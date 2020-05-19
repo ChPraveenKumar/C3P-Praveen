@@ -1,0 +1,135 @@
+<header class="pb-18">
+  <a routerLink="/home" class="c3pLogo"></a>
+  <h1 routerLink="/home" class="c3pTitle">Connect Configuration Certification Platform</h1>
+
+</header>
+<nav class="navbar navbar-default">
+
+  <div class="container-fluid">
+    <ul class="nav navbar-nav pg-nav" style="width: 100%">
+      <li class="" routerLinkActive="active" (click)="makeMeActive('Home')">
+        <a routerLink="/home" class="ico-home">Home</a>
+      </li>
+      <li class="" routerLinkActive="active" (click)="makeMeActive('Dashboard')">
+        <a routerLink="/dashboard" class="ico-dashboard">Dashboard</a>
+      </li>
+      <li class="dropdown" dropdown routerLinkActive="active" (click)="makeMeActive('Configuration')" [ngClass]="{active : menubar.Configuration == true}">
+        <a class="dropdown-toggle ico-config" dropdownToggle aria-controls="dropdown-nested">Configuration
+          <span class="caret"></span>
+        </a>
+        <ul *dropdownMenu class="dropdown-menu">
+          <li role="menuitem" dropdown triggers="mouseenter" placement="right" container="body" class="dropdown-submenu">
+            <a dropdownToggle class="test dropdown-item dropdown-toggle" (click)="false">Create
+              <span class="caret"></span>
+            </a>
+            <ul *dropdownMenu class="dropdown-menu" role="menu">
+              <li (click)="makeMeActive('Configuration')">
+                <a role="menuitem" class="dropdown-item" href="http://localhost:8080/C3P/#/create">Legacy</a>
+              </li>
+              <li (click)="makeMeActive('Configuration')">
+                <a role="menuitem" class="dropdown-item" href="http://localhost:8080/C3P/#/createSDN">SDN/NFV</a>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <a (click)="makeMeActive('Configuration')" ui-sref="ViewConfiguration" href="http://localhost:8080/C3P/#/ViewConfiguration">View</a>
+          </li>
+          <!-- Config Comparison -->
+          <li (click)="makeMeActive('Configuration')" role="menuitem">
+            <a routerLink='/config-comparison'>Config Comparison</a>
+          </li>
+          <!-- Field Engineer -->
+          <li (click)="makeMeActive('Configuration')" role="menuitem">
+            <a routerLink='/field-engg'>Field Engineering Management</a>
+          </li>
+
+        </ul>
+      </li>
+      <li routerLinkActive="active">
+        <a routerLink="/report" (click)="makeMeActive('Report')" class="ico-report">Report</a>
+      </li>
+      <li *ngIf="showPrivilegeLeveAdminFlag" class="dropdown" [ngClass]="{active : menubar.Admin == true}" dropdown routerLinkActive="active">
+        <a class="dropdown-toggle ico-admin" dropdownToggle aria-controls="dropdown-nested">Admin
+          <span class="caret"></span>
+        </a>
+        <ul *dropdownMenu class="dropdown-menu">
+          <li (click)="makeMeActive('Admin')" role="menuitem">
+            <a routerLink="/devicemanagement">Device Management</a>
+          </li>
+          <li (click)="makeMeActive('Admin')" role="menuitem">
+            <a routerLink="/ipmanagement">IP Management</a>
+          </li>
+          <li role="menuitem">
+            <a href="http://localhost:8080/C3P/#/templateManagement">Template Management</a>
+          </li>
+          <li>
+            <a (click)="makeMeActive('Admin')" routerLink="/globallist">Global List Management</a>
+          </li>
+          <li role="menuitem" class="dropdown-submenu" dropdown triggers="mouseenter" placement="right" container="body">
+            <a dropdownToggle class="test dropdown-item dropdown-toggle" (click)="false" id="settings">User Management
+              <span class="caret"></span>
+            </a>
+            <ul *dropdownMenu class="dropdown-menu" role="menu">
+              <li role="menuitem">
+                <a ui-sref="createSDN">Profile</a>
+              </li>
+              <li role="menuitem">
+                <a ui-sref="createSDN">Role and Resposibilty</a>
+              </li>
+            </ul>
+          </li>
+          <li class="dropdown-submenu" dropdown triggers="mouseenter" placement="right" container="body">
+            <a dropdownToggle class="test dropdown-item dropdown-toggle" id="setting" (click)="false">Settings
+              <span class="caret"></span>
+            </a>
+            <ul *dropdownMenu class="dropdown-menu" role="menu">
+              <li role="menuitem" dropdown triggers="mouseenter" placement="right" container="body">
+                <a dropdownToggle class="test dropdown-item dropdown-toggle" (click)="false">Response Analyser
+                  <span class="caret"></span>
+                </a>
+                <ul *dropdownMenu class="dropdown-menu" role="menu">
+                  <li role="menuitem">
+                    <a ui-sref="Alert" routerLink="/alert">Alert Management</a>
+                  </li>
+                  <li role="menuitem">
+                    <a ui-sref="createSDN">Threshold Parameters</a>
+                  </li>
+                </ul>
+            </ul>
+            </li>
+
+        </ul>
+        </li>
+        <li class="dropdown col-lg-push-3 user-menu ml-50" dropdown>
+          <a style="border: none" class="dropdown-toggle ico-user" dropdownToggle>Welcome {{userInfo.username}}
+            <span class="caret"></span>
+          </a>
+          <ul *dropdownMenu class="dropdown-menu">
+            <li role="menuitem">
+              <a class="profile">View Profile</a>
+            </li>
+            <li role="menuitem" (click)="logOut()">
+              <a class="logout">Logout</a>
+            </li>
+          </ul>
+        </li>
+        <li class="col-lg-push-3 mt-5" (click)="helpPopUp()">
+          <a style="border: none" class="ico-help bgBlack"></a>
+        </li>
+        <li class="col-lg-push-3 dropdown " dropdown>
+          <a (click)="pendingTemplateList()" style="border: none;margin-top: -5px;" class="ico-notif bgBlack dropdown-toggle" dropdownToggle>
+            <span class="badge badge-notify" style="left: -9px;"> {{notificationCount}}</span>
+          </a>
+          <ul *dropdownMenu class="dropdown-menu dropdown-slider-noti" style="left: -90%;">
+            <li role="menuitem" class="dropdown-header" style="border-bottom: 1px solid #80808066">
+              <a ui-sref="Approval" class="noti-header-link">Notification : Template Approval</a>
+            </li>
+             <li  ng-class="{'notiRead': template.read == '1'}" *ngFor="let template of notiTemplateList"><a style="color: #337ab7 !important" (click)="pendingTemplateList()" ui-sref="approvalDetails({templateId: template.templateId,version: template.version,read: 1})">{{template.templateId}}-v {{template.version}}</a></li> 
+          </ul>
+        </li>
+        <li class="col-lg-push-3 mt-5">
+          <a (click)="logOut()" class="ico-power bgBlack"></a>
+        </li>
+    </ul>
+  </div>
+</nav>

@@ -1,0 +1,35 @@
+
+<div class="container main-pg">
+
+	<div class="row">
+
+		<!--    Page Header Section     -->
+		<page-header></page-header>
+		<div class="pg-bdy">
+			<!-- Breadcrumb Section -->
+			<ul class="breadcrumb">
+				<li><a href="#">C3P</a></li>
+				<li class="active">Admin</li>
+			</ul>
+	<div class="panel form-inline border-top mt-5 lbl-normal cmp-normal">
+			<!--    Customer Information     -->
+			</br>
+			<section class="mt-15 pr-60">
+				<h3 class="title second-title ml-40">Work in progress..</h3>
+
+			</section>
+
+		</div>
+		</div>
+		
+
+	</div>
+	<!--    Page Body Section    -->
+
+	<!--    Page Footer Section  -->
+	<footer class="text-center">&copy; Tech Mahindra - 2018</footer>
+	<!--    Page Footer Section  -->
+
+</div>
+</div>
+

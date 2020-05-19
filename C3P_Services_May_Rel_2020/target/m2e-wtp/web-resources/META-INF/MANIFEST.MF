@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Implementation-Title: com.orion
+Implementation-Version: Testing-26_4_19-1
+Built-By: RT00500838
+Implementation-Vendor-Id: com.orion
+Build-Jdk: 1.8.0_25
+Created-By: Maven Integration for Eclipse
+Implementation-Vendor: Pivotal Software, Inc.
+

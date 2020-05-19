@@ -1,0 +1,14 @@
+<interface xmlns="http://cisco.com/ns/yang/ned/ios">
+			<Multilink>
+				<name>{{ MULTILINK_INDEX }}</name>
+				<description>{{ ML_DESCRIPTION }}</description>
+				<ip>
+					<address>
+						<primary>
+							<address>{{ ML_IP_ADDRESS }}</address>
+							<mask>{{ ML_SUBNET_MASK }}</mask>
+						</primary>
+					</address>
+				</ip>				
+			</Multilink>
+</interface>

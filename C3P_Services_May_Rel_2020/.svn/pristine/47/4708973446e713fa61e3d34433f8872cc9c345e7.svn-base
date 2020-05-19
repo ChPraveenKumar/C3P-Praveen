@@ -1,0 +1,30 @@
+			<!-- Breadcrumb Section -->
+			<ul class="breadcrumb">
+				<li><a ui-sref="Home">C3P</a></li>
+				<li class="breadcrumbLabel">Admin</li>
+				<li class="active">Template Management</li>
+			</ul>
+			<!--    Search Item    -->
+			<div class="panel-grey form-inline border-top-bottom mt-3 lbl-normal cmp-normal">
+                <span ng-style="deviceDetails == true && {'visibility': 'hidden'}" class="pull-right template-mgmt-id">Template ID: {{templateId}}</span>
+                <div class="tempProgressBar-container">
+                	<div class="progress device-config-bar">
+                	<div class="progress-bar progress-bar-success device-details" style="width:{{configBarWidth}}">
+	                	<span ng-class="{'Device_icon-succsess': deviceDetails == true, 'Device_icon-passed': deviceDetails == false}" style="left: 0%;"></span>
+	                	<label class="device-label-success" style="left: -5%;">Device Details</label>
+				    </div>
+				    <div class="config-feature">
+	                	<span ng-class="{'Config_icon-grey' : configFeature == false, 'Config_icon-succsess':configFeature == true, 'Config_icon-passed': finalView == true}" style="left: 50%;"></span>
+	                	<label ng-class="{'Config-label-grey' : configFeature == false, 'Config-label-succsess': configFeature == true || finalView == true}" style="left: 40%;">Configuration Features</label>
+				    </div>
+				    <div class="final-view">
+	                	<span ng-class="{'Final_icon-grey': finalView == false, 'Final_icon-succsess': finalView == true}" style="left: 100%;"></span>
+	                	<label ng-class="{'Final-label-grey': finalView == false, 'Final-label-succsess':  finalView == true}" style="left: 97%; width:12%;">Final View</label>
+				    </div>
+                </div>
+                </div>
+                
+                <!-- <span class="pull-left template-mgmt-categ">{{templateTags}}</span> -->
+            </div>
+            <div ng-include="configTemplateName"></div>
+        

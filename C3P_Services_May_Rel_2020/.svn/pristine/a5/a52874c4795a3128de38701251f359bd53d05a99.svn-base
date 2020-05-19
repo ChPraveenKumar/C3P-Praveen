@@ -1,0 +1,71 @@
+package com.techm.orion.springboot;
+
+import javax.annotation.Resource;
+
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.web.SpringBootServletInitializer;
+import org.springframework.boot.orm.jpa.EntityScan;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+
+import com.techm.orion.service.StorageService;
+
+
+
+@SpringBootApplication
+@EnableAutoConfiguration
+@EnableJpaRepositories(basePackages = "com.techm.orion.repositories")
+@EntityScan(basePackages = "com.techm.orion.entitybeans")
+@ComponentScan(basePackages = "com")
+
+public class WebApplication extends SpringBootServletInitializer implements CommandLineRunner {
+	@Override
+	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+		return application.sources(WebApplication.class);
+	}
+
+	
+	
+	@Bean 
+    public Jackson2ObjectMapperBuilder objectMapperBuilder(){
+        Jackson2ObjectMapperBuilder builder = new Jackson2ObjectMapperBuilder();
+        builder.failOnUnknownProperties(true);
+        builder.failOnEmptyBeans(false);
+        return builder;
+    }
+	
+	public static void main(String[] args) throws Exception {
+		SpringApplication.run(WebApplication.class, args);
+		
+	}
+
+
+
+	@Override
+	public void run(String... arg0) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+	
+/*	@Resource
+	StorageService storageService;
+	@Override
+	public void run(String... args) throws Exception {
+
+		//storageService.deleteAll();
+
+	   // storageService.init();
+
+	    	
+
+	}*/
+	
+	
+}

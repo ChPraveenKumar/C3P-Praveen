@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestRequest TestType="FrameLoss">
+      <Parameters>
+            <RequestID>Request ID </RequestID>
+            <Protocol>IP</Protocol>
+            <TargetIPaddress> ???? </TargetIPaddress>
+            <TrialDurationInSeconds>120</TrialDurationInSeconds>
+            <BandwidthGranularityInMbps>10</BandwidthGranularityInMbps>
+            <SourceAddress> ???? </SourceAddress>
+            <TypeOfService> ??? </TypeOfService>
+       </Parameters>
+</TestRequest>

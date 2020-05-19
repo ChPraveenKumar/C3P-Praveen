@@ -1,0 +1,245 @@
+
+<div class="container main-pg">
+
+	<div class="row">
+
+		<!--    Page Header Section     -->
+		<page-header></page-header>
+		<div class="pg-bdy">
+			<!-- Breadcrumb Section -->
+			<ul class="breadcrumb">
+				<li><a ui-sref="Home">C3P</a></li>
+				<li class="breadcrumbLabel">Admin</li>
+				<li class="breadcrumbLabel">Settings</li>
+				<li class="breadcrumbLabel">Response Analyser</li>
+				<li class="active">Alert/Notification Management</li>
+			</ul>
+	<div class="panel form-inline border-top mt-5 lbl-normal cmp-normal">
+			<!--    Customer Information     -->
+			</br>
+			<section>
+				<div class="row col-md-12">
+					<div class="col-lg-6 mb-15">
+						<h2 class="title second-title">Alert/ Notification</h2>
+						
+					</div>
+					
+				</div>
+				<!-- Start of new alert/Notification PopUp-->
+				<div id="addPopUp" class="popup">
+				<div id="addPopUpContainer" class="popUpContainer">
+				  <!-- Modal content -->
+				<form id="newAlertNoti" name="newAlertNotiForm"  novalidate
+				ng-class={submitted:submitted}>
+				  <div class="popup-content">
+					  <div id="addPopUpContainerHeader" class="col-lg-6 col-lg-offset-3 popup-content-header">
+						  <span class="small_logo_icon"></span>
+						  <label class="report-header-style"><h4>Alert/Notification Management</h4></label>
+						  <span class="report-close-icon" onclick="closeAddPopUp('addPopUp')"></span>
+					  </div>
+					  <div class="addPopUpContainer col-lg-6 col-lg-offset-3" style="height: 200px;">
+					    <div class="row mt-50">
+					    <div class="col-lg-6 form-group">
+								<label class="col-lg-4 text-right">Type :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select required ng-value="addAlertNotiType" ng-change="generateNewCode()" ng-model="addAlertNotiType">
+											<option value="">Select</option>
+											<option value="Alert">Alert</option>
+											<option value="Notification">Notification</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-6 form-group">
+								<label class="col-lg-4 text-right">Category :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select required ng-value="addAlertNotiCategory" ng-model="addAlertNotiCategory">
+											<option value="">Select</option>
+											<option value="configurationGeneration">Configuration generation</option>
+											<option value="preTest">Pre Test</option>
+											<option value="certificationTest">Certification Test</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							
+							<div class="col-lg-6 mt-15">
+								<label class="col-lg-4 text-right">Description :</label>
+								<div class="col-lg-8">
+									<input required type="text" class="form-control width100" ng-value="addAlertNotiDesc" ng-model="addAlertNotiDesc" />
+								</div>
+							</div>
+							<div class="col-lg-6 mt-15">
+								<label class="col-lg-4 text-right">Code :</label>
+								<div class="col-lg-8">
+									<input type="text" required disabled class="form-control width100 disabled" ng-value="addAlertNotiCode" ng-model="addAlertNotiCode" />
+								</div>
+							</div>
+							<div class="col-lg-6 mb-15">
+								<label class="text-right col-lg-6 mt-15">All fields are required</label>
+							</div>
+							<div class="col-lg-6 mt-15">
+								<div class="pull-right">
+								 <button class="btn btn-primary" type="submit" ng-click="addNewAlertNotiData($event)">Save</button>
+                                    <button class="btn btn-default mr-15" type="button" ng-click="resetAlertNotiData()">Reset</button>
+                                   
+                                </div>
+							</div>
+						</div>
+                     
+				  </div>
+				  </div>
+				  </form>
+				 </div></div>
+				 <!-- End of new alert/Notification PopUp-->
+				 
+				 <!-- Start of Edit PopUp -->
+				<div id="editPopUp" class="popup">
+				<div id="editPopUpContainer" class="popUpContainer">
+				  <!-- Modal content -->
+				  <div class="popup-content">
+					  <div id="editPopUpContainer" class="col-lg-6 col-lg-offset-3 popup-content-header">
+						  <span class="small_logo_icon"></span>
+						  <label class="report-header-style"><h4>Alert/Notification Management</h4></label>
+						  <span class="report-close-icon" onclick="closeAddPopUp('editPopUp')"></span>
+					  </div>
+					  <div class="addPopUpContainer col-lg-6 col-lg-offset-3" style="height: 200px;">
+					    <div class="row mt-50">
+					    <div class="col-lg-6 form-group">
+								<label class="col-lg-4 text-right">Type :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select required ng-value="editAlertNotiType" ng-model="editAlertNotiType">
+											<option value="">Select</option>
+											<option value="Alert">Alert</option>
+											<option value="Notification">Notification</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-6 form-group">
+								<label class="col-lg-4 text-right">Category :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select required ng-value="editAlertNotiCategory" ng-model="editAlertNotiCategory">
+											<option value="">Select</option>
+											<option value="configurationGeneration">Configuration generation</option>
+											<option value="preTest">Pre Test</option>
+											<option value="certificationTest">Certification Test</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							
+							<div class="col-lg-6 mt-15">
+								<label class="col-lg-4 text-right">Description :</label>
+								<div class="col-lg-8">
+									<input type="text" class="form-control width100" ng-value="editAlertNotiDesc" ng-model="editAlertNotiDesc" />
+								</div>
+							</div>
+							<div class="col-lg-6 mt-15">
+								<label class="col-lg-4 text-right">Code :</label>
+								<div class="col-lg-8">
+									<input type="text" class="form-control width100" ng-value="editAlertNotiCode" ng-model="editAlertNotiCode" />
+								</div>
+							</div>
+							
+							<div class="col-lg-12 mt-15">
+								<div class="pull-right">
+								 <button class="btn btn-primary" ng-click="updateAlertNotiData()">Save</button>
+                                   <!--  <button class="btn btn-default mr-15" ng-click="resetAlertNotiData()">Reset</button> -->
+                                   
+                                </div>
+							</div>
+						</div>
+                     
+				  </div>
+				  </div>
+				 </div></div>
+				 <!-- End of Edit PopUp -->
+				<div class="row col-md-12">
+					<div class="col-lg-3 form-group">
+						<label>Code :</label>
+							<input type="text" class="form-control"
+								ng-model="alertNotiCode">
+					</div>
+					<div class="col-lg-4 form-group">
+						<label>Description :</label>
+							<input type="text" class="form-control" ng-model="alertNotiDesc" />
+					</div>
+					<div class="col-lg-2 form-group">
+						<span style="color: red;font-size: 14px;margin-left: 8px;" ng-show="errorMessege">Record not found</span>
+					</div>
+				<div class="col-lg-2 pull-left">
+					<button id="alertNotiAdddPopUp"  type="submit" class="btn btn-primary ml-10 pull-right"
+									 ng-click="flushAlertNotiData()">New</button>
+					<button  type="submit" class="btn btn-primary  mr-41 pull-right"
+							ng-click="searchAlertNotiRecord()">Search</button>
+				</div> 
+				</div>
+				<div class="db-result-section col-md-12">
+                <div class="table-responsive">
+                    <table  st-table="requestsList" style="margin-bottom:0px" class="table table-striped table-hover hdr-table hdr-sort" st-safe-src="rowCollection">   
+                        <colgroup>
+                              <col width="15.2212389380531%" />
+                              <col width="33.2212389380531%" />
+                              <col width="33.2212389380531%" />
+                              <col width="15.2212389380531%" />
+                        </colgroup>
+                        <thead style="padding-right: 17px;">
+                            
+                            <tr>
+                                <th id="alert_code" class="sort-ascent" ng-click="sort('alert_code',$event)">Code</th>
+                                <th id="alert_category" class="sort-ascent" ng-click="sort('alert_category',$event)">Category</th>
+                                <th id="alert_description" class="sort-ascent" ng-click="sort('alert_description',$event)">Description</th>
+                                <th >Edit</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <div style="max-height:290px; overflow-y:auto">
+                        <table id="tbl_dashboard" st-table="requestsList" class="table table-striped table-hover" st-safe-src="rowCollection">
+                            
+                            <colgroup>
+                              <col width="15.2212389380531%" />
+                              <col width="33.2212389380531%" />
+                              <col width="33.2212389380531%" />
+                              <col width="15.2212389380531%" />
+                            </colgroup>
+                        
+                            <tbody>
+                             <tr ng-repeat="req in requestsList | orderBy:sortKey:reverse">
+                              <td>{{req.alert_code}}</td>
+                              <td>{{req.alert_category}}</td>
+                              <td>{{req.alert_description}}</td>
+                              <td><a class="ico-edit" ng-click="editAlertNotiData( req.alert_code,req.alert_category,req.alert_description,req.alert_type)"></a></td>
+                          	</tr>
+                            </tbody>
+                        </table>
+                        
+                    </div>
+                </div></div>
+                <div class="row mt-10">
+				<!-- <div class="col-lg-12 form-group">
+				<button type="submit" class="btn btn-primary ml-5 pull-right"
+						ng-click="getallipamData()">Get All Data</button>
+				</div> -->
+			</section>
+		</div>
+		</div>
+		</div>
+	<!--    Page Body Section    -->
+
+	<!--    Page Footer Section  -->
+	<footer class="text-center">&copy; Tech Mahindra - 2018</footer>
+	<!--    Page Footer Section  -->
+
+</div>
+
+

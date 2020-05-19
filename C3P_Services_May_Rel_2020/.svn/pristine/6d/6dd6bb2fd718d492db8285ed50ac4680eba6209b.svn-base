@@ -1,0 +1,114 @@
+package com.techm.orion.models;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.techm.orion.entitybeans.RequestDetailsEntity;
+import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+
+public class BackUpRequestVersioningJSONModel {
+	
+	List<RequestDetailsEntity>childList=new ArrayList<RequestDetailsEntity>();
+	private int requestinfoid;
+	private String hostname;
+	private String managementIp;
+	private String vendor;
+	private String model;
+	private String date_of_processing;
+	private String requeststatus;
+	private String request_creator_name;
+	private String restore;
+	private String recurring;
+	private String baseline;
+	private boolean isEditable;
+	private String 	alphanumericReqId;
+	
+	
+	public String getAlphanumericReqId() {
+		return alphanumericReqId;
+	}
+	public void setAlphanumericReqId(String alphanumericReqId) {
+		this.alphanumericReqId = alphanumericReqId;
+	}
+	public boolean isEditable() {
+		return isEditable;
+	}
+	public void setEditable(boolean isEditable) {
+		this.isEditable = isEditable;
+	}
+	public List<RequestDetailsEntity> getChildList() {
+		return childList;
+	}
+	public void setChildList(List<RequestDetailsEntity> childList) {
+		this.childList = childList;
+	}
+	public int getRequestinfoid() {
+		return requestinfoid;
+	}
+	public void setRequestinfoid(int requestinfoid) {
+		this.requestinfoid = requestinfoid;
+	}
+	public String getHostname() {
+		return hostname;
+	}
+	public void setHostname(String hostname) {
+		this.hostname = hostname;
+	}
+	public String getManagementIp() {
+		return managementIp;
+	}
+	public void setManagementIp(String managementIp) {
+		this.managementIp = managementIp;
+	}
+	public String getVendor() {
+		return vendor;
+	}
+	public void setVendor(String vendor) {
+		this.vendor = vendor;
+	}
+	public String getModel() {
+		return model;
+	}
+	public void setModel(String model) {
+		this.model = model;
+	}
+	public String getDate_of_processing() {
+		return date_of_processing;
+	}
+	public void setDate_of_processing(String date_of_processing) {
+		this.date_of_processing = date_of_processing;
+	}
+	public String getRequeststatus() {
+		return requeststatus;
+	}
+	public void setRequeststatus(String requeststatus) {
+		this.requeststatus = requeststatus;
+	}
+	public String getRequest_creator_name() {
+		return request_creator_name;
+	}
+	public void setRequest_creator_name(String request_creator_name) {
+		this.request_creator_name = request_creator_name;
+	}
+	public String getRestore() {
+		return restore;
+	}
+	public void setRestore(String restore) {
+		this.restore = restore;
+	}
+	public String getRecurring() {
+		return recurring;
+	}
+	public void setRecurring(String recurring) {
+		this.recurring = recurring;
+	}
+	public String getBaseline() {
+		return baseline;
+	}
+	public void setBaseline(String baseline) {
+		this.baseline = baseline;
+	}
+	
+	
+
+}

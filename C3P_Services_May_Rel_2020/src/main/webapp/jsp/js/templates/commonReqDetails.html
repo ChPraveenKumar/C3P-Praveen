@@ -1,0 +1,587 @@
+
+		<div class="pg-bdy">
+			<!-- Breadcrumb Section -->
+			<ul class="breadcrumb">
+				<li><a ui-sref="Home">C3P</a></li>
+				<li class="breadcrumbLabel">Configuration</li>
+				<li class="active">Request Details</li>
+			</ul>
+			<div class="panel form-inline border-top db-req-dtl mt-5">
+				<section>
+						<div class="row mt-5">
+					 	<div class="col-lg-5 form-group">
+							<h2 class="title main-title">Configuration for :  {{RequestDetails[0].display_request_id}}-v{{RequestDetails[0].request_version}}</h2>
+						</div>
+						<div class="col-lg-5 form-group">
+							<h2 class="title second-title pull-right ng-binding" style="margin-right: 16px">
+							Network Type : Legacy
+							 
+							</h2>
+						</div>
+						<div class="col-lg-2 pull-right">
+                        <button title="Refresh" class="refreshBtn" ng-click="getUpdatedGridData()"></button>
+                    </div>
+						</div>
+					<div class="row mt-15">
+
+						<div class="col-lg-3 form-group">
+
+							<label class="col-lg-6 text-right">Site ID : </label>
+							<div class="col-lg-6" style="padding: 0">
+								<input type="text" class="form-control" ng-readonly="true"
+									ng-model="RequestDetails[0].siteid" />
+							</div>
+
+						</div>
+						<div class="col-lg-3 form-group">
+
+							<label class="col-lg-6 text-right">Region : </label>
+							<div class="col-lg-6" style="padding: 0">
+								<input type="text" class="form-control" ng-readonly="true"
+									ng-model="RequestDetails[0].region" />
+							</div>
+
+						</div>
+						<div class="col-lg-3 form-group">
+
+							<label class="col-lg-6 text-right">Service : </label>
+							<div class="col-lg-6" style="padding: 0">
+								<input type="text" class="form-control" ng-readonly="true"
+									ng-model="RequestDetails[0].service" />
+							</div>
+
+						</div>
+					
+					</div>
+				</section>
+				<section>
+					<h3 class="title second-title">
+						Device Information
+						</h2>
+						<div class="row mt-15">
+
+							<div class="col-lg-3 form-group">
+
+								<label class="col-lg-6 text-right">Vendor : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].vendor" />
+								</div>
+
+							</div>
+							<div class="col-lg-3 form-group">
+
+								<label class="col-lg-6 text-right">Model : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].model" />
+								</div>
+
+							</div>
+							<div class="col-lg-3 form-group">
+
+								<label class="col-lg-6 text-right">Host Name : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" style="width:120% !important"  class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].hostname" />
+								</div>
+
+							</div>
+							<div class="col-lg-3 form-group">
+
+								<label class="col-lg-6">Management IP :
+								</label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].managementIp" />
+								</div>
+
+							</div>
+
+						</div>
+					
+				</section>
+				<section class="no-border">
+					<h3 class="title second-title">
+						Configuration Features
+						</h2>
+						<div class="row mt-15">
+
+							<div ng-show="RequestDetails[0].deviceInterfaceSO.name.length" class="col-lg-3 form-group">
+
+								<label class="col-lg-6 text-right">WAN Int : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true" ng-model="RequestDetails[0].deviceInterfaceSO.name" />
+								</div>
+
+							</div>
+							<div ng-show="RequestDetails[0].deviceInterfaceSO.ip.length" class="col-lg-3 form-group">
+
+								<label  class="col-lg-6 text-right">IP Address : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].deviceInterfaceSO.ip" />
+								</div>
+
+							</div>
+							<div ng-show="RequestDetails[0].deviceInterfaceSO.encapsulation.length" class="col-lg-3 form-group">
+
+								<label class="col-lg-6 text-right">Encapsulation : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].deviceInterfaceSO.encapsulation" />
+								</div>
+
+							</div>
+							<div ng-show="RequestDetails[0].deviceInterfaceSO.bandwidth.length" class="col-lg-3 form-group">
+
+								<div ng-if="RequestDetails[0].deviceInterfaceSO.speed == null">
+									<label class="col-lg-6 text-right">Bandwidth : </label>
+									<div class="col-lg-6" style="padding: 0">
+										<input type="text" class="form-control" ng-readonly="true"
+											ng-model="RequestDetails[0].deviceInterfaceSO.bandwidth" />
+									</div>
+								</div>
+							</div>
+							<div ng-show="RequestDetails[0].deviceInterfaceSO.speed.length" class="col-lg-3 form-group">
+								<div ng-if="RequestDetails[0].deviceInterfaceSO.speed != null">
+								<label class="col-lg-6 text-right">Speed : </label>
+								<div class="col-lg-6" style="padding: 0">
+								<input type="text" class="form-control" ng-readonly="true"
+									ng-model="RequestDetails[0].deviceInterfaceSO.speed" />
+								</div>
+								</div>
+							</div>
+							<div ng-show="RequestDetails[0].lanInterface.length" class="col-lg-3 form-group">
+								<label class="col-lg-6 text-right">LAN Int : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input style="width: 131% !important;" type="text" class="form-control" ng-readonly="true" ng-model="RequestDetails[0].lanInterface" />
+								</div>
+							</div>
+							<div ng-show="RequestDetails[0].lanIp.length" class="col-lg-3 form-group">
+								<label  class="col-lg-6 text-right">LAN IP : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input style="width:115% !important" type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].lanIp" />
+								</div>
+							</div>
+							<div ng-show="RequestDetails[0].lanMaskAddress.length" class="col-lg-3 form-group">
+								<label  class="col-lg-6 text-right">Subnet Mask : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].lanMaskAddress" style="width:115% !important"/>
+								</div>
+							</div>
+							<div ng-show="RequestDetails[0].internetLcVrf.routingProtocol.length" class="col-lg-3 form-group">
+
+								<label class="col-lg-6 text-right">Routing Protocol : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].internetLcVrf.routingProtocol" />
+								</div>
+
+							</div>
+							<div ng-show="RequestDetails[0].internetLcVrf.AS.length" class="col-lg-3 form-group">
+
+								<label class="col-lg-6 text-right">AS No : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true" ng-model="RequestDetails[0].internetLcVrf.AS"/>
+								</div>
+
+							</div>
+							<div ng-show="RequestDetails[0].internetLcVrf.networkIp.length" class="col-lg-3 form-group">
+
+								<label class="col-lg-6 text-right">N/W IP : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].internetLcVrf.networkIp" />
+								</div>
+
+							</div>
+							<div ng-show="RequestDetails[0].internetLcVrf.neighbor1.length" class="col-lg-3 form-group">
+
+								<label class="col-lg-6 text-right">Neighbour IP : </label>
+								<div class="col-lg-6" style="padding: 0">
+									<input type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].internetLcVrf.neighbor1" />
+								</div>
+
+							</div>
+							<div ng-show="RequestDetails[0].vrfName.length" class="col-lg-3 form-group">
+								<label class="col-lg-6 text-right">VRF : </label>
+								<div class="col-lg-6" style="padding: 0">
+								<input type="text" class="form-control" ng-readonly="true"
+										ng-model="RequestDetails[0].vrfName" />
+								</div>
+							</div>
+						
+							<div ng-show="RequestDetails[0].snmpHostAddress.length" style="margin-top: 1px;" class="col-lg-3 form-group">
+								<label class="col-lg-6 text-right">SNMP : </label>
+								<div class="col-lg-6" style="padding: 0">
+								<label ng-show="RequestDetails[0].snmpHostAddress != ''">Yes</label>
+								<label ng-show="RequestDetails[0].snmpHostAddress == ''">No</label>
+								
+								</div>
+							</div>
+							<div ng-show="RequestDetails[0].loopBackType.length" class="col-lg-3 form-group">
+								<label class="col-lg-6 text-right">Loopback : </label>
+								<div class="col-lg-6" style="padding: 0">
+								<label ng-show="RequestDetails[0].loopBackType != ''">Yes</label>
+								<label ng-show="RequestDetails[0].loopBackType == ''">No</label>
+							</div>
+						</div>
+					</div>	
+				</section>
+			</div>
+			<!-- Search Section -->
+			<!-- Search Section -->
+			<div id="reportPopUp" class="reportPopUp">
+				<div id="reportPopUpContainer" class="popUpContainer">
+				<!-- Modal content -->
+				<div class="popup-content">
+					<div id="reportPopUpContainerHeader" class="col-lg-6 col-lg-offset-3 popup-content-header">
+						<span class="small_logo_icon"></span> <label
+							class="report-header-style"><h4 class="fs-16">{{report_title}}</h4></label> <span
+							class="report-close-icon" ng-click="closeReportPopUp('#reportPopUp')"></span>
+					</div>
+					
+					<textarea style="resize: none;" ng-show="format == 'false' && formatColor == 'false' && !deliverConfig"
+						class="reportPopUpContainer col-lg-6 col-lg-offset-3"
+						disabled ng-model="getdata" 
+						maxlength="1024">
+                    </textarea>
+                    <p ng-show="format == 'true'" id="reportContainer" class="reportPopUpContainer col-lg-6 col-lg-offset-3">
+                    </p>
+					<pre ng-show="formatColor == 'true'" id="reportContainerColorCode" class="reportPopUpContainer col-lg-6 col-lg-offset-3">
+                    </pre> 
+				</div>
+				</div>
+			</div>
+			
+			<div id="backupandDelivery" class="reportPopUp">
+				<div id="backupandDeliveryContainer" class="popUpContainer">
+				<!-- Modal content -->
+				<div class="popup-content">
+					<div id="backupandDeliveryContainerHeader" class="col-lg-5 col-lg-offset-3 popup-content-header">
+						<span class="small_logo_icon"></span> <label
+							class="report-header-style"><h4 class="fs-16">{{report_title}}</h4></label> <span
+							class="report-close-icon" ng-click="closeReportPopUp('#backupandDelivery')"></span>
+					</div>
+					
+					<div ng-show="deliverConfig" class="IntRountingOptContainer col-lg-5 col-lg-offset-3">
+					
+					<ul class="listStyle">
+						<li><h4>Backup</h4>
+							<ul>
+								<li><h5 class="mt-5">Backup Status - {{backupStatus}} <span class="bckupStatus"></span></h5></li>
+								<li><h5 ng-class = "{'disabledDiv': backupStatus == 'Failed'}" class="hoverStyle mt-5" ng-click="getbackupConfig('backupConfig')">Backup Configuration</h5></li>
+							</ul>
+						</li>
+						<li class="mt-10"><h4>Configuration Delivery</h4>
+							<ul class="errorColCode">
+								<li><h5 class="mt-5">Delivery Status - {{deliveryStatus}}<span class="deliveryStatus"></span></h5></li>
+								<h6 ng-hide="errorType == 'false'" class="mt-5">{{errorType}} : {{errorWarningMsg}}</h6>
+								<h6 ng-hide="errorType == 'false'" class=""><span ng-class="{'warning-msg' : errorType == 'Warning', 'error-msg' : errorType == 'Failure'}" 
+								ng-bind-html="errorRouterMessage"></span></h6>
+							</ul>
+						</li>
+						<li class="mt-10"><h4>Difference in Configuration</h4>
+							<ul>
+								<li><h5 ng-class = "{'disabledDiv': disableText}" class="hoverStyle mt-5" ng-click="getConfigDiff('findDiff')">Compare Configurations</h5></li>
+							</ul>
+						</li>
+					</ul>
+						
+					</div>
+					
+				</div>
+				</div>
+			</div>
+			<!-- Configuration Status Section  -->
+			<div class="db-config-status">
+				<h2 class="title">
+					Configuration Status
+					<aside class="elapsed-time">
+						<span ng-show="RequestDetails[0].status !== 'Scheduled'" ng-style="RequestDetails[0].status == 'Failure' && {'visibility': 'hidden'} || RequestDetails[0].status == 'In Progress' && {'visibility': 'hidden'}">
+							Total Elapsed Time :<span class="time-dtl">{{RequestDetails[0].elapsedTime}}</span>
+						</span>
+						<span ng-show="RequestDetails[0].status == 'Scheduled'" ng-style="RequestDetails[0].status == 'Failure' && {'visibility': 'hidden'} || RequestDetails[0].status == 'In Progress' && {'visibility': 'hidden'}">
+							Scheduled Time :<span class="time-dtl">{{RequestDetails[0].scheduledTime}}</span>
+						</span>
+						<div class="mtn15">
+						<label class="text-right" style="font-size: 14px;font-weight: normal">Status :</label> <span
+						ng-show="RequestDetails[0].status == 'Success'"
+						class="info-success" style="font-weight: 600">Success</span> 
+						<span
+						ng-show="RequestDetails[0].status == 'Failure'"
+						class="info-error" style="font-weight: 600">Failure</span>
+						 <span
+						ng-show="RequestDetails[0].status == 'In Progress'"
+						class="info-inProgress" style="font-weight: 600">In Progress</span>
+						 <span
+						ng-show="RequestDetails[0].status == 'Hold'"
+						class="info-hold" style="font-weight: 600">Hold</span>
+						<span
+						ng-show="RequestDetails[0].status == 'Scheduled'"
+						class="info-inProgress" style="font-weight: 600">Scheduled</span>
+						</div>
+					</aside>
+				</h2>
+				<!-- Tooltip on mousehover of Tests section start-->
+				<section class="progress-sec">
+						<div class="subTest preSubTest" ng-show="preSubTest" >
+						 	<div ng-class="{'ico-failure pl-5': getSubTestData.deviceReachabilityTest == '2','ico-success pl-5':  getSubTestData.deviceReachabilityTest == '1','ico-usedIp pl-5':  getSubTestData.deviceReachabilityTest == '0'}">
+							<span>Device Reachability test</span></div>
+							<div ng-class="{'ico-failure pl-5': getSubTestData.vendorTest == '2','ico-success pl-5':  getSubTestData.vendorTest == '1','ico-usedIp pl-5':  getSubTestData.vendorTest == '0'}">
+							<span>Vendor test</span></div>
+							<div ng-class="{'ico-failure pl-5': getSubTestData.deviceModelTest == '2','ico-success pl-5':  getSubTestData.deviceModelTest == '1','ico-usedIp pl-5':  getSubTestData.deviceModelTest == '0'}">
+							<span>Device Model test</span></div>
+							<div ng-class="{'ico-failure pl-5': getSubTestData.iosVersionTest == '2','ico-success pl-5':  getSubTestData.iosVersionTest == '1','ico-usedIp pl-5':  getSubTestData.iosVersionTest == '0'}">
+							<span>IOS Version test</span></div>
+						</div>
+						<div class="subTest networkSubTest" ng-show="networkSubTest">
+							<div ng-class="{'ico-failure pl-5': getSubTestData.showIpIntBriefCmd == '2','ico-success pl-5':  getSubTestData.showIpIntBriefCmd == '1','ico-usedIp pl-5':  getSubTestData.showIpIntBriefCmd == '0'}">
+								<span>Interfaces status</span></div>
+							<div ng-class="{'ico-failure pl-5': getSubTestData.showInterfaceCmd == '2','ico-success pl-5':  getSubTestData.showInterfaceCmd == '1','ico-usedIp pl-5':  getSubTestData.showInterfaceCmd == '0'}">
+								<span>WAN Interface</span></div>
+							<div ng-class="{'ico-failure pl-5': getSubTestData.showVersionCmd == '2','ico-success pl-5':  getSubTestData.showVersionCmd == '1','ico-usedIp pl-5':  getSubTestData.showVersionCmd == '0'}">
+								<span>Platform & IOS</span></div>
+							<div ng-class="{'ico-failure pl-5': getSubTestData.showIpBgpSummaryCmd == '2','ico-success pl-5':  getSubTestData.showIpBgpSummaryCmd == '1','ico-usedIp pl-5':  getSubTestData.showIpBgpSummaryCmd == '0'}">
+								<span>BGP neighbor</span></div>
+						</div>
+						<div class="subTest healthCheckSubTest" ng-show="healthCheckSubTest">
+							<div ng-class="{'ico-failure pl-5': getSubTestData.frameLossTest == '2','ico-success pl-5':  getSubTestData.frameLossTest == '1','ico-usedIp pl-5':  getSubTestData.frameLossTest == '0'}">
+							<span>FrameLoss</span></div>
+							<div ng-class="{'ico-failure pl-5': getSubTestData.latencyTest == '2','ico-success pl-5':  getSubTestData.latencyTest == '1','ico-usedIp pl-5':  getSubTestData.latencyTest == '0'}">
+							<span>Latency</span></div>
+							<div ng-class="{'ico-failure pl-5': getSubTestData.throughputTest == '2','ico-success pl-5':  getSubTestData.throughputTest == '1','ico-usedIp pl-5':  getSubTestData.throughputTest == '0'}">
+							<span>Throughput</span></div>
+						</div>
+						</section>
+					 <!-- Tooltip on mpusehover of Tests section end-->
+					<section class="progress-sec">
+					
+					<!-- start progress -->
+					<div ng-show="ReportDetails[0].start_test == '1'" class="success">
+						<div class="evt-box start-success">Start</div>
+						<div class="circle back-color-green"></div>
+						<div class="bars bar-color-green "></div>
+					</div>
+					<div ng-show="ReportDetails[0].start_test == '0'" class="success">
+						<div class="evt-box start-disable">Start</div>
+						<div class="back-color-white circle"></div>
+						<div class="bar-color-white bars mlp-50"></div>
+					</div>
+					<div ng-show="ReportDetails[0].start_test == '2'" class="success">
+						<div class="evt-box start-fail">Start</div>
+						<div class="circle back-color-red"></div>
+						<div class="bars bar-color-red mlp-50"></div>
+					</div>
+					<!-- start progress end -->
+
+					<!-- Generate progress -->
+					<div ng-show="ReportDetails[0].generate_config == '1'"
+						class="success">
+						<div class="evt-box generate-success"
+							ng-click="getConfigratioData('generateConfig', 'View Generate Config')">Generate</div>
+						<div class="circle back-color-green"></div>
+						<div class="bars bar-color-green"></div>
+					</div>
+					<div ng-show="ReportDetails[0].generate_config == '0'"
+						class="success">
+						<div class="evt-box generate-disable">Generate</div>
+						<div class="back-color-white circle"></div>
+						<div class="bar-color-white bars"></div>
+					</div>
+					<div ng-show="ReportDetails[0].generate_config == '2'"
+						class="success">
+						<div class="evt-box generate-fail"
+							ng-click="getConfigratioData('generateConfig', 'View Generate Config')">Generate</div>
+						<div class="circle back-color-red"></div>
+						<div class="bars bar-color-red"></div>
+					</div>
+					<!-- Generate progress end -->
+
+					<!-- Pre Validate progress -->
+					<div ng-show="ReportDetails[0].application_test == '1'"
+						class="success" ng-mouseover="preSubTest=true" ng-mouseleave="preSubTest=false">
+						<div class="evt-box apptest-success" ng-mouseover="getPreValidateSubTestData('preValidate')"
+							ng-click="getConfigratioData('preValidate','View Pre Validate')">Pre
+							Validate</div>
+						<div class="circle back-color-green"></div>
+						<div class="bars bar-color-green"></div>
+					</div>
+					<div ng-show="ReportDetails[0].application_test == '0'"
+						class="success" ng-mouseover="preSubTest=true" ng-mouseleave="preSubTest=false">
+						<div class="evt-box apptest-disable" ng-mouseover="getPreValidateSubTestData('preValidate')">Pre
+							Validate</div>
+						<div class="back-color-white circle"></div>
+						<div class="bar-color-white bars"></div>
+					</div>
+					<div ng-show="ReportDetails[0].application_test == '2'" 
+						class="success" ng-mouseover="preSubTest=true" ng-mouseleave="preSubTest=false">
+						<div  class="evt-box apptest-fail" ng-mouseover="getPreValidateSubTestData('preValidate')"
+							ng-click="getConfigratioData('preValidate','View Pre Validate')">Pre
+							Validate</div>
+						<div class="circle back-color-red"></div>
+						<div class="bars bar-color-red"></div>
+					</div>
+					<!-- Pre Validate progress end -->
+
+					<!-- Deliver progress -->
+					<div ng-show="ReportDetails[0].deliever_config == '1'"
+						class="success">
+						<div class="evt-box deliver-success"
+							ng-click="getConfigratioData('deliverConfig','Backup & Delivery')"><span>Backup & Delivery</span></div>
+						<div class="circle back-color-green"></div>
+						<div class="bars bar-color-green"></div>
+					</div>
+					<div ng-show="ReportDetails[0].deliever_config == '0'"
+						class="success">
+						<div class="evt-box deliver-disable"><span>Backup & Delivery</span></div>
+						<div class="back-color-white circle"></div>
+						<div class="bar-color-white bars"></div>
+					</div>
+					<div ng-show="ReportDetails[0].deliever_config == '2'"
+						class="success">
+						<div class="evt-box deliver-fail"
+							ng-click="getConfigratioData('deliverConfig','Backup & Delivery')"><span>Backup & Delivery</span></div>
+						<div class="circle back-color-red"></div>
+						<div class="bars bar-color-red"></div>
+					</div>
+					<!-- Deliver progress end -->
+
+					<!-- Network Test progress -->
+					
+					<div ng-show="ReportDetails[0].network_test == '1'" class="success" ng-mouseover="networkSubTest=true" ng-mouseleave="networkSubTest=false">
+						<div class="evt-box network-success" ng-mouseover="getNetworkSubTestData('networkTest')"
+							ng-click="getConfigratioData('networkTest','View Network Test')">Network
+							Test</div>
+						<div class="circle back-color-green"></div>
+						<div class="bars bar-color-green"></div>
+					</div>
+					<div ng-show="ReportDetails[0].network_test == '0'" class="success" ng-mouseover="networkSubTest=true" ng-mouseleave="networkSubTest=false">
+						<div class="evt-box network-disable" ng-mouseover="getNetworkSubTestData('networkTest')">Network
+							Test</div>
+						<div class="back-color-white circle"></div>
+						<div class="bar-color-white bars"></div>
+					</div>
+					<div ng-show="ReportDetails[0].network_test == '2'" class="success"  ng-mouseover="networkSubTest=true" ng-mouseleave="networkSubTest=false">
+						<div class="evt-box network-fail" ng-mouseover="getNetworkSubTestData('networkTest')"
+							ng-click="getConfigratioData('networkTest','View Network Test')">Network
+							Test</div>
+						<div class="circle back-color-red"></div>
+						<div class="bars bar-color-red"></div>
+					</div>
+					
+					<!-- Network Test progress end -->
+
+					<!-- health_checkup progress -->
+					<div ng-show="ReportDetails[0].health_checkup == '1'"
+						class="success" ng-mouseover="healthCheckSubTest=true" ng-mouseleave="healthCheckSubTest=false">
+						<div class="evt-box healthchk-success" ng-mouseover="getPreHealthCheckSubTestData('HealthTest')"
+							ng-click="getConfigratioData('HealthTest','View Health Test')">Health
+							Check</div>
+						<div class="circle back-color-green"></div>
+						<div class="bars bar-color-green"></div>
+					</div>
+					<div ng-show="ReportDetails[0].health_checkup == '0'"
+						class="success" ng-mouseover="healthCheckSubTest=true" ng-mouseleave="healthCheckSubTest=false">
+						<div class="evt-box healthchk-disable" ng-mouseover="getPreHealthCheckSubTestData('HealthTest')">Health
+							Check</div>
+						<div class="back-color-white circle"></div>
+						<div class="bar-color-white bars"></div>
+					</div>
+					<div ng-show="ReportDetails[0].health_checkup == '2'"
+						class="success" ng-mouseover="healthCheckSubTest=true" ng-mouseleave="healthCheckSubTest=false">
+						<div class="evt-box healthchk-fail" ng-mouseover="getPreHealthCheckSubTestData('HealthTest')"
+							ng-click="getConfigratioData('HealthTest','View Health Test')">Health
+							Check</div>
+						<div class="circle back-color-red"></div>
+						<div class="bars bar-color-red"></div>
+					</div>
+					<!-- health_checkup progress end -->
+
+					<!-- Report progress -->
+					<div ng-show="ReportDetails[0].customer_report == '1'"
+						class="success" ng-click="getConfigratioData('CustomerReport','Customer Report')">
+						<div class="evt-box report-success">Report</div>
+						<div class="circle back-color-green"></div>
+						<div class="bars bar-color-green width50"></div>
+					</div>
+					<div ng-show="ReportDetails[0].customer_report == '0'"
+						class="success">
+						<div class="evt-box report-disable">Report</div>
+						<div class="back-color-white circle"></div>
+						<div class="bar-color-white bars width50"></div>
+					</div>
+					<div ng-show="ReportDetails[0].customer_report == '2'"
+						class="success" ng-click="getConfigratioData('CustomerReport','Customer Report')">
+						<div class="evt-box report-fail">Report</div>
+						<div class="circle back-color-red"></div>
+						<div class="bars bar-color-red width50"></div>
+					</div>
+					<!-- Report progress end -->
+
+					<!--  <div>
+                        <div class="evt-box finish">Finish</div>
+                        <div class="circle"></div>
+                        <div class="bars"></div>
+                    </div> -->
+
+				</section>
+				<section class="progress-sec-pts"></section>
+			</div>
+		</div>
+		<div class="col-lg-12" style="margin: -3% 0% 0% -3%;">
+					<div class="pull-right">
+						<button ng-hide="RequestDetails[0].status == 'Hold'" class="btn btn-primary ml-5" ng-class="{'disabled-modify' : RequestDetails[0].status == 'Success' ||  RequestDetails[0].status == 'In Progress' || RequestDetails[0].status == 'Scheduled' || $parent.disableModifyScheduleButton}">
+							<a style="text-decoration:none; color: white; " name="#" ui-sref="editDashboardDetails({dashboardReq_Details: RequestDetails[0].display_request_id, version: RequestDetails[0].request_version, templateId: RequestDetails[0].templateId})">Modify</a>
+						</button>
+						<button ng-hide="RequestDetails[0].status == 'Hold'" class="btn btn-primary ml-5" ng-class="{'disabled-modify' : RequestDetails[0].status == 'Success' || RequestDetails[0].status == 'In Progress' || RequestDetails[0].status == 'Failure'}">
+							<a style="text-decoration:none; color: white;" ng-click="getReqScheduler('schedulePopUp', true)">Scheduler</a>
+						</button>
+						<button class="btn btn-primary ml-5" ng-show="RequestDetails[0].status == 'Hold'">
+							<a style="text-decoration:none; color: white;" ng-click="restartSEFlow()">Restart</a>
+						</button>
+					</div>
+				</div>
+
+<!-- Previous Version Start -->
+<div id="prevRouterVersion" class="reportPopUp">
+     <div id="prevRouterVersionContainer" class="popUpContainer">
+	<!-- Modal content -->
+	<div class="popup-content">
+		<div id="prevRouterVersionContainerHeader" class="col-lg-6 col-lg-offset-3 popup-content-header">
+			<span class="small_logo_icon"></span> <label
+				class="report-header-style"><h4 class="fs-16">Previous Router Version</h4></label> <span
+				class="report-close-icon" ng-click="closeReportPopUp('#prevRouterVersion')"></span>
+		</div>
+							
+		 <textarea style="resize: none;"
+			class="reportPopUpContainer col-lg-6 col-lg-offset-3"
+			disabled ng-model="getPrevdata" 
+			maxlength="1024">
+                 </textarea> 
+                
+	</div>
+	</div>
+</div>
+<!-- Previous Version End -->			
+
+<!-- Diffrence in Config Start -->
+<div id="DiffConfigVersion" class="reportPopUp" style="left:5%;">
+<div style="left: 4% !important" id="DiffConfigVersionContainer" class="popUpContainer">
+	<!-- Modal content -->
+	<div class="popup-content picadiff">
+		<div id="DiffConfigVersionContainerHeader" class="col-lg-11 popup-content-header">
+			<span class="small_logo_icon"></span> <label
+				class="report-header-style"><h4 class="fs-16">View Configuration Difference</h4></label> <span
+				class="report-close-icon" ng-click="closeReportPopUp('#DiffConfigVersion')"></span>
+		</div>
+		<div class="IntRountingOptContainer col-lg-11 white" id="prettydiff">
+			
+         </div>       
+	</div></div>
+</div>
+<!-- Diffrence in Config End -->			

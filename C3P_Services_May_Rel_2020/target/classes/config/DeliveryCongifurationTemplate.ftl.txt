@@ -1,0 +1,1 @@
+Configuration file ${(configRequest.requestId)!""} is successfully delivered to ${(configRequest.hostname)!""} !!

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>C3P</title>
+  <base href="/">
+  <!-- Diff library -->
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/index.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/webtool_only.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/color_white.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/color_canvas.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/reports.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/documentation.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/page_specific.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/color_shadow.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/global.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/jquery.picadiff.css">
+  <link type="text/css" rel="stylesheet" href="http://localhost:8080/C3P/node_modules/difflib/difflibcss/diffview.css">
+  <!-- Diff library -->
+  
+  <script src="http://localhost:8080/C3P/node_modules/jquery/dist/jquery.min.js"></script>
+  <script src="http://localhost:8080/C3P/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+   <script src="http://localhost:8080/C3P/node_modules/bootbox/bootbox.js"></script>
+   
+   
+   <!-- script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment-with-locales.js"></script>
+   <script src="http://localhost:8080/node_modules/angular-moment-picker/dist/angular-moment-picker.js"></script -->
+
+
+    <script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/global.js" type="application/javascript"></script>
+	<script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/language.js" type="application/javascript"></script>
+	<script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/options.js" type="application/javascript"></script>
+	<script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/finalFile.js" type="application/javascript"></script>
+	<script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/dom.js" type="application/javascript"></script>
+	<script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/csspretty.js" type="application/javascript"></script>
+	<script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/csvpretty.js" type="application/javascript"></script>
+	<script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/diffview.js" type="application/javascript"></script>
+	<script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/jspretty.js" type="application/javascript"></script>
+	<script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/markuppretty.js" type="application/javascript"></script>
+	<script src="http://localhost:8080/C3P/node_modules/difflib/diflibjs/prettydiff.js" type="application/javascript"></script>
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>

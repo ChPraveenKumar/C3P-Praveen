@@ -1,0 +1,894 @@
+
+<div class="container">
+
+	<div class="row">
+
+		<!--    Page Header Section     -->
+		<page-header></page-header>
+		<div class="pg-bdy">
+			<!-- Breadcrumb Section -->
+			<ul class="breadcrumb">
+				<li><a ui-sref="Home">C3P</a></li>
+				<li class="breadcrumbLabel">Configuration</li>
+				<li class="active" >Create</li>
+			</ul>
+			<!-- Breadcrumb Section -->
+			<!-- Search Section -->
+			<form id="createCongigForm" novalidate>
+				<div class="panel form-inline border-top mt-5 lbl-normal cmp-normal">
+					<!--    Customer Information     -->
+					<section class="pr-60">
+						<h3 class="title second-title ml-40 mt-5">Customer Information</h3><div class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right ">Customer :</label>
+								<div class="col-lg-8">
+									<input ng-style="configuartion.customer && {'background-color': 'rgba(234, 193, 26, 0.12)'}" type="text" required ng-model="configuartion.customer"
+										 ng-change='onCustomerNameChange()'
+										maxlength="100" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" required col-lg-4 text-right">Site
+									ID :</label>
+								<div class="col-lg-8">
+									<input ng-style="configuartion.siteid && {'background-color': 'rgba(234, 193, 26, 0.12)'}" type="text" required ng-model="configuartion.siteid"
+										class="upperCase" ng-change='onSiteIDChange()' maxlength="12" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Region :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-style="configuartion.region && {'background-color': 'rgba(234, 193, 26, 0.12)'}" required ng-model="configuartion.region"
+											ng-change='onRegionChange()'>
+											<option value="">Select</option>
+											<option value="US">US</option>
+											<option value="CANADA">CANADA</option>
+											<option value="EMEA">EMEA</option>
+											<option value="ROW">ROW</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Service :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-style="configuartion.service && {'background-color': 'rgba(234, 193, 26, 0.12)'}" required ng-model="configuartion.service">
+											<option value="">Select</option>
+											<option value="MIS">MIS</option>
+											<option value="AVPN">AVPN</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<!-- <div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">VPN :</label>
+								<div class="col-lg-8 mt-5">
+									<div class="styled-radio">
+										<input type="radio" required id="VPNYes" name="VPN-group"
+											 value='Yes' ng-model="configuartion.VPN" /> <label
+											for="VPNYes">Yes</label>
+									</div>
+									<div class="styled-radio ml-10">
+										<input type="radio" required id="VPNNo" name="VPN-group"
+											value="No" ng-init="configuartion.VPN = 'No'" ng-click="resetVrfName()"
+											ng-model="configuartion.VPN" /> <label for="VPNNo">No</label>
+									</div>
+								</div>
+							</div> -->
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right  pl-0">Network Type :</label>
+								<div class="col-lg-8 mt-5">
+									<div class="styled-radio">
+										<input type="radio" required id="VPNYes" ng-init="configuartion.networkType = 'Legacy'" name="radio-group"
+											ng-click="resetDeviceName()" value='Legacy' ng-model="configuartion.networkType" /> <label
+											for="Legacy">Legacy</label>
+									</div>
+									<div class="styled-radio ml-10">
+										<input type="radio" required id="VPNNo" name="radio-group" ng-click="resetDeviceName()"
+											value="SDN/NFV" ng-model="configuartion.networkType" /> <label for="SDN/NFV">SDN/NFV</label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+					<!--    Customer Information     -->
+					<!--    loading   -->
+					<loading></loading>
+					<!--    Device Information     -->
+					<section class="pr-60">
+						<h3 class="title second-title mt-5 ml-40">Device Information</h3>
+						<div class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Vendor :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-style="configuartion.vendor && {'background-color': 'rgba(234, 193, 26, 0.12)'}" required ng-model="configuartion.vendor"
+											ng-change='onVendorChange()'>
+											<option value="">Select</option>
+											<option value="CISCO">CISCO</option>
+											<option value="JUNIPER">JUNIPER</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Device Type :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-style="configuartion.deviceType && {'background-color': 'rgba(234, 193, 26, 0.12)'}" required ng-model="configuartion.deviceType"
+											ng-change='onDeviceChange()' value="configuartion.deviceType">
+											<option value="">Select</option>
+											<option value="Router"
+												ng-show="configuartion.networkType == 'Legacy'">Router</option>
+											<option value="Switch"
+												ng-show="configuartion.networkType == 'Legacy'">Switch</option>
+											<option value="VNF"
+												ng-show="configuartion.networkType == 'SDN/NFV'">VNF</option>
+											
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Model :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select required ng-style="configuartion.model && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-model="configuartion.model"
+											ng-change='onModelChange(configuartion.model)'>
+											<option value="">Select</option>
+											<option value="891F-K9"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router'">891F-K9</option>
+											<option value="1921"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router'">1921</option>
+											<option value="2901"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router'">2901</option>
+											<option value="3660"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router'">3660</option>
+											<option value="7200"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router'">7200</option>
+											<option value="C2951"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router'">C2951</option>
+											<option value="CSR1000v" ng-show="configuartion.deviceType=='VNF'">CSR1000v</option>
+											
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">OS :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-style="configuartion.os && {'background-color': 'rgba(234, 193, 26, 0.12)'}" required ng-change='OsChange()' ng-model="configuartion.os">
+											<option value="">Select</option>
+											<option value="IOS"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router'">IOS</option>
+											<option value="JUNOS"
+												ng-show="configuartion.vendor=='JUNIPER' && configuartion.deviceType=='Router'">JUNOS</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">OS Version :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-change="getInterfaceRountingOptions()" required ng-style="configuartion.osVersion && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-model="configuartion.osVersion">
+											<option value="">Select</option>
+											<option value="15.4"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">15.4</option>
+											<option value="12.3"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='3660'">12.3</option>
+											<option value="12.4"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200' || configuartion.model=='3660'">12.4</option>
+											<option value="15.4(3)M1"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">15.4(3)M1</option>
+											<option value="15.3(3)M"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='C2951'">15.3(3)M</option>		
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right pl-0">Management
+									IP :</label>
+								<div class="col-lg-8">
+									 <input ng-style="configuartion.managementIp && {'background-color': 'rgba(234, 193, 26, 0.12)'}" type='text' 
+									 required ng-pattern='/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/' ng-model="configuartion.managementIp" maxlength="15" />
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Host Name :</label>
+								<div class="col-lg-8 mt-5">
+									<input ng-style="configuartion.hostname && {'background-color': 'rgba(234, 193, 26, 0.12)'}" required type="text" class="upperCase"
+										ng-value="varHostname" class="disabled" disabled
+										ng-model="configuartion.hostname"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<div class="col-lg-12 mt-5">
+									<a ng-show="configuartion.osVersion.length" style="cursor: pointer; font-size: large; float: right;" class="" ng-click="getSuggestionPopUp()">Template Suggestion</a>
+								</div>
+							</div>
+						</div>
+						<div id="bannerPopUp" class="popup">
+
+							<!-- Modal content -->
+							<div class="popup-content">
+								<div class="col-lg-6 col-lg-offset-3 popup-content-header">
+									<span class="small_logo_icon"></span> <label
+										class="report-header-style"><h4  class="fs-16">Banner</h4></label> <span
+										class="report-close-icon" onclick="closeAddPopUp('bannerPopUp')"></span>
+								</div>
+								<textarea 
+									class="autoExpand col-lg-6 col-lg-offset-3 ng-pristine ng-untouched ng-valid ng-empty ng-valid-maxlength"
+									ng-model="configuartion.banner" maxlength="1024" style="resize: none;">
+                           </textarea>
+							</div>
+						</div>
+						
+					</section>
+					<!--    Device Information     -->
+						
+					<section class="pr-60">
+						<div class="row mt-5">
+							<div class="col-lg-3 form-group">
+								<h3 class="title second-title ml-40 mt-5">Configuration Features</h3>
+									<button ng-show="tempSuggFlag" type="button" class="ico-open-popup pull-right tooltip" style="margin:-14px 40px 0px 0px;border-bottom: 1px solid #aeaeae;" ng-click="getConfigFeature()">
+									<span class="tooltiptext">Selection for Interface & Routing</span>
+								</button>
+							</div>
+							<!-- <div class="col-lg-3 form-group">
+								<button type="button" class="ico-open-popup" ng-click="getInterfaceRountingOptions()"></button>
+							</div> -->
+						</div>
+						<div ng-show="WANInterface" class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">WAN Int :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-change="" ng-style="configuartion.c3p_interface.name && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-required="WANInterface" ng-model="configuartion.c3p_interface.name">
+											<option value="">Select</option>
+											<option value="GigabitEthernet1"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">GigabitEthernet1</option>
+											<option value="GigabitEthernet 0/0"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">GigabitEthernet
+												0/0</option>
+											<option value="GigabitEthernet 0/1"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">GigabitEthernet
+												0/1</option>
+											<option value="GigabitEthernet 0/2"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='2901'">GigabitEthernet
+												0/2</option>
+											<option value="Serial1/0"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && (configuartion.model=='3660' || configuartion.model=='7200')">Serial
+												1/0</option>
+											<option value="Serial0/0/1"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && (configuartion.model=='C2951')">Serial 0/0/1</option>	
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">WAN IP :</label>
+								<div class="col-lg-8">
+									<div class="styled-fileDlg" ng-click="getEIPAMIP()">
+										<input ng-style="configuartion.c3p_interface.ip && {'background-color': 'rgba(234, 193, 26, 0.12)'}" id="txt_WANIP" ng-required="WANInterface" ng-value="wanIPvalue"
+											maxlength="15" ng-change="onWanIpChange" class="disabled" disabled
+											type="text" ng-model="configuartion.c3p_interface.ip"
+											maxlength="39" /> <label for="file_WANIP">...</label>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Subnet Mask :</label>
+								<div class="col-lg-8">
+									<input ng-required="WANInterface" type="text" ng-value="wanIPMask"
+										class="disabled" disabled
+										ng-model="configuartion.c3p_interface.mask" maxlength="15" />
+								</div>
+							</div>
+						</div>
+						<div ng-show="WANInterface" class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0">Int Description
+									:</label>
+								<div class="col-lg-8">
+									<input type="text" ng-style="configuartion.c3p_interface.description && {'background-color': 'rgba(234, 193, 26, 0.12)'}"
+										ng-model="configuartion.c3p_interface.description"
+										maxlength="100" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 pl-1 text-right">Encapsulation
+									:</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-required="WANInterface" ng-style="configuartion.c3p_interface.encapsulation && {'background-color': 'rgba(234, 193, 26, 0.12)'}"
+											ng-model="configuartion.c3p_interface.encapsulation">
+											<option value="">Select</option>
+											<option value="E2EVLAN"
+												ng-if = "!configuartion.c3p_interface.name == ''"
+												ng-hide="configuartion.c3p_interface.name == 'Serial0/0/1' || configuartion.c3p_interface.name == 'Serial1/0' || configuartion.c3p_interface.name == 'GigabitEthernet1'">E2E
+												VLAN</option>
+											<option value="PPP"
+												ng-if = "!configuartion.c3p_interface.name == ''"
+												ng-show="configuartion.c3p_interface.name == 'Serial1/0' || configuartion.c3p_interface.name == 'Serial0/0/1'">PPP</option>
+											<option value="Ethernet FullPort"
+												ng-if = "!configuartion.c3p_interface.name == ''"
+												ng-show="configuartion.c3p_interface.name == 'GigabitEthernet1' && configuartion.c3p_interface.name !== 'Serial1/0' && configuartion.c3p_interface.name !== 'Serial0/0/1'">Ethernet FullPort</option>		
+											<option ng-if = "!configuartion.c3p_interface.name == ''" 
+											ng-hide="configuartion.c3p_interface.name == 'Serial1/0' || configuartion.c3p_interface.name == 'Serial0/0/1' || configuartion.c3p_interface.name == 'GigabitEthernet1'" value="Frame-Relay">Frame-Relay</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right"
+									ng-show="configuartion.c3p_interface.name != 'Serial0/0/1' && configuartion.c3p_interface.name != 'Serial1/0' && configuartion.c3p_interface.name != 'GigabitEthernet 0/2' && configuartion.c3p_interface.name != 'GigabitEthernet 0/1' && configuartion.c3p_interface.name != 'GigabitEthernet 0/0' && configuartion.c3p_interface.name != 'GigabitEthernet1'">Speed(Mbps):</label>
+								<label class=" col-lg-4 text-right"
+									ng-show="configuartion.c3p_interface.name == 'Serial1/0' || configuartion.c3p_interface.name == 'Serial0/0/1'">Bandwidth:</label>
+								<label class=" col-lg-4 text-right"
+									ng-show="configuartion.c3p_interface.name == 'GigabitEthernet 0/2'">Speed(Mbps):</label>
+								<label class=" col-lg-4 text-right"
+									ng-show="configuartion.c3p_interface.name == 'GigabitEthernet 0/1'">Speed(Mbps):</label>
+								<label class=" col-lg-4 text-right"
+									ng-show="configuartion.c3p_interface.name == 'GigabitEthernet 0/0'">Speed(Mbps):</label>
+								<label class=" col-lg-4 text-right"
+									ng-show="configuartion.c3p_interface.name == 'GigabitEthernet1'">Speed(Mbps):</label>
+									
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-style="configuartion.c3p_interface.speed && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-required="configuartion.c3p_interface.name == 'GigabitEthernet 0/0' || configuartion.c3p_interface.name == 'GigabitEthernet 0/1' || configuartion.c3p_interface.name == 'GigabitEthernet 0/2' || configuartion.c3p_interface.name == 'GigabitEthernet1'" ng-model="configuartion.c3p_interface.speed"
+											ng-show="configuartion.c3p_interface.name !== 'Serial0/0/1' && configuartion.c3p_interface.name != 'Serial1/0' && configuartion.c3p_interface.name != 'GigabitEthernet 0/2' && configuartion.c3p_interface.name != 'GigabitEthernet 0/1' && configuartion.c3p_interface.name != 'GigabitEthernet 0/0' && configuartion.c3p_interface.name != 'GigabitEthernet1'">
+											<option>Select</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">1000</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">1000</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">1000</option>
+												
+										</select> <select ng-style="configuartion.c3p_interface.speed && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-required="configuartion.c3p_interface.name == 'GigabitEthernet 0/0' || configuartion.c3p_interface.name == 'GigabitEthernet 0/1' || configuartion.c3p_interface.name == 'GigabitEthernet 0/2' || configuartion.c3p_interface.name == 'GigabitEthernet1'" ng-model="configuartion.c3p_interface.speed"
+											ng-show="configuartion.c3p_interface.name == 'GigabitEthernet 0/2'">
+											<option>Select</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">1000</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">1000</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">1000</option>	
+
+										</select> <select ng-style="configuartion.c3p_interface.speed && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-required="configuartion.c3p_interface.name == 'GigabitEthernet 0/0' || configuartion.c3p_interface.name == 'GigabitEthernet 0/1' || configuartion.c3p_interface.name == 'GigabitEthernet 0/2' || configuartion.c3p_interface.name == 'GigabitEthernet1'" ng-model="configuartion.c3p_interface.speed"
+											ng-show="configuartion.c3p_interface.name == 'GigabitEthernet 0/1'">
+											<option>Select</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">1000</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">1000</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">1000</option>	
+
+										</select> <select ng-style="configuartion.c3p_interface.speed && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-required="configuartion.c3p_interface.name == 'GigabitEthernet 0/0' || configuartion.c3p_interface.name == 'GigabitEthernet 0/1' || configuartion.c3p_interface.name == 'GigabitEthernet 0/2' || configuartion.c3p_interface.name == 'GigabitEthernet1'" ng-model="configuartion.c3p_interface.speed"
+											ng-show="configuartion.c3p_interface.name == 'GigabitEthernet 0/0'">
+											<option>Select</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">1000</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">1000</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">1000</option>	
+
+										</select><select ng-style="configuartion.c3p_interface.speed && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-required="configuartion.c3p_interface.name == 'GigabitEthernet 0/0' || configuartion.c3p_interface.name == 'GigabitEthernet 0/1' || configuartion.c3p_interface.name == 'GigabitEthernet 0/2' || configuartion.c3p_interface.name == 'GigabitEthernet1'" ng-model="configuartion.c3p_interface.speed"
+											ng-show="configuartion.c3p_interface.name == 'GigabitEthernet1'">
+											<option>Select</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='1921'">1000</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='7200'">1000</option>
+											<option value="10"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">10</option>
+											<option value="100"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">100</option>
+											<option value="1000"
+												ng-show="configuartion.vendor=='CISCO' && configuartion.deviceType=='Router' && configuartion.model=='891F-K9'">1000</option>
+										</select>	
+
+											<select ng-style="configuartion.c3p_interface.bandwidth && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-required="configuartion.c3p_interface.name == 'Serial1/0' || configuartion.c3p_interface.name == 'Serial0/0/1'" ng-model="configuartion.c3p_interface.bandwidth"
+                                                                  ng-show="configuartion.c3p_interface.name == 'Serial1/0' || configuartion.c3p_interface.name == 'Serial0/0/1'">
+												<option>Select</option>
+												<option value="56">56</option>
+												<option value="64">64</option>
+												<option value="128">128</option>
+												<option value="256">256</option>
+												<option value="512">512</option>
+												<option value="1024">1024</option>
+												<option value="1544">1544</option>
+												<option value="2000">2000</option>
+												<option value="3000">3000</option>
+												<option value="5000">5000</option>
+												<option value="10000">10000</option>
+												<option value="20000">20000</option>
+												<option value="30000">30000</option>
+												<option value="40000">40000</option>
+												<option value="45000">45000</option>
+											</select>
+										 <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div ng-show="lanInterface" class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">LAN Int :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-style="configuartion.lanTnterface && {'background-color': 'rgba(234, 193, 26, 0.12)'}"  ng-class="{'disabled': configuartion.model != '7200' && configuartion.model != 'C2951'}" ng-model="configuartion.lanTnterface">
+											<option value="">Select</option>
+											<option ng-show="configuartion.model == '7200'" value="GigabitEthernet2/0">GigabitEthernet2/0</option>
+											<option ng-show="configuartion.c3p_interface.name == 'GigabitEthernet1'" value="GigabitEthernet0">GigabitEthernet0</option>
+											<option ng-show="configuartion.model == 'C2951'" value="GigabitEthernet0/0">GigabitEthernet0/0</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0">LAN IP :</label>
+								<div class="col-lg-8">
+									<input ng-required="configuartion.lanTnterface" ng-style="configuartion.lanIPaddress && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-class="{'disabled': configuartion.lanTnterface != 'GigabitEthernet2/0' &&  configuartion.lanTnterface != 'GigabitEthernet0/0'}" type="text" class="upperCase width100" ng-required="configuartion.lanTnterface == 'GigabitEthernet2/0' && configuartion.lanTnterface == 'GigabitEthernet0/0'"
+										ng-pattern="/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/"
+										ng-model="configuartion.lanIPaddress" maxlength="15" 
+										class="width100"/>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label  class="col-lg-4 text-right pl-0">Subnet Mask :</label>
+								<div class="col-lg-8">
+									<input ng-required="configuartion.lanTnterface" id="subnetMaskLan" ng-class="{'disabled': configuartion.lanTnterface != 'GigabitEthernet2/0' && configuartion.lanTnterface != 'GigabitEthernet0/0'}" autocomplete="off" type="text" ng-required="configuartion.lanTnterface == 'GigabitEthernet2/0' && configuartion.lanTnterface == 'GigabitEthernet0/0'"
+										class="upperCase" maxlength="15" onkeyup="subnetMaskValidation(event)" ng-model="configuartion.lanSubnetMask" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group mt-5">
+								<label class="col-lg-4 text-right pl-0">Int Description
+									:</label>
+								<div class="col-lg-8">
+									<input type="text" ng-style="configuartion.lanDescription && {'background-color': 'rgba(234, 193, 26, 0.12)'}"
+										ng-model="configuartion.lanDescription"
+										maxlength="100" />
+								</div>
+							</div>
+						</div>
+						<div ng-show="LoopbackInterface" class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">Loopback :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-style="configuartion.loopBackType && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-change="onLoopbackChange()" ng-class="{'disabled': configuartion.model != '7200' && configuartion.model != '891F-K9' && configuartion.model != 'C2951'}" ng-model="configuartion.loopBackType">
+											<option value="">Select</option>
+											<option 
+											ng-show="configuartion.model == '7200'" value="Loopback0">Loopback0</option>
+											<option ng-show="configuartion.c3p_interface.name == 'GigabitEthernet1'" value="Loopback1">Loopback1</option>
+											<option ng-show="configuartion.model == 'C2951'" value="Loopback4">Loopback4</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0">IP Address :</label>
+								<div class="col-lg-8">
+									<input ng-style="configuartion.loopbackIPaddress && {'background-color': 'rgba(234, 193, 26, 0.12)'}" ng-class="{'disabled': configuartion.loopBackType != 'Loopback0' && configuartion.loopBackType != 'Loopback4'}" type="text" class="upperCase width100" ng-required="configuartion.loopBackType == 'Loopback0' && configuartion.loopBackType == 'Loopback4'"
+										ng-pattern="/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/"
+										ng-model="configuartion.loopbackIPaddress" maxlength="15" 
+										class="width100"/>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label  class="col-lg-4 text-right pl-0">Subnet Mask :</label>
+								<div class="col-lg-8">
+									<input id="subnetMaskSNMP" ng-class="{'disabled': configuartion.loopBackType != 'Loopback0'}" autocomplete="off" type="text" ng-required="configuartion.loopBackType == 'Loopback0'"
+										class="upperCase" maxlength="15"
+										onkeyup="subnetMaskValidation(event)"
+										ng-model="configuartion.loopbackSubnetMask" />
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div ng-show="banner" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">Banner :</label>
+								<div class="col-lg-8">
+									<textarea style="resize: none" class="scrollabletextbox"
+									ng-style="configuartion.banner && {'background-color': 'rgba(234, 193, 26, 0.12)'}"
+										ng-model="configuartion.banner" maxlength="1024">
+                                   	</textarea>
+									<span class="maximize_icon" onclick="openAddPopUp('bannerPopUp')"></span>
+								</div>
+							</div>
+							<div ng-show="VPN" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">VRF Name :</label>
+								<div class="col-lg-8">
+									<input ng-style="configuartion.vrfName && {'background-color': 'rgba(234, 193, 26, 0.12)'}" id="vrfName" type="text" ng-model="configuartion.vrfName"
+										class="upperCase" ng-class="{disabled : configuartion.VPN == 'No'}" ng-required="configuartion.VPN == 'Yes'" maxlength="32" />
+								</div>
+							</div>
+							<div ng-show="enablePassword" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0">Enable Password
+									:</label>
+								<div class="col-lg-8">
+									<input ng-style="configuartion.enablePassword && {'background-color': 'rgba(234, 193, 26, 0.12)'}" type="password" class="width100"
+										ng-model="configuartion.enablePassword" maxlength="12" />
+								</div>
+							</div>
+						</div>
+						<div  ng-show="SNMP" class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">SNMP String :</label>
+								<div class="col-lg-8">
+									<input id ="SNMPString" ng-class="{'disabled': configuartion.model != '7200' && configuartion.model != 'C2951'}" type="text" ng-required="configuartion.snmpHostAddress.length" 
+										ng-model="configuartion.snmpString" maxlength="16" ng-style="configuartion.snmpString && {'background-color': 'rgba(234, 193, 26, 0.12)'}"/>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0" style="margin-left: -15px;padding-right: 0px;">SNMP Host Address :</label>
+								<div class="col-lg-8 ml-10">
+									<input id ="SNMPHostAddress" type="text" class="upperCase ml-5" ng-class="{'disabled': configuartion.model != '7200' && configuartion.model != 'C2951'}" ng-style="configuartion.snmpHostAddress && {'background-color': 'rgba(234, 193, 26, 0.12)'}"
+									   ng-pattern="/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/" 
+										ng-model="configuartion.snmpHostAddress" ng-required="configuartion.snmpString.length" maxlength="15"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+						</div>
+						<div ng-show="rountingProtocol"  class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right pl-0">Routing
+									Protocol :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select  ng-required="rountingProtocol" ng-style="configuartion.internetLcVrf.routingProtocol && {'background-color': 'rgba(234, 193, 26, 0.12)'}"
+											ng-model="configuartion.internetLcVrf.routingProtocol">
+											<option value="">Select</option>
+											<option value="BGP">BGP</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right pl-0">AS No :</label>
+								<div class="col-lg-8">
+									<input  ng-required="rountingProtocol"  ng-style="configuartion.internetLcVrf.AS && {'background-color': 'rgba(234, 193, 26, 0.12)'}" 
+									 type="number" class="upperCase width100"
+										ng-model="configuartion.internetLcVrf.AS" maxlength="5"
+										class="width100" min="1" max="65535" />
+								</div>
+							</div>
+						</div>
+						
+						<div ng-show="rountingProtocol" class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">N/W IP :</label>
+								<div class="col-lg-8">
+									<input ng-required="rountingProtocol"  ng-style="configuartion.internetLcVrf.networkIp && {'background-color': 'rgba(234, 193, 26, 0.12)'}"  type="text" autocomplete="off" 
+									ng-pattern='/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/' maxlength="15" ng-model="configuartion.internetLcVrf.networkIp"/>
+
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Mask :</label>
+								<div class="col-lg-8">
+									<input ng-required="rountingProtocol" id="mask" autocomplete="off" type="text"
+										class="upperCase" maxlength="15"
+										onkeyup="subnetMaskValidation(event)"
+										ng-model="configuartion.internetLcVrf.networkIp_subnetMask" />
+								</div>
+							</div>
+						</div>
+						<div ng-show="rountingProtocol" class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Neighbour 1 :</label>
+								<div class="col-lg-8">
+									<input ng-required="configuartion.internetLcVrf.neighbor1_remoteAS && rountingProtocol" 
+										ng-style="configuartion.internetLcVrf.neighbor1 && {'background-color': 'rgba(234, 193, 26, 0.12)'}"
+										ng-pattern='/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/'
+										type="text" class="upperCase"
+										ng-class="{'disabled': WANInterface}"
+										maxlength="15" ng-value="neighbor1"
+										ng-model="configuartion.internetLcVrf.neighbor1"
+										ng-disabled= "WANInterface"/>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Remote As :</label>
+								<div class="col-lg-8">
+									<input ng-required="configuartion.internetLcVrf.neighbor1 && rountingProtocol" ng-style="configuartion.internetLcVrf.neighbor1_remoteAS && {'background-color': 'rgba(234, 193, 26, 0.12)'}"  
+										type="number"
+										ng-model="configuartion.internetLcVrf.neighbor1_remoteAS"
+										maxlength="5" class="width100" min="1" max="65535" />
+								</div>
+							</div>
+						</div>
+						<div ng-show="rountingProtocol" class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Neighbour 2 :</label>
+								<div class="col-lg-8">
+									<input ng-required="configuartion.internetLcVrf.neighbor2_remoteAS && rountingProtocol" ng-style="configuartion.internetLcVrf.neighbor2 && {'background-color': 'rgba(234, 193, 26, 0.12)'}"  type="text" class="upperCase" maxlength="15"
+										ng-pattern='/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/' 
+										ng-model="configuartion.internetLcVrf.neighbor2" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Remote As :</label>
+								<div class="col-lg-8">
+									<input ng-required="configuartion.internetLcVrf.neighbor2 && rountingProtocol" ng-style="configuartion.internetLcVrf.neighbor2_remoteAS && {'background-color': 'rgba(234, 193, 26, 0.12)'}"  type="number" maxlength="5"
+										ng-model="configuartion.internetLcVrf.neighbor2_remoteAS"
+										class="width100 " min="1" max="65535" />
+								</div>
+							</div>
+							
+							</div>
+							<div  class="row mt-5">
+							<div class="col-lg-3 form-group">
+								<h3 class="title second-title ml-40 mt-5">Test & Turn Up Strategy</h3>
+								<button type="button" class="ico-open-popup pull-right tooltip" style="margin:-14px 40px 0px 0px;border-bottom: 1px solid #aeaeae;" ng-click="getCPEcertificationOptions()">
+									<span class="tooltiptext">Certification Test Selection</span>
+								</button>
+							</div>
+							<div class="col-lg-9">
+								<div class="pull-right">
+									<button class="btn btn-primary ml-5" ng-click ="openImportPopUp()">Import</button>
+									<button type="button" class="btn btn-default ml-5" ng-click="resetForm(resetFlag?'#fileImport':'#apiImport')">Reset</button>
+									<button ng-keyup="$event.keyCode == 13 && getGenerateConfigratioData('', 'View Generate Config',$event)" id="createSubmit" class="btn btn-primary ml-5" 
+										ng-click="getGenerateConfigratioData('', 'View Generate Config',$event)" ng-disabled="generateConfigState">Generate Config</button>
+								</div>								
+							</div>
+						</div>
+					</section>
+					<!--    Template suggestion     -->
+					<div id="tempSuggestionPopUp" class="reportPopUp" style="padding-top: 13%;">
+					           <div id="interfaceRountingOptionsContainer" style="width: 140% !important;left: -20%;" class="popUpContainer"> 
+								<!-- Modal content -->
+								<div class="popup-content col-lg-offset-3" style="width: 50%">
+									<div id="interfaceRountingOptionsContainerHeader" class="col-lg-6 col-lg-offset-3 popup-content-header">
+										<span class="small_logo_icon"></span> <label
+											class="report-header-style"><h5 class="fs-16">Select Template</h5></label> <span
+											class="report-close-icon" onclick="closeAddPopUp('tempSuggestionPopUp')"></span>
+									</div>
+									<div ng-hide="messageFlag" class="IntRountingOptContainer col-lg-6 col-lg-offset-3">
+										<div class="col-lg-6" style="border-right: 1px solid #0000005e;">
+											<!-- <div ng-show="selectAllFlag" class="col-lg-12" ><input ng-click="toggleAll()" ng-model="isAllSelected" type="checkbox"/>Select All</div>-->
+											<div class="col-lg-12" ng-repeat="option in optionList"><input type="checkbox" ng-change="getTempSuggestionList(option,option.selected)" ng-disabled="option.disabled"  ng-value="option.value" ng-model="option.selected">{{option.value}}
+											
+											</div>
+											
+										</div>
+										<div class="col-lg-6">
+											<div ng-repeat="template in getTempSuggList">
+												<label for="template.name">
+													<input id="{{template.templateId}}" type="radio" ng-click ="getSelTemplateId(template.templateId)" name="template" ng-model="selTemplate" ng-checked="template.checked"
+													value="{{template.templateId}}"/>
+													{{template.templateId}}
+												</label>
+											</div>
+										</div>
+				                    </div>
+									<div ng-show="messageFlag" class="IntRountingOptContainer col-lg-6 col-lg-offset-3">
+										<span style="font-size: 14px;margin-left: 20%;">{{messageFlag}}</span>
+									</div>
+				                    <div class="col-lg-6 col-lg-offset-3 reportBottom">
+				                    <button class="btn btn-primary ml-5 m-5 pull-right" ng-click="getSelTemplateFeaList()">OK</button>
+					                <button type="button" class="btn btn-default ml-5 m-5 pull-right" ng-click="resetConfiguration(true)">Reset</button>
+					                </div>
+								</div>
+								</div>
+							</div>
+					<!--    Template suggestion end  -->	
+					<!--    Interface &amp; Routing     -->
+					<div id="interfaceRountingOptions" class="reportPopUp" style="padding-top: 13%;">
+					           <div id="interfaceRountingOptionsContainer" style="width: 140% !important;left: -20%;" class="popUpContainer"> 
+								<!-- Modal content -->
+								<div class="popup-content col-lg-offset-3" style="width: 50%">
+									<div id="interfaceRountingOptionsContainerHeader" class="col-lg-6 col-lg-offset-3 popup-content-header">
+										<span class="small_logo_icon"></span> <label
+											class="report-header-style"><h5 class="fs-16">Configuration Features</h5></label> <span
+											class="report-close-icon" onclick="closeAddPopUp('interfaceRountingOptions')"></span>
+									</div>
+									<div class="IntRountingOptContainer col-lg-6 col-lg-offset-3">
+										<div ng-show="selectAllFlag" class="col-lg-12" ><input ng-click="toggleAll()" ng-model="isAllSelected" type="checkbox"/>Select All</div>
+										<!-- 	<div class="col-lg-12" ><input type="checkbox" ng-checked="true" disabled ng-model="basicConfig">Basic Configuartion</input></div> -->
+										<div class="col-lg-12" ng-repeat="option in getTempSelectedList"><input type="checkbox" ng-change="showHideConfiguration(option,option.selected)" ng-disabled="option.disabled"  ng-value="option.value" ng-model="option.selected">{{option.value}}
+										</div>
+										<span style="font-size: 14px;margin-left: 20%;" ng-show="messageFlag">{{messageFlag}}</span>
+				                    </div>
+				                    <div class="col-lg-6 col-lg-offset-3 reportBottom">
+				                    <button class="btn btn-primary ml-5 m-5 pull-right" onclick="closeAddPopUp('interfaceRountingOptions')">OK</button>
+					                <button type="button" class="btn btn-default ml-5 m-5 pull-right" ng-click="resetConfiguration()">Reset</button>
+					                </div>
+								</div>
+								</div>
+							</div>
+					<!--    Interface &amp; Routing end  -->	
+				</div>
+			</form>
+			<!-- gnerate Cionfigurtion popup -->
+					<div id="generateConfigPopUp" class="reportPopUp">
+                               <div id="generateConfigPopUpContainer" class="popUpContainer" style="width: 101%;">
+								<!-- Modal content -->
+								<div class="popup-content">
+									<div id="generateConfigPopUpContainerHeader" class="col-lg-6 col-lg-offset-3 popup-content-header">
+										<span class="small_logo_icon"></span> <label
+											class="report-header-style"><h4>{{report_title}}</h4></label> <span
+											class="report-close-icon" onclick="closeAddPopUp('generateConfigPopUp')"></span>
+									</div>
+									<!-- <textarea style="resize: none;border-bottom: none" 
+										class="reportPopUpContainer col-lg-6 col-lg-offset-3"
+										disabled ng-model="getdata" 
+										maxlength="1024">
+				                    </textarea>-->
+				                    <pre id="reportContainer" class="reportPopUpContainer col-lg-6 col-lg-offset-3" style="overflow-x: hidden;margin-bottom: 0px;border-bottom: none;">
+                    					</pre>
+				                     <div class="col-lg-6 col-lg-offset-3 reportBottom">
+					                    <button type="button" class="btn btn-default ml-5 m-5 pull-right" onclick="closeAddPopUp('generateConfigPopUp')">Cancel</button>
+					                    <!--  button ng-keyup="$event.keyCode == 13 && saveConfiguration($event)" id="createSubmit" class="btn btn-primary ml-5 m-5 pull-right" type ="submit"
+											ng-click="saveConfiguration($event)" ng-disabled="createConfSubmitted">Submit</button-->
+										<button id="createSubmit" class="btn btn-primary ml-5 m-5 pull-right" type ="submit"
+                                         ng-click="openSchedulePopup('schedulePopUp')">Schedule</button>	
+									</div>
+								</div>
+								</div>
+							</div>
+							
+							 <!-- Schedule pop up-->
+                             <schedule></schedule>
+                             
+			<!-- Start of new Import PopUp-->
+								<div id="addImportPopUp" class="popup">
+								<div id="addImportPopUpContainer" class="popUpContainer">
+								  <!-- Modal content -->
+								  <div class="popup-content">
+									  <div id="addImportPopUpContainerHeader" class="col-lg-3 col-lg-offset-5 popup-content-header">
+										  <span class="small_logo_icon"></span>
+										  <label class="report-header-style"><h4>Import File</h4></label>
+										  <span class="report-close-icon" ng-click="closeImportPopUp('addImportPopUp')"></span>
+									  </div>
+									  <div class="addPopUpContainer col-lg-3 col-lg-offset-5" style="height: 110px;">
+									    <div class="row">									    
+											<div class="col-md-12  col-lg-12 mt-15">
+												<input type="radio" name = "importFile" value="1" ng-model="configuartion.importFile" class="col-lg-1 col-md-1"/>
+												<div class="col-md-11 col-lg-11">
+													<h4 class="col-md-8 col-lg-8 mln-15" >Import from file</h4>
+													
+												</div>											
+											</div>											
+										</div>
+										<div class="row mt-20">
+									
+										<div class="col-md-12 col-lg-12">
+											<input type="radio" name="importFile" value="2" ng-model="configuartion.importFile" ng-click="" class="col-lg-1 col-md-1" />
+											<div class="col-lg-11 col-md-11">
+												<input ng-keyup="$event.keyCode == 13 && getxmlData($event)" ng-disabled="isCheckboxSelected('1')" type="text" class="upperCase col-lg-6 col-md-6" ng-required="configuartion.customerNo" ng-model="configuartion.internetLcVrf.customerNo" placeholder="{{ orderId }}" />
+												
+											</div>												
+										</div>
+										<div class="col-md-12 col-lg-12">
+											<div class="pull-right" ng-if="isCheckboxSelected('1')">
+												<label class="fileContainer btn btn-primary" ng-style="isCheckboxSelected('2') && {'opacity': 0.65}">
+												    Import
+												    <input  type="file" id="fileImport" ng-click="closeImportPopUp('addImportPopUp')" class="pt-2 btn btn-primary" file-model="myFile"/>
+												    
+												</label>
+											</div>
+											<div class="pull-right" ng-if="isCheckboxSelected('2')" >	
+												<button class="btn btn-primary" id="apiImport" ng-click="getxmlData($event)">Import</button>
+											</div>
+										</div>
+									</div>				                     
+								  </div>
+								  </div></div>
+								 </div>
+								 <!-- End of new Import PopUp-->
+								 <!-- CPE certification test selection options -->
+					<div id="CPEcertificationOptions" class="reportPopUp" style="padding-top: 13%;">
+						<!-- Modal content -->
+						<div id="certificationOptionsContainer" class="popUpContainer"> 
+							<div class="popup-content col-lg-offset-3" style="width: 50%">
+								<div id="certificationOptionsContainerHeader" class="col-lg-6 col-lg-offset-3 popup-content-header">
+									<span class="small_logo_icon"></span> <label
+										class="report-header-style"><h5 class="fs-16">Certification Tests</h5></label> <span
+										class="report-close-icon" onclick="closeAddPopUp('CPEcertificationOptions')"></span>
+								</div>
+								<div class="IntRountingOptContainer col-lg-6 col-lg-offset-3">
+									<div class="col-lg-12" ng-repeat="option in certificationOptionList"><input type="checkbox" ng-disabled="option.disabled" ng-checked="option.selected" ng-model="option.selected">{{option.value}}
+									</div>
+			                    </div>
+			                   <div class="col-lg-6 col-lg-offset-3 reportBottom">
+			                    <button class="btn btn-primary ml-5 m-5 pull-right" onclick="closeAddPopUp('CPEcertificationOptions')">OK</button>
+				                <button type="button" class="btn btn-default ml-5 m-5 pull-right" ng-click="resetCertificationTests()">Reset</button>
+				                </div>
+							</div>
+						</div>
+					</div>
+					<!-- CPE certification test selection end -->	
+
+		</div>
+		<!--    Page Footer Section  -->
+		<footer class="text-center">&copy; Tech Mahindra - 2018</footer>
+		<!--    Page Footer Section  -->
+
+	</div>
+</div>
+

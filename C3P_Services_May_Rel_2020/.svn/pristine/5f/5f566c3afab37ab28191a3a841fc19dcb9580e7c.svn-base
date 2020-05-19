@@ -1,0 +1,141 @@
+ <div class="container main-pg">
+        
+    <div class="row">
+    
+        <!--    Page Header Section     -->
+            <page-header></page-header>
+            
+        <div class="pg-bdy">
+            <!-- Breadcrumb Section -->
+            <ul class="breadcrumb">
+                <li><a ui-sref="Home">C3P</a></li>
+                <li class="breadcrumbLabel">Dashboard</li>
+                <li class="active">Request List</li>
+            </ul>
+            <div class="db-search-section">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="form-inline mt-10">
+                            <div class="form-group">
+                                <label class="mr-5">Search By : </label>
+                                <select class="form-control" ng-model="searchField" ng-change="clearSearch()">
+                                   <option ng-repeat="item in SearchItems" value="{{item}}">{{item}}</option>
+                                </select>
+                                <input type="text" class="form-control" placeholder="Enter search text"  ng-model="searchInput"/>
+                                <button type="submit" class="btn ico-search" ng-click="searchRequest()"></button>
+                                <span style="color: red;font-size: 14px;margin-left: 8px;" ng-show="errorMessege">Record not found</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="db-srch-sec-time-lbl col-lg-5">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <div class="row">
+                                    <span style="font-size: 14px;" class="info-success">Request Success : </span>
+                                    <span class="info-success">{{successRequests}}/{{TotalRequests}}</span>
+                                </div>
+                            </div>
+                            <div class="col-lg-4">
+                                <div class="row">
+                                    <span>Min Elapsed Time &nbsp; : {{MinElapsedTime}} </span>
+                                    <span>&nbsp;</span>
+                                </div>
+                                <div class="row">
+                                    <span>Max Elapsed Time &nbsp;: {{MaxElapsedTime}} </span>
+                                    <span>&nbsp;</span>
+                                </div>
+                                <div class="row">
+                                    <span>Avg Elapsed Time &nbsp; : {{AvgElapsedTime}}</span>
+                                    <span>&nbsp;</span>
+                                </div>
+                            </div>                            
+                        </div>
+                    </div>
+                    <div class="col-lg-1 mt-10">
+                        <button title="Refresh" class="refreshBtn" ng-click="getUpdatedGridData()"></button>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="db-result-section" >
+                <div class="table-responsive">
+                    <table  style="margin-bottom: 0px;" st-table="requestsList"  class="table table-striped table-hover hdr-table hdr-sort" st-safe-src="rowCollection">   
+                        <colgroup>
+                            <col width="11.60176991150442%" />
+                                <col width="8.61946902654867%" />
+                                <col width="8.06194690265487%" />
+                                <col width="9.17699115044248%" />
+                                <col width="10.17699115044248%" />
+                                <col width="12.2212389380531%" />
+                                <col width="12.2212389380531%" />
+                                <col width="8.2212389380531%" />
+                                <col width="8.2212389380531%" />
+                                <col width="11.2212389380531%" />
+                        </colgroup>
+                        <thead style="padding-right: 17px;">
+                            
+                            <tr>
+                                <th id="display_request_id" sort-table="true" class="sort-ascent" >Request ID</th>
+                                <th id="region" sort-table="true" class="sort-ascent" >Region</th>
+                                <th id="vendor" sort-table="true" class="sort-ascent">Vendor</th>
+                                <th id="model" sort-table="true" class="sort-ascent">Model</th>
+                                <th id="status" sort-table="true" class="sort-ascent">Status</th>
+                                <th id="dateOfProcessing" sort-table="true" class="sort-ascent">Request Raised Time</th>
+                                <th id="hostname" sort-table="true" class="sort-ascent">Host Name</th>
+                                <th id="request_creator_name" sort-table="true" class="sort-ascent">Created By</th>
+                                <th id="hostname" sort-table="true" class="sort-ascent">Assigned To</th>
+                                <th id="elapsed_time" sort-table="true" class="sort-ascent">Elapsed Time</th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                    <div style="max-height:304px; overflow-y:auto">
+                        <table id="tbl_dashboard" st-table="requestsList" class="table table-striped table-hover" st-safe-src="rowCollection">
+                            
+                            <colgroup>
+                             <col width="11.60176991150442%" />
+                                <col width="8.61946902654867%" />
+                                <col width="8.06194690265487%" />
+                                <col width="9.17699115044248%" />
+                                <col width="10.17699115044248%" />
+                                <col width="12.2212389380531%" />
+                                <col width="12.2212389380531%" />
+                                <col width="8.2212389380531%" />
+                                <col width="8.2212389380531%" />
+                                <col width="11.2212389380531%" />
+                            </colgroup>
+                        
+                            <tbody>
+                                <tr ng-repeat="req in requestsList | orderBy:sortKey:reverse">
+                                    <td><a class="requestIdStyle" ng-click="getDashboardConfigFlag(false)" ng-bind="req.display_request_id | limitTo:10" ui-sref="dashboardReqDetails({dashboardReq_Details: req.display_request_id,version: req.request_version,pageName:'Dashboard'})"></a></td>
+                                    <td>{{req.region}}</td>
+                                    <td>{{req.vendor}}</td>
+                                    <td>{{req.model}}</td>
+                                    <td>
+                                        <span ng-show = "req.status == 'Success'" class="ico-success info-success">Success</span>
+                                        <span ng-show = "req.status == 'Failure'" class="ico-failure info-error">Failure</span>
+                                        <span ng-show = "req.status == 'In Progress'" class="ico-success ico-inProgress">In Progress</span>
+                                        <span ng-show = "req.status == 'Scheduled'" class="ico-success ico-inProgress">Scheduled</span>
+                                        <span ng-show = "req.status == 'Hold'" class="ico-hold info-hold">Hold</span>
+                                    </td>
+                                    <td>{{req.dateOfProcessing}}</td>
+                                    <td>{{req.hostname}}</td>
+                                    <td>{{req.request_creator_name}}</td>
+                                    <td>{{req.request_assigned_to}}</td>
+                                    <td>{{req.elapsed_time}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                    </div>
+                </div>
+            </div>
+                
+        </div>  
+            <!--    Page Footer Section  -->
+            <footer class="text-center">&copy; Tech Mahindra - 2018</footer>
+            <!--    Page Footer Section  -->
+    </div>
+</div>
+

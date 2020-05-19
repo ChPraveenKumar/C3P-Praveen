@@ -1,0 +1,678 @@
+
+<div class="container">
+
+	<div class="row">
+
+		<!--    Page Header Section     -->
+		<page-header></page-header>
+		<div class="pg-bdy">
+			<!-- Breadcrumb Section -->
+			<ul class="breadcrumb">
+				<li><a ui-sref="Home">C3P</a></li>
+				<li class="breadcrumbLabel">Configuration</li>
+				<li class="active" >Edit Details</li>
+			</ul>
+			<!-- Breadcrumb Section -->
+			<!-- Search Section -->
+			<form id="editConfigForm" name="editform" novalidate
+				ng-class={submitted:submitted}>
+				<div class="panel form-inline border-top mt-5 lbl-normal cmp-normal">
+					<!--    Customer Information     -->
+					<section class="mt-15 pr-60">
+					<div class="row mt-5">
+					 	<div class="col-lg-5 form-group">
+							<h3 class="title second-title ml-40">Customer Information</h3>
+						</div>
+						<div class="col-lg-7 form-group">
+							<h2 class="title second-title pull-right" style="margin-right: 16px">
+							Configuration for : {{editRequestDetails[0].display_request_id}}-v{{version}}
+							 
+							</h2>
+						</div>
+						
+						</div>
+						<div class="row mt-15">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Customer :</label>
+								<div class="col-lg-8">
+									<input disabled class="disabled" type="text" required ng-model="editRequestDetails[0].customer"
+										 ng-change='onCustomerNameChange()'
+										maxlength="100" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" required col-lg-4 text-right">Site
+									ID :</label>
+								<div class="col-lg-8">
+									<input disabled class="disabled" type="text" required ng-model="editRequestDetails[0].siteid"
+										class="upperCase" ng-change='onSiteIDChange()' maxlength="12" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Region :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select disabled class="disabled" required ng-model="editRequestDetails[0].region"
+											ng-change='onRegionChange()'>
+											<option value="">Select</option>
+											<option value="US">US</option>
+											<option value="EMEA">EMEA</option>
+											<option value="ROW">ROW</option>
+											<option value="CANADA">CANADA</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Service :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select disabled class="disabled" required ng-model="editRequestDetails[0].service">
+											<option value="">Select</option>
+											<option value="MIS">MIS</option>
+											<option value="AVPN">AVPN</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							
+						</div>
+					</section>
+					<!--    Customer Information     -->
+					<!--    loading   -->
+					<loading></loading>
+					<!--    Device Information     -->
+					<!-- CPE certification test selection options -->
+					<div id="CPEcertificationOptions" class="reportPopUp" style="padding-top: 13%;">
+						<!-- Modal content -->
+						<div class="popup-content col-lg-offset-3" style="width: 50%">
+							<div class="col-lg-6 col-lg-offset-3 popup-content-header">
+								<span class="small_logo_icon"></span> <label
+									class="report-header-style"><h5 class="fs-16">Certification Tests</h5></label> <span
+									class="report-close-icon" onclick="closeAddPopUp('CPEcertificationOptions')"></span>
+							</div>
+							<div class="IntRountingOptContainer col-lg-6 col-lg-offset-3">
+								<div class="col-lg-12" ng-repeat="option in certificationOptionList"><input type="checkbox" ng-disabled="option.disabled" ng-checked="option.selected" ng-model="option.selected">{{option.value}}
+								</div>
+		                    </div>
+		                   <div class="col-lg-6 col-lg-offset-3 reportBottom">
+		                    <button class="btn btn-primary ml-5 m-5 pull-right" onclick="closeAddPopUp('CPEcertificationOptions')">OK</button>
+			                <button type="button" class="btn btn-default ml-5 m-5 pull-right" ng-click="resetCertificationTests()">Reset</button>
+			                </div>
+						</div>
+					</div>
+					<!-- CPE certification test selection end -->		
+					<section class="mt-15 pr-60">
+						<h3 class="title second-title ml-40">Device Information</h3>
+						<div class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Vendor :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select disabled class="disabled" required ng-value="editRequestDetails[0].vendor" ng-model="editRequestDetails[0].vendor"
+											ng-change='onVendorChange()'>
+											<option value="">Select</option>
+											<option value="CISCO">CISCO</option>
+											<option value="JUNIPER">JUNIPER</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Device Type :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select disabled class="disabled" required ng-model="editRequestDetails[0].deviceType"
+											ng-change='onDeviceChange()'>
+											<option value="">Select</option>
+											<option value="Router">Router</option>
+											<option value="Switch">Switch</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Model :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select disabled class="disabled" required ng-model="editRequestDetails[0].model"
+											ng-change='onModelChange()'>
+											<option value="">Select</option>
+											<option value="1921"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router'">1921</option>
+											<option value="2901"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router'">2901</option>
+											<option value="3660"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router'">3660</option>
+											<option value="7200"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router'">7200</option>
+												<option value="C2951"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router'">C2951</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">OS :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select disabled class="disabled" required ng-change='OsChange()' ng-model="editRequestDetails[0].os">
+											<option value="">Select</option>
+											<option value="IOS"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router'">IOS</option>
+											<option value="JUNOS"
+												ng-show="editRequestDetails[0].vendor=='JUNIPER' && editRequestDetails[0].deviceType=='Router'">JUNOS</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">OS Version :</label>
+								<div class="col-lg-8 mt-5">
+									<div class="styled-select">
+										<select required ng-model="editRequestDetails[0].osVersion">
+											<option value="">Select</option>
+											<option value="15.4"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">15.4</option>
+											<option value="12.3"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='3660'">12.3</option>
+											<option value="12.4"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">12.4</option>
+												<option value="15.3(3)M"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='C2951'">15.3(3)M</option>		
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label  class=" col-lg-4 text-right pl-0">Management
+									IP :</label>
+								<div class="col-lg-8">
+									<input disabled class="disabled" required type="text"
+										autocomplete="off" 
+										ng-pattern='/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/'
+										ng-model="editRequestDetails[0].managementIp" maxlength="15">
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Host Name :</label>
+								<div class="col-lg-8">
+									<input disabled class="disabled" required type="text" class="upperCase"
+										ng-value="varHostname" class="disabled" disabled
+										ng-model="editRequestDetails[0].hostname"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+						</div>
+						<div id="editBannerPopUp" class="popup">
+
+							<!-- Modal content -->
+							<div class="popup-content">
+								<!-- <label class="banner-header-style"><h4>Banner</h4></label>
+						   	 <span class="minimize_icon" ng-click="closeBannerWindow()"></span> -->
+								<div class="col-lg-6 col-lg-offset-3 popup-content-header">
+									<span class="small_logo_icon"></span> <label
+										class="report-header-style"><h4>Banner</h4></label> <span
+										class="report-close-icon" onclick="closeAddPopUp('editBannerPopUp')"></span>
+								</div>
+								<textarea
+									class="autoExpand col-lg-6 col-lg-offset-3 ng-pristine ng-untouched ng-valid ng-empty ng-valid-maxlength"
+									ng-model="editRequestDetails[0].banner" style="resize: none;" maxlength="1024">
+                           </textarea>
+							</div>
+						</div>
+					</section>
+					<!--    Device Information     -->
+					<!--    Interface &amp; Routing     -->
+					<section class="mt-15 pr-60">
+						<h3 class="title second-title ml-40">Configuration Features</h3>
+						<div class="row mt-5">
+							<div ng-show="editFieldFlags.wanFlags" class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">WAN Int :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-model="editRequestDetails[0].deviceInterfaceSO.name" ng-required="editFieldFlags.wanFlags">
+											<option value="">Select</option>
+											<option value="GigabitEthernet 0/0"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">GigabitEthernet
+												0/0</option>
+											<option value="GigabitEthernet 0/1"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">GigabitEthernet
+												0/1</option>
+											<option value="GigabitEthernet 0/2"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='2901'">GigabitEthernet
+												0/2</option>
+											<option value="Serial1/0"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && (editRequestDetails[0].model=='3660' || editRequestDetails[0].model=='7200')">Serial
+												1/0</option>
+												<option value="Serial0/0/1"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && (editRequestDetails[0].model=='C2951')">Serial 0/0/1</option>	
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.wanFlags" class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">WAN IP :</label>
+								<div class="col-lg-8">
+									<div class="styled-fileDlg" ng-click="getEIPAMIP()">
+										<input id="txt_WANIP" ng-value="wanIPvalue" ng-required="editFieldFlags.wanFlags"
+											ng-change="onWanIpChange" class="disabled" disabled
+											type="text" ng-model="editRequestDetails[0].deviceInterfaceSO.ip"
+											maxlength="39" /> <label for="file_WANIP">...</label>
+									</div>
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.wanFlags" class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Subnet Mask :</label>
+								<div class="col-lg-8">
+									<input type="text" ng-value="wanIPMask"
+										class="disabled" disabled ng-required="editFieldFlags.wanFlags"
+										ng-model="editRequestDetails[0].deviceInterfaceSO.mask" maxlength="15" />
+								</div>
+							</div>
+						</div>
+						
+						<div class="row mt-5">
+							<div ng-show="editFieldFlags.wanFlags" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0">Int Description
+									:</label>
+								<div class="col-lg-8">
+									<input type="text"
+										ng-model="editRequestDetails[0].deviceInterfaceSO.description"
+										maxlength="100" />
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.wanFlags" class="col-lg-4 form-group">
+								<label class=" col-lg-4 pl-1 text-right">Encapsulation
+									:</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select
+											ng-model="editRequestDetails[0].deviceInterfaceSO.encapsulation" ng-required="editFieldFlags.wanFlags">
+											<option value="">Select</option>
+											<option value="E2EVLAN"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'&& editRequestDetails[0].model=='C2951'">E2E
+												VLAN</option>
+											<option value="PPP"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model!='1921'">PPP</option>
+											<option value="Frame-Relay">Frame-Relay</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+			
+							<div ng-show="editFieldFlags.wanFlags" class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right"
+									ng-show="editRequestDetails[0].deviceInterfaceSO.name != 'Serial1/0' && editRequestDetails[0].deviceInterfaceSO.name != 'GigabitEthernet 0/2' && editRequestDetails[0].deviceInterfaceSO.name != 'GigabitEthernet 0/1' && editRequestDetails[0].deviceInterfaceSO.name != 'GigabitEthernet 0/0' && editRequestDetails[0].deviceInterfaceSO.name != 'Serial0/0/1'">Speed(Mbps):</label>
+								<label class=" col-lg-4 text-right"
+									ng-show="editRequestDetails[0].deviceInterfaceSO.name == 'Serial1/0' || editRequestDetails[0].deviceInterfaceSO.name == 'Serial0/0/1'">Bandwidth:</label>
+								<label class=" col-lg-4 text-right"
+									ng-show="editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/2'">Speed(Mbps):</label>
+								<label class=" col-lg-4 text-right"
+									ng-show="editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/1'">Speed(Mbps):</label>
+								<label class=" col-lg-4 text-right"
+									ng-show="editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/0'">Speed(Mbps):</label>
+
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-required="editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/0' || editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/1' || editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/2'"  ng-model="editRequestDetails[0].deviceInterfaceSO.speed"
+											ng-show="editRequestDetails[0].deviceInterfaceSO.name != 'Serial0/0/1' && editRequestDetails[0].deviceInterfaceSO.name != 'Serial1/0' && editRequestDetails[0].deviceInterfaceSO.name != 'GigabitEthernet 0/2' && editRequestDetails[0].deviceInterfaceSO.name != 'GigabitEthernet 0/1' && editRequestDetails[0].deviceInterfaceSO.name != 'GigabitEthernet 0/0'">
+											<option value="">Select</option>
+											<option value="10"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">10</option>
+											<option value="100"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">100</option>
+											<option value="1000"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">1000</option>
+											<option value="10"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">10</option>
+											<option value="100"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">100</option>
+											<option value="1000"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">1000</option>
+
+										</select> <select ng-required="editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/0' || editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/1' || editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/2'" ng-model="editRequestDetails[0].deviceInterfaceSO.speed" 
+											ng-show="editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/2'">
+											<option value="">Select</option>
+											<option value="10"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">10</option>
+											<option value="100"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">100</option>
+											<option value="1000"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">1000</option>
+											<option value="10"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">10</option>
+											<option value="100"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">100</option>
+											<option value="1000"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">1000</option>
+
+										</select> <select ng-required="editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/0' || editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/1' || editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/2'"  ng-model="editRequestDetails[0].deviceInterfaceSO.speed"
+											ng-show="editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/1'">
+											<option value="">Select</option>
+											<option value="10"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">10</option>
+											<option value="100"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">100</option>
+											<option value="1000"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">1000</option>
+											<option value="10"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">10</option>
+											<option value="100"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">100</option>
+											<option value="1000"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">1000</option>
+
+										</select> <select ng-required="editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/0' || editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/1' || editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/2'"  ng-model="editRequestDetails[0].deviceInterfaceSO.speed"
+											ng-show="editRequestDetails[0].deviceInterfaceSO.name == 'GigabitEthernet 0/0'">
+											<option value="">Select</option>
+											<option value="10"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">10</option>
+											<option value="100"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">100</option>
+											<option value="1000"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='1921'">1000</option>
+											<option value="10"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">10</option>
+											<option value="100"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">100</option>
+											<option value="1000"
+												ng-show="editRequestDetails[0].vendor=='CISCO' && editRequestDetails[0].deviceType=='Router' && editRequestDetails[0].model=='7200'">1000</option>
+
+										</select> <select ng-required="editRequestDetails[0].deviceInterfaceSO.name == 'Serial1/0'" ng-model="editRequestDetails[0].deviceInterfaceSO.bandwidth"
+											ng-show="editRequestDetails[0].deviceInterfaceSO.name == 'Serial1/0'|| editRequestDetails[0].deviceInterfaceSO.name == 'Serial0/0/1'">
+											<option value="">Select</option>
+											<option value="56">56</option>
+											<option value="64">64</option>
+											<option value="128">128</option>
+											<option value="256">256</option>
+											<option value="512">512</option>
+											<option value="1024">1024</option>
+											<option value="1544">1544</option>
+											<option value="2000">2000</option>
+												<option value="3000">3000</option>
+												<option value="5000">5000</option>
+												<option value="10000">10000</option>
+												<option value="20000">20000</option>
+												<option value="30000">30000</option>
+												<option value="40000">40000</option>
+												<option value="45000">45000</option>
+
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div ng-show="editFieldFlags.lanFlags" class="row mt-5">
+							<div class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">LAN Int :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select  ng-class="{'disabled': editRequestDetails[0].model != '7200' && editRequestDetails[0].model != 'C2951'}" ng-model="editRequestDetails[0].lanInterface">
+											<option value="">Select</option>
+											<option ng-show="editRequestDetails[0].model != 'C2951'" value="GigabitEthernet2/0">GigabitEthernet2/0</option>
+											<option ng-show="editRequestDetails[0].model == 'C2951'" value="GigabitEthernet0/0">GigabitEthernet0/0</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0">LAN IP :</label>
+								<div class="col-lg-8">
+									<input ng-class="{'disabled': editRequestDetails[0].lanInterface != 'GigabitEthernet2/0'}" type="text" class="upperCase width100" ng-required="editRequestDetails[0].lanInterface == 'GigabitEthernet2/0'"
+										ng-pattern="/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/"
+										ng-model="editRequestDetails[0].lanIp" maxlength="15" 
+										class="width100"/>
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label  class="col-lg-4 text-right pl-0">Subnet Mask :</label>
+								<div class="col-lg-8">
+									<input id="subnetMaskLanedit" ng-class="{'disabled': editRequestDetails[0].lanInterface != 'GigabitEthernet2/0'}" autocomplete="off" type="text" ng-required="editRequestDetails[0].lanInterface == 'GigabitEthernet2/0'"
+										class="upperCase" maxlength="15" onkeyup="subnetMaskValidation(event)" ng-model="editRequestDetails[0].lanMaskAddress" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group mt-5">
+								<label class="col-lg-4 text-right pl-0">Int Description
+									:</label>
+								<div class="col-lg-8">
+									<input type="text" ng-style="configuartion.lanDescription && {'background-color': 'rgba(234, 193, 26, 0.12)'}"
+										ng-model="editRequestDetails[0].lanDescription"
+										maxlength="100" />
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div ng-show="editFieldFlags.loopbackFlags" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">Loopback :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-required="editFieldFlags.loopbackFlags" ng-class="{'disabled': editRequestDetails[0].model != '7200'&& editRequestDetails[0].model != 'C2951'}" ng-model="editRequestDetails[0].loopBackType">
+											<option value="">Select</option>
+											<option ng-show="editRequestDetails[0].model !== 'C2951'" value="Loopback0">Loopback0</option>
+											<option ng-show="editRequestDetails[0].model == 'C2951'" value="Loopback4">Loopback4</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.loopbackFlags" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0">IP Address :</label>
+								<div class="col-lg-8">
+									<input ng-class="{'disabled': editRequestDetails[0].model != '7200'}" type="text" class="upperCase width100" ng-required="editRequestDetails[0].loopBackType == 'Loopback0'"
+										ng-pattern="/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/"
+										ng-model="editRequestDetails[0].loopbackIPaddress" maxlength="15" 
+										class="width100"/>
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.loopbackFlags" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0">Subnet Mask :</label>
+								<div class="col-lg-8">
+									<input id="subnetMaskSNMP" ng-class="{'disabled': editRequestDetails[0].model != '7200'}" autocomplete="off" type="text" ng-required="editRequestDetails[0].loopBackType == 'Loopback0'"
+										class="upperCase" maxlength="15"
+										onkeyup="subnetMaskValidation(event)" ng-model="editRequestDetails[0].loopbackSubnetMask" />
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div ng-show="editFieldFlags.bannerFlag" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">Banner :</label>
+								<div class="col-lg-8">
+									<textarea class="scrollabletextbox"
+										ng-model="editRequestDetails[0].banner" maxlength="1024">
+                                   	</textarea>
+									<span class="maximize_icon" onclick="openAddPopUp('editBannerPopUp')"></span>
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.vrfFlag" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">VRF Name :</label>
+								<div class="col-lg-8">
+									<input id="vrfName" type="text" ng-model="editRequestDetails[0].vrfName"
+										class="upperCase" ng-disabled="editRequestDetails[0].VPN == 'No'" ng-required="editFieldFlags.vrfFlag" maxlength="32" />
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.enablePasswordFlag" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0">Enable Password :</label>
+								<div class="col-lg-8">
+									<input type="password" class="width100"
+										ng-model="editRequestDetails[0].enablePassword" maxlength="12" />
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div ng-show="editFieldFlags.snmpFlags" class="col-lg-4 form-group">
+								<label  class="col-lg-4 text-right">SNMP String :</label>
+								<div class="col-lg-8">
+									<input id ="SNMPString" ng-class="{'disabled': editRequestDetails[0].model != '7200' && editRequestDetails[0].model != 'C2951'}" type="text" class="upperCase" ng-required="editFieldFlags.snmpFlags" 
+										ng-model="editRequestDetails[0].snmpString" maxlength="16"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.snmpFlags" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right pl-0" style="margin-left: -15px;padding-right: 0px;">SNMP Host Address :</label>
+								<div class="col-lg-8 ml-10">
+									<input id ="SNMPHostAddress" type="text" class="upperCase ml-5" ng-class="{'disabled': editRequestDetails[0].model != '7200' && editRequestDetails[0].model != 'C2951'}"
+									    ng-pattern="/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/" 
+										ng-model="editRequestDetails[0].snmpHostAddress" ng-required="editFieldFlags.snmpFlags" maxlength="15"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div ng-show="editFieldFlags.routingProtocolFlag"  class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right pl-0">Routing
+									Protocol :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-required="editFieldFlags.routingProtocolFlag"
+											ng-model="editRequestDetails[0].internetLcVrf.routingProtocol">
+											<option value="">Select</option>
+											<option value="BGP">BGP</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.routingProtocolFlag" class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right pl-0">AS No :</label>
+								<div class="col-lg-8">
+									<input type="text" class="upperCase width100" ng-required="editFieldFlags.routingProtocolFlag"
+										ng-model="editRequestDetails[0].internetLcVrf.bgpASNumber" maxlength="5"
+										class="width100" min="1" max="65535" />
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div ng-show="editFieldFlags.routingProtocolFlag" class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">N/W IP :</label>
+								<div class="col-lg-8">
+									<input type="text" autocomplete="off" maxlength="15" ng-required="editFieldFlags.routingProtocolFlag"
+										ng-model="editRequestDetails[0].internetLcVrf.networkIp"
+										ng-pattern='/^([1-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/' />
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.routingProtocolFlag" class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Mask :</label>
+								<div class="col-lg-8">
+									<input id="mask" autocomplete="off" type="text" ng-required="editFieldFlags.routingProtocolFlag"
+										class="upperCase" maxlength="15"
+										onkeyup="subnetMaskValidation(event)"
+										ng-model="editRequestDetails[0].internetLcVrf.networkIp_subnetMask" />
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div ng-show="editFieldFlags.routingProtocolFlag" class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Neighbour 1 :</label>
+								<div class="col-lg-8">
+									<input type="text" class="upperCase" 
+										ng-class="{'disabled':editFieldFlags.wanFlags}"
+										ng-disabled = "editFieldFlags.wanFlags" 
+										ng-required="editRequestDetails[0].internetLcVrf.neighbor1_remoteAS"
+										maxlength="15" ng-value="neighbor1"
+										ng-model="editRequestDetails[0].internetLcVrf.neighbor1" />
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.routingProtocolFlag" class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Remote As :</label>
+								<div class="col-lg-8">
+									<input type="text" ng-required="editRequestDetails[0].internetLcVrf.neighbor1"
+										ng-model="editRequestDetails[0].internetLcVrf.neighbor1_remoteAS"
+										maxlength="5" class="width100" min="1" max="65535" />
+								</div>
+							</div>
+						</div>
+						<div class="row mt-5">
+							<div ng-show="editFieldFlags.routingProtocolFlag" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">Neighbour 2 :</label>
+								<div class="col-lg-8">
+									<input type="text" class="upperCase" maxlength="15" ng-required="editFieldFlags.routingProtocolFlag"
+										ng-model="editRequestDetails[0].internetLcVrf.neighbor2" />
+								</div>
+							</div>
+							<div ng-show="editFieldFlags.routingProtocolFlag" class="col-lg-4 form-group">
+								<label class="col-lg-4 text-right">Remote As :</label>
+								<div class="col-lg-8">
+									<input type="text" maxlength="5" ng-required="editFieldFlags.routingProtocolFlag"
+										ng-model="editRequestDetails[0].internetLcVrf.neighbor2_remoteAS"
+										class="width100 " min="1" max="65535" />
+								</div>
+							</div>
+							<div class="col-lg-12">
+							<div class="col-lg-3 form-group">
+								<h3 class="title second-title ml-40 mt-5">Test & Turn Up Strategy</h3>
+								<button type="button" class="ico-open-popup pull-right tooltip" style="margin:-14px 40px 0px 0px;border-bottom: 1px solid #aeaeae;" ng-click="getCPEcertificationOptions()">
+									<span class="tooltiptext">Certification Test Selection</span>
+								</button>
+							</div>
+							<div class="col-lg-9">
+								<div class="pull-right">
+									<button  ui-sref="dashboardReqDetails({dashboardReq_Details: editRequestDetails[0].display_request_id,version: editRequestDetails[0].request_version})" type="button" class="btn btn-default">Cancel</button>
+									<!-- button id="editSubmit" class="btn btn-primary ml-5" type ="submit"
+										ng-click="saveUpdatedConfigurationData($event)">Submit</button -->
+									<button ng-keyup="$event.keyCode == 13 && getGenerateConfigratioData('', 'View Generate Config',$event)" id="createSubmit" class="btn btn-primary ml-5" 
+										ng-click="getGenerateConfigratioDataForEdit('View Generate Config',$event)">Generate Config</button>
+									<!-- ng-disabled="myform.$invalid" -->
+								</div>
+							</div>
+							</div>
+						</div>
+						
+						<!-- gnerate Cionfigurtion popup -->
+					<div id="generateConfigPopUp" class="reportPopUp">
+                               <div id="generateConfigPopUpContainer" class="popUpContainer">
+								<!-- Modal content -->
+								<div class="popup-content">
+									<div id="generateConfigPopUpContainerHeader" class="col-lg-6 col-lg-offset-3 popup-content-header">
+										<span class="small_logo_icon"></span> <label
+											class="report-header-style"><h4>{{report_title}}</h4></label> <span
+											class="report-close-icon" onclick="closeAddPopUp('generateConfigPopUp')"></span>
+									</div>
+									<textarea style="resize: none;border-bottom: none" 
+										class="reportPopUpContainer col-lg-6 col-lg-offset-3"
+										disabled ng-model="getdata" 
+										maxlength="1024">
+				                    </textarea>
+				                     <div class="col-lg-6 col-lg-offset-3 reportBottom">
+					                    <button type="button" class="btn btn-default ml-5 m-5 pull-right" onclick="closeAddPopUp('generateConfigPopUp')">Cancel</button>
+					                    <!--  button ng-keyup="$event.keyCode == 13 && saveConfiguration($event)" id="createSubmit" class="btn btn-primary ml-5 m-5 pull-right" type ="submit"
+											ng-click="saveConfiguration($event)" ng-disabled="createConfSubmitted">Submit</button-->
+										<button id="" class="btn btn-primary ml-5 m-5 pull-right" type ="submit"
+                                         ng-click="getModifyScheduler('schedulePopUp')">Schedule</button>	
+									</div>
+								</div>
+								</div>
+							</div>
+							
+							 <!-- Schedule pop up-->
+                             <schedule></schedule>
+					</section>
+					<!--    Interface &amp; Routing     -->
+				</div>
+			</form>
+
+		</div>
+		<!--    Page Footer Section  -->
+		<footer class="text-center">&copy; Tech Mahindra - 2018</footer>
+		<!--    Page Footer Section  -->
+
+	</div>
+</div>
+

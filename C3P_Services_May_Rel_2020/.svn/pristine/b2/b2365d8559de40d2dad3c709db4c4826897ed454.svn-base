@@ -1,0 +1,610 @@
+<div class="container">
+  <div class="row" *ngIf="RequestDetails">
+    <!--    Page Header Section     -->
+    <app-header></app-header>
+    
+    
+  <div class="pg-bdy">
+      <!-- Breadcrumb Section -->
+      <ul class="breadcrumb">
+        <li><a ui-sref="Home">C3P</a></li>
+        <li class="breadcrumbLabel">Configuration</li>
+        <li class="active">Request Details</li>
+      </ul>
+      <div class="panel form-inline border-top db-req-dtl mt-5">
+        <section>
+            <div class="row mt-5">
+             <div class="col-lg-5 form-group">
+              <h2 class="title main-title">Configuration for : {{RequestDetails[0].display_request_id}}-v{{RequestDetails[0].request_version}}</h2>
+            </div>
+            <div class="col-lg-5 form-group">
+              <h2 class="title second-title pull-right ng-binding" style="margin-right: 16px">
+              Network Type : Legacy
+               
+              </h2>
+            </div>
+            <div class="col-lg-2 pull-right">
+                        <button title="Refresh" class="refreshBtn" (click)="getUpdatedGridData()"></button>
+                    </div>
+            </div>
+          <div class="row mt-15">
+
+            <div class="col-lg-3 form-group">
+
+              <label class="col-lg-5 text-right">Site ID : </label>
+              <div class="col-lg-4" style="padding: 0">
+                <input type="text" class="form-control" readonly
+                  [(ngModel)]="RequestDetails[0].siteid" />
+              </div>
+
+            </div>
+            <div class="col-lg-3 form-group">
+
+              <label class="col-lg-5 text-right">Region : </label>
+              <div class="col-lg-4" style="padding: 0">
+                <input type="text" class="form-control" readonly
+                  [(ngModel)]="RequestDetails[0].region" />
+              </div>
+
+            </div>
+            <div class="col-lg-3 form-group">
+
+              <label class="col-lg-5 text-right">Service : </label>
+              <div class="col-lg-4" style="padding: 0">
+                <input type="text" class="form-control" readonly
+                  [(ngModel)]="RequestDetails[0].service" />
+              </div>
+
+            </div>
+          
+          </div>
+        </section>
+        <section>
+          <h2 class="title second-title">
+            Device Information
+            </h2>
+            <div class="row mt-15">
+
+              <div class="col-lg-3 form-group">
+
+                <label class="col-lg-5 text-right">Vendor : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].vendor" />
+                </div>
+
+              </div>
+              <div class="col-lg-3 form-group">
+
+                <label class="col-lg-5 text-right">Model : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].model" />
+                </div>
+
+              </div>
+              <div class="col-lg-3 form-group">
+
+                <label class="col-lg-4 ml-19 text-right">Host Name : </label>
+                <div class="col-lg-5" style="padding: 0">
+                  <input type="text" style="width:120% !important"  class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].hostname" />
+                </div>
+
+              </div>
+              <div class="col-lg-3 form-group">
+
+                <label class="col-lg-5 mln2 pr-13">Management IP :
+                </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].managementIp" />
+                </div>
+
+              </div>
+
+            </div>
+          
+        </section>
+        <section class="no-border">
+          <h2 class="title second-title">
+            Configuration Features
+            </h2>
+            <div class="row mt-15">
+
+              <div *ngIf="RequestDetails[0].deviceInterfaceSO.name" class="col-lg-3 form-group">
+
+                <label class="col-lg-5 text-right">WAN Int : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly [(ngModel)]="RequestDetails[0].deviceInterfaceSO.name" />
+                </div>
+
+              </div>
+              <div *ngIf="RequestDetails[0].deviceInterfaceSO.ip" class="col-lg-3 form-group">
+
+                <label  class="col-lg-5 text-right">IP Address : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].deviceInterfaceSO.ip" />
+                </div>
+
+              </div>
+              <div *ngIf="RequestDetails[0].deviceInterfaceSO.encapsulation" class="col-lg-3 form-group">
+
+                <label class="col-lg-5 text-right">Encapsulation : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].deviceInterfaceSO.encapsulation" />
+                </div>
+
+              </div>
+              <div *ngIf="RequestDetails[0].deviceInterfaceSO.bandwidth" class="col-lg-3 form-group">
+                <div *ngIf="RequestDetails[0].deviceInterfaceSO.speed == null">
+                  <label class="col-lg-5 text-right">Bandwidth : </label>
+                  <div class="col-lg-4" style="padding: 0">
+                    <input type="text" class="form-control" readonly
+                      [(ngModel)]="RequestDetails[0].deviceInterfaceSO.bandwidth" />
+                  </div>
+                </div>
+              </div>
+              <div *ngIf="RequestDetails[0].deviceInterfaceSO.speed" class="col-lg-3 form-group">
+                <div *ngIf="RequestDetails[0].deviceInterfaceSO.speed != null">
+                <label class="col-lg-5 text-right">Speed : </label>
+                <div class="col-lg-4" style="padding: 0">
+                <input type="text" class="form-control" readonly
+                  [(ngModel)]="RequestDetails[0].deviceInterfaceSO.speed" />
+                </div>
+                </div>
+              </div>
+              <div *ngIf="RequestDetails[0].lanInterface" class="col-lg-3 form-group">
+                <label class="col-lg-5 text-right">LAN Int : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input style="width: 131% !important;" type="text" class="form-control" readonly [(ngModel)]="RequestDetails[0].lanInterface" />
+                </div>
+              </div>
+              <div *ngIf="RequestDetails[0].lanIp" class="col-lg-3 form-group">
+                <label  class="col-lg-5 text-right">LAN IP : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input style="width:115% !important" type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].lanIp" />
+                </div>
+              </div>
+              <div *ngIf="RequestDetails[0].lanMaskAddress" class="col-lg-3 form-group">
+                <label  class="col-lg-5 text-right">Subnet Mask : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].lanMaskAddress" style="width:115% !important"/>
+                </div>
+              </div>
+              <div *ngIf="RequestDetails[0].internetLcVrf.routingProtocol" class="col-lg-3 form-group">
+
+                <label class="col-lg-5 pr-2 mln4">Routing Protocol : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].internetLcVrf.routingProtocol" />
+                </div>
+
+              </div>
+              <div *ngIf="RequestDetails[0].internetLcVrf.AS" class="col-lg-3 form-group">
+
+                <label class="col-lg-5 text-right">AS No : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly [(ngModel)]="RequestDetails[0].internetLcVrf.AS"/>
+                </div>
+
+              </div>
+              <div *ngIf="RequestDetails[0].internetLcVrf.networkIp" class="col-lg-3 form-group">
+
+                <label class="col-lg-5 text-right">N/W IP : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].internetLcVrf.networkIp" />
+                </div>
+
+              </div>
+              <div *ngIf="RequestDetails[0].internetLcVrf.neighbor1" class="col-lg-3 form-group">
+
+                <label class="col-lg-5 text-right">Neighbour IP : </label>
+                <div class="col-lg-4" style="padding: 0">
+                  <input type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].internetLcVrf.neighbor1" />
+                </div>
+
+              </div>
+              <div *ngIf="RequestDetails[0].vrfName" class="col-lg-3 form-group">
+                <label class="col-lg-5 text-right">VRF : </label>
+                <div class="col-lg-4" style="padding: 0">
+                <input type="text" class="form-control" readonly
+                    [(ngModel)]="RequestDetails[0].vrfName" />
+                </div>
+              </div>
+            
+              <div *ngIf="RequestDetails[0].snmpHostAddress" style="margin-top: 1px;" class="col-lg-3 form-group">
+                <label class="col-lg-5 text-right">SNMP : </label>
+                <div class="col-lg-4" style="padding: 0">
+                <label *ngIf="RequestDetails[0].snmpHostAddress != ''">Yes</label>
+                <label *ngIf="RequestDetails[0].snmpHostAddress == ''">No</label>
+                
+                </div>
+              </div>
+              <div *ngIf="RequestDetails[0].loopBackType" class="col-lg-3 form-group">
+                <label class="col-lg-5 text-right">Loopback : </label>
+                <div class="col-lg-4" style="padding: 0">
+                <label *ngIf="RequestDetails[0].loopBackType != ''">Yes</label>
+                <label *ngIf="RequestDetails[0].loopBackType == ''">No</label>
+              </div>
+            </div>
+          </div>	
+        </section>
+      </div>
+      <!-- Search Section -->
+      
+      <!-- Configuration Status Section  -->
+      <div class="db-config-status">
+        <h2 class="title">
+          Configuration Status
+          <aside class="elapsed-time">
+            <span *ngIf="RequestDetails[0].status !== 'Scheduled'" [ngStyle]="RequestDetails[0].status == 'Failure' && {'visibility': 'hidden'} || RequestDetails[0].status == 'In Progress' && {'visibility': 'hidden'}">
+              Total Elapsed Time :<span class="time-dtl">{{RequestDetails[0].elapsedTime}}</span>
+            </span>
+            <span *ngIf="RequestDetails[0].status == 'Scheduled'" [ngStyle]="RequestDetails[0].status == 'Failure' && {'visibility': 'hidden'} || RequestDetails[0].status == 'In Progress' && {'visibility': 'hidden'}">
+              Scheduled Time :<span class="time-dtl">{{RequestDetails[0].scheduledTime}}</span>
+            </span>
+            <div class="mtn15">
+            <label class="text-right" style="font-size: 14px;font-weight: normal">Status :</label> 
+            <span [ngClass]="{
+                'info-success': RequestDetails[0].status === 'Success',
+                'info-error': RequestDetails[0].status === 'Failure',
+                'info-inProgress': RequestDetails[0].status === 'In Progress',
+                'info-inProgress': RequestDetails[0].status === 'Scheduled'
+              }" style="font-weight: 600">
+              {{RequestDetails[0].status}}
+            </span> 
+            
+            </div>
+          </aside>
+        </h2>
+        <!-- Tooltip on mousehover of Tests section start-->
+        <section class="progress-sec">
+            <div class="subTest preSubTest" *ngIf="preSubTest && getSubTestData" >
+               <div [ngClass]="{'ico-failure pl-5': getSubTestData.deviceReachabilityTest == '2','ico-success pl-5':  getSubTestData.deviceReachabilityTest == '1','ico-usedIp pl-5':  getSubTestData.deviceReachabilityTest == '0'}">
+              <span>Device Reachability test</span></div>
+              <div [ngClass]="{'ico-failure pl-5': getSubTestData.vendorTest == '2','ico-success pl-5':  getSubTestData.vendorTest == '1','ico-usedIp pl-5':  getSubTestData.vendorTest == '0'}">
+              <span>Vendor test</span></div>
+              <div [ngClass]="{'ico-failure pl-5': getSubTestData.deviceModelTest == '2','ico-success pl-5':  getSubTestData.deviceModelTest == '1','ico-usedIp pl-5':  getSubTestData.deviceModelTest == '0'}">
+              <span>Device Model test</span></div>
+              <div [ngClass]="{'ico-failure pl-5': getSubTestData.iosVersionTest == '2','ico-success pl-5':  getSubTestData.iosVersionTest == '1','ico-usedIp pl-5':  getSubTestData.iosVersionTest == '0'}">
+              <span>IOS Version test</span></div>
+            </div>
+            <div class="subTest networkSubTest" *ngIf="networkSubTest">
+              <div [ngClass]="{'ico-failure pl-5': getSubTestData.showIpIntBriefCmd == '2','ico-success pl-5':  getSubTestData.showIpIntBriefCmd == '1','ico-usedIp pl-5':  getSubTestData.showIpIntBriefCmd == '0'}">
+                <span>Interfaces status</span></div>
+              <div [ngClass]="{'ico-failure pl-5': getSubTestData.showInterfaceCmd == '2','ico-success pl-5':  getSubTestData.showInterfaceCmd == '1','ico-usedIp pl-5':  getSubTestData.showInterfaceCmd == '0'}">
+                <span>WAN Interface</span></div>
+              <div [ngClass]="{'ico-failure pl-5': getSubTestData.showVersionCmd == '2','ico-success pl-5':  getSubTestData.showVersionCmd == '1','ico-usedIp pl-5':  getSubTestData.showVersionCmd == '0'}">
+                <span>Platform & IOS</span></div>
+              <div [ngClass]="{'ico-failure pl-5': getSubTestData.showIpBgpSummaryCmd == '2','ico-success pl-5':  getSubTestData.showIpBgpSummaryCmd == '1','ico-usedIp pl-5':  getSubTestData.showIpBgpSummaryCmd == '0'}">
+                <span>BGP neighbor</span></div>
+            </div>
+            <div class="subTest healthCheckSubTest" *ngIf="healthCheckSubTest">
+              <div [ngClass]="{'ico-failure pl-5': getSubTestData.frameLossTest == '2','ico-success pl-5':  getSubTestData.frameLossTest == '1','ico-usedIp pl-5':  getSubTestData.frameLossTest == '0'}">
+              <span>FrameLoss</span></div>
+              <div [ngClass]="{'ico-failure pl-5': getSubTestData.latencyTest == '2','ico-success pl-5':  getSubTestData.latencyTest == '1','ico-usedIp pl-5':  getSubTestData.latencyTest == '0'}">
+              <span>Latency</span></div>
+              <div [ngClass]="{'ico-failure pl-5': getSubTestData.throughputTest == '2','ico-success pl-5':  getSubTestData.throughputTest == '1','ico-usedIp pl-5':  getSubTestData.throughputTest == '0'}">
+              <span>Throughput</span></div>
+            </div>
+            </section>
+           <!-- Tooltip on mpusehover of Tests section end-->
+          <section class="progress-sec" *ngIf="ReportDetailsFlag">
+          
+          <!-- start progress -->
+          <div *ngIf="ReportDetails[0].start_test == '1'" class="success">
+            <div class="evt-box" [ngClass]="{'start-success': ReportDetails[0].start_test == '1', 
+            'start-disable': ReportDetails[0].start_test == '0',
+            'start-fail': ReportDetails[0].start_test == '2'}">Start</div>
+            <div class="circle" [ngClass]="{'back-color-green': ReportDetails[0].start_test == '1',
+            'back-color-white':ReportDetails[0].start_test == '0',
+            'back-color-red': ReportDetails[0].start_test == '2'}"></div>
+            <div class="bars"  [ngClass]="{'bar-color-green': ReportDetails[0].start_test == '1',
+            'bar-color-white mlp-50': ReportDetails[0].start_test == '0',
+            'bar-color-red mlp-50': ReportDetails[0].start_test == '2'} "></div>
+          </div>
+          <!-- <div *ngIf="ReportDetails[0].start_test == '0'" class="success">
+            <div class="evt-box start-disable">Start</div>
+            <div class="back-color-white circle"></div>
+            <div class="bar-color-white bars mlp-50"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].start_test == '2'" class="success">
+            <div class="evt-box start-fail">Start</div>
+            <div class="circle back-color-red"></div>
+            <div class="bars bar-color-red mlp-50"></div>
+          </div>
+          start progress end -->
+
+          <!-- Generate progress -->
+          <div *ngIf="ReportDetails[0].generate_config == '1'"
+            class="success">
+            <div class="evt-box generate-success"
+              (click)="getConfigratioData('generateConfig', 'View Generate Config')">Generate</div>
+            <div class="circle back-color-green"></div>
+            <div class="bars bar-color-green"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].generate_config == '0'"
+            class="success">
+            <div class="evt-box generate-disable">Generate</div>
+            <div class="back-color-white circle"></div>
+            <div class="bar-color-white bars"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].generate_config == '2'"
+            class="success">
+            <div class="evt-box generate-fail"
+            (click)="getConfigratioData('generateConfig', 'View Generate Config')">Generate</div>
+            <div class="circle back-color-red"></div>
+            <div class="bars bar-color-red"></div>
+          </div>
+          <!-- Generate progress end -->
+
+          <!-- Pre Validate progress -->
+          <div *ngIf="ReportDetails[0].application_test == '1'"
+            class="success" (mouseenter)="preSubTest=true" (mouseleave)="preSubTest=false">
+            <div class="evt-box apptest-success" (mouseover)="getValidateSubTestData('preValidate')"
+            (click)="getConfigratioData('preValidate','View Pre Validate')">Pre
+              Validate</div>
+            <div class="circle back-color-green"></div>
+            <div class="bars bar-color-green"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].application_test == '0'"
+            class="success" (mouseenter)="preSubTest=true" (mouseleave)="preSubTest=false">
+            <div class="evt-box apptest-disable" (mouseover)="getValidateSubTestData('preValidate')">Pre
+              Validate</div>
+            <div class="back-color-white circle"></div>
+            <div class="bar-color-white bars"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].application_test == '2'" 
+            class="success" (mouseenter)="preSubTest=true" (mouseleave)="preSubTest=false">
+            <div  class="evt-box apptest-fail" (mouseover)="getValidateSubTestData('preValidate')"
+            (click)="getConfigratioData('preValidate','View Pre Validate')">Pre
+              Validate</div>
+            <div class="circle back-color-red"></div>
+            <div class="bars bar-color-red"></div>
+          </div>
+          <!-- Pre Validate progress end -->
+
+          <!-- Deliver progress -->
+          <div *ngIf="ReportDetails[0].deliever_config == '1'"
+            class="success">
+            <div class="evt-box deliver-success"
+            (click)="getConfigratioData('deliverConfig','Backup & Delivery')"><span>Backup & Delivery</span></div>
+            <div class="circle back-color-green"></div>
+            <div class="bars bar-color-green"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].deliever_config == '0'"
+            class="success">
+            <div class="evt-box deliver-disable"><span>Backup & Delivery</span></div>
+            <div class="back-color-white circle"></div>
+            <div class="bar-color-white bars"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].deliever_config == '2'"
+            class="success">
+            <div class="evt-box deliver-fail"
+            (click)="getConfigratioData('deliverConfig','Backup & Delivery')"><span>Backup & Delivery</span></div>
+            <div class="circle back-color-red"></div>
+            <div class="bars bar-color-red"></div>
+          </div>
+          <!-- Deliver progress end -->
+
+          <!-- Network Test progress -->
+          
+          <div *ngIf="ReportDetails[0].network_test == '1'" class="success" (mouseenter)="networkSubTest=true" (mouseleave)="networkSubTest=false">
+            <div class="evt-box network-success" (mouseover)="getValidateSubTestData('networkTest')"
+            (click)="getConfigratioData('networkTest','View Network Test')">Network
+              Test</div>
+            <div class="circle back-color-green"></div>
+            <div class="bars bar-color-green"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].network_test == '0'" class="success" (mouseenter)="networkSubTest=true" (mouseleave)="networkSubTest=false">
+            <div class="evt-box network-disable" (mouseover)="getValidateSubTestData('networkTest')">Network
+              Test</div>
+            <div class="back-color-white circle"></div>
+            <div class="bar-color-white bars"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].network_test == '2'" class="success"  
+            (mouseenter)="networkSubTest=true">
+            <div class="evt-box network-fail" (mouseover)="getValidateSubTestData('networkTest')"
+            (click)="getConfigratioData('networkTest','View Network Test')">Network
+              Test</div>
+            <div class="circle back-color-red"></div>
+            <div class="bars bar-color-red"></div>
+          </div>
+          
+          <!-- Network Test progress end -->
+
+          <!-- health_checkup progress -->
+          <div *ngIf="ReportDetails[0].health_checkup == '1'"
+            class="success" (mouseenter)="healthCheckSubTest=true" (mouseleave)="healthCheckSubTest=false">
+            <div class="evt-box healthchk-success" (mouseover)="getValidateSubTestData('HealthTest')"
+            (click)="getConfigratioData('HealthTest','View Health Test')">Health
+              Check</div>
+            <div class="circle back-color-green"></div>
+            <div class="bars bar-color-green"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].health_checkup == '0'"
+            class="success" (mouseenter)="healthCheckSubTest=true" (mouseleave)="healthCheckSubTest=false">
+            <div class="evt-box healthchk-disable" (mouseover)="getValidateSubTestData('HealthTest')">Health
+              Check</div>
+            <div class="back-color-white circle"></div>
+            <div class="bar-color-white bars"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].health_checkup == '2'"
+            class="success" (mouseenter)="healthCheckSubTest=true" (mouseleave)="healthCheckSubTest=false">
+            <div class="evt-box healthchk-fail" (mouseover)="getValidateSubTestData('HealthTest')"
+            (click)="getConfigratioData('HealthTest','View Health Test')">Health
+              Check</div>
+            <div class="circle back-color-red"></div>
+            <div class="bars bar-color-red"></div>
+          </div>
+          <!-- health_checkup progress end -->
+
+          <!-- Report progress -->
+          <div *ngIf="ReportDetails[0].customer_report == '1'"
+            class="success" (click)="getConfigratioData('CustomerReport','Customer Report')">
+            <div class="evt-box report-success">Report</div>
+            <div class="circle back-color-green"></div>
+            <div class="bars bar-color-green width50"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].customer_report == '0'"
+            class="success">
+            <div class="evt-box report-disable">Report</div>
+            <div class="back-color-white circle"></div>
+            <div class="bar-color-white bars width50"></div>
+          </div>
+          <div *ngIf="ReportDetails[0].customer_report == '2'"
+            class="success" (click)="getConfigratioData('CustomerReport','Customer Report')">
+            <div class="evt-box report-fail">Report</div>
+            <div class="circle back-color-red"></div>
+            <div class="bars bar-color-red width50"></div>
+          </div>
+          <!-- Report progress end -->
+
+          <!--  <div>
+                        <div class="evt-box finish">Finish</div>
+                        <div class="circle"></div>
+                        <div class="bars"></div>
+                    </div> -->
+
+        </section>
+        <section class="progress-sec-pts"></section>
+      </div>
+    </div>
+    
+
+<!-- Previous Version Start -->
+<div id="prevRouterVersion" class="reportPopUp">
+     <div id="prevRouterVersionContainer" class="popUpContainer">
+  <!-- Modal content -->
+  <div class="popup-content">
+    <div id="prevRouterVersionContainerHeader" class="col-lg-6 col-lg-offset-3 popup-content-header">
+      <span class="small_logo_icon"></span> <label
+        class="report-header-style"><h4 class="fs-16">Previous Router Version</h4></label> <span
+        class="report-close-icon" (click)="closeAddPopUp('prevRouterVersion')"></span>
+    </div>
+              
+     <textarea style="resize: none;"
+      class="reportPopUpContainer col-lg-6 col-lg-offset-3"
+      disabled [(ngModel)]="getPrevdata" 
+      maxlength="1024">
+      </textarea> 
+                
+  </div>
+  </div>
+</div>
+<!-- Previous Version End -->			
+
+<!-- Diffrence in Config Start -->
+<div id="DiffConfigVersion" class="reportPopUp" style="left:5%;">
+<div style="left: 4% !important" id="DiffConfigVersionContainer" class="popUpContainer">
+  <!-- Modal content -->
+  <div class="popup-content picadiff">
+    <div id="DiffConfigVersionContainerHeader" class="col-lg-11 popup-content-header">
+      <span class="small_logo_icon"></span> <label
+        class="report-header-style"><h4 class="fs-16">View Configuration Difference</h4></label> <span
+        class="report-close-icon" (click)="closeAddPopUp('DiffConfigVersion')"></span>
+    </div>
+    <div class="IntRountingOptContainer col-lg-11 white" id="prettydiff">
+      
+         </div>       
+  </div></div>
+</div>
+<!-- Diffrence in Config End -->			
+
+<div class="col-lg-12" style="margin: -3% 0% 0% -3%;">
+    <div class="pull-right">
+      <button class="btn btn-primary ml-5" [ngClass]="{'disabled-modify' : RequestDetails[0].status == 'Success' ||  RequestDetails[0].status == 'In Progress' || RequestDetails[0].status == 'Scheduled'}">
+        <a style="text-decoration:none; color: white; " name="#" href="http://localhost:8080/C3P/#/editDashboardDetails?dashboardReq_Details={{RequestDetails[0].display_request_id}}&version={{RequestDetails[0].request_version}}">Modify</a>
+      </button>
+      <button class="btn btn-primary ml-5" [ngClass]="{'disabled-modify' : RequestDetails[0].status == 'Success' || RequestDetails[0].status == 'In Progress' || RequestDetails[0].status == 'Failure'}">
+        <a style="text-decoration:none; color: white;" ng-click="getReqScheduler('schedulePopUp', true)">Scheduler</a>
+    </button>
+      <!-- button class="btn btn-primary ml-5">
+        <a style="text-decoration:none; color: white;" (click)="getReqScheduler('schedulePopUp', true)">Scheduler</a>
+      </button>-->
+    </div>
+  </div>
+  <!-- Search Section -->
+  <div id="reportPopUp" class="reportPopUp">
+    <div id="reportPopUpContainer" class="popUpContainer">
+    <!-- Modal content -->
+    <div class="popup-content">
+      <div id="reportPopUpContainerHeader" class="col-lg-6 col-lg-offset-3 popup-content-header">
+        <span class="small_logo_icon"></span> <label
+          class="report-header-style"><h4 class="fs-16">{{report_title}}</h4></label> <span
+          class="report-close-icon" (click)="closeAddPopUp('reportPopUp')"></span>
+      </div>
+      
+      <textarea style="resize: none;" *ngIf="format == 'false' && formatColor == 'false' && !deliverConfig"
+        class="reportPopUpContainer col-lg-6 col-lg-offset-3"
+        disabled [(ngModel)]="getdata" 
+        maxlength="1024">
+                </textarea>
+                <p *ngIf="format == 'true'" [innerHTML]="getReportdata" id="reportContainer" class="reportPopUpContainer col-lg-6 col-lg-offset-3">
+                     
+                </p>
+      <pre *ngIf="formatColor == 'true'" [innerHTML]="getReportdata" id="reportContainerColorCode" class="reportPopUpContainer col-lg-6 col-lg-offset-3">
+               
+      </pre> 
+    </div>
+    </div>
+  </div>
+  
+  <div id="backupandDelivery" class="reportPopUp">
+    <div id="backupandDeliveryContainer" class="popUpContainer">
+    <!-- Modal content -->
+    <div class="popup-content">
+      <div id="backupandDeliveryContainerHeader" class="col-lg-5 col-lg-offset-3 popup-content-header">
+        <span class="small_logo_icon"></span> <label
+          class="report-header-style"><h4 class="fs-16">{{report_title}}</h4></label> <span
+          class="report-close-icon" (click)="closeAddPopUp('backupandDelivery')"></span>
+      </div>
+      
+      <div *ngIf="deliverConfig" class="IntRountingOptContainer col-lg-5 col-lg-offset-3">
+      
+      <ul class="listStyle">
+        <li><h4>Backup</h4>
+          <ul>
+            <li><h5 class="mt-5">Backup Status - {{backupStatus}} 
+              <span class="bckupStatus"
+              [ngClass]="{'bkup-success-icon': backupStatus == 'Success', 'bkup-fail-icon': backupStatus =='Failed'}"></span></h5></li>
+            <li><h5 [ngClass] = "{'disabledDiv': backupStatus == 'Failed'}" class="hoverStyle mt-5" (click)="getbackupConfig('backupConfig')">Backup Configuration</h5></li>
+          </ul>
+        </li>
+        <li class="mt-10"><h4>Configuration Delivery</h4>
+          <ul class="errorColCode">
+            <li><h5 class="mt-5">Delivery Status - {{deliveryStatus}}
+              <span class="deliveryStatus" 
+              [ngClass]="{'bkup-success-icon': deliveryStatus == 'Success', 'bkup-fail-icon': deliveryStatus =='Failed'}"></span></h5></li>
+            <h6 ng-hide="errorType == 'false'" class="mt-5">{{errorType}} : {{errorWarningMsg}}</h6>
+            <h6 ng-hide="errorType == 'false'" class=""><span [ngClass]="{'warning-msg' : errorType == 'Warning', 'error-msg' : errorType == 'Failure'}" 
+              [innerHTML]="errorRouterMessage"></span></h6>
+          </ul>
+        </li>
+        <li class="mt-10"><h4>Difference in Configuration</h4>
+          <ul>
+            <li><h5 class="hoverStyle mt-5" (click)="getConfigDiff('findDiff')">Compare Configurations</h5></li>
+          </ul>
+        </li>
+      </ul>
+        
+      </div>
+      
+    </div>
+    </div>
+  </div>
+
+  <app-schedule #callSchedule></app-schedule>
+    <!--    Page Footer Section  -->
+    <app-footer></app-footer>
+    <!--    Page Footer Section  -->
+  </div>
+</div>
+

@@ -1,0 +1,29 @@
+table {
+    border-collapse: collapse;
+    background: white;
+    table-layout: fixed;
+    width: 100%;
+  }
+  th, td {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .pane {
+    background: #eee;
+  }
+  .pane-hScroll {
+    overflow: auto;
+    width: 400px;
+    background: green;
+  }
+  .pane-vScroll {
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 200px;
+    background: red;
+  }
