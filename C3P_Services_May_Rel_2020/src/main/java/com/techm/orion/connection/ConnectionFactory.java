@@ -7,12 +7,12 @@ import java.sql.SQLException;
 public class ConnectionFactory {
     //static reference to itself
     private static ConnectionFactory instance = new ConnectionFactory();
-    public static final String URL = "jdbc:mysql://localhost:3306/RequestInfo?zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
-    public static final String USER = "root";
-    public static final String PASSWORD = "root";
+    public static final String URL = "jdbc:mysql://localhost:3306/requestinfo?zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
+    public static final String USER = "root1234";
+    public static final String PASSWORD = "root1234";
     public static final String DRIVER_CLASS = "com.mysql.jdbc.Driver"; 
     private static ConnectionFactory instance1 = new ConnectionFactory();
-    public static final String URL_TEMPLATE_DB = "jdbc:mysql://localhost:3306/Template_Schema?zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
+    //public static final String URL_TEMPLATE_DB = "jdbc:mysql://localhost:3306/Template_Schema?zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
 
     //private constructor
     private ConnectionFactory() {
@@ -35,7 +35,7 @@ public class ConnectionFactory {
         }
         return connection;
     }   
-    private Connection createConnectionToTemplateDB() {
+    /*private Connection createConnectionToTemplateDB() {
         Connection connection = null;
         try {
             connection = DriverManager.getConnection(URL_TEMPLATE_DB, USER, PASSWORD);
@@ -43,12 +43,12 @@ public class ConnectionFactory {
             System.out.println("ERROR: Unable to Connect to Database.");
         }
         return connection;
-    }   
+    }   */
      
     public static Connection getConnection() {
         return instance.createConnection();
     }
-    public static Connection getConnectionToTemplateDB() {
+   /* public static Connection getConnectionToTemplateDB() {
         return instance1.createConnectionToTemplateDB();
-    }
+    } */
 }
