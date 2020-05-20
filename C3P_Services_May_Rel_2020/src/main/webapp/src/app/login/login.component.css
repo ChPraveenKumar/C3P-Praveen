@@ -1,0 +1,60 @@
+#c3p_login {
+    position: absolute;
+    width: 300px;
+    height: 260px;
+    left: 50%;
+    top: 50%;
+    margin-left: -150px;
+    margin-top: -130px;
+}
+#c3p_login header {
+    font-size: 18px;
+    font-weight: normal;
+    color: #fff;
+    text-align: center;
+    padding-top: 85px;
+    background-image: url(../../imgs/homepage/logo.png);
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    background-size: 56px 75px;
+}
+#c3p_login .bdy {
+    width: 235px;
+    margin-left: 35px;
+}
+#c3p_login label {
+    font-size: 12px;
+    font-weight: normal;
+    color: #fff;
+}
+#c3p_login input[type="text"], #c3p_login input[type="password"] {
+    font-size: 12px;
+    font-weight: normal;
+    color: #fff;
+    background: transparent;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    border: 1px solid #3B5061;
+    padding-left: 5px;
+}
+.form-group div[class^="col"] input[type="text"] {
+    width: 99%;
+}
+#c3p_login label {
+    font-size: 12px;
+    font-weight: normal;
+    color: #fff;
+}
+#c3p_login label {
+    font-size: 12px;
+    font-weight: normal;
+    color: #fff;
+}
+#c3p_login .login {
+    background-color: #1D364C;
+    border: 0px solid transparent;
+    color: #fff;
+    padding: 3px 15px;
+}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestResult TestType="Throughput">
+ <Tests>
+ <RequestID>Request ID </RequestID>
+   <Test1 FrameSize="64">
+     <Response>
+         <TxPackets>100</TxPackets>
+	 <RxPackets>100</RxPackets>
+	 <LossPackets>0</LossPackets>
+	 <TotalRateFrames>4</TotalRateFrames>
+	 <TotalRateBps>16</TotalRateBps>
+      </Response>
+    </Test1>
+   <Test2 FrameSize="512">
+      <Response>
+         <TxPackets>100</TxPackets>
+	 <RxPackets>100</RxPackets>
+	 <LossPackets>0</LossPackets>
+	 <TotalRateFrames>2</TotalRateFrames>
+	 <TotalRateBps>8</TotalRateBps>
+      </Response>
+    </Test2>
+   <Test3 FrameSize="1518">
+      <Response>
+         <TxPackets>100</TxPackets>
+	 <RxPackets>100</RxPackets>
+	 <LossPackets>0</LossPackets>
+	 <TotalRateFrames>1</TotalRateFrames>
+	 <TotalRateBps>4</TotalRateBps>
+      </Response>
+    </Test3>
+ </Tests>
+</TestResult>

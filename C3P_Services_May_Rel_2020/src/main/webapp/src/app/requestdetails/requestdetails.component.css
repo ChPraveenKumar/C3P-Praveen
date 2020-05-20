@@ -1,0 +1,246 @@
+.db-req-dtl section .main-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+.db-req-dtl section {
+    color: #535353;
+    padding: 10px 40px;
+    border-bottom: 1px solid #ccc;
+    margin-left: 0;
+    margin-right: 0;
+}
+.db-req-dtl section .main-title {
+    font-size: 16px;
+    font-weight: bold;
+}
+.db-req-dtl label[class^="col"] {
+    padding-left: 0;
+}
+.db-req-dtl label, .db-req-dtl input {
+    font-size: 12px;
+    color: #0e0e0e;
+    font-weight: normal;
+}
+.db-req-dtl section input[type="text"] {
+    padding: 0px 0;
+    border: 0px solid transparent;
+    color: #535353;
+    margin-top: -4.5px;
+}
+.db-req-dtl section.no-border {
+    border-bottom: 1px solid transparent;
+}
+.db-config-status .progress-sec {
+    margin-top: 30px;
+    text-align: center;
+}
+.db-config-status .progress-sec>div.preSubTest {
+    left: 29%;
+}
+.db-config-status .progress-sec>div.subTest {
+    height: auto;
+    text-align: left;
+    border: 1px solid rgba(77, 100, 140, 0.86);
+    padding: 5px;
+    background-color: rgba(252, 248, 227, 0.44);
+    position: absolute;
+    margin-top: -88px;
+    border-radius: 5px;
+    color: rgba(0, 0, 0, 0.9);
+}
+.db-config-status .progress-sec>div {
+    display: inline-block;
+    position: relative;
+    height: 100px;
+    margin-left: -3px;
+    overflow: hidden;
+}
+.db-config-status .progress-sec>div.networkSubTest {
+    left: 46.5%;
+}
+.db-config-status .progress-sec .evt-box.start-success {
+    background: url(../../imgs/dashboard_details/Success/Start.png) center 10px
+ no-repeat;
+    font-weight: bold;
+    color: #3f3f3f;
+}
+
+.db-config-status .progress-sec .success .evt-box {
+    cursor: pointer;
+}
+.db-config-status .progress-sec .evt-box {
+    width: 70px;
+    height: 70px;
+    padding-top: 50px;
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    border: 1px solid #ccc;
+    display: inline-block;
+    /* margin-left: 1.829268292682927%; */
+    /* margin-right: 1.829268292682927%; */
+    margin-left: 15px;
+    margin-right: 15px;
+}
+.db-config-status .progress-sec .success .circle {
+    background-color: #8DCE50;
+}
+.db-config-status .progress-sec .circle {
+    position: absolute;
+    left: 50%;
+    margin-left: -5px;
+    bottom: 0;
+    margin-top: 15px;
+    width: 10px;
+    height: 10px;
+    border: 1px solid #ccc;
+    background-color: transparent;
+    border-radius: 50%;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    z-index: 5;
+    background-color: #fff;
+}
+.back-color-green {
+    background-color: #8DCE50 !important;
+}
+.db-config-status .progress-sec>div:first-child .bars {
+    left: 50%;
+}
+.db-config-status .progress-sec .success .bars {
+    background: linear-gradient(90deg, #8DCE50 100%, #fff 100%);
+}
+.db-config-status .progress-sec .bars {
+    position: absolute;
+    bottom: 3px;
+    width: 100%;
+    height: 3px;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+}
+.bar-color-green {
+    background: linear-gradient(90deg, #8dce50 100%, #fff 100%) !important;
+}
+.db-config-status .progress-sec .evt-box.start-disable {
+    background: url(../../imgs/dashboard_details/Disabled/start.png) center
+ 10px no-repeat;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.bar-color-white {
+    background: linear-gradient(90deg, white 100%, #fff 100%) !important;
+}
+.db-config-status .progress-sec .evt-box.start-fail {
+    background: url(../../imgs/dashboard_details/Failure/start.png) center 10px
+ no-repeat;
+}
+.back-color-red {
+    background-color: red !important;
+}
+.bar-color-red {
+    background: linear-gradient(90deg, red 100%, #fff 100%) !important;
+}
+.db-config-status .progress-sec .evt-box.generate-success {
+    background: url(../../imgs/dashboard_details/Success/genrate.png) center
+ 10px no-repeat;
+    font-weight: bold;
+    color: #3f3f3f;
+}
+.db-config-status .progress-sec .evt-box.generate-disable {
+    background: url(../../imgs/dashboard_details/Disabled/genrate.png) center
+ 10px no-repeat;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.db-config-status .progress-sec .evt-box.generate-fail {
+    background: url(../../imgs/dashboard_details/Failure/genrate.png) center
+ 10px no-repeat;
+}
+.db-config-status .progress-sec .evt-box.apptest-success {
+    background: url(../../imgs/dashboard_details/Success/App-Test.png) center
+ 10px no-repeat;
+    font-weight: bold;
+    color: #3f3f3f;
+}
+.db-config-status .progress-sec .evt-box.apptest-disable {
+    background: url(../../imgs/dashboard_details/Disabled/Apptest.png) center
+ 10px no-repeat;
+}
+.db-config-status .progress-sec .evt-box.apptest-fail {
+    background: url(../../imgs/dashboard_details/Failure/apptest.png) center
+ 10px no-repeat;
+}
+.db-config-status .progress-sec .evt-box.deliver-success {
+    background: url(../../imgs/dashboard_details/Success/Deliver.png) center
+ 10px no-repeat;
+    font-weight: bold;
+    color: #3f3f3f;
+}
+.db-config-status .progress-sec .evt-box.deliver-disable {
+    background: url(../../imgs/dashboard_details/Disabled/deliver.png) center
+ 10px no-repeat;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.db-config-status .progress-sec .evt-box.deliver-fail {
+    background: url(../../imgs/dashboard_details/Failure/deliver.png) center
+ 10px no-repeat;
+}
+.db-config-status .progress-sec .evt-box.network-success {
+    background: url(../../imgs/dashboard_details/Success/Network.png) center
+ 10px no-repeat;
+    font-weight: bold;
+    color: #3f3f3f;
+}
+.db-config-status .progress-sec .evt-box.network-disable {
+    background: url(../../imgs/dashboard_details/Disabled/network.png) center
+ 10px no-repeat;
+}
+.db-config-status .progress-sec .evt-box.network-fail {
+    background: url(../../imgs/dashboard_details/Failure/network.png) center
+ 10px no-repeat;
+}
+.db-config-status .progress-sec .evt-box.healthchk-success {
+    background: url(../../imgs/dashboard_details/Success/HealthCheck.png)
+ center 10px no-repeat;
+    font-weight: bold;
+    color: #3f3f3f;
+}
+.db-config-status .progress-sec .evt-box.healthchk-disable {
+    background: url(../../imgs/dashboard_details/Disabled/Health_check.png)
+ center 10px no-repeat;
+}
+.db-config-status .progress-sec .evt-box.healthchk-fail {
+    background: url(../../imgs/dashboard_details/Failure/healthcheck.png)
+ center 10px no-repeat;
+}
+.db-config-status .progress-sec .evt-box.report-success {
+    background: url(../../imgs/dashboard_details/Success/report.png) center
+ 10px no-repeat;
+    font-weight: bold;
+    color: #3f3f3f;
+}
+.db-config-status .progress-sec .evt-box.report-disable {
+    background: url(../../imgs/dashboard_details/Disabled/report.png) center
+ 10px no-repeat;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+.db-config-status .progress-sec .evt-box.report-fail {
+    background: url(../../imgs/dashboard_details/Failure/report.png) center
+ 10px no-repeat;
+}
+#prettydiff {
+    text-align: center;
+    font-size: 10px;
+}
+#prettydiff {
+    text-align: center;
+    font-size: 10px;
+}
+#prettydiff {
+    height: 500px;
+}
+#prettydiff {
+    height: 500px;
+}

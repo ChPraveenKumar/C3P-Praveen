@@ -1,0 +1,29 @@
+ 
+<div class="container main-pg">
+  <!--    Page Header Section     -->
+  <app-header></app-header>
+    <div class="pg-bdy">
+      <!-- Breadcrumb Section -->
+      <ul class="breadcrumb">
+        <li><a href="#">C3P</a></li>
+        <li class="active">Report</li>
+      </ul>
+    <!--    Page Body Section    -->
+    <div class="panel form-inline border-top mt-5 lbl-normal cmp-normal">
+      <div class="row">
+        <div class="col-lg-6" [chart]="pieChartContainer" id="pieChartContainer"></div>
+        <div class="col-lg-6" [chart]="columnChartContainer" id="columnChartContainer"></div>
+        <!-- <div class="col-lg-6" id="donutChartContainer"></div>--> 
+      </div> 
+      <!-- <hr style="border-bottom:2px solid #999" >
+      <div class="row">
+        
+      </div> -->
+      
+    </div>
+  </div>
+  <!--    Page Footer Section  -->
+  <app-footer></app-footer>
+  <!--    Page Footer Section  -->
+</div>
+

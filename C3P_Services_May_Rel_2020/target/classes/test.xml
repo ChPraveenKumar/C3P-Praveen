@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RequestList>
+      <Request>
+            <orderID>OID1234</orderID>
+            
+            <customerInfo>
+                  <customer>Shoppers Drug Mart</customer>
+                  <siteid>SDM08-0554</siteid>
+                  <region>CANADA</region>
+                  <service>MIS</service>
+                  <networkType>Legacy</networkType>
+            </customerInfo>
+            
+            <deviceInfo>
+                  <vendor>CISCO</vendor>
+                  <deviceType>Router</deviceType>
+                  <model>7200</model>
+                  <os>IOS</os>
+                  <osVersion>12.4</osVersion>
+                  <hostname>SDM08-MB0554N-CE2</hostname>
+                  <managementIp>30.0.0.2</managementIp>
+            </deviceInfo>
+            
+            <interfaceRoutingInfo>
+            <enablePassword>6666</enablePassword>
+            <banner>BANNER</banner>
+            <wanInterface>
+                  <wanInterfaceName>Serial1/0</wanInterfaceName>
+                  <wanInterfaceIP>10.10.10.11</wanInterfaceIP>
+                  <wanInterfaceSubnetMask>255.255.255.252</wanInterfaceSubnetMask>
+                  <description>description</description>
+                  <encapsulation>PPP</encapsulation>
+                  <speed></speed>
+                  <bandwidth>256</bandwidth>
+            </wanInterface>
+            
+            <loopbackInterface>
+                  <loopbackIPaddress>10.10.10.4</loopbackIPaddress>
+                  <loopInterfaceName>Loopback0</loopInterfaceName>
+                  <loopbackSubnetMask>255.255.255.255</loopbackSubnetMask>
+            </loopbackInterface>
+            
+            <vpn>
+                  <vrfName>VRF</vrfName>
+            </vpn>
+            
+            <snmp>
+                  <snmpHostAddress>140.0.0.1</snmpHostAddress>
+                  <snmpString>TEST</snmpString>
+            </snmp>
+            
+            <routing>
+                  <routingProtocol>BGP</routingProtocol>
+                  <asnumber>65000</asnumber>
+                  <networkIP>10.10.10.1</networkIP>
+                  <networkMask>255.255.255.252</networkMask>
+                  <neighbour1Ip>10.10.10.0</neighbour1Ip>
+                  <neighbour1As>65000</neighbour1As>
+                  <neighbour2Ip>10.10.10.2</neighbour2Ip>
+                  <neighbour2As>65000</neighbour2As>
+            </routing>
+            
+            <lanInterface>
+            	<lanInterfaceIP>172.16.65.165</lanInterfaceIP>
+            	<lanInterfaceSubnetMask>255.255.255.252</lanInterfaceSubnetMask>
+            	<lanInterfaceDescription>Lan Interface Description</lanInterfaceDescription>
+            	<lanInterfaceType>GigabitEthernet2/0</lanInterfaceType>
+            </lanInterface>
+            </interfaceRoutingInfo>
+      </Request>
+      
+            <Request>
+            <orderID>OID5678</orderID>
+            
+            <customerInfo>
+                  <customer>ABC INC</customer>
+                  <siteid>ABC68-1557</siteid>
+                  <region>US</region>
+                  <service>MIS</service>
+                  <networkType>Legacy</networkType>
+            </customerInfo>
+            
+            <deviceInfo>
+                  <vendor>CISCO</vendor>
+                  <deviceType>Router</deviceType>
+                  <model>7200</model>
+                  <os>IOS</os>
+                  <osVersion>12.4</osVersion>
+                  <hostname>ABC68-MB0554N-CE2</hostname>
+                  <managementIp>30.0.0.2</managementIp>
+            </deviceInfo>
+            
+            <interfaceRoutingInfo>
+            <enablePassword>6666</enablePassword>
+            <banner>BANNER</banner>
+            <wanInterface>
+                  <wanInterfaceName>Serial1/0</wanInterfaceName>
+                  <wanInterfaceIP>10.10.10.11</wanInterfaceIP>
+                  <wanInterfaceSubnetMask>255.255.255.252</wanInterfaceSubnetMask>
+                  <description>description</description>
+                  <encapsulation>PPP</encapsulation>
+                  <speed></speed>
+                  <bandwidth>256</bandwidth>
+            </wanInterface>
+            
+            <loopbackInterface>
+                  <loopbackIPaddress>10.10.10.4</loopbackIPaddress>
+                  <loopInterfaceName>Loopback0</loopInterfaceName>
+                  <loopbackSubnetMask>255.255.255.255</loopbackSubnetMask>
+            </loopbackInterface>
+            
+            <vpn>
+                  <vrfName>VRF</vrfName>
+            </vpn>
+            
+            <snmp>
+                  <snmpHostAddress>140.0.0.1</snmpHostAddress>
+                  <snmpString>TEST</snmpString>
+            </snmp>
+            
+            <routing>
+                  <routingProtocol>BGP</routingProtocol>
+                  <asnumber>65000</asnumber>
+                  <networkIP>10.10.10.1</networkIP>
+                  <networkMask>255.255.255.252</networkMask>
+                  <neighbour1Ip>10.10.10.0</neighbour1Ip>
+                  <neighbour1As>65000</neighbour1As>
+                  <neighbour2Ip>10.10.10.2</neighbour2Ip>
+                  <neighbour2As>65000</neighbour2As>
+            </routing>
+            <lanInterface>
+            	<lanInterfaceIP>172.16.65.165</lanInterfaceIP>
+            	<lanInterfaceSubnetMask>255.255.255.252</lanInterfaceSubnetMask>
+            	<lanInterfaceDescription>Lan Interface Description2</lanInterfaceDescription>
+            	<lanInterfaceType>GigabitEthernet2/0</lanInterfaceType>
+            </lanInterface>
+            </interfaceRoutingInfo>
+      </Request>
+      <Request>
+            <orderID>OID8888</orderID>
+            
+            <customerInfo>
+                  <customer>Shoppers Drug Mart</customer>
+                  <siteid>SDM08-0554</siteid>
+                  <region>US</region>
+                  <service>MIS</service>
+                  <networkType>Legacy</networkType>
+            </customerInfo>
+            
+            <deviceInfo>
+                  <vendor>CISCO</vendor>
+                  <deviceType>Router</deviceType>
+                  <model>7200</model>
+                  <os>IOS</os>
+                  <osVersion>12.4</osVersion>
+                  <hostname>SDM08-MB0554N-CE2</hostname>
+                  <managementIp>30.0.0.2</managementIp>
+            </deviceInfo>
+            
+            <interfaceRoutingInfo>
+            <enablePassword>6666</enablePassword>
+            <banner>BANNER</banner>
+            <wanInterface>
+                  <wanInterfaceName>Serial1/0</wanInterfaceName>
+                  <wanInterfaceIP>10.10.10.11</wanInterfaceIP>
+                  <wanInterfaceSubnetMask>255.255.255.252</wanInterfaceSubnetMask>
+                  <description>description</description>
+                  <encapsulation>PPP</encapsulation>
+                  <speed></speed>
+                  <bandwidth>256</bandwidth>
+            </wanInterface>
+            
+            <loopbackInterface>
+                  <loopbackIPaddress>10.10.10.4</loopbackIPaddress>
+                  <loopInterfaceName>Loopback0</loopInterfaceName>
+                  <loopbackSubnetMask>255.255.255.255</loopbackSubnetMask>
+            </loopbackInterface>
+            
+            <vpn>
+                  <vrfName>VRF</vrfName>
+            </vpn>
+            
+            <snmp>
+                  <snmpHostAddress>140.0.0.1</snmpHostAddress>
+                  <snmpString>TEST</snmpString>
+            </snmp>
+            
+            <routing>
+                  <routingProtocol>BGP</routingProtocol>
+                  <asnumber>65000</asnumber>
+                  <networkIP>10.10.10.1</networkIP>
+                  <networkMask>255.255.255.252</networkMask>
+                  <neighbour1Ip>10.10.10.0</neighbour1Ip>
+                  <neighbour1As>65000</neighbour1As>
+                  <neighbour2Ip>10.10.10.2</neighbour2Ip>
+                  <neighbour2As>65000</neighbour2As>
+            </routing>
+            
+            <lanInterface>
+            	<lanInterfaceIP>172.16.65.165</lanInterfaceIP>
+            	<lanInterfaceSubnetMask>255.255.255.252</lanInterfaceSubnetMask>
+            	<lanInterfaceDescription>Lan Interface Description</lanInterfaceDescription>
+            	<lanInterfaceType>GigabitEthernet2/0</lanInterfaceType>
+            </lanInterface>
+            </interfaceRoutingInfo>
+      </Request>
+</RequestList>
