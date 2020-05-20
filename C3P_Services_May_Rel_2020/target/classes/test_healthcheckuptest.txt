@@ -1,1 +1,0 @@
-Health Checkup command ran successfully..
