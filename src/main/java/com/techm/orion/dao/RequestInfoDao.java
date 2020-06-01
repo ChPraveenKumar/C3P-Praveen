@@ -31,18 +31,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import javax.inject.Inject;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
 
 import com.techm.orion.beans.RequestInfo;
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
-import com.techm.orion.entitybeans.CertificationTestResultEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestRules;
@@ -70,15 +66,13 @@ import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.pojo.UserValidationResultDetailPojo;
 import com.techm.orion.repositories.AlertInformationRepository;
-import com.techm.orion.repositories.CertificationTestResultRepository;
 import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.RequestDetailsBackUpAndRestoreRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.rest.NetworkTestValidation;
-import com.techm.orion.service.CertificationTestResultService;
 import com.techm.orion.webService.GetAllDetailsService;
 
-@Controller
+@Component
 public class RequestInfoDao {
 	private Connection connection;
 	Statement statement;
@@ -92,9 +86,6 @@ public class RequestInfoDao {
 
 	@Autowired
 	RequestInfoDetailsRepositories reository;
-	
-	@Inject
-	CertificationTestResultService certificationTestService;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -1139,7 +1130,7 @@ public class RequestInfoDao {
 
 	public final List<RequestInfo> getAllRequestInfoData() throws IOException {
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM RequestInfoSO";
+		String query = "SELECT * FROM requestinfoso";
 		ResultSet rs = null;
 		RequestInfoSO requestInfoObj = null;
 		List<RequestInfoSO> requestInfoList1 = null;
@@ -1251,7 +1242,7 @@ public class RequestInfoDao {
 
 	public boolean addRequestIDtoWebserviceInfo(String alphanumeric_req_id, String request_version) {
 		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO webserviceInfo(start_test,generate_config,deliever_config,health_checkup,network_test,application_test,customer_report,filename,latencyResultRes,alphanumeric_req_id,version,pre_health_checkup,others_test)"
+		String sql = "INSERT INTO webserviceinfo(start_test,generate_config,deliever_config,health_checkup,network_test,application_test,customer_report,filename,latencyResultRes,alphanumeric_req_id,version,pre_health_checkup,others_test)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		try {
@@ -1386,7 +1377,7 @@ public class RequestInfoDao {
 
 	public List<RequestInfoSO> getCertificationtestvalidation(String value) {
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM RequestInfoSO where alphanumeric_req_id =?";
+		String query = "SELECT * FROM requestinfoso where alphanumeric_req_id =?";
 
 		ResultSet rs = null;
 
@@ -1428,7 +1419,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String query1 = null;
-		query = "update webserviceInfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ? ";
+		query = "update webserviceinfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ? ";
 		PreparedStatement preparedStmt;
 		try {
 			preparedStmt = connection.prepareStatement(query);
@@ -1853,7 +1844,7 @@ public class RequestInfoDao {
 
 	public final UserValidationResultDetailPojo checkUsersDB(String username, String password) throws IOException {
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM Users";
+		String query = "SELECT * FROM users";
 		ResultSet rs = null;
 		UserPojo flags = null;
 		List<UserPojo> InfoList1 = null;
@@ -1951,7 +1942,7 @@ public class RequestInfoDao {
 
 		UserPojo userList = new UserPojo();
 		try {
-			String query = "SELECT * FROM RouterUserDeviceManagementTable";
+			String query = "SELECT * FROM routeruserdevicemanagementtable";
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
 
@@ -1974,7 +1965,7 @@ public class RequestInfoDao {
 	public boolean addNewUserToDB(String username, String pass) {
 		connection = ConnectionFactory.getConnection();
 
-		String sql = "INSERT INTO Users(user_name,user_password,user_status)" + "VALUES(?,?,?)";
+		String sql = "INSERT INTO users(user_name,user_password,user_status)" + "VALUES(?,?,?)";
 
 		try {
 			PreparedStatement ps = connection.prepareStatement(sql);
@@ -2004,7 +1995,7 @@ public class RequestInfoDao {
 
 		UserPojo userList = new UserPojo();
 		try {
-			String query = "SELECT * FROM RouterUserDeviceManagementTable";
+			String query = "SELECT * FROM routeruserdevicemanagementtable";
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
 
@@ -3910,7 +3901,7 @@ public class RequestInfoDao {
 	public final String getLogedInUserDetail() throws IOException {
 
 		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM RequestInfo.users WHERE user_status=?";
+		String query1 = "SELECT * FROM users WHERE user_status=?";
 		ResultSet rs = null;
 		UserPojo user = null;
 		try {
@@ -3938,7 +3929,7 @@ public class RequestInfoDao {
 	public final boolean resetUsersDB(String username) {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "update RequestInfo.users set user_status=0 WHERE user_name=?";
+		String query1 = "update users set user_status=0 WHERE user_name=?";
 		try {
 			PreparedStatement ps = connection.prepareStatement(query1);
 
@@ -4194,7 +4185,7 @@ public class RequestInfoDao {
 	public boolean addCertificationTestForRequest(String alphanumeric_req_id, String request_version,
 			String Device_Reachability_Test) {
 		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO CertificationTestValidation(Device_Reachability_Test,Vendor_Test,Device_Model_Test,IOSVersion_Test,PreValidation_Test,ShowIpIntBrief_Cmd,ShowInterface_Cmd,ShowVersion_Cmd,Network_Test,showIpBgpSummary_Cmd,Throughput_Test,FrameLoss_Test,Latency_Test,HealthCheck_Test,alphanumeric_req_id,version,suggestionForFailure)"
+		String sql = "INSERT INTO certificationtestvalidation(Device_Reachability_Test,Vendor_Test,Device_Model_Test,IOSVersion_Test,PreValidation_Test,ShowIpIntBrief_Cmd,ShowInterface_Cmd,ShowVersion_Cmd,Network_Test,showIpBgpSummary_Cmd,Throughput_Test,FrameLoss_Test,Latency_Test,HealthCheck_Test,alphanumeric_req_id,version,suggestionForFailure)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		String suggestion = "NA";
 		if (Device_Reachability_Test.equalsIgnoreCase("2")) {
@@ -4242,7 +4233,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String suggestion = "NA";
-		query = "update CertificationTestValidation set Vendor_Test = ?,IOSVersion_Test = ?,Device_Model_Test  = ?,suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set Vendor_Test = ?,IOSVersion_Test = ?,Device_Model_Test  = ?,suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
 		if (vendorflag == 2) {
 			suggestion = "Please select the correct Vendor from C3P GUI";
 		}
@@ -4269,34 +4260,6 @@ public class RequestInfoDao {
 		}
 	}
 
-	
-	public void updatePrevalidationValues(String requestId, String version, String vendorActual, String vendorGui, String osActual, String osGui, String modelActual, String modelGui) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-		String suggestion = "NA";
-		query = "update CertificationTestValidation set actual_vendor = ?,gui_vendor = ?,actual_os_version  = ?,gui_os_version =?,actual_model=?,gui_model=? where alphanumeric_req_id = ? and version = ? ";
-		
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
-			preparedStmt.setString(1, vendorActual);
-			preparedStmt.setString(2, vendorGui);
-			preparedStmt.setString(3, osActual);
-			preparedStmt.setString(4, osGui);
-			preparedStmt.setString(5, modelActual);
-			preparedStmt.setString(6, modelGui);
-
-			preparedStmt.setString(7, requestId);
-			preparedStmt.setString(8, version);
-			preparedStmt.executeUpdate();
-		} catch (SQLException e) {
-
-			System.err.println(e.getMessage());
-		}
-	}
-
-	
-	
 	public CertificationTestPojo getCertificationTestFlagData(String requestId, String version, String TestType) {
 		connection = ConnectionFactory.getConnection();
 		CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
@@ -4307,7 +4270,7 @@ public class RequestInfoDao {
 		String flagFordelieverConfig = "";
 		Map<String, String> hmap = new HashMap<String, String>();
 
-		query = "select * from  CertificationTestValidation where alphanumeric_req_id = ? and version = ? ";
+		query = "select * from  certificationtestvalidation where alphanumeric_req_id = ? and version = ? ";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestId);
@@ -4365,7 +4328,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 
-		query = "update CertificationTestValidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -4387,7 +4350,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 
-		query = "update CertificationTestValidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -4409,11 +4372,11 @@ public class RequestInfoDao {
 		String query = null;
 
 		if (type.equalsIgnoreCase("frameloss")) {
-			query = "update CertificationTestValidation set frameloss = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set frameloss = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (type.equalsIgnoreCase("latency")) {
-			query = "update CertificationTestValidation set latency = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set latency = ? where alphanumeric_req_id = ? and version = ? ";
 		} else {
-			query = "update CertificationTestValidation set throughput = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set throughput = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 		PreparedStatement preparedStmt;
 		try {
@@ -4433,7 +4396,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 
-		query = "update CertificationTestValidation set ShowIpIntBrief_Cmd = ?,ShowInterface_Cmd = ?,ShowVersion_Cmd  = ?,showIpBgpSummary_Cmd=? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set ShowIpIntBrief_Cmd = ?,ShowInterface_Cmd = ?,ShowVersion_Cmd  = ?,showIpBgpSummary_Cmd=? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -4674,7 +4637,7 @@ public class RequestInfoDao {
 	public final List<ConfigurationDataValuePojo> getALLVendorData() throws IOException {
 		connection = ConnectionFactory.getConnection();
 
-		String query = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name='c3p_vendor'";
+		String query = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_vendor'";
 
 		EIPAMPojo pojo;
 		ResultSet rs = null;
@@ -4707,7 +4670,7 @@ public class RequestInfoDao {
 	public final List<ConfigurationDataValuePojo> getALLDeviceTypeData() throws IOException {
 		connection = ConnectionFactory.getConnection();
 
-		String query = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name='c3p_device_type'";
+		String query = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_device_type'";
 
 		EIPAMPojo pojo;
 		ResultSet rs = null;
@@ -4740,7 +4703,7 @@ public class RequestInfoDao {
 	public final List<String> getALLModelData(String vendor, String deviceType) throws IOException {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name=? AND component_make=?";
+		String query1 = "SELECT * FROM c3p_data_configuration_table where component_name=? AND component_make=?";
 		List<String> list = new ArrayList<String>();
 		ResultSet rs = null;
 		try {
@@ -4770,7 +4733,7 @@ public class RequestInfoDao {
 	public final List<String> getALLOSData(String make, String deviceType) throws IOException {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name='c3p_os_type'";
+		String query1 = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_os_type'";
 		List<String> list = new ArrayList<String>();
 		ResultSet rs = null;
 		try {
@@ -4799,7 +4762,7 @@ public class RequestInfoDao {
 	public final List<String> getALLOSVersionData(String os, String model) throws IOException {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name='c3p_os_version'";
+		String query1 = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_os_version'";
 		List<String> list = new ArrayList<String>();
 		List<String> listtoSend = new ArrayList<String>();
 
@@ -5005,7 +4968,7 @@ public class RequestInfoDao {
 	public final List<ConfigurationDataValuePojo> getALLRegionData() throws IOException {
 		connection = ConnectionFactory.getConnection();
 
-		String query = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name='c3p_region'";
+		String query = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_region'";
 
 		EIPAMPojo pojo;
 		ResultSet rs = null;
@@ -5038,7 +5001,7 @@ public class RequestInfoDao {
 	public final List<ErrorValidationPojo> getAllErrorCodeFromRouter() throws IOException {
 		connection = ConnectionFactory.getConnection();
 
-		String query = "select * from RequestInfo.errorcodedata where router_error_message is not null";
+		String query = "select * from errorcodedata where router_error_message is not null";
 		ResultSet rs = null;
 		List<ErrorValidationPojo> list = null;
 		try {
@@ -5375,7 +5338,7 @@ public class RequestInfoDao {
 
 		try {
 			if (TestType.equalsIgnoreCase("DeviceTest")) {
-				query = "Select * from DeviceLocked_ManagementIP  where management_ip = ?";
+				query = "Select * from devicelocked_managementip  where management_ip = ?";
 				pst = connection.prepareStatement(query);
 				// pst.setString(1, requestId);
 				pst.setString(1, managementIp);
@@ -5413,7 +5376,7 @@ public class RequestInfoDao {
 		PreparedStatement preparedStmt = null;
 		String query = null;
 		try {
-			query = "INSERT INTO DeviceLocked_ManagementIP(management_ip,locked_by,flag)" + "VALUES(?,?,?)";
+			query = "INSERT INTO devicelocked_managementip(management_ip,locked_by,flag)" + "VALUES(?,?,?)";
 
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, managementIp);
@@ -5442,7 +5405,7 @@ public class RequestInfoDao {
 		PreparedStatement preparedStmt = null;
 		String query = null;
 		try {
-			query = "delete from DeviceLocked_ManagementIP where management_ip = ? and locked_by = ? ";
+			query = "delete from devicelocked_managementip where management_ip = ? and locked_by = ? ";
 
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, managementIp);
@@ -5535,7 +5498,7 @@ public class RequestInfoDao {
 	public String getUserTaskIdForRequest(String requestId, String version) {
 		String usertaskid = null;
 		connection = ConnectionFactory.getConnection();
-		String query2 = "select * from  camundaHistory where history_requestId=? and history_versionId=?";
+		String query2 = "select * from  camundahistory where history_requestId=? and history_versionId=?";
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
 			pst.setString(1, requestId);
@@ -6210,7 +6173,7 @@ public class RequestInfoDao {
 			String key) throws IOException {
 
 		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM RequestInfo.CreateSSHConfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
+		String query1 = "SELECT * FROM createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
@@ -6282,7 +6245,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String suggestion = "Please check the connectivity.Issue while performing Health check test";
-		query = "update CertificationTestValidation set suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -6301,7 +6264,7 @@ public class RequestInfoDao {
 
 	public String updateTimeForScheduledRequest(String requestId, String version) throws SQLException {
 		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM RequestInfo.requestinfoso WHERE alphanumeric_req_id=? AND request_version=?";
+		String query1 = "SELECT * FROM requestinfoso WHERE alphanumeric_req_id=? AND request_version=?";
 		ResultSet rs = null;
 		String result = "false";
 
@@ -7153,53 +7116,52 @@ public class RequestInfoDao {
 	/*
 	 * Owner: Ruchita Salvi Module: Test Strategey
 	 */
-    @SuppressWarnings("unchecked")
-    public org.json.simple.JSONArray getDynamicTestResultCustomerReport(String requestId, String version,
-                  String testtype) {
-           org.json.simple.JSONObject res = new org.json.simple.JSONObject();
-           org.json.simple.JSONArray array = new org.json.simple.JSONArray();
+	@SuppressWarnings("unchecked")
+	public org.json.simple.JSONArray getDynamicTestResultCustomerReport(String requestId, String version,
+			String testtype) {
+		org.json.simple.JSONObject res = new org.json.simple.JSONObject();
+		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
 
-           if (!version.contains(".")) {
-                  version = version + ".0";
-           }
-           connection = ConnectionFactory.getConnection();
-           String query = "";
-           ResultSet rs = null;
-           PreparedStatement preparedStmt;
+		if (!version.contains(".")) {
+			version = version + ".0";
+		}
+		connection = ConnectionFactory.getConnection();
+		String query = "";
+		ResultSet rs = null;
+		PreparedStatement preparedStmt;
 
-           query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
-           try {
-                  preparedStmt = connection.prepareStatement(query);
-                  preparedStmt.setString(1, requestId);
-                  preparedStmt.setString(2, testtype);
-                  rs = preparedStmt.executeQuery();
-                  if (rs != null) {
-                        while (rs.next()) {
-                               org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
+		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
+		try {
+			preparedStmt = connection.prepareStatement(query);
+			preparedStmt.setString(1, requestId);
+			preparedStmt.setString(2, testtype);
+			rs = preparedStmt.executeQuery();
+			if (rs != null) {
+				while (rs.next()) {
+					org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
 
-                               obj.put("status", rs.getString("TestResult"));
-                               obj.put("CollectedValue", rs.getString("CollectedValue"));
-                               obj.put("EvaluationCriteria", rs.getString("EvaluationCriteria"));
+					obj.put("status", rs.getString("TestResult"));
+					obj.put("CollectedValue", rs.getString("CollectedValue"));
+					obj.put("EvaluationCriteria", rs.getString("EvaluationCriteria"));
 
-                               obj.put("testname", rs.getString("testName").substring(15).concat("_").concat(rs.getString("data_type"))
-                                             .concat("_").concat(rs.getString("ResultText")));
-                               obj.put("notes", rs.getString("notes"));
-                               obj.put("dataType", rs.getString("data_type"));
-                               obj.put("keyword", rs.getString("CollectedValue"));
+					obj.put("testname", rs.getString("testName").concat("_").concat(rs.getString("data_type"))
+							.concat("_").concat(rs.getString("ResultText")));
+					obj.put("notes", rs.getString("notes"));
+					obj.put("dataType", rs.getString("data_type"));
+					obj.put("keyword", rs.getString("CollectedValue"));
 
-                               obj.put("evaluationStatus", "NA");
-                               array.add(obj);
-                        }
-                  }
+					obj.put("evaluationStatus", "NA");
+					array.add(obj);
+				}
+			}
 
-           } catch (SQLException e) {
-                  // TODO Auto-generated catch block
-                  e.printStackTrace();
-           }
-           res.put("custom", array);
-           return array;
-    }
-
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		res.put("custom", array);
+		return array;
+	}
 
 	/*
 	 * Owner: Ruchita Salvi Module: Test Strategey
@@ -7212,7 +7174,6 @@ public class RequestInfoDao {
 
 		CertificationTestPojo certificationTestPojo3 = new CertificationTestPojo();
 
-		CertificationTestResultEntity resultEnt=new CertificationTestResultEntity();
 		org.json.simple.JSONArray prevalidationArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONObject reachabilityObj = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject iosVersion = new org.json.simple.JSONObject();
@@ -7223,10 +7184,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONArray networkAuditArray = new org.json.simple.JSONArray();
 		certificationTestPojo1 = getCertificationTestFlagData(request.getRequestId(), request.getVersion_report(),
 				"preValidate");
-		certificationTestService=new CertificationTestResultService();
 
-		resultEnt=certificationTestService.getRecordByRequestId(request.getRequestId(), request.getVersion_report());
-		
 		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
 			reachabilityObj.put("testname", "Device Reachability test");
 			reachabilityObj.put("status", "Failed");
@@ -7866,9 +7824,9 @@ public class RequestInfoDao {
 
 		connection = ConnectionFactory.getConnection();
 		String query = "SELECT * FROM webserviceinfo where alphanumeric_req_id =?";
+
 		ResultSet rs = null;
 		boolean deliver_status = false;
-		
 
 		PreparedStatement pst = null;
 
@@ -7881,16 +7839,11 @@ public class RequestInfoDao {
 			if (rs != null) {
 				while (rs.next()) {
 
-					int deleveryConfig = rs.getInt("deliever_config");
-					if(deleveryConfig==1) {
-						deliver_status = true;
-					}else if(deleveryConfig==2) {
-						deliver_status = false;
-					}
+					deliver_status = rs.getBoolean("deliever_config");
 
 				}
 			}
-		}  catch (SQLException e) {
+		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -8230,7 +8183,6 @@ public class RequestInfoDao {
 
 					java.sql.Timestamp timestampTimeForScheduled = new java.sql.Timestamp(parsedDate.getTime());
 
-					//requestEntity.setSceheduledTime(timestampTimeForScheduled);
 					requestEntity.setSceheduledTime(timestampTimeForScheduled);
 					requestEntity.setRequestTypeFlag("S");
 					/* ps.setString(37,TimeZ); *//* Added for TimeZ */
@@ -8432,453 +8384,4 @@ public class RequestInfoDao {
 
 	
 	}
-	
-	public List checkForDeviceLock(String requestId, String managementIp,
-			String TestType) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-
-		ResultSet rs = null;
-		PreparedStatement pst = null;
-		List deviceLockList = new ArrayList<>();
-
-		try {
-			if (TestType.equalsIgnoreCase("DeviceTest")) {
-				query = "Select * from DeviceLocked_ManagementIP";
-				pst = connection.prepareStatement(query);
-				
-
-				rs = pst.executeQuery();
-				while (rs.next()) {
-					
-					requestId = rs.getString("locked_by");
-					deviceLockList.add(requestId);
-				
-				}
-			} 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
-		}
-		return deviceLockList;
-	}
-	public String deleteForDeviceLock(String locked_by) {
-
-		connection = ConnectionFactory.getConnection();
-		String query = null, result = null;
-
-		ResultSet rs = null;
-		PreparedStatement pst = null;
-		boolean devicelocked = false;
-
-		try {
-
-			query = "delete from DeviceLocked_ManagementIP where locked_by = ?";
-			pst = connection.prepareStatement(query);
-
-			// pst.setString(1, requestId);
-			pst.setString(1, locked_by);
-
-			pst.executeUpdate();
-			result = "Success";
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
-		}
-		return result;
-
-	}
-	
-	public org.json.simple.JSONObject getStatusForBackUpRequestCustomerReport(RequestInfoPojo request) {
-
-		org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
-		CertificationTestPojo certificationTestPojo1 = new CertificationTestPojo();
-
-		org.json.simple.JSONArray prevalidationArray = new org.json.simple.JSONArray();
-		org.json.simple.JSONObject reachabilityObj = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject iosVersion = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject deviceModel = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject backUpStatus = new org.json.simple.JSONObject();
-		String model = null, vendor = null, requestId = null, deliveryStatus = null;
-
-		certificationTestPojo1 = getCertificationTestFlagData(request.getAlphanumericReqId(), Double.toString(request.getRequestVersion()),
-				"preValidate");
-
-		requestId = request.getAlphanumericReqId();
-
-		connection = ConnectionFactory.getConnection();
-//		String query = "SELECT * FROM RequestInfoSO where alphanumeric_req_id =?";
-		String query1 = "SELECT * FROM webserviceinfo where alphanumeric_req_id =?";
-
-		ResultSet  rs1 = null;
-
-		PreparedStatement  pst1 = null;
-
-		try {
-			RequestInfoEntity findAllByAlphanumericReqId = reository.findByAlphanumericReqId(requestId);
-			if (findAllByAlphanumericReqId != null) {
-					model = findAllByAlphanumericReqId.getModel();
-					vendor = findAllByAlphanumericReqId.getVendor();
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		try {
-			pst1 = connection.prepareStatement(query1);
-			pst1.setString(1, requestId);
-
-			rs1 = pst1.executeQuery();
-
-			if (rs1 != null) {
-				while (rs1.next()) {
-					deliveryStatus = rs1.getString("deliever_config");
-				}
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(statement);
-			DBUtil.close(connection);
-		}
-
-		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
-			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Failed");
-			reachabilityObj.put("outcome", "");
-			reachabilityObj.put("notes", "N/A");
-
-		}
-		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("1")) {
-			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Passed");
-			reachabilityObj.put("outcome", "");
-			reachabilityObj.put("notes", "N/A");
-		}
-
-		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("2")) {
-			deviceModel.put("testname", "Device Model");
-			deviceModel.put("status", "Failed");
-			deviceModel.put("outcome", model);
-			deviceModel.put("notes", "N/A");
-		}
-		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("1")) {
-			deviceModel.put("testname", "Device Model");
-			deviceModel.put("status", "Passed");
-			deviceModel.put("outcome", model);
-			deviceModel.put("notes", "N/A");
-		}
-		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("2")) {
-			vendorTest.put("testname", "Vendor Test");
-			vendorTest.put("status", "Failed");
-			vendorTest.put("outcome", vendor);
-			vendorTest.put("notes", "N/A");
-		}
-		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("1")) {
-			vendorTest.put("testname", "Vendor Test");
-			vendorTest.put("status", "Passed");
-			vendorTest.put("outcome", vendor);
-			vendorTest.put("notes", "N/A");
-		}
-
-		if (deliveryStatus.equals("1")) {
-			backUpStatus.put("backupstatus", "Success");
-		} else {
-			backUpStatus.put("backupstatus", "Failed");
-		}
-		prevalidationArray.add(vendorTest);
-		prevalidationArray.add(deviceModel);
-
-		prevalidationArray.add(reachabilityObj);
-		prevalidationArray.add(backUpStatus);
-
-		obj.put("Prevalidation", prevalidationArray);
-		return obj;
-	
-	}
-	
-	public org.json.simple.JSONObject getStatusForCustomerReport(RequestInfoPojo request) {
-
-		org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
-		CertificationTestPojo certificationTestPojo1 = new CertificationTestPojo();
-		CertificationTestPojo certificationTestPojo2 = new CertificationTestPojo();
-
-		CertificationTestPojo certificationTestPojo3 = new CertificationTestPojo();
-		CertificationTestResultEntity resultEnt=new CertificationTestResultEntity();
-		org.json.simple.JSONArray prevalidationArray = new org.json.simple.JSONArray();
-		org.json.simple.JSONObject reachabilityObj = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject iosVersion = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject deviceModel = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
-		NetworkTestValidation networkTestValidation = new NetworkTestValidation();
-		org.json.simple.JSONArray othersArray = new org.json.simple.JSONArray();
-		org.json.simple.JSONArray networkAuditArray = new org.json.simple.JSONArray();
-		certificationTestPojo1 = getCertificationTestFlagData(request.getAlphanumericReqId(), Double.toString(request.getRequestVersion()),
-				"preValidate");
-
-		certificationTestService=new CertificationTestResultService();
-		resultEnt=certificationTestService.getRecordByRequestId(request.getAlphanumericReqId(), Double.toString(request.getRequestVersion()));
-		
-		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
-			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Failed");
-			reachabilityObj.put("outcome", "");
-			reachabilityObj.put("notes", "N/A");
-		
-
-		}
-		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("1")) {
-			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Passed");
-			reachabilityObj.put("outcome", "");
-			reachabilityObj.put("notes", "N/A");
-		}
-		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
-			iosVersion.put("testname", "OS");
-			iosVersion.put("status", "Failed");
-			iosVersion.put("outcome", "");
-			iosVersion.put("notes", "N/A");
-			iosVersion.put("CollectedValue", resultEnt.getGuiOsVersion());
-			iosVersion.put("EvaluationCriteria", resultEnt.getActualOsVersion());
-		}
-		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("1")) {
-			iosVersion.put("testname", "OS");
-			iosVersion.put("status", "Passed");
-			iosVersion.put("outcome", "");
-			iosVersion.put("notes", "N/A");
-			iosVersion.put("CollectedValue", resultEnt.getGuiOsVersion());
-			iosVersion.put("EvaluationCriteria", resultEnt.getActualOsVersion());
-		}
-		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("2")) {
-			deviceModel.put("testname", "Device Model");
-			deviceModel.put("status", "Failed");
-			deviceModel.put("outcome", "");
-			deviceModel.put("notes", "N/A");
-			deviceModel.put("CollectedValue", resultEnt.getGuiModel());
-			deviceModel.put("EvaluationCriteria", resultEnt.getActualModel());
-		}
-		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("1")) {
-			deviceModel.put("testname", "Device Model");
-			deviceModel.put("status", "Passed");
-			deviceModel.put("outcome", "");
-			deviceModel.put("notes", "N/A");
-			deviceModel.put("CollectedValue", resultEnt.getGuiModel());
-			deviceModel.put("EvaluationCriteria", resultEnt.getActualModel());
-		}
-		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("2")) {
-			vendorTest.put("testname", "Vendor Test");
-			vendorTest.put("status", "Failed");
-			vendorTest.put("outcome", "");
-			vendorTest.put("notes", "N/A");
-			vendorTest.put("CollectedValue", resultEnt.getGuiVendor());
-			vendorTest.put("EvaluationCriteria", resultEnt.getGuiVendor());
-		}
-		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("1")) {
-			vendorTest.put("testname", "Vendor Test");
-			vendorTest.put("status", "Passed");
-			vendorTest.put("outcome", "");
-			vendorTest.put("notes", "N/A");
-			vendorTest.put("CollectedValue", resultEnt.getGuiVendor());
-			vendorTest.put("EvaluationCriteria", resultEnt.getGuiVendor());
-		}
-		prevalidationArray.add(vendorTest);
-		prevalidationArray.add(deviceModel);
-		prevalidationArray.add(iosVersion);
-		prevalidationArray.add(reachabilityObj);
-
-		org.json.simple.JSONArray networkArray = new org.json.simple.JSONArray();
-
-		org.json.simple.JSONObject networkIfObj = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject networkPlatformIOS = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject waninterface = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject bgpneighbour = new org.json.simple.JSONObject();
-
-		certificationTestPojo2 = getCertificationTestFlagData(request.getAlphanumericReqId(), Double.toString(request.getRequestVersion()),
-				"networkTest");
-		if (certificationTestPojo2.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
-			networkIfObj.put("testname", "Network Interface Status");
-			networkIfObj.put("status", "Passed");
-			networkIfObj.put("outcome", "");
-			networkIfObj.put("notes", "N/A");
-		}
-		if (certificationTestPojo2.getShowInterfaceCmd().equalsIgnoreCase("1")) {
-			waninterface.put("testname", "Wan Interface");
-			waninterface.put("status", "Passed");
-			waninterface.put("outcome", "");
-			waninterface.put("notes", "N/A");
-		}
-		if (certificationTestPojo2.getShowVersionCmd().equalsIgnoreCase("1")) {
-			networkPlatformIOS.put("testname", "Network Platform IOS");
-			networkPlatformIOS.put("status", "Passed");
-			networkPlatformIOS.put("outcome", "");
-			networkPlatformIOS.put("notes", "N/A");
-		}
-		if (certificationTestPojo2.getShowIpBgpSummaryCmd().equalsIgnoreCase("1")) {
-			bgpneighbour.put("testname", "BGP Neighbour");
-			bgpneighbour.put("status", "Passed");
-			bgpneighbour.put("outcome", "");
-			bgpneighbour.put("notes", "N/A");
-		}
-		networkArray.add(bgpneighbour);
-		networkArray.add(waninterface);
-		networkArray.add(networkPlatformIOS);
-		networkArray.add(networkIfObj);
-
-		org.json.simple.JSONArray healthArray = new org.json.simple.JSONArray();
-
-		org.json.simple.JSONObject throughputObj = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject latencyObj = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject FrameLossObj = new org.json.simple.JSONObject();
-
-		certificationTestPojo3 = getCertificationTestFlagData(request.getAlphanumericReqId(),Double.toString(request.getRequestVersion()),
-				"HealthTest");
-		if (null != certificationTestPojo3.getThroughput() && certificationTestPojo3.getThroughput() != "") {
-			throughputObj.put("testname", "Throughput");
-			throughputObj.put("status", "Passed");
-			throughputObj.put("outcome", certificationTestPojo3.getThroughput());
-			throughputObj.put("notes", "N/A");
-		} else {
-			throughputObj.put("testname", "Throughput");
-			throughputObj.put("status", "Passed");
-			throughputObj.put("outcome", "-1");
-			throughputObj.put("notes", "N/A");
-		}
-
-		if (null != certificationTestPojo3.getLatency() && certificationTestPojo3.getLatency() != "") {
-			latencyObj.put("testname", "Latency");
-			latencyObj.put("status", "Passed");
-			latencyObj.put("outcome", certificationTestPojo3.getLatency());
-			latencyObj.put("notes", "N/A");
-		} else {
-
-			latencyObj.put("testname", "Latency");
-			latencyObj.put("status", "Passed");
-			latencyObj.put("outcome", "-1");
-			latencyObj.put("notes", "N/A");
-		}
-
-		if (null != certificationTestPojo3.getFrameLoss() && certificationTestPojo3.getFrameLoss() != "") {
-			FrameLossObj.put("testname", "Frameloss");
-			FrameLossObj.put("status", "Passed");
-			FrameLossObj.put("outcome", certificationTestPojo3.getFrameLoss());
-			FrameLossObj.put("notes", "N/A");
-		} else {
-			FrameLossObj.put("testname", "Frameloss");
-			FrameLossObj.put("status", "Passed");
-			FrameLossObj.put("outcome", "-1");
-			FrameLossObj.put("notes", "N/A");
-		}
-		healthArray.add(FrameLossObj);
-		healthArray.add(latencyObj);
-		healthArray.add(throughputObj);
-
-		org.json.simple.JSONArray dynamicTestResultArray = new org.json.simple.JSONArray();
-		dynamicTestResultArray = getDynamicTestResultCustomerReport(request.getAlphanumericReqId(), Double.toString(request.getRequestVersion()),
-				"Network Test");
-
-		if (dynamicTestResultArray.size() > 0) {
-			for (int i = 0; i < dynamicTestResultArray.size(); i++) {
-				networkArray.add(dynamicTestResultArray.get(i));
-			}
-		}
-
-		org.json.simple.JSONArray dynamicTestResultArray1 = new org.json.simple.JSONArray();
-		dynamicTestResultArray1 = getDynamicTestResultCustomerReport(request.getAlphanumericReqId(),
-				Double.toString(request.getRequestVersion()), "Health Check");
-
-		if (dynamicTestResultArray1.size() > 0) {
-			for (int i = 0; i < dynamicTestResultArray1.size(); i++) {
-				healthArray.add(dynamicTestResultArray1.get(i));
-			}
-		}
-
-		org.json.simple.JSONArray dynamicTestResultArray2 = new org.json.simple.JSONArray();
-		dynamicTestResultArray2 = getDynamicTestResultCustomerReport(request.getAlphanumericReqId(),
-				Double.toString(request.getRequestVersion()), "Device Prevalidation");
-
-		if (dynamicTestResultArray2.size() > 0) {
-			for (int i = 0; i < dynamicTestResultArray2.size(); i++) {
-				prevalidationArray.add(dynamicTestResultArray2.get(i));
-			}
-		}
-
-		org.json.simple.JSONArray dynamicTestResultArray3 = new org.json.simple.JSONArray();
-		dynamicTestResultArray3 = getDynamicTestResultCustomerReport(request.getAlphanumericReqId(),
-				Double.toString(request.getRequestVersion()), "Others");
-
-		if (dynamicTestResultArray3.size() > 0) {
-			for (int i = 0; i < dynamicTestResultArray3.size(); i++) {
-				othersArray.add(dynamicTestResultArray3.get(i));
-			}
-		}
-		org.json.simple.JSONArray dynamicTestResultArray4 = new org.json.simple.JSONArray();
-		dynamicTestResultArray4 = getDynamicTestResultCustomerReport(request.getAlphanumericReqId(),
-				Double.toString(request.getRequestVersion()), "Network Audit");
-
-		if (dynamicTestResultArray4.size() > 0) {
-			for (int i = 0; i < dynamicTestResultArray4.size(); i++) {
-				networkAuditArray.add(dynamicTestResultArray4.get(i));
-			}
-		}
-		obj.put("Prevalidation", prevalidationArray);
-		obj.put("Network", networkArray);
-		obj.put("Health_Check", healthArray);
-		obj.put("Others", othersArray);
-		obj.put("NetworkAudit", networkAuditArray);
-		return obj;
-	
-	}
-	
-	public CertificationTestResultEntity findCertificationTestResultEntityByRequestID(String requestID,String version)
-	{
-		
-		CertificationTestResultEntity ent=new CertificationTestResultEntity();
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM certificationtestvalidation WHERE alphanumeric_req_id=? AND version=?";
-		ResultSet rs = null;
-		String result = "false";
-
-		try {
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
-			ps.setString(1, requestID);
-			ps.setString(2, version);
-
-			rs = ps.executeQuery();
-
-			while (rs.next()) {
-
-				ent.setActualModel(rs.getString("actual_model"));
-				ent.setActualOsVersion(rs.getString("actual_os_version"));
-				ent.setActualVendor(rs.getString("actual_vendor"));
-				ent.setGuiModel(rs.getString("gui_model"));
-				ent.setGuiOsVersion(rs.getString("gui_os_version"));
-				ent.setGuiVendor(rs.getString("gui_vendor"));
-
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(rs);
-
-			DBUtil.close(connection);
-		}
-		return ent;
-	}
-
 }
