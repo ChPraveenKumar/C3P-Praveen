@@ -30,7 +30,7 @@ public class RequestSchedulerDao {
 		PreparedStatement preparedStmt = null;
 		String query = null;
 		try{
-			query = "INSERT INTO ScheduledRequestHistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
+			query = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
 					+ "VALUES(?,?,?,?,?)";
 			
 			preparedStmt = connection.prepareStatement(query);
@@ -88,7 +88,7 @@ public class RequestSchedulerDao {
 		{
 			version=version+".0";
 		}
-		query="Select * from ScheduledRequestHistory  where RequestID = ?  ORDER BY id DESC";
+		query="Select * from scheduledrequesthistory  where RequestID = ?  ORDER BY id DESC";
 		ResultSet rs = null;
 		PreparedStatement pst = null;
 		
@@ -164,7 +164,7 @@ public class RequestSchedulerDao {
 			pst.setString(4, version);
 			pst.executeUpdate();
 			
-			queryInsert = "INSERT INTO ScheduledRequestHistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
+			queryInsert = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
 					+ "VALUES(?,?,?,?,?)";
 			
 			pst = connection.prepareStatement(queryInsert);
@@ -217,7 +217,7 @@ public class RequestSchedulerDao {
 					pst.setString(3, version);
 					pst.executeUpdate();
 			
-			queryInsert = "INSERT INTO ScheduledRequestHistory(RequestID,version,Status,Last_Execution_Time)"
+			queryInsert = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Last_Execution_Time)"
 					+ "VALUES(?,?,?,?)";
 			
 			pst = connection.prepareStatement(queryInsert);
@@ -357,7 +357,7 @@ public class RequestSchedulerDao {
 			
 			pst.executeUpdate();
 			
-			query = "delete from MisArPeSO where request_info_id = ? ";
+			query = "delete from misarpeso where request_info_id = ? ";
 			
 			
 			pst = connection.prepareStatement(query);
@@ -369,7 +369,7 @@ public class RequestSchedulerDao {
 			pst.executeUpdate();
 			
 			
-			query = "delete from DeviceInterfaceSO where request_info_id = ? ";
+			query = "delete from deviceinterfaceso where request_info_id = ? ";
 			
 			
 			pst = connection.prepareStatement(query);
@@ -427,7 +427,7 @@ public class RequestSchedulerDao {
 	{
 		String processId=null;
 		connection = ConnectionFactory.getConnection();
-		String query="Select history_processId from camundaHistory where history_requestId=? and history_versionId=?";
+		String query="Select history_processId from camundahistory where history_requestId=? and history_versionId=?";
 		ResultSet rs = null;
 		PreparedStatement pst=null;
 		
@@ -460,7 +460,7 @@ public class RequestSchedulerDao {
 	public void deleteProcessIdFromCamundaHistory(String processId)
 	{
 		connection = ConnectionFactory.getConnection();
-		String query="delete from camundaHistory where history_processId = ?";
+		String query="delete from camundahistory where history_processId = ?";
 		ResultSet rs = null;
 		PreparedStatement pst=null;
 		
@@ -492,7 +492,7 @@ public class RequestSchedulerDao {
 		PreparedStatement preparedStmt = null;
 		String query = null;
 		try{
-			query = "INSERT INTO ScheduledRequestHistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
+			query = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
 					+ "VALUES(?,?,?,?,?)";
 			
 			preparedStmt = connection.prepareStatement(query);

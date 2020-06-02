@@ -253,7 +253,7 @@ public class TemplateManagementDao {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
 		String status = null;
-		String query2 = "select * from  TemplateConfig_basic_details where TempId = ? and templateVersion = ?";
+		String query2 = "select * from  templateconfig_basic_details where TempId = ? and templateVersion = ?";
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
 			pst.setString(1, templateid);
@@ -281,7 +281,7 @@ public class TemplateManagementDao {
 	public String getUserTaskIdForTemplate(String templateid, String version) {
 		String userTaskid = null;
 		connection = ConnectionFactory.getConnection();
-		String query2 = "select * from  camundaHistory where history_requestId=? and history_versionId=?";
+		String query2 = "select * from  camundahistory where history_requestId=? and history_versionId=?";
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
 			pst.setString(1, templateid);
@@ -303,7 +303,7 @@ public class TemplateManagementDao {
 			String status, String approverCommet) {
 		int res = 0;
 		connection = ConnectionFactory.getConnection();
-		String query2 = "update TemplateConfig_basic_details set templateStatus = ?, comment_section= concat(?, comment_section), updatedDate=? where TempId = ? and templateVersion = ? ";
+		String query2 = "update templateconfig_basic_details set templateStatus = ?, comment_section= concat(?, comment_section), updatedDate=? where TempId = ? and templateVersion = ? ";
 		try {
 
 			java.util.Date dt = new java.util.Date();
@@ -341,9 +341,9 @@ public class TemplateManagementDao {
 		connection = ConnectionFactory.getConnection();
 		String query2 = null;
 		if (username.equalsIgnoreCase("Admin")) {
-			query2 = "SELECT * FROM TemplateConfig_basic_details where templateStatus=? or templateStatus=?";
+			query2 = "SELECT * FROM templateconfig_basic_details where templateStatus=? or templateStatus=?";
 		} else if (username.equalsIgnoreCase("suser")) {
-			query2 = "SELECT * FROM TemplateConfig_basic_details where templateStatus=?";
+			query2 = "SELECT * FROM templateconfig_basic_details where templateStatus=?";
 		}
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
@@ -1562,7 +1562,7 @@ public class TemplateManagementDao {
 		PreparedStatement preparedStmt = null;
 		String query = null;
 		try {
-			query = "select tempCmd.Name,tempCmd.Command_Value,tempactive.active,tempactive.TempId FROM TemplateConfig_Feature_Command tempCmd INNER JOIN TemplateConfig_Feature_Active tempactive on tempCmd.Name = tempactive.Feature_Selection where tempactive.TempId=?";
+			query = "select tempCmd.Name,tempCmd.Command_Value,tempactive.active,tempactive.TempId FROM templateconfig_feature_command tempCmd INNER JOIN templateconfig_feature_active tempactive on tempCmd.Name = tempactive.Feature_Selection where tempactive.TempId=?";
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, templateId);
 
@@ -1610,7 +1610,7 @@ public class TemplateManagementDao {
 					if (checked.get(i).toString().equalsIgnoreCase("true"))
 
 					{
-						query = "select * from  TemplateConfig_Feature_Command where Name = ? ";
+						query = "select * from  templateconfig_feature_command where Name = ? ";
 						preparedStmt = connection.prepareStatement(query);
 						preparedStmt.setString(1, names.get(i).toString());
 						// preparedStmt.setString(2, parentValue);
@@ -1633,7 +1633,7 @@ public class TemplateManagementDao {
 
 				for (int j = 0; j < names.size(); j++) {
 					if (checked.get(j).toString().equalsIgnoreCase("true")) {
-						queryUpdate = "update TemplateConfig_Feature_Active set Active = true where TempId = ? and Feature_Selection = ? ";
+						queryUpdate = "update templateconfig_feature_active set Active = true where TempId = ? and Feature_Selection = ? ";
 						try {
 							PreparedStatement preparedStatement = connection
 									.prepareStatement(queryUpdate);
@@ -1649,7 +1649,7 @@ public class TemplateManagementDao {
 							System.err.println(e.getMessage());
 						}
 					} else {
-						queryUpdate = "update TemplateConfig_Feature_Active set Active = false where TempId = ? and Feature_Selection = ? ";
+						queryUpdate = "update templateconfig_feature_active set Active = false where TempId = ? and Feature_Selection = ? ";
 						try {
 							PreparedStatement preparedStatement = connection
 									.prepareStatement(queryUpdate);
@@ -1698,7 +1698,7 @@ public class TemplateManagementDao {
 			/*
 			 * if(!Value.equalsIgnoreCase("Routing Basic Configuration")) {
 			 */
-			query = "select * from  TemplateConfig_Feature_Command where Parent_name = ? ";
+			query = "select * from  templateconfig_feature_command where Parent_name = ? ";
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, Value);
 			// preparedStmt.setString(2, parentValue);
@@ -1719,7 +1719,7 @@ public class TemplateManagementDao {
 			}
 
 			if (i == 0) {
-				query1 = "select * from  TemplateConfig_Feature_Command where Name = ? ";
+				query1 = "select * from  templateconfig_feature_command where Name = ? ";
 				preparedStmt = connection.prepareStatement(query1);
 				preparedStmt.setString(1, Value);
 				// preparedStmt.setString(2, parentValue);
@@ -1738,7 +1738,7 @@ public class TemplateManagementDao {
 					}
 				}
 
-				queryUpdate = "update TemplateConfig_Feature_Active set Active = true where TempId = ? and Feature_Selection = ? ";
+				queryUpdate = "update templateconfig_feature_active set Active = true where TempId = ? and Feature_Selection = ? ";
 
 				try {
 					PreparedStatement preparedStatement = connection
@@ -1754,7 +1754,7 @@ public class TemplateManagementDao {
 					System.err.println(e.getMessage());
 				}
 			} else {
-				queryUpdate = "update TemplateConfig_Feature_Active set Active = true where TempId = ? and Feature_Selection IN (select name from TemplateConfig_Feature_Command where Parent_name=?)";
+				queryUpdate = "update templateconfig_feature_active set Active = true where TempId = ? and Feature_Selection IN (select name from TemplateConfig_Feature_Command where Parent_name=?)";
 
 				try {
 					PreparedStatement preparedStatement = connection
@@ -1818,14 +1818,14 @@ public class TemplateManagementDao {
 		List<GetTemplateMngmntActiveDataPojo> templateMngmntActiveList = null;
 		GetTemplateMngmntActiveDataPojo getTemplateMngmntActivePojo = null;
 		try {
-			query = "select * from  TemplateConfig_Feature_Command where Parent_name = ? ";
+			query = "select * from  templateconfig_feature_command where Parent_name = ? ";
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, Value);
 			// preparedStmt.setString(2, parentValue);
 			rs = preparedStmt.executeQuery();
 			if (rs == null) {
 
-				queryUpdate = "update TemplateConfig_ActiveFeature set Active = false where TempId = ? and Feature_Selection = ? ";
+				queryUpdate = "update templateconfig_activefeature set Active = false where TempId = ? and Feature_Selection = ? ";
 
 				try {
 					PreparedStatement preparedStatement = connection
@@ -1841,7 +1841,7 @@ public class TemplateManagementDao {
 					System.err.println(e.getMessage());
 				}
 			} else {
-				queryUpdate = "update TemplateConfig_Feature_Active set Active = false where TempId = ? and Feature_Selection IN (select name from TemplateConfig_Feature_Command where Parent_name=?)";
+				queryUpdate = "update templateconfig_feature_active set Active = false where TempId = ? and Feature_Selection IN (select name from templateconfig_feature_command where Parent_name=?)";
 
 				try {
 					PreparedStatement preparedStatement = connection
@@ -1887,7 +1887,7 @@ public class TemplateManagementDao {
 		List<TemplateLeftPanelJSONModel> mainList = new ArrayList<TemplateLeftPanelJSONModel>();
 
 		try {
-			query = "SELECT * FROM TemplateConfig_Feature_Command command LEFT OUTER JOIN TemplateConfig_Feature_Active active ON (command.Name = active.Feature_Selection AND active.TempId = ?);";
+			query = "SELECT * FROM templateconfig_feature_command command LEFT OUTER JOIN templateconfig_feature_active active ON (command.Name = active.Feature_Selection AND active.TempId = ?);";
 
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, templateId);
@@ -2000,7 +2000,7 @@ public class TemplateManagementDao {
 		DuplicateDataException exception = null;
 		boolean isPresent = false;
 		if (templateId == null) {
-			String query2 = "SELECT * FROM TemplateConfig_basic_details";
+			String query2 = "SELECT * FROM templateconfig_basic_details";
 			try {
 				Statement pst = connection.createStatement();
 				ResultSet rs1 = pst.executeQuery(query2);
@@ -2064,9 +2064,9 @@ public class TemplateManagementDao {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
 		String tempid = null, oldversion = null;
-		String query1 = "INSERT INTO TemplateConfig_basic_details(TempId,TempVendor,TempDeviceType,TempModel,TempDeviceOs,TempOsVersion,TempRegion,createdDate,templateVersion,templateParentVersion,updatedDate,comment_section,createdby,templateApprover)"
+		String query1 = "INSERT INTO templateconfig_basic_details(TempId,TempVendor,TempDeviceType,TempModel,TempDeviceOs,TempOsVersion,TempRegion,createdDate,templateVersion,templateParentVersion,updatedDate,comment_section,createdby,templateApprover)"
 				+ "VALUES(?,?,?,?,?,?,?,now(),?,?,now(),?,?,?)";
-		String query2 = "SELECT * FROM TemplateConfig_basic_details";
+		String query2 = "SELECT * FROM templateconfig_basic_details";
 		
 			tempid = oldTemplateId;
 			oldVersion= oldVersion;
@@ -2379,7 +2379,7 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		TemplateBasicConfigurationPojo pojo;
 		connection = ConnectionFactory.getConnection();
-		String query2 = "SELECT * FROM TemplateConfig_basic_details";
+		String query2 = "SELECT * FROM templateconfig_basic_details";
 		try {
 			Statement pst = connection.createStatement();
 			ResultSet rs1 = pst.executeQuery(query2);
@@ -2513,27 +2513,27 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		String query = null;
 		if (key.equalsIgnoreCase("Template ID")) {
-			query = "SELECT * FROM Requestinfo.TemplateConfig_basic_details WHERE TempId LIKE ? and templateVersion LIKE ?";
+			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId LIKE ? and templateVersion LIKE ?";
 		} else if (key.equalsIgnoreCase("Device Type")) {
-			query = "SELECT * FROM Requestinfo.TemplateConfig_basic_details WHERE TempDeviceType LIKE ?";
+			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempDeviceType LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Vendor")) {
-			query = "SELECT * FROM Requestinfo.TemplateConfig_basic_details WHERE TempVendor LIKE ?";
+			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempVendor LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Model")) {
-			query = "SELECT * FROM Requestinfo.TemplateConfig_basic_details WHERE TempModel LIKE ?";
+			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempModel LIKE ?";
 
 		} else if (key.equalsIgnoreCase("OS")) {
-			query = "SELECT * FROM Requestinfo.TemplateConfig_basic_details WHERE TempDeviceOs LIKE ?";
+			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempDeviceOs LIKE ?";
 
 		} else if (key.equalsIgnoreCase("OS Version")) {
-			query = "SELECT * FROM Requestinfo.TemplateConfig_basic_details WHERE TempOsVersion LIKE ?";
+			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempOsVersion LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Status")) {
-			query = "SELECT * FROM Requestinfo.TemplateConfig_basic_details WHERE templateStatus LIKE ?";
+			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE templateStatus LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Approver")) {
-			query = "SELECT * FROM Requestinfo.TemplateConfig_basic_details WHERE templateApprover LIKE ?";
+			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE templateApprover LIKE ?";
 
 		}
 		ResultSet rs = null;
@@ -2603,7 +2603,7 @@ public class TemplateManagementDao {
 		List<String> list = new ArrayList<String>();
 		connection = ConnectionFactory.getConnection();
 		String query = null;
-		query = "select * from TemplateConfig_Feature_Active where TempId=?";
+		query = "select * from templateconfig_feature_active where TempId=?";
 		ResultSet rs = null;
 		PreparedStatement pst = null;
 		try {
@@ -2689,7 +2689,7 @@ public class TemplateManagementDao {
 		String query = null;
 		String templateCreated = "";
 		try {
-			query = "select * FROM TemplateConfig_Feature_Command tempCmd INNER JOIN TemplateConfig_Feature_Active tempactive on tempCmd.Name = tempactive.Feature_Selection where tempactive.TempId=? and tempactive.active=true";
+			query = "select * FROM templateconfig_feature_Command tempCmd INNER JOIN templateconfig_feature_active tempactive on tempCmd.Name = tempactive.Feature_Selection where tempactive.TempId=? and tempactive.active=true";
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, tempId);
 
@@ -2793,9 +2793,9 @@ public class TemplateManagementDao {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
 		String tempid = null;
-		String query1 = "SELECT * FROM TemplateConfig_Feature_Active where TempId=?";
+		String query1 = "SELECT * FROM templateconfig_feature_active where TempId=?";
 		String query2 = null;
-		String query3 = "SELECT * FROM TemplateConfig_Feature_Position where TempId=?";
+		String query3 = "SELECT * FROM templateconfig_feature_position where TempId=?";
 		Map<String, String> resultmap = new HashMap<String, String>();
 		Statement pst = null;
 		PreparedStatement pst2 = null;
@@ -2816,7 +2816,7 @@ public class TemplateManagementDao {
 			ps.setString(1, tempID + "_V" + OldVersion);
 			// pst = connection.createStatement();
 			rs = ps.executeQuery();
-			query2 = "INSERT INTO TemplateConfig_Feature_Active(TempId,Feature_Selection,Active,Disabled)"
+			query2 = "INSERT INTO templateconfig_feature_active(TempId,Feature_Selection,Active,Disabled)"
 					+ "VALUES(?,?,?,?)";
 			pst2 = connection.prepareStatement(query2);
 			while (rs.next()) {
@@ -2833,7 +2833,7 @@ public class TemplateManagementDao {
 			ResultSet rs1 = null;
 			rs1 = ps2.executeQuery();
 			query2 = null;
-			query2 = "INSERT INTO TemplateConfig_Feature_Position(TempId,Feature_Selection,Block_Position)"
+			query2 = "INSERT INTO templateconfig_feature_position(TempId,Feature_Selection,Block_Position)"
 					+ "VALUES(?,?,?)";
 			pst2 = connection.prepareStatement(query2);
 			while (rs1.next()) {
@@ -2864,7 +2864,7 @@ public class TemplateManagementDao {
 
 		String queryTransactionCommandList = "Delete from c3p_template_transaction_command_list where command_template_id IN (?)";
 
-		String queryBasicDetails = "Delete from TemplateConfig_basic_details where TempId=? and templateVersion=?";
+		String queryBasicDetails = "Delete from templateconfig_basic_details where TempId=? and templateVersion=?";
 
 		String queryMasterFeatureList = "Delete from c3p_template_master_feature_list where command_type=?";
 
@@ -3161,7 +3161,7 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> templateBscCnfgList = new ArrayList<TemplateBasicConfigurationPojo>();
 		TemplateBasicConfigurationPojo templateBscCnfgPojo;
 		connection = ConnectionFactory.getConnection();
-		getTempalteByDateSortedQuery = "SELECT * FROM TemplateConfig_basic_details WHERE TempId = ?  ORDER BY updatedDate DESC";
+		getTempalteByDateSortedQuery = "SELECT * FROM templateconfig_basic_details WHERE TempId = ?  ORDER BY updatedDate DESC";
 		try{
 			PreparedStatement pst = connection.prepareStatement(getTempalteByDateSortedQuery);
 			pst.setString(1, templateId);
