@@ -113,7 +113,7 @@ public class CamundaServiceCreateReq {
        }
 	
 	public void deleteProcessID(String processId) throws IOException, JSONException {
-		String query = "http://localhost:8080/engine-rest/process-instance/"+processId;
+		String query = "https://ms-shared-nad.techmahindra.com/000000000035913-platfrm-ip-c3p-camunda-development/engine-rest/process-instance/"+processId;
 		
 		URL url = new URL(query);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
