@@ -3,9 +3,6 @@ package com.techm.orion.entitybeans;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.techm.orion.entitybeans.TestDetail;
-import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
-
 
 public class TestStrategeyVersioningJsonModel {
 
@@ -26,6 +23,7 @@ public class TestStrategeyVersioningJsonModel {
 	private String osVersion=null;
 	private String region=null;
 	private String createdOn;
+	private String networkType;
 
 
 
@@ -125,5 +123,10 @@ public class TestStrategeyVersioningJsonModel {
 	public void setEnabled(boolean isEnabled) {
 		this.isEnabled = isEnabled;
 	}
-
+	public String getNetworkType() {
+		return networkType;
+	}
+	public void setNetworkType(String networkType) {
+		this.networkType = networkType;
+	}
 }

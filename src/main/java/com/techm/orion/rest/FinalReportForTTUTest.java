@@ -1027,7 +1027,13 @@ public class FinalReportForTTUTest extends Thread {
 				}
 
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				String statusVAlue = requestDao.getPreviousMileStoneStatus(
+						requestinfo.getAlphanumericReqId(),
+						requestinfo.getRequestVersion());
+				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "customer_report", "4", statusVAlue);
 
+			
 				requestinfo.setAlphanumericReqId(RequestId);
 				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 

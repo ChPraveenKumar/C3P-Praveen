@@ -31,24 +31,39 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	public List<RequestInfoEntity>  findAllByVendor(String vendor);
 	public List<RequestInfoEntity>  findAllByVendorAndModel(String vendor,String model);
 	public List<RequestInfoEntity>  findAllByVendorAndModelAndHostName(String vendor,String model,String HostName);
+	
+	public List<RequestInfoEntity>  findAllByStatus(String status);
+	public List<RequestInfoEntity>  findAllByVendorAndStatus(String vendor,String status);
+	public List<RequestInfoEntity>  findAllByVendorAndModelAndStatus(String vendor,String model,String status);
+	public List<RequestInfoEntity>  findAllByVendorAndModelAndHostNameAndStatus(String vendor,String model,String HostName,String status);
 	RequestInfoEntity findByAlphanumericReqId(String requestId);
+	
+	public List<RequestInfoEntity> findAllByCustomerAndStatus(String customerName,String status);
+	public List<RequestInfoEntity> findAllByCustomerAndRegionAndStatus(String customerName,String region,String status);
+	public List<RequestInfoEntity> findAllByCustomerAndRegionAndSiteNameAndStatus(String customerName,String region,String site,String status);
+	public List<RequestInfoEntity> findAllByCustomerAndRegionAndSiteNameAndHostNameAndStatus(String customerName,String region,String site,String HostName,String status);
 	
 	public List<RequestInfoEntity>  findByRequestCreatorName(String creatorName);
 	public List<RequestInfoEntity>  findByRequestCreatorNameAndCustomer(String creatorName,String customer);
 	public List<RequestInfoEntity>  findByRequestCreatorNameAndCustomerAndRegion(String creatorName,String customer,String region);
 	public List<RequestInfoEntity>  findByRequestCreatorNameAndCustomerAndRegionAndSiteName(String creatorName,String customer,String region,String site);
 	public List<RequestInfoEntity>  findByRequestCreatorNameAndCustomerAndRegionAndSiteNameAndHostName(String creatorName,String customer,String region,String site,String HostName);
+
+	public List<RequestInfoEntity>  findByRequestCreatorNameAndStatus(String creatorName,String status);
+	public List<RequestInfoEntity>  findByRequestCreatorNameAndCustomerAndStatus(String creatorName,String customer,String Status);
+	public List<RequestInfoEntity>  findByRequestCreatorNameAndCustomerAndRegionAndStatus(String creatorName,String customer,String region,String Status);
+	public List<RequestInfoEntity>  findByRequestCreatorNameAndCustomerAndRegionAndSiteNameAndStatus(String creatorName,String customer,String region,String site,String Status);
+	public List<RequestInfoEntity>  findByRequestCreatorNameAndCustomerAndRegionAndSiteNameAndHostNameAndStatus(String creatorName,String customer,String region,String site,String HostName,String Status);
+	
 	
 	public List<RequestInfoEntity>  findByRequestCreatorNameAndVendor(String creatorName,String vendor);
 	public List<RequestInfoEntity>  findByRequestCreatorNameAndVendorAndModel(String creatorName,String vendor,String model);
 	public List<RequestInfoEntity>  findByRequestCreatorNameAndVendorAndModelAndHostName(String creatorName,String vendor,String model,String HostName);
 
-	
-	/*public List<RequestDetailsEntity>  findByCustomer(String customer);
-	public List<RequestDetailsEntity>  findByCustomerAndRegion(String customer,String region);
-	public List<RequestDetailsEntity>  findByCustomerAndRegionAndSiteName(String customer,String region,String site);
-	public List<RequestDetailsEntity>  findByCustomerAndRegionAndSiteNameAndHostName(String customer,String region,String site,String HostName);
-	*/
+	public List<RequestInfoEntity>  findByRequestCreatorNameAndVendorAndStatus(String creatorName,String vendor,String status);
+	public List<RequestInfoEntity>  findByRequestCreatorNameAndVendorAndModelAndStatus(String creatorName,String vendor,String model,String status);
+	public List<RequestInfoEntity>  findByRequestCreatorNameAndVendorAndModelAndHostNameAndStatus(String creatorName,String vendor,String model,String HostName,String status);
+
 
 	int countAlphanumericReqIdByStatus(String status);
 	int countAlphanumericReqIdByStatusAndCustomer(String status,String customer);

@@ -45,6 +45,55 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	List<DeviceDiscoveryEntity> findByCustSiteIdId(int siteId);
 	List<DeviceDiscoveryEntity> findBydMgmtIp(String dMgmtIp);
 	DeviceDiscoveryEntity findByDHostName(String hostname);
+	
+	List<DeviceDiscoveryEntity> findBydHostNameContaining(String dHostname);
+	List<DeviceDiscoveryEntity> findByDHostNameContainingAndCustSiteIdCCustName(String hostname, String customername);
+	List<DeviceDiscoveryEntity> findByDHostNameContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegion(String hostname, String customername,String region);
+	List<DeviceDiscoveryEntity> findByDHostNameContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(String hostname, String customername,String region,String sitename);
+
+	List<DeviceDiscoveryEntity> findBydMgmtIpContaining(String dMgmtIp);
+	List<DeviceDiscoveryEntity> findByDMgmtIpContainingAndCustSiteIdCCustName(String managementip, String customername);
+	List<DeviceDiscoveryEntity> findByDMgmtIpContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegion(String managementip, String customername,String region);
+	List<DeviceDiscoveryEntity> findByDMgmtIpContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(String managementip, String customername,String region,String sitename);
+
+	List<DeviceDiscoveryEntity> findBydOsContaining(String os);
+	List<DeviceDiscoveryEntity> findBydOsContainingAndCustSiteIdCCustName(String os, String customername);
+	List<DeviceDiscoveryEntity> findBydOsContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegion(String os, String customername,String region);
+	List<DeviceDiscoveryEntity> findBydOsContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(String os, String customername,String region,String sitename);
+	
+	List<DeviceDiscoveryEntity> findBydOsVersionContaining(String osversion);
+	List<DeviceDiscoveryEntity> findBydOsVersionContainingAndCustSiteIdCCustName(String osversion, String customername);
+	List<DeviceDiscoveryEntity> findBydOsVersionContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegion(String osversion, String customername,String region);
+	List<DeviceDiscoveryEntity> findBydOsVersionContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(String osversion, String customername,String region,String sitename);
+	
+	
+	List<DeviceDiscoveryEntity> findByDModelContaining(String model);
+	List<DeviceDiscoveryEntity> findByDModelContainingAndCustSiteIdCCustName(String model, String customername);
+	List<DeviceDiscoveryEntity> findByDModelContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegion(String model, String customername,String region);
+	List<DeviceDiscoveryEntity> findByDModelContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(String model, String customername,String region,String sitename);
+	
+	List<DeviceDiscoveryEntity> findBydTypeContaining(String devicetype);
+	List<DeviceDiscoveryEntity> findBydTypeContainingAndCustSiteIdCCustName(String devicetype, String customername);
+	List<DeviceDiscoveryEntity> findBydTypeContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegion(String devicetype, String customername,String region);
+	List<DeviceDiscoveryEntity> findBydTypeContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(String devicetype, String customername,String region,String sitename);
+	
+	List<DeviceDiscoveryEntity> findBydEndOfSaleDateContaining(String eol);
+	List<DeviceDiscoveryEntity> findBydEndOfSaleDateContainingAndCustSiteIdCCustName(String eol, String customername);
+	List<DeviceDiscoveryEntity> findBydEndOfSaleDateContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegion(String eol, String customername,String region);
+	List<DeviceDiscoveryEntity> findBydEndOfSaleDateContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(String eol, String customername,String region,String sitename);
+	
+	
+	List<DeviceDiscoveryEntity> findBydEndOfSupportDateContaining(String eos);
+	List<DeviceDiscoveryEntity> findBydEndOfSupportDateContainingAndCustSiteIdCCustName(String eos, String customername);
+	List<DeviceDiscoveryEntity> findBydEndOfSupportDateContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegion(String eos, String customername,String region);
+	List<DeviceDiscoveryEntity> findBydEndOfSupportDateContainingAndCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(String eos, String customername,String region,String sitename);
+	
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameContaining(String customername);
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameContainingAndCustSiteIdCSiteRegionContaining(String customername,String region);
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameContainingAndCustSiteIdCSiteRegionContainingAndCustSiteIdCSiteNameContaining(String customername,String region,String sitename);
+
+	
+	DeviceDiscoveryEntity findDVNFSupportByDHostName(String hostname);
 //	@Query(value = "select a from DeviceDiscoveryEntity a where a.dModel= ? and a.dVendor=? order by a.dDatePolled desc Limit 0, 5")	
 //	List<DeviceDiscoveryEntity> findByTop(String model,String vendor);
 

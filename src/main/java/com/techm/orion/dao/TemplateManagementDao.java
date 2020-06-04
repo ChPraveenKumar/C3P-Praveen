@@ -6,13 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,9 +33,6 @@ import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
-import com.techm.orion.service.TemplateManagementDetailsService;
-
-import freemarker.core.CollectionAndSequence;
 
 public class TemplateManagementDao {
 
@@ -303,7 +296,7 @@ public class TemplateManagementDao {
 			String status, String approverCommet) {
 		int res = 0;
 		connection = ConnectionFactory.getConnection();
-		String query2 = "update templateconfig_basic_details set templateStatus = ?, comment_section= concat(?, comment_section), updatedDate=? where TempId = ? and templateVersion = ? ";
+		String query2 = "update templateConfig_basic_details set templateStatus = ?, comment_section= concat(?, comment_section), updatedDate=? where TempId = ? and templateVersion = ? ";
 		try {
 
 			java.util.Date dt = new java.util.Date();
@@ -1754,7 +1747,7 @@ public class TemplateManagementDao {
 					System.err.println(e.getMessage());
 				}
 			} else {
-				queryUpdate = "update templateconfig_feature_active set Active = true where TempId = ? and Feature_Selection IN (select name from TemplateConfig_Feature_Command where Parent_name=?)";
+				queryUpdate = "update templateconfig_feature_active set Active = true where TempId = ? and Feature_Selection IN (select name from templateconfig_feature_command where Parent_name=?)";
 
 				try {
 					PreparedStatement preparedStatement = connection
@@ -1773,7 +1766,7 @@ public class TemplateManagementDao {
 			}
 			/*
 			 * } else { query =
-			 * "select * from  TemplateConfig_Feature_Command where Parent_name = ? "
+			 * "select * from  templateconfig_feature_command where Parent_name = ? "
 			 * ; preparedStmt = connection.prepareStatement(query);
 			 * preparedStmt.setString(1, "Routing Protocol");
 			 * //preparedStmt.setString(2, parentValue); rs =
@@ -1825,7 +1818,7 @@ public class TemplateManagementDao {
 			rs = preparedStmt.executeQuery();
 			if (rs == null) {
 
-				queryUpdate = "update templateconfig_activefeature set Active = false where TempId = ? and Feature_Selection = ? ";
+				queryUpdate = "update templateconfig_feature_active set Active = false where TempId = ? and Feature_Selection = ? ";
 
 				try {
 					PreparedStatement preparedStatement = connection
@@ -2060,12 +2053,12 @@ public class TemplateManagementDao {
 	public final Map<String, String> addTemplate(String vendor,
 			String deviceType, String model, String os, String osVersion,
 			String region, String oldTemplateId, String oldVersion,
-			String comment) {
+			String comment,String networkType) {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
 		String tempid = null, oldversion = null;
-		String query1 = "INSERT INTO templateconfig_basic_details(TempId,TempVendor,TempDeviceType,TempModel,TempDeviceOs,TempOsVersion,TempRegion,createdDate,templateVersion,templateParentVersion,updatedDate,comment_section,createdby,templateApprover)"
-				+ "VALUES(?,?,?,?,?,?,?,now(),?,?,now(),?,?,?)";
+		String query1 = "INSERT INTO templateconfig_basic_details(TempId,TempVendor,TempDeviceType,TempModel,TempDeviceOs,TempOsVersion,TempRegion,createdDate,templateVersion,templateParentVersion,updatedDate,comment_section,createdby,templateApprover,networkType)"
+				+ "VALUES(?,?,?,?,?,?,?,now(),?,?,now(),?,?,?,?)";
 		String query2 = "SELECT * FROM templateconfig_basic_details";
 		
 			tempid = oldTemplateId;
@@ -2117,6 +2110,7 @@ public class TemplateManagementDao {
 				ps.setString(10, comment);
 				ps.setString(11, Global.loggedInUser);
 				ps.setString(12, "suser");
+				ps.setString(13, networkType);
 
 				// int i=0;
 				int i = ps.executeUpdate();
@@ -2405,6 +2399,7 @@ public class TemplateManagementDao {
 				pojo.setStatus(rs1.getString("templateStatus"));
 				pojo.setApprover(rs1.getString("templateApprover"));
 				pojo.setCreatedBy(rs1.getString("createdby"));
+				pojo.setNetworkType(rs1.getString("networkType"));
 
 				if (rs1.getString("templateStatus").equalsIgnoreCase("Pending")) {
 					pojo.setEditable(false);
@@ -2689,7 +2684,7 @@ public class TemplateManagementDao {
 		String query = null;
 		String templateCreated = "";
 		try {
-			query = "select * FROM templateconfig_feature_Command tempCmd INNER JOIN templateconfig_feature_active tempactive on tempCmd.Name = tempactive.Feature_Selection where tempactive.TempId=? and tempactive.active=true";
+			query = "select * FROM templateconfig_feature_command tempCmd INNER JOIN templateconfig_feature_active tempactive on tempCmd.Name = tempactive.Feature_Selection where tempactive.TempId=? and tempactive.active=true";
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, tempId);
 
@@ -2735,7 +2730,7 @@ public class TemplateManagementDao {
 			query = "Select * from c3p_template_transaction_feature_list where command_feature_template_id=?";
 
 			// query =
-			// "select distinct tempCmd.Parent_name FROM TemplateConfig_Feature_Command tempCmd INNER JOIN TemplateConfig_Feature_Active tempactive on tempCmd.Name = tempactive.Feature_Selection where tempactive.TempId=? and tempactive.active=true";
+			// "select distinct tempCmd.Parent_name FROM templateconfig_feature_command tempCmd INNER JOIN templateconfig_feature_active tempactive on tempCmd.Name = tempactive.Feature_Selection where tempactive.TempId=? and tempactive.active=true";
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, tempId);
 
@@ -2795,7 +2790,7 @@ public class TemplateManagementDao {
 		String tempid = null;
 		String query1 = "SELECT * FROM templateconfig_feature_active where TempId=?";
 		String query2 = null;
-		String query3 = "SELECT * FROM templateconfig_feature_position where TempId=?";
+		String query3 = "SELECT * FROM TemplateConfig_Feature_Position where TempId=?";
 		Map<String, String> resultmap = new HashMap<String, String>();
 		Statement pst = null;
 		PreparedStatement pst2 = null;
@@ -2833,7 +2828,7 @@ public class TemplateManagementDao {
 			ResultSet rs1 = null;
 			rs1 = ps2.executeQuery();
 			query2 = null;
-			query2 = "INSERT INTO templateconfig_feature_position(TempId,Feature_Selection,Block_Position)"
+			query2 = "INSERT INTO TemplateConfig_Feature_Position(TempId,Feature_Selection,Block_Position)"
 					+ "VALUES(?,?,?)";
 			pst2 = connection.prepareStatement(query2);
 			while (rs1.next()) {

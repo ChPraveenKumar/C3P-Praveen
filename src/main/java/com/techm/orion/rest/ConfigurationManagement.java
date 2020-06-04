@@ -2,7 +2,6 @@ package com.techm.orion.rest;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,7 +70,7 @@ public class ConfigurationManagement {
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 
 			RequestInfoPojo configReqToSendToC3pCode = new RequestInfoPojo();
-
+			configReqToSendToC3pCode.setHostname(json.get("hostname").toString().toUpperCase());
 			// For IOS Upgrade
 
 			if (json.containsKey("requestType")) {
@@ -81,17 +80,31 @@ public class ConfigurationManagement {
 				configReqToSendToC3pCode.setRequestType("SLGC");
 
 			}
-			if (json.containsKey("networkType")) {
+			
+			if (!json.get("networkType").toString().equals("")&& json.get("networkType") != null) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
-				if(json.get("networkType").toString().equalsIgnoreCase("VNF"))
-				{
-					DeviceDiscoveryEntity device=deviceRepo.findByDHostName(json.get("hostname").toString().toUpperCase());
-					requestType=device.getdConnect();
+				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
+					DeviceDiscoveryEntity device = deviceRepo
+							.findByDHostName(json.get("hostname").toString().toUpperCase());
+					requestType = device.getdConnect();
+					configReqToSendToC3pCode.setRequestType(requestType);
+				} else {
+					configReqToSendToC3pCode.setNetworkType("PNF");
+				}
+
+			} else {
+				DeviceDiscoveryEntity networkfunctio = deviceRepo.findDVNFSupportByDHostName(configReqToSendToC3pCode.getHostname());
+				configReqToSendToC3pCode.setNetworkType(networkfunctio.getdVNFSupport());
+				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
+					DeviceDiscoveryEntity device = deviceRepo
+							.findByDHostName(json.get("hostname").toString().toUpperCase());
+					requestType = device.getdConnect();
 					configReqToSendToC3pCode.setRequestType(requestType);
 
-				}			} else {
-				configReqToSendToC3pCode.setNetworkType("Legacy");
-
+				} else {
+					configReqToSendToC3pCode.setNetworkType("PNF");
+				}
+			
 			}
 			if(!requestType.equals("Test")) {
 			// template suggestion

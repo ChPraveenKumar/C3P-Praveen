@@ -27,11 +27,11 @@ public class ServiceRequestController {
 	@POST
 	@RequestMapping(value = "/getServiceRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response getserviceRequest(@RequestBody String requestStatus) {
+	public Response getserviceRequest(@RequestBody String request) {
 		List<ServiceRequestPojo> requestDeatils = null;
 		try {
 			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(requestStatus);
+			JSONObject json = (JSONObject) parser.parse(request);
 			String customerStatus =null;
 			String customer = null;
 			String site = null;
@@ -40,6 +40,7 @@ public class ServiceRequestController {
 			String vendor=null;
 			String family=null;
 			String vendorStatus =null;
+			String requestStatus=null;
 			if(json.containsKey("customerType")) {
 				customerStatus=json.get("customerType").toString();
 			}
@@ -63,11 +64,14 @@ public class ServiceRequestController {
 			}if(json.containsKey("family")) {
 				family = json.get("family").toString();
 			}
+			if(json.containsKey("requestStatus")) {
+				requestStatus=json.get("requestStatus").toString();
+			}
 			if(customerStatus!=null) {
-			requestDeatils=service.getCustomerServiceRequests(customerStatus,customer,region,site,hostName);
+			requestDeatils=service.getCustomerServiceRequests(customerStatus,customer,region,site,hostName,requestStatus);
 			}
 			if(vendorStatus!=null) {
-				requestDeatils=service.getVendorServiceRequests(vendorStatus,vendor,family,hostName);
+				requestDeatils=service.getVendorServiceRequests(vendorStatus,vendor,family,hostName,requestStatus);
 			}
 		} catch (Exception e) {
 

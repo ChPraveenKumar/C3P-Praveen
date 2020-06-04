@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -31,7 +29,6 @@ import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.pojo.CertificationTestPojo;
 import com.techm.orion.pojo.ReoprtFlags;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
-import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.SearchParamPojo;
 
 @RestController
@@ -40,6 +37,7 @@ public class RequestDetailsServiceWithVersion {
 	@Autowired
 	RequestInfoDetailsDao requestRedao;
 
+	
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -48,8 +46,6 @@ public class RequestDetailsServiceWithVersion {
 		String jsonArray = "";
 		String key = null, value = null, version = null;
 		try {
-			JSONParser parser = new JSONParser();
-			JSONObject dilevaryMilestonesforOSupgrade = new JSONObject();
 			Gson gson = new Gson();
 			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
 			key = dto.getKey();
@@ -99,7 +95,6 @@ public class RequestDetailsServiceWithVersion {
 		String jsonArrayReports = "";
 		String key = null, value = null, version = null;
 		List<ReoprtFlags> reoportflagllist = new ArrayList<ReoprtFlags>();
-		List<CertificationTestPojo> testList = new ArrayList<CertificationTestPojo>();
 		List<ReoprtFlags> reoportflagllistforselectedRecord = new ArrayList<ReoprtFlags>();
 		List<RequestInfoCreateConfig> testListforselectedRecord = new ArrayList<RequestInfoCreateConfig>();
 
@@ -349,6 +344,7 @@ public class RequestDetailsServiceWithVersion {
 			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId);
 			// Split test details with comma separator
 			String splitTestAndDiagnosis[] = testAndDiagnosis.toString().split(",");
+			RequestInfoDao requestinfoDao = new RequestInfoDao();
 			for (String testName : splitTestAndDiagnosis) {
 				if (testName.contains("testName")) {
 					JSONObject tests= new JSONObject();
@@ -364,8 +360,9 @@ public class RequestDetailsServiceWithVersion {
 					tests.put("combination", combination);
 					tests.put("testName", name);
 					tests.put("version", version);
-					selectedTest.add(tests);
-					
+					int status = requestinfoDao.getTestDetails(requestId, testName);
+					tests.put("status",status);
+					selectedTest.add(tests);					
 				}
 			}
 		} catch (Exception e) {
@@ -373,4 +370,5 @@ public class RequestDetailsServiceWithVersion {
 		}
 		return Response.status(200).entity(selectedTest).build();
 	}
+    
 }

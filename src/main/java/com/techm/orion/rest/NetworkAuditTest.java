@@ -61,6 +61,10 @@ public class NetworkAuditTest extends Thread {
 	@Autowired
 	RequestInfoDetailsDao requestDao;
 	
+	@Autowired 
+	TestStrategeyAnalyser analyser;
+
+	
 	@POST
 	@RequestMapping(value = "/networkAuditCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -167,7 +171,7 @@ public class NetworkAuditTest extends Thread {
 										/*
 										 * Collect Network Audit test result for snippet and keyword from router
 										 */
-										Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+										Boolean res = analyser.printAndAnalyse(input, channel,
 												configRequest.getRequestId(),
 												Double.toString(configRequest.getRequest_version()),
 												finallistOfTests.get(i), "Network Audit");
@@ -268,7 +272,11 @@ public class NetworkAuditTest extends Thread {
 					}
 
 				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-
+					String statusVAlue = requestDao.getPreviousMileStoneStatus(
+							requestinfo.getAlphanumericReqId(),
+							requestinfo.getRequestVersion());
+					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "network_audit", "4", statusVAlue);
 					NetworkAuditTest.loadProperties();
 					String sshPrivateKeyFilePath = NetworkAuditTest.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
 					String host = requestinfo.getManagementIp();
@@ -340,7 +348,7 @@ public class NetworkAuditTest extends Thread {
 										/*
 										 * Collect Network Audit test result for snippet and keyword from router
 										 */
-										Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+										Boolean res = analyser.printAndAnalyse(input, channel,
 												requestinfo.getAlphanumericReqId(),
 												Double.toString(requestinfo.getRequestVersion()),
 												finallistOfTests.get(i), "Network Audit");
@@ -351,9 +359,13 @@ public class NetworkAuditTest extends Thread {
 												requestinfo.getRequestVersion());
 										String switchh = "1";
 
+										int statusData=requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+												Double.toString(requestinfo.getRequestVersion()), "network_audit");
+										if(statusData!=3) {
 										requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 												Double.toString(requestinfo.getRequestVersion()), "network_audit",
 												"1", status);
+										}
 
 										channel.disconnect();
 										session.disconnect();

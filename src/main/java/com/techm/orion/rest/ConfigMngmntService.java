@@ -90,7 +90,7 @@ public class ConfigMngmntService implements Observer {
 			// template suggestion
 			if(json.get("requestType").equals("SLGB"))
 			{
-				configReqToSendToC3pCode.setTemplateID(json.get("templateID").toString());
+				configReqToSendToC3pCode.setTemplateID(null);
 			}
 			else
 			{

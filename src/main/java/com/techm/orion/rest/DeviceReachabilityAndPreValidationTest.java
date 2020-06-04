@@ -57,7 +57,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	
 	@Autowired
 	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
-
+	
+	@Autowired 
+	TestStrategeyAnalyser analyser;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -171,7 +173,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 
-				} else {
+				} else if (type.equalsIgnoreCase("SLGF")) {
 					value = false;
 					String response = invokeFtl.generateDevicelockedFile(createConfigRequest);
 
@@ -284,7 +286,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 								// printResult(input,
 								// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-								Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+								Boolean res = analyser.printAndAnalyse(input, channel,
 										createConfigRequest.getRequestId(),
 										Double.toString(createConfigRequest.getRequest_version()),
 										finallistOfTests.get(i), "Device Prevalidation");
@@ -399,7 +401,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 								// printResult(input,
 								// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-								Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+								Boolean res = analyser.printAndAnalyse(input, channel,
 										createConfigRequest.getRequestId(),
 										Double.toString(createConfigRequest.getRequest_version()),
 										finallistOfTests.get(i), "Device Prevalidation");
@@ -431,7 +433,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 				}
 
-				else {
+				else if (type.equalsIgnoreCase("SLGF")){
 					// Perform health checks for OS upgrade
 					PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
 					obj = osHealthChk.healthcheckCommandTest(request, "Pre");
@@ -440,6 +442,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				}
 			}
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "Application_test", "4",
+						"In Progress");
 				
 				requestinfo.setAlphanumericReqId(RequestId);
 				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
@@ -510,7 +515,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 
-					} else {
+					} else if (type.equalsIgnoreCase("SLGF")) {
 						value = false;
 						String response = invokeFtl.generateDevicelockedFile(requestinfo);
 
@@ -625,7 +630,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 									// printResult(input,
 									// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-									Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+									Boolean res = analyser.printAndAnalyse(input, channel,
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()),
 											finallistOfTests.get(i), "Device Prevalidation");
@@ -740,7 +745,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 									// printResult(input,
 									// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-									Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+									Boolean res = analyser.printAndAnalyse(input, channel,
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()),
 											finallistOfTests.get(i), "Device Prevalidation");
@@ -772,7 +777,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 					}
 
-					else {
+					else if(type.equalsIgnoreCase("SLGF")) {
 						// Perform health checks for OS upgrade
 						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
 						obj = osHealthChk.healthcheckCommandTest(request, "Pre");
@@ -938,12 +943,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					String type = createConfigRequest.getRequestId().substring(0,
 							Math.min(createConfigRequest.getRequestId().length(), 2));
 					if (type.equalsIgnoreCase("SLGC")) {
-					} else {
-						/*
-						 * requestInfoDao.editRequestforReportWebserviceInfo(
-						 * createConfigRequest.getRequestId(), Double .toString(createConfigRequest
-						 * .getRequest_version()), "pre_health_checkup", "1", "In Progress");
-						 */
+					} else if(type.equalsIgnoreCase("SLGF")){
+						
+						  requestInfoDao.editRequestforReportWebserviceInfo(
+						  createConfigRequest.getRequestId(), Double .toString(createConfigRequest
+						  .getRequest_version()), "pre_health_checkup", "1", "In Progress");
+						 
 
 					}
 
@@ -1069,7 +1074,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 					}
 
-					else {
+					else  if (type.equalsIgnoreCase("SLGF")){
 						String response = "";
 						String responseDownloadPath = "";
 						requestInfoDao.releaselockDeviceForRequest(createConfigRequest.getManagementIp(),
@@ -1098,6 +1103,13 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				}
 
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "4",
+						"In Progress");
+			
+				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "Application_test", "4",
+						"In Progress");
 
 				requestinfo.setAlphanumericReqId(RequestId);
 				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
@@ -1119,12 +1131,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					String type = requestinfo.getAlphanumericReqId().substring(0,
 							Math.min(requestinfo.getAlphanumericReqId().length(), 2));
 					if (type.equalsIgnoreCase("SLGC")) {
-					} else {
-						/*
-						 * requestInfoDao.editRequestforReportWebserviceInfo(
-						 * createConfigRequest.getRequestId(), Double .toString(createConfigRequest
-						 * .getRequest_version()), "pre_health_checkup", "1", "In Progress");
-						 */
+					} else if(type.equalsIgnoreCase("SLGF")){
+						
+						  requestInfoDao.editRequestforReportWebserviceInfo(
+						  createConfigRequest.getRequestId(), Double .toString(createConfigRequest
+						  .getRequest_version()), "pre_health_checkup", "1", "In Progress");
+						 
 
 					}
 
@@ -1240,7 +1252,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 					}
 
-					else {
+					else if(type.equalsIgnoreCase("SLGF")) {
 						String response = "";
 						String responseDownloadPath = "";
 						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),

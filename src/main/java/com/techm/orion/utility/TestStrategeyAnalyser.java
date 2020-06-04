@@ -7,31 +7,31 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.jcraft.jsch.Channel;
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestRules;
-import com.techm.orion.pojo.PreValidateTest;
-import com.techm.orion.rest.ConfigComparisonService;
-import com.techm.orion.rest.DeviceReachabilityAndPreValidationTest;
-
+@Component
 public class TestStrategeyAnalyser {
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
 
+	
+	@Autowired
+	RequestInfoDetailsDao requestDetailsInfoDao;
+
+	
 	public static boolean loadProperties() throws IOException {
 		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
 
@@ -49,7 +49,7 @@ public class TestStrategeyAnalyser {
 	 * tests
 	 */
 	@SuppressWarnings("unused")
-	public static boolean printAndAnalyse(InputStream input, Channel channel, String requestID, String version,
+	public boolean printAndAnalyse(InputStream input, Channel channel, String requestID, String version,
 			TestDetail test, String testIdentifier) throws Exception {
 		TestStrategeyAnalyser.loadProperties();
 
@@ -81,7 +81,7 @@ public class TestStrategeyAnalyser {
 
 		} else if (testIdentifier.equalsIgnoreCase("Network Audit")) {
 			filename = "_CurrentVersionConfig.txt";
-			webserviceinfoFlag = "networkaudit_test";
+			webserviceinfoFlag = "network_audit";
 
 		}
 		try {
@@ -155,15 +155,15 @@ public class TestStrategeyAnalyser {
 						collectedValue = output;
 					} else {
 						resultText = rules.get(i).getReportedLabel();
-						collectedValue = "N\\A";
+						collectedValue = "N/A";
 					}
 					res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
-							test.getTestCategory(), result, resultText, collectedValue, "N\\A", collectedValue,
+							test.getTestCategory(), result, resultText, collectedValue, "N/A", collectedValue,
 							rules.get(i).getDataType());
 				}
-				RequestInfoDao requestInfoDao = new RequestInfoDao();
+//				RequestInfoDao requestInfoDao = new RequestInfoDao();
 				// Update main request status to failure
-				requestInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "2",
+				requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "2",
 						"failure");
 				res = false;
 			} else if (text.contains("% Invalid input detected at '^' marker") || text.contains("Request timed out")
@@ -186,12 +186,12 @@ public class TestStrategeyAnalyser {
 						collectedValue = "Failed";
 					}
 					res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
-							test.getTestCategory(), result, resultText, collectedValue, "N\\A", collectedValue,
+							test.getTestCategory(), result, resultText, collectedValue, "N/A", collectedValue,
 							rules.get(i).getDataType());
 				}
-				RequestInfoDao requestInfoDao = new RequestInfoDao();
+//				RequestInfoDao requestInfoDao = new RequestInfoDao();
 				// Update main request status to failure
-				requestInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "3",
+				requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "3",
 						"Partial Success");
 				res = true;
 			} else {
@@ -250,7 +250,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text starts with: " + value1, "",
+												result, resultText, output, "Text starts with: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -274,7 +274,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Is equal to (=): " + value1, "",
+												result, resultText, output, "Is equal to (=): " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -305,7 +305,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + " & " + value2,
-													"", rules.get(i).getDataType());
+													"N/A", rules.get(i).getDataType());
 										} else {
 											// fail the test
 											result = "Failed";
@@ -348,7 +348,7 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Greater than (>): " + value1, "",
+													result, resultText, output, "Greater than (>): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -391,7 +391,7 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Less than (<): " + value1, "",
+													result, resultText, output, "Less than (<): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -435,7 +435,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
-													"Greater than or equals to (>=): " + value1, "",
+													"Greater than or equals to (>=): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -480,7 +480,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
-													"Less than or equals to (<=): " + value1, "",
+													"Less than or equals to (<=): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -524,7 +524,7 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Is not equal to  (<>): " + value1, "",
+													result, resultText, output, "Is not equal to  (<>): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -561,7 +561,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text matches excatly: " + value1, "",
+												result, resultText, output, "Text matches excatly: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -585,7 +585,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text ends with: " + value1, "",
+												result, resultText, output, "Text ends with: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -609,7 +609,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text contains: " + value1, "",
+												result, resultText, output, "Text contains: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -640,7 +640,7 @@ public class TestStrategeyAnalyser {
 								resultArray.add(result);
 								resultText = rules.get(i).getReportedLabel();
 								res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
-										test.getTestCategory(), result, resultText, output, "N\\A", "",
+										test.getTestCategory(), result, resultText, output, "N/A", "",
 										rules.get(i).getDataType());
 							}
 						} else {
@@ -649,7 +649,7 @@ public class TestStrategeyAnalyser {
 
 							resultText = rules.get(i).getReportedLabel();
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
-									test.getTestCategory(), result, resultText, "N\\A", "N\\A",
+									test.getTestCategory(), result, resultText, "N/A", "N/A",
 									"Invalid rule please contact admisitrator", rules.get(i).getDataType());
 							// Update main request status to partial success
 						}
@@ -712,7 +712,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text starts with: " + value1, "",
+												result, resultText, output, "Text starts with: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -736,7 +736,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Is equal to (=): " + value1, "",
+												result, resultText, output, "Is equal to (=): " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -767,7 +767,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
-													"", rules.get(i).getDataType());
+													"N/A", rules.get(i).getDataType());
 										} else {
 											// fail the test
 											result = "Failed";
@@ -810,7 +810,7 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Greater than (>): " + value1, "",
+													result, resultText, output, "Greater than (>): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -853,7 +853,7 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Less than (<): " + value1, "",
+													result, resultText, output, "Less than (<): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -897,7 +897,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
-													"Greater than or equals to (>=): " + value1, "",
+													"Greater than or equals to (>=): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -942,7 +942,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
-													"Less than or equals to (<=): " + value1, "",
+													"Less than or equals to (<=): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -986,7 +986,7 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Is not equal to  (<>): " + value1, "",
+													result, resultText, output, "Is not equal to  (<>): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -1023,7 +1023,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text matches excatly: " + value1, "",
+												result, resultText, output, "Text matches excatly: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -1047,7 +1047,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text ends with: " + value1, "",
+												result, resultText, output, "Text ends with: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -1071,7 +1071,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text contains: " + value1, "",
+												result, resultText, output, "Text contains: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -1102,7 +1102,7 @@ public class TestStrategeyAnalyser {
 								resultArray.add(result);
 								resultText = rules.get(i).getReportedLabel();
 								res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
-										test.getTestCategory(), result, resultText, output, "N\\A", "",
+										test.getTestCategory(), result, resultText, output, "N/A", "",
 										rules.get(i).getDataType());
 							}
 						} else {
@@ -1111,7 +1111,7 @@ public class TestStrategeyAnalyser {
 
 							resultText = rules.get(i).getReportedLabel();
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
-									test.getTestCategory(), result, resultText, "N\\A", "N\\A",
+									test.getTestCategory(), result, resultText, "N/A", "N/A",
 									"Invalid rule please contact administrator", rules.get(i).getDataType());
 							// Update main request status to partial success
 						}
@@ -1188,7 +1188,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text starts with: " + value1, "",
+												result, resultText, output, "Text starts with: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -1212,7 +1212,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Is equal to (=): " + value1, "",
+												result, resultText, output, "Is equal to (=): " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -1243,7 +1243,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
-													"", rules.get(i).getDataType());
+													"N/A", rules.get(i).getDataType());
 										} else {
 											// fail the test
 											result = "Failed";
@@ -1286,7 +1286,7 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Greater than (>): " + value1, "",
+													result, resultText, output, "Greater than (>): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -1329,7 +1329,7 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Less than (<): " + value1, "",
+													result, resultText, output, "Less than (<): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -1373,7 +1373,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
-													"Greater than or equals to (>=): " + value1, "",
+													"Greater than or equals to (>=): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -1418,7 +1418,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
-													"Less than or equals to (<=): " + value1, "",
+													"Less than or equals to (<=): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -1462,7 +1462,7 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Is not equal to  (<>): " + value1, "",
+													result, resultText, output, "Is not equal to  (<>): " + value1, "N/A",
 													rules.get(i).getDataType());
 										} else {
 											// fail the test
@@ -1499,7 +1499,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text matches excatly: " + value1, "",
+												result, resultText, output, "Text matches excatly: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -1523,7 +1523,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text ends with: " + value1, "",
+												result, resultText, output, "Text ends with: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -1547,7 +1547,7 @@ public class TestStrategeyAnalyser {
 										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
-												result, resultText, output, "Text contains: " + value1, "",
+												result, resultText, output, "Text contains: " + value1, "N/A",
 												rules.get(i).getDataType());
 									} else {
 										// fail the test
@@ -1578,7 +1578,7 @@ public class TestStrategeyAnalyser {
 								resultArray.add(result);
 								resultText = rules.get(i).getReportedLabel();
 								res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
-										test.getTestCategory(), result, resultText, output, "N\\A", "",
+										test.getTestCategory(), result, resultText, output, "N/A", "",
 										rules.get(i).getDataType());
 							}
 						} else {
@@ -1587,7 +1587,7 @@ public class TestStrategeyAnalyser {
 
 							resultText = rules.get(i).getReportedLabel();
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
-									test.getTestCategory(), result, resultText, "N\\A", "N\\A",
+									test.getTestCategory(), result, resultText, "N/A", "N/A",
 									"Invalid rule please contact administrator", rules.get(i).getDataType());
 							// Update main request status to partial success
 						}
@@ -1646,7 +1646,7 @@ public class TestStrategeyAnalyser {
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(),
 
-									result, resultText, output, "Snippet starts with: " + evaluationOperator, "",
+									result, resultText, output, "Snippet starts with: " + evaluationOperator, "N/A",
 									rules.get(i).getDataType());
 						} else {
 							// fail the test
@@ -1722,10 +1722,10 @@ public class TestStrategeyAnalyser {
 						break;
 					}
 				}
-				if (resultVar = false) {
-					RequestInfoDao requestInfoDao = new RequestInfoDao();
+				if (resultVar ==false) {
+//					RequestInfoDao requestInfoDao = new RequestInfoDao();
 					// Update main request status to partial success
-					requestInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "3",
+					requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "3",
 							"Partial Success");
 					res = true;
 				} else {

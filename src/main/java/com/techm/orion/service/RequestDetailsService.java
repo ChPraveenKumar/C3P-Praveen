@@ -2,7 +2,6 @@ package com.techm.orion.service;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -55,49 +54,104 @@ public class RequestDetailsService {
 	private ArrayList<String> dateWiseRequest = null;
 
 	public List<ServiceRequestPojo> getCustomerServiceRequests(String Status, String customer, String region,
-			String site, String HostName) {
+			String site, String HostName, String requestStatus) {
 		RequestDetailsResponseMapper mapper = new RequestDetailsResponseMapper();
-		List<ServiceRequestPojo> requetDetails = null;
 		List<RequestInfoEntity> getSiteServices = null;
 
 		if (Status.equals("my")) {
 			String logedInUserName = dcmConfigService.getLogedInUserName();
 			if (customer != null && region == null && site == null && HostName == null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findByRequestCreatorNameAndCustomerAndStatus(logedInUserName, customer,
+							requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findByRequestCreatorNameAndCustomer(logedInUserName, customer);
+				return (mapper.setEntityToPojo(getSiteServices));
 
-			} else if (customer != null && region != null && site == null && HostName == null) {
+			}
+			if (customer != null && region != null && site == null && HostName == null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findByRequestCreatorNameAndCustomerAndRegionAndStatus(logedInUserName,
+							customer, region, requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findByRequestCreatorNameAndCustomerAndRegion(logedInUserName, customer, region);
+				return (mapper.setEntityToPojo(getSiteServices));
 
-			} else if (customer != null && region != null && site != null && HostName == null) {
+			}
+			if (customer != null && region != null && site != null && HostName == null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findByRequestCreatorNameAndCustomerAndRegionAndSiteNameAndStatus(
+							logedInUserName, customer, region, site, requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findByRequestCreatorNameAndCustomerAndRegionAndSiteName(logedInUserName,
 						customer, region, site);
+				return (mapper.setEntityToPojo(getSiteServices));
 
-			} else if (customer != null && region != null && site != null && HostName != null) {
+			}
+			if (customer != null && region != null && site != null && HostName != null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findByRequestCreatorNameAndCustomerAndRegionAndSiteNameAndHostNameAndStatus(
+							logedInUserName, customer, region, site, HostName, requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findByRequestCreatorNameAndCustomerAndRegionAndSiteNameAndHostName(
 						logedInUserName, customer, region, site, HostName);
+				return (mapper.setEntityToPojo(getSiteServices));
 
-			} else {
-				getSiteServices = repo.findByRequestCreatorName(logedInUserName);
 			}
+			if (requestStatus != null) {
+				getSiteServices = repo.findByRequestCreatorNameAndStatus(logedInUserName, requestStatus);
+				return (mapper.setEntityToPojo(getSiteServices));
+			}
+			getSiteServices = repo.findByRequestCreatorName(logedInUserName);
+			return (mapper.setEntityToPojo(getSiteServices));
+
 		} else {
 			if (customer != null && region == null && site == null && HostName == null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findAllByCustomerAndStatus(customer, requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findAllByCustomer(customer);
-			} else if (customer != null && region != null && site == null && HostName == null) {
+				return (mapper.setEntityToPojo(getSiteServices));
+			}
+			if (customer != null && region != null && site == null && HostName == null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findAllByCustomerAndRegionAndStatus(customer, region, requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findAllByCustomerAndRegion(customer, region);
+				return (mapper.setEntityToPojo(getSiteServices));
 			} else if (customer != null && region != null && site != null && HostName == null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findAllByCustomerAndRegionAndSiteNameAndStatus(customer, region, site,
+							requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findAllByCustomerAndRegionAndSiteName(customer, region, site);
+				return (mapper.setEntityToPojo(getSiteServices));
 			} else if (customer != null && region != null && site != null && HostName != null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findAllByCustomerAndRegionAndSiteNameAndHostNameAndStatus(customer, region,
+							site, HostName, requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findAllByCustomerAndRegionAndSiteNameAndHostName(customer, region, site,
 						HostName);
+				return (mapper.setEntityToPojo(getSiteServices));
 			} else {
+				if (requestStatus != null) {
+					getSiteServices = repo.findAllByStatus(requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findAll();
-
+				return (mapper.setEntityToPojo(getSiteServices));
 			}
 		}
-		if (getSiteServices != null && !getSiteServices.isEmpty()) {
-			requetDetails = mapper.setEntityToPojo(getSiteServices);
-		}
-		return requetDetails;
+
 	}
 
 	@SuppressWarnings("null")
@@ -496,10 +550,10 @@ public class RequestDetailsService {
 		}
 		typesOfServices.put("configuration", legacyconfigurationReq);
 		typesOfServices.put("test", legacytestOnly);
-		typesOfServices.put("firmwareUpgrade", legacyfirmwareReq);
+		typesOfServices.put("firmware Upgrade", legacyfirmwareReq);
 		// typesOfServices.put("netrworkAudit", legacynetworkAudit);
 		typesOfServices.put("audit", legacynetworkAudit);
-		typesOfServices.put("backUp", backup);
+		typesOfServices.put("back Up", backup);
 		return typesOfServices;
 
 	}
@@ -618,44 +672,85 @@ public class RequestDetailsService {
 	}
 
 	public List<ServiceRequestPojo> getVendorServiceRequests(String vendorStatus, String vendor, String family,
-			String HostName) {
+			String HostName, String requestStatus) {
 		RequestDetailsResponseMapper mapper = new RequestDetailsResponseMapper();
-		List<ServiceRequestPojo> requetDetails = null;
 		List<RequestInfoEntity> getSiteServices = null;
 
 		if (vendorStatus.equals("my")) {
 			String logedInUserName = dcmConfigService.getLogedInUserName();
 			if (vendor != null && family == null && HostName == null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findByRequestCreatorNameAndVendorAndStatus(logedInUserName, vendor,
+							requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findByRequestCreatorNameAndVendor(logedInUserName, vendor);
+				return (mapper.setEntityToPojo(getSiteServices));
 
-			} else if (vendor != null && family != null && HostName == null) {
+			}
+			if (vendor != null && family != null && HostName == null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findByRequestCreatorNameAndVendorAndModelAndStatus(logedInUserName, vendor,
+							family, requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findByRequestCreatorNameAndVendorAndModel(logedInUserName, vendor, family);
+				return (mapper.setEntityToPojo(getSiteServices));
 
-			} else if (vendor != null && family != null && HostName != null) {
+			}
+			if (vendor != null && family != null && HostName != null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findByRequestCreatorNameAndVendorAndModelAndHostNameAndStatus(
+							logedInUserName, vendor, family, HostName, requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findByRequestCreatorNameAndVendorAndModelAndHostName(logedInUserName, vendor,
 						family, HostName);
+				return (mapper.setEntityToPojo(getSiteServices));
 
-			} else {
-				getSiteServices = repo.findByRequestCreatorName(logedInUserName);
 			}
+			if (requestStatus != null) {
+				getSiteServices = repo.findByRequestCreatorNameAndStatus(logedInUserName, requestStatus);
+				return (mapper.setEntityToPojo(getSiteServices));
+			}
+			getSiteServices = repo.findByRequestCreatorName(logedInUserName);
+			return (mapper.setEntityToPojo(getSiteServices));
+
 		} else {
 			if (vendor != null && family == null && HostName == null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findAllByVendorAndStatus(vendor, requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
 				getSiteServices = repo.findAllByVendor(vendor);
-
-			} else if (vendor != null && family != null && HostName == null) {
-				getSiteServices = repo.findAllByVendorAndModel(vendor, family);
-
-			} else if (vendor != null && family != null && HostName != null) {
-				getSiteServices = repo.findAllByVendorAndModelAndHostName(vendor, family, HostName);
-
-			} else {
-				getSiteServices = repo.findAll();
+				return (mapper.setEntityToPojo(getSiteServices));
 			}
+			if (vendor != null && family != null && HostName == null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findAllByVendorAndModelAndStatus(vendor, family, requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
+				getSiteServices = repo.findAllByVendorAndModel(vendor, family);
+				return (mapper.setEntityToPojo(getSiteServices));
+			}
+			if (vendor != null && family != null && HostName != null) {
+				if (requestStatus != null) {
+					getSiteServices = repo.findAllByVendorAndModelAndHostNameAndStatus(vendor, family, HostName,
+							requestStatus);
+					return (mapper.setEntityToPojo(getSiteServices));
+				}
+				getSiteServices = repo.findAllByVendorAndModelAndHostName(vendor, family, HostName);
+				return (mapper.setEntityToPojo(getSiteServices));
+			}
+			if (requestStatus != null) {
+				getSiteServices = repo.findAllByStatus(requestStatus);
+				return (mapper.setEntityToPojo(getSiteServices));
+			}
+			getSiteServices = repo.findAll();
+			return (mapper.setEntityToPojo(getSiteServices));
+
 		}
-		if (getSiteServices != null && !getSiteServices.isEmpty()) {
-			requetDetails = mapper.setEntityToPojo(getSiteServices);
-		}
-		return requetDetails;
+
 	}
 
 	public JSONObject getVendorservcieCount(String vendorStatus, String vendorValue, String familyValue,
@@ -921,10 +1016,10 @@ public class RequestDetailsService {
 		}
 		typesOfServices.put("configuration", legacyconfigurationReq);
 		typesOfServices.put("test", legacytestOnly);
-		typesOfServices.put("firmwareUpgrade", legacyfirmwareReq);
+		typesOfServices.put("firmware Upgrade", legacyfirmwareReq);
 		// typesOfServices.put("netrworkAudit", legacynetworkAudit);
 		typesOfServices.put("audit", legacynetworkAudit);
-		typesOfServices.put("backUp", backup);
+		typesOfServices.put("back Up", backup);
 		return typesOfServices;
 	}
 

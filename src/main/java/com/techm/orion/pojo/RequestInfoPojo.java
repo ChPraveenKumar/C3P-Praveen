@@ -254,6 +254,16 @@ public class RequestInfoPojo {
 	private String post_memory_info = null;
 	private String post_power_info = null;
 	private String post_version_info = null;
+	
+	private Boolean StartUp;
+
+	public Boolean getStartUp() {
+		return StartUp;
+	}
+
+	public void setStartUp(Boolean startUp) {
+		StartUp = startUp;
+	}
 
 	public int getInfoId() {
 		return infoId;

@@ -121,7 +121,14 @@ public class VNFHelper {
 				System.out.println("" + ret);
 			} else {
 				System.out.println("" + bre.readLine());
+				if(bre.readLine().contains("File exists") ||bre.readLine().contains("File exist"))
+				{
+					result=true;
+				}
+				else
+				{
 				result=false;
+				}
 			}
 			bre.close();
 		} catch (IOException e) {

@@ -20,11 +20,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.ws.rs.POST;
-import javax.ws.rs.core.Response;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.json.XML;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,9 +29,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.google.gson.Gson;
 import com.jcraft.jsch.Channel;
@@ -46,7 +39,6 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.pojo.CreateConfigRequest;
-import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
@@ -908,6 +900,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							exe.printStackTrace();
 
 						}
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
 					} else {
 						value = false;
 						jsonArray = new Gson().toJson(value);
@@ -941,7 +935,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				}
 
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-
+			
+				requestDao.editRequestforReportWebserviceInfo(
+						requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "deliever_config",
+						"4", "In Progress");
+			
 				requestinfo.setAlphanumericReqId(RequestId);
 				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 
@@ -1703,6 +1702,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					String payload = helper.readConfigurationXML(path);
 					// get file from vnf config requests folder
 					// pass file path to vnf helper class push on device method.
+					requestDao.getRouterConfig(requestinfo, "previous");
+
 					boolean result = helper.pushOnVnfDevice(path);
 					if (result) {
 						value = true;
@@ -1724,7 +1725,15 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						} catch (IOException exe) {
 							exe.printStackTrace();
 
+							
 						}
+						requestDao.getRouterConfig(requestinfo, "current");
+
+						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "deliever_config", "1",
+								"In Progress");
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
 					} else {
 						value = false;
 						jsonArray = new Gson().toJson(value);

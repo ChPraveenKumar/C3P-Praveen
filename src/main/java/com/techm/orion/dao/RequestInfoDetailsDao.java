@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -61,32 +62,32 @@ public class RequestInfoDetailsDao {
 		String query1 = null;
 
 		if (field.equalsIgnoreCase("health_check")) {
-			query = "update webserviceInfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliver_configuration")) {
-			query = "update webserviceInfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("network_test")) {
-			query = "update webserviceInfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliever_config")) {
-			query = "update webserviceInfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 
 		else if (field.equalsIgnoreCase("Application_test")) {
-			query = "update webserviceInfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("customer_report")) {
-			query = "update webserviceInfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("generate_configuration")) {
-			query = "update webserviceInfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("pre_health_checkup")) {
-			query = "update webserviceInfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("others_test")) {
-			query = "update webserviceInfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("network_audit")) {
-			query = "update webserviceInfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
 
 		}
 
@@ -102,7 +103,7 @@ public class RequestInfoDetailsDao {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (field.equalsIgnoreCase("customer_report") && status.equals("Success")) {
+		if (field.equalsIgnoreCase("customer_report") && status.contains("Success")) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
 			try {
@@ -151,7 +152,17 @@ public class RequestInfoDetailsDao {
 				java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
 				Timestamp d = null;
 				if (request.getAlphanumericReqId() != null && !request.getAlphanumericReqId().equals("")) {
-					reository.updateElapsedTimeStatus(status, timestamp, "00:00:00", requestId, finalVersion);
+					if (request.getRequestTypeFlag().equals("M")) {
+						Date dateofProcessing = request.getDateofProcessing();
+						d = new java.sql.Timestamp(dateofProcessing.getTime());
+					} else {
+						Date dateofProcessing = request.getSceheduledTime();
+						d =new java.sql.Timestamp(dateofProcessing.getTime());
+					}
+					String diff = calcTimeDiffInMins(timestamp, d);
+					diff = StringUtils.replace(diff, ".", ":");
+					diff = "00:" + diff;
+					reository.updateElapsedTimeStatus(status, timestamp, diff, requestId, finalVersion);
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
@@ -164,9 +175,19 @@ public class RequestInfoDetailsDao {
 				java.util.Date date = new java.util.Date();
 				java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
 				Timestamp d = null;
-				if (request.getAlphanumericReqId() != null && !request.getAlphanumericReqId().equals("")) {
+				/*if (request.getAlphanumericReqId() != null && !request.getAlphanumericReqId().equals("")) {
+					if (request.getRequestTypeFlag().equals("M")) {
+						Date dateofProcessing = request.getDateofProcessing();
+						d = new java.sql.Timestamp(dateofProcessing.getTime());
+					} else {
+						Date dateofProcessing = request.getSceheduledTime();
+						d =new java.sql.Timestamp(dateofProcessing.getTime());
+					}
+					String diff = calcTimeDiffInMins(timestamp, d);
+					diff = StringUtils.replace(diff, ".", ":");
+					diff = "00:" + diff;*/
 					reository.updateElapsedTimeStatus(status, timestamp, "00:00:00", requestId, finalVersion);
-				}
+//				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -448,12 +469,23 @@ public class RequestInfoDetailsDao {
 			String host = requestinfo.getManagementIp();
 			UserPojo userPojo = new UserPojo();
 			userPojo = requestInfoDao.getRouterCredentials();
-
-			String user = userPojo.getUsername();
-			String password = userPojo.getPassword();
+			String user, password;
+			
+			
 			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
-			JSch jsch = new JSch();
+			String type = requestinfo.getAlphanumericReqId().substring(0, Math.min(requestinfo.getAlphanumericReqId().length(), 4));			JSch jsch = new JSch();
+			
+			if(type.equalsIgnoreCase("SNNC")||type.equalsIgnoreCase("SNRC"))
+			{
+				user="c3pteam";
+				password="csr1000v";
+			}
+			else
+			{
+				 user = userPojo.getUsername();
+				 password = userPojo.getPassword();
+			}
 			Channel channel = null;
 			Session session = jsch.getSession(user, host, Integer.parseInt(port));
 			Properties config = new Properties();
@@ -500,6 +532,7 @@ public class RequestInfoDetailsDao {
 			String response = "";
 			String responseDownloadPath = "";
 			try {
+				BackupCurrentRouterConfigurationService.loadProperties();
 				editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
@@ -522,6 +555,41 @@ public class RequestInfoDetailsDao {
 	public String getPreviousMileStoneStatus(String alphanumericReqId, Double version) {
 		RequestInfoEntity requestEntity = reository.findByAlphanumericReqIdAndRequestVersion(alphanumericReqId, version);
 		return requestEntity.getStatus();
+	}
+	
+	
+	public int getStatusForMilestone (String alphanumericReqId, String  version,String field) {		
+		connection = ConnectionFactory.getConnection();
+		String query = null;
+		ResultSet rs1 = null;
+		int status=0;
+		if (field.equalsIgnoreCase("health_check")) {
+			query = "select health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
+		} else if (field.equalsIgnoreCase("network_test")) {
+			query = "select  network_test as dataValue from webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
+		}  else if (field.equalsIgnoreCase("others_test")) {
+			query = "select others_test as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+		} else if (field.equalsIgnoreCase("network_audit")) {
+			query = "select network_audit as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+
+		}
+
+		PreparedStatement preparedStmt;
+		try {
+			
+			preparedStmt = connection.prepareStatement(query);
+			preparedStmt.setString(1, alphanumericReqId);
+			preparedStmt.setString(2, version);
+			rs1 = preparedStmt.executeQuery();
+			
+			while (rs1.next()) {
+				status=rs1.getInt("dataValue");
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		return status;		
 	}
 
 }

@@ -60,7 +60,10 @@ public class HealthCheckTestValidation extends Thread {
 
 	@Autowired
 	RequestInfoDetailsDao requestDao;
-
+	
+	@Autowired 
+	TestStrategeyAnalyser analyser;	
+	
 	@POST
 	@RequestMapping(value = "/healthcheckCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -268,7 +271,7 @@ public class HealthCheckTestValidation extends Thread {
 										}
 										// printResult(input,
 										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-										Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+										Boolean res = analyser.printAndAnalyse(input, channel,
 												configRequest.getRequestId(),
 												Double.toString(configRequest.getRequest_version()),
 												finallistOfTests.get(i), "Health Check");
@@ -405,7 +408,12 @@ public class HealthCheckTestValidation extends Thread {
 					}
 
 				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-
+					String statusVAlue = requestDao.getPreviousMileStoneStatus(
+							requestinfo.getAlphanumericReqId(),
+							requestinfo.getRequestVersion());
+					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "health_check", "4", statusVAlue);				
+				
 					requestinfo.setAlphanumericReqId(RequestId);
 					requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 
@@ -566,7 +574,7 @@ public class HealthCheckTestValidation extends Thread {
 										}
 										// printResult(input,
 										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-										Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+										Boolean res = analyser.printAndAnalyse(input, channel,
 												requestinfo.getAlphanumericReqId(),
 												Double.toString(requestinfo.getRequestVersion()),
 												finallistOfTests.get(i), "Health Check");
@@ -595,8 +603,12 @@ public class HealthCheckTestValidation extends Thread {
 								String status = requestDao.getPreviousMileStoneStatus(
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 
+								int statusData=requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "health_check");
+								if(statusData!=3) {
 								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "health_check", "1", status);
+								}
 							} else if (resultAnalyser.equalsIgnoreCase("Fail")) {
 								// db call for flag set false
 								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
@@ -619,8 +631,12 @@ public class HealthCheckTestValidation extends Thread {
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 								String switchh = "1";
 
-								requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								int statusData=requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "health_check");
+								if(statusData!=3) {
+								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "health_check", "1", status);
+								}
 								// to create final report if success
 								/* finalReportTestSSH.FlagCheckTest(configRequest); */
 

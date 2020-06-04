@@ -1,28 +1,21 @@
 package com.techm.orion.rest;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.ws.rs.POST;
-import javax.ws.rs.core.Response;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -41,14 +34,9 @@ import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.TestDetail;
-import com.techm.orion.entitybeans.TestRules;
 import com.techm.orion.pojo.CreateConfigRequest;
-import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
-import com.techm.orion.service.BackupCurrentRouterConfigurationService;
-import com.techm.orion.service.ErrorCodeValidationDeliveryTest;
-import com.techm.orion.service.HealthCheckTestSSH;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
@@ -65,7 +53,10 @@ public class NetworkTestValidation extends Thread {
 
 	@Autowired
 	RequestInfoDetailsDao requestDao;
-
+	
+	@Autowired 
+	TestStrategeyAnalyser analyser;
+	
 	@POST
 	@RequestMapping(value = "/networkCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -278,7 +269,7 @@ public class NetworkTestValidation extends Thread {
 
 								// printResult(input,
 								// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-								Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+								Boolean res = analyser.printAndAnalyse(input, channel,
 										configRequest.getRequestId(),
 										Double.toString(configRequest
 												.getRequest_version()),
@@ -494,6 +485,11 @@ public class NetworkTestValidation extends Thread {
 			}
 		
 		} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+			String statusVAlue = requestDao.getPreviousMileStoneStatus(
+					requestinfo.getAlphanumericReqId(),
+					requestinfo.getRequestVersion());
+			requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					Double.toString(requestinfo.getRequestVersion()), "network_test", "4",statusVAlue);
 			
 			requestinfo.setAlphanumericReqId(RequestId);
 			requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
@@ -665,7 +661,7 @@ public class NetworkTestValidation extends Thread {
 
 								// printResult(input,
 								// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-								Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+								Boolean res = analyser.printAndAnalyse(input, channel,
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()),
 										finallistOfTests.get(i),"Network Test");
@@ -770,11 +766,15 @@ public class NetworkTestValidation extends Thread {
 										.substring(3, 4)));
 						
 						String status=requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),requestinfo.getRequestVersion());
-			
-						requestInfoDao.editRequestforReportWebserviceInfo(
-								requestinfo.getAlphanumericReqId(), Double
-										.toString(requestinfo.getRequestVersion()),
-								"network_test", "1", status);
+						int statusData=requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "network_test");
+						if(statusData!=3) {
+							requestInfoDao.editRequestforReportWebserviceInfo(
+									requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "network_test", "1",
+									status);
+						}
+
 					}
 					/*
 					 * else if(configRequest.getCertificationBit().substring(0).

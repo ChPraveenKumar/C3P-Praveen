@@ -101,6 +101,9 @@ public class VnfConfigService implements Observer {
 	@Autowired
 	RequestInfoDao requestInfoDao;
 
+	@Autowired 
+	TestStrategeyAnalyser analyser;	
+
 	@SuppressWarnings({ "unchecked", "null" })
 	@POST
 	@RequestMapping(value = "/generateConfiguration", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -533,7 +536,7 @@ public class VnfConfigService implements Observer {
 
 									// printResult(input,
 									// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-									Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+									Boolean res = analyser.printAndAnalyse(input, channel,
 											createConfigRequest.getRequestId(),
 											Double.toString(createConfigRequest.getRequest_version()),
 											finallistOfTests.get(i), "Device Prevalidation");
@@ -682,7 +685,7 @@ public class VnfConfigService implements Observer {
 
 									// printResult(input,
 									// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-									Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+									Boolean res = analyser.printAndAnalyse(input, channel,
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), finallistOfTests.get(i),
 											"Device Prevalidation");

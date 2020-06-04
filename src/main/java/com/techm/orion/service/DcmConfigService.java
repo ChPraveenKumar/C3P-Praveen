@@ -47,6 +47,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Component
@@ -83,7 +84,7 @@ public class DcmConfigService {
 
 		List<RequestInfoEntity> requestDetail = null;
 		List<RequestInfoEntity> requestDetail1 = null;
-		List<RequestInfoEntity> requestDetail2 = null;
+		RequestInfoPojo requestInfoPojo = new RequestInfoPojo();
 
 		try {
 			Map<String, Object> variables = new HashMap<String, Object>();
@@ -201,55 +202,51 @@ public class DcmConfigService {
 
 				}
 			} else {
-				alphaneumeric_req_id = "SLGB-"
-						+ UUID.randomUUID().toString().toUpperCase()
-								.substring(0, 7);
-				entity.setRequestType(configRequest.getRequestType());
-				entity.setAlphanumericReqId(alphaneumeric_req_id);
-
-				SimpleDateFormat sdf1 = new SimpleDateFormat(
-						"dd/MM/yyyy hh:mm:ss");
-
-				String strDate1 = sdf1.format(configRequest
-						.getDateofProcessing());
-				entity.setDateofProcessing(convertStringToTimestamp(strDate1));
-				if (configRequest.getScheduledTime() != "") {
-					entity.setSceheduledTime(convertStringToTimestamp(configRequest
-							.getScheduledTime()));
-				}
-				entity.setCustomer(configRequest.getCustomer());
-				entity.setSiteId(configRequest.getSiteid());
-				entity.setDeviceType(configRequest.getDeviceType());
-				entity.setModel(configRequest.getModel());
-				entity.setOs(configRequest.getOs());
-				entity.setOsVersion(configRequest.getOsVersion());
-				entity.setManagmentIP(configRequest.getManagementIp());
-				entity.setRegion(configRequest.getRegion());
-				entity.setService(configRequest.getService());
-				entity.setHostName(configRequest.getHostname());
-				entity.setVendor(configRequest.getVendor());
-				entity.setNetworkType(configRequest.getNetworkType());
-				entity.setRequestTypeFlag(configRequest.getRequestType_Flag());
-				entity.setRequestVersion(configRequest.getRequest_version());
-				entity.setRequestParentVersion(configRequest
-						.getRequest_parent_version());
-				entity.setFamily(configRequest.getFamily());
-				entity.setSiteName(configRequest.getSiteName());
-				entity.setRequestCreatorName(configRequest
-						.getRequest_creator_name());
-
-				entity.setStartUp(configRequest.getIsStartUp());
-
+				alphaneumeric_req_id = "SLGB-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+				requestInfoPojo.setRequestType(configRequest.getRequestType());
+				requestInfoPojo.setAlphanumericReqId(alphaneumeric_req_id);
+				
+				LocalDateTime nowDate = LocalDateTime.now();
+				Timestamp timestamp = Timestamp.valueOf(nowDate);
+				requestInfoPojo.setRequestCreatedOn(timestamp.toString());
+				
+				requestInfoPojo.setSceheduledTime(configRequest.getScheduledTime());
+				
+				requestInfoPojo.setCustomer(configRequest.getCustomer());
+				requestInfoPojo.setSiteid(configRequest.getSiteid());
+				requestInfoPojo.setDeviceType(configRequest.getDeviceType());
+				requestInfoPojo.setModel(configRequest.getModel());
+				requestInfoPojo.setOs(configRequest.getOs());
+				requestInfoPojo.setOsVersion(configRequest.getOsVersion());				
+				requestInfoPojo.setManagementIp(configRequest.getManagementIp());				
+				requestInfoPojo.setRegion(configRequest.getRegion());
+				requestInfoPojo.setService(configRequest.getService());
+				requestInfoPojo.setHostname(configRequest.getHostname());				
+				requestInfoPojo.setVendor(configRequest.getVendor());
+				requestInfoPojo.setNetworkType(configRequest.getNetworkType());
+				requestInfoPojo.setRequestTypeFlag(configRequest.getRequestType_Flag());
+				requestInfoPojo.setRequestVersion(configRequest.getRequest_version());
+				requestInfoPojo.setRequestParentVersion(configRequest.getRequest_parent_version());
+				requestInfoPojo.setFamily(configRequest.getFamily());
+				requestInfoPojo.setSiteName(configRequest.getSiteName());
+				requestInfoPojo.setRequestCreatorName(configRequest.getRequest_creator_name());
+				
+				requestInfoPojo.setStartUp(configRequest.getIsStartUp());
+				
 				// added new to database
 				// new added parameter for request created by field
-				entity.setRequestCreatorName(configRequest
-						.getRequest_creator_name());
+				requestInfoPojo.setRequestCreatorName(configRequest.getRequest_creator_name());
 				// get templateId to save it
-				entity.setTemplateUsed(configRequest.getTemplateID());
+				requestInfoPojo.setTemplateID(configRequest.getTemplateID());
+			
+		
+				
+				
+				requestInfoPojo.setCertificationSelectionBit(configRequest.getCertificationSelectionBit());
+		
+				
 
-				entity.setCertificationSelectionBit(configRequest
-						.getCertificationSelectionBit());
-
+				
 			}
 			requestInfoSO.setTestsSelected(configRequest.getTestsSelected());
 			variables.put("createConfigRequest", requestInfoSO);
@@ -258,7 +255,7 @@ public class DcmConfigService {
 					&& configRequest.getScheduledTime().equalsIgnoreCase("")) {
 				requestInfoSO.setStatus("In Progress");
 				// validateMessage=validatorConfigManagement.validate(configRequest);
-
+				
 				// update template
 
 				requestType = configRequest.getRequestType();
@@ -271,15 +268,16 @@ public class DcmConfigService {
 
 				if ((requestType.equals("SLGT"))
 						|| (requestType.equals("SLGC"))) {
-
+					
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
-					if (!(requestType.equals("SLGT"))) {
-						if (!requestInfoSO.getTemplateId().isEmpty())
-							templateSuggestionDao
-									.insertTemplateUsageData(requestInfoSO
-											.getTemplateId());
-					}
+					if(!(requestType.equals("SLGT")))
+							{
+					if (!requestInfoSO.getTemplateId().isEmpty())
+						templateSuggestionDao
+								.insertTemplateUsageData(requestInfoSO
+										.getTemplateId());
+							}
 					// validateMessage=requestInfoSO.getProcessID();
 
 					for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -296,7 +294,7 @@ public class DcmConfigService {
 					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
 							configRequest.getRequestId(),
 							configRequest.getTestsSelected(), requestType);
-					// int testStrategyResultsDB=requestInfoDao.
+					
 					JSONArray array = new JSONArray(
 							requestInfoSO.getTestsSelected());
 					if (array.length() != 0) {
@@ -304,8 +302,7 @@ public class DcmConfigService {
 							org.json.JSONObject obj = array.getJSONObject(i);
 							String testname = obj.getString("testName");
 							String reqid = configRequest.getRequestId();
-							// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
-							// "", "",obj.getString("testName"));
+							
 						}
 					}
 					if (testStrategyDBUpdate > 0) {
@@ -337,25 +334,39 @@ public class DcmConfigService {
 							telnetCommunicationSSH.start();
 							// telnetCommunicationSSH.connectToRouter(configRequest);
 						} else if (configRequest.getNetworkType()
-								.equalsIgnoreCase("VNF")) {
-							VNFHelper helper = new VNFHelper();
-							if (configRequest.getVnfConfig() != null) {
-								String filepath = helper.saveXML(
-										configRequest.getVnfConfig(),
-										requestIdForConfig, configRequest);
-								if (filepath != null) {
-
-									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											configRequest);
-									telnetCommunicationSSH.setDaemon(true);
-									telnetCommunicationSSH.start();
-
-								} else {
-									validateMessage = "Failure due to invalid input";
-
-								}
-							}
-
+								.equalsIgnoreCase("VNF")) {/*
+															 * VNFHelper helper
+															 * = new
+															 * VNFHelper(); if
+															 * (configRequest
+															 * .getVnfConfig()
+															 * != null) { String
+															 * filepath =
+															 * helper.saveXML(
+															 * configRequest
+															 * .getVnfConfig(),
+															 * requestIdForConfig
+															 * , configRequest);
+															 * if (filepath !=
+															 * null) {
+															 * 
+															 * TelnetCommunicationSSH
+															 * telnetCommunicationSSH
+															 * = new
+															 * TelnetCommunicationSSH
+															 * ( configRequest);
+															 * telnetCommunicationSSH
+															 * .setDaemon(true);
+															 * telnetCommunicationSSH
+															 * .start();
+															 * 
+															 * } else {
+															 * validateMessage =
+															 * "Failure due to invalid input"
+															 * ;
+															 * 
+															 * } }
+															 */
 						}
 					} else {
 
@@ -364,16 +375,12 @@ public class DcmConfigService {
 					}
 				} else {
 
-					entity.setStatus("In Progress");
-					requestInfoDetailsRepositories.save(entity);
-
-					requestInfoDao.addRequestIDtoWebserviceInfo(
-							entity.getAlphanumericReqId(),
-							Double.toString(entity.getRequestVersion()));
-
-					result.put("result", "true");
-					result.put("requestID", entity.getAlphanumericReqId());
-
+					requestInfoPojo.setStatus("Scheduled");
+				
+					
+					result = dao.insertRequestInDB(requestInfoPojo);
+					
+					
 					hostName = configRequest.getHostname();
 					managementIp = configRequest.getManagementIp();
 
@@ -385,7 +392,8 @@ public class DcmConfigService {
 
 					for (int i = 0; i < requestDetail1.size(); i++) {
 
-						requestinfoid = requestDetail1.get(i).getInfoId();
+						requestinfoid = requestDetail1.get(i)
+								.getInfoId();
 
 					}
 
@@ -409,6 +417,7 @@ public class DcmConfigService {
 				}
 			} else {
 				requestInfoSO.setStatus("Scheduled");
+				
 
 				requestType = configRequest.getRequestType();
 				if (requestType.equals("TS")) {
@@ -422,11 +431,12 @@ public class DcmConfigService {
 						|| (requestType.equals("SLGC"))) {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
-					if (!(requestType.equals("SLGT"))) {
-						if (!requestInfoSO.getTemplateId().isEmpty())
-							templateSuggestionDao
-									.insertTemplateUsageData(requestInfoSO
-											.getTemplateId());
+					if(!(requestType.equals("SLGT")))
+					{
+			if (!requestInfoSO.getTemplateId().isEmpty())
+				templateSuggestionDao
+						.insertTemplateUsageData(requestInfoSO
+								.getTemplateId());
 					}
 
 					for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -444,7 +454,7 @@ public class DcmConfigService {
 					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
 							configRequest.getRequestId(),
 							configRequest.getTestsSelected(), requestType);
-					// int testStrategyResultsDB=requestInfoDao.
+				
 					JSONArray array = new JSONArray(
 							requestInfoSO.getTestsSelected());
 					if (array.length() != 0) {
@@ -484,35 +494,30 @@ public class DcmConfigService {
 						telnetCommunicationSSH.setDaemon(true);
 						telnetCommunicationSSH.start();
 					} else if (configRequest.getNetworkType().equalsIgnoreCase(
-							"VNF")) {
-						VNFHelper helper = new VNFHelper();
-						if (configRequest.getVnfConfig() != null) {
-							String filepath = helper.saveXML(
-									configRequest.getVnfConfig(),
-									requestIdForConfig, configRequest);
-							if (filepath != null) {
-
-								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-										configRequest);
-								telnetCommunicationSSH.setDaemon(true);
-								telnetCommunicationSSH.start();
-
-							}
-						}
-
+							"VNF")) {/*
+									 * VNFHelper helper = new VNFHelper(); if
+									 * (configRequest.getVnfConfig() != null) {
+									 * String filepath = helper.saveXML(
+									 * configRequest.getVnfConfig(),
+									 * requestIdForConfig, configRequest); if
+									 * (filepath != null) {
+									 * 
+									 * TelnetCommunicationSSH
+									 * telnetCommunicationSSH = new
+									 * TelnetCommunicationSSH( configRequest);
+									 * telnetCommunicationSSH.setDaemon(true);
+									 * telnetCommunicationSSH.start();
+									 * 
+									 * } }
+									 */
 					}
 
 				} else {
-
-					entity.setStatus("Scheduled");
-					requestInfoDetailsRepositories.save(entity);
-
-					requestInfoDao.addRequestIDtoWebserviceInfo(
-							entity.getAlphanumericReqId(),
-							Double.toString(entity.getRequestVersion()));
-
-					result.put("result", "true");
-					result.put("requestID", entity.getAlphanumericReqId());
+				
+					requestInfoPojo.setStatus("Scheduled");
+					
+					result = dao.insertRequestInDB(requestInfoPojo);
+					
 
 					hostName = configRequest.getHostname();
 					managementIp = configRequest.getManagementIp();
@@ -525,7 +530,8 @@ public class DcmConfigService {
 
 					for (int i = 0; i < requestDetail1.size(); i++) {
 
-						requestinfoid = requestDetail1.get(i).getInfoId();
+						requestinfoid = requestDetail1.get(i)
+								.getInfoId();
 
 					}
 
@@ -1565,7 +1571,7 @@ public class DcmConfigService {
 				if (output.equalsIgnoreCase("true")) {
 					validateMessage = "Success";
 					if (requestInfoSO.getNetworkType().equalsIgnoreCase(
-							"Legacy")) {
+							"PNF")) {
 						createTemplate(requestInfoSO);
 
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
@@ -1638,7 +1644,7 @@ public class DcmConfigService {
 				// update the scheduler history
 				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
 				if (requestInfoSO.getNetworkType().equalsIgnoreCase(
-						"Legacy")) {
+						"PNF")) {
 					//createTemplate(requestInfoSO);
 
 					// update the scheduler history
@@ -1668,6 +1674,70 @@ public class DcmConfigService {
 				}
 			}
 		}
+			else
+			{
+				
+
+				requestInfoSO.setStatus("Scheduled");
+				result = dao.insertRequestInDB(requestInfoSO);
+
+				for (Map.Entry<String, String> entry : result.entrySet()) {
+					if (entry.getKey() == "requestID") {
+
+						requestIdForConfig = entry.getValue();
+						requestInfoSO.setAlphanumericReqId(requestIdForConfig);
+					}
+					if (entry.getKey() == "result") {
+						res = entry.getValue();
+					}
+
+				}
+				if (pojoList != null) {
+					if (pojoList.isEmpty()) {
+					}
+					// Save the Data in t_create_config_m_attrib_info Table
+					else {
+						for (CreateConfigPojo pojo : pojoList) {
+							pojo.setRequestId(requestInfoSO
+									.getAlphanumericReqId());
+							saveDynamicAttribValue(pojo);
+						}
+					}
+				}
+				createTemplate(requestInfoSO);
+				// update the scheduler history
+				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+				if (requestInfoSO.getNetworkType().equalsIgnoreCase(
+						"PNF")) {
+					//createTemplate(requestInfoSO);
+
+					// update the scheduler history
+					requestSchedulerDao
+							.updateScheduledRequest(requestInfoSO);
+					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+							requestInfoSO);
+					telnetCommunicationSSH.setDaemon(true);
+					telnetCommunicationSSH.start();
+				} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
+						"VNF")) {
+					VNFHelper helper = new VNFHelper();
+					if (requestInfoSO.getVnfConfig() != null) {
+						String filepath = helper.saveXML(
+								requestInfoSO.getVnfConfig(),
+								requestIdForConfig, requestInfoSO);
+						if (filepath != null) {
+
+							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+									requestInfoSO);
+							telnetCommunicationSSH.setDaemon(true);
+							telnetCommunicationSSH.start();
+
+						}
+					}
+
+				}
+			
+			}
 
 		} catch (Exception e) {
 			System.out.println(e);

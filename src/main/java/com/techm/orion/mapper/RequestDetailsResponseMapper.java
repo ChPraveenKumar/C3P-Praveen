@@ -29,6 +29,7 @@ public class RequestDetailsResponseMapper {
 	
 	public List<ServiceRequestPojo> setEntityToPojo(List<RequestInfoEntity> allRequestDetails) {
 		List<ServiceRequestPojo> serviceRequest = new ArrayList<>();
+		if(allRequestDetails!=null) {
 		allRequestDetails.forEach(request -> {
 			ServiceRequestPojo req = new ServiceRequestPojo();
 			req.setAlpha_numeric_req_id(request.getAlphanumericReqId());
@@ -42,6 +43,7 @@ public class RequestDetailsResponseMapper {
 			req.setRequestVersion(request.getRequestVersion());
 			serviceRequest.add(req);
 		});
+		}
 		return serviceRequest;
 	}
 

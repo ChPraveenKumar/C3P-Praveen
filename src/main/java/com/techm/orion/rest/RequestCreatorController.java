@@ -275,7 +275,12 @@ public class RequestCreatorController {
 			LocalDateTime nowDate = LocalDateTime.now();
 			Timestamp timestamp = Timestamp.valueOf(nowDate);
 			createConfigRequest.setRequestCreatedOn(timestamp.toString());
-
+			if (!json.get("networkType").toString().equals("") && json.get("networkType").toString()!=null) {
+			createConfigRequest.setNetworkType(json.get("networkType").toString());
+			}else {
+				DeviceDiscoveryEntity networkfunctio =deviceRepo.findDVNFSupportByDHostName(createConfigRequest.getHostname());
+				createConfigRequest.setNetworkType(networkfunctio.getdVNFSupport());
+			}
 			/* Get Cammands and Template attribute selected Features */
 			org.json.simple.JSONArray featureListJson = null;
 			if (json.containsKey("selectedFeatures")) {
@@ -303,11 +308,10 @@ public class RequestCreatorController {
 			boolean flag = false;
 			if (json.get("networkType").toString().equals("VNF")) {
 				JSONObject vnfFinalObject = new JSONObject();
-				JSONArray fianlJson = new JSONArray();
-				
-				JSONArray vnfattribJson = new JSONArray();
+				JSONArray fianlJson = new JSONArray();				
 				
 				for (String feature : featureList) {
+					JSONArray vnfattribJson = new JSONArray();
 					String templateId = createConfigRequest.getTemplateID();
 					List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = service
 							.getByAttribTemplateAndFeatureName(templateId, feature);
@@ -320,7 +324,7 @@ public class RequestCreatorController {
 
 							String attribLabel = object.get("label").toString();
 							String attribName = object.get("name").toString();
-							if (attribLabel.equals(attr.getAttribLabel()) && attribName.equals(attr.getAttribName())) {
+							if ( attribName.equals(attr.getAttribName()) && attribLabel.equals(attr.getAttribLabel())) {
 								vnfattribJson.add(object);
 								break AA;
 					

@@ -81,6 +81,16 @@ public class PingTest {
 				break;
 			/* System.out.print(new String(tmp, 0, i)); */
 			String s = new String(tmp, 0, i);
+			
+			if(s.contains("Microsoft"))
+			{
+			int startIndex = s.indexOf("Microsoft ");
+			int endIndex = s.indexOf(">");
+			String toBeReplaced = s.substring(startIndex, endIndex+1);
+			System.out.println("\n"+s.replace(toBeReplaced, ""));
+			
+			s=s.replace(toBeReplaced, "");
+			}
 			if (!(s.equals("")) && s.contains("Destination host unreachable")) {
 
 				flag = false;

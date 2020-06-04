@@ -60,6 +60,9 @@ public class OthersCheckTestValidation extends Thread {
 
 	@Autowired
 	RequestInfoDetailsDao requestDao;
+	
+	@Autowired 
+	TestStrategeyAnalyser analyser;
 
 	@POST
 	@RequestMapping(value = "/otherscheckCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -174,6 +177,7 @@ public class OthersCheckTestValidation extends Thread {
 									results = new ArrayList<Boolean>();
 									for (int i = 0; i < finallistOfTests.size(); i++) {
 										// conduct and analyse the tests
+										ps.println("terminal length 0");
 										ps.println(finallistOfTests.get(i).getTestCommand());
 										try {
 											Thread.sleep(8000);
@@ -181,7 +185,7 @@ public class OthersCheckTestValidation extends Thread {
 										}
 										// printResult(input,
 										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-										Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+										Boolean res = analyser.printAndAnalyse(input, channel,
 												configRequest.getRequestId(),
 												Double.toString(configRequest.getRequest_version()),
 												finallistOfTests.get(i), "Others Test");
@@ -277,6 +281,13 @@ public class OthersCheckTestValidation extends Thread {
 					}
 
 				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+					String statusVAlue = requestDao.getPreviousMileStoneStatus(
+							requestinfo.getAlphanumericReqId(),
+							requestinfo.getRequestVersion());
+
+					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "others_test", "4", statusVAlue);
+				
 					requestinfo.setAlphanumericReqId(RequestId);
 					requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 
@@ -353,6 +364,7 @@ public class OthersCheckTestValidation extends Thread {
 									results = new ArrayList<Boolean>();
 									for (int i = 0; i < finallistOfTests.size(); i++) {
 										// conduct and analyse the tests
+										ps.println("terminal length 0");
 										ps.println(finallistOfTests.get(i).getTestCommand());
 										try {
 											Thread.sleep(8000);
@@ -360,7 +372,7 @@ public class OthersCheckTestValidation extends Thread {
 										}
 										// printResult(input,
 										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-										Boolean res = TestStrategeyAnalyser.printAndAnalyse(input, channel,
+										Boolean res = analyser.printAndAnalyse(input, channel,
 												requestinfo.getAlphanumericReqId(),
 												Double.toString(requestinfo.getRequestVersion()),
 												finallistOfTests.get(i), "Others Test");
@@ -389,9 +401,12 @@ public class OthersCheckTestValidation extends Thread {
 								String status = requestDao.getPreviousMileStoneStatus(
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 								String switchh = "1";
-
+								int statusData=requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "others_test");
+								if(statusData!=3) {
 								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "others_test", "1", status);
+								}
 							}
 
 							System.out.println("DONE");

@@ -14,6 +14,7 @@ public class TemplateBasicConfigurationPojo {
 	private String updatedDate;
 	private String comment;
 	private String status;
+	private String networkType;
 
 	private String approver;
 	private String createdBy;
@@ -129,6 +130,12 @@ public class TemplateBasicConfigurationPojo {
 	}
 	public void setSeries(String series) {
 		this.series = series;
+	}
+	public String getNetworkType() {
+		return networkType;
+	}
+	public void setNetworkType(String networkType) {
+		this.networkType = networkType;
 	}
 	
 }
