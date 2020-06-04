@@ -4,14 +4,20 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.techm.orion.entitybeans.OS;
 import com.techm.orion.entitybeans.TestDetail;
+import com.techm.orion.entitybeans.Vendors;
 
 public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer> {
 
 	Set<TestDetail> findByTestIdAndVersion(String testId, String version);
 	
-	List<TestDetail> findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(String deviceType,String deviceModel,String os,String osVersion,String vendor,String region,String networkType);
+	List<TestDetail> findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContaining(String deviceType,String deviceModel,String os,String osVersion,String vendor,String region);
 	
 	
 	

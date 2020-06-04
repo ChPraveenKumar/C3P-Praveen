@@ -70,10 +70,8 @@ public class TemplateSuggestionService implements Observer {
 			String templateId = dcmConfigService.getTemplateName(createConfigRequestDCM.getRegion(),
 					createConfigRequestDCM.getVendor(), createConfigRequestDCM.getModel(),
 					createConfigRequestDCM.getOs(), createConfigRequestDCM.getOsVersion());
-			
-			String networkType=json.get("networkType").toString();		
-			
-			List<String> getFfeatureList = templateSuggestionDao.getListOfFeaturesForDeviceDetail(templateId,networkType);
+
+			List<String> getFfeatureList = templateSuggestionDao.getListOfFeaturesForDeviceDetail(templateId);
 			Set<String> uniqueFeatureList = new HashSet<>(getFfeatureList);
 			// uniqueFeatureList.addAll(getFfeatureList);
 			List<String> featureList = new ArrayList<>(uniqueFeatureList);

@@ -59,7 +59,6 @@ import com.techm.orion.entitybeans.DiscoveryResultDeviceDetailsEntity;
 import com.techm.orion.entitybeans.DiscoveryResultDeviceDetailsFlagsEntity;
 import com.techm.orion.entitybeans.DiscoveryResultDeviceInterfaceEntity;
 import com.techm.orion.entitybeans.DiscoveryResultDeviceInterfaceFlagsEntity;
-import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.DeviceDiscoveryDashboardRepository;
 import com.techm.orion.repositories.DeviceDiscoveryInterfaceRepository;
@@ -376,7 +375,6 @@ public class DeviceDiscoveryController implements Observer {
 		JSONObject obj = new JSONObject();
 		try {
 			List<DeviceDiscoveryEntity> getAllDevice = deviceInforepo.findAll();
-			
 			List<DiscoveryResultDeviceDetailsEntity> devices = discoveryResultDeviceDetailsRepo
 					.findAll();
 			JSONArray outputArray = new JSONArray();
@@ -395,12 +393,6 @@ public class DeviceDiscoveryController implements Observer {
 				object.put("status", "Available");
 				object.put("customer", getAllDevice.get(i).getCustSiteId()
 						.getcCustName());
-				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
-				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
-				
-				SiteInfoEntity site=getAllDevice.get(i).getCustSiteId();
-				object.put("site", site.getcSiteName());
-				object.put("region",site.getcSiteRegion());
 
 				object.put("requests", requests.size());
 

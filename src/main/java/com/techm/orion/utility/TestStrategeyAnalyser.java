@@ -1722,7 +1722,7 @@ public class TestStrategeyAnalyser {
 						break;
 					}
 				}
-				if (resultVar ==false) {
+				if (resultVar = false) {
 //					RequestInfoDao requestInfoDao = new RequestInfoDao();
 					// Update main request status to partial success
 					requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "3",

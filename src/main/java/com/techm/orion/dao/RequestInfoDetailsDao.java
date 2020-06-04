@@ -62,32 +62,32 @@ public class RequestInfoDetailsDao {
 		String query1 = null;
 
 		if (field.equalsIgnoreCase("health_check")) {
-			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceInfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliver_configuration")) {
-			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceInfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("network_test")) {
-			query = "update webserviceinfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceInfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliever_config")) {
-			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceInfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 
 		else if (field.equalsIgnoreCase("Application_test")) {
-			query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceInfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("customer_report")) {
-			query = "update webserviceinfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceInfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("generate_configuration")) {
-			query = "update webserviceinfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceInfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("pre_health_checkup")) {
-			query = "update webserviceinfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceInfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("others_test")) {
-			query = "update webserviceinfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceInfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("network_audit")) {
-			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceInfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
 
 		}
 
@@ -532,7 +532,6 @@ public class RequestInfoDetailsDao {
 			String response = "";
 			String responseDownloadPath = "";
 			try {
-				BackupCurrentRouterConfigurationService.loadProperties();
 				editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
@@ -564,13 +563,13 @@ public class RequestInfoDetailsDao {
 		ResultSet rs1 = null;
 		int status=0;
 		if (field.equalsIgnoreCase("health_check")) {
-			query = "select health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
+			query = "select health_checkup as dataValue  from  webserviceInfo  where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("network_test")) {
-			query = "select  network_test as dataValue from webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
+			query = "select  network_test as dataValue from webserviceInfo  where alphanumeric_req_id = ? and version = ? ";
 		}  else if (field.equalsIgnoreCase("others_test")) {
-			query = "select others_test as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+			query = "select others_test as dataValue from  webserviceInfo where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("network_audit")) {
-			query = "select network_audit as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+			query = "select network_audit as dataValue from  webserviceInfo where alphanumeric_req_id = ? and version = ? ";
 
 		}
 
