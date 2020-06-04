@@ -1,0 +1,16 @@
+
+
+<interface xmlns="http://cisco.com/ns/yang/ned/ios">
+			<Virtual-Template>
+				<name>{{ VT_INDEX }}</name>
+				<description>{{ VT_DESCRIPTION }}</description>
+				<ip>
+					<address>
+						<primary>
+							<address>{{ VT_IP_ADDRESS }}</address>
+							<mask>{{ VT_SUBNET_MASK }}</mask>
+						</primary>
+					</address>
+				</ip>				
+			</Virtual-Template>
+</interface>

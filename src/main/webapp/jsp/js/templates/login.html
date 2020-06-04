@@ -1,0 +1,49 @@
+   <div class="container home-pg" >
+        <!-- Header Section -->
+        
+        <!-- Header Section -->
+        <!-- Nav Section -->
+        <div class="container home-pg">
+        <section id="c3p_login">
+            
+            <header>Connect Configure Certification Platform</header>
+            <h1>{{user.model.name}}</h1>
+            <h1>{{user.model.password}}</h1>
+            <div class="bdy">
+                <div class="row form-horizontal mt-30">
+                    <div class="form-group">
+                        <label class="control-label col-lg-4">User Name</label>
+                        <div class="col-lg-8">
+                            <input ng-keyup="$event.keyCode == 13 && login()" type="text" class="form-control" ng-model="user.username"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-horizontal mt-10">
+                    <div class="form-group">
+                        <label class="control-label col-lg-4">Password</label>
+                        <div class="col-lg-8">
+                            <input ng-keyup="$event.keyCode == 13 && login()" type="password" class="form-control col-lg-8" ng-model="user.password"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="row form-horizontal mt-10">
+                    <div class="form-group">
+                        <label class="col-lg-4">&nbsp;</label>
+                        <div class="col-lg-8">
+                            <div class="styled-chkbox">
+                                <input type="checkbox" ng-model="user.keepmelogin" class="chkbox" id="chk_keepmelogin" />
+                                <label for="chk_keepmelogin">Keep me Logged in</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <button  class="btn login pull-right" ng-click="login()">Login</button>
+                </div>
+            </div>
+        </section>
+    </div>
+        <!--    Page Footer Section  -->
+        <footer class="text-center">&copy; Tech Mahindra - 2018</footer>
+        <!--    Page Footer Section  -->
+    </div>

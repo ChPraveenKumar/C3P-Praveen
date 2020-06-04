@@ -1,0 +1,74 @@
+1) For IP address Validation
+	npm install --save is-my-ip-valid 
+	Ref :: https://github.com/LinusU/is-my-ip-valid
+	Implementation ::
+	I have written a common function in commonService.ts
+		HTML ::
+			Whereever you require IP address validation add a function on keyup and pass the model to it.
+			Add class :: ipInput for styling purpose
+			eg :: (keyup)="validateIP(updateIp)" class="ipInput"
+		.ts ::
+			validateIP(enteredValue) {
+    			this.commonService.validateIPAddress(enteredValue);
+  			}
+	
+
+2) To make a particular div draggable
+	npm install angular2-draggable --save 
+	Ref :: https://xieziyu.github.io/angular2-draggable/#/home
+	Implementation ::
+		write ngDraggable in the div which you need to drag.
+		In app.module.ts add the below
+			import { AngularDraggableModule } from 'angular2-draggable';
+			add AngularDraggableModule in [imports]
+
+3) To show Popover/Tooltip
+	npm install popper.js --save
+	npm install ngx-popper --save 
+	Ref :: https://www.npmjs.com/package/ngx-popper
+	Implementation ::
+		In app.module.ts add the below
+			import { NgxPopperModule } from 'ngx-popper';
+			add NgxPopperModule in [imports]
+
+		<td  [popper]="popper1Content" [popperShowOnStart]="false" [popperTrigger]="'hover'" [popperPlacement]="'top'">
+            <popper-content  #popper1Content>
+                    <span>data to be displayed in popover/tooltip</span>
+            </popper-content>
+        </td>
+	
+	NOTE :: [popperTrigger] will have event - click/hover etc..
+			[popperPlacement] will have the position of popover - top,bottom,left,right
+
+
+4) To save/download a file
+	npm install angular-file-saver
+	Ref:: https://www.npmjs.com/package/angular-file-saver	
+	In field-eng-details.component.ts add the below line. Ignore if already pesent.
+	import { saveAs } from 'file-saver/FileSaver';
+
+	To use saveAs(), it is necessary to add the above package for download function.
+
+5) Multi-select Dropdown
+	npm install ng-multiselect-dropdown --save
+	Ref: https://www.npmjs.com/package/ng-multiselect-dropdown
+
+6) Download Functionality Changes And Remote Access
+For Remote Access ::
+Machine A ::
+	Mention IP address of Machine A instead of localhost
+	NOTE :: Services will be on 8080 as they are deployed on 8080 itself.
+			Hence don't change the port 8080 in urls.
+			For all the methods(java file) :: cross origin issue change 
+			While running Angular Application(ng serve):: type the below command
+			ng serve --host IPADDRESS OF MACHINE A --port PORT NUMBER
+			eg:: ng serve --host 10.10.223.85 --port 8070
+
+Machine B(remote Machine) ::
+	No changes in code
+	Just hit the url :: IPADDRESS OF MACHINE A : PORT NUMBER
+	eg:: 10.10.223.85:85
+
+For Download Functionality ::
+ Changes the url :: instead of localhost give Machine A's IP IPADDRESS.
+ 

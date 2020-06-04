@@ -1,0 +1,72 @@
+<div id="schedulePopUp" class="reportPopUp schedulePopUp">
+	<!-- Modal content -->
+	<div class="popup-content">
+		<div class="col-lg-6 col-lg-offset-3 popup-content-header schedulePopUpWidth">
+			<span class="small_logo_icon"></span> <label
+				class="report-header-style"><h4>Schedule Request Delivery</h4></label> <span
+				class="report-close-icon" (click)="closeAddPopUp('schedulePopUp')"></span>
+		</div>
+		<div class="col-lg-6 col-lg-offset-3 scheduleOption">
+			<div class="col-lg-12 pdt-10">
+				<div class="styled-radio col-lg-2">
+					<input type="radio" (change)="checkSchedulerIndex('1')" name="schedulerOption" [value]="false" [(ngModel)]="schedulerValue" class="" />
+					<label>Run</label>
+				</div>
+			
+				<div class="styled-radio col-lg-4">
+          <input type="radio" (change)="checkSchedulerIndex('2')" 
+            [checked] = "schedulerOption === '2'" name="schedulerOption" [value]="true" 
+            [(ngModel)]="schedulerValue" class="" />
+					<label>Schedule </label>
+				</div>
+			</div>
+		</div>
+		<div class="reportPopUpContainer scheduleContainer col-lg-6 col-lg-offset-3 schedulePopUpWidth" 
+		[ngClass]="{'disabledDiv' : schedulerOption == '1'}">
+			
+		 	<div class='input-group date ScheduledDate' style="width: 50%">
+        <input type='text' class="form-control" [disabled]="eventDisable"
+        onkeydown="return false"						                    
+        a2e-datetimepicker [options]="startOptions"
+        [(ngModel)]="scedulerDatePicker" name="scedulerDatePicker"
+        [ngStyle]="eventDisable && {'opacity':'0.5'} || !eventDisable && {'border': '1px solid red'}"
+        style="height: 10%;" />
+        <span class="input-group-addon">
+        <span class="glyphicon glyphicon-calendar"
+        [ngStyle]="eventDisable && {'opacity':'0.5'}"></span>
+        </span>
+      </div>
+      <button style="margin-top: -28px;" class="btn btn-primary pull-right" (click)="getScheduledData(true)">Save</button>
+      <h3 class="title second-title mt-10">Scheduled Requests : </h3>
+      <div class="table-responsive mt-10" style="max-height: 200px;">
+        <table st-table="scheduleList"  class="table table-striped hdr-table hdr-sort" st-safe-src="rowCollection">   
+            <thead>
+                <tr>
+                    <th id="display_request_id" (click)="setOrder('display_request_id')" class="" >Request ID</th>
+                    <th id="region" (click)="setOrder('region')" class="" >Status</th>
+                    <th id="vendor" (click)="setOrder('vendor')" class="">Next Execution Time</th>
+                    <th id="model" (click)="setOrder('model')" class="">Action Time</th>
+                    <th id="status" (click)="setOrder('status')" class="">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let schedule of requestsList">
+                  <td>{{schedule.requestId}}</td>
+                  <td>{{schedule.status}}</td>
+                  <td>{{schedule.nextExecutionTime}}</td>
+                  <td>{{schedule.lastExecutionTime}}</td>
+                  <td>
+                    <a ng-show="schedule.showActionReschdule" (click)="scheduleAction('reschedule', schedule.requestId, schedule.version)">Reschedule</a><br>
+                    <a ng-show="schedule.showActionRun" (click)="scheduleAction('run', schedule.requestId, schedule.version)">Run</a><br>
+                    <a ng-show="schedule.showActionCancel" (click)="scheduleAction('cancel', schedule.requestId, schedule.version)">Cancel</a>
+                  </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>       
+  </div>
+  <div class="col-lg-6 col-lg-offset-3 schedulePopUpWidth scheduleBottom">
+    <button *ngIf="schedulerOption == '1'" class="btn btn-primary ml-5 m-5 pull-right" (click)="saveConfiguration($event)" type ="submit">Ok</button>                   
+    <button *ngIf="schedulerOption == '2'"  class="btn btn-primary ml-5 m-5 pull-right" [disabled]="!eventDisable" (click)="scheduleAction('ok')">Ok</button>
+ </div>
+</div>

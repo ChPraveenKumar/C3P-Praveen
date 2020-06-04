@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestRequest TestType="Latency">
+      <Parameters>
+            <RequestID>Request ID </RequestID>
+            <Protocol>IP</Protocol>
+            <TargetIPaddress> ???? </TargetIPaddress>
+            <RepeatCount>5</RepeatCount>
+            <DatagramSize>100</DatagramSize>
+            <TimeoutInSeconds>2</TimeoutInSeconds>
+            <ExtendedCommands>Y</ExtendedCommands>
+            <SourceAddress> ???? </SourceAddress>
+            <TypeOfService> ??? </TypeOfService>
+            <SetDFBitInIPHeader>N</SetDFBitInIPHeader>
+            <ValidateReplyData>N</ValidateReplyData>
+            <DataPattern>0xABCD</DataPattern>
+            <SweepRangeOfSizes>N</SweepRangeOfSizes>
+      </Parameters>
+</TestRequest>

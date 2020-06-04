@@ -1,0 +1,78 @@
+<header class="pb-18">
+    <a ui-sref="Home" class="c3pLogo"></a>
+    <h1 class="c3pTitle">Connect Configuration Certification Platform</h1>
+    
+</header>
+<nav class="navbar navbar-default">
+
+    <div class="container-fluid">
+        <ul class="nav navbar-nav pg-nav" style="width: 100%">
+            <li class="" ng-class="{active : $root.menubar.Home == true}" ng-click="makeMeActive('Home')"><a ui-sref="Home" class="ico-home" >Home</a></li>
+            <li class="" ng-class="{active : $root.menubar.Dashboard == true}" ng-click="makeMeActive('Dashboard')"><a ui-sref="Dashboard" class="ico-dashboard" >Dashboard</a></li>
+            <li class="dropdown" ng-class="{active : $root.menubar.Configuration == true}" ng-click="makeMeActive('Configuration')"><a class="dropdown-toggle ico-config"  data-toggle="dropdown">Configuration<span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li class="dropdown-submenu">
+			        <a class="test" >Create <span class="caret"></span></a>
+			        <ul class="dropdown-menu">
+			           <li><a ui-sref="CMCreate">Legacy</a></li>
+			          <li><a ui-sref="createSDN">SDN/NFV</a></li>
+			          <li><a ui-sref="iosUpdate">IOS update</a></li>
+			        </ul>
+			      </li>
+                  <li><a ui-sref="ViewConfiguration">View</a></li>
+                   <li><a ui-sref="fieldEng">Field Engineering Management</a></li>
+                </ul>
+            </li>
+            <li ng-click="makeMeActive('Report')" ng-class="{active : $root.menubar.Report == true}"><a ui-sref="Reports" class="ico-report">Report</a></li>
+            <li class="dropdown" ng-style="$root.userInfo.showPrivilegeLeveAdmin == false && {'visibility': 'hidden'}" ng-click="makeMeActive('Admin')" ng-class="{active : $root.menubar.Admin == true}"><a class="dropdown-toggle ico-admin"  data-toggle="dropdown">Admin<span class="caret"></span></a>
+            <ul class="dropdown-menu">
+                    <li><a ui-sref="DeviceManagement">Device Management</a></li>
+                    <li><a ui-sref="Admin">IP Management</a></li>
+                    <li><a href="http://localhost:4200/globallist">Global List Management</a></li>
+                    <li><a ui-sref="templateManagement">Template Management</a></li>
+                    <li><a ui-sref="Approval">Template Approval</a></li>
+                    <li class="dropdown-submenu">
+       			 	<a class="test" id="setting">User Management <span class="caret"></span></a>
+       			 		<ul class="dropdown-menu">
+			           		<li><a ui-sref="createSDN">Profile</a></li>
+			          		<li><a ui-sref="createSDN">Role and Resposibilty</a></li>
+			       		 </ul>
+       			 	  </li>
+                  	 </li>
+                  <li class="dropdown-submenu">
+       			 	<a class="test" id="setting">Settings <span class="caret"></span></a>
+  			 	   <ul class="dropdown-menu">
+  			 	  	<li><a class="test" ui-sref="RA">Response Analyser <span class="caret"></span></a>
+  			 	  	<ul class="dropdown-menu">
+  			 	  		 <li><a ui-sref="Alert">Alert Management</a></li>
+  			 	  		 <li><a ui-sref="createSDN">Threshold Parameters</a></li>
+  			 	  	</ul>		 
+  			 	   </ul>
+  			 	  </li>
+             	 </li>
+              </ul>
+            </li>
+             <li class="dropdown  col-lg-push-3 user-menu ml-50">
+                <a ui-sref="Header" style="border: none" class="dropdown-toggle ico-user" data-toggle="dropdown">Welcome {{$root.userInfo.username}}<span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                    <li><a class="profile">View Profile</a></li>
+                    <li ng-click="logOut()"><a class="logout" >Logout</a></li>
+                </ul>
+	            </li>
+	            <li class="col-lg-push-3 mt-5" onclick="helpPopUp()"><a style="border: none" class="ico-help bgBlack"></a></li>
+	            <li class="col-lg-push-3 dropdown "><a ng-click="pendingTemplateList()" style="border: none" class="ico-notif bgBlack dropdown-toggle" data-toggle="dropdown">
+	            <span class="badge badge-notify"> {{$root.notificationCount}}</span></a>
+	            <ul class="dropdown-menu dropdown-slider-noti">
+			      <li ng-style="$root.userInfo.showPrivilegeLeveAdmin == false && {'display': 'none'}" class="dropdown-header" style="border-bottom: 1px solid #80808066; width:113%"><a ui-sref="Approval" class="noti-header-link">Notification : Template Approval</a></li>
+			      <li ng-style="$root.userInfo.showPrivilegeLeveAdmin == false && {'display': 'none'}"  style="width:113%" ng-class="{'notiRead': template.read == '1'}" ng-repeat="template in notiTemplateList track by $index"><a style="color: #337ab7 !important" ui-sref="approvalDetails({templateId: template.templateId,version: template.version,read: 1,isEditable : template.isEditable})">{{template.templateId}} -v {{template.version}} : {{template.status}} </a></li>
+			      <li ng-show="feNotiReqListFlag" class="dropdown-header"  style="border-bottom: 1px solid #80808066;width:113%"><a ui-sref="fieldEng" class="noti-header-link">Notification : FE</a></li>
+			      <li ng-show="feNotiReqListFlag" && {'display': 'none'}" style="width:113%" ng-class="{'notiRead': request.read == '1'}" ng-repeat="request in feNotiReqList track by $index"><a style="color: #337ab7 !important" ui-sref="fieldEngDetails({requestId: request.display_request_id,version: request.request_version,read: 1})">{{request.display_request_id}} -v {{request.request_version}} : {{request.status}}</a></li>
+			     <li ng-show="seNotiReqeListFlag" class="dropdown-header"  style="border-bottom: 1px solid #80808066;width:113%"><a style="cursor: auto;" class="noti-header-link">Notification : SE</a></li>
+			     <li ng-show="seNotiReqeListFlag" style="width:113%" ng-class="{'notiRead': request.read == '1'}" ng-repeat="request in seNotiReqeList track by $index"><a style="color: #337ab7 !important" ui-sref="dashboardReqDetails({dashboardReq_Details: request.display_request_id,version: request.request_version,read: 1})">{{request.display_request_id}} -v {{request.request_version}} : {{request.status}}</a></li>
+					    	   
+	    		</ul>
+			     </li>
+	            <li class="col-lg-push-3 mt-5"><a ng-click="logOut()" class="ico-power"></a></li>
+        </ul>
+    </div>
+</nav> 

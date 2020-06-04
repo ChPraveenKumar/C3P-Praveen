@@ -1,0 +1,123 @@
+
+<div class="container">
+
+	<div class="row">
+
+		<!--    Page Header Section     -->
+		<page-header></page-header>
+		<div class="pg-bdy">
+			<!-- Breadcrumb Section -->
+			<ul class="breadcrumb">
+				<li><a ui-sref="Home">C3P</a></li>
+				<li class="breadcrumbLabel">Admin</li>
+				<li class="active" >Global List Management</li>
+			</ul>
+			<!-- Breadcrumb Section -->
+			<!-- Search Section -->
+			<form id="createCongigForm" novalidate>
+				<div class="panel form-inline border-top mt-5 lbl-normal cmp-normal">
+					<!--    Customer Information     -->
+					<section class="pr-60">
+						<h3 class="title second-title ml-40 mt-5">Attribute Information</h3>
+						<div class="row mt-5">
+						<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Attribute :</label>
+								<div class="col-lg-8">
+									<div class="styled-select">
+										<select ng-model="attributeName"
+											ng-change='onAttributeChange()'>
+											<option value="">Select</option>
+											<option value="Region">Region </option>
+											<option value="Service">Service </option>
+											<option value="Vendor">Vendor </option>
+											<option value="Device Type">Device Type</option>
+											<option value="Model">Model</option>
+											<option value="OS">OS</option>
+											<option value="OS Version">OS Version</option>
+										</select> <span class="caret-container"> <span class="caret"></span>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+							<div class="row mt-5" ng-show="deviceDetails">
+					   		<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Vendor :</label>
+								<div class="col-lg-8 mt-5">
+									<input  required type="text" class="upperCase"
+										ng-value="varHostname" class="disabled" disabled
+										ng-model="configuartion.hostname"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Device Type :</label>
+								<div class="col-lg-8 mt-5">
+									<input required type="text" class="upperCase"
+										ng-value="varHostname" class="disabled" disabled
+										ng-model="configuartion.hostname"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Model :</label>
+								<div class="col-lg-8 mt-5">
+									<input required type="text" class="upperCase"
+										ng-value="varHostname" class="disabled" disabled
+										ng-model="configuartion.hostname"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">OS :</label>
+								<div class="col-lg-8 mt-5">
+									<input required type="text" class="upperCase"
+										ng-value="varHostname" class="disabled" disabled
+										ng-model="configuartion.hostname"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+							
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">OS Version :</label>
+								<div class="col-lg-8 mt-5">
+									<input required type="text" class="upperCase"
+										ng-value="varHostname" class="disabled" disabled
+										ng-model="configuartion.hostname"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+					   	</div>	
+					   	<div class="row mt-5" ng-show="customerDetails">
+					   		<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Region :</label>
+								<div class="col-lg-8 mt-5">
+									<input  required type="text" class="upperCase"
+										ng-value="varHostname" class="disabled" disabled
+										ng-model="configuartion.hostname"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+							<div class="col-lg-4 form-group">
+								<label class=" col-lg-4 text-right">Service :</label>
+								<div class="col-lg-8 mt-5">
+									<input required type="text" class="upperCase"
+										ng-value="varHostname" class="disabled" disabled
+										ng-model="configuartion.hostname"
+										style="text-transform: uppercase" />
+								</div>
+							</div>
+							</div>
+					   	<div class="row mt-5 ">
+					   		<div class="col-lg-12 form-group">
+					   			<button type="submit" class="btn btn-primary pull-right">Add</button>
+					   		</div>
+					   	</div>
+				</div>
+			</form>
+		</div>
+		<!--    Page Footer Section  -->
+		<footer class="text-center">&copy; Tech Mahindra - 2018</footer>
+		<!--    Page Footer Section  -->
+	</div>
+</div>
