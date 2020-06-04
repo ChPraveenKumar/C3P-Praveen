@@ -112,7 +112,7 @@ public class RequestInfoDao {
 
 		/* TimeZ Column added for Time Zone task */
 
-		String sql = "INSERT INTO RequestInfoSO(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
+		String sql = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		connection = ConnectionFactory.getConnection();
@@ -914,34 +914,34 @@ public class RequestInfoDao {
 
 		if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 			if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE concat(alphanumeric_req_id,concat('-v',request_version)) LIKE ? AND RequestOwner=?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE concat(alphanumeric_req_id,concat('-v',request_version)) LIKE ? AND RequestOwner=?";
 			} else if (key.equalsIgnoreCase("Region")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE region LIKE ? AND RequestOwner=?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE region LIKE ? AND RequestOwner=?";
 
 			} else if (key.equalsIgnoreCase("Vendor")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE vendor LIKE ? AND RequestOwner=?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE vendor LIKE ? AND RequestOwner=?";
 
 			} else if (key.equalsIgnoreCase("Model")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE model LIKE ? AND RequestOwner=?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE model LIKE ? AND RequestOwner=?";
 
 			} else if (key.equalsIgnoreCase("Status")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE request_status LIKE ? AND RequestOwner=?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE request_status LIKE ? AND RequestOwner=?";
 
 			}
 		} else {
 			if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE concat(alphanumeric_req_id,concat('-v',request_version)) LIKE ?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE concat(alphanumeric_req_id,concat('-v',request_version)) LIKE ?";
 			} else if (key.equalsIgnoreCase("Region")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE region LIKE ?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE region LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Vendor")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE vendor LIKE ?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE vendor LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Model")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE model LIKE ?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE model LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Status")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE request_status LIKE ?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE request_status LIKE ?";
 
 			}
 		}
@@ -1052,7 +1052,7 @@ public class RequestInfoDao {
 
 				}
 
-				String subQueryOne = "select*from MisArPeSO where request_info_id=" + id;
+				String subQueryOne = "select*from misarpeso where request_info_id=" + id;
 				Statement smt = connection.createStatement();
 				ResultSet rsnew = smt.executeQuery(subQueryOne);
 
@@ -1066,7 +1066,7 @@ public class RequestInfoDao {
 					request.setMisArPeSO(mis);
 				}
 
-				String subQueryTwo = "select*from InternetLcVrfSO where request_info_id=" + id;
+				String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
 				Statement smt1 = connection.createStatement();
 				ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
 
@@ -1086,7 +1086,7 @@ public class RequestInfoDao {
 					request.setInternetLcVrf(iis);
 				}
 
-				String subQueryThree = "select*from DeviceInterfaceSO where request_info_id=" + id;
+				String subQueryThree = "select*from deviceinterfaceso where request_info_id=" + id;
 				Statement smt3 = connection.createStatement();
 				ResultSet rsnew3 = smt3.executeQuery(subQueryThree);
 
@@ -1137,7 +1137,7 @@ public class RequestInfoDao {
 
 	public final List<RequestInfo> getAllRequestInfoData() throws IOException {
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM RequestInfoSO";
+		String query = "SELECT * FROM requestinfoso";
 		ResultSet rs = null;
 		RequestInfoSO requestInfoObj = null;
 		List<RequestInfoSO> requestInfoList1 = null;
@@ -1249,7 +1249,7 @@ public class RequestInfoDao {
 
 	public boolean addRequestIDtoWebserviceInfo(String alphanumeric_req_id, String request_version) {
 		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO webserviceInfo(start_test,generate_config,deliever_config,health_checkup,network_test,application_test,customer_report,filename,latencyResultRes,alphanumeric_req_id,version,pre_health_checkup,others_test)"
+		String sql = "INSERT INTO webserviceinfo(start_test,generate_config,deliever_config,health_checkup,network_test,application_test,customer_report,filename,latencyResultRes,alphanumeric_req_id,version,pre_health_checkup,others_test)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		try {
@@ -1283,7 +1283,7 @@ public class RequestInfoDao {
 
 	public boolean checkDB(String requestId) {
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM webserviceInfo";
+		String query = "SELECT * FROM webserviceinfo";
 		// String query =
 		// "INSERT INTO request_detail(request_id, request_date,
 		// request_status,request_model,request_device_name,request_source) VALUES(2,
@@ -1338,7 +1338,7 @@ public class RequestInfoDao {
 
 	public List<ReoprtFlags> getReportsInfoForAllRequestsDB() {
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM webserviceInfo";
+		String query = "SELECT * FROM webserviceinfo";
 
 		ResultSet rs = null;
 		ReoprtFlags flags = null;
@@ -1384,7 +1384,7 @@ public class RequestInfoDao {
 
 	public List<RequestInfoSO> getCertificationtestvalidation(String value) {
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM RequestInfoSO where alphanumeric_req_id =?";
+		String query = "SELECT * FROM requestinfoso where alphanumeric_req_id =?";
 
 		ResultSet rs = null;
 
@@ -1426,7 +1426,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String query1 = null;
-		query = "update webserviceInfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ? ";
+		query = "update webserviceinfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ? ";
 		PreparedStatement preparedStmt;
 		try {
 			preparedStmt = connection.prepareStatement(query);
@@ -1452,32 +1452,32 @@ public class RequestInfoDao {
 		String query2 = null;
 
 		if (field.equalsIgnoreCase("health_check")) {
-			query = "update webserviceInfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliver_configuration")) {
-			query = "update webserviceInfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("network_test")) {
-			query = "update webserviceInfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliever_config")) {
-			query = "update webserviceInfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 
 		else if (field.equalsIgnoreCase("Application_test")) {
-			query = "update webserviceInfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("customer_report")) {
-			query = "update webserviceInfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("generate_configuration")) {
-			query = "update webserviceInfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("pre_health_checkup")) {
-			query = "update webserviceInfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("others_test")) {
-			query = "update webserviceInfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("network_audit")) {
-			query = "update webserviceInfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
 
 		}
 
@@ -1619,15 +1619,15 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
-			query = "SELECT * FROM RequestInfoSO WHERE request_status NOT IN('Cancelled') and RequestOwner=? and alphanumeric_req_id rlike'SLGC|SLGF|SLGT|SNRC|SNNC|SNNA|SLGB'";
+			query = "SELECT * FROM requestinfoso WHERE request_status NOT IN('Cancelled') and RequestOwner=? and alphanumeric_req_id rlike'SLGC|SLGF|SLGT|SNRC|SNNC|SNNA|SLGB'";
 		} else if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
-			query = "SELECT * FROM RequestInfoSO WHERE request_status NOT IN('Cancelled') and request_creator_name=? and alphanumeric_req_id rlike'SLGC|SLGF|SLGT|SNRC|SNNC|SNNA|SLGB'";
+			query = "SELECT * FROM requestinfoso WHERE request_status NOT IN('Cancelled') and request_creator_name=? and alphanumeric_req_id rlike'SLGC|SLGF|SLGT|SNRC|SNNC|SNNA|SLGB'";
 
 		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
 			// query =
 			// "SELECT * FROM RequestInfoSO WHERE request_status NOT IN('Cancelled') and
 			// alphanumeric_req_id rlike'SR|OS'";
-			query = "SELECT * FROM RequestInfoSO WHERE (request_status NOT IN('Cancelled') AND import_status IS NULL) OR import_status IN('Success')";
+			query = "SELECT * FROM requestinfoso WHERE (request_status NOT IN('Cancelled') AND import_status IS NULL) OR import_status IN('Success')";
 		}
 		// String query =
 		// "INSERT INTO request_detail(request_id, request_date,
@@ -1696,7 +1696,7 @@ public class RequestInfoDao {
 						request.setEndDateofProcessing(covnertTStoString(d1));
 					}
 
-					String subQueryOne = "select*from MisArPeSO where request_info_id=" + id;
+					String subQueryOne = "select*from misarpeso where request_info_id=" + id;
 					Statement smt = connection.createStatement();
 					ResultSet rsnew = smt.executeQuery(subQueryOne);
 
@@ -1710,7 +1710,7 @@ public class RequestInfoDao {
 						request.setMisArPeSO(mis);
 					}
 
-					String subQueryTwo = "select*from InternetLcVrfSO where request_info_id=" + id;
+					String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
 					Statement smt1 = connection.createStatement();
 					ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
 
@@ -1729,7 +1729,7 @@ public class RequestInfoDao {
 						request.setInternetLcVrf(iis);
 					}
 
-					String subQueryThree = "select*from DeviceInterfaceSO where request_info_id=" + id;
+					String subQueryThree = "select*from deviceinterfaceso where request_info_id=" + id;
 					Statement smt3 = connection.createStatement();
 					ResultSet rsnew3 = smt3.executeQuery(subQueryThree);
 
@@ -1768,7 +1768,7 @@ public class RequestInfoDao {
 			throws IOException {
 		connection = ConnectionFactory.getConnection();
 		String ip = null;
-		String query = "SELECT * FROM RequestInfo.EIPAMDBTable WHERE eipam_site_id = ? AND eipam_customer_name=? AND eipam_service=? AND eipam_region=?";
+		String query = "SELECT * FROM requestinfo.EIPAMDBTable WHERE eipam_site_id = ? AND eipam_customer_name=? AND eipam_service=? AND eipam_region=?";
 
 		ResultSet rs = null;
 		EIPAMPojo eipamobj = null;
@@ -1851,7 +1851,7 @@ public class RequestInfoDao {
 
 	public final UserValidationResultDetailPojo checkUsersDB(String username, String password) throws IOException {
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM Users";
+		String query = "SELECT * FROM users";
 		ResultSet rs = null;
 		UserPojo flags = null;
 		List<UserPojo> InfoList1 = null;
@@ -1949,7 +1949,7 @@ public class RequestInfoDao {
 
 		UserPojo userList = new UserPojo();
 		try {
-			String query = "SELECT * FROM RouterUserDeviceManagementTable";
+			String query = "SELECT * FROM routeruserdevicemanagementtable";
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
 
@@ -1972,7 +1972,7 @@ public class RequestInfoDao {
 	public boolean addNewUserToDB(String username, String pass) {
 		connection = ConnectionFactory.getConnection();
 
-		String sql = "INSERT INTO Users(user_name,user_password,user_status)" + "VALUES(?,?,?)";
+		String sql = "INSERT INTO users(user_name,user_password,user_status)" + "VALUES(?,?,?)";
 
 		try {
 			PreparedStatement ps = connection.prepareStatement(sql);
@@ -2002,7 +2002,7 @@ public class RequestInfoDao {
 
 		UserPojo userList = new UserPojo();
 		try {
-			String query = "SELECT * FROM RouterUserDeviceManagementTable";
+			String query = "SELECT * FROM routeruserdevicemanagementtable";
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
 
@@ -2010,7 +2010,7 @@ public class RequestInfoDao {
 
 			if (rs.next()) {
 				String query1 = null;
-				query1 = "update RouterUserDeviceManagementTable set router_username = ?,router_password=? where id = ?";
+				query1 = "update routeruserdevicemanagementtable set router_username = ?,router_password=? where id = ?";
 				PreparedStatement preparedStmt;
 
 				preparedStmt = connection.prepareStatement(query1);
@@ -2024,7 +2024,7 @@ public class RequestInfoDao {
 			}
 
 			else {
-				String sql = "INSERT INTO RouterUserDeviceManagementTable(router_username,router_password)"
+				String sql = "INSERT INTO routeruserdevicemanagementtable(router_username,router_password)"
 						+ "VALUES(?,?)";
 
 				PreparedStatement ps = connection.prepareStatement(sql);
@@ -2035,7 +2035,7 @@ public class RequestInfoDao {
 
 				ps.executeUpdate();
 			}
-			query = "SELECT * FROM RouterUserDeviceManagementTable";
+			query = "SELECT * FROM routeruserdevicemanagementtable";
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
 			while (rs.next()) {
@@ -2260,7 +2260,7 @@ public class RequestInfoDao {
 	public final List<AlertInformationPojo> getALLAlertDataFromDB() throws IOException {
 
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM RequestInfo.AlertInformationTable";
+		String query = "SELECT * FROM requestinfo.alertinformationtable";
 
 		AlertInformationPojo pojo;
 		ResultSet rs = null;
@@ -2543,7 +2543,7 @@ public class RequestInfoDao {
 	public List<RequestInfoSO> getDatasForRequestfromDB(String id) {
 		List<RequestInfoSO> list = null;
 		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM RequestInfo.requestinfoso WHERE alphanumeric_req_id = ?";
+		String query1 = "SELECT * FROM requestinfo.requestinfoso WHERE alphanumeric_req_id = ?";
 		RequestInfoSO request;
 		ResultSet rs = null;
 		int id1;
@@ -2622,7 +2622,7 @@ public class RequestInfoDao {
 
 				}
 
-				String subQueryOne = "select*from MisArPeSO where request_info_id = ?";
+				String subQueryOne = "select*from misarpeso where request_info_id = ?";
 
 				ResultSet rsnew = null;
 				PreparedStatement ps1 = connection.prepareStatement(subQueryOne);
@@ -2639,7 +2639,7 @@ public class RequestInfoDao {
 					request.setMisArPeSO(mis);
 				}
 
-				String subQueryTwo = "select*from InternetLcVrfSO where request_info_id= ?";
+				String subQueryTwo = "select*from internetlcvrfso where request_info_id= ?";
 				ResultSet rsnew1 = null;
 				PreparedStatement ps2 = connection.prepareStatement(subQueryTwo);
 
@@ -2661,7 +2661,7 @@ public class RequestInfoDao {
 					request.setInternetLcVrf(iis);
 				}
 
-				String subQueryThree = "select*from DeviceInterfaceSO where request_info_id= ?";
+				String subQueryThree = "select*from deviceinterfaceso where request_info_id= ?";
 				ResultSet rsnew3 = null;
 				PreparedStatement ps3 = connection.prepareStatement(subQueryThree);
 
@@ -2711,7 +2711,7 @@ public class RequestInfoDao {
 
 		double request_version = 0, request_parent_version = 0;
 		boolean isAutoProgress;
-		String sql = "INSERT INTO RequestInfoSO(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner)"
+		String sql = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		connection = ConnectionFactory.getConnection();
@@ -2968,7 +2968,7 @@ public class RequestInfoDao {
 					fastEthernetIp = request.getMisArPeSO().getFastEthernetIp();
 				}
 
-				String sql1 = "INSERT INTO MisArPeSO(routerVrfVpnDIp, routerVrfVpnDGateway, fastEthernetIp) "
+				String sql1 = "INSERT INTO misarpeso(routerVrfVpnDIp, routerVrfVpnDGateway, fastEthernetIp) "
 						+ "VALUES(?, ?, ?)";
 				PreparedStatement ps1 = connection.prepareStatement(sql1);
 				if (routerVrfVpnDIp != "") {
@@ -2994,7 +2994,7 @@ public class RequestInfoDao {
 
 			} else {
 				String routerVrfVpnDIp = "", routerVrfVpnDGateway = "", fastEthernetIp = "";
-				String sql1 = "INSERT INTO MisArPeSO(routerVrfVpnDIp, routerVrfVpnDGateway, fastEthernetIp) "
+				String sql1 = "INSERT INTO misarpeso(routerVrfVpnDIp, routerVrfVpnDGateway, fastEthernetIp) "
 						+ "VALUES(?, ?, ?)";
 				PreparedStatement ps1 = connection.prepareStatement(sql1);
 				if (routerVrfVpnDIp != "") {
@@ -3053,7 +3053,7 @@ public class RequestInfoDao {
 					encapsulation = request.getDeviceInterfaceSO().getEncapsulation();
 				}
 
-				String sql1 = "INSERT INTO DeviceInterfaceSO(name,description,ip,mask,speed,encapsulation,Bandwidth)"
+				String sql1 = "INSERT INTO deviceinterfaceso(name,description,ip,mask,speed,encapsulation,Bandwidth)"
 						+ "VALUES(?, ?, ?, ?, ?, ?, ?)";
 
 				PreparedStatement ps1 = connection.prepareStatement(sql1);
@@ -3100,7 +3100,7 @@ public class RequestInfoDao {
 				// neighbor2 =null, neighbor3 =null, neighbor4 = null, neighbor5
 				// = null, neighbor6 = null, routerBgp65k = null;
 
-				String sql1 = "INSERT INTO DeviceInterfaceSO(name,description,ip,mask,speed,encapsulation)"
+				String sql1 = "INSERT INTO deviceinterfaceso(name,description,ip,mask,speed,encapsulation)"
 						+ "VALUES(?, ?, ?, ?, ?, ?)";
 				PreparedStatement ps1 = connection.prepareStatement(sql1);
 				ps1.setNull(1, java.sql.Types.VARCHAR);
@@ -3371,67 +3371,67 @@ public class RequestInfoDao {
 
 			if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
 				if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE alphanumeric_req_id = ? AND request_version = ? and request_creator_name=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ? and request_creator_name=?";
 				} else if (key.equalsIgnoreCase("Region")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE region LIKE ?  and request_creator_name=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE region LIKE ?  and request_creator_name=?";
 
 				} else if (key.equalsIgnoreCase("Vendor")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE vendor LIKE ?  and request_creator_name=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE vendor LIKE ?  and request_creator_name=?";
 
 				} else if (key.equalsIgnoreCase("Model")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE model LIKE ?  and request_creator_name=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE model LIKE ?  and request_creator_name=?";
 
 				} else if (key.equalsIgnoreCase("Status")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE request_status LIKE ?  and request_creator_name=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE request_status LIKE ?  and request_creator_name=?";
 
 				}
 			} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
 				if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE alphanumeric_req_id = ? AND request_version = ? and RequestOwner=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ? and RequestOwner=?";
 				} else if (key.equalsIgnoreCase("Region")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE region LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE region LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Vendor")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE vendor LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE vendor LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Model")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE model LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE model LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Status")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE request_status LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE request_status LIKE ?  and RequestOwner=?";
 
 				}
 			} else {
 				if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE alphanumeric_req_id = ? AND request_version = ? and RequestOwner=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ? and RequestOwner=?";
 				} else if (key.equalsIgnoreCase("Region")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE region LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE region LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Vendor")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE vendor LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE vendor LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Model")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE model LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE model LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Status")) {
-					query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE request_status LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfo.requestinfoso WHERE request_status LIKE ?  and RequestOwner=?";
 
 				}
 			}
 		} else {
 			if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE alphanumeric_req_id = ? AND request_version = ?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ?";
 			} else if (key.equalsIgnoreCase("Region")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE region LIKE ?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE region LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Vendor")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE vendor LIKE ?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE vendor LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Model")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE model LIKE ?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE model LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Status")) {
-				query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE request_status LIKE ?";
+				query = "SELECT * FROM requestinfo.requestinfoso WHERE request_status LIKE ?";
 
 			}
 		}
@@ -3617,7 +3617,7 @@ public class RequestInfoDao {
 
 				}
 
-				String subQueryOne = "select*from MisArPeSO where request_info_id=" + id;
+				String subQueryOne = "select*from misarpeso where request_info_id=" + id;
 				Statement smt = connection.createStatement();
 				ResultSet rsnew = smt.executeQuery(subQueryOne);
 
@@ -3631,7 +3631,7 @@ public class RequestInfoDao {
 					request.setMisArPeSO(mis);
 				}
 
-				String subQueryTwo = "select*from InternetLcVrfSO where request_info_id=" + id;
+				String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
 				Statement smt1 = connection.createStatement();
 				ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
 
@@ -3651,7 +3651,7 @@ public class RequestInfoDao {
 					request.setInternetLcVrf(iis);
 				}
 
-				String subQueryThree = "select*from DeviceInterfaceSO where request_info_id=" + id;
+				String subQueryThree = "select*from deviceinterfaceso where request_info_id=" + id;
 				Statement smt3 = connection.createStatement();
 				ResultSet rsnew3 = smt3.executeQuery(subQueryThree);
 
@@ -3699,7 +3699,7 @@ public class RequestInfoDao {
 	public List<RequestInfoSO> getDatasToCompareForRequestfromDB(String id) {
 		List<RequestInfoSO> list = null;
 		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM RequestInfo.requestinfoso WHERE alphanumeric_req_id = ? ORDER BY date_of_processing DESC LIMIT 0,2";
+		String query1 = "SELECT * FROM requestinfo.requestinfoso WHERE alphanumeric_req_id = ? ORDER BY date_of_processing DESC LIMIT 0,2";
 
 		RequestInfoSO request;
 		ResultSet rs = null;
@@ -3789,7 +3789,7 @@ public class RequestInfoDao {
 
 				}
 
-				String subQueryOne = "select*from MisArPeSO where request_info_id = ?";
+				String subQueryOne = "select*from misarpeso where request_info_id = ?";
 				ResultSet rsnew = null;
 				PreparedStatement ps1 = connection.prepareStatement(subQueryOne);
 
@@ -3805,7 +3805,7 @@ public class RequestInfoDao {
 					request.setMisArPeSO(mis);
 				}
 
-				String subQueryTwo = "select*from InternetLcVrfSO where request_info_id= ?";
+				String subQueryTwo = "select*from internetlcvrfso where request_info_id= ?";
 				ResultSet rsnew1 = null;
 				PreparedStatement ps2 = connection.prepareStatement(subQueryTwo);
 
@@ -3827,7 +3827,7 @@ public class RequestInfoDao {
 					request.setInternetLcVrf(iis);
 				}
 
-				String subQueryThree = "select*from DeviceInterfaceSO where request_info_id= ?";
+				String subQueryThree = "select*from deviceinterfaceso where request_info_id= ?";
 				ResultSet rsnew3 = null;
 				PreparedStatement ps3 = connection.prepareStatement(subQueryThree);
 
@@ -3868,7 +3868,7 @@ public class RequestInfoDao {
 			throws IOException {
 
 		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM RequestInfo.CreateSSHConfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
+		String query1 = "SELECT * FROM requestinfo.createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
@@ -3908,7 +3908,7 @@ public class RequestInfoDao {
 	public final String getLogedInUserDetail() throws IOException {
 
 		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM RequestInfo.users WHERE user_status=?";
+		String query1 = "SELECT * FROM requestinfo.users WHERE user_status=?";
 		ResultSet rs = null;
 		UserPojo user = null;
 		try {
@@ -3936,7 +3936,7 @@ public class RequestInfoDao {
 	public final boolean resetUsersDB(String username) {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "update RequestInfo.users set user_status=0 WHERE user_name=?";
+		String query1 = "update requestinfo.users set user_status=0 WHERE user_name=?";
 		try {
 			PreparedStatement ps = connection.prepareStatement(query1);
 
@@ -4192,7 +4192,7 @@ public class RequestInfoDao {
 	public boolean addCertificationTestForRequest(String alphanumeric_req_id, String request_version,
 			String Device_Reachability_Test) {
 		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO CertificationTestValidation(Device_Reachability_Test,Vendor_Test,Device_Model_Test,IOSVersion_Test,PreValidation_Test,ShowIpIntBrief_Cmd,ShowInterface_Cmd,ShowVersion_Cmd,Network_Test,showIpBgpSummary_Cmd,Throughput_Test,FrameLoss_Test,Latency_Test,HealthCheck_Test,alphanumeric_req_id,version,suggestionForFailure)"
+		String sql = "INSERT INTO certificationtestvalidation(Device_Reachability_Test,Vendor_Test,Device_Model_Test,IOSVersion_Test,PreValidation_Test,ShowIpIntBrief_Cmd,ShowInterface_Cmd,ShowVersion_Cmd,Network_Test,showIpBgpSummary_Cmd,Throughput_Test,FrameLoss_Test,Latency_Test,HealthCheck_Test,alphanumeric_req_id,version,suggestionForFailure)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		String suggestion = "NA";
 		if (Device_Reachability_Test.equalsIgnoreCase("2")) {
@@ -4240,7 +4240,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String suggestion = "NA";
-		query = "update CertificationTestValidation set Vendor_Test = ?,IOSVersion_Test = ?,Device_Model_Test  = ?,suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set Vendor_Test = ?,IOSVersion_Test = ?,Device_Model_Test  = ?,suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
 		if (vendorflag == 2) {
 			suggestion = "Please select the correct Vendor from C3P GUI";
 		}
@@ -4272,7 +4272,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String suggestion = "NA";
-		query = "update CertificationTestValidation set actual_vendor = ?,gui_vendor = ?,actual_os_version  = ?,gui_os_version =?,actual_model=?,gui_model=? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set actual_vendor = ?,gui_vendor = ?,actual_os_version  = ?,gui_os_version =?,actual_model=?,gui_model=? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -4303,7 +4303,7 @@ public class RequestInfoDao {
 		String flagFordelieverConfig = "";
 		Map<String, String> hmap = new HashMap<String, String>();
 
-		query = "select * from  CertificationTestValidation where alphanumeric_req_id = ? and version = ? ";
+		query = "select * from  certificationtestvalidation where alphanumeric_req_id = ? and version = ? ";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestId);
@@ -4361,7 +4361,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 
-		query = "update CertificationTestValidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -4383,7 +4383,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 
-		query = "update CertificationTestValidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -4405,11 +4405,11 @@ public class RequestInfoDao {
 		String query = null;
 
 		if (type.equalsIgnoreCase("frameloss")) {
-			query = "update CertificationTestValidation set frameloss = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set frameloss = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (type.equalsIgnoreCase("latency")) {
-			query = "update CertificationTestValidation set latency = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set latency = ? where alphanumeric_req_id = ? and version = ? ";
 		} else {
-			query = "update CertificationTestValidation set throughput = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set throughput = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 		PreparedStatement preparedStmt;
 		try {
@@ -4429,7 +4429,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 
-		query = "update CertificationTestValidation set ShowIpIntBrief_Cmd = ?,ShowInterface_Cmd = ?,ShowVersion_Cmd  = ?,showIpBgpSummary_Cmd=? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set ShowIpIntBrief_Cmd = ?,ShowInterface_Cmd = ?,ShowVersion_Cmd  = ?,showIpBgpSummary_Cmd=? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -4670,7 +4670,7 @@ public class RequestInfoDao {
 	public final List<ConfigurationDataValuePojo> getALLVendorData() throws IOException {
 		connection = ConnectionFactory.getConnection();
 
-		String query = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name='c3p_vendor'";
+		String query = "SELECT * FROM requestinfo.c3p_data_configuration_table where component_name='c3p_vendor'";
 
 		EIPAMPojo pojo;
 		ResultSet rs = null;
@@ -4703,7 +4703,7 @@ public class RequestInfoDao {
 	public final List<ConfigurationDataValuePojo> getALLDeviceTypeData() throws IOException {
 		connection = ConnectionFactory.getConnection();
 
-		String query = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name='c3p_device_type'";
+		String query = "SELECT * FROM requestinfo.c3p_data_configuration_table where component_name='c3p_device_type'";
 
 		EIPAMPojo pojo;
 		ResultSet rs = null;
@@ -4736,7 +4736,7 @@ public class RequestInfoDao {
 	public final List<String> getALLModelData(String vendor, String deviceType) throws IOException {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name=? AND component_make=?";
+		String query1 = "SELECT * FROM requestinfo.c3p_data_configuration_table where component_name=? AND component_make=?";
 		List<String> list = new ArrayList<String>();
 		ResultSet rs = null;
 		try {
@@ -4766,7 +4766,7 @@ public class RequestInfoDao {
 	public final List<String> getALLOSData(String make, String deviceType) throws IOException {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name='c3p_os_type'";
+		String query1 = "SELECT * FROM requestinfo.c3p_data_configuration_table where component_name='c3p_os_type'";
 		List<String> list = new ArrayList<String>();
 		ResultSet rs = null;
 		try {
@@ -4795,7 +4795,7 @@ public class RequestInfoDao {
 	public final List<String> getALLOSVersionData(String os, String model) throws IOException {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name='c3p_os_version'";
+		String query1 = "SELECT * FROM requestinfo.c3p_data_configuration_table where component_name='c3p_os_version'";
 		List<String> list = new ArrayList<String>();
 		List<String> listtoSend = new ArrayList<String>();
 
@@ -5001,7 +5001,7 @@ public class RequestInfoDao {
 	public final List<ConfigurationDataValuePojo> getALLRegionData() throws IOException {
 		connection = ConnectionFactory.getConnection();
 
-		String query = "SELECT * FROM RequestInfo.c3p_data_configuration_table where component_name='c3p_region'";
+		String query = "SELECT * FROM requestinfo.c3p_data_configuration_table where component_name='c3p_region'";
 
 		EIPAMPojo pojo;
 		ResultSet rs = null;
@@ -5034,7 +5034,7 @@ public class RequestInfoDao {
 	public final List<ErrorValidationPojo> getAllErrorCodeFromRouter() throws IOException {
 		connection = ConnectionFactory.getConnection();
 
-		String query = "select * from RequestInfo.errorcodedata where router_error_message is not null";
+		String query = "select * from requestinfo.errorcodedata where router_error_message is not null";
 		ResultSet rs = null;
 		List<ErrorValidationPojo> list = null;
 		try {
@@ -5071,7 +5071,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		String suggestionForErrorDesc = "";
 		try {
-			query = "update webserviceInfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ?";
+			query = "update webserviceinfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ?";
 
 			preparedStmt = connection.prepareStatement(query);
 
@@ -5147,7 +5147,7 @@ public class RequestInfoDao {
 		ErrorValidationPojo errorValidationPojo = new ErrorValidationPojo();
 		connection = ConnectionFactory.getConnection();
 		String query = null;
-		query = "Select * from webserviceInfo  where alphanumeric_req_id = ? and version = ?";
+		query = "Select * from webserviceinfo  where alphanumeric_req_id = ? and version = ?";
 		ResultSet rs = null;
 		PreparedStatement pst = null;
 
@@ -5180,7 +5180,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 
-		query = "SELECT * FROM RequestInfo.RequestInfoSO WHERE alphanumeric_req_id = ? AND request_version = ?";
+		query = "SELECT * FROM requestinfo.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ?";
 
 		ResultSet rs = null;
 		CreateConfigRequest request = new CreateConfigRequest();
@@ -5371,7 +5371,7 @@ public class RequestInfoDao {
 
 		try {
 			if (TestType.equalsIgnoreCase("DeviceTest")) {
-				query = "Select * from DeviceLocked_ManagementIP  where management_ip = ?";
+				query = "Select * from devicelocked_managementip  where management_ip = ?";
 				pst = connection.prepareStatement(query);
 				// pst.setString(1, requestId);
 				pst.setString(1, managementIp);
@@ -5381,7 +5381,7 @@ public class RequestInfoDao {
 					devicelocked = true;
 				}
 			} else {
-				query = "Select * from DeviceLocked_ManagementIP  where management_ip = ? and locked_by = ?";
+				query = "Select * from devicelocked_managementip  where management_ip = ? and locked_by = ?";
 				pst = connection.prepareStatement(query);
 				pst.setString(1, managementIp);
 				pst.setString(2, requestId);
@@ -5409,7 +5409,7 @@ public class RequestInfoDao {
 		PreparedStatement preparedStmt = null;
 		String query = null;
 		try {
-			query = "INSERT INTO DeviceLocked_ManagementIP(management_ip,locked_by,flag)" + "VALUES(?,?,?)";
+			query = "INSERT INTO devicelocked_managementip(management_ip,locked_by,flag)" + "VALUES(?,?,?)";
 
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, managementIp);
@@ -5438,7 +5438,7 @@ public class RequestInfoDao {
 		PreparedStatement preparedStmt = null;
 		String query = null;
 		try {
-			query = "delete from DeviceLocked_ManagementIP where management_ip = ? and locked_by = ? ";
+			query = "delete from devicelocked_managementip where management_ip = ? and locked_by = ? ";
 
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, managementIp);
@@ -5531,7 +5531,7 @@ public class RequestInfoDao {
 	public String getUserTaskIdForRequest(String requestId, String version) {
 		String usertaskid = null;
 		connection = ConnectionFactory.getConnection();
-		String query2 = "select * from  camundaHistory where history_requestId=? and history_versionId=?";
+		String query2 = "select * from  camundahistory where history_requestId=? and history_versionId=?";
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
 			pst.setString(1, requestId);
@@ -6206,7 +6206,7 @@ public class RequestInfoDao {
 			String key) throws IOException {
 
 		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM RequestInfo.CreateSSHConfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
+		String query1 = "SELECT * FROM requestinfo.createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
@@ -6249,7 +6249,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		PreparedStatement preparedStmt;
 		int rs = 0;
-		String query = "update webserviceInfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
+		String query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, "0");
@@ -6258,7 +6258,7 @@ public class RequestInfoDao {
 
 			rs = preparedStmt.executeUpdate();
 
-			query = "update CertificationTestValidation set Device_Reachability_Test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set Device_Reachability_Test = ? where alphanumeric_req_id = ? and version = ? ";
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, "0");
 			preparedStmt.setString(2, requestId);
@@ -6278,7 +6278,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String suggestion = "Please check the connectivity.Issue while performing Health check test";
-		query = "update CertificationTestValidation set suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -6297,7 +6297,7 @@ public class RequestInfoDao {
 
 	public String updateTimeForScheduledRequest(String requestId, String version) throws SQLException {
 		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM RequestInfo.requestinfoso WHERE alphanumeric_req_id=? AND request_version=?";
+		String query1 = "SELECT * FROM requestinfo.requestinfoso WHERE alphanumeric_req_id=? AND request_version=?";
 		ResultSet rs = null;
 		String result = "false";
 
@@ -6431,7 +6431,7 @@ public class RequestInfoDao {
 	public boolean updateEditedAlertData(String alertCode, String description) {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "update RequestInfo.alertinformationtable set alert_description = ? WHERE alert_code=?";
+		String query1 = "update requestinfo.alertinformationtable set alert_description = ? WHERE alert_code=?";
 		try {
 			PreparedStatement ps = connection.prepareStatement(query1);
 			ps.setString(1, description);
@@ -7716,7 +7716,7 @@ public class RequestInfoDao {
 		requestId = request.getRequestId();
 
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM RequestInfoSO where alphanumeric_req_id =?";
+		String query = "SELECT * FROM requestinfoso where alphanumeric_req_id =?";
 		String query1 = "SELECT * FROM webserviceinfo where alphanumeric_req_id =?";
 
 		ResultSet rs = null, rs1 = null;
@@ -8444,7 +8444,7 @@ public class RequestInfoDao {
 
 		try {
 			if (TestType.equalsIgnoreCase("DeviceTest")) {
-				query = "Select * from DeviceLocked_ManagementIP";
+				query = "Select * from devicelocked_managementip";
 				pst = connection.prepareStatement(query);
 
 				rs = pst.executeQuery();
@@ -8477,7 +8477,7 @@ public class RequestInfoDao {
 
 		try {
 
-			query = "delete from DeviceLocked_ManagementIP where locked_by = ?";
+			query = "delete from devicelocked_managementip where locked_by = ?";
 			pst = connection.prepareStatement(query);
 
 			// pst.setString(1, requestId);

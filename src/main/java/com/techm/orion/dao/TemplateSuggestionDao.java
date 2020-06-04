@@ -267,7 +267,7 @@ public class TemplateSuggestionDao {
 
 		try {
 
-			String query1 = "SELECT * FROM RequestInfo.template_usage_data WHERE templateId = ? and Version = ?";
+			String query1 = "SELECT * FROM requestinfo.template_usage_data WHERE templateId = ? and Version = ?";
 
 			PreparedStatement ps = connection.prepareStatement(query1);
 
@@ -321,7 +321,7 @@ public class TemplateSuggestionDao {
 
 		try {
 
-			String query1 = "SELECT * FROM RequestInfo.template_usage_data WHERE templateId = ? and Version = ?";
+			String query1 = "SELECT * FROM requestinfo.template_usage_data WHERE templateId = ? and Version = ?";
 
 			PreparedStatement ps = connection.prepareStatement(query1);
 
@@ -382,7 +382,7 @@ public class TemplateSuggestionDao {
 
 		try {
 
-			String query1 = "SELECT * FROM RequestInfo.errorcodedata WHERE suggestion=?";
+			String query1 = "SELECT * FROM requestinfo.errorcodedata WHERE suggestion=?";
 
 			PreparedStatement ps = connection.prepareStatement(query1);
 
@@ -407,7 +407,7 @@ public class TemplateSuggestionDao {
 		String query = createQueryForVersion(templateVersionList.size());
 		try {
 
-			String query1 = "SELECT * FROM RequestInfo.template_usage_data WHERE " + query
+			String query1 = "SELECT * FROM requestinfo.template_usage_data WHERE " + query
 					+ " and templateId = ? order by Total_Success_Ratio desc,id desc LIMIT 0,1";
 
 			PreparedStatement ps = connection.prepareStatement(query1);
@@ -573,10 +573,10 @@ public class TemplateSuggestionDao {
 	        try {
 
 
-	            String query1 = "SELECT * FROM RequestInfo.templateconfig_basic_details WHERE TempId=? And templateVersion=?";
+	            String query1 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId=? And templateVersion=?";
 
 
-	            String query2 = "SELECT * FROM RequestInfo.templateconfig_basic_details WHERE TempId=? order by templateVersion asc;";
+	            String query2 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId=? order by templateVersion asc;";
 
 
 	            PreparedStatement ps = connection.prepareStatement(query1);
