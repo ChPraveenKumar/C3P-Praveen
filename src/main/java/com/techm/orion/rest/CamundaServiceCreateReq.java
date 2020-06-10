@@ -20,7 +20,7 @@ public class CamundaServiceCreateReq {
 	@SuppressWarnings("unchecked")
 	public void uploadToServer(String requestId,String version,String requestType) throws IOException, JSONException {
         
-		String query = "http://localhost:8080/engine-rest/process-definition/key/C3P_Schedule_Request_Workflow/start";
+		String query = "https://ms-shared-nad.techmahindra.com/000000000035913-platfrm-ip-c3p-camunda-development/engine-rest/process-definition/key/C3P_Schedule_Request_Workflow/start";
 		
         JSONObject obj = new JSONObject();
         JSONObject obj2 = new JSONObject();
@@ -64,7 +64,7 @@ public class CamundaServiceCreateReq {
 	@SuppressWarnings("unchecked")
 	public void uploadToServerNew(String requestId,String version,String requestType) throws IOException, JSONException {
         
-		String query = "http://localhost:8080/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
+		String query = "https://ms-shared-nad.techmahindra.com/000000000035913-platfrm-ip-c3p-camunda-development/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
         
 		JSONObject obj = new JSONObject();
         JSONObject obj2 = new JSONObject();
@@ -113,7 +113,7 @@ public class CamundaServiceCreateReq {
        }
 	
 	public void deleteProcessID(String processId) throws IOException, JSONException {
-		String query = "http://localhost:8080/engine-rest/process-instance/"+processId;
+		String query = "https://ms-shared-nad.techmahindra.com/000000000035913-platfrm-ip-c3p-camunda-development/engine-rest/process-instance/"+processId;
 		
 		URL url = new URL(query);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
