@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class ConnectionFactory {
     //static reference to itself
     private static ConnectionFactory instance = new ConnectionFactory();
-    public static final String URL = "jdbc:mysql://tool-mysql-35913-development/requestinfo?zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true&autoReconnect=true";
+    public static final String URL = "jdbc:mysql://tool-mysql-35913-development/requestinfo?autoReconnect=true&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
     public static final String USER = "root";
     public static final String PASSWORD = "root";
     public static final String DRIVER_CLASS = "com.mysql.jdbc.Driver"; 
