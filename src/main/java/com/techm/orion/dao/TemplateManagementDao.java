@@ -2009,7 +2009,7 @@ public class TemplateManagementDao {
 						isPresent = true;
 						exception = new DuplicateDataException();
 						exception.setError_code("E001");
-						query2 = "SELECT * FROM ErrorCodeData";
+						query2 = "SELECT * FROM errorcodedata";
 						rs1 = pst.executeQuery(query2);
 						while (rs1.next()) {
 							if (rs1.getString("ErrorId").equalsIgnoreCase(exception.getError_code())) {
@@ -2089,7 +2089,7 @@ public class TemplateManagementDao {
 					region = rs1.getString("TempRegion");
 					exception = new DuplicateDataException();
 					exception.setError_code("E001");
-					query2 = "SELECT * FROM ErrorCodeData";
+					query2 = "SELECT * FROM errorcodedata";
 					rs1 = pst.executeQuery(query2);
 					while (rs1.next()) {
 						if (rs1.getString("ErrorId").equalsIgnoreCase(
