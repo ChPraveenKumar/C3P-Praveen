@@ -238,13 +238,13 @@ public class TemplateManagementService implements Observer {
 			JSONObject json = (JSONObject) parser.parse(newFeature);
 
 			AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
-			String templateAndVesion = json.get("templateid").toString() + "_V"
+			String templateAndVesion = json.get("templateid").toString() + "_v"
 					+ json.get("templateVersion").toString();
 			boolean ifTemplateAlreadyPresent = templateDao.checkTemplateVersionAlredyexist(templateAndVesion);
 			if (ifTemplateAlreadyPresent) {
 				double value = Double.parseDouble(json.get("templateVersion").toString());
 				value = value + 0.1;
-				templateAndVesion = json.get("templateid").toString() + "_V" + numberFormat.format(value);
+				templateAndVesion = json.get("templateid").toString() + "_v" + numberFormat.format(value);
 				templateId = json.get("templateid").toString();
 				templateVersion = numberFormat.format(value);
 				addNewFeatureTemplateMngmntPojo.setTemplateid(templateAndVesion);
