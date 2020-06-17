@@ -444,7 +444,7 @@ public class GetTemplateConfigurationData implements Observer {
 			
 			
 			
-			String templateAndVesion = templateId+"_V"+templateVersion;
+			String templateAndVesion = templateId+"_v"+templateVersion;
 			
 			GetTemplateMngmntPojo getTemplateMngmntPojo = new GetTemplateMngmntPojo();
 
