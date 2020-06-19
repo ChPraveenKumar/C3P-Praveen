@@ -213,5 +213,3 @@ public class RequestDetails {
 		return finalObject;
 	}
 }
-
-

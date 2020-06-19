@@ -1,19 +1,13 @@
 package com.techm.orion.rest;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -25,14 +19,11 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -44,36 +35,19 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryDashboardEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryInterfaceEntity;
-import com.techm.orion.entitybeans.DeviceInterfaceEntity;
 import com.techm.orion.entitybeans.DiscoveryResultDeviceDetailsEntity;
-import com.techm.orion.entitybeans.DiscoveryResultDeviceDetailsFlagsEntity;
 import com.techm.orion.entitybeans.DiscoveryResultDeviceInterfaceEntity;
-import com.techm.orion.entitybeans.DiscoveryResultDeviceInterfaceFlagsEntity;
+import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.DeviceDiscoveryDashboardRepository;
 import com.techm.orion.repositories.DeviceDiscoveryInterfaceRepository;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DiscoveryResultDeviceDetailsRepository;
-import com.techm.orion.repositories.DiscoveryResultDeviceInterfaceFlagsRepository;
 import com.techm.orion.repositories.DiscoveryResultDeviceInterfaceRepository;
-import com.techm.orion.repositories.TestDetailsRepository;
-import com.techm.orion.service.DiscoveryInventoryUpdateService;
 import com.techm.orion.service.InventoryManagmentService;
-import com.techm.orion.service.TelnetCommunicationSSH;
-import com.techm.orion.springboot.WebApplication;
-import com.techm.orion.utility.TestStrategeyAnalyser;
-
-import java.net.InetAddress;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
@@ -375,6 +349,7 @@ public class DeviceDiscoveryController implements Observer {
 		JSONObject obj = new JSONObject();
 		try {
 			List<DeviceDiscoveryEntity> getAllDevice = deviceInforepo.findAll();
+			
 			List<DiscoveryResultDeviceDetailsEntity> devices = discoveryResultDeviceDetailsRepo
 					.findAll();
 			JSONArray outputArray = new JSONArray();
@@ -393,9 +368,27 @@ public class DeviceDiscoveryController implements Observer {
 				object.put("status", "Available");
 				object.put("customer", getAllDevice.get(i).getCustSiteId()
 						.getcCustName());
+				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
+				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
+				
+				SiteInfoEntity site=getAllDevice.get(i).getCustSiteId();
+				object.put("site", site.getcSiteName());
+				object.put("region",site.getcSiteRegion());
 
 				object.put("requests", requests.size());
-
+				if(getAllDevice.get(i).getdDeComm().equalsIgnoreCase("0"))
+				{
+				object.put("state", "");
+				}
+				else if(getAllDevice.get(i).getdDeComm().equalsIgnoreCase("1"))
+				{
+					object.put("state", "Commissioned");
+	
+				}
+				else if(getAllDevice.get(i).getdDeComm().equalsIgnoreCase("2"))
+				{
+					object.put("state", "Decommissioned");
+				}
 				/*
 				 * DiscoveryResultDeviceDetailsFlagsEntity flags=new
 				 * DiscoveryResultDeviceDetailsFlagsEntity();
@@ -445,17 +438,21 @@ public class DeviceDiscoveryController implements Observer {
 		try {
 			List<DiscoveryResultDeviceDetailsEntity> device = discoveryResultDeviceDetailsRepo
 					.findBydHostname(hostname);
-			List<DiscoveryResultDeviceInterfaceEntity> interfaceList = new ArrayList<DiscoveryResultDeviceInterfaceEntity>();
-			List<DiscoveryResultDeviceInterfaceFlagsEntity> interfaceFlagList = new ArrayList<DiscoveryResultDeviceInterfaceFlagsEntity>();
 
 			List<DeviceDiscoveryEntity> inventoryList = deviceInforepo
 					.findBydHostName(hostname);
+			
 			List<DeviceDiscoveryInterfaceEntity> interfaceListInventory = deviceinterfaceRepo
 					.findByDevice(inventoryList.get(0));
 
 			for (int i = 0; i < interfaceListInventory.size(); i++) {
 				interfaceListInventory.get(i).setDevice(null);
-
+				
+				String getiIntSubnet = interfaceListInventory.get(i).getiIntSubnet();
+				InetAddress netmask = InetAddress.getByName(getiIntSubnet);
+				int cidr = convertNetmaskToCIDR(netmask);
+				String finalIpAddress=interfaceListInventory.get(i).getiIntIpaddr()+" / "+cidr;
+				interfaceListInventory.get(i).setiIntIpaddr(finalIpAddress);
 			}
 			for (int j = 0; j < inventoryList.size(); j++) {
 

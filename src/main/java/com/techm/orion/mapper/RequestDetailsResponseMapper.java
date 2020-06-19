@@ -41,6 +41,11 @@ public class RequestDetailsResponseMapper {
 			req.setStatus(request.getStatus());
 			req.setModel(request.getModel());
 			req.setRequestVersion(request.getRequestVersion());
+			if(request.getBatchId()!=null) {
+				req.setBatchId(request.getBatchId());
+			}
+			req.setStartup(request.getStartUp());
+			req.setExecutionMode(request.getRequestTypeFlag());
 			serviceRequest.add(req);
 		});
 		}

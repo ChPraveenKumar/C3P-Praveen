@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Properties;
 
 import org.json.JSONException;
 import org.json.simple.JSONObject;
@@ -16,11 +17,15 @@ import org.json.simple.JSONObject;
 import com.techm.orion.pojo.Global;
 
 public class CamundaServiceCreateReq {
+	public static String TSA_PROPERTIES_FILE = "TSA.properties";
+	public static final Properties TSA_PROPERTIES = new Properties();
 	
 	@SuppressWarnings("unchecked")
 	public void uploadToServer(String requestId,String version,String requestType) throws IOException, JSONException {
         
-		String query = "https://ms-shared-nad.techmahindra.com/000000000035913-platfrm-ip-c3p-camunda-development/engine-rest/process-definition/key/C3P_Schedule_Request_Workflow/start";
+		String serverPath = CamundaServiceCreateReq.TSA_PROPERTIES
+				.getProperty("serverPath");
+		String query = serverPath +"/engine-rest/process-definition/key/C3P_Schedule_Request_Workflow/start";
 		
         JSONObject obj = new JSONObject();
         JSONObject obj2 = new JSONObject();
@@ -63,8 +68,9 @@ public class CamundaServiceCreateReq {
 	
 	@SuppressWarnings("unchecked")
 	public void uploadToServerNew(String requestId,String version,String requestType) throws IOException, JSONException {
-        
-		String query = "https://ms-shared-nad.techmahindra.com/000000000035913-platfrm-ip-c3p-camunda-development/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
+		String serverPath = CamundaServiceCreateReq.TSA_PROPERTIES
+				.getProperty("serverPath");
+		String query = serverPath +"/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
         
 		JSONObject obj = new JSONObject();
         JSONObject obj2 = new JSONObject();
@@ -77,7 +83,7 @@ public class CamundaServiceCreateReq {
 
         
         usernameValueObj.put(new String("value"), Global.loggedInUser);
-        //usernameValueObj.put(new String("value"), "seuser");
+       // usernameValueObj.put(new String("value"), "seuser");
         obj.put(new String("value"), version);
         
         requestTypeValueObj.put(new String("value"), requestType);
@@ -113,7 +119,9 @@ public class CamundaServiceCreateReq {
        }
 	
 	public void deleteProcessID(String processId) throws IOException, JSONException {
-		String query = "https://ms-shared-nad.techmahindra.com/000000000035913-platfrm-ip-c3p-camunda-development/engine-rest/process-instance/"+processId;
+		String serverPath = CamundaServiceCreateReq.TSA_PROPERTIES
+				.getProperty("serverPath");
+		String query = serverPath +"/engine-rest/process-instance/"+processId;
 		
 		URL url = new URL(query);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -132,4 +140,16 @@ public class CamundaServiceCreateReq {
 		
 	}
 	
+	public static boolean loadProperties() throws IOException {
+		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
+				.getResourceAsStream(TSA_PROPERTIES_FILE);
+
+		try {
+			TSA_PROPERTIES.load(tsaPropFile);
+		} catch (IOException exc) {
+			exc.printStackTrace();
+			return false;
+		}
+		return false;
+	}
 }

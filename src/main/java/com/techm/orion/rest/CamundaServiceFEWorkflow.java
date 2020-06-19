@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Properties;
 
 import org.json.JSONException;
 import org.json.simple.JSONObject;
@@ -14,11 +15,15 @@ import org.json.simple.JSONObject;
 import com.techm.orion.pojo.Global;
 
 public class CamundaServiceFEWorkflow {
-
+	public static String TSA_PROPERTIES_FILE = "TSA.properties";
+	public static final Properties TSA_PROPERTIES = new Properties();
+	
 	@SuppressWarnings("unchecked")
 	public void initiateFEWorkflow(String templateId, String version) throws IOException, JSONException {
 
-		String query = "http://localhost:8080/engine-rest/process-definition/key/C3P_Template_Approval_Workflow/start ";
+		String serverPath = CamundaServiceFEWorkflow.TSA_PROPERTIES
+				.getProperty("serverPath");
+		String query = serverPath +"/engine-rest/process-definition/key/C3P_Template_Approval_Workflow/start ";
 
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -58,7 +63,9 @@ public class CamundaServiceFEWorkflow {
 	
 	@SuppressWarnings("unchecked")
 	public void completeFEDeviceReachabilityFlow(String userTaskId, boolean status) {
-		String query = "http://localhost:8080/engine-rest/task/"
+		String serverPath = CamundaServiceFEWorkflow.TSA_PROPERTIES
+				.getProperty("serverPath");
+		String query = serverPath +"/engine-rest/task/"
 				+ userTaskId + "/complete";
 		JSONObject statusObj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -114,5 +121,16 @@ public class CamundaServiceFEWorkflow {
 		}
 	}
 
+	public static boolean loadProperties() throws IOException {
+		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
+				.getResourceAsStream(TSA_PROPERTIES_FILE);
 
+		try {
+			TSA_PROPERTIES.load(tsaPropFile);
+		} catch (IOException exc) {
+			exc.printStackTrace();
+			return false;
+		}
+		return false;
+	}
 }

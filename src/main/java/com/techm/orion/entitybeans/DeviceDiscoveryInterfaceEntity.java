@@ -56,6 +56,9 @@ public class DeviceDiscoveryInterfaceEntity implements Serializable {
 
 	@Column(name = "i_int_phy_addr", length=48)
     private String iIntPhyAddr;
+
+	@Column(name = "i_int_connecting_host", length=20)
+    private String iIntConnectingHost;
 	
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	private DeviceDiscoveryEntity device;
@@ -155,5 +158,14 @@ public class DeviceDiscoveryInterfaceEntity implements Serializable {
 	public void setDevice(DeviceDiscoveryEntity device) {
 		this.device = device;
 	}
+
+	public String getiIntConnectingHost() {
+		return iIntConnectingHost;
+	}
+
+	public void setiIntConnectingHost(String iIntConnectingHost) {
+		this.iIntConnectingHost = iIntConnectingHost;
+	}
+	
 }
 

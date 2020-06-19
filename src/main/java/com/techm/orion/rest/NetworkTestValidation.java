@@ -78,7 +78,7 @@ public class NetworkTestValidation extends Thread {
 		String type = RequestId.substring(0,
 				Math.min(RequestId.length(), 4));
 		
-		if(!(type.equals("SLGB")))
+		if (!((type.equals("SLGB") || (type.equals("SLGM")))))
 		{
 
 		try {
@@ -96,7 +96,7 @@ public class NetworkTestValidation extends Thread {
 					"version").toString()));
 
 			
-			if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")||type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
+			if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")||type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")|| type.equalsIgnoreCase("SLGA")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
 				NetworkTestValidation.loadProperties();
 				String host = configRequest.getManagementIp();
 				UserPojo userPojo = new UserPojo();
@@ -494,7 +494,7 @@ public class NetworkTestValidation extends Thread {
 			requestinfo.setAlphanumericReqId(RequestId);
 			requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 					
-			if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")||type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
+			if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")||type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
 				NetworkTestValidation.loadProperties();
 				String host = requestinfo.getManagementIp();
 				UserPojo userPojo = new UserPojo();

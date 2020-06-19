@@ -163,4 +163,9 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	
 	public List<RequestInfoEntity> findByInfoId(int requestinfoid);
 	
+	public List<RequestInfoEntity> findByBatchId(String tempBatchId);
+	
+	@Query(value="select * from c3p_t_request_info r where r.r_alphanumeric_req_id like :keyword%", nativeQuery=true)
+	List<RequestInfoEntity> findRequestsByKeyword(@Param("keyword") String keyword);
+	
 }

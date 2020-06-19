@@ -19,7 +19,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
@@ -30,7 +29,6 @@ import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.models.TemplateCommandJSONModel;
 import com.techm.orion.pojo.AddNewFeatureTemplateMngmntPojo;
-import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.MasterAttribPojo;
@@ -238,13 +236,13 @@ public class TemplateManagementService implements Observer {
 			JSONObject json = (JSONObject) parser.parse(newFeature);
 
 			AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
-			String templateAndVesion = json.get("templateid").toString() + "_v"
+			String templateAndVesion = json.get("templateid").toString() + "_V"
 					+ json.get("templateVersion").toString();
 			boolean ifTemplateAlreadyPresent = templateDao.checkTemplateVersionAlredyexist(templateAndVesion);
 			if (ifTemplateAlreadyPresent) {
 				double value = Double.parseDouble(json.get("templateVersion").toString());
 				value = value + 0.1;
-				templateAndVesion = json.get("templateid").toString() + "_v" + numberFormat.format(value);
+				templateAndVesion = json.get("templateid").toString() + "_V" + numberFormat.format(value);
 				templateId = json.get("templateid").toString();
 				templateVersion = numberFormat.format(value);
 				addNewFeatureTemplateMngmntPojo.setTemplateid(templateAndVesion);

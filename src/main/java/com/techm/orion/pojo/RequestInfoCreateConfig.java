@@ -86,9 +86,17 @@ public class RequestInfoCreateConfig {
 	
 	private boolean startUp;
 
-	
+	private String commissionFlag;
 
 
+
+	public String getCommissionFlag() {
+		return commissionFlag;
+	}
+
+	public void setCommissionFlag(String commissionFlag) {
+		this.commissionFlag = commissionFlag;
+	}
 
 	public boolean isStartUp() {
 		return startUp;

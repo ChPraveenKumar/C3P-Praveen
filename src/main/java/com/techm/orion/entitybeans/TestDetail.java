@@ -8,14 +8,12 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 /*
@@ -122,6 +120,9 @@ public class TestDetail implements Serializable
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "testDetail")
 	private Set<TestFeatureList> testfeaturelist;
 
+	@Column(name = "network_type", length = 5)
+	private String networkType;
+	
 	public String getRegion() {
 		return region;
 	}
@@ -353,4 +354,11 @@ public class TestDetail implements Serializable
 		this.keyword_attributes = keyword_attributes;
 	}
 
+	public String getNetworkType() {
+		return networkType;
+	}
+
+	public void setNetworkType(String networkType) {
+		this.networkType = networkType;
+	}
 }
