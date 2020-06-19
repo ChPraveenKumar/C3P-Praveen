@@ -1,6 +1,8 @@
 package com.techm.orion.entitybeans;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -12,10 +14,11 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "c3p_t_request_info")
-public class RequestInfoEntity {
+public class RequestInfoEntity implements Serializable{
 	@Id
 	@Column(name = "r_info_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -172,6 +175,47 @@ public class RequestInfoEntity {
 	
 	@Column(name = "r_start_up")
 	private Boolean StartUp;
+	
+	
+	@Transient
+	private String backUpScheduleTime;
+
+	@Transient
+	private Boolean commissionFlag;
+	
+	@Transient
+	private Object selectedFeatures;
+	
+	@Transient
+	private Object dynamicAttribs;
+
+
+
+
+
+	public Object getDynamicAttribs() {
+		return dynamicAttribs;
+	}
+
+	public void setDynamicAttribs(Object dynamicAttribs) {
+		this.dynamicAttribs = dynamicAttribs;
+	}
+
+	public Object getSelectedFeatures() {
+		return selectedFeatures;
+	}
+
+	public void setSelectedFeatures(Object selectedFeatures) {
+		this.selectedFeatures = selectedFeatures;
+	}
+
+	public String getBackUpScheduleTime() {
+		return backUpScheduleTime;
+	}
+
+	public void setBackUpScheduleTime(String backUpScheduleTime) {
+		this.backUpScheduleTime = backUpScheduleTime;
+	}
 
 	public Boolean getStartUp() {
 		return StartUp;
@@ -180,6 +224,22 @@ public class RequestInfoEntity {
 	public void setStartUp(Boolean startUp) {
 		StartUp = startUp;
 	}
+	
+	@Column(name = "r_batch_id")
+	private String batchId;
+
+	
+
+	
+
+	public String getBatchId() {
+		return batchId;
+	}
+
+	public void setBatchId(String batchId) {
+		this.batchId = batchId;
+	}
+	
 
 	public int getInfoId() {
 		return infoId;
@@ -526,6 +586,14 @@ public class RequestInfoEntity {
 
 	public void setFamily(String family) {
 		this.family = family;
+	}
+
+	public Boolean getCommissionFlag() {
+		return commissionFlag;
+	}
+
+	public void setCommissionFlag(Boolean commissionFlag) {
+		this.commissionFlag = commissionFlag;
 	}
  
 	

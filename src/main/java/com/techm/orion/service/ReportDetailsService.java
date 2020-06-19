@@ -9,6 +9,7 @@ import org.json.simple.JSONArray;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
+import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.utility.InvokeFtl;
 
 
@@ -16,7 +17,7 @@ public class ReportDetailsService {
 
 	
 	
-	public String getDetailsForReport(CreateConfigRequestDCM createConfigRequestDCM) throws Exception
+	public String getDetailsForReport(CreateConfigRequestDCM createConfigRequestDCM,RequestInfoPojo request) throws Exception
 	{
 		RequestInfoDao dao=new RequestInfoDao();
 
@@ -55,7 +56,7 @@ public class ReportDetailsService {
 		}
 		if(TestType.equalsIgnoreCase("iosHealthTest"))
 		{
-			data=invokeFtl.iosHealthCheckFile(req.getHostname(),req.getRegion(),"Post");
+			data=invokeFtl.iosHealthCheckFile(request.getHostname(),request.getRegion(),"Post");
 
 		}
 		if(TestType.equalsIgnoreCase("iospreValidate"))
@@ -64,7 +65,7 @@ public class ReportDetailsService {
 			String res=dao.getRequestFlagForReportPreHealthCheck(requestId, version);
 			if(res.equalsIgnoreCase("1"))
 			{
-			data=invokeFtl.iosHealthCheckFile(req.getHostname(),req.getRegion(),"Pre");
+			data=invokeFtl.iosHealthCheckFile(request.getHostname(),request.getRegion(),"Pre");
 			}
 			else
 			{

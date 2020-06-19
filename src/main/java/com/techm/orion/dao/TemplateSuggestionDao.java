@@ -7,8 +7,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONObject;
@@ -41,66 +43,77 @@ public class TemplateSuggestionDao {
 	private Connection connection;
 	Statement statement;
 
-	public List<String> getListOfFeaturesForDeviceDetail(String tempId) throws SQLException {
+	public List<String> getListOfFeaturesForDeviceDetail(String tempId, String networkType) throws SQLException {
 		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
 		PreparedStatement preparedStmt = null;
 		String query = null;
 		String query1 = null;
 		List<String> featureList = new ArrayList<String>();
-	
+
 		List<Integer> featuresChecked = new ArrayList<Integer>();
 		try {
-			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(TempId, '_V', templateVersion) from templateconfig_basic_details where templateStatus='Approved' and TempId= ?)";
 
-			// query =
-			// "select distinct tempCmd.Parent_name FROM TemplateConfig_Feature_Command
-			// tempCmd INNER JOIN TemplateConfig_Feature_Active tempactive on tempCmd.Name =
-			// tempactive.Feature_Selection where tempactive.TempId=? and
-			// tempactive.active=true";
-			preparedStmt = connection.prepareStatement(query);
+			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(TempId, '_V', templateVersion) from templateconfig_basic_details where templateStatus='Approved' and TempId= ?)";
+			String query2 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId=?";
+
+			preparedStmt = connection.prepareStatement(query2);
 			preparedStmt.setString(1, tempId);
 
 			rs = preparedStmt.executeQuery();
+			Set<String> networkTypeList = new HashSet<>();
 			while (rs.next()) {
-				featuresChecked.add(rs.getInt("id"));
-				// itemsToAdd.add(rs.getString("tempCmd.Parent_name"));
-
+				networkTypeList.add(rs.getString("networkType"));
 			}
 			preparedStmt.close();
-			query1 = "select * from c3p_template_master_feature_list where id=?";
-			for (int i = 0; i < featuresChecked.size(); i++) {
+			if (networkTypeList.size() == 1) {
+				for (String data : networkTypeList) {
+					if (data.equals(networkType)) {
+						preparedStmt = connection.prepareStatement(query);
+						preparedStmt.setString(1, tempId);
 
-				preparedStmt = connection.prepareStatement(query1);
+						rs = preparedStmt.executeQuery();
+						while (rs.next()) {
+							featuresChecked.add(rs.getInt("id"));
+							// itemsToAdd.add(rs.getString("tempCmd.Parent_name"));
 
-				preparedStmt.setInt(1, featuresChecked.get(i));
-				rs = preparedStmt.executeQuery();
-				while (rs.next()) {
-					boolean isPresent = false;
-					if (rs.getInt("hasParent") == 1) {
-						if (featureList.size() > 0) {
-							for (int j = 0; j < featureList.size(); j++) {
-								if (rs.getString("command_parent_feature").equalsIgnoreCase(featureList.get(j))) {
-									isPresent = true;
-									break;
+						}
+						preparedStmt.close();
+						query1 = "select * from c3p_template_master_feature_list where id=?";
+						for (int i = 0; i < featuresChecked.size(); i++) {
+
+							preparedStmt = connection.prepareStatement(query1);
+
+							preparedStmt.setInt(1, featuresChecked.get(i));
+							rs = preparedStmt.executeQuery();
+							while (rs.next()) {
+								boolean isPresent = false;
+								if (rs.getInt("hasParent") == 1) {
+									if (featureList.size() > 0) {
+										for (int j = 0; j < featureList.size(); j++) {
+											if (rs.getString("command_parent_feature")
+													.equalsIgnoreCase(featureList.get(j))) {
+												isPresent = true;
+												break;
+											}
+										}
+										if (!isPresent) {
+											featureList.add(rs.getString("command_parent_feature"));
+
+										}
+									} else {
+										featureList.add(rs.getString("command_parent_feature"));
+									}
+								} else if (rs.getInt("hasParent") == 0) {
+									featureList.add(rs.getString("comand_display_feature"));
 								}
 							}
-							if (!isPresent) {
-								featureList.add(rs.getString("command_parent_feature"));
-
-							}
-						} else {
-							featureList.add(rs.getString("command_parent_feature"));
 						}
-					} else if (rs.getInt("hasParent") == 0) {
-						featureList.add(rs.getString("comand_display_feature"));
 					}
+
 				}
 			}
-			/*
-			 * for (String value : featureList) { if(!finalList.contains(value)) {
-			 * finalList.add(value); } }
-			 */
+
 		} finally {
 			DBUtil.close(rs);
 			DBUtil.close(preparedStmt);
@@ -116,7 +129,6 @@ public class TemplateSuggestionDao {
 		String query = null;
 		String query1 = null;
 		List<String> featureList = new ArrayList<String>();
-		List<String> finalList = new ArrayList<String>();
 
 		List<Integer> featuresChecked = new ArrayList<Integer>();
 		try {
@@ -565,87 +577,75 @@ public class TemplateSuggestionDao {
 		}
 		return templateWithAttrib;
 	}
+
 	public JSONObject getBasicDeatilsOfTemplate(String templateId, String version) {
-	        connection = ConnectionFactory.getConnection();
-	        JSONObject basicDetails = new JSONObject();
-	        ResultSet rs = null;
-	        List<String> versionList = new ArrayList<>();
-	        try {
+		connection = ConnectionFactory.getConnection();
+		JSONObject basicDetails = new JSONObject();
+		ResultSet rs = null;
+		List<String> versionList = new ArrayList<>();
+		try {
+			String query1 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId=? And templateVersion=?";
+			String query2 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId=? order by templateVersion asc;";
 
+			PreparedStatement ps = connection.prepareStatement(query1);
+			ps.setString(1, templateId);
+			ps.setString(2, version);
+			rs = ps.executeQuery();
 
-	            String query1 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId=? And templateVersion=?";
+			PreparedStatement ps2 = connection.prepareStatement(query2);
+			ps2.setString(1, templateId);
 
+			String status = null;
+			while (rs.next()) {
+				basicDetails.put("vendor", rs.getString("TempVendor"));
+				basicDetails.put("deviceType", rs.getString("TempDeviceType"));
+				basicDetails.put("model", rs.getString("TempModel"));
+				basicDetails.put("region", rs.getString("TempRegion"));
+				basicDetails.put("os", rs.getString("TempDeviceOs"));
+				basicDetails.put("osVersion", rs.getString("TempOsVersion"));
+				basicDetails.put("creationDate", rs.getString("createdDate"));
+				basicDetails.put("raisedBy", rs.getString("createdby"));
+				basicDetails.put("networkType", rs.getString("networkType"));
+				String comment = rs.getString("comment_section");
+				// String suserComment = StringUtils.substringAfter(comment, "suser , ");
+				// suserComment = StringUtils.substringBefore(suserComment, "admin : ");
+				// String adminComment = StringUtils.substringAfter(comment, "admin : ");
+				// if (suserComment != null && !suserComment.equals("")) {
+				// String substring1 = suserComment.substring(0, 21);
+				// suserComment = StringUtils.substringAfter(suserComment, substring1);
+				// }
+				// if (adminComment != null && !adminComment.equals("")) {
+				// String substring = adminComment.substring(0, 21);
+				// adminComment = StringUtils.substringAfter(adminComment, substring);
+				// }
+				basicDetails.put("comment", comment);
+				// basicDetails.put("note", adminComment);
+				status = rs.getString("templateStatus");
+			}
+			rs = ps2.executeQuery();
+			while (rs.next()) {
+				versionList.add(rs.getString("templateVersion"));
+			}
+			int size = versionList.size();
+			String dbVersion = versionList.get(size - 1);
 
-	            String query2 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId=? order by templateVersion asc;";
+			if (version.equals(dbVersion)) {
+				if (status.equals("Approved")) {
+					basicDetails.put("isEditable", true);
+				} else {
+					basicDetails.put("isEditable", false);
+				}
+			} else {
+				basicDetails.put("isEditable", false);
+			}
+			basicDetails.put("verionsList", versionList);
 
+		} catch (SQLException e) {
 
-	            PreparedStatement ps = connection.prepareStatement(query1);
+		}
+		return basicDetails;
+	}
 
-
-	            ps.setString(1, templateId);
-	            ps.setString(2, version);
-	            rs = ps.executeQuery();
-
-
-	            PreparedStatement ps2 = connection.prepareStatement(query2);
-	            ps2.setString(1, templateId);
-	            
-	            String status = null;
-	            while (rs.next()) {
-	                basicDetails.put("vendor", rs.getString("TempVendor"));
-	                basicDetails.put("deviceType", rs.getString("TempDeviceType"));
-	                basicDetails.put("model", rs.getString("TempModel"));
-	                basicDetails.put("region", rs.getString("TempRegion"));
-	                basicDetails.put("os", rs.getString("TempDeviceOs"));
-	                basicDetails.put("osVersion", rs.getString("TempOsVersion"));
-	                basicDetails.put("creationDate", rs.getString("createdDate"));
-	                basicDetails.put("raisedBy", rs.getString("createdby"));
-	                String comment = rs.getString("comment_section");
-//	                String suserComment = StringUtils.substringAfter(comment, "suser , ");
-//	                suserComment = StringUtils.substringBefore(suserComment, "admin : ");
-//	                String adminComment = StringUtils.substringAfter(comment, "admin : ");
-//	                if (suserComment != null && !suserComment.equals("")) {
-//	                    String substring1 = suserComment.substring(0, 21);
-//	                    suserComment = StringUtils.substringAfter(suserComment, substring1);
-//	                }
-//	                if (adminComment != null && !adminComment.equals("")) {
-//	                    String substring = adminComment.substring(0, 21);
-//	                    adminComment = StringUtils.substringAfter(adminComment, substring);
-//	                }
-	                basicDetails.put("comment", comment);
-	                //basicDetails.put("note", adminComment);
-	                status = rs.getString("templateStatus");
-	            }
-	            rs = ps2.executeQuery();
-	            while (rs.next()) {
-	                versionList.add(rs.getString("templateVersion"));
-	            }
-	            int size = versionList.size();
-	            String dbVersion = versionList.get(size - 1);
-
-
-	            if (version.equals(dbVersion)) {
-	                if (status.equals("Approved")) {
-	                    basicDetails.put("isEditable", true);
-	                } else {
-	                    basicDetails.put("isEditable", false);
-	                }
-	            } else {
-	                basicDetails.put("isEditable", false);
-	            }
-	            basicDetails.put("verionsList", versionList);
-
-
-	        } catch (SQLException e) {
-
-
-	        }
-	        return basicDetails;
-
-
-	    }
-
-	
 	public List<String> getFeatureList(String tempId) throws SQLException {
 		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
@@ -663,7 +663,7 @@ public class TemplateSuggestionDao {
 				featureList.add(rs.getString("comand_display_feature"));
 			}
 			preparedStmt.close();
-			} finally {
+		} finally {
 			DBUtil.close(rs);
 			DBUtil.close(preparedStmt);
 			DBUtil.close(connection);

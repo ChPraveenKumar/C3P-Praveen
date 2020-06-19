@@ -14,7 +14,7 @@ public class TextReport {
 	
 	public static void main(String args[])throws IOException
 	{	
-		TextReport.writeFile("/opt/jboss/HP00487288/ATT/Orion","report.txt","asd");
+		TextReport.writeFile("D:\\HP00487288\\ATT\\Orion","report.txt","asd");
 			
 	}
 	
@@ -22,7 +22,7 @@ public class TextReport {
 	{
 		/*********************create text file code here****************************/
 		//String FILENAME = "D:\\HP00487288\\ATT\\Orion\\report.txt";
-		String FILENAME =responseDownloadPath+"/"+filename;
+		String FILENAME =responseDownloadPath+"\\"+filename;
     	BufferedWriter bw = null;
 		FileWriter fw = null;
 		

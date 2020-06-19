@@ -61,6 +61,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	@Autowired 
 	TestStrategeyAnalyser analyser;
 
+	@Autowired
+	private PostUpgradeHealthCheck postUpgradeHealthCheck;
+	
+	
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -137,7 +141,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				}
 			if (isCheck) {
 				String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
-				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
+				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
 					value = false;
 					String response = invokeFtl.generateDevicelockedFile(createConfigRequest);
 
@@ -173,7 +177,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 
-				} else {
+				} else if (type.equalsIgnoreCase("SLGF")) {
 					value = false;
 					String response = invokeFtl.generateDevicelockedFile(createConfigRequest);
 
@@ -194,7 +198,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 																						// type id OS or SR
 				requestInfoDao.lockDeviceForRequest(createConfigRequest.getManagementIp(),
 						createConfigRequest.getRequestId());
-				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
+				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
 
 					String host = createConfigRequest.getManagementIp();
 					UserPojo userPojo = new UserPojo();
@@ -433,11 +437,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 				}
 
-				else {
+				else if (type.equalsIgnoreCase("SLGF")){
 					// Perform health checks for OS upgrade
-					PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-					obj = osHealthChk.healthcheckCommandTest(request, "Pre");
-
+					//PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
+					//obj = osHealthChk.healthcheckCommandTest(request, "Pre");
+					obj=this.postUpgradeHealthCheck.healthcheckCommandTest(request, "Pre");
 					System.out.println("obj");
 				}
 			}
@@ -480,7 +484,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					}
 				if (isCheck) {
 					String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
+					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")||type.equalsIgnoreCase("SLGA")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
 						value = false;
 						String response = invokeFtl.generateDevicelockedFile(requestinfo);
 
@@ -515,7 +519,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 
-					} else {
+					} else if (type.equalsIgnoreCase("SLGF")) {
 						value = false;
 						String response = invokeFtl.generateDevicelockedFile(requestinfo);
 
@@ -536,7 +540,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 																							// type id OS or SR
 					requestInfoDao.lockDeviceForRequest(requestinfo.getManagementIp(),
 							requestinfo.getAlphanumericReqId());
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
+					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")||type.equalsIgnoreCase("SLGA")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
 
 						String host = requestinfo.getManagementIp();
 						UserPojo userPojo = new UserPojo();
@@ -777,10 +781,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 					}
 
-					else {
+					else if(type.equalsIgnoreCase("SLGF")) {
 						// Perform health checks for OS upgrade
-						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-						obj = osHealthChk.healthcheckCommandTest(request, "Pre");
+						
+						obj=this.postUpgradeHealthCheck.healthcheckCommandTest(request, "Pre");
+						//PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
+						//obj = osHealthChk.healthcheckCommandTest(request, "Pre");
 
 						System.out.println("obj");
 					}
@@ -943,12 +949,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					String type = createConfigRequest.getRequestId().substring(0,
 							Math.min(createConfigRequest.getRequestId().length(), 2));
 					if (type.equalsIgnoreCase("SLGC")) {
-					} else {
-						/*
-						 * requestInfoDao.editRequestforReportWebserviceInfo(
-						 * createConfigRequest.getRequestId(), Double .toString(createConfigRequest
-						 * .getRequest_version()), "pre_health_checkup", "1", "In Progress");
-						 */
+					} else if(type.equalsIgnoreCase("SLGF")){
+						
+						  requestInfoDao.editRequestforReportWebserviceInfo(
+						  createConfigRequest.getRequestId(), Double .toString(createConfigRequest
+						  .getRequest_version()), "pre_health_checkup", "1", "In Progress");
+						 
 
 					}
 
@@ -961,7 +967,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					String type = createConfigRequest.getRequestId().substring(0,
 							Math.min(createConfigRequest.getRequestId().length(), 4));
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
+							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")||type.equalsIgnoreCase("SLGF")) {
 						String response = "";
 						String responseDownloadPath = "";
 						try {
@@ -1074,7 +1080,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 					}
 
-					else {
+					else  if (type.equalsIgnoreCase("SLGF")){
 						String response = "";
 						String responseDownloadPath = "";
 						requestInfoDao.releaselockDeviceForRequest(createConfigRequest.getManagementIp(),
@@ -1131,12 +1137,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					String type = requestinfo.getAlphanumericReqId().substring(0,
 							Math.min(requestinfo.getAlphanumericReqId().length(), 2));
 					if (type.equalsIgnoreCase("SLGC")) {
-					} else {
-						/*
-						 * requestInfoDao.editRequestforReportWebserviceInfo(
-						 * createConfigRequest.getRequestId(), Double .toString(createConfigRequest
-						 * .getRequest_version()), "pre_health_checkup", "1", "In Progress");
-						 */
+					} else if(type.equalsIgnoreCase("SLGF")){
+						
+						  requestInfoDao.editRequestforReportWebserviceInfo(
+						  createConfigRequest.getRequestId(), Double .toString(createConfigRequest
+						  .getRequest_version()), "pre_health_checkup", "1", "In Progress");
+						 
 
 					}
 
@@ -1149,7 +1155,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					String type = requestinfo.getAlphanumericReqId().substring(0,
 							Math.min(requestinfo.getAlphanumericReqId().length(), 4));
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC")) {
+							|| type.equalsIgnoreCase("SNNC")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
 						String response = "";
 						String responseDownloadPath = "";
 						try {
@@ -1252,7 +1258,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 					}
 
-					else {
+					else if(type.equalsIgnoreCase("SLGF")) {
 						String response = "";
 						String responseDownloadPath = "";
 						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),

@@ -123,7 +123,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 					// ftp_image_size=getFTPImageSize();
 					// String ftp_image_name=getFTPImageName();
-					String ftp_image_name = "test2.bin";
+					String ftp_image_name = "c7200-a3js-mz.122-15.T15.bin";
 					available_flash_size = 9;
 					ftp_image_size = 4;
 					// set login to csr flag in DB to 1
@@ -335,7 +335,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						obj.put(new String("output"), jsonArray);
 					}
 
-				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGT")) {
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGT") || json.get("requestType").toString().equalsIgnoreCase("SLGA")) {
 
 					value = true;
 					jsonArray = new Gson().toJson(value);
@@ -473,7 +473,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						session.disconnect();
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
-					} else if (json.get("requestType").toString().equalsIgnoreCase("SLGC")) {
+					} else if (json.get("requestType").toString().equalsIgnoreCase("SLGC")||json.get("requestType").toString().equalsIgnoreCase("SLGM")) {
 					ArrayList<String> commandToPush = new ArrayList<String>();
 
 					JSch jsch = new JSch();
@@ -693,7 +693,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					}
 					session.disconnect();
 
-				} else if (json.get("requestType").toString().equalsIgnoreCase("SNRC")) {
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SNRC")||json.get("requestType").toString().equalsIgnoreCase("SNRM")) {
 					
 
 					//for restconf
@@ -865,7 +865,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				
 					
 					
-				} else if (json.get("requestType").toString().equalsIgnoreCase("SNNC")) {
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SNNC")||json.get("requestType").toString().equalsIgnoreCase("SNNM")) {
 					
 					// push configuration for Netconf devices String
 					String requestId = createConfigRequest.getRequestId();
@@ -1172,7 +1172,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						obj.put(new String("output"), jsonArray);
 					}
 
-				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGT")) {
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGT") || json.get("requestType").toString().equalsIgnoreCase("SLGA")) {
 
 					value = true;
 					jsonArray = new Gson().toJson(value);
@@ -1306,7 +1306,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						session.disconnect();
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
-					} else if (json.get("requestType").toString().equalsIgnoreCase("SLGC")) {
+					} else if (json.get("requestType").toString().equalsIgnoreCase("SLGC")||json.get("requestType").toString().equalsIgnoreCase("SLGM")) {
 					ArrayList<String> commandToPush = new ArrayList<String>();
 
 					JSch jsch = new JSch();
@@ -1518,7 +1518,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					}
 					session.disconnect();
 
-				}else if(json.get("requestType").toString().equalsIgnoreCase("SNRC"))
+				}else if(json.get("requestType").toString().equalsIgnoreCase("SNRC")||json.get("requestType").toString().equalsIgnoreCase("SNRM"))
 				{
 					//for restconf
 					
@@ -1690,7 +1690,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					
 					
 				
-				}else if (json.get("requestType").toString().equalsIgnoreCase("SNNC")) {
+				}else if (json.get("requestType").toString().equalsIgnoreCase("SNNC")||json.get("requestType").toString().equalsIgnoreCase("SNNM")) {
 					
 					// push configuration for Netconf devices String
 					String requestId = requestinfo.getAlphanumericReqId();
