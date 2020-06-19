@@ -98,13 +98,9 @@ public class RequestInfoPojo {
 	private String throughputTest = "0";
 
 	private String testType;
-	
-	private String batchId;
 
 	// Extra fields for master Configuration
 	// Predefine attribute
-
-
 
 	private String osVer;
 	private String hostNameConfig;
@@ -275,13 +271,6 @@ public class RequestInfoPojo {
 
 	public void setInfoId(int infoId) {
 		this.infoId = infoId;
-	}
-	public String getBatchId() {
-		return batchId;
-	}
-
-	public void setBatchId(String batchId) {
-		this.batchId = batchId;
 	}
 
 	public String getOs() {

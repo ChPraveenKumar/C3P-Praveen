@@ -106,7 +106,7 @@ public class ConfigurationManagement {
 				}
 			
 			}
-			if(!requestType.equals("Test") && !requestType.equals("Audit")) {
+			if(!requestType.equals("Test")) {
 			// template suggestion
 			if (json.get("requestType").equals("SLGB")) {
 				configReqToSendToC3pCode.setTemplateID(json.get("templateID").toString());
@@ -1112,7 +1112,7 @@ public class ConfigurationManagement {
 											break;
 										}
 										if (attribName.equals("Attrib21")) {
-											configReqToSendToC3pCode.setAttrib21(attriValue);
+											configReqToSendToC3pCode.setAttrib11(attriValue);
 											break;
 										}
 										if (attribName.equals("Attrib22")) {
@@ -1212,7 +1212,7 @@ public class ConfigurationManagement {
 											break;
 										}
 										if (attribName.equals("Attrib46")) {
-											configReqToSendToC3pCode.setAttrib46(attriValue);
+											configReqToSendToC3pCode.setAttrib36(attriValue);
 											break;
 										}
 										if (attribName.equals("Attrib47")) {

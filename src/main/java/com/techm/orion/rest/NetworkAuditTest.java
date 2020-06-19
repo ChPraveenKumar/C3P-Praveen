@@ -87,7 +87,7 @@ public class NetworkAuditTest extends Thread {
 
 		String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
 
-		if (!((type.equals("SLGB") || (type.equals("SLGM")))))  {
+		if (!(type.equals("SLGB"))) {
 
 			try {
 				configRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
@@ -113,7 +113,7 @@ public class NetworkAuditTest extends Thread {
 					/* Logic to connect router */
 					String privateKeyPath = NetworkAuditTest.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
 
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")|| type.equalsIgnoreCase("SLGA")||type.equalsIgnoreCase("SLGM")) {
+					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")) {
 						JSch jsch = new JSch();
 						Channel channel = null;
 						Session session = jsch.getSession(user, host, Integer.parseInt(port));
@@ -263,18 +263,12 @@ public class NetworkAuditTest extends Thread {
 					} else if (type.equalsIgnoreCase("SLGF")) {
 						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
 						obj = osHealthChk.healthcheckCommandTest(request, "POST");
-					} else if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
+					} else if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 						// TO be done
 						value = true;
 						System.out.println("DONE Network Test");
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
-						String status = requestInfoDao.getPreviousMileStoneStatus(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()));
-						String switchh = "1";
-						requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()), "network_audit", "0",
-								status);
 					}
 
 				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
@@ -296,7 +290,7 @@ public class NetworkAuditTest extends Thread {
 					/* Logic to connect router */
 					String privateKeyPath = NetworkAuditTest.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
 
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")|| type.equalsIgnoreCase("SLGA")||type.equalsIgnoreCase("SLGM")) {
+					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")) {
 						JSch jsch = new JSch();
 						Channel channel = null;
 						Session session = jsch.getSession(user, host, Integer.parseInt(port));
@@ -450,19 +444,12 @@ public class NetworkAuditTest extends Thread {
 					} else if (type.equalsIgnoreCase("SLGF")) {
 						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
 						obj = osHealthChk.healthcheckCommandTest(request, "POST");
-					} else if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
+					} else if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 						// TO be done
 						value = true;
 						System.out.println("DONE Network Test");
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
-						String status = requestDao.getPreviousMileStoneStatus(
-								requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
-						String switchh = "1";
-
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "network_audit", "0", status);
-
 					}
 
 				}

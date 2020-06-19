@@ -64,10 +64,6 @@ public class HealthCheckTestValidation extends Thread {
 	@Autowired 
 	TestStrategeyAnalyser analyser;	
 	
-
-	@Autowired
-	private PostUpgradeHealthCheck postUpgradeHealthCheck;
-	
 	@POST
 	@RequestMapping(value = "/healthcheckCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -92,7 +88,7 @@ public class HealthCheckTestValidation extends Thread {
 
 		String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
 
-		if (!((type.equals("SLGB") || (type.equals("SLGM"))))) {
+		if (!(type.equals("SLGB"))) {
 
 			try {
 				configRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
@@ -129,7 +125,7 @@ public class HealthCheckTestValidation extends Thread {
 					String privateKeyPath = HealthCheckTestValidation.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
 
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
+							|| type.equalsIgnoreCase("SNNC")) {
 						JSch jsch = new JSch();
 						Channel channel = null;
 						Session session = jsch.getSession(user, host, Integer.parseInt(port));
@@ -407,10 +403,8 @@ public class HealthCheckTestValidation extends Thread {
 
 						session.disconnect();
 					} else if (type.equalsIgnoreCase("SLGF")) {
-						//PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-						//obj = osHealthChk.healthcheckCommandTest(request, "POST");
-						obj=this.postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
-
+						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
+						obj = osHealthChk.healthcheckCommandTest(request, "POST");
 					}
 
 				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
@@ -447,7 +441,7 @@ public class HealthCheckTestValidation extends Thread {
 					String port = HealthCheckTestValidation.TSA_PROPERTIES.getProperty("portSSH");
 
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
+							|| type.equalsIgnoreCase("SNNC")) {
 						JSch jsch = new JSch();
 						Channel channel = null;
 						Session session = jsch.getSession(user, host, Integer.parseInt(port));
@@ -708,10 +702,8 @@ public class HealthCheckTestValidation extends Thread {
 
 						session.disconnect();
 					} else if (type.equalsIgnoreCase("SLGF")) {
-						//PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-						//obj = osHealthChk.healthcheckCommandTest(request, "POST");
-						obj=this.postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
-
+						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
+						obj = osHealthChk.healthcheckCommandTest(request, "POST");
 					}
 
 				}

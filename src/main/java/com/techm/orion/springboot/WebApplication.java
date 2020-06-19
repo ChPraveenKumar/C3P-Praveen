@@ -26,7 +26,6 @@ import org.springframework.context.annotation.aspectj.EnableSpringConfigured;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.techm.orion.rest.FinalReportForTTUTest;
 import com.techm.orion.service.StorageService;
@@ -42,7 +41,6 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 @ComponentScan(basePackages = "com.techm.orion")
 @EnableSpringConfigured
 @EnableAsync
-@EnableScheduling
 public class WebApplication extends SpringBootServletInitializer implements CommandLineRunner {
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";

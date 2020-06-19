@@ -47,13 +47,13 @@ public class ShowVersionTest {
 		String[] comp=new String[10];
 		PreValidateTest preValidateTest=new PreValidateTest();
 
-		
+		String exp=ShowVersionTest.PROPERTIES.getProperty("RegexFilterForPreValidation");
+
+		data=exp.split("\\|");
 		try {
 			ShowVersionTest.loadProperties();
 			String filepath=null;
-			String exp=ShowVersionTest.PROPERTIES.getProperty("RegexFilterForPreValidation");
-
-			data=exp.split("\\|");
+			
 			if(type.equalsIgnoreCase("Pre"))
 			{
 			filepath = ShowVersionTest.PROPERTIES

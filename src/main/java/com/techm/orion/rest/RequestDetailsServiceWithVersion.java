@@ -26,13 +26,10 @@ import com.google.gson.JsonParseException;
 import com.techm.orion.dao.RequestDetails;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
-import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
-import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.pojo.CertificationTestPojo;
 import com.techm.orion.pojo.ReoprtFlags;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.SearchParamPojo;
-import com.techm.orion.repositories.DeviceDiscoveryRepository;
 
 @RestController
 @RequestMapping("/requestDetails")
@@ -40,9 +37,6 @@ public class RequestDetailsServiceWithVersion {
 	@Autowired
 	RequestInfoDetailsDao requestRedao;
 
-
-	@Autowired
-	DeviceDiscoveryRepository deviceInforepo;
 	
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -62,29 +56,7 @@ public class RequestDetailsServiceWithVersion {
 			if (value != null && !value.isEmpty()) {
 				try {
 					detailsList = requestRedao.getRequestWithVersion(key, value, version);
-					for(RequestInfoCreateConfig request : detailsList){
-						
-						
-						DeviceDiscoveryEntity device=deviceInforepo.findByDHostName(request.getHostname());
-						if(device.getdDeComm().equalsIgnoreCase("0"))
-						{
-							request.setCommissionFlag("Commission");
-						}
-						else if(device.getdDeComm().equalsIgnoreCase("1"))
-						{
-							request.setCommissionFlag("Decommission");
-
-						}
-						else if(device.getdDeComm().equalsIgnoreCase("2"))
-
-						{
-							request.setCommissionFlag("Commission");
-
-						}
-					}
-					
 					jsonArray = new Gson().toJson(detailsList);
-
 					obj.put(new String("output"), jsonArray);
 					
 				} catch (Exception e) {

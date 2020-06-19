@@ -444,7 +444,7 @@ public class GetTemplateConfigurationData implements Observer {
 			
 			
 			
-			String templateAndVesion = templateId+"_V"+templateVersion;
+			String templateAndVesion = templateId+"_v"+templateVersion;
 			
 			GetTemplateMngmntPojo getTemplateMngmntPojo = new GetTemplateMngmntPojo();
 
@@ -469,14 +469,11 @@ public class GetTemplateConfigurationData implements Observer {
 			temp = temp.replace("[", "${(configRequest.");
 			temp = temp.replace("]", s);
 			getTemplateMngmntPojo.setFinalTemplate(temp);
-			String vendor = null, deviceType = null, model = null, deviceOs = null, osVersion = null, region = null, comment = "",networkType=null;
+			String vendor = null, deviceType = null, model = null, deviceOs = null, osVersion = null, region = null, comment = "";
 			if (json.get("vendor") != null) {
 				vendor = json.get("vendor").toString();
 			} else {
 				vendor = json.get("templateid").toString().substring(2, 4);
-			}
-			if(json.get("networkType")!=null) {
-				networkType=json.get("networkType").toString();
 			}
 			if (json.get("deviceType") != null) {
 				deviceType = json.get("deviceType").toString();
@@ -522,12 +519,12 @@ public class GetTemplateConfigurationData implements Observer {
 						osVersion,
 						region,
 						templateId,
-						templateVersion, comment,networkType);
+						templateVersion, comment);
 				version = templateVersion;
 			} else {
 				tempIDafterSaveBasicDetails = dao.addTemplate(vendor,
 						deviceType, model, deviceOs, osVersion, region,
-						templateId, "1.0", comment,networkType);
+						templateId, "1.0", comment);
 				version = getTemplateMngmntPojo.getTemplateid().substring(getTemplateMngmntPojo.getTemplateid().length()-3);
 			}
 
@@ -770,8 +767,6 @@ public class GetTemplateConfigurationData implements Observer {
 						versioningModelObject.setComment(objToAdd.getComment());
 					}
 					versioningModelObject.setApprover(objToAdd.getApprover());
-					versioningModelObject.setNetworkType(objToAdd.getNetworkType());
-					
 					versioningModelObject.setStatus(objToAdd.getStatus());
 					versioningModelObject.setCreatedBy(objToAdd.getCreatedBy());
 					versioningModelObject.setEditable(objToAdd.isEditable());
@@ -872,7 +867,7 @@ String comment="";
 
 			List<String> lines = Files.readAllLines(Paths
 					.get(responseDownloadPath
-							+ "\\"
+							+ "/"
 							+ json.get("templateid").toString()
 									.replace("-", "_")));
 			List<CommandPojo> listShow = new ArrayList<CommandPojo>();

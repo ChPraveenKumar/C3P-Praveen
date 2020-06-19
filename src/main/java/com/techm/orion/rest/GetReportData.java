@@ -71,7 +71,6 @@ public class GetReportData implements Observer {
 		String currentRouterVersion = "";
 		boolean isCheck = false;
 		JSONObject dilevaryMilestonesforOSupgrade = new JSONObject();
-		RequestInfoPojo requestinfo = new RequestInfoPojo();
 
 		try {
 			JSONParser parser = new JSONParser();
@@ -82,7 +81,6 @@ public class GetReportData implements Observer {
 			createConfigRequestDCM.setRequestId(json.get("requestID").toString());
 			createConfigRequestDCM.setTestType(json.get("testType").toString());
 			createConfigRequestDCM.setVersion_report(json.get("version").toString());
-			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(json.get("requestID").toString(), "1.0");
 
 			if (createConfigRequestDCM.getTestType().equalsIgnoreCase("deliverConfig")) {
 
@@ -139,7 +137,7 @@ public class GetReportData implements Observer {
 								0,
 								Math.min(json.get("requestID").toString()
 										.length(), 4));
-				if (requesttype.equalsIgnoreCase("SLGF")) {
+				if (requesttype.equalsIgnoreCase("OS")) {
 					RequestInfoDao requestInfoDao = new RequestInfoDao();
 					Float v = Float.parseFloat(json.get("version").toString());
 					DecimalFormat df = new DecimalFormat("0.0");
@@ -177,7 +175,7 @@ public class GetReportData implements Observer {
 				}
 
 			} else {
-				jsonMessage = reportDetailsService.getDetailsForReport(createConfigRequestDCM,requestinfo);
+				jsonMessage = reportDetailsService.getDetailsForReport(createConfigRequestDCM);
 			}
 
 			if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")
@@ -998,7 +996,7 @@ public class GetReportData implements Observer {
 			String type = createConfigRequestDCM.getAlphanumericReqId().substring(0,
 					Math.min(createConfigRequestDCM.getAlphanumericReqId().length(), 4));
 
-			if (type.equalsIgnoreCase("SLGF")) {
+			if (type.equalsIgnoreCase("OS")) {
 				CreateConfigRequest req = new CreateConfigRequest();
 				req = dao.getOSDilevarySteps(createConfigRequestDCM.getAlphanumericReqId(),
 						stringVersion);
@@ -1052,18 +1050,16 @@ public class GetReportData implements Observer {
 				ShowMemoryTest memoryInfo = new ShowMemoryTest();
 				ShowPowerTest powerTest = new ShowPowerTest();
 				ShowVersionTest versionTest = new ShowVersionTest();
-				RequestInfoPojo reqDetail = requestDao.getRequestDetailTRequestInfoDBForVersion(createConfigRequestDCM.getAlphanumericReqId(), Double.toString(createConfigRequestDCM.getRequestVersion()));
 
 				CreateConfigRequest createConfigRequest = dao
 						.getRequestDetailFromDBForVersion(createConfigRequestDCM.getAlphanumericReqId(), stringVersion);
 
-				createConfigRequest.setHostname(reqDetail.getHostname());
-				createConfigRequest.setSiteid(reqDetail.getSiteid());
-				createConfigRequest.setManagementIp(reqDetail.getManagementIp());
-				createConfigRequest.setCustomer(reqDetail.getCustomer());
-				createConfigRequest.setModel(reqDetail.getModel());
-				createConfigRequest.setRegion(reqDetail.getRegion());
-				
+				createConfigRequest.setHostname(createConfigRequest.getHostname());
+				createConfigRequest.setSiteid(createConfigRequest.getSiteid());
+				createConfigRequest.setManagementIp(createConfigRequest.getManagementIp());
+				createConfigRequest.setCustomer(createConfigRequest.getCustomer());
+				createConfigRequest.setModel(createConfigRequest.getModel());
+
 				createConfigRequest.setPre_cpu_usage_percentage(cpuUsage.getCPUUsagePercentage(
 						createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Pre"));
 				createConfigRequest.setPre_memory_info(memoryInfo
@@ -1126,11 +1122,7 @@ public class GetReportData implements Observer {
 				}
 				healthCheckArray.put(pow);
 
-				//obj.put("osUpgradeStatus", "1");
-				obj.put("preVersionInfo", "12.4");
-
-				obj.put("postVersionInfo", "12.5");
-
+				obj.put("osUpgradeStatus", "1");
 				obj.put("Statusmessage", "Device upgraded Succesfully");
 
 				obj.put("OsupgradeSummary", os_upgrade_dilevary_step_array.toString());
@@ -1175,9 +1167,6 @@ public class GetReportData implements Observer {
 			List<String> out = new ArrayList<String>();
 			out.add(new Gson().toJson(reqDetail));
 			obj.put("details", out);
-			if (type.equalsIgnoreCase("SLGF")) {
-				obj.put("status", reqDetail.getStatus());
-			}
 		} catch (Exception e) {
 			System.out.println(e);
 		}

@@ -89,7 +89,7 @@ public class OthersCheckTestValidation extends Thread {
 
 		String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
 
-		if (!((type.equals("SLGB") || (type.equals("SLGM"))))) {
+		if (!(type.equals("SLGB"))) {
 
 			try {
 				configRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
@@ -123,7 +123,7 @@ public class OthersCheckTestValidation extends Thread {
 						password = userPojo.getPassword();
 					}
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
+							|| type.equalsIgnoreCase("SNNC")) {
 						JSch jsch = new JSch();
 						Channel channel = null;
 						Session session = jsch.getSession(user, host, Integer.parseInt(port));
@@ -312,7 +312,7 @@ public class OthersCheckTestValidation extends Thread {
 						password = userPojo.getPassword();
 					}
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC")||type.equalsIgnoreCase("SLGM")||type.equalsIgnoreCase("SNRM")||type.equalsIgnoreCase("SNNM")) {
+							|| type.equalsIgnoreCase("SNNC")) {
 						JSch jsch = new JSch();
 						Channel channel = null;
 						Session session = jsch.getSession(user, host, Integer.parseInt(port));

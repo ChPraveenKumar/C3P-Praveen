@@ -98,7 +98,7 @@ public class DeviceDiscoveryEntity {
 	@Column(name = "d_endof_saledate")
 	private String dEndOfSaleDate;
 
-	@Column(name = "d_decomm",columnDefinition="varchar(255) default '0'")
+	@Column(name = "d_decomm")
 	private String dDeComm;
 
 	@Column(name = "d_lastpolled")
@@ -133,20 +133,6 @@ public class DeviceDiscoveryEntity {
 
 	@Column(name = "d_autorun_date")
 	private String dAutoRunDate;
-	
-	@Column(name = "d_decomm_date")
-	private String dDecommDate;
-	
-	@Column(name = "d_decomm_time")
-	private String dDecommTime;
-	
-	@Column(name = "d_decomm_reason")
-	private String dDecommReason;
-	
-	
-	@Column(name = "d_new_device",columnDefinition="int default 0")
-	private int dNewDevice;
-	
 	
 	@Transient
 	private String dSystemDescription;
@@ -549,38 +535,6 @@ public class DeviceDiscoveryEntity {
 
 	public void setUsers(Set<UserEntity> users) {
 		this.users = users;
-	}
-
-	public int getdNewDevice() {
-		return dNewDevice;
-	}
-
-	public void setdNewDevice(int dNewDevice) {
-		this.dNewDevice = dNewDevice;
-	}
-
-	public String getdDecommDate() {
-		return dDecommDate;
-	}
-
-	public void setdDecommDate(String dDecommDate) {
-		this.dDecommDate = dDecommDate;
-	}
-
-	public String getdDecommTime() {
-		return dDecommTime;
-	}
-
-	public void setdDecommTime(String dDecommTime) {
-		this.dDecommTime = dDecommTime;
-	}
-
-	public String getdDecommReason() {
-		return dDecommReason;
-	}
-
-	public void setdDecommReason(String dDecommReason) {
-		this.dDecommReason = dDecommReason;
 	}
 
 }

@@ -19,7 +19,6 @@ import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CertificationTestPojo;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
-import com.techm.orion.service.ReportDetailsService;
 import com.techm.orion.service.CertificationTestFlagDetailsService;
 
 	@Controller

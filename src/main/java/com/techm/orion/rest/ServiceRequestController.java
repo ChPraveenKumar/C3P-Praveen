@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.service.RequestDetailsService;
-import com.techm.orion.service.RequestGridService;
 
 @RestController
 @RequestMapping("/serviceRequest")
@@ -24,9 +23,6 @@ public class ServiceRequestController {
 
 	@Autowired
 	RequestDetailsService service;
-	
-	@Autowired
-	RequestGridService requestService;
 
 	@POST
 	@RequestMapping(value = "/getServiceRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -45,7 +41,6 @@ public class ServiceRequestController {
 			String family=null;
 			String vendorStatus =null;
 			String requestStatus=null;
-			String type= null;
 			if(json.containsKey("customerType")) {
 				customerStatus=json.get("customerType").toString();
 			}
@@ -72,14 +67,11 @@ public class ServiceRequestController {
 			if(json.containsKey("requestStatus")) {
 				requestStatus=json.get("requestStatus").toString();
 			}
-			if(json.containsKey("type")) {
-				type = json.get("type").toString();
-			}
 			if(customerStatus!=null) {
-			requestDeatils=requestService.getCustomerServiceRequests(customerStatus,customer,region,site,hostName,requestStatus,type);
+			requestDeatils=service.getCustomerServiceRequests(customerStatus,customer,region,site,hostName,requestStatus);
 			}
 			if(vendorStatus!=null) {
-				requestDeatils=requestService.getVendorServiceRequests(vendorStatus,vendor,family,hostName,requestStatus,type);
+				requestDeatils=service.getVendorServiceRequests(vendorStatus,vendor,family,hostName,requestStatus);
 			}
 		} catch (Exception e) {
 
@@ -104,8 +96,6 @@ public class ServiceRequestController {
 		String vendor=null;
 		String family=null;
 		String vendorStatus =null;
-		String type=null;
-		
 		if(json.containsKey("customerType")) {
 			customerStatus=json.get("customerType").toString();
 		}
@@ -129,13 +119,10 @@ public class ServiceRequestController {
 		}if(json.containsKey("family")) {
 			family = json.get("family").toString();
 		}
-		if(json.containsKey("type")) {
-			type = json.get("type").toString();
-		}
 		if(customerStatus!=null) {
-			myservcieCount = service.getCustomerservcieCount(customerStatus, customer, site, region, hostName,type);
+			myservcieCount = service.getCustomerservcieCount(customerStatus, customer, site, region, hostName);
 		}else {
-			myservcieCount = service.getVendorservcieCount(vendorStatus, vendor, family, hostName,type);
+			myservcieCount = service.getVendorservcieCount(vendorStatus, vendor, family, hostName);
 		}
 		} catch (Exception e) {
 			System.out.println(e);

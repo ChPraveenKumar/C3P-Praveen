@@ -65,7 +65,7 @@ public class DeviceDiscoveryDashboardEntity implements Serializable
 	}
 
 	public String getDiscoveryNextRun() {
-		SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy  hh:mm:ss");
+		SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy - hh:mm");
 		String strDate = formatter.format(discoveryNextRun);
 		return strDate;
 	}

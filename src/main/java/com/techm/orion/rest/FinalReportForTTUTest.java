@@ -96,7 +96,7 @@ public class FinalReportForTTUTest extends Thread {
 
 				// Require requestId and version from camunda
 
-				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")|| type.equalsIgnoreCase("SLGA")) {
+				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")) {
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							createConfigRequest.getRequestId(), createConfigRequest.getManagementIp(), "FinalReport");
 					if (deviceLocked) {
@@ -1041,7 +1041,7 @@ public class FinalReportForTTUTest extends Thread {
 
 				// Require requestId and version from camunda
 
-				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")|| type.equalsIgnoreCase("SLGA")) {
+				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")) {
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
 					if (deviceLocked) {

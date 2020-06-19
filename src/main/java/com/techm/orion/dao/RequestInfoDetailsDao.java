@@ -27,7 +27,6 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.entitybeans.RequestInfoEntity;
-import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.mapper.RequestInfoMappper;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
@@ -35,7 +34,6 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
-import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TextReport;
@@ -56,10 +54,6 @@ public class RequestInfoDetailsDao {
 	private Connection connection;
 	Statement statement;
 
-
-	@Autowired
-	ServiceOrderRepo serviceOrderRepo;
-	
 	@Transactional
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
@@ -150,11 +144,6 @@ public class RequestInfoDetailsDao {
 				e.printStackTrace();
 
 			}
-			ServiceOrderEntity ent=serviceOrderRepo.findByRequestId(requestId);
-			if(ent!=null)
-			{
-			serviceOrderRepo.updateStatusAndRequestId(requestId, "Success", ent.getServiceOrder());
-			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
@@ -178,11 +167,6 @@ public class RequestInfoDetailsDao {
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
-			ServiceOrderEntity ent=serviceOrderRepo.findByRequestId(requestId);
-			if(ent!=null)
-			{
-			serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder());
 			}
 		} else {
 			Double finalVersion = Double.valueOf(version);
@@ -235,8 +219,6 @@ public class RequestInfoDetailsDao {
 				pojo.setOsVersion(entity.getOsVersion());
 				pojo.setRegion(entity.getRegion());
 				pojo.setCertificationSelectionBit(entity.getCertificationSelectionBit());
-				pojo.setHostname(entity.getHostName());
-				pojo.setStatus(entity.getStatus());
 
 			}
 		} catch (Exception e) {
@@ -550,7 +532,6 @@ public class RequestInfoDetailsDao {
 			String response = "";
 			String responseDownloadPath = "";
 			try {
-				BackupCurrentRouterConfigurationService.loadProperties();
 				editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);

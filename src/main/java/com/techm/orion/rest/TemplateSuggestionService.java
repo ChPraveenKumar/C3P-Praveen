@@ -24,13 +24,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
-import com.techm.orion.entitybeans.TemplateFeatureEntity;
-import com.techm.orion.pojo.AttribCreateConfigPojo;
-import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.TemplateAttribPojo;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
-import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.DcmConfigService;
 
@@ -43,9 +39,6 @@ public class TemplateSuggestionService implements Observer {
 
 	@Autowired
 	AttribCreateConfigService service;
-	
-	@Autowired
-	TemplateFeatureRepo templatefeatureRepo;
 
 	@POST
 	@RequestMapping(value = "/getFeaturesForDeviceDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -77,10 +70,8 @@ public class TemplateSuggestionService implements Observer {
 			String templateId = dcmConfigService.getTemplateName(createConfigRequestDCM.getRegion(),
 					createConfigRequestDCM.getVendor(), createConfigRequestDCM.getModel(),
 					createConfigRequestDCM.getOs(), createConfigRequestDCM.getOsVersion());
-			
-			String networkType=json.get("networkType").toString();		
-			
-			List<String> getFfeatureList = templateSuggestionDao.getListOfFeaturesForDeviceDetail(templateId,networkType);
+
+			List<String> getFfeatureList = templateSuggestionDao.getListOfFeaturesForDeviceDetail(templateId);
 			Set<String> uniqueFeatureList = new HashSet<>(getFfeatureList);
 			// uniqueFeatureList.addAll(getFfeatureList);
 			List<String> featureList = new ArrayList<>(uniqueFeatureList);
@@ -195,14 +186,12 @@ public class TemplateSuggestionService implements Observer {
 				JSONObject arrObj = (JSONObject) jsonArr.get(i);
 				list.add(arrObj.get("value").toString());
 			}
-			if(!list.isEmpty() && list!=null) {
-				String[] features = list.toArray(new String[list.size()]);
-				String templateId = json.get("templateId").toString();
-				List<TemplateBasicConfigurationPojo> templateBasicConfigurationPojo = templateSuggestionDao
-						.getDataGrid(features, templateId);
-				jsonList = new Gson().toJson(templateBasicConfigurationPojo);				
-			}
+			String[] features = list.toArray(new String[list.size()]);
+			String templateId = json.get("templateId").toString();
+			List<TemplateBasicConfigurationPojo> templateBasicConfigurationPojo = templateSuggestionDao
+					.getDataGrid(features, templateId);
 
+			jsonList = new Gson().toJson(templateBasicConfigurationPojo);
 			if (jsonList != "") {
 				obj.put(new String("TemplateDetailList"), jsonList);
 				obj.put(new String("Result"), "Success");
@@ -360,83 +349,4 @@ public class TemplateSuggestionService implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-	
-	/* Dhanshri Mane */
-	/* Get Attribute Related MACD Features and template Id */
-	@POST
-	@RequestMapping(value = "/getAttribForMACD", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public Response getAttribForMACD(@RequestBody String featuresList) {
-
-		// TemplateSuggestionDao templateSuggestionDao=new TemplateSuggestionDao();
-		JSONObject obj = new JSONObject();
-		
-		String jsonAttrib = "";
-
-		try {
-
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(featuresList);
-			org.json.simple.JSONArray jsonArr = (org.json.simple.JSONArray) json.get("featureList");
-
-			List<String> list = new ArrayList<String>();
-			TemplateManagementDao dao = new TemplateManagementDao();
-			String templateId = json.get("templateId").toString();
-			
-			for (int i = 0; i < jsonArr.size(); i++) {
-				JSONObject arrObj = (JSONObject) jsonArr.get(i);
-				list.add(arrObj.get("value").toString());
-			}
-			String templateIdValue=null;
-			if(!list.isEmpty() && list!=null) {
-				String[] features = list.toArray(new String[list.size()]);	
-				List<TemplateBasicConfigurationPojo> templateBasicConfigurationPojo = templateSuggestionDao
-						.getDataGrid(features, templateId);
-				for(int i=0;i<templateBasicConfigurationPojo.size();i++) {
-					templateIdValue=templateBasicConfigurationPojo.get(i).getTemplateId();
-				}
-			}
-			String[] features = list.toArray(new String[list.size()]);
-			List<TemplateAttribPojo> templateAttrib = templateSuggestionDao.getDynamicAttribDataGrid(features,
-					templateIdValue);
-			
-			List<CommandPojo> cammandByTemplate = new ArrayList<>();
-			for (String feature : features) {
-				
-				TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
-						.findIdByComandDisplayFeatureAndCommandContains(feature, templateId);
-				cammandByTemplate.addAll(dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(),
-						templateIdValue));
-			}
-			String finalCommands="";
-			for(CommandPojo command:cammandByTemplate) {
-				finalCommands=finalCommands+command.getCommandValue();
-			}
-			
-			jsonAttrib = new Gson().toJson(templateAttrib);
-			if (!jsonAttrib.isEmpty() && templateAttrib != null) {
-				obj.put(new String("features"), templateAttrib);
-				obj.put(new String("commands"), finalCommands);
-				obj.put(new String("templateId"), templateIdValue);
-				obj.put(new String("Result"), "Success");
-				obj.put(new String("Message"), "Success");
-			}
-
-			else {
-				obj.put(new String("Result"), "Failure");
-				obj.put(new String("Message"), "No Data.Create the template first");
-				obj.put(new String("TemplateDetailList"), null);
-			}
-
-		} catch (Exception e) {
-			System.out.println(e);
-		}
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-
-	}
-	
 }

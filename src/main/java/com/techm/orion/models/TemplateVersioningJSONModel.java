@@ -23,7 +23,6 @@ public class TemplateVersioningJSONModel {
 	private String approver;
 	private String createdBy;
 	private boolean isEditable;
-	private String networkType;
 	public boolean isEditable() {
 		return isEditable;
 	}
@@ -121,11 +120,4 @@ public class TemplateVersioningJSONModel {
 	public void setRegion(String region) {
 		this.region = region;
 	}
-	public String getNetworkType() {
-		return networkType;
-	}
-	public void setNetworkType(String networkType) {
-		this.networkType = networkType;
-	}
-	
 }
