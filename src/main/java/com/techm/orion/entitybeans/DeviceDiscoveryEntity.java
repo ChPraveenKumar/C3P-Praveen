@@ -15,7 +15,6 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -98,7 +97,7 @@ public class DeviceDiscoveryEntity {
 	@Column(name = "d_endof_saledate")
 	private String dEndOfSaleDate;
 
-	@Column(name = "d_decomm",columnDefinition="varchar(255) default '0'")
+	@Column(name = "d_decomm", columnDefinition = "varchar(255) default '0'")
 	private String dDeComm;
 
 	@Column(name = "d_lastpolled")
@@ -133,39 +132,36 @@ public class DeviceDiscoveryEntity {
 
 	@Column(name = "d_autorun_date")
 	private String dAutoRunDate;
-	
+
 	@Column(name = "d_decomm_date")
 	private String dDecommDate;
-	
+
 	@Column(name = "d_decomm_time")
 	private String dDecommTime;
-	
+
 	@Column(name = "d_decomm_reason")
 	private String dDecommReason;
-	
-	
-	@Column(name = "d_new_device",columnDefinition="int default 0")
+
+	@Column(name = "d_new_device", columnDefinition = "int default 0")
 	private int dNewDevice;
-	
-	
+
 	@Transient
 	private String dSystemDescription;
 
 	@Transient
 	private String dLocation;
-	
+
 	@Transient
 	private String dEndOfLife;
 	@Transient
 	private String dLoginDetails;
-	
+
 	@Transient
 	private String dStatus;
-	
+
 	@Transient
 	private JSONArray contactDetails;
-	
-	
+
 	public JSONArray getContactDetails() {
 		return contactDetails;
 	}
@@ -182,12 +178,8 @@ public class DeviceDiscoveryEntity {
 		this.dStatus = dStatus;
 	}
 
-	
-	
 	@Transient
 	private String dPollUsing;
-	
-	
 
 	public String getdLoginDetails() {
 		return dLoginDetails;
@@ -238,13 +230,10 @@ public class DeviceDiscoveryEntity {
 	Set<UserEntity> users;
 
 	@JsonIgnore
-	@OneToMany(cascade = {CascadeType.ALL}, mappedBy = "device")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "device")
 
 	private List<DeviceDiscoveryInterfaceEntity> interfaces;
-	
-	
-	
-	
+
 	public List<DeviceDiscoveryInterfaceEntity> getInterfaces() {
 		return interfaces;
 	}
@@ -252,8 +241,6 @@ public class DeviceDiscoveryEntity {
 	public void setInterfaces(List<DeviceDiscoveryInterfaceEntity> interfaces) {
 		this.interfaces = interfaces;
 	}
-
-	
 
 	public int getdId() {
 		return dId;

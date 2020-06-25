@@ -1,7 +1,6 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -12,27 +11,30 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "T_TSTSTRATEGY_M_TSTFEATURELST")
-public class TestFeatureList implements  Serializable
+public class TestFeatureList implements Serializable
 
 {
-	
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	@Id 
-     private int id;
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7545018593601573894L;
+
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Id
+	private int id;
 
 	@Column(name = "testFeature")
 	private String testFeature;
-	
+
 	@JsonIgnore
-	@ManyToOne (fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "testName")
 	private TestDetail testDetail;
 
@@ -59,8 +61,5 @@ public class TestFeatureList implements  Serializable
 	public void setTestDetail(TestDetail testDetail) {
 		this.testDetail = testDetail;
 	}
-
-
-
 
 }

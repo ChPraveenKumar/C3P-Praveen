@@ -1,9 +1,5 @@
 package com.techm.orion.pojo;
 
-import java.util.List;
-
-import com.techm.orion.entitybeans.CategoryMasterEntity;
-
 public class PredefinedMappedAtrribPojo {
 	
     private int Id;

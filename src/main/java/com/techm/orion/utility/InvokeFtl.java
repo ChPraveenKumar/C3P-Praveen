@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.collections.ListUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.techm.orion.dao.RequestInfoDao;
@@ -40,6 +42,8 @@ import freemarker.template.Template;
  */
 
 public class InvokeFtl {
+	private static final Logger logger = LogManager.getLogger(InvokeFtl.class);
+	
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -989,12 +993,12 @@ public class InvokeFtl {
 		/* Arrange Commands with position */
 		finalCammandsList.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
 		String finalCammands = "";
-		
+
 		for (CommandPojo cammands : finalCammandsList) {
 			finalCammands = finalCammands + cammands.getCommandValue();
 		}
 
-		System.out.println(finalCammands);
+		logger.info(finalCammands);
 		try {
 			// new Template is Save in NewTemplate Folder
 			TemplateManagementDetailsService.loadProperties();
@@ -1249,31 +1253,27 @@ public class InvokeFtl {
 		return res;
 
 	}
-	public String getStartUpRouterVersion(String requestId,String version)
-			throws Exception {
+
+	public String getStartUpRouterVersion(String requestId, String version) throws Exception {
 		InvokeFtl.loadProperties();
 		String content = "";
-		String filePath="";
-		String newStr="";
-		try 
-		{
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES
-					.getProperty("responseDownloadPath");
-			File file = new File(responseDownloadPath+"//"+requestId+"V"+version+"_StartupConfig.txt");
-			if(file.exists()){
-			filePath=responseDownloadPath+"//"+requestId+"V"+version+"_StartupConfig.txt";
-			content = new String ( Files.readAllBytes( Paths.get(filePath) ) );
-			content= content.substring(content.indexOf("run\r\n")+5);
-			newStr = content.substring(0, content.lastIndexOf("end")+3);
+		String filePath = "";
+		String newStr = "";
+		try {
+			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
+			File file = new File(responseDownloadPath + "//" + requestId + "V" + version + "_StartupConfig.txt");
+			if (file.exists()) {
+				filePath = responseDownloadPath + "//" + requestId + "V" + version + "_StartupConfig.txt";
+				content = new String(Files.readAllBytes(Paths.get(filePath)));
+				content = content.substring(content.indexOf("run\r\n") + 5);
+				newStr = content.substring(0, content.lastIndexOf("end") + 3);
 			}
-		} 
-		catch (IOException e) 
-		{
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return newStr;
 	}
-	
+
 	public void createFinalTemplateforBatch(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate,
 			List<AttribCreateConfigPojo> masterAttribute, List<AttribCreateConfigPojo> templateAttribute,
 			String templateId) {
@@ -1336,14 +1336,14 @@ public class InvokeFtl {
 				finalCammandsList = ListUtils.union(cammandsBySeriesId, cammandByTemplate);
 			}
 		}
-		
+
 		String finalCammands = "";
-		finalCammandsList=cammandByTemplate;
+		finalCammandsList = cammandByTemplate;
 		for (CommandPojo cammands : finalCammandsList) {
 			finalCammands = finalCammands + cammands.getCommandValue();
 		}
 
-		System.out.println(finalCammands);
+		logger.info(finalCammands);
 		try {
 			// new Template is Save in NewTemplate Folder
 			TemplateManagementDetailsService.loadProperties();

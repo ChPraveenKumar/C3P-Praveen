@@ -8,6 +8,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import com.techm.orion.repositories.UserRepository;
 
 @Service
 public class InventoryManagmentService {
+	private static final Logger logger = LogManager.getLogger(InventoryManagmentService.class);
 
 	@Autowired
 	DeviceDiscoveryRepository deviceInforepo;
@@ -47,111 +50,64 @@ public class InventoryManagmentService {
 	public JSONArray getAllDeviceDescoverdForVendor() {
 
 		JSONArray vendorArray = new JSONArray();
-
-		(deviceInforepo.findAll().stream().filter(distinctByKey(p -> p.getdVendor())).collect(Collectors.toList()))
-				.forEach(vendorObj -> {
-					JSONObject vendor = new JSONObject();
-					vendor.put("vendor", vendorObj.getdVendor());
-					JSONArray modelArray = new JSONArray();
-					(deviceInforepo.findDModelByDVendor(vendorObj.getdVendor()).stream()
-							.filter(distinctByKey(p -> p.getdModel())).collect(Collectors.toList()))
-									.forEach(modelObj -> {
-										JSONObject model = new JSONObject();
-										JSONArray hostArray = new JSONArray();
-										(deviceInforepo.findAllDHostNameByDModelAndDVendor(modelObj.getdModel(),
-												vendorObj.getdVendor())).forEach(hostNameObj -> {
-													JSONObject hostName = new JSONObject();
-													hostName.put("hostName", hostNameObj.getdHostName());
-													hostArray.add(hostName);
-												});
-										model.put("hostNames", hostArray);
-										model.put("model", modelObj.getdModel());
-										modelArray.add(model);
-									});
-					vendor.put("models", modelArray);
-					vendorArray.add(vendor);
-				});
-
-		/*
-		 * for (DeviceDiscoveryEntity entity : distinctElementsForVendor) { JSONObject
-		 * vendor = new JSONObject(); vendor.put("vendor", entity.getdVendor());
-		 * List<DeviceDiscoveryEntity> models =
-		 * deviceInforepo.findDModelByDVendor(entity.getdVendor());
-		 * 
-		 * // Get distinct objects by key List<DeviceDiscoveryEntity> distinctModel =
-		 * models.stream().filter(distinctByKey(p -> p.getdModel()))
-		 * .collect(Collectors.toList());
-		 * 
-		 * JSONArray modelArray = new JSONArray(); for (DeviceDiscoveryEntity modelName
-		 * : distinctModel) { JSONObject model = new JSONObject();
-		 * List<DeviceDiscoveryEntity> findAllDHostNameByDModelAndDVendor =
-		 * deviceInforepo
-		 * .findAllDHostNameByDModelAndDVendor(modelName.getdModel(),entity.getdVendor()
-		 * );
-		 * 
-		 * JSONArray hostArray = new JSONArray(); for (DeviceDiscoveryEntity host :
-		 * findAllDHostNameByDModelAndDVendor) { JSONObject hostName = new JSONObject();
-		 * hostName.put("hostName", host.getdHostName()); hostArray.add(hostName); }
-		 * model.put("hostNames", hostArray); model.put("model", modelName.getdModel());
-		 * modelArray.add(model);
-		 * 
-		 * } vendor.put("models", modelArray); vendorArray.add(vendor);
-		 * 
-		 * }
-		 */
-		// vendorObject.put("vendors", vendorArray);
-
+		List<DeviceDiscoveryEntity> deviceDetails = deviceInforepo.findAll();
+		deviceDetails.stream().filter(distinctByKey(p -> p.getdVendor())).forEach(vendorInfo -> {
+			JSONObject vendor = new JSONObject();
+			vendor.put("vendor", vendorInfo.getdVendor());
+			JSONArray modelArray = new JSONArray();
+			deviceDetails.stream().filter(distinctByKey(p -> p.getdModel())).forEach(modelInfo -> {
+				JSONObject model = new JSONObject();
+				JSONArray hostArray = new JSONArray();
+				(deviceInforepo.findAllDHostNameByDModelAndDVendor(modelInfo.getdModel(), vendorInfo.getdVendor()))
+						.forEach(hostNameObj -> {
+							JSONObject hostName = new JSONObject();
+							hostName.put("hostName", hostNameObj);
+							hostArray.add(hostName);
+						});
+				model.put("hostNames", hostArray);
+				model.put("model", modelInfo.getdModel());
+				modelArray.add(model);
+			});
+			vendor.put("models", modelArray);
+			vendorArray.add(vendor);
+		});
 		return vendorArray;
 	}
 
 	public JSONArray getAllDeviceDescoverdForCustomer() {
+		long startMethod = System.currentTimeMillis();
 
 		List<SiteInfoEntity> allSiteInfo = siteRepo.findAll();
-		List<SiteInfoEntity> customerNames = allSiteInfo.stream().filter(distinctByKey(p -> p.getcCustName()))
-				.collect(Collectors.toList());
 		JSONArray customerArray = new JSONArray();
-		for (SiteInfoEntity entity : customerNames) {
+		allSiteInfo.stream().filter(distinctByKey(p -> p.getcCustName())).forEach(customerInfo -> {
 			JSONObject customerObject = new JSONObject();
-			customerObject.put("customer", entity.getcCustName());
-
-			List<SiteInfoEntity> regionsNames = siteRepo.findCSiteRegionByCCustName(entity.getcCustName());
-
-			List<SiteInfoEntity> regionsNameEntity = regionsNames.stream()
-					.filter(distinctByKey(p -> p.getcSiteRegion())).collect(Collectors.toList());
-
+			customerObject.put("customer", customerInfo.getcCustName());
 			JSONArray regionsArray = new JSONArray();
-			for (SiteInfoEntity region : regionsNameEntity) {
+			allSiteInfo.stream().filter(distinctByKey(p -> p.getcSiteRegion())).forEach(regionInfo -> {
 				JSONObject regionObject = new JSONObject();
-				int regionId = region.getId();
-				regionObject.put("region", region.getcSiteRegion());
-				List<SiteInfoEntity> sites = siteRepo.findCSiteNameByCSiteRegion(region.getcSiteRegion());
-				List<SiteInfoEntity> sitesValue = sites.stream().filter(distinctByKey(p -> p.getcSiteName()))
-						.collect(Collectors.toList());
+				regionObject.put("region", regionInfo.getcSiteRegion());
 				JSONArray siteArray = new JSONArray();
-				for (SiteInfoEntity site : sitesValue) {
+				allSiteInfo.stream().filter(distinctByKey(p -> p.getcSiteName())).forEach(siteInfo -> {
 					JSONObject siteObject = new JSONObject();
-					int siteId = site.getId();
 					JSONArray hostArray = new JSONArray();
-					// if (regionId == siteId) {
-					List<DeviceDiscoveryEntity> findDHostNameByCustSiteIdId = deviceInforepo
-							.findDHostNameByCustSiteIdId(siteId);
-					siteObject.put("site", site.getcSiteName());
-					for (DeviceDiscoveryEntity host : findDHostNameByCustSiteIdId) {
+					deviceInforepo.findDHostNameByCustSiteIdId(siteInfo.getId()).forEach(hostNameInfo -> {
 						JSONObject hostNameObject = new JSONObject();
-						hostNameObject.put("hostName", host.getdHostName());
+						hostNameObject.put("hostName", hostNameInfo);
 						hostArray.add(hostNameObject);
-					}
-					// }
+					});
 					siteObject.put("hostNames", hostArray);
+					siteObject.put("site", siteInfo.getcSiteName());
 					siteArray.add(siteObject);
-				}
+				});
+
 				regionObject.put("sites", siteArray);
 				regionsArray.add(regionObject);
-			}
+			});
 			customerObject.put("regions", regionsArray);
 			customerArray.add(customerObject);
-		}
-
+		});
+		logger.info("Total time taken to execute the method in milli secs - "
+				+ ((System.currentTimeMillis() - startMethod)));
 		return customerArray;
 	}
 
@@ -196,6 +152,7 @@ public class InventoryManagmentService {
 	}
 
 	public JSONArray getMyCustomersDevice() {
+		long startMethod = System.currentTimeMillis();
 		String logedInUserName = dcmConfigService.getLogedInUserName();
 		JSONArray customerArray = new JSONArray();
 		if (logedInUserName != null) {
@@ -207,62 +164,48 @@ public class InventoryManagmentService {
 				devices.forEach(item -> {
 					allSiteInfo.add(item.getCustSiteId());
 				});
-				// List<SiteInfoEntity> allSiteInfo = siteRepo.findAll();
-				List<SiteInfoEntity> customerNames = allSiteInfo.stream().filter(distinctByKey(p -> p.getcCustName()))
-						.collect(Collectors.toList());
 
-				for (SiteInfoEntity entity : customerNames) {
+				allSiteInfo.stream().filter(distinctByKey(p -> p.getcCustName())).forEach(customerInfo -> {
 					JSONObject customerObject = new JSONObject();
-					customerObject.put("customer", entity.getcCustName());
-
-					List<SiteInfoEntity> regionsNames = siteRepo.findCSiteRegionByCCustName(entity.getcCustName());
-
-					List<SiteInfoEntity> regionsNameEntity = regionsNames.stream()
-							.filter(distinctByKey(p -> p.getcSiteRegion())).collect(Collectors.toList());
-
+					customerObject.put("customer", customerInfo.getcCustName());
 					JSONArray regionsArray = new JSONArray();
-					for (SiteInfoEntity region : regionsNameEntity) {
+					allSiteInfo.stream().filter(distinctByKey(p -> p.getcSiteRegion())).forEach(regionInfo -> {
 						JSONObject regionObject = new JSONObject();
-						int regionId = region.getId();
-						regionObject.put("region", region.getcSiteRegion());
-						List<SiteInfoEntity> sites = siteRepo.findCSiteNameByCSiteRegion(region.getcSiteRegion());
-						List<SiteInfoEntity> sitesValue = sites.stream().filter(distinctByKey(p -> p.getcSiteName()))
-								.collect(Collectors.toList());
+						regionObject.put("region", regionInfo.getcSiteRegion());
 						JSONArray siteArray = new JSONArray();
-						for (SiteInfoEntity site : sitesValue) {
+
+						allSiteInfo.stream().filter(distinctByKey(p -> p.getcSiteName())).forEach(siteInfo -> {
 							JSONObject siteObject = new JSONObject();
-							int siteId = site.getId();
 							JSONArray hostArray = new JSONArray();
-							// if (regionId == siteId) {
-							List<DeviceDiscoveryEntity> findDHostNameByCustSiteIdId = deviceInforepo
-									.findDHostNameByCustSiteIdId(siteId);
-							siteObject.put("site", site.getcSiteName());
-							for (DeviceDiscoveryEntity host : findDHostNameByCustSiteIdId) {
+							deviceInforepo.findDHostNameByCustSiteIdId(siteInfo.getId()).forEach(hostNameinfo -> {
 								JSONObject hostNameObject = new JSONObject();
-								hostNameObject.put("hostName", host.getdHostName());
+								hostNameObject.put("hostName", hostNameinfo);
 								hostArray.add(hostNameObject);
-							}
-							// }
+							});
 							siteObject.put("hostNames", hostArray);
+							siteObject.put("site", siteInfo.getcSiteName());
 							siteArray.add(siteObject);
-						}
+						});
 						regionObject.put("sites", siteArray);
 						regionsArray.add(regionObject);
-					}
+					});
 					customerObject.put("regions", regionsArray);
 					customerArray.add(customerObject);
-				}
 
+				});
 			});
-		}
 
+		}
+		logger.info("Total time taken to execute the method in milli secs - "
+				+ ((System.currentTimeMillis() - startMethod)));
 		return customerArray;
+
 	}
 
 	public JSONArray getMyVendorsDevice() {
 
 		JSONArray vendorArray = new JSONArray();
-		String logedInUserName = dcmConfigService.getLogedInUserName();		
+		String logedInUserName = dcmConfigService.getLogedInUserName();
 		if (logedInUserName != null) {
 			List<UserEntity> findDevicesByUserName = userRepo.findDevicesByUserName(logedInUserName);
 			findDevicesByUserName.forEach(user -> {
@@ -284,7 +227,7 @@ public class InventoryManagmentService {
 												(deviceInforepo.findAllDHostNameByDModelAndDVendor(modelObj.getdModel(),
 														vendorObj.getdVendor())).forEach(hostNameObj -> {
 															JSONObject hostName = new JSONObject();
-															hostName.put("hostName", hostNameObj.getdHostName());
+															hostName.put("hostName", hostNameObj);
 															hostArray.add(hostName);
 														});
 												model.put("hostNames", hostArray);

@@ -175,16 +175,16 @@ public class TemplateManagementDB {
 				String devicetype = json.get("deviceType").toString();
 				String model = json.get("model").toString();
 				tempserieskey = vendor + devicetype + model.substring(0, 2);
-				/*if master configuration updated that time series is not null*/
+				/* if master configuration updated that time series is not null */
 				if (json.containsKey("series")) {
 					if (json.get("series") != null && !json.get("series").toString().equals("")) {
 						tempserieskey = json.get("series").toString();
-					}else {
+					} else {
 						/*
-						 * Dhanshri Mane 14-1-2020
-						 * get the series according to template id*/
-						tempserieskey=templatemanagementDao.getSeriesId(templateIdAndVersion, tempserieskey);
-						tempserieskey=StringUtils.substringAfter(tempserieskey, "Generic_");
+						 * Dhanshri Mane 14-1-2020 get the series according to template id
+						 */
+						tempserieskey = templatemanagementDao.getSeriesId(templateIdAndVersion, tempserieskey);
+						tempserieskey = StringUtils.substringAfter(tempserieskey, "Generic_");
 					}
 				}
 			}
@@ -210,40 +210,41 @@ public class TemplateManagementDB {
 			// cmdlist.command_sequence_id";
 
 			if (json.get("series") == null || json.get("series").toString().equals("")) {
-			query1 = "select cmdlist.command_value,cmdlist.command_sequence_id,flist.check_default,flist.hasParent,flist.id from c3p_template_master_command_list cmdlist ,c3p_template_master_feature_list flist where cmdlist.command_id=flist.id and (flist.command_type = ? or flist.command_type=?)order by cmdlist.command_sequence_id";
-			preparedStmt = connection.prepareStatement(query1);
-			if (tempserieskey != null) {
-				preparedStmt.setString(1, "Generic_" + tempserieskey);
-			} else {
-				preparedStmt.setString(1, "Generic");
-			}
-			// preparedStmt.setString(2,templateId );
-			preparedStmt.setString(2, templateIdAndVersion);
+				query1 = "select cmdlist.command_value,cmdlist.command_sequence_id,flist.check_default,flist.hasParent,flist.id from c3p_template_master_command_list cmdlist ,c3p_template_master_feature_list flist where cmdlist.command_id=flist.id and (flist.command_type = ? or flist.command_type=?)order by cmdlist.command_sequence_id";
+				preparedStmt = connection.prepareStatement(query1);
+				if (tempserieskey != null) {
+					preparedStmt.setString(1, "Generic_" + tempserieskey);
+				} else {
+					preparedStmt.setString(1, "Generic");
+				}
+				// preparedStmt.setString(2,templateId );
+				preparedStmt.setString(2, templateIdAndVersion);
 
-			query2 = "SELECT * FROM c3p_template_transaction_command_list where c3p_template_transaction_command_list.command_template_id = ?";
-			preparedStmt2 = connection.prepareStatement(query2);
-			preparedStmt2.setString(1, templateIdAndVersion);
-			rsl2 = preparedStmt2.executeQuery();
-			while (rsl2.next()) {
-				getTemplateMngmntActiveDataPojo = new GetTemplateMngmntActiveDataPojo();
-				getTemplateMngmntActiveDataPojo.setCommandSequenceId(
-						rsl2.getString("c3p_template_transaction_command_list.command_sequence_id"));
+				query2 = "SELECT * FROM c3p_template_transaction_command_list where c3p_template_transaction_command_list.command_template_id = ?";
+				preparedStmt2 = connection.prepareStatement(query2);
+				preparedStmt2.setString(1, templateIdAndVersion);
+				rsl2 = preparedStmt2.executeQuery();
+				while (rsl2.next()) {
+					getTemplateMngmntActiveDataPojo = new GetTemplateMngmntActiveDataPojo();
+					getTemplateMngmntActiveDataPojo.setCommandSequenceId(
+							rsl2.getString("c3p_template_transaction_command_list.command_sequence_id"));
 
-				getTemplateMngmntActiveDataPojo.setActive(true);
-				getTemplateMngmntActiveDataPojo.setId(rsl2.getInt("c3p_template_transaction_command_list.command_id"));
-				getTemplateMngmntActiveDataPojo
-						.setPosition(rsl2.getInt("c3p_template_transaction_command_list.command_position"));
-				if (rsl2.getInt("c3p_template_transaction_command_list.is_save") == 1) {
-					commandSequenceIdforSelectedTemplete.put(
-							rsl2.getString("c3p_template_transaction_command_list.command_sequence_id"),
+					getTemplateMngmntActiveDataPojo.setActive(true);
+					getTemplateMngmntActiveDataPojo
+							.setId(rsl2.getInt("c3p_template_transaction_command_list.command_id"));
+					getTemplateMngmntActiveDataPojo
+							.setPosition(rsl2.getInt("c3p_template_transaction_command_list.command_position"));
+					if (rsl2.getInt("c3p_template_transaction_command_list.is_save") == 1) {
+						commandSequenceIdforSelectedTemplete.put(
+								rsl2.getString("c3p_template_transaction_command_list.command_sequence_id"),
+								rsl2.getInt("c3p_template_transaction_command_list.command_position"));
+					}
+					positionMap.put(rsl2.getString("c3p_template_transaction_command_list.command_sequence_id"),
 							rsl2.getInt("c3p_template_transaction_command_list.command_position"));
+					dataListoftemplatespecificcommand.add(getTemplateMngmntActiveDataPojo);
 				}
-				positionMap.put(rsl2.getString("c3p_template_transaction_command_list.command_sequence_id"),
-						rsl2.getInt("c3p_template_transaction_command_list.command_position"));
-				dataListoftemplatespecificcommand.add(getTemplateMngmntActiveDataPojo);
-				}
-			
-			}else {
+
+			} else {
 				query1 = "select cmdlist.command_value,cmdlist.command_sequence_id,flist.check_default,flist.hasParent,flist.id from c3p_template_master_command_list cmdlist ,c3p_template_master_feature_list flist where cmdlist.command_id=flist.id and (flist.command_type = ?)order by cmdlist.command_sequence_id";
 				preparedStmt = connection.prepareStatement(query1);
 				if (tempserieskey != null) {
@@ -275,7 +276,6 @@ public class TemplateManagementDB {
 				getTemplateMngmntActiveDataPojo.setId(rs1.getInt("flist.id"));
 				dataList.add(getTemplateMngmntActiveDataPojo);
 			}
-		
 
 		} catch (Exception e) {
 			e.printStackTrace();

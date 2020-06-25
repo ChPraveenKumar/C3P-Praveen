@@ -1,7 +1,6 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -12,13 +11,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
-
 
 /*
  * Owner: Vivek Vidhate Module: Test Strategey Logic: To
@@ -31,20 +26,22 @@ public class TestRules implements Serializable
 
 {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -645443588346704742L;
+
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
 	private int id;
 
 	@JsonIgnore
-	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE,
-			CascadeType.PERSIST })
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "testName")
 	private TestDetail testDetail;
 
 	@Column(name = "reportedLabel")
 	private String reportedLabel;
-
-	
 
 	@Column(name = "dataType")
 	private String dataType;
@@ -67,8 +64,6 @@ public class TestRules implements Serializable
 	@Column(name = "whereKeyword")
 	private String whereKeyword;
 
-
-
 	@Column(name = "sectionName")
 	private String sectionName;
 
@@ -83,14 +78,12 @@ public class TestRules implements Serializable
 
 	@Column(name = "value2")
 	private String value2;
-	
+
 	@Column(name = "snippet")
 	private String snippet;
-	
+
 	@Column(name = "keyword")
 	private String keyword;
-	
-
 
 	public int getId() {
 		return id;
@@ -107,6 +100,7 @@ public class TestRules implements Serializable
 	public void setTestDetail(TestDetail testDetail) {
 		this.testDetail = testDetail;
 	}
+
 	public String getReportedLabel() {
 		return reportedLabel;
 	}
@@ -114,7 +108,6 @@ public class TestRules implements Serializable
 	public void setReportedLabel(String reportedLabel) {
 		this.reportedLabel = reportedLabel;
 	}
-	
 
 	public String getDataType() {
 		return dataType;
@@ -155,8 +148,6 @@ public class TestRules implements Serializable
 	public void setFromColumn(String fromColumn) {
 		this.fromColumn = fromColumn;
 	}
-
-
 
 	public String getReferenceColumn() {
 		return referenceColumn;
@@ -213,7 +204,6 @@ public class TestRules implements Serializable
 	public void setValue2(String value2) {
 		this.value2 = value2;
 	}
-	
 
 	public String getSnippet() {
 		return snippet;

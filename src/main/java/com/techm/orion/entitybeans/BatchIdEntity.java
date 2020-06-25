@@ -15,56 +15,53 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+@Entity
+@Table(name = "c3p_t_request_batch_info")
+public class BatchIdEntity implements Serializable
 
-	
-	@Entity
-	@Table(name = "c3p_t_request_batch_info")
-	public class BatchIdEntity implements Serializable
+{
 
-	{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6319429069754910549L;
 
-		@GeneratedValue(strategy = GenerationType.AUTO)
-		@Id
-		private int infoId;
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Id
+	private int infoId;
 
-		
-		@JsonIgnore
-		@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE,
-				CascadeType.PERSIST })
-		@JoinColumn(name = "r_alphanumeric_req_id")
-		private RequestInfoEntity requestInfoEntity;
-		
-	
+	@JsonIgnore
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
+	@JoinColumn(name = "r_alphanumeric_req_id")
+	private RequestInfoEntity requestInfoEntity;
 
-		@Column(name = "r_batch_id")
-		private String batchId;
-		
+	@Column(name = "r_batch_id")
+	private String batchId;
 
+	@Column(name = "r_batch_status")
+	private String batchStatus;
 
-		@Column(name = "r_batch_status")
-	    private String batchStatus;
+	public String getBatchStatus() {
+		return batchStatus;
+	}
 
-		public String getBatchStatus() {
-			return batchStatus;
-		}
+	public void setBatchStatus(String batchStatus) {
+		this.batchStatus = batchStatus;
+	}
 
-		public void setBatchStatus(String batchStatus) {
-			this.batchStatus = batchStatus;
-		}
+	public String getBatchId() {
+		return batchId;
+	}
 
-		public String getBatchId() {
-			return batchId;
-		}
+	public void setBatchId(String batchId) {
+		this.batchId = batchId;
+	}
 
-		public void setBatchId(String batchId) {
-			this.batchId = batchId;
-		}
+	public RequestInfoEntity getRequestInfoEntity() {
+		return requestInfoEntity;
+	}
 
-		public RequestInfoEntity getRequestInfoEntity() {
-			return requestInfoEntity;
-		}
-
-		public void setRequestInfoEntity(RequestInfoEntity requestInfoEntity) {
-			this.requestInfoEntity = requestInfoEntity;
-		}
+	public void setRequestInfoEntity(RequestInfoEntity requestInfoEntity) {
+		this.requestInfoEntity = requestInfoEntity;
+	}
 }

@@ -16,15 +16,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class WebServiceEntity implements Serializable {
 
-
-
-
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4804628823147479921L;
 
 	@Id
 	@Column(name = "request_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int requestInfoId;
-	
+
 	public int getRequestInfoId() {
 		return requestInfoId;
 	}
@@ -34,47 +35,46 @@ public class WebServiceEntity implements Serializable {
 	}
 
 	@Column(name = "start_test")
-    private int start_test;
-	
+	private int start_test;
+
 	@Column(name = "generate_config")
-    private int generate_config;
-	
+	private int generate_config;
+
 	@Column(name = "deliever_config")
-    private int deliever_config;
-	
+	private int deliever_config;
+
 	@Column(name = "health_checkup")
-    private int health_checkup;
-	
+	private int health_checkup;
+
 	@Column(name = "network_test")
-    private int network_test;
-	
+	private int network_test;
+
 	@Column(name = "application_test")
-    private int application_test;
-	
+	private int application_test;
+
 	@Column(name = "customer_report")
-    private int customer_report;
-	
+	private int customer_report;
+
 	@Column(name = "filename")
-    private int filename;
-	
+	private int filename;
+
 	@Column(name = "latencyresultres")
-    private int latencyResultRes;
-	
+	private int latencyResultRes;
+
 	@Column(name = "alphanumeric_req_id")
-    private String alphanumericReqId;
-	
+	private String alphanumericReqId;
 
 	@Column(name = "version")
-    private double version;
-	
+	private double version;
+
 	@Column(name = "textfound_deliverytest")
-    private String TextFoundDeliveryTest;
-	
+	private String TextFoundDeliveryTest;
+
 	@Column(name = "errorStatus_deliverytest")
-    private String ErrorStatusDeliveryTest;
-	
+	private String ErrorStatusDeliveryTest;
+
 	@Column(name = "errordescription_deliverytest")
-    private String ErrorDescriptionDeliveryTest;
+	private String ErrorDescriptionDeliveryTest;
 
 	public int getStart_test() {
 		return start_test;
@@ -156,8 +156,6 @@ public class WebServiceEntity implements Serializable {
 		this.alphanumericReqId = alphanumericReqId;
 	}
 
-	
-
 	public double getVersion() {
 		return version;
 	}
@@ -189,8 +187,5 @@ public class WebServiceEntity implements Serializable {
 	public void setErrorDescriptionDeliveryTest(String errorDescriptionDeliveryTest) {
 		ErrorDescriptionDeliveryTest = errorDescriptionDeliveryTest;
 	}
-	
-	
-	
-}
 
+}

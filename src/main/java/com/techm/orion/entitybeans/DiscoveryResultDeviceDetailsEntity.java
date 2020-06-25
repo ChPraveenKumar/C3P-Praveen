@@ -1,12 +1,7 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,19 +11,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @Table(name = "c3p_t_device_discovery_result_device_details")
@@ -51,17 +39,15 @@ public class DiscoveryResultDeviceDetailsEntity implements Serializable
 		return id;
 	}
 
-
 	public void setId(int id) {
 		this.id = id;
 	}
 
 	@JsonIgnore
-	@OneToMany(cascade = {CascadeType.ALL}, mappedBy = "device")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "device")
 
 	private List<DiscoveryResultDeviceInterfaceEntity> interfaces;
-	
-	
+
 	public List<DiscoveryResultDeviceInterfaceEntity> getInterfaces() {
 		return interfaces;
 	}
@@ -78,70 +64,65 @@ public class DiscoveryResultDeviceDetailsEntity implements Serializable
 
 	@Column(name = "d_drm_size", length = 50)
 	private String dDrmSize;
-	
+
 	@Column(name = "d_flash_size", length = 50)
 	private String dFlashSize;
-	
+
 	@Column(name = "d_hostname", length = 50)
 	private String dHostname;
-	
+
 	@Column(name = "d_ipaddrs_six", length = 50)
 	private String dIpAddrsSix;
-	
+
 	@Column(name = "d_image_file", length = 50)
 	private String dImageFile;
-	
+
 	@Column(name = "d_macaddress", length = 50)
 	private String dMacaddress;
-	
+
 	@Column(name = "d_mgmtip", length = 10)
 	private String dMgmtip;
-	
+
 	@Column(name = "d_model", length = 50)
 	private String dModel;
-	
+
 	@Column(name = "d_nvram_size", length = 50)
 	private String dNvramSize;
-	
+
 	@Column(name = "d_os", length = 10)
 	private String dOs;
-	
+
 	@Column(name = "d_os_version", length = 30)
 	private String dOsVersion;
-	
+
 	@Column(name = "d_releasever", length = 10)
 	private String dReleasever;
-	
+
 	@Column(name = "d_serial_number", length = 10)
 	private String dSerialNumber;
-	
+
 	@Column(name = "d_sries", length = 10)
-	private String dSries ;
-	
+	private String dSries;
+
 	@Column(name = "d_upsince", length = 10)
-	private String dUpsince ;
-	
+	private String dUpsince;
+
 	@Column(name = "d_vendor", length = 10)
-	private String dVendor ;
+	private String dVendor;
 
 	@Column(name = "d_status", length = 20)
-	private String dStatus ;
-	
-	
+	private String dStatus;
+
 	@Column(name = "d_inventoried", length = 10)
-	private String dInventoried ;
-	 
-	
+	private String dInventoried;
 
 	public String getdInventoried() {
 		return dInventoried;
 	}
 
-
 	public void setdInventoried(String dInventoried) {
 		this.dInventoried = dInventoried;
 	}
-
 
 	public String getdStatus() {
 		return dStatus;
@@ -294,7 +275,7 @@ public class DiscoveryResultDeviceDetailsEntity implements Serializable
 	public void setdVendor(String dVendor) {
 		this.dVendor = dVendor;
 	}
-	
+
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "discovery_id")
 	private DeviceDiscoveryDashboardEntity deviceDiscoveryDashboardEntity;
@@ -303,9 +284,7 @@ public class DiscoveryResultDeviceDetailsEntity implements Serializable
 		return deviceDiscoveryDashboardEntity;
 	}
 
-
-	public void setDeviceDiscoveryDashboardEntity(
-			DeviceDiscoveryDashboardEntity deviceDiscoveryDashboardEntity) {
+	public void setDeviceDiscoveryDashboardEntity(DeviceDiscoveryDashboardEntity deviceDiscoveryDashboardEntity) {
 		this.deviceDiscoveryDashboardEntity = deviceDiscoveryDashboardEntity;
 	}
 }

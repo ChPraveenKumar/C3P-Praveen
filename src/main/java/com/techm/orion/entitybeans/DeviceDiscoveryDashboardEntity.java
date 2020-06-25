@@ -2,28 +2,19 @@ package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -32,9 +23,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @Entity
 @Table(name = "c3p_t_device_discovery_dashboard")
 
-public class DeviceDiscoveryDashboardEntity implements Serializable
-
-{
+public class DeviceDiscoveryDashboardEntity implements Serializable {
 
 	/**
 	 * 
@@ -94,8 +83,7 @@ public class DeviceDiscoveryDashboardEntity implements Serializable
 		return discoveryNonInventoriedDevices;
 	}
 
-	public void setDiscoveryNonInventoriedDevices(
-			String discoveryNonInventoriedDevices) {
+	public void setDiscoveryNonInventoriedDevices(String discoveryNonInventoriedDevices) {
 		this.discoveryNonInventoriedDevices = discoveryNonInventoriedDevices;
 	}
 
@@ -116,7 +104,6 @@ public class DeviceDiscoveryDashboardEntity implements Serializable
 	@Column(name = "discovery_status", length = 50)
 	private String discoveryStatus;
 
-	
 	public String getDiscoveryStatus() {
 		return discoveryStatus;
 	}
@@ -124,8 +111,9 @@ public class DeviceDiscoveryDashboardEntity implements Serializable
 	public void setDiscoveryStatus(String discoveryStatus) {
 		this.discoveryStatus = discoveryStatus;
 	}
+
 	@JsonIgnore
-	@OneToMany(cascade = {CascadeType.ALL}, mappedBy = "deviceDiscoveryDashboardEntity")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "deviceDiscoveryDashboardEntity")
 	private Set<DiscoveryResultDeviceDetailsEntity> discoveryResultDeviceDetailsEntity;
 
 	public Set<DiscoveryResultDeviceDetailsEntity> getDiscoveryResultDeviceDetailsEntity() {

@@ -14,7 +14,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
-import org.json.JSONArray;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -60,7 +61,9 @@ import com.techm.orion.service.DcmConfigService;
 @Controller
 @RequestMapping("/BackUpConfigurationAndTest")
 public class BackUpAndRestoreController {
-
+	
+	private static final Logger logger = LogManager.getLogger(BackUpAndRestoreController.class);
+	
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -142,7 +145,7 @@ public class BackUpAndRestoreController {
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).entity(str).build();
@@ -180,7 +183,7 @@ public class BackUpAndRestoreController {
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).entity(str).build();
@@ -276,7 +279,7 @@ public class BackUpAndRestoreController {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -331,7 +334,7 @@ public class BackUpAndRestoreController {
 			str = "Baseline version reset successfully";
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).entity(str).build();
@@ -542,7 +545,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 
 		}
 
@@ -644,7 +647,7 @@ public class BackUpAndRestoreController {
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return versioningModel;
@@ -807,7 +810,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return obj;
 
@@ -1094,7 +1097,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return obj;
 

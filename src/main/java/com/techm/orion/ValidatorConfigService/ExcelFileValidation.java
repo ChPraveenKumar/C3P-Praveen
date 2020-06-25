@@ -6,13 +6,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.poi.EncryptedDocumentException;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
@@ -20,7 +20,6 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.ss.util.NumberToTextConverter;
 import org.springframework.core.io.Resource;
 
 import com.opencsv.CSVReader;
@@ -28,10 +27,10 @@ import com.opencsv.CSVReaderBuilder;
 
 /*Class to validate file against predefine set of rules like file format, mandatory column name and position, mandatory values*/
 public class ExcelFileValidation {
+	private static final Logger logger = LogManager.getLogger(ExcelFileValidation.class);
 
 	/* Method call to validate column of xlsx file */
-	public String validateColumnXLSX(Resource filePath)
-			throws EncryptedDocumentException, InvalidFormatException {
+	public String validateColumnXLSX(Resource filePath) throws EncryptedDocumentException, InvalidFormatException {
 		String jsonArray = "";
 		try {
 
@@ -58,8 +57,7 @@ public class ExcelFileValidation {
 					/*
 					 * for (Row row1 : sheet) { for (Cell cell : row1) {
 					 * 
-					 * //String scheduled =
-					 * cell.getRichStringCellValue().toString();
+					 * //String scheduled = cell.getRichStringCellValue().toString();
 					 * 
 					 * if(cell.getRichStringCellValue().toString().equalsIgnoreCase
 					 * ("To Be Scheduled")) { int i = cell.getColumnIndex();
@@ -83,12 +81,10 @@ public class ExcelFileValidation {
 					/*
 					 * String cell1 = row.getCell(1).getStringCellValue();
 					 * 
-					 * if (cell1.equals("Request Number")) { flag = true; } else
-					 * { flag = false; break; } String cell2 =
-					 * row.getCell(2).getStringCellValue();
+					 * if (cell1.equals("Request Number")) { flag = true; } else { flag = false;
+					 * break; } String cell2 = row.getCell(2).getStringCellValue();
 					 * 
-					 * if (cell2.equals("Hostname")) { flag = true; } else {
-					 * flag = false; break; }
+					 * if (cell2.equals("Hostname")) { flag = true; } else { flag = false; break; }
 					 */
 					String cell3 = row.getCell(3).getStringCellValue();
 
@@ -201,16 +197,14 @@ public class ExcelFileValidation {
 	}
 
 	/* Method call to validate single or bulk SR */
-	public String validateNoOfRequestXLSX(Resource filePath)
-			throws EncryptedDocumentException, InvalidFormatException {
+	public String validateNoOfRequestXLSX(Resource filePath) throws EncryptedDocumentException, InvalidFormatException {
 		String jsonArray = "";
 
 		try {
 			File SAMPLE_XLSX_FILE_PATH = filePath.getFile();
 
 			Workbook workbook = WorkbookFactory.create(SAMPLE_XLSX_FILE_PATH);
-			String fileExtension = FilenameUtils.getExtension(filePath
-					.getFilename());
+			String fileExtension = FilenameUtils.getExtension(filePath.getFilename());
 
 			Sheet sheet = workbook.getSheetAt(0);
 			Row row;
@@ -331,8 +325,7 @@ public class ExcelFileValidation {
 							break;
 						}
 						if (fileExtension.equals("csv")) {
-							String cell10 = row.getCell(10)
-									.getStringCellValue();
+							String cell10 = row.getCell(10).getStringCellValue();
 							if (cell10 != null) {
 								isFlag = true;
 
@@ -343,8 +336,7 @@ public class ExcelFileValidation {
 							}
 
 						} else {
-							Double cell10 = row.getCell(10)
-									.getNumericCellValue();
+							Double cell10 = row.getCell(10).getNumericCellValue();
 							if (cell10 != null) {
 								isFlag = true;
 
@@ -428,8 +420,7 @@ public class ExcelFileValidation {
 								break;
 							}
 							if (fileExtension.equals("csv")) {
-								String cell8 = row.getCell(8)
-										.getStringCellValue();
+								String cell8 = row.getCell(8).getStringCellValue();
 								if (cell8 != null) {
 									isFlag = true;
 
@@ -440,8 +431,7 @@ public class ExcelFileValidation {
 								}
 
 							} else {
-								Double cell8 = row.getCell(8)
-										.getNumericCellValue();
+								Double cell8 = row.getCell(8).getNumericCellValue();
 								if (cell8 != null) {
 									isFlag = true;
 
@@ -461,8 +451,7 @@ public class ExcelFileValidation {
 								break;
 							}
 							if (fileExtension.equals("csv")) {
-								String cell10 = row.getCell(10)
-										.getStringCellValue();
+								String cell10 = row.getCell(10).getStringCellValue();
 								if (cell10 != null) {
 									isFlag = true;
 
@@ -473,8 +462,7 @@ public class ExcelFileValidation {
 								}
 
 							} else {
-								Double cell10 = row.getCell(10)
-										.getNumericCellValue();
+								Double cell10 = row.getCell(10).getNumericCellValue();
 								if (cell10 != null) {
 									isFlag = true;
 
@@ -484,8 +472,7 @@ public class ExcelFileValidation {
 									break;
 								}
 							}
-							String cell11 = row.getCell(11)
-									.getStringCellValue();
+							String cell11 = row.getCell(11).getStringCellValue();
 							if (cell11 != null) {
 								isFlag = true;
 
@@ -494,8 +481,7 @@ public class ExcelFileValidation {
 
 								break;
 							}
-							String cell13 = row.getCell(13)
-									.getStringCellValue();
+							String cell13 = row.getCell(13).getStringCellValue();
 							if (cell13 != null) {
 								isFlag = true;
 
@@ -553,13 +539,13 @@ public class ExcelFileValidation {
 		if (rowSize == 2) {
 			for (int i = 0; i < (rows.size() - 1); i++) {
 				header = Arrays.asList(rows.get(i));
-				System.out.println(header);
+				logger.info(header);
 
 			}
 		} else {
 			for (int i = (rows.size() - 1); i >= 0; i--) {
 				header = Arrays.asList(rows.get(i));
-				System.out.println(header);
+				logger.info(header);
 
 			}
 		}
@@ -697,7 +683,7 @@ public class ExcelFileValidation {
 
 				rowValue = Arrays.asList(rows.get(i));
 
-				System.out.println(rowValue);
+				logger.info(rowValue);
 
 				String cell3 = rowValue.get(3).toString();
 				if (!(cell3.equals(""))) {

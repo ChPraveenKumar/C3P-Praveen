@@ -33,6 +33,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,13 +77,14 @@ import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.RequestDetailsBackUpAndRestoreRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.rest.NetworkTestValidation;
 import com.techm.orion.service.CertificationTestResultService;
 import com.techm.orion.webService.GetAllDetailsService;
-import com.techm.orion.repositories.ServiceOrderRepo;
 
 @Controller
 public class RequestInfoDao {
+	private static final Logger logger = LogManager.getLogger(RequestInfoDao.class);
 	private Connection connection;
 	Statement statement;
 	List<ElapsedTimeFormatPojo> elapsedtimings;
@@ -94,7 +97,7 @@ public class RequestInfoDao {
 
 	@Autowired
 	RequestInfoDetailsRepositories reository;
-	
+
 	@Autowired
 	public BatchInfoRepo batchInfoRepo;
 
@@ -103,7 +106,7 @@ public class RequestInfoDao {
 
 	@Autowired
 	ServiceOrderRepo serviceOrderRepo;
-	
+
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -1135,11 +1138,10 @@ public class RequestInfoDao {
 		}
 		/*
 		 * for (int i = 0; i < requestInfoList1.size(); i++) { //
-		 * System.out.println(""+requestInfoList1.get(i).getRequestId());
-		 * System.out.println("" + requestInfoList1.get(i).getDeviceName());
-		 * System.out.println("" + requestInfoList1.get(i).getMisArPeSO()
-		 * .getFastEthernetIp()); System.out .println("" +
-		 * requestInfoList1.get(i).getInternetLcVrf() .getNetworkIp()); }
+		 * logger.info(""+requestInfoList1.get(i).getRequestId()); logger.info("" +
+		 * requestInfoList1.get(i).getDeviceName()); logger.info("" +
+		 * requestInfoList1.get(i).getMisArPeSO() .getFastEthernetIp()); System.out
+		 * .println("" + requestInfoList1.get(i).getInternetLcVrf() .getNetworkIp()); }
 		 */
 		return requestInfoList1;
 
@@ -1229,9 +1231,9 @@ public class RequestInfoDao {
 		}
 		/*
 		 * for (int i = 0; i < requestInfoList1.size(); i++) { //
-		 * System.out.println(""+requestInfoList1.get(i).getRequestId());
-		 * System.out.println("" + requestInfoList1.get(i).getDateOfProcessing());
-		 * System.out.println("" + requestInfoList1.get(i).getRequest_id());
+		 * logger.info(""+requestInfoList1.get(i).getRequestId()); logger.info("" +
+		 * requestInfoList1.get(i).getDateOfProcessing()); logger.info("" +
+		 * requestInfoList1.get(i).getRequest_id());
 		 * 
 		 * }
 		 */
@@ -1253,7 +1255,7 @@ public class RequestInfoDao {
 			requestInfo.setDateProcessedString(tsmresponse.getJSONObject(i).getString("date"));
 			requestInfoList.add(requestInfo);
 		}
-		System.out.println("request>>>>>>>>>>>" + requestInfoList);
+		logger.info("request>>>>>>>>>>>" + requestInfoList);
 		return requestInfoList;
 	}
 
@@ -1308,7 +1310,7 @@ public class RequestInfoDao {
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
 			InfoList1 = new ArrayList<ReoprtFlags>();
-			System.out.println("" + rs.getFetchSize());
+			logger.info("" + rs.getFetchSize());
 
 			if (rs != null) {
 				while (rs.next()) {
@@ -1566,10 +1568,9 @@ public class RequestInfoDao {
 				e.printStackTrace();
 
 			}
-			ServiceOrderEntity ent=serviceOrderRepo.findByRequestId(requestId);
-			if(ent!=null)
-			{
-			serviceOrderRepo.updateStatusAndRequestId(requestId, "Success", ent.getServiceOrder());
+			ServiceOrderEntity ent = serviceOrderRepo.findByRequestId(requestId);
+			if (ent != null) {
+				serviceOrderRepo.updateStatusAndRequestId(requestId, "Success", ent.getServiceOrder());
 			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
 			String query0 = "select * from requestinfoso where alphanumeric_req_id = ? and request_version= ?";
@@ -1603,10 +1604,9 @@ public class RequestInfoDao {
 				e.printStackTrace();
 
 			}
-			ServiceOrderEntity ent=serviceOrderRepo.findByRequestId(requestId);
-			if(ent!=null)
-			{
-			serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder());
+			ServiceOrderEntity ent = serviceOrderRepo.findByRequestId(requestId);
+			if (ent != null) {
+				serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder());
 			}
 		} else {
 
@@ -1881,7 +1881,7 @@ public class RequestInfoDao {
 			statement = connection.createStatement();
 			rs = statement.executeQuery(query);
 			InfoList1 = new ArrayList<UserPojo>();
-			System.out.println("" + rs.getFetchSize());
+			logger.info("" + rs.getFetchSize());
 
 			boolean flag = false;
 			if (rs != null) {
@@ -2507,7 +2507,7 @@ public class RequestInfoDao {
 				return validatedResult;
 			}
 		} catch (SQLException e) {
-			System.out.println("Error:> " + e.getMessage());
+			logger.info("Error:> " + e.getMessage());
 		}
 		return validatedResult;
 	}
@@ -2554,7 +2554,7 @@ public class RequestInfoDao {
 				result = false;
 			}
 		} catch (SQLException e) {
-			System.out.println("Error:> " + e.getMessage());
+			logger.info("Error:> " + e.getMessage());
 			result = false;
 		}
 		return result;
@@ -3495,7 +3495,7 @@ public class RequestInfoDao {
 				/*
 				 * else if(importStatus ==null) //if(importStatus.equals("Not")) {
 				 * 
-				 * System.out.println("Not taken");
+				 * logger.info("Not taken");
 				 * 
 				 * }
 				 */
@@ -3584,7 +3584,7 @@ public class RequestInfoDao {
 					String calElapsedTime = rs.getString("request_elapsed_time");
 
 					String[] arr = calElapsedTime.split("\\.");
-					System.out.println(arr[0]);
+					logger.info(arr[0]);
 					if (arr[0].length() == 1) {
 						arr[0] = "0" + arr[0];
 					}
@@ -4172,7 +4172,7 @@ public class RequestInfoDao {
 		 * int seconds = (int) milliseconds / 1000; int minutes = (seconds % 3600) / 60;
 		 * String str = minutes + "." + seconds;
 		 */
-		System.out.println("we are here" + milliseconds);
+		logger.info("we are here" + milliseconds);
 		return String.format("%02d.%02d", TimeUnit.MILLISECONDS.toMinutes(milliseconds),
 				TimeUnit.MILLISECONDS.toSeconds(milliseconds)
 						- TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(milliseconds)));
@@ -4250,7 +4250,7 @@ public class RequestInfoDao {
 
 			}
 		} catch (SQLException e) {
-			System.out.println("Error:> " + e.getMessage());
+			logger.info("Error:> " + e.getMessage());
 		}
 		return false;
 	}
@@ -4283,7 +4283,7 @@ public class RequestInfoDao {
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -4309,7 +4309,7 @@ public class RequestInfoDao {
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -4394,7 +4394,7 @@ public class RequestInfoDao {
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -4416,7 +4416,7 @@ public class RequestInfoDao {
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -4440,7 +4440,7 @@ public class RequestInfoDao {
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -4463,7 +4463,7 @@ public class RequestInfoDao {
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -4631,7 +4631,7 @@ public class RequestInfoDao {
 				now.add(Calendar.DAY_OF_MONTH, 1);
 			}
 			daysArray = new ArrayList<String>(Arrays.asList(days));
-			System.out.println("DayCheck");
+			logger.info("DayCheck");
 			JSONObject successObj = new JSONObject();
 			successObj.put("name", "Success");
 			successObj.put("data", successData);
@@ -5126,7 +5126,7 @@ public class RequestInfoDao {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -6128,7 +6128,7 @@ public class RequestInfoDao {
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -6216,7 +6216,7 @@ public class RequestInfoDao {
 			}
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 
 		return owner;
@@ -6288,7 +6288,7 @@ public class RequestInfoDao {
 
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		} finally {
 
 		}
@@ -6311,7 +6311,7 @@ public class RequestInfoDao {
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 	}
 
@@ -6501,7 +6501,7 @@ public class RequestInfoDao {
 			}
 		} catch (SQLException e) {
 
-			System.err.println(e.getMessage());
+			logger.error(e.getMessage());
 		}
 		return content;
 	}
@@ -6890,7 +6890,7 @@ public class RequestInfoDao {
 		String flagFordelieverConfig = "";
 		String res = null;
 		Map<String, String> hmap = new HashMap<String, String>();
-		System.out.println("Version received" + versionId);
+		logger.info("Version received" + versionId);
 
 		query = "select pre_health_checkup from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		try {
@@ -7705,7 +7705,7 @@ public class RequestInfoDao {
 			preparedStmt.execute("SET FOREIGN_KEY_CHECKS=0");
 			preparedStmt.executeUpdate();
 
-			System.out.println("I am here");
+			logger.info("I am here");
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -8067,7 +8067,7 @@ public class RequestInfoDao {
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase();
 
-			}else if (requestInfoSO.getRequestType().equalsIgnoreCase("Audit")
+			} else if (requestInfoSO.getRequestType().equalsIgnoreCase("Audit")
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGA-" + UUID.randomUUID().toString().toUpperCase();
 
@@ -8352,7 +8352,7 @@ public class RequestInfoDao {
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			System.out.println(e);
+			logger.error(e);
 			e.printStackTrace();
 		} finally {
 			DBUtil.close(rs);
@@ -8402,7 +8402,7 @@ public class RequestInfoDao {
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			System.out.println(e);
+			logger.error(e);
 			e.printStackTrace();
 		} finally {
 			DBUtil.close(rs);
@@ -8416,13 +8416,12 @@ public class RequestInfoDao {
 	public List<FirmwareUpgradeDetail> findByVendorName(String vendor) {
 
 		connection = ConnectionFactory.getConnection();
-		String query = null,version=null;
-		
+		String query = null, version = null;
+
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
 		PreparedStatement pst = null;
-		
 
 		try {
 			requestInfoList = new ArrayList<FirmwareUpgradeDetail>();
@@ -8430,25 +8429,24 @@ public class RequestInfoDao {
 			pst = connection.prepareStatement(query);
 
 			// pst.setString(1, requestId);
-			pst.setString(1, vendor+"%");
+			pst.setString(1, vendor + "%");
 
 			rs = pst.executeQuery();
 			while (rs.next()) {
-				
+
 				request = new FirmwareUpgradeDetail();
 				request.setFamily(rs.getString("family"));
 				request.setOs_version(rs.getString("os_version"));
 				request.setCreate_date(rs.getString("create_date"));
 				request.setImage_filename(rs.getString("image_filename"));
-				request.setVendor(rs.getString("vendor"));		
-				
-				
+				request.setVendor(rs.getString("vendor"));
+
 				requestInfoList.add(request);
 			}
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			System.out.println(e);
+			logger.error(e);
 			e.printStackTrace();
 		} finally {
 			DBUtil.close(rs);
@@ -8457,9 +8455,7 @@ public class RequestInfoDao {
 		}
 		return requestInfoList;
 
-	
 	}
-
 
 	public List checkForDeviceLock(String requestId, String managementIp, String TestType) {
 		connection = ConnectionFactory.getConnection();
@@ -8962,7 +8958,8 @@ public class RequestInfoDao {
 		}
 		return result;
 	}
-/*Dhanshri Mane */
+
+	/* Dhanshri Mane */
 	public int getTestDetails(String requestId, String testName) {
 		connection = ConnectionFactory.getConnection();
 		String query = "";
@@ -8975,7 +8972,7 @@ public class RequestInfoDao {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testName);
 			rs = preparedStmt.executeQuery();
-			
+
 			int successCount = 0;
 			int failuarCount = 0;
 			if (rs != null) {
@@ -8991,16 +8988,15 @@ public class RequestInfoDao {
 					}
 				}
 			}
-			if(failuarCount > 0) {
+			if (failuarCount > 0) {
 				return 2;
 			}
-			
-			/*Check for partial success.*/
-			/*if ( successCount != 0 && failuarCount !=0 ) {
-				if (successCount != failuarCount) {
-					status = 3;
-				}
-			}*/
+
+			/* Check for partial success. */
+			/*
+			 * if ( successCount != 0 && failuarCount !=0 ) { if (successCount !=
+			 * failuarCount) { status = 3; } }
+			 */
 
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -9011,15 +9007,13 @@ public class RequestInfoDao {
 
 	public List<FirmwareUpgradeDetail> findByFamily(String isFamily, String isVendor) {
 
-
 		connection = ConnectionFactory.getConnection();
-		String query = null,version=null;
-		
+		String query = null, version = null;
+
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
 		PreparedStatement pst = null;
-		
 
 		try {
 			requestInfoList = new ArrayList<FirmwareUpgradeDetail>();
@@ -9027,26 +9021,25 @@ public class RequestInfoDao {
 			pst = connection.prepareStatement(query);
 
 			// pst.setString(1, requestId);
-			pst.setString(1, isFamily+"%");
-			pst.setString(2, isVendor+"%");
+			pst.setString(1, isFamily + "%");
+			pst.setString(2, isVendor + "%");
 
 			rs = pst.executeQuery();
 			while (rs.next()) {
-				
+
 				request = new FirmwareUpgradeDetail();
 				request.setFamily(rs.getString("family"));
 				request.setOs_version(rs.getString("os_version"));
 				request.setCreate_date(rs.getString("create_date"));
 				request.setImage_filename(rs.getString("image_filename"));
-				request.setVendor(rs.getString("vendor"));		
-				
-				
+				request.setVendor(rs.getString("vendor"));
+
 				requestInfoList.add(request);
 			}
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
-			System.out.println(e);
+			logger.error(e);
 			e.printStackTrace();
 		} finally {
 			DBUtil.close(rs);
@@ -9056,44 +9049,44 @@ public class RequestInfoDao {
 		return requestInfoList;
 
 	}
+
 	public final boolean updateBatchStatus(String batchId) {
-        boolean result = false;
-        connection = ConnectionFactory.getConnection();
-        String sql = "update c3p_t_request_batch_info set r_batch_status='Completed' where r_batch_id=?";
-        try {
-               PreparedStatement ps = connection.prepareStatement(sql);
+		boolean result = false;
+		connection = ConnectionFactory.getConnection();
+		String sql = "update c3p_t_request_batch_info set r_batch_status='Completed' where r_batch_id=?";
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
 
-               ps.setString(1, batchId);
-               
-               int i = ps.executeUpdate();
-               if (i == 1) {
-                     result = true;
+			ps.setString(1, batchId);
 
-               } else {
-                     result = false;
-               }
-        } catch (SQLException e) {
+			int i = ps.executeUpdate();
+			if (i == 1) {
+				result = true;
 
-               result = false;
-        }
-        return result;
- }
+			} else {
+				result = false;
+			}
+		} catch (SQLException e) {
+
+			result = false;
+		}
+		return result;
+	}
+
 	public Map<String, String> insertBatchConfigRequestInDB(RequestInfoPojo requestInfoSO) {
 		Map<String, String> hmap = new HashMap<String, String>();
 		String Os = null, model = null, region = null, service = null, version = null, hostname = null,
-				alphaneumeric_req_id = null, customer = null, siteName = null, siteId = null, vendor = null, deviceType = null,
-				vpn = null;
-		String request_creator_name = null, batchId=null, requestStatus = null;
+				alphaneumeric_req_id = null, customer = null, siteName = null, siteId = null, vendor = null,
+				deviceType = null, vpn = null;
+		String request_creator_name = null, batchId = null, requestStatus = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
 		String zipcode = null, managed = null, downtimerequired = null, lastupgradedon = null, networktype = null;
 		double request_version = 0, request_parent_version = 0;
 		boolean isAutoProgress, startup = false;
 
 		RequestInfoEntity requestEntity = new RequestInfoEntity();
-		
-		BatchIdEntity batchIdEntity = new BatchIdEntity();
 
-	
+		BatchIdEntity batchIdEntity = new BatchIdEntity();
 
 		try {
 
@@ -9101,8 +9094,8 @@ public class RequestInfoDao {
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGM-" + UUID.randomUUID().toString().toUpperCase();
 
-			} 
-			
+			}
+
 			alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
 			hmap.put("requestID", alphaneumeric_req_id);
 			if (requestInfoSO.getOs() != null || requestInfoSO.getOs() != "") {
@@ -9123,7 +9116,6 @@ public class RequestInfoDao {
 				batchId = requestInfoSO.getBatchId();
 			}
 
-
 			if (requestInfoSO.getService() != null || requestInfoSO.getService() != "") {
 				service = requestInfoSO.getService();
 			}
@@ -9135,7 +9127,6 @@ public class RequestInfoDao {
 				hostname = requestInfoSO.getHostname();
 			}
 
-			
 			if (requestInfoSO.getCustomer() != null || requestInfoSO.getCustomer() != "") {
 				customer = requestInfoSO.getCustomer();
 			}
@@ -9164,7 +9155,7 @@ public class RequestInfoDao {
 			if (requestInfoSO.getRequestCreatorName() != null) {
 				request_creator_name = requestInfoSO.getRequestCreatorName();
 			}
-		
+
 			if (requestInfoSO.getStartUp() != null) {
 				startup = requestInfoSO.getStartUp();
 			}
@@ -9173,11 +9164,10 @@ public class RequestInfoDao {
 				scheduledTime = requestInfoSO.getSceheduledTime();
 			}
 
-			
 			if (requestInfoSO.getTemplateID() != null && requestInfoSO.getTemplateID() != "") {
 				templateId = requestInfoSO.getTemplateID();
 			}
-			
+
 			if (requestInfoSO.getNetworkType() != null || requestInfoSO.getNetworkType() != "") {
 				networktype = requestInfoSO.getNetworkType();
 			} else {
@@ -9250,7 +9240,7 @@ public class RequestInfoDao {
 				requestEntity.setRequestCreatorName(request_creator_name);
 				requestEntity.setRequestOwnerName(request_creator_name);
 			}
-	
+
 			if (startup != false) {
 				requestEntity.setStartUp(true);
 			} else {
@@ -9269,10 +9259,9 @@ public class RequestInfoDao {
 
 					java.sql.Timestamp timestampTimeForScheduled = new java.sql.Timestamp(parsedDate.getTime());
 
-					
 					requestEntity.setSceheduledTime(timestampTimeForScheduled);
 					requestEntity.setRequestTypeFlag("S");
-					
+
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -9294,17 +9283,14 @@ public class RequestInfoDao {
 			batchIdEntity.setBatchId(batchId);
 
 			batchIdEntity.setRequestInfoEntity(requestEntity);
-			
-			
-			
+
 			BatchIdEntity save = batchInfoRepo.save(batchIdEntity);
-			
-			
-			if (save.getBatchId() !=null) {
+
+			if (save.getBatchId() != null) {
 
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
 				addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
-			
+
 				hmap.put("result", "true");
 				return hmap;
 

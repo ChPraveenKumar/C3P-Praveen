@@ -13,6 +13,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -51,7 +53,7 @@ import com.techm.orion.repositories.TestStrategeBasicConfigurationRepository;
  */
 @RestController
 public class TestStrategyController {
-
+	private static final Logger logger = LogManager.getLogger(TestStrategyController.class);
 	@Autowired
 	public TestDetailsRepository testDetailsRepository;
 
@@ -186,7 +188,7 @@ public class TestStrategyController {
 									aList.get(i).setDisabled(false);
 								}
 							}
-							System.out.println("");
+							logger.info("");
 						}
 					} else {
 						for (int i = 0; i < aList.size(); i++) {
@@ -194,7 +196,7 @@ public class TestStrategyController {
 							aList.get(i).setSelected(false);
 							aList.get(i).setDisabled(false);
 
-							System.out.println("");
+							logger.info("");
 						}
 					}
 
@@ -649,7 +651,7 @@ public class TestStrategyController {
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println(e);
+			logger.error(e);
 		}
 		return Response.status(200).entity(str).build();
 	}
@@ -998,7 +1000,7 @@ public class TestStrategyController {
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println(e);
+			logger.error(e);
 		}
 		return Response.status(200).entity(str).build();
 	}
@@ -1824,7 +1826,7 @@ public class TestStrategyController {
 									aList.get(i).setDisabled(false);
 								}
 							}
-							System.out.println("");
+							logger.info("");
 						}
 					} else {
 						for (int i = 0; i < aList.size(); i++) {
@@ -1832,7 +1834,7 @@ public class TestStrategyController {
 							aList.get(i).setSelected(false);
 							aList.get(i).setDisabled(false);
 
-							System.out.println("");
+							logger.info("");
 						}
 					}
 

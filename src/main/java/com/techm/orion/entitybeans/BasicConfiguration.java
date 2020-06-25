@@ -1,7 +1,6 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -11,13 +10,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 
@@ -25,6 +19,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class BasicConfiguration implements Serializable
 
 {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1329252947828402748L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -35,7 +34,6 @@ public class BasicConfiguration implements Serializable
 
 	@Column(name = "sequence_id")
 	private int sequence_id;
-
 
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "series_id")
@@ -64,7 +62,7 @@ public class BasicConfiguration implements Serializable
 	public void setSeries(Series series) {
 		this.series = series;
 	}
-	
+
 	public int getSequence_id() {
 		return sequence_id;
 	}

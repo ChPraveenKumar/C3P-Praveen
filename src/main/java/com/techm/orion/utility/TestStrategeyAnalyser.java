@@ -14,6 +14,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -22,16 +24,17 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestRules;
+
 @Component
 public class TestStrategeyAnalyser {
+	private static final Logger logger = LogManager.getLogger(TestStrategeyAnalyser.class);
+
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
 
-	
 	@Autowired
 	RequestInfoDetailsDao requestDetailsInfoDao;
 
-	
 	public static boolean loadProperties() throws IOException {
 		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
 
@@ -95,7 +98,7 @@ public class TestStrategeyAnalyser {
 					break;
 				}
 
-				/* System.out.print(new String(tmp, 0, i)); */
+				/* logger.info(new String(tmp, 0, i)); */
 
 				String s = new String(tmp, 0, i);
 				if (tempTextToAnalyse == null) {
@@ -130,9 +133,9 @@ public class TestStrategeyAnalyser {
 
 			// String text = readFile(filepath1);
 			String text = tempTextToAnalyse;
-			System.out.println("text" + text);
+			logger.info("text" + text);
 
-			System.out.println("After readfile");
+			logger.info("After readfile");
 			List<TestRules> rules = new ArrayList<TestRules>();
 			rules = test.getListRules();
 			int chars = 0;
@@ -161,7 +164,7 @@ public class TestStrategeyAnalyser {
 							test.getTestCategory(), result, resultText, collectedValue, "N/A", collectedValue,
 							rules.get(i).getDataType());
 				}
-//				RequestInfoDao requestInfoDao = new RequestInfoDao();
+				// RequestInfoDao requestInfoDao = new RequestInfoDao();
 				// Update main request status to failure
 				requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "2",
 						"failure");
@@ -189,7 +192,7 @@ public class TestStrategeyAnalyser {
 							test.getTestCategory(), result, resultText, collectedValue, "N/A", collectedValue,
 							rules.get(i).getDataType());
 				}
-//				RequestInfoDao requestInfoDao = new RequestInfoDao();
+				// RequestInfoDao requestInfoDao = new RequestInfoDao();
 				// Update main request status to failure
 				requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "3",
 						"Partial Success");
@@ -213,7 +216,7 @@ public class TestStrategeyAnalyser {
 							Matcher matcher = pattern.matcher(text);
 							while (matcher.find()) {
 								output = matcher.group(1);
-								System.out.println(matcher.group(1));
+								logger.info(matcher.group(1));
 							}
 
 						} else if (!afterText.isEmpty() && !noOfChars.isEmpty()) {
@@ -524,8 +527,8 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Is not equal to  (<>): " + value1, "N/A",
-													rules.get(i).getDataType());
+													result, resultText, output, "Is not equal to  (<>): " + value1,
+													"N/A", rules.get(i).getDataType());
 										} else {
 											// fail the test
 											result = "Failed";
@@ -669,7 +672,7 @@ public class TestStrategeyAnalyser {
 							Matcher matcher = pattern.matcher(text);
 							while (matcher.find()) {
 								output1 = matcher.group(1);
-								System.out.println(matcher.group(1));
+								logger.info(matcher.group(1));
 								output = output1.trim();
 
 							}
@@ -986,8 +989,8 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Is not equal to  (<>): " + value1, "N/A",
-													rules.get(i).getDataType());
+													result, resultText, output, "Is not equal to  (<>): " + value1,
+													"N/A", rules.get(i).getDataType());
 										} else {
 											// fail the test
 											result = "Failed";
@@ -1462,8 +1465,8 @@ public class TestStrategeyAnalyser {
 											res = dao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
-													result, resultText, output, "Is not equal to  (<>): " + value1, "N/A",
-													rules.get(i).getDataType());
+													result, resultText, output, "Is not equal to  (<>): " + value1,
+													"N/A", rules.get(i).getDataType());
 										} else {
 											// fail the test
 											result = "Failed";
@@ -1591,7 +1594,7 @@ public class TestStrategeyAnalyser {
 									"Invalid rule please contact administrator", rules.get(i).getDataType());
 							// Update main request status to partial success
 						}
-						System.out.println("Out");
+						logger.info("Out");
 					}
 					/* Checking for Snippet Rule validation */
 					else if (rules.get(i).getDataType().equalsIgnoreCase("Snippet")) {
@@ -1663,7 +1666,7 @@ public class TestStrategeyAnalyser {
 									rules.get(i).getDataType());
 						}
 
-						System.out.println("Out");
+						logger.info("Out");
 
 					}
 
@@ -1690,14 +1693,14 @@ public class TestStrategeyAnalyser {
 						}
 						if (count != 0) {
 							result = "Passed";
-							
+
 							resultArray.add(result);
 							resultText = rules.get(i).getReportedLabel();
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(),
 
-									result, resultText, evaluationOperator, "Keyword starts with: " + evaluationOperator,
-									"", rules.get(i).getDataType());
+									result, resultText, evaluationOperator,
+									"Keyword starts with: " + evaluationOperator, "", rules.get(i).getDataType());
 						} else {
 							result = "Failed";
 							String collectedValue = "Test failed";
@@ -1722,18 +1725,18 @@ public class TestStrategeyAnalyser {
 						break;
 					}
 				}
-				if (resultVar ==false) {
-//					RequestInfoDao requestInfoDao = new RequestInfoDao();
+				if (resultVar == false) {
+					// RequestInfoDao requestInfoDao = new RequestInfoDao();
 					// Update main request status to partial success
-					requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "3",
-							"Partial Success");
+					requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag,
+							"3", "Partial Success");
 					res = true;
 				} else {
 					res = true;
 				}
 			}
 			if (channel.isClosed()) {
-				System.out.println("exit-status: " + channel.getExitStatus());
+				logger.info("exit-status: " + channel.getExitStatus());
 
 			}
 			try {
@@ -1741,7 +1744,7 @@ public class TestStrategeyAnalyser {
 			} catch (Exception ee) {
 			}
 		} catch (Exception e) {
-			System.out.println("Exception in print and analyse" + e.getMessage());
+			logger.info("Exception in print and analyse" + e.getMessage());
 			e.printStackTrace();
 		}
 		return res;

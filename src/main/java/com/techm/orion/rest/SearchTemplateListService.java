@@ -9,7 +9,8 @@ import java.util.Observer;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
-import org.json.simple.JSONArray;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,19 +20,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.models.TemplateVersioningJSONModel;
-import com.techm.orion.pojo.CertificationTestPojo;
-import com.techm.orion.pojo.ReoprtFlags;
-import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.service.TemplateManagementDetailsService;
 
 @Controller
 @RequestMapping("/SearchTemplateList")
-@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600) 
+@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class SearchTemplateListService implements Observer {
+	private static final Logger logger = LogManager.getLogger(SearchTemplateListService.class);
 
 	TemplateManagementDetailsService service = new TemplateManagementDetailsService();
 
@@ -48,8 +46,7 @@ public class SearchTemplateListService implements Observer {
 
 		try {
 			Gson gson = new Gson();
-			SearchParamPojo dto = gson.fromJson(searchParameters,
-					SearchParamPojo.class);
+			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
 			key = dto.getKey();
 			value = dto.getValue().replace("-", "_");
 			List<TemplateBasicConfigurationPojo> detailsList = new ArrayList<TemplateBasicConfigurationPojo>();
@@ -63,18 +60,14 @@ public class SearchTemplateListService implements Observer {
 						List<TemplateBasicConfigurationPojo> versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();
 						TemplateBasicConfigurationPojo objToAdd;
 						TemplateVersioningJSONModel versioningModelObject = null;
-						
+
 						// create treeview json
 						for (int i = 0; i < detailsList.size(); i++) {
 							boolean objectPrsent = false;
 							if (versioningModel.size() > 0) {
 								for (int j = 0; j < versioningModel.size(); j++) {
-									if (versioningModel
-											.get(j)
-											.getTemplateId()
-											.equalsIgnoreCase(
-													detailsList.get(i)
-															.getTemplateId())) {
+									if (versioningModel.get(j).getTemplateId()
+											.equalsIgnoreCase(detailsList.get(i).getTemplateId())) {
 										objectPrsent = true;
 										break;
 									}
@@ -84,15 +77,12 @@ public class SearchTemplateListService implements Observer {
 								versioningModelObject = new TemplateVersioningJSONModel();
 								objToAdd = new TemplateBasicConfigurationPojo();
 								objToAdd = detailsList.get(i);
-								versioningModelObject.setTemplateId(objToAdd
-										.getTemplateId());
+								versioningModelObject.setTemplateId(objToAdd.getTemplateId());
 								versioningModelObject.setVendor(objToAdd.getVendor());
 								versioningModelObject.setRegion(objToAdd.getRegion());
 								versioningModelObject.setModel(objToAdd.getModel());
-								versioningModelObject.setDeviceType(objToAdd
-										.getDeviceType());
-								versioningModelObject.setDeviceOsVersion(objToAdd
-										.getOsVersion());
+								versioningModelObject.setDeviceType(objToAdd.getDeviceType());
+								versioningModelObject.setDeviceOsVersion(objToAdd.getOsVersion());
 								versioningModelObject.setDeviceOs(objToAdd.getDeviceOs());
 								if (objToAdd.getComment().equalsIgnoreCase("undefined")) {
 									versioningModelObject.setComment("");
@@ -105,18 +95,14 @@ public class SearchTemplateListService implements Observer {
 								versioningModelObject.setCreatedBy(objToAdd.getCreatedBy());
 								versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();
 								for (int k = 0; k < detailsList.size(); k++) {
-									if (detailsList.get(k)
-											.getTemplateId()
-											.equalsIgnoreCase(
-													versioningModelObject.getTemplateId())) {
+									if (detailsList.get(k).getTemplateId()
+											.equalsIgnoreCase(versioningModelObject.getTemplateId())) {
 										versioningModelChildList.add(detailsList.get(k));
 									}
 								}
 								Collections.reverse(versioningModelChildList);
-								versioningModelChildList.get(0).setEnabled(
-										objToAdd.isEditable());
-								versioningModelObject
-										.setChildList(versioningModelChildList);
+								versioningModelChildList.get(0).setEnabled(objToAdd.isEditable());
+								versioningModelObject.setChildList(versioningModelChildList);
 								versioningModel.add(versioningModelObject);
 
 							}
@@ -133,23 +119,18 @@ public class SearchTemplateListService implements Observer {
 					}
 
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error(e);
 				}
 			}
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
 	@Override

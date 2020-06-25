@@ -48,7 +48,7 @@ public class RequestDetailsService {
 	private ArrayList<Integer> dateOfOnHoldRequest = null;
 	private ArrayList<Integer> dateOfOnScheduledRequest = null;
 	private ArrayList<Integer> dateOffailuarRequest = null;
-//	private ArrayList<Integer> dateOfPartialSuccessRequest = null;
+	// private ArrayList<Integer> dateOfPartialSuccessRequest = null;
 	private ArrayList<Integer> dateOfAwaitingRequest = null;
 	private ArrayList<String> dateWiseRequest = null;
 
@@ -79,7 +79,7 @@ public class RequestDetailsService {
 		dateOfOnScheduledRequest = new ArrayList<>();
 		dateOffailuarRequest = new ArrayList<>();
 		dateOfAwaitingRequest = new ArrayList<>();
-//		dateOfPartialSuccessRequest = new ArrayList<>();
+		// dateOfPartialSuccessRequest = new ArrayList<>();
 		dateWiseRequest = new ArrayList<>();
 		dateWiseRequest = new ArrayList<>();
 		String logedInUserName = null;
@@ -384,7 +384,7 @@ public class RequestDetailsService {
 		JSONObject dateOfHold = new JSONObject();
 		JSONObject dateOfSchedule = new JSONObject();
 		JSONObject dateOffailed = new JSONObject();
-//		JSONObject dateOfPartialSucess = new JSONObject();
+		// JSONObject dateOfPartialSucess = new JSONObject();
 		JSONObject dateOfAwaiting = new JSONObject();
 
 		dateOfSuccess.put("name", "Success");
@@ -397,8 +397,8 @@ public class RequestDetailsService {
 		dateOfSchedule.put("data", dateOfOnScheduledRequest);
 		dateOffailed.put("name", "Failure");
 		dateOffailed.put("data", dateOffailuarRequest);
-//		dateOfPartialSucess.put("name", "Partial Sucess");
-//		dateOfPartialSucess.put("data", dateOfPartialSuccessRequest);
+		// dateOfPartialSucess.put("name", "Partial Sucess");
+		// dateOfPartialSucess.put("data", dateOfPartialSuccessRequest);
 		dateOfAwaiting.put("name", "Awaiting");
 		dateOfAwaiting.put("data", dateOfAwaitingRequest);
 		categoryObject.put("category", dateWiseRequest);
@@ -409,7 +409,7 @@ public class RequestDetailsService {
 		array.add(dateOfHold);
 		array.add(dateOfSchedule);
 		array.add(dateOffailed);
-//		array.add(dateOfPartialSucess);
+		// array.add(dateOfPartialSucess);
 		array.add(dateOfAwaiting);
 		categoryObject.put("series", array);
 		finalJson.put("dateWiseStatus", categoryObject);
@@ -557,8 +557,8 @@ public class RequestDetailsService {
 		dateOfOnScheduledRequest = new ArrayList<>();
 		dateOffailuarRequest = new ArrayList<>();
 		dateOfAwaitingRequest = new ArrayList<>();
-//		dateOfPartialSuccessRequest = new ArrayList<>();
-		
+		// dateOfPartialSuccessRequest = new ArrayList<>();
+
 		dateWiseRequest = new ArrayList<>();
 		String logedInUserName = null;
 
@@ -1049,7 +1049,7 @@ public class RequestDetailsService {
 				dateOfOnScheduledRequest.add(dateOfSchedule);
 				dateOffailuarRequest.add(dateOfFailuar);
 				dateOfAwaitingRequest.add(dateOfAwaiting);
-//				dateOfPartialSuccessRequest.add(dateOfPartialSucess);
+				// dateOfPartialSuccessRequest.add(dateOfPartialSucess);
 				String day = getDay(StringUtils.substring(dateArray[i], 0, 2));
 				String dayDate = StringUtils.substring(dateArray[i], 3, 5) + " " + day;
 				dateWiseRequest.add(dayDate);

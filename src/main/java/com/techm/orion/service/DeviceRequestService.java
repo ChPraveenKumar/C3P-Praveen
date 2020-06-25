@@ -21,20 +21,20 @@ public class DeviceRequestService {
 		RequestDetailsResponseMapper mapper = new RequestDetailsResponseMapper();
 		List<RequestInfoEntity> getSiteServices = new ArrayList<>();
 		List<RequestInfoEntity> findAllByHostName = repo.findAllByHostName(hostName);
-		 requestType = requestType.toLowerCase();
+		requestType = requestType.toLowerCase();
 		switch (requestType) {
 		case "config":
-			findAllByHostName.forEach(request->{
+			findAllByHostName.forEach(request -> {
 				String alphanumericReqId = request.getAlphanumericReqId();
-				if(!alphanumericReqId.contains("SLGB")) {
-					getSiteServices.add(request);	
+				if (!alphanumericReqId.contains("SLGB")) {
+					getSiteServices.add(request);
 				}
 			});
 			break;
 		case "backup":
-			findAllByHostName.forEach(request->{
+			findAllByHostName.forEach(request -> {
 				String alphanumericReqId = request.getAlphanumericReqId();
-				if(alphanumericReqId.contains("SLGB")) {
+				if (alphanumericReqId.contains("SLGB")) {
 					getSiteServices.add(request);
 				}
 			});

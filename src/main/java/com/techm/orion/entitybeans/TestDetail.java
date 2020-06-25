@@ -16,6 +16,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /*
  * Owner: Vivek Vidhate Module: Test Strategey Logic: To
  * Get, Save, edit, tree structure and show Network Audit tests for all rules(Text, Table, Section, Snippet, Keyword)
@@ -26,6 +27,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class TestDetail implements Serializable
 
 {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3239675401983359179L;
 
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
@@ -78,16 +84,14 @@ public class TestDetail implements Serializable
 
 	@Column(name = "version")
 	private String version;
-	
+
 	private boolean isEnabled = false;
 
 	@Transient
-	boolean selected=false;
-	
-
+	boolean selected = false;
 
 	@Transient
-	boolean disabled=true;
+	boolean disabled = true;
 
 	@Transient
 	private List<TestRules> listRules = new ArrayList<TestRules>();
@@ -100,14 +104,12 @@ public class TestDetail implements Serializable
 
 	@Transient
 	private List<TestRules> section_attributes = new ArrayList<TestRules>();
-	
+
 	@Transient
 	private List<TestRules> snippet_attributes = new ArrayList<TestRules>();
-	
+
 	@Transient
 	private List<TestRules> keyword_attributes = new ArrayList<TestRules>();
-
-
 
 	@Transient
 	private List<TestFeatureList> listFeatures = new ArrayList<TestFeatureList>();
@@ -122,7 +124,7 @@ public class TestDetail implements Serializable
 
 	@Column(name = "network_type", length = 5)
 	private String networkType;
-	
+
 	public String getRegion() {
 		return region;
 	}
@@ -314,7 +316,7 @@ public class TestDetail implements Serializable
 	public void setSection_attributes(List<TestRules> section_attributes) {
 		this.section_attributes = section_attributes;
 	}
-	
+
 	public boolean isEnabled() {
 		return isEnabled;
 	}
@@ -322,6 +324,7 @@ public class TestDetail implements Serializable
 	public void setEnabled(boolean isEnabled) {
 		this.isEnabled = isEnabled;
 	}
+
 	public boolean isSelected() {
 		return selected;
 	}
@@ -337,7 +340,7 @@ public class TestDetail implements Serializable
 	public void setDisabled(boolean disabled) {
 		this.disabled = disabled;
 	}
-	
+
 	public List<TestRules> getSnippet_attributes() {
 		return snippet_attributes;
 	}

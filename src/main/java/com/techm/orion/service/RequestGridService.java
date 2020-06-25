@@ -1,7 +1,6 @@
 package com.techm.orion.service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 import com.techm.orion.entitybeans.BatchIdEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.mapper.RequestDetailsResponseMapper;
-import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
@@ -42,12 +40,13 @@ public class RequestGridService {
 							requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						/*if (request.getBatchId() != null) {
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-
-						}*/
+						/*
+						 * if (request.getBatchId() != null) { BatchIdEntity findBatchStatusByBatchId =
+						 * batchRepo .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 * 
+						 * }
+						 */
 					});
 					return setEntityToPojo;
 				}
@@ -61,7 +60,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -70,7 +69,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -82,11 +81,11 @@ public class RequestGridService {
 				getSiteServices = repo.findByRequestCreatorNameAndCustomer(logedInUserName, customer);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					/*if (request.getBatchId() != null) {
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					}*/
+					/*
+					 * if (request.getBatchId() != null) { BatchIdEntity findBatchStatusByBatchId =
+					 * batchRepo .findBatchStatusByBatchId(request.getBatchId());
+					 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus()); }
+					 */
 				});
 				return setEntityToPojo;
 
@@ -97,11 +96,11 @@ public class RequestGridService {
 							customer, region, requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						/*if (request.getBatchId() != null) {
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						}*/
+						/*
+						 * if (request.getBatchId() != null) { BatchIdEntity findBatchStatusByBatchId =
+						 * batchRepo .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus()); }
+						 */
 					});
 					return setEntityToPojo;
 				}
@@ -113,19 +112,20 @@ public class RequestGridService {
 
 					Set<String> batchId = new HashSet<>();
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						findBatchStatusByBatchId.forEach(requestBatch->{
-							request.setBatchStatus(requestBatch.getBatchStatus());
-							batchId.add(requestBatch.getBatchId());
-							if (request.getExecutionMode().equals("M")) {
-								request.setExecutionMode("Run now");
-								request.setLastExecution(request.getDateOfProcessing());
-							} else if (request.getExecutionMode().equals("S")) {
-								request.setExecutionMode("Schedule");
-							}
-						
-						});
+						if (request.getBatchId() != null) {
+							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
+									.findBatchStatusByBatchId(request.getBatchId());
+							findBatchStatusByBatchId.forEach(requestBatch -> {
+								request.setBatchStatus(requestBatch.getBatchStatus());
+								batchId.add(requestBatch.getBatchId());
+								if (request.getExecutionMode().equals("M")) {
+									request.setExecutionMode("Run now");
+									request.setLastExecution(request.getDateOfProcessing());
+								} else if (request.getExecutionMode().equals("S")) {
+									request.setExecutionMode("Schedule");
+								}
+
+							});
 						}
 					});
 					if (type.equals("batch")) {
@@ -137,9 +137,11 @@ public class RequestGridService {
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
 					if (request.getBatchId() != null) {
-						/*BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());*/
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */
 					}
 				});
 				return setEntityToPojo;
@@ -150,11 +152,12 @@ public class RequestGridService {
 							logedInUserName, customer, region, site, requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -168,7 +171,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -177,7 +180,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -190,11 +193,12 @@ public class RequestGridService {
 						customer, region, site);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 
@@ -205,11 +209,12 @@ public class RequestGridService {
 							logedInUserName, customer, region, site, HostName, requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -224,7 +229,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -233,7 +238,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -246,11 +251,12 @@ public class RequestGridService {
 						logedInUserName, customer, region, site, HostName);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			}
@@ -258,11 +264,12 @@ public class RequestGridService {
 				getSiteServices = repo.findByRequestCreatorNameAndStatus(logedInUserName, requestStatus);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			}
@@ -276,7 +283,7 @@ public class RequestGridService {
 
 						List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 								.findBatchStatusByBatchId(request.getBatchId());
-						findBatchStatusByBatchId.forEach(requestBatch->{
+						findBatchStatusByBatchId.forEach(requestBatch -> {
 							request.setBatchStatus(requestBatch.getBatchStatus());
 							batchId.add(requestBatch.getBatchId());
 							if (request.getExecutionMode().equals("M")) {
@@ -285,9 +292,9 @@ public class RequestGridService {
 							} else if (request.getExecutionMode().equals("S")) {
 								request.setExecutionMode("Schedule");
 							}
-						
+
 						});
-					
+
 					}
 				});
 				if (type.equals("batch")) {
@@ -298,10 +305,12 @@ public class RequestGridService {
 			getSiteServices = repo.findByRequestCreatorName(logedInUserName);
 			List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 			setEntityToPojo.forEach(request -> {
-				if (request.getBatchId() != null) {/*
-					BatchIdEntity findBatchStatusByBatchId = batchRepo.findBatchStatusByBatchId(request.getBatchId());
-					request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-				*/}
+				if (request.getBatchId() != null) {
+					/*
+					 * BatchIdEntity findBatchStatusByBatchId =
+					 * batchRepo.findBatchStatusByBatchId(request.getBatchId());
+					 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+					 */}
 			});
 			return setEntityToPojo;
 
@@ -311,11 +320,12 @@ public class RequestGridService {
 					getSiteServices = repo.findAllByCustomerAndStatus(customer, requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -328,7 +338,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -337,7 +347,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -349,11 +359,12 @@ public class RequestGridService {
 				getSiteServices = repo.findAllByCustomer(customer);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			}
@@ -362,11 +373,12 @@ public class RequestGridService {
 					getSiteServices = repo.findAllByCustomerAndRegionAndStatus(customer, region, requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -379,7 +391,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -388,7 +400,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -400,11 +412,12 @@ public class RequestGridService {
 				getSiteServices = repo.findAllByCustomerAndRegion(customer, region);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			} else if (customer != null && region != null && site != null && HostName == null) {
@@ -413,11 +426,12 @@ public class RequestGridService {
 							requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -430,7 +444,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -439,7 +453,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -451,11 +465,12 @@ public class RequestGridService {
 				getSiteServices = repo.findAllByCustomerAndRegionAndSiteName(customer, region, site);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			} else if (customer != null && region != null && site != null && HostName != null) {
@@ -464,11 +479,12 @@ public class RequestGridService {
 							site, HostName, requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -482,7 +498,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -491,7 +507,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -504,24 +520,24 @@ public class RequestGridService {
 						HostName);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			} else {
 				if (requestStatus != null) {
 					getSiteServices = repo.findAllByStatus(requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
-					setEntityToPojo.forEach(request -> {/*
-						if (request.getBatchId() != null) {
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						}
-					*/});
+					setEntityToPojo.forEach(request -> {
+						/*
+						 * if (request.getBatchId() != null) { BatchIdEntity findBatchStatusByBatchId =
+						 * batchRepo .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus()); }
+						 */});
 					return setEntityToPojo;
 				}
 				if (type != null) {
@@ -533,7 +549,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -542,7 +558,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -554,11 +570,12 @@ public class RequestGridService {
 				getSiteServices = repo.findAll();
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			}
@@ -570,8 +587,8 @@ public class RequestGridService {
 		List<ServiceRequestPojo> setEntityToPojoValue = new ArrayList<>();
 		List<String> json = new ArrayList<>();
 		for (int i = 0; i < setEntityToPojo.size(); i++) {
-			for (String batch : batchId) {	
-				if(setEntityToPojo.get(i).getBatchId().equals(batch)) {
+			for (String batch : batchId) {
+				if (setEntityToPojo.get(i).getBatchId().equals(batch)) {
 					json.add(batch);
 					setEntityToPojo.get(i).setAlpha_numeric_req_id("");
 					setEntityToPojo.get(i).setCustomer("");
@@ -601,11 +618,12 @@ public class RequestGridService {
 							requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -618,7 +636,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -627,7 +645,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -639,11 +657,12 @@ public class RequestGridService {
 				getSiteServices = repo.findByRequestCreatorNameAndVendor(logedInUserName, vendor);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 
@@ -654,11 +673,12 @@ public class RequestGridService {
 							family, requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -671,7 +691,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -680,7 +700,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -692,11 +712,12 @@ public class RequestGridService {
 				getSiteServices = repo.findByRequestCreatorNameAndVendorAndModel(logedInUserName, vendor, family);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 
@@ -707,11 +728,12 @@ public class RequestGridService {
 							logedInUserName, vendor, family, HostName, requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -725,7 +747,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -734,7 +756,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -747,11 +769,11 @@ public class RequestGridService {
 						family, HostName);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-//					if (request.getBatchId() != null) {
-//						BatchIdEntity findBatchStatusByBatchId = batchRepo
-//								.findBatchStatusByBatchId(request.getBatchId());
-//						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-//					}
+					// if (request.getBatchId() != null) {
+					// BatchIdEntity findBatchStatusByBatchId = batchRepo
+					// .findBatchStatusByBatchId(request.getBatchId());
+					// request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+					// }
 				});
 				return setEntityToPojo;
 			}
@@ -759,11 +781,12 @@ public class RequestGridService {
 				getSiteServices = repo.findByRequestCreatorNameAndStatus(logedInUserName, requestStatus);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			}
@@ -776,7 +799,7 @@ public class RequestGridService {
 					if (request.getBatchId() != null) {
 						List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 								.findBatchStatusByBatchId(request.getBatchId());
-						findBatchStatusByBatchId.forEach(requestBatch->{
+						findBatchStatusByBatchId.forEach(requestBatch -> {
 							request.setBatchStatus(requestBatch.getBatchStatus());
 							batchId.add(requestBatch.getBatchId());
 							if (request.getExecutionMode().equals("M")) {
@@ -785,7 +808,7 @@ public class RequestGridService {
 							} else if (request.getExecutionMode().equals("S")) {
 								request.setExecutionMode("Schedule");
 							}
-						
+
 						});
 					}
 				});
@@ -797,10 +820,12 @@ public class RequestGridService {
 			getSiteServices = repo.findByRequestCreatorName(logedInUserName);
 			List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 			setEntityToPojo.forEach(request -> {
-				if (request.getBatchId() != null) {/*
-					BatchIdEntity findBatchStatusByBatchId = batchRepo.findBatchStatusByBatchId(request.getBatchId());
-					request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-				*/}
+				if (request.getBatchId() != null) {
+					/*
+					 * BatchIdEntity findBatchStatusByBatchId =
+					 * batchRepo.findBatchStatusByBatchId(request.getBatchId());
+					 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+					 */}
 			});
 			return setEntityToPojo;
 		} else {
@@ -809,11 +834,12 @@ public class RequestGridService {
 					getSiteServices = repo.findAllByVendorAndStatus(vendor, requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -826,7 +852,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -835,7 +861,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -847,11 +873,12 @@ public class RequestGridService {
 				getSiteServices = repo.findAllByVendor(vendor);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			}
@@ -860,11 +887,12 @@ public class RequestGridService {
 					getSiteServices = repo.findAllByVendorAndModelAndStatus(vendor, family, requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -877,7 +905,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -886,7 +914,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -898,11 +926,12 @@ public class RequestGridService {
 				getSiteServices = repo.findAllByVendorAndModel(vendor, family);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			}
@@ -912,11 +941,12 @@ public class RequestGridService {
 							requestStatus);
 					List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 					setEntityToPojo.forEach(request -> {
-						if (request.getBatchId() != null) {/*
-							BatchIdEntity findBatchStatusByBatchId = batchRepo
-									.findBatchStatusByBatchId(request.getBatchId());
-							request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-						*/}
+						if (request.getBatchId() != null) {
+							/*
+							 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+							 * .findBatchStatusByBatchId(request.getBatchId());
+							 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+							 */}
 					});
 					return setEntityToPojo;
 				}
@@ -929,7 +959,7 @@ public class RequestGridService {
 						if (request.getBatchId() != null) {
 							List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 									.findBatchStatusByBatchId(request.getBatchId());
-							findBatchStatusByBatchId.forEach(requestBatch->{
+							findBatchStatusByBatchId.forEach(requestBatch -> {
 								request.setBatchStatus(requestBatch.getBatchStatus());
 								batchId.add(requestBatch.getBatchId());
 								if (request.getExecutionMode().equals("M")) {
@@ -938,7 +968,7 @@ public class RequestGridService {
 								} else if (request.getExecutionMode().equals("S")) {
 									request.setExecutionMode("Schedule");
 								}
-							
+
 							});
 						}
 					});
@@ -950,11 +980,12 @@ public class RequestGridService {
 				getSiteServices = repo.findAllByVendorAndModelAndHostName(vendor, family, HostName);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			}
@@ -962,11 +993,12 @@ public class RequestGridService {
 				getSiteServices = repo.findAllByStatus(requestStatus);
 				List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 				setEntityToPojo.forEach(request -> {
-					if (request.getBatchId() != null) {/*
-						BatchIdEntity findBatchStatusByBatchId = batchRepo
-								.findBatchStatusByBatchId(request.getBatchId());
-						request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-					*/}
+					if (request.getBatchId() != null) {
+						/*
+						 * BatchIdEntity findBatchStatusByBatchId = batchRepo
+						 * .findBatchStatusByBatchId(request.getBatchId());
+						 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+						 */}
 				});
 				return setEntityToPojo;
 			}
@@ -980,7 +1012,7 @@ public class RequestGridService {
 					if (request.getBatchId() != null) {
 						List<BatchIdEntity> findBatchStatusByBatchId = batchRepo
 								.findBatchStatusByBatchId(request.getBatchId());
-						findBatchStatusByBatchId.forEach(requestBatch->{
+						findBatchStatusByBatchId.forEach(requestBatch -> {
 							request.setBatchStatus(requestBatch.getBatchStatus());
 							batchId.add(requestBatch.getBatchId());
 							if (request.getExecutionMode().equals("M")) {
@@ -989,7 +1021,7 @@ public class RequestGridService {
 							} else if (request.getExecutionMode().equals("S")) {
 								request.setExecutionMode("Schedule");
 							}
-						
+
 						});
 					}
 				});
@@ -1001,10 +1033,12 @@ public class RequestGridService {
 			getSiteServices = repo.findAll();
 			List<ServiceRequestPojo> setEntityToPojo = mapper.setEntityToPojo(getSiteServices);
 			setEntityToPojo.forEach(request -> {
-				if (request.getBatchId() != null) {/*
-					BatchIdEntity findBatchStatusByBatchId = batchRepo.findBatchStatusByBatchId(request.getBatchId());
-					request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
-				*/}
+				if (request.getBatchId() != null) {
+					/*
+					 * BatchIdEntity findBatchStatusByBatchId =
+					 * batchRepo.findBatchStatusByBatchId(request.getBatchId());
+					 * request.setBatchStatus(findBatchStatusByBatchId.getBatchStatus());
+					 */}
 			});
 			return setEntityToPojo;
 		}

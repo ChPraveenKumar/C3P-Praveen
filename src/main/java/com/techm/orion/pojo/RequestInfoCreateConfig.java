@@ -2,8 +2,6 @@ package com.techm.orion.pojo;
 
 import java.sql.Timestamp;
 
-import javax.xml.bind.annotation.XmlElement;
-
 public class RequestInfoCreateConfig {
 
 	private int infoId;

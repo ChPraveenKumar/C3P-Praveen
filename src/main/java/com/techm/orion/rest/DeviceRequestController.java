@@ -22,7 +22,7 @@ public class DeviceRequestController {
 
 	@Autowired
 	DeviceRequestService service;
-	
+
 	@POST
 	@RequestMapping(value = "/getConfigRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -32,17 +32,17 @@ public class DeviceRequestController {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 			String hostName = null;
-			String requestType=null;
+			String requestType = null;
 			if (json.containsKey("hostName")) {
 				hostName = json.get("hostName").toString();
 			}
 			if (json.containsKey("requestType")) {
 				requestType = json.get("requestType").toString();
 			}
-			if(hostName!=null) {
-				requestDeatils=service.getConfigServiceRequest(hostName,requestType);
+			if (hostName != null) {
+				requestDeatils = service.getConfigServiceRequest(hostName, requestType);
 			}
-			
+
 		} catch (Exception e) {
 
 		}

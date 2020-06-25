@@ -14,13 +14,15 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
 @Entity
 @Table(name = "c3p_t_request_service_order")
 
 public class ServiceOrderEntity implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2442162560584603332L;
 
 	@Id
 	@Column(name = "so_id")
@@ -32,7 +34,7 @@ public class ServiceOrderEntity implements Serializable {
 	private String serviceOrder;
 
 	@Column(name = "so_requestid", length = 50)
-	private String requestId="";
+	private String requestId = "";
 
 	@Column(name = "so_hostname", length = 50)
 	private String hostName;
@@ -59,14 +61,14 @@ public class ServiceOrderEntity implements Serializable {
 	private String series;
 
 	@Column(name = "so_status", length = 50)
-	private String status="";
+	private String status = "";
 
 	@Column(name = "so_request_status", length = 50)
 	private String requestStatus;
 
 	@Column(name = "so_action", length = 50)
 	private String action;
-	
+
 	@Column(name = "so_date")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date date;
@@ -88,8 +90,8 @@ public class ServiceOrderEntity implements Serializable {
 	}
 
 	public String getRequestId() {
-		if(requestId==null)
-			requestId="";
+		if (requestId == null)
+			requestId = "";
 		return requestId;
 	}
 
@@ -170,8 +172,8 @@ public class ServiceOrderEntity implements Serializable {
 	}
 
 	public String getRequestStatus() {
-		if(requestStatus==null)
-			requestStatus="";
+		if (requestStatus == null)
+			requestStatus = "";
 		return requestStatus;
 	}
 
@@ -180,8 +182,8 @@ public class ServiceOrderEntity implements Serializable {
 	}
 
 	public String getAction() {
-		if(action==null)
-			action="";
+		if (action == null)
+			action = "";
 		return action;
 	}
 

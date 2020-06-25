@@ -15,30 +15,30 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Entity
-@Table(name="firmware_upgrade_single_device")
+@Table(name = "firmware_upgrade_single_device")
 public class FirmwareUpgradeSingleDeviceEntity {
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private long id;
-	
-	@Column(name="vendor")
+
+	@Column(name = "vendor")
 	private String vendor;
-	
-	@Column(name="family", length = 50)
+
+	@Column(name = "family", length = 50)
 	private String family;
-	
-	@Column(name="image_filename")
+
+	@Column(name = "image_filename")
 	private String imageFilename;
-	
-	@Column(name="os_version")
+
+	@Column(name = "os_version")
 	private String displayName;
 
 	@CreationTimestamp
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "create_date")
 	private Date createDate;
-	
+
 	public long getId() {
 		return id;
 	}
@@ -46,7 +46,7 @@ public class FirmwareUpgradeSingleDeviceEntity {
 	public void setId(long id) {
 		this.id = id;
 	}
-	
+
 	public String getVendor() {
 		return vendor;
 	}
@@ -70,7 +70,7 @@ public class FirmwareUpgradeSingleDeviceEntity {
 	public void setImageFilename(String imageFilename) {
 		this.imageFilename = imageFilename;
 	}
-	
+
 	public String getDisplayName() {
 		return displayName;
 	}
@@ -91,8 +91,8 @@ public class FirmwareUpgradeSingleDeviceEntity {
 		super();
 	}
 
-	public FirmwareUpgradeSingleDeviceEntity(int id, String vendor, String family,
-			String imageFilename, String displayName, Date createDate) {
+	public FirmwareUpgradeSingleDeviceEntity(int id, String vendor, String family, String imageFilename,
+			String displayName, Date createDate) {
 		super();
 		this.id = id;
 		this.vendor = vendor;

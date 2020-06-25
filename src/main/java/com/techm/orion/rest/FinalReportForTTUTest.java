@@ -20,6 +20,8 @@ import java.util.Scanner;
 
 import javax.ws.rs.POST;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,6 +51,8 @@ import com.techm.orion.utility.TextReport;
 @Controller
 @RequestMapping("/FinalReportForTTUTest")
 public class FinalReportForTTUTest extends Thread {
+
+	private static final Logger logger = LogManager.getLogger(FinalReportForTTUTest.class);
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -96,7 +100,7 @@ public class FinalReportForTTUTest extends Thread {
 
 				// Require requestId and version from camunda
 
-				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")|| type.equalsIgnoreCase("SLGA")) {
+				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA")) {
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							createConfigRequest.getRequestId(), createConfigRequest.getManagementIp(), "FinalReport");
 					if (deviceLocked) {
@@ -339,17 +343,17 @@ public class FinalReportForTTUTest extends Thread {
 								response);
 
 					}
-					System.out.println("DONE");
+					logger.info("DONE");
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 				} else if (type.equalsIgnoreCase("SLGF")) {
 					RequestInfoDao dao = new RequestInfoDao();
 					boolean ishealthCheckSuccess = dao.isHealthCheckSuccesfulForOSUpgrade(
 							createConfigRequest.getRequestId(), createConfigRequest.getRequest_version());
-					System.out.println("Health Check Flag is " + ishealthCheckSuccess);
+					logger.info("Health Check Flag is " + ishealthCheckSuccess);
 					boolean isPreHealthCheckSuccess = dao.isPreHealthCheckSuccesfulForOSUpgrade(
 							createConfigRequest.getRequestId(), createConfigRequest.getRequest_version());
-					System.out.println("Pre Health Check Flag is " + isPreHealthCheckSuccess);
+					logger.info("Pre Health Check Flag is " + isPreHealthCheckSuccess);
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							createConfigRequest.getRequestId(), createConfigRequest.getManagementIp(), "FinalReport");
 					boolean isDilevarySuccess = dao.isDilevarySuccessforOSUpgrade(createConfigRequest.getRequestId(),
@@ -796,10 +800,10 @@ public class FinalReportForTTUTest extends Thread {
 					RequestInfoDao dao = new RequestInfoDao();
 					boolean ishealthCheckSuccess = dao.isHealthCheckSuccesfulForOSUpgrade(
 							createConfigRequest.getRequestId(), createConfigRequest.getRequest_version());
-					System.out.println("Health Check Flag is " + ishealthCheckSuccess);
+					logger.info("Health Check Flag is " + ishealthCheckSuccess);
 					boolean isPreHealthCheckSuccess = dao.isPreHealthCheckSuccesfulForOSUpgrade(
 							createConfigRequest.getRequestId(), createConfigRequest.getRequest_version());
-					System.out.println("Pre Health Check Flag is " + isPreHealthCheckSuccess);
+					logger.info("Pre Health Check Flag is " + isPreHealthCheckSuccess);
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							createConfigRequest.getRequestId(), createConfigRequest.getManagementIp(), "FinalReport");
 					boolean isDilevarySuccess = dao.isDilevarySuccessforOSUpgrade(createConfigRequest.getRequestId(),
@@ -1027,13 +1031,11 @@ public class FinalReportForTTUTest extends Thread {
 				}
 
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-				String statusVAlue = requestDao.getPreviousMileStoneStatus(
-						requestinfo.getAlphanumericReqId(),
+				String statusVAlue = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 						requestinfo.getRequestVersion());
 				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "customer_report", "4", statusVAlue);
 
-			
 				requestinfo.setAlphanumericReqId(RequestId);
 				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 
@@ -1041,7 +1043,7 @@ public class FinalReportForTTUTest extends Thread {
 
 				// Require requestId and version from camunda
 
-				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")|| type.equalsIgnoreCase("SLGA")) {
+				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA")) {
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
 					if (deviceLocked) {
@@ -1270,17 +1272,17 @@ public class FinalReportForTTUTest extends Thread {
 								response);
 
 					}
-					System.out.println("DONE");
+					logger.info("DONE");
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 				} else if (type.equalsIgnoreCase("SLGF")) {
 					RequestInfoDao dao = new RequestInfoDao();
 					boolean ishealthCheckSuccess = dao.isHealthCheckSuccesfulForOSUpgrade(
 							requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
-					System.out.println("Health Check Flag is " + ishealthCheckSuccess);
+					logger.info("Health Check Flag is " + ishealthCheckSuccess);
 					boolean isPreHealthCheckSuccess = dao.isPreHealthCheckSuccesfulForOSUpgrade(
 							requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
-					System.out.println("Pre Health Check Flag is " + isPreHealthCheckSuccess);
+					logger.info("Pre Health Check Flag is " + isPreHealthCheckSuccess);
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
 					boolean isDilevarySuccess = dao.isDilevarySuccessforOSUpgrade(requestinfo.getAlphanumericReqId(),
@@ -1709,10 +1711,10 @@ public class FinalReportForTTUTest extends Thread {
 					RequestInfoDao dao = new RequestInfoDao();
 					boolean ishealthCheckSuccess = dao.isHealthCheckSuccesfulForOSUpgrade(
 							requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
-					System.out.println("Health Check Flag is " + ishealthCheckSuccess);
+					logger.info("Health Check Flag is " + ishealthCheckSuccess);
 					boolean isPreHealthCheckSuccess = dao.isPreHealthCheckSuccesfulForOSUpgrade(
 							requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
-					System.out.println("Pre Health Check Flag is " + isPreHealthCheckSuccess);
+					logger.info("Pre Health Check Flag is " + isPreHealthCheckSuccess);
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
 					boolean isDilevarySuccess = dao.isDilevarySuccessforOSUpgrade(requestinfo.getAlphanumericReqId(),
@@ -2172,7 +2174,7 @@ public class FinalReportForTTUTest extends Thread {
 
 		}
 		if (channel.isClosed()) {
-			System.out.println("exit-status: " + channel.getExitStatus());
+			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
 		try {
@@ -2263,7 +2265,7 @@ public class FinalReportForTTUTest extends Thread {
 			while (in.hasNext()) {
 				String line = in.nextLine();
 				if (line.contains(configRequest.getC3p_interface().getName())) {
-					System.out.println(line);
+					logger.info(line);
 					content = line;
 					break;
 				}

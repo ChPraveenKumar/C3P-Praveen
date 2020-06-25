@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -30,7 +32,7 @@ import com.techm.orion.service.CategoryDropDownService;
 
 @Component
 public class TemplateSuggestionDao {
-
+	private static final Logger logger = LogManager.getLogger(TemplateSuggestionDao.class);
 	@Autowired
 	private AttribCreateConfigService service;
 
@@ -192,7 +194,7 @@ public class TemplateSuggestionDao {
 		String query1 = "select * from templateconfig_basic_details  where concat(TempId,'_V',templateVersion) in(Select command_feature_template_id from c3p_template_transaction_feature_list where id in("
 				+ query
 				+ ") and command_feature_template_id like ?  group by command_feature_template_id having count(distinct id)=?) and templateStatus='Approved'";
-		System.out.println("Query=" + query1);
+		logger.info("Query=" + query1);
 		connection = ConnectionFactory.getConnection();
 		PreparedStatement ps = null;
 		ResultSet rs = null;

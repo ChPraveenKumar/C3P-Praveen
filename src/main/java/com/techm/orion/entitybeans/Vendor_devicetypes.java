@@ -8,15 +8,16 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
-
-import org.hibernate.annotations.Sort;
-import org.hibernate.annotations.SortType;
 
 @Entity
 
 @Table(name = "T_TPMGMT_GLBLIST_J_Vendor_devicetypes")
 public class Vendor_devicetypes implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6920148270740242963L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)

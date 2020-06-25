@@ -15,6 +15,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -47,7 +49,7 @@ import com.techm.orion.service.TemplateManagementDetailsService;
 @RequestMapping("/GetTemplateConfigurationData")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600) 
 public class GetTemplateConfigurationData implements Observer {
-
+	private static final Logger logger = LogManager.getLogger(GetTemplateConfigurationData.class);
 	@Autowired
 	AttribCreateConfigService attribService;
 
@@ -77,7 +79,7 @@ public class GetTemplateConfigurationData implements Observer {
 			obj.put(new String("right"), jsonArrayright);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -113,7 +115,7 @@ public class GetTemplateConfigurationData implements Observer {
 			
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		jsonArray = new Gson().toJson(list);
 		obj.put(new String("output"), jsonArray);
@@ -144,7 +146,7 @@ public class GetTemplateConfigurationData implements Observer {
 		try {
 			list = dao.getParentFeatureList(templateid);
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		jsonArray = new Gson().toJson(list);
 		obj.put(new String("output"), jsonArray);
@@ -196,7 +198,7 @@ public class GetTemplateConfigurationData implements Observer {
 			jsonArray = array.toString();
 			obj.put(new String("output"), jsonArray);
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -262,7 +264,7 @@ public class GetTemplateConfigurationData implements Observer {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -352,7 +354,7 @@ public class GetTemplateConfigurationData implements Observer {
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -401,7 +403,7 @@ public class GetTemplateConfigurationData implements Observer {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -635,7 +637,7 @@ public class GetTemplateConfigurationData implements Observer {
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -703,7 +705,7 @@ public class GetTemplateConfigurationData implements Observer {
 			obj.put(new String("sequence"), list.get("sequence"));
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -799,7 +801,7 @@ public class GetTemplateConfigurationData implements Observer {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -901,7 +903,7 @@ String comment="";
 			obj.put(new String("comment"), comment);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -946,7 +948,7 @@ String comment="";
 			obj.put(new String("version"), templateDetails.get("version"));
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -1010,7 +1012,7 @@ String comment="";
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -1287,7 +1289,7 @@ String comment="";
 			obj.put(new String("output"), s.toString());
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -1332,7 +1334,7 @@ String comment="";
 			obj.put(new String("map"), list.get("list"));
 			obj.put(new String("sequence"), list.get("sequence"));
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -1382,7 +1384,7 @@ String comment="";
 
 			obj.put(new String("output"), res);
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -1465,7 +1467,7 @@ String comment="";
 
 			obj.put(new String("output"), "");
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -1603,7 +1605,7 @@ String comment="";
 
 			obj.put(new String("output"), s);
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response
@@ -1823,7 +1825,7 @@ String comment="";
 			obj.put(new String("version"), nextVersion);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response

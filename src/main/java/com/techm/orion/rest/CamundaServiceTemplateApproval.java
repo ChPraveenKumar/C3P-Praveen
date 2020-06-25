@@ -9,12 +9,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 
-import com.techm.orion.pojo.Global;
-
 public class CamundaServiceTemplateApproval {
+	private static final Logger logger = LogManager.getLogger(CamundaServiceTemplateApproval.class);
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 	
@@ -65,11 +66,9 @@ public class CamundaServiceTemplateApproval {
 			in.close();
 			conn.disconnect();
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error(e);
 		}
 	}
 

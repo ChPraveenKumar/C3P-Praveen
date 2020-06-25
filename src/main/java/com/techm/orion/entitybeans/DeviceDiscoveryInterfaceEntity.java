@@ -14,52 +14,53 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
 @Entity
 @Table(name = "c3p_t_inventorymgmt_interfaces")
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class DeviceDiscoveryInterfaceEntity implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4942717149166571780L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
 
-	
-	@Column(name = "i_Int_type", length=10)
-    private String iIntType;
+	@Column(name = "i_Int_type", length = 10)
+	private String iIntType;
 
-	@Column(name = "i_int_name", length=30)
-    private String iIntName;
-	
+	@Column(name = "i_int_name", length = 30)
+	private String iIntName;
 
-	@Column(name = "i_int_description", length=64)
-    private String iIntDescription;
-	
-	@Column(name = "i_int_ipaddr", length=15)
-    private String iIntIpaddr;
-	
-	@Column(name = "i_int_subnet", length=15)
-    private String iIntSubnet;
-	
-	@Column(name = "i_int_ipv6addr", length=128)
-    private String iIntIpv6addr;
-	
-	@Column(name = "i_int_prefix", length=3)
-    private String iIntPrefix;
-	
-	@Column(name = "i_int_admin_stat", length=16)
-    private String iIntAdminStat;
-	
-	@Column(name = "i_int_Oper_stat", length=16)
-    private String iIntOperStat;
+	@Column(name = "i_int_description", length = 64)
+	private String iIntDescription;
 
-	@Column(name = "i_int_phy_addr", length=48)
-    private String iIntPhyAddr;
+	@Column(name = "i_int_ipaddr", length = 15)
+	private String iIntIpaddr;
 
-	@Column(name = "i_int_connecting_host", length=20)
-    private String iIntConnectingHost;
-	
+	@Column(name = "i_int_subnet", length = 15)
+	private String iIntSubnet;
+
+	@Column(name = "i_int_ipv6addr", length = 128)
+	private String iIntIpv6addr;
+
+	@Column(name = "i_int_prefix", length = 3)
+	private String iIntPrefix;
+
+	@Column(name = "i_int_admin_stat", length = 16)
+	private String iIntAdminStat;
+
+	@Column(name = "i_int_Oper_stat", length = 16)
+	private String iIntOperStat;
+
+	@Column(name = "i_int_phy_addr", length = 48)
+	private String iIntPhyAddr;
+
+	@Column(name = "i_int_connecting_host", length = 20)
+	private String iIntConnectingHost;
+
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	private DeviceDiscoveryEntity device;
 
@@ -166,6 +167,5 @@ public class DeviceDiscoveryInterfaceEntity implements Serializable {
 	public void setiIntConnectingHost(String iIntConnectingHost) {
 		this.iIntConnectingHost = iIntConnectingHost;
 	}
-	
-}
 
+}

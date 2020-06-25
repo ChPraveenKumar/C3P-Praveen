@@ -1,6 +1,5 @@
 package com.techm.orion.pojo;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 
 import com.fasterxml.jackson.annotation.JsonInclude;

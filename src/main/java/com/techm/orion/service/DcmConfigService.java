@@ -3,16 +3,23 @@ package com.techm.orion.service;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,15 +51,10 @@ import com.techm.orion.utility.VNFHelper;
 //import com.techm.orion.utility.VNFHelper;
 import com.techm.orion.webService.GetAllDetailsService;
 
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.Date;
-
 @Component
 public class DcmConfigService {
+	private static final Logger logger = LogManager.getLogger(DcmConfigService.class);
+
 	@Autowired
 	CreateConfigRepo repo;
 
@@ -470,7 +472,7 @@ public class DcmConfigService {
 		}
 
 		catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return result;
 
@@ -1007,7 +1009,7 @@ public class DcmConfigService {
 			if (fileEntry.isDirectory()) {
 				listFilesForFolder(fileEntry);
 			} else {
-				System.out.println(fileEntry.getName());
+				logger.info(fileEntry.getName());
 				list.add(fileEntry.getName());
 			}
 		}
@@ -1190,7 +1192,7 @@ public class DcmConfigService {
 		} catch (Exception e) {
 
 		}
-		System.out.println(response);
+		logger.info(response);
 	}
 
 	public int getScheduledRequests() {
@@ -1237,7 +1239,7 @@ public class DcmConfigService {
 		try {
 			repo.save(setRequestMapper);
 		} catch (Exception e) {
-			System.out.println(e.toString());
+			logger.info(e.toString());
 		}
 		return responceMapper;
 
@@ -1427,28 +1429,25 @@ public class DcmConfigService {
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(requestInfoSO);
 						telnetCommunicationSSH.setDaemon(true);
 						telnetCommunicationSSH.start();
-					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {/*
-						VNFHelper helper = new VNFHelper();
-						if (requestInfoSO.getVnfConfig() != null) {
-							String filepath = helper.saveXML(requestInfoSO.getVnfConfig(), requestIdForConfig,
-									requestInfoSO);
-							if (filepath != null) {
-
-								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-										requestInfoSO);
-								telnetCommunicationSSH.setDaemon(true);
-								telnetCommunicationSSH.start();
-
-							}
-						}
-
-					*/}
+					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {
+						/*
+						 * VNFHelper helper = new VNFHelper(); if (requestInfoSO.getVnfConfig() != null)
+						 * { String filepath = helper.saveXML(requestInfoSO.getVnfConfig(),
+						 * requestIdForConfig, requestInfoSO); if (filepath != null) {
+						 * 
+						 * TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+						 * requestInfoSO); telnetCommunicationSSH.setDaemon(true);
+						 * telnetCommunicationSSH.start();
+						 * 
+						 * } }
+						 * 
+						 */}
 				}
 			} else {
 
 				requestInfoSO.setStatus("Scheduled");
 				result = dao.insertRequestInDB(requestInfoSO);
-				
+
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))) {
 					if (!requestInfoSO.getTemplateID().isEmpty())
@@ -1496,26 +1495,24 @@ public class DcmConfigService {
 					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(requestInfoSO);
 					telnetCommunicationSSH.setDaemon(true);
 					telnetCommunicationSSH.start();
-				} else if (requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {/*
-					VNFHelper helper = new VNFHelper();
-					if (requestInfoSO.getVnfConfig() != null) {
-						String filepath = helper.saveXML(requestInfoSO.getVnfConfig(), requestIdForConfig,
-								requestInfoSO);
-						if (filepath != null) {
-
-							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(requestInfoSO);
-							telnetCommunicationSSH.setDaemon(true);
-							telnetCommunicationSSH.start();
-
-						}
-					}
-
-				*/}
+				} else if (requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {
+					/*
+					 * VNFHelper helper = new VNFHelper(); if (requestInfoSO.getVnfConfig() != null)
+					 * { String filepath = helper.saveXML(requestInfoSO.getVnfConfig(),
+					 * requestIdForConfig, requestInfoSO); if (filepath != null) {
+					 * 
+					 * TelnetCommunicationSSH telnetCommunicationSSH = new
+					 * TelnetCommunicationSSH(requestInfoSO);
+					 * telnetCommunicationSSH.setDaemon(true); telnetCommunicationSSH.start();
+					 * 
+					 * } }
+					 * 
+					 */}
 
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return result;
 	}
@@ -1612,7 +1609,7 @@ public class DcmConfigService {
 		} catch (Exception e) {
 
 		}
-		System.out.println(response);
+		logger.info(response);
 	}
 
 	public static Timestamp convertStringToTimestamp(String str_date) {
@@ -1624,18 +1621,17 @@ public class DcmConfigService {
 
 			return timeStampDate;
 		} catch (ParseException e) {
-			System.out.println("Exception :" + e);
+			logger.info("Exception :" + e);
 			return null;
 		}
 	}
-	
+
 	public Map<String, String> updateBatchConfig(RequestInfoPojo requestInfoSO, List<CreateConfigPojo> pojoList) {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
-		
 
 		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
 		String validateMessage = "";
-	
+
 		String requestIdForConfig = "", requestType = "";
 		String res = "", output = "";
 		Map<String, String> result = new HashMap<String, String>();
@@ -1643,14 +1639,12 @@ public class DcmConfigService {
 		try {
 			Map<String, Object> variables = new HashMap<String, Object>();
 
-		
 			variables.put("createConfigRequest", requestInfoSO);
 			if (variables.containsKey("createConfigRequest") && !variables.isEmpty()
 					&& requestInfoSO.getSceheduledTime().equalsIgnoreCase("")) {
-				//requestInfoSO.setStatus("In Progress");
-				
+				// requestInfoSO.setStatus("In Progress");
+
 				result = dao.insertBatchConfigRequestInDB(requestInfoSO);
-			
 
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))) {
@@ -1669,11 +1663,11 @@ public class DcmConfigService {
 					}
 
 				}
-	
+
 				if (pojoList != null) {
 					if (pojoList.isEmpty()) {
 					}
-					
+
 					else {
 						for (CreateConfigPojo pojo : pojoList) {
 							pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
@@ -1682,13 +1676,12 @@ public class DcmConfigService {
 					}
 				}
 				createTemplate(requestInfoSO);
-			} 
+			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return result;
 	}
-
 
 }

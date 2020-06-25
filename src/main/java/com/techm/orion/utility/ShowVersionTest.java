@@ -13,21 +13,23 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.gson.Gson;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.techm.orion.pojo.PreValidateTest;
-import com.techm.orion.rest.DeviceReachabilityAndPreValidationTest;
 
 public class ShowVersionTest {
+	private static final Logger logger = LogManager.getLogger(ShowVersionTest.class);
+
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
+
 	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread()
-				.getContextClassLoader()
-				.getResourceAsStream(PROPERTIES_FILE);
+		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
 
 		try {
 			PROPERTIES.load(PropFile);
@@ -37,137 +39,110 @@ public class ShowVersionTest {
 		}
 		return false;
 	}
-	public String getVersion(String hostname, String region, String type)
-	{
-		String version=null;
-		String[] data=null;
-		String[] data1=null;
-		String[] ar=null;
-		String str1="";
-		String[] comp=new String[10];
-		PreValidateTest preValidateTest=new PreValidateTest();
 
-		
+	public String getVersion(String hostname, String region, String type) {
+		String version = null;
+		String[] data = null;
+		String[] data1 = null;
+		String[] ar = null;
+		String str1 = "";
+		String[] comp = new String[10];
+		PreValidateTest preValidateTest = new PreValidateTest();
+
 		try {
 			ShowVersionTest.loadProperties();
-			String filepath=null;
-			String exp=ShowVersionTest.PROPERTIES.getProperty("RegexFilterForPreValidation");
+			String filepath = null;
+			String exp = ShowVersionTest.PROPERTIES.getProperty("RegexFilterForPreValidation");
 
-			data=exp.split("\\|");
-			if(type.equalsIgnoreCase("Pre"))
-			{
-			filepath = ShowVersionTest.PROPERTIES
-					.getProperty("responseDownloadPathVersion")
-					+ "//"+"Pre_"+ hostname
-					+ "_" + region + "_VersionInfo.txt";
+			data = exp.split("\\|");
+			if (type.equalsIgnoreCase("Pre")) {
+				filepath = ShowVersionTest.PROPERTIES.getProperty("responseDownloadPathVersion") + "//" + "Pre_"
+						+ hostname + "_" + region + "_VersionInfo.txt";
+			} else {
+				filepath = ShowVersionTest.PROPERTIES.getProperty("responseDownloadPathVersion") + "//" + type + "_"
+						+ hostname + "_" + region + "_VersionInfo.txt";
 			}
-			else
-			{
-				filepath = ShowVersionTest.PROPERTIES
-						.getProperty("responseDownloadPathVersion")
-						+ "//"+type+"_"
-						+ hostname
-						+ "_" + region + "_VersionInfo.txt";
-			}
-			if(filepath!=null)
-			{
+			if (filepath != null) {
 				String text = readFile(filepath);
-		        Matcher m = Pattern.compile("(?m)^(.*?\\b"+data[1]+"\\b).*?").matcher(text);
-		        while (m.find())
-		        {
-		        	ar=  m.group().split(data[2]);
-		           break;
-		        }
-		       String indexPos=data[3];//to get the position
-		       data1=indexPos.split(",");
-		       int k=0;
-		         for (String s1 : data1) 
-		         {
-		        	 {
-		        		 String[] str=ar[k].split(" ");//
-				        	str1=str[Integer.parseInt(s1)].trim();
-				        	comp[k]=str1;
-				        	k++; 
-		        	 }
-		        	 
-		        	
-		        	
-				}  
-		         int vendorflag=2;
-		        int versionflag=2;
-		        int modelflag=2;
-		        if(!comp[0].equalsIgnoreCase(""))
-	       	 {
-	       		 preValidateTest.setVendorActualValue(comp[0]);
-	       		 
-	       	 }
-	       	 if(!comp[1].equalsIgnoreCase(""))
-	       	 {
-	       		 
-	       		 preValidateTest.setModelActualValue(comp[1]);
-	       		 
-	       	 }
-	       	  if(!comp[2].equalsIgnoreCase(""))
-	       	 {
-	       		  
-	       		preValidateTest.setOsVersionActualValue(comp[2].substring(0, 4));
-	       		version=preValidateTest.getOsVersionActualValue();
-	       		 
-	       	 }
-		        
+				Matcher m = Pattern.compile("(?m)^(.*?\\b" + data[1] + "\\b).*?").matcher(text);
+				while (m.find()) {
+					ar = m.group().split(data[2]);
+					break;
+				}
+				String indexPos = data[3];// to get the position
+				data1 = indexPos.split(",");
+				int k = 0;
+				for (String s1 : data1) {
+					{
+						String[] str = ar[k].split(" ");//
+						str1 = str[Integer.parseInt(s1)].trim();
+						comp[k] = str1;
+						k++;
+					}
+
+				}
+				int vendorflag = 2;
+				int versionflag = 2;
+				int modelflag = 2;
+				if (!comp[0].equalsIgnoreCase("")) {
+					preValidateTest.setVendorActualValue(comp[0]);
+
+				}
+				if (!comp[1].equalsIgnoreCase("")) {
+
+					preValidateTest.setModelActualValue(comp[1]);
+
+				}
+				if (!comp[2].equalsIgnoreCase("")) {
+
+					preValidateTest.setOsVersionActualValue(comp[2].substring(0, 4));
+					version = preValidateTest.getOsVersionActualValue();
+
+				}
+
 			}
-			
-			
-			
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return version;
 	}
-	public String versionInfo(String ip, String username, String password,String routername, String region,String type) throws IOException
-	{
-		boolean result=false;
+
+	public String versionInfo(String ip, String username, String password, String routername, String region,
+			String type) throws IOException {
+		boolean result = false;
 		ShowVersionTest.loadProperties();
-		String port = ShowVersionTest.PROPERTIES
-				.getProperty("portSSH");
-		String osversionOnDevice=null;
+		String port = ShowVersionTest.PROPERTIES.getProperty("portSSH");
+		String osversionOnDevice = null;
 		try {
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(username, ip,
-					Integer.parseInt(port));
-			
+			Session session = jsch.getSession(username, ip, Integer.parseInt(port));
+
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try 
-			{
+			try {
 				Thread.sleep(10000);
-			} catch (Exception ee) 
-			{
+			} catch (Exception ee) {
 			}
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 
 			PrintStream ps = new PrintStream(ops, true);
-			System.out.println("Channel Connected to machine " +  ip
-					+ " server for version test");
+			logger.info("Channel Connected to machine " + ip + " server for version test");
 			channel.connect();
 			InputStream input = channel.getInputStream();
 			ps.println("show version");
-			try 
-			{
+			try {
 				Thread.sleep(5000);
-			} catch (Exception ee) 
-			{
+			} catch (Exception ee) {
 			}
-			osversionOnDevice=printVersionversionInfo(input, channel,
-					routername,
-					region,type);
-			result=true;
+			osversionOnDevice = printVersionversionInfo(input, channel, routername, region, type);
+			result = true;
 			channel.disconnect();
 			session.disconnect();
 		} catch (NumberFormatException e) {
@@ -176,7 +151,7 @@ public class ShowVersionTest {
 		} catch (JSchException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-			osversionOnDevice="JSchException";
+			osversionOnDevice = "JSchException";
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -186,21 +161,21 @@ public class ShowVersionTest {
 		}
 		return osversionOnDevice;
 	}
-	
-	public String printVersionversionInfo(InputStream input, Channel channel,
-			String routername, String region,String type) throws Exception {
-		
-		String osversionOnDevice=null;
-		String[] ar=null;
-		String[] data=null;
-		String[] data1=null;
-		String[] comp=new String[10];
-		String str1="";
-		String exp=ShowVersionTest.PROPERTIES.getProperty("RegexFilterForPreValidation");
-		boolean value=false;
-		PreValidateTest preValidateTest=new PreValidateTest();
-		data=exp.split("\\|");
-		
+
+	public String printVersionversionInfo(InputStream input, Channel channel, String routername, String region,
+			String type) throws Exception {
+
+		String osversionOnDevice = null;
+		String[] ar = null;
+		String[] data = null;
+		String[] data1 = null;
+		String[] comp = new String[10];
+		String str1 = "";
+		String exp = ShowVersionTest.PROPERTIES.getProperty("RegexFilterForPreValidation");
+		boolean value = false;
+		PreValidateTest preValidateTest = new PreValidateTest();
+		data = exp.split("\\|");
+
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 		int SIZE = 1024;
@@ -210,16 +185,13 @@ public class ShowVersionTest {
 			int i = input.read(tmp, 0, SIZE);
 			if (i < 0)
 				break;
-			/* System.out.print(new String(tmp, 0, i)); */
-			String filepath=null;
+			/* logger.info(new String(tmp, 0, i)); */
+			String filepath = null;
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
-				// System.out.print(str);
-				 filepath = ShowVersionTest.PROPERTIES
-						.getProperty("responseDownloadPathVersion")
-						+ "//"+type+"_"
-						+ routername
-						+ "_" + region + "_VersionInfo.txt";
+				// logger.info(str);
+				filepath = ShowVersionTest.PROPERTIES.getProperty("responseDownloadPathVersion") + "//" + type + "_"
+						+ routername + "_" + region + "_VersionInfo.txt";
 				File file = new File(filepath);
 
 				// if file doesnt exists, then create it
@@ -238,79 +210,72 @@ public class ShowVersionTest {
 				}
 			}
 			String text = readFile(filepath);
-	        Matcher m = Pattern.compile("(?m)^(.*?\\b"+data[1]+"\\b).*?").matcher(text);
-	        
-	        while (m.find())
-	        {
-	        	ar=  m.group().split(data[2]);
-	           break;
-	        }
-	       String indexPos=data[3];//to get the position
-	       data1=indexPos.split(",");
-	       int k=0;
-	         for (String s1 : data1) 
-	         {
-	        	 {
-	        		 String[] str=ar[k].split(" ");//
-			        	str1=str[Integer.parseInt(s1)].trim();
-			        	comp[k]=str1;
-			        	k++; 
-	        	 }
-	        	 
-	        	
-	        	
-			}  
-	         int vendorflag=2;
-	        int versionflag=2;
-	        int modelflag=2;
-	        if(!comp[0].equalsIgnoreCase(""))
-       	 {
-       		 preValidateTest.setVendorActualValue(comp[0]);
-       		 
-       	 }
-       	 if(!comp[1].equalsIgnoreCase(""))
-       	 {
-       		 
-       		 preValidateTest.setModelActualValue(comp[1]);
-       		 
-       	 }
-       	  if(!comp[2].equalsIgnoreCase(""))
-       	 {
-       		  
-       		 preValidateTest.setOsVersionActualValue(comp[2].substring(0, 4));
-       		osversionOnDevice=preValidateTest.getOsVersionActualValue();
-       		 
-       	 }
-	        
+			Matcher m = Pattern.compile("(?m)^(.*?\\b" + data[1] + "\\b).*?").matcher(text);
+
+			while (m.find()) {
+				ar = m.group().split(data[2]);
+				break;
+			}
+			String indexPos = data[3];// to get the position
+			data1 = indexPos.split(",");
+			int k = 0;
+			for (String s1 : data1) {
+				{
+					String[] str = ar[k].split(" ");//
+					str1 = str[Integer.parseInt(s1)].trim();
+					comp[k] = str1;
+					k++;
+				}
+
+			}
+			int vendorflag = 2;
+			int versionflag = 2;
+			int modelflag = 2;
+			if (!comp[0].equalsIgnoreCase("")) {
+				preValidateTest.setVendorActualValue(comp[0]);
+
+			}
+			if (!comp[1].equalsIgnoreCase("")) {
+
+				preValidateTest.setModelActualValue(comp[1]);
+
+			}
+			if (!comp[2].equalsIgnoreCase("")) {
+
+				preValidateTest.setOsVersionActualValue(comp[2].substring(0, 4));
+				osversionOnDevice = preValidateTest.getOsVersionActualValue();
+
+			}
+
 		}
 		if (channel.isClosed()) {
-			System.out.println("exit-status: " + channel.getExitStatus());
+			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
 		try {
 			Thread.sleep(1000);
 		} catch (Exception ee) {
 		}
-		
+
 		return osversionOnDevice;
 
 	}
-		
-	private static String readFile(String path) throws IOException {
-		 
-        BufferedReader br = new BufferedReader(new FileReader(path));
-        try {
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
 
-            while (line != null) {
-                sb.append(line);
-                sb.append("\n");
-                line = br.readLine();
-            }
-            return sb.toString();
-        } finally {
-            br.close();
-        }
-    }
+	private static String readFile(String path) throws IOException {
+
+		BufferedReader br = new BufferedReader(new FileReader(path));
+		try {
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+
+			while (line != null) {
+				sb.append(line);
+				sb.append("\n");
+				line = br.readLine();
+			}
+			return sb.toString();
+		} finally {
+			br.close();
+		}
+	}
 }

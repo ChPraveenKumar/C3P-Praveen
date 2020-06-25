@@ -7,13 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryInterfaceEntity;
-import com.techm.orion.entitybeans.DiscoveryResultDeviceDetailsEntity;
-import com.techm.orion.entitybeans.DiscoveryResultDeviceInterfaceEntity;
-import com.techm.orion.entitybeans.SiteInfoEntity;
 
 @Repository
 public interface DeviceDiscoveryInterfaceRepository extends JpaRepository<DeviceDiscoveryInterfaceEntity, Long> {
 
-	List<DeviceDiscoveryInterfaceEntity>findByDevice(DeviceDiscoveryEntity device);
+	List<DeviceDiscoveryInterfaceEntity> findByDevice(DeviceDiscoveryEntity device);
 
 }
