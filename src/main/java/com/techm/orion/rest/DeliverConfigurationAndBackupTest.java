@@ -86,6 +86,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
 
 		try {
+			//Ruchita comment to remove
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 
