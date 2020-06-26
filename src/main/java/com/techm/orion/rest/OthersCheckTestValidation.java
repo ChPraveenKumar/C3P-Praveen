@@ -91,6 +91,9 @@ public class OthersCheckTestValidation extends Thread {
 
 		String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
 
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		if (!((type.equals("SLGB") || (type.equals("SLGM"))))) {
 
 			try {
@@ -127,9 +130,7 @@ public class OthersCheckTestValidation extends Thread {
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
 							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGM")
 							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
@@ -316,9 +317,7 @@ public class OthersCheckTestValidation extends Thread {
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
 							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGM")
 							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
@@ -431,7 +430,7 @@ public class OthersCheckTestValidation extends Thread {
 							}
 							session.disconnect();
 							try {
-								Thread.sleep(15000);
+								Thread.sleep(1500);
 							} catch (Exception ee) {
 							}
 							logger.info("DONE");
@@ -534,6 +533,25 @@ public class OthersCheckTestValidation extends Thread {
 
 					}
 
+				}
+			}
+			finally {
+
+				if (channel != null) {
+					try {
+					session = channel.getSession();
+					
+					if (channel.getExitStatus() == -1) {
+						
+							Thread.sleep(5000);
+						
+					}
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+					channel.disconnect();
+					session.disconnect();
+				
 				}
 			}
 		} else {

@@ -93,6 +93,9 @@ public class HealthCheckTestValidation extends Thread {
 
 		String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
 
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		if (!((type.equals("SLGB") || (type.equals("SLGM"))))) {
 
 			try {
@@ -133,9 +136,7 @@ public class HealthCheckTestValidation extends Thread {
 							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")
 							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
 							|| type.equalsIgnoreCase("SNNM")) {
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
@@ -157,18 +158,6 @@ public class HealthCheckTestValidation extends Thread {
 							logger.info("Channel Connected to machine " + host + " server");
 							channel.connect();
 							InputStream input = channel.getInputStream();
-
-							/*
-							 * session = jsch.getSession(user, host, Integer.parseInt(port)); config = new
-							 * Properties(); config.put("StrictHostKeyChecking", "no");
-							 * session.setConfig(config); session.setPassword(password); session.connect();
-							 * logger.info("After session.connect 2"); channel =
-							 * session.openChannel("shell"); ops = channel.getOutputStream();
-							 * 
-							 * ps = new PrintStream(ops, true);
-							 * 
-							 * channel.connect();
-							 */
 
 							if (configRequest.getCertificationBit().substring(5, 6).equalsIgnoreCase("1")
 									|| configRequest.getCertificationBit().substring(6).equalsIgnoreCase("1")) {
@@ -409,9 +398,8 @@ public class HealthCheckTestValidation extends Thread {
 						}
 
 						session.disconnect();
+						channel.disconnect();
 					} else if (type.equalsIgnoreCase("SLGF")) {
-						// PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-						// obj = osHealthChk.healthcheckCommandTest(request, "POST");
 						obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
 
 					}
@@ -452,9 +440,9 @@ public class HealthCheckTestValidation extends Thread {
 							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")
 							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
 							|| type.equalsIgnoreCase("SNNM")) {
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						
+						
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
@@ -679,7 +667,7 @@ public class HealthCheckTestValidation extends Thread {
 							}
 							session.disconnect();
 							try {
-								Thread.sleep(15000);
+								Thread.sleep(5000);
 							} catch (Exception ee) {
 							}
 							logger.info("DONE");
@@ -716,8 +704,7 @@ public class HealthCheckTestValidation extends Thread {
 
 						session.disconnect();
 					} else if (type.equalsIgnoreCase("SLGF")) {
-						// PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-						// obj = osHealthChk.healthcheckCommandTest(request, "POST");
+						
 						obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
 
 					}
@@ -789,6 +776,25 @@ public class HealthCheckTestValidation extends Thread {
 
 				}
 			}
+			finally {
+
+				if (channel != null) {
+					try {
+					session = channel.getSession();
+					
+					if (channel.getExitStatus() == -1) {
+						
+							Thread.sleep(5000);
+						
+					}
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+					channel.disconnect();
+					session.disconnect();
+				
+				}
+			}
 		} else {
 			value = true;
 
@@ -797,15 +803,7 @@ public class HealthCheckTestValidation extends Thread {
 
 		}
 
-		/*
-		 * return Response .status(200) .header("Access-Control-Allow-Origin", "*")
-		 * .header("Access-Control-Allow-Headers",
-		 * "origin, content-type, accept, authorization")
-		 * .header("Access-Control-Allow-Credentials", "true")
-		 * .header("Access-Control-Allow-Methods",
-		 * "GET, POST, PUT, DELETE, OPTIONS, HEAD") .header("Access-Control-Max-Age",
-		 * "1209600").entity(obj) .build();
-		 */
+		
 
 		return obj;
 

@@ -88,6 +88,10 @@ public class NetworkAuditTest extends Thread {
 
 		String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
 
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
+		
 		if (!((type.equals("SLGB") || (type.equals("SLGM"))))) {
 
 			try {
@@ -116,9 +120,7 @@ public class NetworkAuditTest extends Thread {
 
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA")
 							|| type.equalsIgnoreCase("SLGM")) {
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						logger.info("Password for network audit test " + password + "user " + user + "host "
@@ -128,7 +130,7 @@ public class NetworkAuditTest extends Thread {
 						session.connect();
 						logger.info("After session.connect Network audit milestone");
 						try {
-							Thread.sleep(10000);
+							Thread.sleep(5000);
 						} catch (Exception ee) {
 						}
 						try {
@@ -299,9 +301,7 @@ public class NetworkAuditTest extends Thread {
 
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA")
 							|| type.equalsIgnoreCase("SLGM")) {
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						logger.info("Password for network audit test " + password + "user " + user + "host "
@@ -528,6 +528,25 @@ public class NetworkAuditTest extends Thread {
 
 					}
 
+				}
+			}
+			finally {
+
+				if (channel != null) {
+					try {
+					session = channel.getSession();
+					
+					if (channel.getExitStatus() == -1) {
+						
+							Thread.sleep(5000);
+						
+					}
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+					channel.disconnect();
+					session.disconnect();
+				
 				}
 			}
 		} else {

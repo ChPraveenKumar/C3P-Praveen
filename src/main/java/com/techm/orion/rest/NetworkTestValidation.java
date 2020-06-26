@@ -78,7 +78,9 @@ public class NetworkTestValidation extends Thread {
 		String version = json.get("version").toString();
 
 		String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
-
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		if (!((type.equals("SLGB") || (type.equals("SLGM"))))) {
 
 			try {
@@ -114,9 +116,7 @@ public class NetworkTestValidation extends Thread {
 						String port = NetworkTestValidation.TSA_PROPERTIES.getProperty("portSSH");
 						ArrayList<String> commandToPush = new ArrayList<String>();
 
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						session.setConfig(config);
@@ -125,33 +125,16 @@ public class NetworkTestValidation extends Thread {
 								+ " Password " + password + " host" + host);
 						session.connect();
 						try {
-							Thread.sleep(10000);
+							Thread.sleep(5000);
 						} catch (Exception ee) {
 						}
 						try {
 							channel = session.openChannel("shell");
 							OutputStream ops = channel.getOutputStream();
-
 							PrintStream ps = new PrintStream(ops, true);
 							logger.info("Channel Connected to machine " + host + " server");
 							channel.connect();
 							InputStream input = channel.getInputStream();
-
-							session = jsch.getSession(user, host, Integer.parseInt(port));
-							config = new Properties();
-
-							config.put("StrictHostKeyChecking", "no");
-							session.setConfig(config);
-							session.setPassword(password);
-							session.connect();
-
-							channel = session.openChannel("shell");
-							ops = channel.getOutputStream();
-
-							ps = new PrintStream(ops, true);
-
-							channel.connect();
-
 							input = channel.getInputStream();
 							ps.println("terminal length 0");
 							if (configRequest.getCertificationBit().substring(0, 1).equalsIgnoreCase("1")) {
@@ -269,32 +252,7 @@ public class NetworkTestValidation extends Thread {
 											}
 										}
 									}
-									/*
-									 * if(result==false) {
-									 * 
-									 * value=false; requestInfoDao.updateNetworkTestStatus (configRequest
-									 * .getRequestId(),Double.toString(configRequest .getRequest_version
-									 * ()),Integer.parseInt(configRequest .getCertificationBit
-									 * ().substring(0,1)),Integer.parseInt (configRequest.
-									 * getCertificationBit().substring(1,2 )),Integer.parseInt
-									 * (configRequest.getCertificationBit ().substring(2,3
-									 * )),Integer.parseInt(configRequest. getCertificationBit().substring(3,4)));
-									 * requestInfoDao .editRequestforReportWebserviceInfo( configRequest.
-									 * getRequestId(),Double.toString(configRequest .getRequest_version
-									 * ()),"network_test","2","Failure"); } else { value=true;
-									 * 
-									 * requestInfoDao.updateNetworkTestStatus(configRequest
-									 * .getRequestId(),Double.toString(configRequest. getRequest_version
-									 * ()),Integer.parseInt(configRequest .getCertificationBit
-									 * ().substring(0,1)),Integer.parseInt (configRequest.
-									 * getCertificationBit().substring(1,2 )),Integer.parseInt
-									 * (configRequest.getCertificationBit ().substring(2,3
-									 * )),Integer.parseInt(configRequest. getCertificationBit().substring(3,4)));
-									 * requestInfoDao .editRequestforReportWebserviceInfo( configRequest.
-									 * getRequestId(),Double.toString(configRequest .getRequest_version
-									 * ()),"network_test","1","In Progress"); }
-									 */
-
+								
 								}
 								requestInfoDao.updateNetworkTestStatus(configRequest.getRequestId(),
 										Double.toString(configRequest.getRequest_version()),
@@ -310,17 +268,7 @@ public class NetworkTestValidation extends Thread {
 										Double.toString(configRequest.getRequest_version()), "network_test", "1",
 										status);
 							}
-							/*
-							 * else if(configRequest.getCertificationBit().substring(0).
-							 * equalsIgnoreCase("0")&& configRequest.getCertificationBit(
-							 * ).substring(0).equalsIgnoreCase ("0")&&configRequest.getCertificationBit
-							 * ().substring(2).equalsIgnoreCase("0")&& configRequest.getCertificationBit
-							 * ().substring(3).equalsIgnoreCase("0")) { HealthCheckTestSSH
-							 * healthCheckTestSSH=new HealthCheckTestSSH();
-							 * healthCheckTestSSH.HealthCheckTest(configRequest);
-							 * 
-							 * }
-							 */
+							
 							else {
 								// db call to set flag false
 								requestInfoDao.updateNetworkTestStatus(configRequest.getRequestId(),
@@ -416,10 +364,7 @@ public class NetworkTestValidation extends Thread {
 							password = userPojo.getPassword();
 						}
 						String port = NetworkTestValidation.TSA_PROPERTIES.getProperty("portSSH");
-
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						session.setConfig(config);
@@ -428,7 +373,7 @@ public class NetworkTestValidation extends Thread {
 								+ " Password " + password + " host" + host);
 						session.connect();
 						try {
-							Thread.sleep(10000);
+							Thread.sleep(5000);
 						} catch (Exception ee) {
 						}
 						try {
@@ -439,23 +384,6 @@ public class NetworkTestValidation extends Thread {
 							logger.info("Channel Connected to machine " + host + " server");
 							channel.connect();
 							InputStream input = channel.getInputStream();
-
-							session = jsch.getSession(user, host, Integer.parseInt(port));
-							config = new Properties();
-
-							config.put("StrictHostKeyChecking", "no");
-							session.setConfig(config);
-							session.setPassword(password);
-							session.connect();
-
-							channel = session.openChannel("shell");
-							ops = channel.getOutputStream();
-
-							ps = new PrintStream(ops, true);
-
-							channel.connect();
-
-							input = channel.getInputStream();
 							ps.println("terminal length 0");
 							if (requestinfo.getCertificationSelectionBit().substring(0, 1).equalsIgnoreCase("1")) {
 								ps.println("show ip interface brief");
@@ -574,32 +502,7 @@ public class NetworkTestValidation extends Thread {
 											}
 										}
 									}
-									/*
-									 * if(result==false) {
-									 * 
-									 * value=false; requestInfoDao.updateNetworkTestStatus (configRequest
-									 * .getRequestId(),Double.toString(configRequest .getRequest_version
-									 * ()),Integer.parseInt(configRequest .getCertificationBit
-									 * ().substring(0,1)),Integer.parseInt (configRequest.
-									 * getCertificationBit().substring(1,2 )),Integer.parseInt
-									 * (configRequest.getCertificationBit ().substring(2,3
-									 * )),Integer.parseInt(configRequest. getCertificationBit().substring(3,4)));
-									 * requestInfoDao .editRequestforReportWebserviceInfo( configRequest.
-									 * getRequestId(),Double.toString(configRequest .getRequest_version
-									 * ()),"network_test","2","Failure"); } else { value=true;
-									 * 
-									 * requestInfoDao.updateNetworkTestStatus(configRequest
-									 * .getRequestId(),Double.toString(configRequest. getRequest_version
-									 * ()),Integer.parseInt(configRequest .getCertificationBit
-									 * ().substring(0,1)),Integer.parseInt (configRequest.
-									 * getCertificationBit().substring(1,2 )),Integer.parseInt
-									 * (configRequest.getCertificationBit ().substring(2,3
-									 * )),Integer.parseInt(configRequest. getCertificationBit().substring(3,4)));
-									 * requestInfoDao .editRequestforReportWebserviceInfo( configRequest.
-									 * getRequestId(),Double.toString(configRequest .getRequest_version
-									 * ()),"network_test","1","In Progress"); }
-									 */
-
+								
 								}
 								requestInfoDao.updateNetworkTestStatus(configRequest.getRequestId(),
 										Double.toString(configRequest.getRequest_version()),
@@ -620,17 +523,7 @@ public class NetworkTestValidation extends Thread {
 								}
 
 							}
-							/*
-							 * else if(configRequest.getCertificationBit().substring(0).
-							 * equalsIgnoreCase("0")&& configRequest.getCertificationBit(
-							 * ).substring(0).equalsIgnoreCase ("0")&&configRequest.getCertificationBit
-							 * ().substring(2).equalsIgnoreCase("0")&& configRequest.getCertificationBit
-							 * ().substring(3).equalsIgnoreCase("0")) { HealthCheckTestSSH
-							 * healthCheckTestSSH=new HealthCheckTestSSH();
-							 * healthCheckTestSSH.HealthCheckTest(configRequest);
-							 * 
-							 * }
-							 */
+						
 							else {
 								// db call to set flag false
 								requestInfoDao.updateNetworkTestStatus(requestinfo.getAlphanumericReqId(),
@@ -745,6 +638,26 @@ public class NetworkTestValidation extends Thread {
 
 				}
 			}
+			finally {
+
+				if (channel != null) {
+					try {
+					session = channel.getSession();
+					
+					if (channel.getExitStatus() == -1) {
+						
+							Thread.sleep(5000);
+						
+					}
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+					channel.disconnect();
+					session.disconnect();
+				
+				}
+			}
+			
 		} else {
 			value = true;
 
@@ -753,15 +666,6 @@ public class NetworkTestValidation extends Thread {
 
 		}
 
-		/*
-		 * return Response .status(200) .header("Access-Control-Allow-Origin", "*")
-		 * .header("Access-Control-Allow-Headers",
-		 * "origin, content-type, accept, authorization")
-		 * .header("Access-Control-Allow-Credentials", "true")
-		 * .header("Access-Control-Allow-Methods",
-		 * "GET, POST, PUT, DELETE, OPTIONS, HEAD") .header("Access-Control-Max-Age",
-		 * "1209600").entity(obj) .build();
-		 */
 		return obj;
 
 	}

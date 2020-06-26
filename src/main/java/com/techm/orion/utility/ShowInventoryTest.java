@@ -70,7 +70,8 @@ public class ShowInventoryTest {
 			} catch (Exception ee) {
 			}
 			printInventoryInfo(input, channel, routername, region);
-
+			session.disconnect();
+			channel.disconnect();
 			result = "Pass";
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
@@ -168,6 +169,7 @@ public class ShowInventoryTest {
 			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
+		
 		try {
 			Thread.sleep(1000);
 		} catch (Exception ee) {

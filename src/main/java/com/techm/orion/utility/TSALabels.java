@@ -15,7 +15,10 @@ public enum TSALabels {
 	/* Regular expression Information */
 	REGEX_FILTER_PRE_VALIDATION, REGEX_FILTER_PRE_THROUGHPUT, REGEX_FILTER_PRE_FRAMELOSS,
 	/* Spring Information */
-	SPRING_SERVLET_MUTLIPART_MAX_FILE_SIZE, SPRING_SERVLET_MUTLIPART_MAX_REQUEST_SIZE;
+	SPRING_SERVLET_MUTLIPART_MAX_FILE_SIZE, SPRING_SERVLET_MUTLIPART_MAX_REQUEST_SIZE,
+	
+	/*Megham device urls*/
+	ODL_GET_CONFIGURATION_URL, ODL_PUT_CONFIGURATION_INTERFACE_URL;
 
 	private static final Logger logger = LogManager.getLogger(TSALabels.class);
 	private static ResourceBundle resourceLabels;

@@ -35,6 +35,9 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		boolean backupdone = false;
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		try {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
@@ -45,9 +48,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			String password = userPojo.getPassword();
 			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
-			JSch jsch = new JSch();
-			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(port));
+			session = jsch.getSession(user, host, Integer.parseInt(port));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -81,14 +82,20 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 					printCurrentVersionInfo(input, channel, configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()));
 				}
+				input.close();
 				channel.disconnect();
+				session.disconnect();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
+				backupdone = false;
 				e.printStackTrace();
 			}
 		}
 
 		catch (Exception ex) {
+			backupdone = false;
+			channel.disconnect();
+			session.disconnect();
 			String response = "";
 			String responseDownloadPath = "";
 			try {
@@ -106,6 +113,25 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				e.printStackTrace();
 			}
 
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				channel.disconnect();
+				session.disconnect();
+			
+			}
 		}
 		return backupdone;
 
@@ -304,6 +330,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				// logger.info(str);
 				String filepath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty(
 						"responseDownloadPath") + "//" + requestID + "V" + version + "_CurrentVersionConfig.txt";
+				System.out.println("File path for current "+filepath);
 				File file = new File(filepath);
 
 				// if file doesnt exists, then create it

@@ -81,9 +81,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		Boolean value = false, isCheck = false;
 		String status = null, lockRequestId = null;
-		;
+		
 		List deviceLocked;
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
@@ -100,12 +103,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 				createConfigRequest.setRequestId(RequestId);
 				createConfigRequest.setRequest_version(Double.parseDouble(json.get("version").toString()));
-				// deviceLock for ManagementIP
-				/*
-				 * deviceLocked =
-				 * requestInfoDao.checkForDeviceLockWithManagementIp(createConfigRequest.
-				 * getRequestId(), createConfigRequest.getManagementIp(), "DeviceTest");
-				 */
+				
 				createConfigRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
 
 				createConfigRequest.setRequestId(RequestId);
@@ -220,9 +218,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						}
 						String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("portSSH");
 
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						session.setConfig(config);
@@ -288,7 +284,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									ps.println("terminal length 0");
 									ps.println(finallistOfTests.get(i).getTestCommand());
 									try {
-										Thread.sleep(6000);
+										Thread.sleep(100);
 									} catch (Exception ee) {
 									}
 
@@ -318,6 +314,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							 */
 						}
 						// value=true;
+						input.close();
 						channel.disconnect();
 						session.disconnect();
 
@@ -335,9 +332,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						String password = userPojo.getPassword();
 						String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("portSSH");
 
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						session.setConfig(config);
@@ -403,7 +398,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									ps.println("terminal length 0");
 									ps.println(finallistOfTests.get(i).getTestCommand());
 									try {
-										Thread.sleep(6000);
+										Thread.sleep(100);
 									} catch (Exception ee) {
 									}
 
@@ -560,9 +555,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("portSSH");
 
 						// port="22";
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						session.setConfig(config);
@@ -581,7 +574,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						InputStream input = channel.getInputStream();
 						ps.println("show version");
 						try {
-							Thread.sleep(5000);
+							Thread.sleep(1000);
 						} catch (Exception ee) {
 						}
 						/*
@@ -658,6 +651,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							 */
 						}
 						// value=true;
+						input.close();
 						channel.disconnect();
 						session.disconnect();
 
@@ -674,17 +668,14 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						String user = userPojo.getUsername();
 						String password = userPojo.getPassword();
 						String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("portSSH");
-
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
 						session.setConfig(config);
 						session.setPassword(password);
 						session.connect();
 						try {
-							Thread.sleep(10000);
+							Thread.sleep(1000);
 						} catch (Exception ee) {
 						}
 						channel = session.openChannel("shell");
@@ -784,10 +775,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						// Perform health checks for OS upgrade
 
 						obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "Pre");
-						// PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-						// obj = osHealthChk.healthcheckCommandTest(request, "Pre");
-
-						logger.info("obj");
+						
 					}
 				}
 
@@ -899,6 +887,25 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					}
 				}
 
+			}
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				channel.disconnect();
+				session.disconnect();
+			
 			}
 		}
 
@@ -1410,7 +1417,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			p = builder.start();
 			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
 			logger.info("reachability mngmntip " + managementIp);
-			String commandToPing = "ping " + managementIp + " -n 20";
+			String commandToPing = "ping " + managementIp + " -n";
 			p_stdin.write(commandToPing);
 			p_stdin.newLine();
 			p_stdin.flush();

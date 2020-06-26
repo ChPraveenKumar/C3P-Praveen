@@ -50,6 +50,7 @@ import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.VNFHelper;
+import com.techm.orion.utility.TSALabels;
 
 @Controller
 @RequestMapping("/DeliverConfigurationAndBackupTest")
@@ -84,9 +85,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		long ftp_image_size = 0, available_flash_size = 0;
 		Boolean isStartUp = false;
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
-
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		try {
-			//Ruchita comment to remove
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 
@@ -165,9 +167,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										+ "destination";
 
 								String port1 = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
-								JSch jsch = new JSch();
-								Channel channel = null;
-								Session session = jsch.getSession(user, host, Integer.parseInt(port1));
+								session = jsch.getSession(user, host, Integer.parseInt(port1));
 								Properties config = new Properties();
 								config.put("StrictHostKeyChecking", "no");
 								session.setConfig(config);
@@ -214,6 +214,22 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									}
 
 								}
+								if (channel != null) {
+									try {
+									session = channel.getSession();
+									
+									if (channel.getExitStatus() == -1) {
+										
+											Thread.sleep(5000);
+										
+									}
+									} catch (Exception e) {
+										System.out.println(e);
+									}
+								}
+								input.close();
+								channel.disconnect();
+								session.disconnect();
 								// requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"deliever_config","2","Failure");
 								logger.info("EOBlock");
 								if (copyFtpStatus) {
@@ -262,7 +278,16 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										// requestInfoDao.editRequestForReportIOSWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"Boot
 										// System Flash","Failure","Could not load image on top on boot commands.");
 										// CODE for write and reload to be done!!!!!
-										BackUp(createConfigRequest, user, password, "current");
+										boolean isCurrentConf=BackUp(createConfigRequest, user, password, "current");
+										if(isCurrentConf)
+										{
+											value=true;
+				
+										}
+										else
+										{
+											value= false;
+										}
 										jsonArray = new Gson().toJson(value);
 										obj.put(new String("output"), jsonArray);
 									} else {
@@ -336,6 +361,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 					}
+					session.disconnect();
+					channel.disconnect();
 
 				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGT")
 						|| json.get("requestType").toString().equalsIgnoreCase("SLGA")) {
@@ -362,69 +389,26 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 				else if (json.get("requestType").toString().equalsIgnoreCase("SLGB")) {
 
-					ArrayList<String> commandToPush = new ArrayList<String>();
-
-					JSch jsch = new JSch();
-					Channel channel = null;
-					Session session = jsch.getSession(user, host, Integer.parseInt(port));
-					Properties config = new Properties();
-					config.put("StrictHostKeyChecking", "no");
-					session.setConfig(config);
-					session.setPassword(password);
-					session.connect();
+					
 					try {
-						Thread.sleep(10000);
-					} catch (Exception ee) {
-					}
-					try {
-						channel = session.openChannel("shell");
-						OutputStream ops = channel.getOutputStream();
-
-						PrintStream ps = new PrintStream(ops, true);
-						logger.info("Channel Connected to machine " + host + " server");
-						channel.connect();
-						InputStream input = channel.getInputStream();
-
+						
 						// to save the backup and deliver the
 						// configuration(configuration in the router)
 						boolean isCheck = bckupConfigService.getRouterConfig(createConfigRequest, "previous");
 
-						// db call for success deliver config
+					
 
 						if (isStartUp == true) {
 
-							ArrayList<String> commandToPush1 = new ArrayList<String>();
-
-							JSch jsch1 = new JSch();
-							Channel channel1 = null;
-							Session session1 = jsch1.getSession(user, host, Integer.parseInt(port));
-							Properties config1 = new Properties();
-							config1.put("StrictHostKeyChecking", "no");
-							session1.setConfig(config1);
-							session1.setPassword(password);
-							session1.connect();
+						
 							try {
-								Thread.sleep(10000);
-							} catch (Exception ee) {
-							}
-							try {
-								channel1 = session1.openChannel("shell");
-								OutputStream ops1 = channel1.getOutputStream();
-
-								PrintStream ps1 = new PrintStream(ops1, true);
-								logger.info("Channel Connected to machine " + host + " server");
-								channel1.connect();
-								InputStream input1 = channel1.getInputStream();
-
+								
 								// to save the backup and deliver the
 								// configuration(configuration in the router)
 								boolean isCheck1 = bckupConfigService.getRouterConfigStartUp(createConfigRequest,
 										"startup");
 
-								// db call for success deliver config
-
-								channel1.disconnect();
-								session1.disconnect();
+								
 
 							} catch (Exception ee) {
 							}
@@ -441,8 +425,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							value = false;
 						}
 
-						channel.disconnect();
-						session.disconnect();
+					
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 
@@ -457,16 +440,14 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						|| json.get("requestType").toString().equalsIgnoreCase("SLGM")) {
 					ArrayList<String> commandToPush = new ArrayList<String>();
 
-					JSch jsch = new JSch();
-					Channel channel = null;
-					Session session = jsch.getSession(user, host, Integer.parseInt(port));
+					session = jsch.getSession(user, host, Integer.parseInt(port));
 					Properties config = new Properties();
 					config.put("StrictHostKeyChecking", "no");
 					session.setConfig(config);
 					session.setPassword(password);
 					session.connect();
 					try {
-						Thread.sleep(10000);
+						Thread.sleep(1000);
 					} catch (Exception ee) {
 					}
 					try {
@@ -481,23 +462,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						// to save the backup and deliver the
 						// configuration(configuration in the router)
 						bckupConfigService.getRouterConfig(createConfigRequest, "previous");
-
-						session = jsch.getSession(user, host, Integer.parseInt(port));
-						config = new Properties();
-						config.put("StrictHostKeyChecking", "no");
-						session.setConfig(config);
-						session.setPassword(password);
-						session.connect();
-
-						channel = session.openChannel("shell");
-						ops = channel.getOutputStream();
-
-						ps = new PrintStream(ops, true);
-
-						channel.connect();
-
-						input = channel.getInputStream();
-
+					
 						Map<String, String> resultForFlag = new HashMap<String, String>();
 						resultForFlag = requestInfoDao.getRequestFlag(createConfigRequest.getRequestId(),
 								createConfigRequest.getRequest_version());
@@ -647,7 +612,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									"In Progress");
 
 						}
-
+						input.close();
 						channel.disconnect();
 						session.disconnect();
 						jsonArray = new Gson().toJson(value);
@@ -683,7 +648,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					ODLClient client = new ODLClient();
 					boolean result = client.doGetODLBackUp(createConfigRequest.getRequestId(),
 							Double.toString(createConfigRequest.getRequest_version()),
-							"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native",
+							TSALabels.ODL_GET_CONFIGURATION_URL.getValue(),
 							"previous");
 					// boolean result=true;
 					// call method for dilevary from vnf utils
@@ -716,7 +681,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							String payloadMultilink = helper.getPayload("Multilink", payload);
 							dilevaryresult = client.doPUTDilevary(createConfigRequest.getRequestId(),
 									Double.toString(createConfigRequest.getRequest_version()),
-									"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",
+									TSALabels.ODL_PUT_CONFIGURATION_INTERFACE_URL.getValue(),
 									payloadMultilink);
 							// dilevaryresult=true;
 							if (dilevaryresult) {
@@ -746,7 +711,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							// take current config back up
 							boolean currentconfig = client.doGetODLBackUp(createConfigRequest.getRequestId(),
 									Double.toString(createConfigRequest.getRequest_version()),
-									"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native",
+									TSALabels.ODL_GET_CONFIGURATION_URL.getValue(),
 									"current");
 							// boolean currentconfig=true;
 							if (currentconfig == true) {
@@ -967,9 +932,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										+ "destination";
 
 								String port1 = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
-								JSch jsch = new JSch();
-								Channel channel = null;
-								Session session = jsch.getSession(user, host, Integer.parseInt(port1));
+								session = jsch.getSession(user, host, Integer.parseInt(port1));
 								Properties config = new Properties();
 								config.put("StrictHostKeyChecking", "no");
 								session.setConfig(config);
@@ -977,7 +940,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 								session.connect();
 								try {
-									Thread.sleep(10000);
+									Thread.sleep(5000);
 								} catch (Exception ee) {
 								}
 								channel = session.openChannel("shell");
@@ -1016,6 +979,21 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									}
 
 								}
+								if (channel != null) {
+									try {
+									session = channel.getSession();
+									
+									if (channel.getExitStatus() == -1) {
+										
+											Thread.sleep(5000);
+										
+									}
+									} catch (Exception e) {
+										System.out.println(e);
+									}
+								}
+								channel.disconnect();
+								session.disconnect();
 								// requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"deliever_config","2","Failure");
 								logger.info("EOBlock");
 								if (copyFtpStatus) {
@@ -1064,7 +1042,16 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										// requestInfoDao.editRequestForReportIOSWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"Boot
 										// System Flash","Failure","Could not load image on top on boot commands.");
 										// CODE for write and reload to be done!!!!!
-										BackUp(requestinfo, user, password, "current");
+										boolean isCurrentConf=BackUp(createConfigRequest, user, password, "current");
+										if(isCurrentConf)
+										{
+											value=true;
+				
+										}
+										else
+										{
+											value= false;
+										}
 										jsonArray = new Gson().toJson(value);
 										obj.put(new String("output"), jsonArray);
 									} else {
@@ -1135,7 +1122,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 					}
-
+					session.disconnect();
+					channel.disconnect();
 				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGT")
 						|| json.get("requestType").toString().equalsIgnoreCase("SLGA")) {
 
@@ -1159,69 +1147,19 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 				else if (json.get("requestType").toString().equalsIgnoreCase("SLGB")) {
 
-					ArrayList<String> commandToPush = new ArrayList<String>();
 					String tempRequestId = requestinfo.getAlphanumericReqId();
 					Double tempVersion = requestinfo.getRequestVersion();
-					JSch jsch = new JSch();
-					Channel channel = null;
-					Session session = jsch.getSession(user, host, Integer.parseInt(port));
-					Properties config = new Properties();
-					config.put("StrictHostKeyChecking", "no");
-					session.setConfig(config);
-					session.setPassword(password);
-					session.connect();
+					
 					try {
-						Thread.sleep(10000);
-					} catch (Exception ee) {
-					}
-					try {
-						channel = session.openChannel("shell");
-						OutputStream ops = channel.getOutputStream();
-
-						PrintStream ps = new PrintStream(ops, true);
-						logger.info("Channel Connected to machine " + host + " server");
-						channel.connect();
-						InputStream input = channel.getInputStream();
-
 						// to save the backup and deliver the
 						// configuration(configuration in the router)
 						boolean isCheck = bckupConfigService.getRouterConfig(requestinfo, "previous");
 
-						// db call for success deliver config
-
 						if (isStartUp == true) {
 
-							ArrayList<String> commandToPush1 = new ArrayList<String>();
-
-							JSch jsch1 = new JSch();
-							Channel channel1 = null;
-							Session session1 = jsch1.getSession(user, host, Integer.parseInt(port));
-							Properties config1 = new Properties();
-							config1.put("StrictHostKeyChecking", "no");
-							session1.setConfig(config1);
-							session1.setPassword(password);
-							session1.connect();
 							try {
-								Thread.sleep(10000);
-							} catch (Exception ee) {
-							}
-							try {
-								channel1 = session1.openChannel("shell");
-								OutputStream ops1 = channel1.getOutputStream();
-
-								PrintStream ps1 = new PrintStream(ops1, true);
-								logger.info("Channel Connected to machine " + host + " server");
-								channel1.connect();
-								InputStream input1 = channel1.getInputStream();
-
-								// to save the backup and deliver the
-								// configuration(configuration in the router)
+								
 								boolean isCheck1 = bckupConfigService.getRouterConfigStartUp(requestinfo, "startup");
-
-								// db call for success deliver config
-
-								channel1.disconnect();
-								session1.disconnect();
 
 							} catch (Exception ee) {
 							}
@@ -1253,9 +1191,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						|| json.get("requestType").toString().equalsIgnoreCase("SLGM")) {
 					ArrayList<String> commandToPush = new ArrayList<String>();
 
-					JSch jsch = new JSch();
-					Channel channel = null;
-					Session session = jsch.getSession(user, host, Integer.parseInt(port));
+					session = jsch.getSession(user, host, Integer.parseInt(port));
 					Properties config = new Properties();
 					config.put("StrictHostKeyChecking", "no");
 					session.setConfig(config);
@@ -1277,23 +1213,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						// to save the backup and deliver the
 						// configuration(configuration in the router)
 						requestDao.getRouterConfig(requestinfo, "previous");
-
-						session = jsch.getSession(user, host, Integer.parseInt(port));
-						config = new Properties();
-						config.put("StrictHostKeyChecking", "no");
-						session.setConfig(config);
-						session.setPassword(password);
-						session.connect();
-
-						channel = session.openChannel("shell");
-						ops = channel.getOutputStream();
-
-						ps = new PrintStream(ops, true);
-
-						channel.connect();
-
-						input = channel.getInputStream();
-
 						Map<String, String> resultForFlag = new HashMap<String, String>();
 						resultForFlag = requestInfoDao.getRequestFlag(requestinfo.getAlphanumericReqId(),
 								requestinfo.getRequestVersion());
@@ -1437,7 +1356,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									"In Progress");
 
 						}
-
+						input.close();
 						channel.disconnect();
 						session.disconnect();
 						jsonArray = new Gson().toJson(value);
@@ -1470,7 +1389,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					ODLClient client = new ODLClient();
 					boolean result = client.doGetODLBackUp(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()),
-							"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native",
+							TSALabels.ODL_GET_CONFIGURATION_URL.getValue(),
 							"previous");
 					// boolean result=true;
 					// call method for dilevary from vnf utils
@@ -1503,7 +1422,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							String payloadMultilink = helper.getPayload("Multilink", payload);
 							dilevaryresult = client.doPUTDilevary(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()),
-									"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",
+									TSALabels.ODL_PUT_CONFIGURATION_INTERFACE_URL.getValue(),
 									payloadMultilink);
 							dilevaryresult = true;
 							if (dilevaryresult) {
@@ -1533,7 +1452,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							// take current config back up
 							boolean currentconfig = client.doGetODLBackUp(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()),
-									"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native",
+									TSALabels.ODL_GET_CONFIGURATION_URL.getValue(),
 									"current");
 							// boolean currentconfig=true;
 							if (currentconfig == true) {
@@ -1730,17 +1649,26 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				}
 			}
 		}
+		finally {
 
-		/*
-		 * return Response .status(200) .header("Access-Control-Allow-Origin", "*")
-		 * .header("Access-Control-Allow-Headers",
-		 * "origin, content-type, accept, authorization")
-		 * .header("Access-Control-Allow-Credentials", "true")
-		 * .header("Access-Control-Allow-Methods",
-		 * "GET, POST, PUT, DELETE, OPTIONS, HEAD") .header("Access-Control-Max-Age",
-		 * "1209600").entity(obj) .build();
-		 */
-
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				channel.disconnect();
+				session.disconnect();
+			
+			}
+		}
+		
 		return obj;
 
 	}
@@ -1753,7 +1681,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		boolean isSuccess = false;
 		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
 		String host = requestinfo.getManagementIp();
-		JSch jsch = new JSch();
+		/*JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = jsch.getSession(user, host, Integer.parseInt(port));
 		Properties config = new Properties();
@@ -1764,14 +1692,14 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		try {
 			Thread.sleep(10000);
 		} catch (Exception ee) {
-		}
+		}*/
 		try {
-			channel = session.openChannel("shell");
-			OutputStream ops = channel.getOutputStream();
+			//channel = session.openChannel("shell");
+			//OutputStream ops = channel.getOutputStream();
 
-			PrintStream ps = new PrintStream(ops, true);
-			logger.info("Channel Connected to machine " + host + " server for backup");
-			channel.connect();
+			//PrintStream ps = new PrintStream(ops, true);
+			//logger.info("Channel Connected to machine " + host + " server for backup");
+			//channel.connect();
 
 			// to save the backup and deliver the configuration(configuration in the router)
 			isSuccess = requestDao.getRouterConfig(requestinfo, stage);
@@ -1992,7 +1920,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
 		ArrayList<String> commandToPush = new ArrayList<String>();
 		String host = createConfigRequest.getManagementIp();
-		JSch jsch = new JSch();
+		/*JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = jsch.getSession(user, host, Integer.parseInt(port));
 		Properties config = new Properties();
@@ -2003,21 +1931,23 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		try {
 			Thread.sleep(10000);
 		} catch (Exception ee) {
-		}
+		}*/
 		try {
-			channel = session.openChannel("shell");
-			OutputStream ops = channel.getOutputStream();
+			//channel = session.openChannel("shell");
+		//	OutputStream ops = channel.getOutputStream();
 
-			PrintStream ps = new PrintStream(ops, true);
-			logger.info("Channel Connected to machine " + host + " server for backup");
-			channel.connect();
-			InputStream input = channel.getInputStream();
+			//PrintStream ps = new PrintStream(ops, true);
+			//logger.info("Channel Connected to machine " + host + " server for backup");
+			//channel.connect();
+			//InputStream input = channel.getInputStream();
 
 			// to save the backup and deliver the configuration(configuration in the router)
 			isSuccess = bckupConfigService.getRouterConfig(createConfigRequest, stage);
 		} catch (Exception e) {
 
 		}
+		//session.disconnect();
+		//channel.disconnect();
 		return isSuccess;
 	}
 
@@ -2081,6 +2011,22 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				}
 
 			}
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+			}
+				input.close();
+				channel.disconnect();
+				session.disconnect();
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -2090,6 +2036,25 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				channel.disconnect();
+				session.disconnect();
+			
+			}
 		}
 		channel.disconnect();
 		session.disconnect();
@@ -2132,6 +2097,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 			logger.info("Done pushing flash commands on" + host);
 			isSuccess = checkIdLoadedProperly(user, password, host);
+			input.close();
+			session.disconnect();
+			channel.disconnect();
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -2141,6 +2109,25 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				channel.disconnect();
+				session.disconnect();
+			
+			}
 		}
 		return isSuccess;
 	}
@@ -2192,6 +2179,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				isRes = true;
 			}
 			logger.info("Input size < 0: ");
+			input.close();
+			channel.disconnect();
+			session.disconnect();
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -2201,6 +2191,25 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				channel.disconnect();
+				session.disconnect();
+			
+			}
 		}
 		channel.disconnect();
 		session.disconnect();
