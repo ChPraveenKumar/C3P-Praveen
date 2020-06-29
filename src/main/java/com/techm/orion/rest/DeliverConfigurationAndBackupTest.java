@@ -214,6 +214,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									}
 
 								}
+								input.close();
 								if (channel != null) {
 									try {
 									session = channel.getSession();
@@ -227,7 +228,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										System.out.println(e);
 									}
 								}
-								input.close();
 								channel.disconnect();
 								session.disconnect();
 								// requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"deliever_config","2","Failure");
@@ -1033,7 +1033,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										key = "post_login_flag";
 										requestInfoDao.update_dilevary_step_flag_in_db(key, 1, RequestId, version);
 
-										value = true;
+										//value = true;
 
 										requestDao.editRequestforReportWebserviceInfo(
 												requestinfo.getAlphanumericReqId(),
@@ -1042,7 +1042,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										// requestInfoDao.editRequestForReportIOSWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"Boot
 										// System Flash","Failure","Could not load image on top on boot commands.");
 										// CODE for write and reload to be done!!!!!
-										boolean isCurrentConf=BackUp(createConfigRequest, user, password, "current");
+										boolean isCurrentConf=BackUp(requestinfo, user, password, "current");
 										if(isCurrentConf)
 										{
 											value=true;
@@ -1051,6 +1051,19 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										else
 										{
 											value= false;
+											key = "reload_flag";
+											requestInfoDao.update_dilevary_step_flag_in_db(key, 2, RequestId, version);
+											key = "post_login_flag";
+											requestInfoDao.update_dilevary_step_flag_in_db(key, 2, RequestId, version);
+											requestDao.editRequestforReportWebserviceInfo(
+													requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()), "deliever_config",
+													"2", "Failure");
+											requestInfoDao.editRequestForReportIOSWebserviceInfo(
+													requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()), "Current config",
+													"Failure", "Could not get current config.");
+										
 										}
 										jsonArray = new Gson().toJson(value);
 										obj.put(new String("output"), jsonArray);
@@ -1071,7 +1084,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 												Double.toString(requestinfo.getRequestVersion()), "Boot System Flash",
 												"Failure", "Could not load image on top on boot commands.");
 										jsonArray = new Gson().toJson(value);
-										BackUp(createConfigRequest, user, password, "current");
+										BackUp(requestinfo, user, password, "current");
 										obj.put(new String("output"), jsonArray);
 									}
 
@@ -1980,7 +1993,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			ps.println("show run | i boot");
 			try {
 				// change this sleep in case of longer wait
-				Thread.sleep(1000);
+				Thread.sleep(5000);
 			} catch (Exception ee) {
 			}
 			BufferedWriter bw = null;
