@@ -7,6 +7,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,12 +19,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.UserPojo;
-import com.techm.orion.pojo.UserValidationResultDetailPojo;
+import com.techm.orion.service.InventoryManagmentService;
 
 @Controller
 @RequestMapping("/addDeviceManagementUser")
 public class AddDeviceManagementUserService implements Observer {
 
+	private static final Logger logger = LogManager.getLogger(AddDeviceManagementUserService.class);
+	
     RequestInfoDao requestInfoDao = new RequestInfoDao();
 
     @POST
@@ -54,11 +58,11 @@ public class AddDeviceManagementUserService implements Observer {
 		    obj.put(new String("password"), userList.getPassword());
 
 		} catch (Exception e) {
-		    System.out.println(e);
+			logger.error(e);
 		}
 	    }
 	} catch (Exception e) {
-	    System.out.println(e);
+		logger.error(e);
 	}
 
 	return Response
@@ -100,11 +104,11 @@ public class AddDeviceManagementUserService implements Observer {
 		    obj.put(new String("password"), userList.getPassword());
 
 		} catch (Exception e) {
-		    System.out.println(e);
+			logger.error(e);
 		}
 	    
 	} catch (Exception e) {
-	    System.out.println(e);
+		logger.error(e);
 	}
 
 	return Response

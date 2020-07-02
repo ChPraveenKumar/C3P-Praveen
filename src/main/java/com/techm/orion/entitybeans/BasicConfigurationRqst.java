@@ -1,20 +1,19 @@
 package com.techm.orion.entitybeans;
 
-
 import java.util.List;
 
 import com.techm.orion.pojo.MasterAttribPojo;
 
 public class BasicConfigurationRqst {
-	
+
 	private String vendor;
-	
+
 	private String devicetype;
-	
+
 	private String model;
-	
+
 	private String basicConfiguration;
-	
+
 	private List<MasterAttribPojo> attributeMappings;
 
 	public String getVendor() {
@@ -55,5 +54,5 @@ public class BasicConfigurationRqst {
 
 	public void setAttributeMappings(List<MasterAttribPojo> attributeMappings) {
 		this.attributeMappings = attributeMappings;
-	} 
+	}
 }

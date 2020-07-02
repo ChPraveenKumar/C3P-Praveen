@@ -16,6 +16,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class RequestDetailsBackUpAndRestoreEntity implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6295063518084251419L;
+
 	@Id
 	@Column(name = "request_info_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)

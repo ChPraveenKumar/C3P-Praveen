@@ -10,7 +10,7 @@ import com.techm.orion.pojo.AttribCreateConfigPojo;
 public class AttribCreateConfigRequestMapper {
 
 	public MasterAttributes setAttribTemplateSuggestionMapper(AttribCreateConfigPojo pojo) {
-		MasterAttributes entity = new MasterAttributes(); 
+		MasterAttributes entity = new MasterAttributes();
 		entity.setId(pojo.getId());
 		entity.setName(pojo.getAttribName());
 		entity.setLabel(pojo.getAttribLabel());
@@ -19,7 +19,7 @@ public class AttribCreateConfigRequestMapper {
 		entity.setCategory(pojo.getAttribCategoty());
 		entity.setTemplateId(pojo.getAttribTemplateId());
 		entity.setUiComponent(pojo.getAttribUIComponent());
-		//entity.setValidations(pojo.getAttribValidations());
+		// entity.setValidations(pojo.getAttribValidations());
 		entity.setValidations(Arrays.toString(pojo.getAttribValidations()));
 		entity.setTemplateFeature(pojo.getTemplateFeature());
 		return entity;

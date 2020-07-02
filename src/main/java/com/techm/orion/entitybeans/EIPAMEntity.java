@@ -9,39 +9,41 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-
 @Entity
 @Table(name = "EIPAMDBTable")
 public class EIPAMEntity implements Serializable {
-	
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1156251081847978835L;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
-	
+
 	@Column(name = "eipam_site_id")
-    private String site;
-	
+	private String site;
+
 	@Column(name = "eipam_customer_name")
-    private String customer;
-	
+	private String customer;
+
 	@Column(name = "eipam_ip")
-    private String ip;
-	
+	private String ip;
+
 	@Column(name = "eipam_subnet_mask")
-    private String mask;
-	
+	private String mask;
+
 	@Column(name = "eipam_region")
-    private String region;
-    
-	@Column(name = "eipam_service")    
+	private String region;
+
+	@Column(name = "eipam_service")
 	private String service;
-	
-	@Column(name = "eipam_ip_status")   
-    private int status=0;	
-	
-	private boolean isIpUsed=false;
-	
-	
+
+	@Column(name = "eipam_ip_status")
+	private int status = 0;
+
+	private boolean isIpUsed = false;
 
 	public boolean isIpUsed() {
 		return isIpUsed;
@@ -114,7 +116,5 @@ public class EIPAMEntity implements Serializable {
 	public void setStatus(int status) {
 		this.status = status;
 	}
-	
-	
 
 }

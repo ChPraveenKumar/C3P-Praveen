@@ -2,13 +2,14 @@ package com.techm.orion.rest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.models.TemplateAttributeJSONModel;
-import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.service.AttributeFeatureNewService;
 import com.techm.orion.service.DcmConfigService;
@@ -29,7 +29,9 @@ import com.techm.orion.service.DcmConfigService;
 @Controller
 @RequestMapping("/AttributeFeatureServiceTM")
 public class AttributeFeatureServiceTM implements Observer {
-
+	
+	private static final Logger logger = LogManager.getLogger(AttributeFeatureService.class);
+	
 	@POST
 	@RequestMapping(value = "/getFeaturesForAttributes", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -65,7 +67,7 @@ public class AttributeFeatureServiceTM implements Observer {
 			}
 			obj.put(new String("attriList"), jsonArray);
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return Response
 				.status(200)
@@ -131,7 +133,7 @@ public class AttributeFeatureServiceTM implements Observer {
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return Response
 				.status(200)
@@ -191,7 +193,7 @@ public class AttributeFeatureServiceTM implements Observer {
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return Response
 				.status(200)

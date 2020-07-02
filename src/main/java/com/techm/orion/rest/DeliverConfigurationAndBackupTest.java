@@ -21,6 +21,8 @@ import java.util.Properties;
 
 import javax.ws.rs.POST;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,11 +50,13 @@ import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.VNFHelper;
+import com.techm.orion.utility.TSALabels;
 
 @Controller
 @RequestMapping("/DeliverConfigurationAndBackupTest")
 public class DeliverConfigurationAndBackupTest extends Thread {
 
+	private static final Logger logger = LogManager.getLogger(DeliverConfigurationAndBackupTest.class);
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 	@Autowired
@@ -60,7 +64,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 	@Autowired
 	RequestInfoDetailsDao requestDao;
-	
+
 	@Autowired
 	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
@@ -79,9 +83,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		BackupCurrentRouterConfigurationService bckupConfigService = new BackupCurrentRouterConfigurationService();
 		List<RequestInfoEntity> requestDetailEntity = new ArrayList<RequestInfoEntity>();
 		long ftp_image_size = 0, available_flash_size = 0;
-		Boolean isStartUp=false;
+		Boolean isStartUp = false;
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
-
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
@@ -91,12 +97,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			String version = json.get("version").toString();
 			createConfigRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
 			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			
-            requestDetailEntity = requestInfoDetailsRepositories.findAllByAlphanumericReqId(RequestId);
-			
-			for(int i=0; i<requestDetailEntity.size();i++)
-			{
-				isStartUp= requestDetailEntity.get(i).getStartUp();
+
+			requestDetailEntity = requestInfoDetailsRepositories.findAllByAlphanumericReqId(RequestId);
+
+			for (int i = 0; i < requestDetailEntity.size(); i++) {
+				isStartUp = requestDetailEntity.get(i).getStartUp();
 			}
 
 			if (createConfigRequest.getManagementIp() != null && !createConfigRequest.getManagementIp().equals("")) {
@@ -123,7 +128,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 					// ftp_image_size=getFTPImageSize();
 					// String ftp_image_name=getFTPImageName();
-					String ftp_image_name = "test2.bin";
+					String ftp_image_name = "c7200-a3js-mz.122-15.T15.bin";
 					available_flash_size = 9;
 					ftp_image_size = 4;
 					// set login to csr flag in DB to 1
@@ -162,9 +167,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										+ "destination";
 
 								String port1 = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
-								JSch jsch = new JSch();
-								Channel channel = null;
-								Session session = jsch.getSession(user, host, Integer.parseInt(port1));
+								session = jsch.getSession(user, host, Integer.parseInt(port1));
 								Properties config = new Properties();
 								config.put("StrictHostKeyChecking", "no");
 								session.setConfig(config);
@@ -178,8 +181,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								channel = session.openChannel("shell");
 								OutputStream ops = channel.getOutputStream();
 								PrintStream ps = new PrintStream(ops, true);
-								System.out
-										.println("Channel Connected to machine " + host + " server for copy ftp flash");
+								logger.info("Channel Connected to machine " + host + " server for copy ftp flash");
 								channel.connect();
 								InputStream input = channel.getInputStream();
 
@@ -202,7 +204,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									// String s = new String(tmp, 0, i);
 									// Hardcoding it for time being
 									String s = "Loading c7200-a3js-mz.122-15.T16.bin from 172.22.1.84 (via GigabitEthernet0/1):/n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!/n[OK - 19187152 bytes]/n/nVerifying checksum...  OK (0x15C1)19187152 bytes/ncopied in 482.920 secs (39732 bytes/sec)";
-									System.out.println("EOSubBlock");
+									logger.info("EOSubBlock");
 									List<String> outList = new ArrayList<String>();
 									String str[] = s.split("/n");
 									outList = Arrays.asList(str);
@@ -212,8 +214,24 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									}
 
 								}
+								input.close();
+								if (channel != null) {
+									try {
+									session = channel.getSession();
+									
+									if (channel.getExitStatus() == -1) {
+										
+											Thread.sleep(5000);
+										
+									}
+									} catch (Exception e) {
+										System.out.println(e);
+									}
+								}
+								channel.disconnect();
+								session.disconnect();
 								// requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"deliever_config","2","Failure");
-								System.out.println("EOBlock");
+								logger.info("EOBlock");
 								if (copyFtpStatus) {
 									// set copy ftp flag in DB to 1
 									key = "os_download_flag";
@@ -260,7 +278,16 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										// requestInfoDao.editRequestForReportIOSWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"Boot
 										// System Flash","Failure","Could not load image on top on boot commands.");
 										// CODE for write and reload to be done!!!!!
-										BackUp(createConfigRequest, user, password, "current");
+										boolean isCurrentConf=BackUp(createConfigRequest, user, password, "current");
+										if(isCurrentConf)
+										{
+											value=true;
+				
+										}
+										else
+										{
+											value= false;
+										}
 										jsonArray = new Gson().toJson(value);
 										obj.put(new String("output"), jsonArray);
 									} else {
@@ -334,8 +361,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 					}
+					session.disconnect();
+					channel.disconnect();
 
-				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGT")) {
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGT")
+						|| json.get("requestType").toString().equalsIgnoreCase("SLGA")) {
 
 					value = true;
 					jsonArray = new Gson().toJson(value);
@@ -354,138 +384,70 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "0", status);
 
 					obj.put(new String("output"), jsonArray);
-					System.out.println("Out of dilever config");
+					logger.info("Out of dilever config");
 				}
 
-				else if(json.get("requestType").toString()
-						.equalsIgnoreCase("SLGB"))
-				{
-
-					ArrayList<String> commandToPush = new ArrayList<String>();
-
-					JSch jsch = new JSch();
-					Channel channel = null;
-					Session session = jsch.getSession(user, host,
-							Integer.parseInt(port));
-					Properties config = new Properties();
-					config.put("StrictHostKeyChecking", "no");
-					session.setConfig(config);
-					session.setPassword(password);
-					session.connect();
-					try {
-						Thread.sleep(10000);
-					} catch (Exception ee) {
-					}
-					try {
-						channel = session.openChannel("shell");
-						OutputStream ops = channel.getOutputStream();
-
-						PrintStream ps = new PrintStream(ops, true);
-						System.out.println("Channel Connected to machine " + host
-								+ " server");
-						channel.connect();
-						InputStream input = channel.getInputStream();
-
-						// to save the backup and deliver the
-						// configuration(configuration in the router)
-						boolean isCheck = bckupConfigService.getRouterConfig(createConfigRequest,
-								"previous");
+				else if (json.get("requestType").toString().equalsIgnoreCase("SLGB")) {
 
 					
-								// db call for success deliver config
-							
-							
-							if(isStartUp==true)
-							{
+					try {
+						
+						// to save the backup and deliver the
+						// configuration(configuration in the router)
+						boolean isCheck = bckupConfigService.getRouterConfig(createConfigRequest, "previous");
 
+					
 
-								ArrayList<String> commandToPush1 = new ArrayList<String>();
+						if (isStartUp == true) {
 
-								JSch jsch1 = new JSch();
-								Channel channel1 = null;
-								Session session1 = jsch1.getSession(user, host,
-										Integer.parseInt(port));
-								Properties config1 = new Properties();
-								config1.put("StrictHostKeyChecking", "no");
-								session1.setConfig(config1);
-								session1.setPassword(password);
-								session1.connect();
-								try {
-									Thread.sleep(10000);
-								} catch (Exception ee) {
-								}
-								try {
-									channel1 = session1.openChannel("shell");
-									OutputStream ops1 = channel1.getOutputStream();
-
-									PrintStream ps1 = new PrintStream(ops1, true);
-									System.out.println("Channel Connected to machine " + host
-											+ " server");
-									channel1.connect();
-									InputStream input1 = channel1.getInputStream();
-
-									// to save the backup and deliver the
-									// configuration(configuration in the router)
-									boolean isCheck1 = bckupConfigService.getRouterConfigStartUp(createConfigRequest,
-											"startup");
+						
+							try {
+								
+								// to save the backup and deliver the
+								// configuration(configuration in the router)
+								boolean isCheck1 = bckupConfigService.getRouterConfigStartUp(createConfigRequest,
+										"startup");
 
 								
-											// db call for success deliver config
-										
-									channel1.disconnect();
-									session1.disconnect();	
-											
-										
-									}
-								catch (Exception ee) {
-								}  
+
+							} catch (Exception ee) {
 							}
-								requestInfoDao.editRequestforReportWebserviceInfo(
-										createConfigRequest.getRequestId(), Double
-												.toString(createConfigRequest
-														.getRequest_version()),
-										"deliever_config", "1", "In Progress");
-								
-								
-								requestInfoDao.updateRequestforReportWebserviceInfo(
-										createConfigRequest.getRequestId());
-								
-								
-							if(isCheck)
-							{
-								value=true;
-							} else
-							{
-								value=false;
-							}
-
-									channel.disconnect();
-									session.disconnect();
-									jsonArray = new Gson().toJson(value);
-									obj.put(new String("output"), jsonArray);
-								
-							
 						}
-					catch (Exception ee) {
-					}
+						requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
+								Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "1",
+								"In Progress");
 
-						channel.disconnect();
-						session.disconnect();
+						requestInfoDao.updateRequestforReportWebserviceInfo(createConfigRequest.getRequestId());
+
+						if (isCheck) {
+							value = true;
+						} else {
+							value = false;
+						}
+
+					
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
-					} else if (json.get("requestType").toString().equalsIgnoreCase("SLGC")) {
+
+					} catch (Exception ee) {
+					}
+
+					channel.disconnect();
+					session.disconnect();
+					jsonArray = new Gson().toJson(value);
+					obj.put(new String("output"), jsonArray);
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGC")
+						|| json.get("requestType").toString().equalsIgnoreCase("SLGM")) {
 					ArrayList<String> commandToPush = new ArrayList<String>();
 
-					JSch jsch = new JSch();
-					Channel channel = null;
-					Session session = jsch.getSession(user, host, Integer.parseInt(port));
+					session = jsch.getSession(user, host, Integer.parseInt(port));
 					Properties config = new Properties();
 					config.put("StrictHostKeyChecking", "no");
 					session.setConfig(config);
 					session.setPassword(password);
 					session.connect();
 					try {
-						Thread.sleep(10000);
+						Thread.sleep(1000);
 					} catch (Exception ee) {
 					}
 					try {
@@ -493,30 +455,14 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						OutputStream ops = channel.getOutputStream();
 
 						PrintStream ps = new PrintStream(ops, true);
-						System.out.println("Channel Connected to machine " + host + " server");
+						logger.info("Channel Connected to machine " + host + " server");
 						channel.connect();
 						InputStream input = channel.getInputStream();
 
 						// to save the backup and deliver the
 						// configuration(configuration in the router)
 						bckupConfigService.getRouterConfig(createConfigRequest, "previous");
-
-						session = jsch.getSession(user, host, Integer.parseInt(port));
-						config = new Properties();
-						config.put("StrictHostKeyChecking", "no");
-						session.setConfig(config);
-						session.setPassword(password);
-						session.connect();
-
-						channel = session.openChannel("shell");
-						ops = channel.getOutputStream();
-
-						ps = new PrintStream(ops, true);
-
-						channel.connect();
-
-						input = channel.getInputStream();
-
+					
 						Map<String, String> resultForFlag = new HashMap<String, String>();
 						resultForFlag = requestInfoDao.getRequestFlag(createConfigRequest.getRequestId(),
 								createConfigRequest.getRequest_version());
@@ -666,7 +612,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									"In Progress");
 
 						}
-
+						input.close();
 						channel.disconnect();
 						session.disconnect();
 						jsonArray = new Gson().toJson(value);
@@ -693,186 +639,184 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					}
 					session.disconnect();
 
-				} else if (json.get("requestType").toString().equalsIgnoreCase("SNRC")) {
-					
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SNRC")
+						|| json.get("requestType").toString().equalsIgnoreCase("SNRM")) {
 
-					//for restconf
-					VNFHelper helper=new VNFHelper();
-					//call method for backup from vnf utils
-					ODLClient client=new ODLClient();
-					boolean result=client.doGetODLBackUp(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()), "http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native", "previous");
-					//boolean result=true;
-					//call method for dilevary from vnf utils
-					if(result==true)
-					{
-						//go for dilevary
-						
-						boolean dilevaryresult=false;
-						
-						//dilevaryresult=true;
-						
-						//Get XML to be pushed from local
+					// for restconf
+					VNFHelper helper = new VNFHelper();
+					// call method for backup from vnf utils
+					ODLClient client = new ODLClient();
+					boolean result = client.doGetODLBackUp(createConfigRequest.getRequestId(),
+							Double.toString(createConfigRequest.getRequest_version()),
+							TSALabels.ODL_GET_CONFIGURATION_URL.getValue(),
+							"previous");
+					// boolean result=true;
+					// call method for dilevary from vnf utils
+					if (result == true) {
+						// go for dilevary
+
+						boolean dilevaryresult = false;
+
+						// dilevaryresult=true;
+
+						// Get XML to be pushed from local
 						String responseDownloadPathRestConf = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 								.getProperty("VnfConfigCreationPath");
-						String path=responseDownloadPathRestConf+"/"+createConfigRequest.getRequestId()+"_ConfigurationToPush.xml";
-						//VNFHelper helper = new VNFHelper();
-						String payload=helper.readConfigurationXML(path);
-						
-						System.out.println("log");
-						//dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface ");
-						
-						 
-						 String payloadLoopback=helper.getPayload("Loopback",payload);
-						 
-						 //dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadLoopback);
-						 dilevaryresult=true;
-						 if(dilevaryresult)
-						 {
-						 String payloadMultilink=helper.getPayload("Multilink",payload);
-						dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadMultilink);
-						 //dilevaryresult=true;
-						 if(dilevaryresult)
-						 {
-							 String payloadVT=helper.getPayload("Virtual-Template",payload);
+						String path = responseDownloadPathRestConf + "/" + createConfigRequest.getRequestId()
+								+ "_ConfigurationToPush.xml";
+						// VNFHelper helper = new VNFHelper();
+						String payload = helper.readConfigurationXML(path);
 
-							// dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadVT);
-							 dilevaryresult=true;
-							 if(dilevaryresult)
-							 {
-								 dilevaryresult=true;
-							 }
-							 else
-							 {
-								 dilevaryresult=false;
-							 }
-						 }
-						 else
-						 {
-							 dilevaryresult=false;
+						logger.info("log");
+						// dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(),
+						// Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface
+						// ");
 
-							 //error handling
-						 }
-						 }
-						 else
-						 {
-							 dilevaryresult=false;
+						String payloadLoopback = helper.getPayload("Loopback", payload);
 
-							//error handling
-						 }
+						// dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(),
+						// Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadLoopback);
+						dilevaryresult = true;
+						if (dilevaryresult) {
+							String payloadMultilink = helper.getPayload("Multilink", payload);
+							dilevaryresult = client.doPUTDilevary(createConfigRequest.getRequestId(),
+									Double.toString(createConfigRequest.getRequest_version()),
+									TSALabels.ODL_PUT_CONFIGURATION_INTERFACE_URL.getValue(),
+									payloadMultilink);
+							// dilevaryresult=true;
+							if (dilevaryresult) {
+								String payloadVT = helper.getPayload("Virtual-Template", payload);
 
-							
-							
-						/////////////////Need to write code for put service for dilevary of config
-						if (dilevaryresult==true)
-						{
-							//take current config back up
-							boolean currentconfig=client.doGetODLBackUp(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()), "http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native", "current");
-							//boolean currentconfig=true;
-							if(currentconfig== true)
-							{
-								requestInfoDao.editRequestforReportWebserviceInfo(
-										createConfigRequest.getRequestId(), Double
-												.toString(createConfigRequest
-														.getRequest_version()),
-										"deliever_config", "1", "In Progress");
+								// dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(),
+								// Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadVT);
+								dilevaryresult = true;
+								if (dilevaryresult) {
+									dilevaryresult = true;
+								} else {
+									dilevaryresult = false;
+								}
+							} else {
+								dilevaryresult = false;
+
+								// error handling
+							}
+						} else {
+							dilevaryresult = false;
+
+							// error handling
+						}
+
+						///////////////// Need to write code for put service for dilevary of config
+						if (dilevaryresult == true) {
+							// take current config back up
+							boolean currentconfig = client.doGetODLBackUp(createConfigRequest.getRequestId(),
+									Double.toString(createConfigRequest.getRequest_version()),
+									TSALabels.ODL_GET_CONFIGURATION_URL.getValue(),
+									"current");
+							// boolean currentconfig=true;
+							if (currentconfig == true) {
+								requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
+										Double.toString(createConfigRequest.getRequest_version()), "deliever_config",
+										"1", "In Progress");
 								value = true;
 								jsonArray = new Gson().toJson(value);
 								obj.put(new String("output"), jsonArray);
 
-								String response = invokeFtl
-										.generateDileveryConfigFile(createConfigRequest);
+								String response = invokeFtl.generateDileveryConfigFile(createConfigRequest);
 								try {
 									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 											.getProperty("responseDownloadPath");
-									TextReport
-											.writeFile(
-													responseDownloadPath,
-													createConfigRequest.getRequestId()
-															+ "V"
-															+ Double.toString(createConfigRequest
-																	.getRequest_version())
-															+ "_deliveredConfig.txt",
-													response);
+									TextReport.writeFile(responseDownloadPath,
+											createConfigRequest.getRequestId() + "V"
+													+ Double.toString(createConfigRequest.getRequest_version())
+													+ "_deliveredConfig.txt",
+											response);
 
 								} catch (IOException exe) {
 									exe.printStackTrace();
 
 								}
-							}
-							else
-							{
-								value=false;
-								requestInfoDao.editRequestforReportWebserviceInfo(
-										createConfigRequest.getRequestId(), Double
-												.toString(createConfigRequest
-														.getRequest_version()),
-										"deliever_config", "2", "Failure");
+							} else {
+								value = false;
+								requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
+										Double.toString(createConfigRequest.getRequest_version()), "deliever_config",
+										"2", "Failure");
 								jsonArray = new Gson().toJson(value);
 								obj.put(new String("output"), jsonArray);
-								String response="";
-								String responseDownloadPath="";
+								String response = "";
+								String responseDownloadPath = "";
 								try {
-									requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"deliever_config","2","Failure");
+									requestInfoDao.editRequestforReportWebserviceInfo(
+											createConfigRequest.getRequestId(),
+											Double.toString(createConfigRequest.getRequest_version()),
+											"deliever_config", "2", "Failure");
 									response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
 									responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
 											.getProperty("responseDownloadPath");
-									TextReport.writeFile(responseDownloadPath, createConfigRequest.getRequestId()
-											+"V"+Double.toString(createConfigRequest.getRequest_version())+"_deliveredConfig.txt", response);
+									TextReport.writeFile(responseDownloadPath,
+											createConfigRequest.getRequestId() + "V"
+													+ Double.toString(createConfigRequest.getRequest_version())
+													+ "_deliveredConfig.txt",
+											response);
 								} catch (Exception e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							}
-						}
-						else
-						{
-							value=false;
+						} else {
+							value = false;
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-							String response="";
-							String responseDownloadPath="";
+							String response = "";
+							String responseDownloadPath = "";
 							try {
-								requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"deliever_config","2","Failure");
+								requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
+										Double.toString(createConfigRequest.getRequest_version()), "deliever_config",
+										"2", "Failure");
 								response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
 								responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
 										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath, createConfigRequest.getRequestId()
-										+"V"+Double.toString(createConfigRequest.getRequest_version())+"_deliveredConfig.txt", response);
+								TextReport.writeFile(responseDownloadPath,
+										createConfigRequest.getRequestId() + "V"
+												+ Double.toString(createConfigRequest.getRequest_version())
+												+ "_deliveredConfig.txt",
+										response);
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
-					}
-					else
-					{
-						value=false;
-						String response="";
-						String responseDownloadPath="";
+					} else {
+						value = false;
+						String response = "";
+						String responseDownloadPath = "";
 						try {
-							requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"deliever_config","2","Failure");
+							requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
+									Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2",
+									"Failure");
 							response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
 							responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath, createConfigRequest.getRequestId()
-									+"V"+Double.toString(createConfigRequest.getRequest_version())+"_deliveredConfig.txt", response);
+							TextReport.writeFile(responseDownloadPath,
+									createConfigRequest.getRequestId() + "V"
+											+ Double.toString(createConfigRequest.getRequest_version())
+											+ "_deliveredConfig.txt",
+									response);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
-					//call method for back up from vnf utils for current configuration
-				
-					
-					
-				} else if (json.get("requestType").toString().equalsIgnoreCase("SNNC")) {
-					
+					// call method for back up from vnf utils for current configuration
+
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SNNC")
+						|| json.get("requestType").toString().equalsIgnoreCase("SNNM")) {
+
 					// push configuration for Netconf devices String
 					String requestId = createConfigRequest.getRequestId();
 					String responseDownloadPathNetconf = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 							.getProperty("VnfConfigCreationPath");
-					String path = responseDownloadPathNetconf + "/" + requestId
-							+ "_ConfigurationToPush.xml";
+					String path = responseDownloadPathNetconf + "/" + requestId + "_ConfigurationToPush.xml";
 					VNFHelper helper = new VNFHelper();
 					String payload = helper.readConfigurationXML(path);
 					// get file from vnf config requests folder
@@ -881,20 +825,15 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					if (result) {
 						value = true;
 
-						String response = invokeFtl
-								.generateDileveryConfigFile(createConfigRequest);
+						String response = invokeFtl.generateDileveryConfigFile(createConfigRequest);
 						try {
 							String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 									.getProperty("responseDownloadPath");
-							TextReport
-									.writeFile(
-											responseDownloadPath,
-											createConfigRequest.getRequestId()
-													+ "V"
-													+ Double.toString(createConfigRequest
-															.getRequest_version())
-													+ "_deliveredConfig.txt",
-											response);
+							TextReport.writeFile(responseDownloadPath,
+									createConfigRequest.getRequestId() + "V"
+											+ Double.toString(createConfigRequest.getRequest_version())
+											+ "_deliveredConfig.txt",
+									response);
 
 						} catch (IOException exe) {
 							exe.printStackTrace();
@@ -909,24 +848,17 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						String response = "";
 						String responseDownloadPath = "";
 						try {
-							requestInfoDao.editRequestforReportWebserviceInfo(
-									createConfigRequest.getRequestId(), Double
-											.toString(createConfigRequest
-													.getRequest_version()),
-									"deliever_config", "2", "Failure");
-							response = invokeFtl
-									.generateDeliveryConfigFileFailure(createConfigRequest);
+							requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
+									Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2",
+									"Failure");
+							response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
 							responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 									.getProperty("responseDownloadPath");
-							TextReport
-									.writeFile(
-											responseDownloadPath,
-											createConfigRequest.getRequestId()
-													+ "V"
-													+ Double.toString(createConfigRequest
-															.getRequest_version())
-													+ "_deliveredConfig.txt",
-											response);
+							TextReport.writeFile(responseDownloadPath,
+									createConfigRequest.getRequestId() + "V"
+											+ Double.toString(createConfigRequest.getRequest_version())
+											+ "_deliveredConfig.txt",
+									response);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							// e.printStackTrace();
@@ -935,12 +867,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				}
 
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-			
-				requestDao.editRequestforReportWebserviceInfo(
-						requestinfo.getAlphanumericReqId(),
-						Double.toString(requestinfo.getRequestVersion()), "deliever_config",
-						"4", "In Progress");
-			
+
+				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "deliever_config", "4", "In Progress");
+
 				requestinfo.setAlphanumericReqId(RequestId);
 				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 
@@ -1002,9 +932,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										+ "destination";
 
 								String port1 = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
-								JSch jsch = new JSch();
-								Channel channel = null;
-								Session session = jsch.getSession(user, host, Integer.parseInt(port1));
+								session = jsch.getSession(user, host, Integer.parseInt(port1));
 								Properties config = new Properties();
 								config.put("StrictHostKeyChecking", "no");
 								session.setConfig(config);
@@ -1012,14 +940,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 								session.connect();
 								try {
-									Thread.sleep(10000);
+									Thread.sleep(5000);
 								} catch (Exception ee) {
 								}
 								channel = session.openChannel("shell");
 								OutputStream ops = channel.getOutputStream();
 								PrintStream ps = new PrintStream(ops, true);
-								System.out
-										.println("Channel Connected to machine " + host + " server for copy ftp flash");
+								logger.info("Channel Connected to machine " + host + " server for copy ftp flash");
 								channel.connect();
 								InputStream input = channel.getInputStream();
 
@@ -1042,7 +969,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									// String s = new String(tmp, 0, i);
 									// Hardcoding it for time being
 									String s = "Loading c7200-a3js-mz.122-15.T16.bin from 172.22.1.84 (via GigabitEthernet0/1):/n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!/n[OK - 19187152 bytes]/n/nVerifying checksum...  OK (0x15C1)19187152 bytes/ncopied in 482.920 secs (39732 bytes/sec)";
-									System.out.println("EOSubBlock");
+									logger.info("EOSubBlock");
 									List<String> outList = new ArrayList<String>();
 									String str[] = s.split("/n");
 									outList = Arrays.asList(str);
@@ -1052,8 +979,23 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									}
 
 								}
+								if (channel != null) {
+									try {
+									session = channel.getSession();
+									
+									if (channel.getExitStatus() == -1) {
+										
+											Thread.sleep(5000);
+										
+									}
+									} catch (Exception e) {
+										System.out.println(e);
+									}
+								}
+								channel.disconnect();
+								session.disconnect();
 								// requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"deliever_config","2","Failure");
-								System.out.println("EOBlock");
+								logger.info("EOBlock");
 								if (copyFtpStatus) {
 									// set copy ftp flag in DB to 1
 									key = "os_download_flag";
@@ -1091,7 +1033,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										key = "post_login_flag";
 										requestInfoDao.update_dilevary_step_flag_in_db(key, 1, RequestId, version);
 
-										value = true;
+										//value = true;
 
 										requestDao.editRequestforReportWebserviceInfo(
 												requestinfo.getAlphanumericReqId(),
@@ -1100,7 +1042,29 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										// requestInfoDao.editRequestForReportIOSWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"Boot
 										// System Flash","Failure","Could not load image on top on boot commands.");
 										// CODE for write and reload to be done!!!!!
-										BackUp(requestinfo, user, password, "current");
+										boolean isCurrentConf=BackUp(requestinfo, user, password, "current");
+										if(isCurrentConf)
+										{
+											value=true;
+				
+										}
+										else
+										{
+											value= false;
+											key = "reload_flag";
+											requestInfoDao.update_dilevary_step_flag_in_db(key, 2, RequestId, version);
+											key = "post_login_flag";
+											requestInfoDao.update_dilevary_step_flag_in_db(key, 2, RequestId, version);
+											requestDao.editRequestforReportWebserviceInfo(
+													requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()), "deliever_config",
+													"2", "Failure");
+											requestInfoDao.editRequestForReportIOSWebserviceInfo(
+													requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()), "Current config",
+													"Failure", "Could not get current config.");
+										
+										}
 										jsonArray = new Gson().toJson(value);
 										obj.put(new String("output"), jsonArray);
 									} else {
@@ -1120,7 +1084,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 												Double.toString(requestinfo.getRequestVersion()), "Boot System Flash",
 												"Failure", "Could not load image on top on boot commands.");
 										jsonArray = new Gson().toJson(value);
-										BackUp(createConfigRequest, user, password, "current");
+										BackUp(requestinfo, user, password, "current");
 										obj.put(new String("output"), jsonArray);
 									}
 
@@ -1171,8 +1135,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 					}
-
-				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGT")) {
+					session.disconnect();
+					channel.disconnect();
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGT")
+						|| json.get("requestType").toString().equalsIgnoreCase("SLGA")) {
 
 					value = true;
 					jsonArray = new Gson().toJson(value);
@@ -1189,129 +1155,56 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "deliever_config", "0", status);
 					obj.put(new String("output"), jsonArray);
-					System.out.println("Out of dilever config");
+					logger.info("Out of dilever config");
 				}
 
 				else if (json.get("requestType").toString().equalsIgnoreCase("SLGB")) {
 
-					ArrayList<String> commandToPush = new ArrayList<String>();
-                    String tempRequestId = requestinfo.getAlphanumericReqId();
-                    Double tempVersion = requestinfo.getRequestVersion();
-					JSch jsch = new JSch();
-					Channel channel = null;
-					Session session = jsch.getSession(user, host,
-							Integer.parseInt(port));
-					Properties config = new Properties();
-					config.put("StrictHostKeyChecking", "no");
-					session.setConfig(config);
-					session.setPassword(password);
-					session.connect();
+					String tempRequestId = requestinfo.getAlphanumericReqId();
+					Double tempVersion = requestinfo.getRequestVersion();
+					
 					try {
-						Thread.sleep(10000);
-					} catch (Exception ee) {
-					}
-					try {
-						channel = session.openChannel("shell");
-						OutputStream ops = channel.getOutputStream();
-
-						PrintStream ps = new PrintStream(ops, true);
-						System.out.println("Channel Connected to machine " + host
-								+ " server");
-						channel.connect();
-						InputStream input = channel.getInputStream();
-
 						// to save the backup and deliver the
 						// configuration(configuration in the router)
-						boolean isCheck = bckupConfigService.getRouterConfig(requestinfo,
-								"previous");
+						boolean isCheck = bckupConfigService.getRouterConfig(requestinfo, "previous");
 
-					
-								// db call for success deliver config
-							
-							
-							if(isStartUp==true)
-							{
+						if (isStartUp == true) {
 
-
-								ArrayList<String> commandToPush1 = new ArrayList<String>();
-
-								JSch jsch1 = new JSch();
-								Channel channel1 = null;
-								Session session1 = jsch1.getSession(user, host,
-										Integer.parseInt(port));
-								Properties config1 = new Properties();
-								config1.put("StrictHostKeyChecking", "no");
-								session1.setConfig(config1);
-								session1.setPassword(password);
-								session1.connect();
-								try {
-									Thread.sleep(10000);
-								} catch (Exception ee) {
-								}
-								try {
-									channel1 = session1.openChannel("shell");
-									OutputStream ops1 = channel1.getOutputStream();
-
-									PrintStream ps1 = new PrintStream(ops1, true);
-									System.out.println("Channel Connected to machine " + host
-											+ " server");
-									channel1.connect();
-									InputStream input1 = channel1.getInputStream();
-
-									// to save the backup and deliver the
-									// configuration(configuration in the router)
-									boolean isCheck1 = bckupConfigService.getRouterConfigStartUp(requestinfo,
-											"startup");
-
+							try {
 								
-											// db call for success deliver config
-										
-									channel1.disconnect();
-									session1.disconnect();	
-											
-										
-									}
-								catch (Exception ee) {
-								}  
+								boolean isCheck1 = bckupConfigService.getRouterConfigStartUp(requestinfo, "startup");
+
+							} catch (Exception ee) {
 							}
-								requestInfoDao.editRequestforReportWebserviceInfo(
-										tempRequestId, Double
-												.toString(tempVersion),
-										"deliever_config", "1", "In Progress");
-								
-								
-								requestInfoDao.updateRequestforReportWebserviceInfo(
-										tempRequestId);
-								
-								
-							if(isCheck)
-							{
-								value=true;
-							} else
-							{
-								value=false;
-							}
-
-									channel.disconnect();
-									session.disconnect();
-									jsonArray = new Gson().toJson(value);
-									obj.put(new String("output"), jsonArray);
-								
-							
 						}
-					catch (Exception ee) {
-					}
+						requestInfoDao.editRequestforReportWebserviceInfo(tempRequestId, Double.toString(tempVersion),
+								"deliever_config", "1", "In Progress");
+
+						requestInfoDao.updateRequestforReportWebserviceInfo(tempRequestId);
+
+						if (isCheck) {
+							value = true;
+						} else {
+							value = false;
+						}
 
 						channel.disconnect();
 						session.disconnect();
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
-					} else if (json.get("requestType").toString().equalsIgnoreCase("SLGC")) {
+
+					} catch (Exception ee) {
+					}
+
+					channel.disconnect();
+					session.disconnect();
+					jsonArray = new Gson().toJson(value);
+					obj.put(new String("output"), jsonArray);
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGC")
+						|| json.get("requestType").toString().equalsIgnoreCase("SLGM")) {
 					ArrayList<String> commandToPush = new ArrayList<String>();
 
-					JSch jsch = new JSch();
-					Channel channel = null;
-					Session session = jsch.getSession(user, host, Integer.parseInt(port));
+					session = jsch.getSession(user, host, Integer.parseInt(port));
 					Properties config = new Properties();
 					config.put("StrictHostKeyChecking", "no");
 					session.setConfig(config);
@@ -1326,30 +1219,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						OutputStream ops = channel.getOutputStream();
 
 						PrintStream ps = new PrintStream(ops, true);
-						System.out.println("Channel Connected to machine " + host + " server");
+						logger.info("Channel Connected to machine " + host + " server");
 						channel.connect();
 						InputStream input = channel.getInputStream();
 
 						// to save the backup and deliver the
 						// configuration(configuration in the router)
 						requestDao.getRouterConfig(requestinfo, "previous");
-
-						session = jsch.getSession(user, host, Integer.parseInt(port));
-						config = new Properties();
-						config.put("StrictHostKeyChecking", "no");
-						session.setConfig(config);
-						session.setPassword(password);
-						session.connect();
-
-						channel = session.openChannel("shell");
-						ops = channel.getOutputStream();
-
-						ps = new PrintStream(ops, true);
-
-						channel.connect();
-
-						input = channel.getInputStream();
-
 						Map<String, String> resultForFlag = new HashMap<String, String>();
 						resultForFlag = requestInfoDao.getRequestFlag(requestinfo.getAlphanumericReqId(),
 								requestinfo.getRequestVersion());
@@ -1493,7 +1369,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									"In Progress");
 
 						}
-
+						input.close();
 						channel.disconnect();
 						session.disconnect();
 						jsonArray = new Gson().toJson(value);
@@ -1518,82 +1394,81 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					}
 					session.disconnect();
 
-				}else if(json.get("requestType").toString().equalsIgnoreCase("SNRC"))
-				{
-					//for restconf
-					
-					//call method for backup from vnf utils
-					ODLClient client=new ODLClient();
-					boolean result=client.doGetODLBackUp(requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()), "http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native", "previous");
-					//boolean result=true;
-					//call method for dilevary from vnf utils
-					if(result==true)
-					{
-						//go for dilevary
-						
-						boolean dilevaryresult=false;
-						
-						//dilevaryresult=true;
-						
-						//Get XML to be pushed from local
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SNRC")
+						|| json.get("requestType").toString().equalsIgnoreCase("SNRM")) {
+					// for restconf
+
+					// call method for backup from vnf utils
+					ODLClient client = new ODLClient();
+					boolean result = client.doGetODLBackUp(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()),
+							TSALabels.ODL_GET_CONFIGURATION_URL.getValue(),
+							"previous");
+					// boolean result=true;
+					// call method for dilevary from vnf utils
+					if (result == true) {
+						// go for dilevary
+
+						boolean dilevaryresult = false;
+
+						// dilevaryresult=true;
+
+						// Get XML to be pushed from local
 						String responseDownloadPathRestConf = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 								.getProperty("VnfConfigCreationPath");
-						String path=responseDownloadPathRestConf+"/"+requestinfo.getAlphanumericReqId()+"_ConfigurationToPush.xml";
+						String path = responseDownloadPathRestConf + "/" + requestinfo.getAlphanumericReqId()
+								+ "_ConfigurationToPush.xml";
 						VNFHelper helper = new VNFHelper();
-						String payload=helper.readConfigurationXML(path);
-						
-						System.out.println("log");
-						//dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface ");
-						
-						 
-						 String payloadLoopback=helper.getPayload("Loopback",payload);
-						 
-						 //dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadLoopback);
-						 dilevaryresult=true;
-						 if(dilevaryresult)
-						 {
-						 String payloadMultilink=helper.getPayload("Multilink",payload);
-						dilevaryresult=client.doPUTDilevary(requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadMultilink);
-						 dilevaryresult=true;
-						 if(dilevaryresult)
-						 {
-							 String payloadVT=helper.getPayload("Virtual-Template",payload);
+						String payload = helper.readConfigurationXML(path);
 
-							//dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadVT);
-							 dilevaryresult=true;
-							 if(dilevaryresult)
-							 {
-								 dilevaryresult=true;
-							 }
-							 else
-							 {
-								 dilevaryresult=false;
-							 }
-						 }
-						 else
-						 {
-							 dilevaryresult=false;
+						logger.info("log");
+						// dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(),
+						// Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface
+						// ");
 
-							 //error handling
-						 }
-						 }
-						 else
-						 {
-							 dilevaryresult=false;
+						String payloadLoopback = helper.getPayload("Loopback", payload);
 
-							//error handling
-						 }
+						// dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(),
+						// Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadLoopback);
+						dilevaryresult = true;
+						if (dilevaryresult) {
+							String payloadMultilink = helper.getPayload("Multilink", payload);
+							dilevaryresult = client.doPUTDilevary(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()),
+									TSALabels.ODL_PUT_CONFIGURATION_INTERFACE_URL.getValue(),
+									payloadMultilink);
+							dilevaryresult = true;
+							if (dilevaryresult) {
+								String payloadVT = helper.getPayload("Virtual-Template", payload);
 
-							
-							
-						/////////////////Need to write code for put service for dilevary of config
-						if (dilevaryresult==true)
-						{
-							//take current config back up
-							boolean currentconfig=client.doGetODLBackUp(requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()), "http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native", "current");
-							//boolean currentconfig=true;
-							if(currentconfig== true)
-							{
+								// dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(),
+								// Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadVT);
+								dilevaryresult = true;
+								if (dilevaryresult) {
+									dilevaryresult = true;
+								} else {
+									dilevaryresult = false;
+								}
+							} else {
+								dilevaryresult = false;
+
+								// error handling
+							}
+						} else {
+							dilevaryresult = false;
+
+							// error handling
+						}
+
+						///////////////// Need to write code for put service for dilevary of config
+						if (dilevaryresult == true) {
+							// take current config back up
+							boolean currentconfig = client.doGetODLBackUp(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()),
+									TSALabels.ODL_GET_CONFIGURATION_URL.getValue(),
+									"current");
+							// boolean currentconfig=true;
+							if (currentconfig == true) {
 								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "deliever_config", "1",
 										"In Progress");
@@ -1601,103 +1476,93 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								jsonArray = new Gson().toJson(value);
 								obj.put(new String("output"), jsonArray);
 
-								String response = invokeFtl
-										.generateDileveryConfigFile(requestinfo);
+								String response = invokeFtl.generateDileveryConfigFile(requestinfo);
 								try {
 									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 											.getProperty("responseDownloadPath");
-									TextReport
-											.writeFile(
-													responseDownloadPath,
-													requestinfo.getAlphanumericReqId()
-															+ "V"
-															+ Double.toString(requestinfo.getRequestVersion())
-															+ "_deliveredConfig.txt",
-													response);
+									TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+											response);
 
 								} catch (IOException exe) {
 									exe.printStackTrace();
 
 								}
-							}
-							else
-							{
-								value=false;
+							} else {
+								value = false;
 								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
 										"Failure");
 								jsonArray = new Gson().toJson(value);
 								obj.put(new String("output"), jsonArray);
-								String response="";
-								String responseDownloadPath="";
+								String response = "";
+								String responseDownloadPath = "";
 								try {
 									requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
-											"Failure");									
+											"Failure");
 									response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
 									responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
 											.getProperty("responseDownloadPath");
-									TextReport.writeFile(responseDownloadPath, createConfigRequest.getRequestId()
-											+"V"+Double.toString(requestinfo.getRequestVersion())+"_deliveredConfig.txt", response);
+									TextReport.writeFile(responseDownloadPath, createConfigRequest.getRequestId() + "V"
+											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+											response);
 								} catch (Exception e) {
 									// TODO Auto-generated catch block
 									e.printStackTrace();
 								}
 							}
-						}
-						else
-						{
-							value=false;
+						} else {
+							value = false;
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-							String response="";
-							String responseDownloadPath="";
+							String response = "";
+							String responseDownloadPath = "";
 							try {
 								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
-										"Failure");								
+										"Failure");
 								response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
 								responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
 										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId()
-										+"V"+Double.toString(requestinfo.getRequestVersion())+"_deliveredConfig.txt", response);
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+										response);
 							} catch (Exception e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 						}
-					}
-					else
-					{
-						value=false;
-						String response="";
-						String responseDownloadPath="";
+					} else {
+						value = false;
+						String response = "";
+						String responseDownloadPath = "";
 						try {
 							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
-									"Failure");							response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
+									"Failure");
+							response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
 							responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath,requestinfo.getAlphanumericReqId()
-									+"V"+Double.toString(requestinfo.getRequestVersion())+"_deliveredConfig.txt", response);
+							TextReport.writeFile(responseDownloadPath,
+									requestinfo.getAlphanumericReqId() + "V"
+											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+									response);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
-					//call method for back up from vnf utils for current configuration
-				
-					
-					
-				
-				}else if (json.get("requestType").toString().equalsIgnoreCase("SNNC")) {
-					
+					// call method for back up from vnf utils for current configuration
+
+				} else if (json.get("requestType").toString().equalsIgnoreCase("SNNC")
+						|| json.get("requestType").toString().equalsIgnoreCase("SNNM")) {
+
 					// push configuration for Netconf devices String
 					String requestId = requestinfo.getAlphanumericReqId();
 					String responseDownloadPathNetconf = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 							.getProperty("VnfConfigCreationPath");
-					String path = responseDownloadPathNetconf + "/" + requestId
-							+ "_ConfigurationToPush.xml";
+					String path = responseDownloadPathNetconf + "/" + requestId + "_ConfigurationToPush.xml";
 					VNFHelper helper = new VNFHelper();
 					String payload = helper.readConfigurationXML(path);
 					// get file from vnf config requests folder
@@ -1708,24 +1573,18 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					if (result) {
 						value = true;
 
-						String response = invokeFtl
-								.generateDileveryConfigFile(requestinfo);
+						String response = invokeFtl.generateDileveryConfigFile(requestinfo);
 						try {
 							String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 									.getProperty("responseDownloadPath");
-							TextReport
-									.writeFile(
-											responseDownloadPath,
-											requestinfo.getAlphanumericReqId()
-													+ "V"
-													+ Double.toString(requestinfo.getRequestVersion())
-													+ "_deliveredConfig.txt",
-											response);
+							TextReport.writeFile(responseDownloadPath,
+									requestinfo.getAlphanumericReqId() + "V"
+											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+									response);
 
 						} catch (IOException exe) {
 							exe.printStackTrace();
 
-							
 						}
 						requestDao.getRouterConfig(requestinfo, "current");
 
@@ -1741,22 +1600,16 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						String response = "";
 						String responseDownloadPath = "";
 						try {
-							requestInfoDao.editRequestforReportWebserviceInfo(
-									requestinfo.getAlphanumericReqId(), Double
-											.toString(requestinfo.getRequestVersion()),
-									"deliever_config", "2", "Failure");
-							response = invokeFtl
-									.generateDeliveryConfigFileFailure(requestinfo);
+							requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
+									"Failure");
+							response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
 							responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 									.getProperty("responseDownloadPath");
-							TextReport
-									.writeFile(
-											responseDownloadPath,
-											requestinfo.getAlphanumericReqId()
-													+ "V"
-													+ Double.toString(requestinfo.getRequestVersion())
-													+ "_deliveredConfig.txt",
-											response);
+							TextReport.writeFile(responseDownloadPath,
+									requestinfo.getAlphanumericReqId() + "V"
+											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+									response);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
 							// e.printStackTrace();
@@ -1809,17 +1662,26 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				}
 			}
 		}
+		finally {
 
-		/*
-		 * return Response .status(200) .header("Access-Control-Allow-Origin", "*")
-		 * .header("Access-Control-Allow-Headers",
-		 * "origin, content-type, accept, authorization")
-		 * .header("Access-Control-Allow-Credentials", "true")
-		 * .header("Access-Control-Allow-Methods",
-		 * "GET, POST, PUT, DELETE, OPTIONS, HEAD") .header("Access-Control-Max-Age",
-		 * "1209600").entity(obj) .build();
-		 */
-
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				channel.disconnect();
+				session.disconnect();
+			
+			}
+		}
+		
 		return obj;
 
 	}
@@ -1828,11 +1690,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	private boolean BackUp(RequestInfoPojo requestinfo, String user, String password, String stage)
 			throws NumberFormatException, JSchException {
 
-		System.out.println("Inside Backup method for ios upgrade..");
+		logger.info("Inside Backup method for ios upgrade..");
 		boolean isSuccess = false;
 		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
 		String host = requestinfo.getManagementIp();
-		JSch jsch = new JSch();
+		/*JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = jsch.getSession(user, host, Integer.parseInt(port));
 		Properties config = new Properties();
@@ -1843,14 +1705,14 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		try {
 			Thread.sleep(10000);
 		} catch (Exception ee) {
-		}
+		}*/
 		try {
-			channel = session.openChannel("shell");
-			OutputStream ops = channel.getOutputStream();
+			//channel = session.openChannel("shell");
+			//OutputStream ops = channel.getOutputStream();
 
-			PrintStream ps = new PrintStream(ops, true);
-			System.out.println("Channel Connected to machine " + host + " server for backup");
-			channel.connect();
+			//PrintStream ps = new PrintStream(ops, true);
+			//logger.info("Channel Connected to machine " + host + " server for backup");
+			//channel.connect();
 
 			// to save the backup and deliver the configuration(configuration in the router)
 			isSuccess = requestDao.getRouterConfig(requestinfo, stage);
@@ -1984,7 +1846,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 		}
 		if (channel.isClosed()) {
-			System.out.println("exit-status: " + channel.getExitStatus());
+			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
 		try {
@@ -2065,13 +1927,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 	private boolean BackUp(CreateConfigRequest createConfigRequest, String user, String password, String stage)
 			throws NumberFormatException, JSchException {
-		System.out.println("Inside Backup method for ios upgrade");
+		logger.info("Inside Backup method for ios upgrade");
 		BackupCurrentRouterConfigurationService bckupConfigService = new BackupCurrentRouterConfigurationService();
 		boolean isSuccess = false;
 		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
 		ArrayList<String> commandToPush = new ArrayList<String>();
 		String host = createConfigRequest.getManagementIp();
-		JSch jsch = new JSch();
+		/*JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = jsch.getSession(user, host, Integer.parseInt(port));
 		Properties config = new Properties();
@@ -2082,21 +1944,23 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		try {
 			Thread.sleep(10000);
 		} catch (Exception ee) {
-		}
+		}*/
 		try {
-			channel = session.openChannel("shell");
-			OutputStream ops = channel.getOutputStream();
+			//channel = session.openChannel("shell");
+		//	OutputStream ops = channel.getOutputStream();
 
-			PrintStream ps = new PrintStream(ops, true);
-			System.out.println("Channel Connected to machine " + host + " server for backup");
-			channel.connect();
-			InputStream input = channel.getInputStream();
+			//PrintStream ps = new PrintStream(ops, true);
+			//logger.info("Channel Connected to machine " + host + " server for backup");
+			//channel.connect();
+			//InputStream input = channel.getInputStream();
 
 			// to save the backup and deliver the configuration(configuration in the router)
 			isSuccess = bckupConfigService.getRouterConfig(createConfigRequest, stage);
 		} catch (Exception e) {
 
 		}
+		//session.disconnect();
+		//channel.disconnect();
 		return isSuccess;
 	}
 
@@ -2123,13 +1987,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 			PrintStream ps = new PrintStream(ops, true);
-			System.out.println("Channel Connected to machine " + host + " show run to copy boot cmds");
+			logger.info("Channel Connected to machine " + host + " show run to copy boot cmds");
 			channel.connect();
 			InputStream input = channel.getInputStream();
 			ps.println("show run | i boot");
 			try {
 				// change this sleep in case of longer wait
-				Thread.sleep(1000);
+				Thread.sleep(5000);
 			} catch (Exception ee) {
 			}
 			BufferedWriter bw = null;
@@ -2160,6 +2024,22 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				}
 
 			}
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+			}
+				input.close();
+				channel.disconnect();
+				session.disconnect();
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -2169,6 +2049,25 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				channel.disconnect();
+				session.disconnect();
+			
+			}
 		}
 		channel.disconnect();
 		session.disconnect();
@@ -2196,11 +2095,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 			PrintStream ps = new PrintStream(ops, true);
-			System.out.println("Channel Connected to machine " + host + " to pust boot System flash cmd");
+			logger.info("Channel Connected to machine " + host + " to pust boot System flash cmd");
 			channel.connect();
 			InputStream input = channel.getInputStream();
 			for (String arr : cmdToPush) {
-				System.out.println("commands to push " + arr);
+				logger.info("commands to push " + arr);
 				ps.println(arr);
 
 				// printResult(input,
@@ -2209,8 +2108,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			}
 			ps.println("exit");
 
-			System.out.println("Done pushing flash commands on" + host);
+			logger.info("Done pushing flash commands on" + host);
 			isSuccess = checkIdLoadedProperly(user, password, host);
+			input.close();
+			session.disconnect();
+			channel.disconnect();
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -2220,6 +2122,25 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				channel.disconnect();
+				session.disconnect();
+			
+			}
 		}
 		return isSuccess;
 	}
@@ -2247,8 +2168,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			PrintStream ps = new PrintStream(ops, true);
 
 			channel.connect();
-			System.out
-					.println("Channel Connected to machine " + host + " for show run | i boot after pushing new file");
+			logger.info("Channel Connected to machine " + host + " for show run | i boot after pushing new file");
 			InputStream input = channel.getInputStream();
 			ps.println("show run | i boot");
 			try {
@@ -2265,13 +2185,16 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					break;
 				// we will get response from router here
 				String s = new String(tmp, 0, i);
-				System.out.println("router output: " + s);
+				logger.info("router output: " + s);
 				List<String> outList = new ArrayList<String>();
 				String str[] = s.split("\n");
 				outList = Arrays.asList(str);
 				isRes = true;
 			}
-			System.out.println("Input size < 0: ");
+			logger.info("Input size < 0: ");
+			input.close();
+			channel.disconnect();
+			session.disconnect();
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -2281,6 +2204,25 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+				session = channel.getSession();
+				
+				if (channel.getExitStatus() == -1) {
+					
+						Thread.sleep(5000);
+					
+				}
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				channel.disconnect();
+				session.disconnect();
+			
+			}
 		}
 		channel.disconnect();
 		session.disconnect();

@@ -1,7 +1,5 @@
 package com.techm.orion.entitybeans;
 
-import java.util.List;
-
 public class TestStrategeySaveRqst {
 	
 	private String TestName;

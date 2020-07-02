@@ -13,6 +13,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -51,7 +53,7 @@ import com.techm.orion.repositories.TestStrategeBasicConfigurationRepository;
  */
 @RestController
 public class TestStrategyController {
-
+	private static final Logger logger = LogManager.getLogger(TestStrategyController.class);
 	@Autowired
 	public TestDetailsRepository testDetailsRepository;
 
@@ -63,22 +65,21 @@ public class TestStrategyController {
 
 	@Autowired
 	public PredefineTestDetailsRepository predefineTestDetailsRepository;
-	
+
 	@Autowired
 	public TestStrategeBasicConfigurationRepository testStrategeBasicConfigurationRepository;
 
 	@Autowired
 	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
-	
+
 	@Autowired
 	public DeviceDiscoveryRepository deviceDiscoveryRepository;
-	
+
 	@GET
 	@RequestMapping(value = "/testfeatureList", method = RequestMethod.GET, produces = "application/json")
 	public Response getOsversions() {
 
-		return Response.status(200).entity(testFeatureListRepository.findAll())
-				.build();
+		return Response.status(200).entity(testFeatureListRepository.findAll()).build();
 
 	}
 
@@ -96,7 +97,8 @@ public class TestStrategyController {
 		HashSet testNameList = new HashSet();
 		String response = null;
 
-		String deviceType = null, deviceModel = null, vendor = null, os = null, osVersion = null, region = null;
+		String deviceType = null, deviceModel = null, vendor = null, os = null, osVersion = null, region = null,
+				networkType = null;
 		JSONParser parser = new JSONParser();
 		JSONObject json;
 		List<String> featuresFromUI = new ArrayList<String>();
@@ -131,12 +133,14 @@ public class TestStrategyController {
 				region = json.get("region").toString();
 			}
 
+			if (json.containsKey("networkType")) {
+				networkType = json.get("networkType").toString();
+			}
 			String version = null;
 			String testName = null;
 			testDetailsList = testDetailsRepository
-					.findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContaining(
-							deviceType, deviceModel, os, osVersion, vendor,
-							region);
+					.findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(
+							deviceType, deviceModel, os, osVersion, vendor, region, networkType);
 
 			for (int i = 0; i < testDetailsList.size(); i++) {
 
@@ -149,24 +153,20 @@ public class TestStrategyController {
 				testName = itrator.next();
 				testDetailsListAllVersion = testDetailsRepository
 						.findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(
-								deviceType, deviceModel, os, osVersion, vendor,
-								region, testName);
+								deviceType, deviceModel, os, osVersion, vendor, region, testName);
 
 				for (int i = 0; i < testDetailsListAllVersion.size(); i++) {
 
-					if (testName.equals(testDetailsListAllVersion.get(i)
-							.getTestName())) {
+					if (testName.equals(testDetailsListAllVersion.get(i).getTestName())) {
 						version = testDetailsListAllVersion.get(i).getVersion();
 					}
 				}
 
 				testDetailsListLatestVersion = testDetailsRepository
 						.findByDeviceTypeAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
-								deviceType, deviceModel, os, osVersion, vendor,
-								region, version, testName);
+								deviceType, deviceModel, os, osVersion, vendor, region, version, testName);
 
-				if (null != testDetailsListLatestVersion
-						|| !testDetailsListLatestVersion.isEmpty()) {
+				if (null != testDetailsListLatestVersion || !testDetailsListLatestVersion.isEmpty()) {
 
 					int n = testDetailsListLatestVersion.size();
 
@@ -180,17 +180,15 @@ public class TestStrategyController {
 
 					if (featuresFromUI != null && featuresFromUI.size() > 0) {
 						for (int i = 0; i < aList.size(); i++) {
-							List<TestFeatureList> dbFeatures = testFeatureListRepository
-									.findByTestDetail(aList.get(i));
+							List<TestFeatureList> dbFeatures = testFeatureListRepository.findByTestDetail(aList.get(i));
 
 							for (int j = 0; j < dbFeatures.size(); j++) {
-								if (featuresFromUI.contains(dbFeatures.get(j)
-										.getTestFeature())) {
+								if (featuresFromUI.contains(dbFeatures.get(j).getTestFeature())) {
 									aList.get(i).setSelected(true);
 									aList.get(i).setDisabled(false);
 								}
 							}
-							System.out.println("");
+							logger.info("");
 						}
 					} else {
 						for (int i = 0; i < aList.size(); i++) {
@@ -198,7 +196,7 @@ public class TestStrategyController {
 							aList.get(i).setSelected(false);
 							aList.get(i).setDisabled(false);
 
-							System.out.println("");
+							logger.info("");
 						}
 					}
 
@@ -243,15 +241,13 @@ public class TestStrategyController {
 
 		TestDetail detail = null;
 		boolean ischeck = false;
-		settestDetails = testDetailsRepository.findByTestIdAndVersion(testid,
-				version);
+		settestDetails = testDetailsRepository.findByTestIdAndVersion(testid, version);
 		testdetaillist.addAll(settestDetails);
 		if (null != settestDetails && !settestDetails.isEmpty()) {
 
 			detail = testdetaillist.get(0);
 
-			testruleslist = testRulesRepository.findByTestDetail(testdetaillist
-					.get(0));
+			testruleslist = testRulesRepository.findByTestDetail(testdetaillist.get(0));
 
 			for (int i = 0; i < testruleslist.size(); i++) {
 
@@ -305,8 +301,7 @@ public class TestStrategyController {
 				}
 			}
 
-			testfeaturelist = testFeatureListRepository
-					.findByTestDetail(testdetaillist.get(0));
+			testfeaturelist = testFeatureListRepository.findByTestDetail(testdetaillist.get(0));
 			detail.setListFeatures(testfeaturelist);
 			detail.setText_attributes(testruleslisttextfinal);
 			detail.setTable_attributes(testruleslisttablefinal);
@@ -320,8 +315,7 @@ public class TestStrategyController {
 		if (ischeck) {
 			return Response.status(200).entity(detail).build();
 		} else {
-			return Response.status(200)
-					.entity("Unable to fetch data for the test.").build();
+			return Response.status(200).entity("Unable to fetch data for the test.").build();
 
 		}
 
@@ -335,15 +329,13 @@ public class TestStrategyController {
 
 		/* testDetaillist = testDetailsRepository */
 
-		return Response.status(200).entity(testDetailsRepository.findAll())
-				.build();
+		return Response.status(200).entity(testDetailsRepository.findAll()).build();
 
 	}
 
 	@POST
 	@RequestMapping(value = "/savetestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response saveBasicConfiguration(
-			@RequestBody String teststrategesaveRqst)
+	public Response saveBasicConfiguration(@RequestBody String teststrategesaveRqst)
 			throws MySQLIntegrityConstraintViolationException {
 
 		String str = "";
@@ -367,8 +359,7 @@ public class TestStrategyController {
 				testDetail.setTestType(json.get("testType").toString());
 			}
 			if (json.containsKey("connectionProtocol")) {
-				testDetail.setTestConnectionProtocol(json.get(
-						"connectionProtocol").toString());
+				testDetail.setTestConnectionProtocol(json.get("connectionProtocol").toString());
 			}
 			if (json.containsKey("command")) {
 				testDetail.setTestCommand(json.get("command").toString());
@@ -392,8 +383,10 @@ public class TestStrategyController {
 			if (json.containsKey("region")) {
 				testDetail.setRegion(json.get("region").toString());
 			}
-			String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
-					.format(new Date());
+			if (json.containsKey("networkType")) {
+				testDetail.setNetworkType(json.get("networkType").toString());
+			}
+			String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
 			testDetail.setCreatedOn(timeStamp);
 			testDetail.setCreatedBy("admin");
 			if (json.containsKey("Comment")) {
@@ -414,8 +407,7 @@ public class TestStrategyController {
 				}
 			}
 
-			Set<TestFeatureList> setFeatureList = new HashSet<TestFeatureList>(
-					list);
+			Set<TestFeatureList> setFeatureList = new HashSet<TestFeatureList>(list);
 			testDetail.setTestfeaturelist(setFeatureList);
 
 			List<TestRules> rulelst = new ArrayList<TestRules>();
@@ -430,40 +422,32 @@ public class TestStrategyController {
 					rule.setDataType("Text");
 
 					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel")
-								.toString());
+						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 					}
 					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText")
-								.toString());
+						rule.setBeforeText(attribobj.get("beforeText").toString());
 
 					}
 					if (attribobj.containsKey("afterText")) {
 						rule.setAfterText(attribobj.get("afterText").toString());
 					}
 					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars")
-								.toString());
+						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
 					}
 					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn")
-								.toString());
+						rule.setFromColumn(attribobj.get("fromColumn").toString());
 					}
 					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj
-								.get("referenceColumn").toString());
+						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
 					}
 					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword")
-								.toString());
+						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
 					}
 					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName")
-								.toString());
+						rule.setSectionName(attribobj.get("sectionName").toString());
 					}
 					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation")
-								.toString());
+						rule.setEvaluation(attribobj.get("evaluation").toString());
 					}
 					if (attribobj.containsKey("operator")) {
 						rule.setOperator(attribobj.get("operator").toString());
@@ -481,8 +465,7 @@ public class TestStrategyController {
 			}
 
 			if (json.containsKey("table_attributes")) {
-				JSONArray attribarray = (JSONArray) json
-						.get("table_attributes");
+				JSONArray attribarray = (JSONArray) json.get("table_attributes");
 				for (int i = 0; i < attribarray.size(); i++) {
 					TestRules rule = new TestRules();
 					JSONObject attribobj = (JSONObject) attribarray.get(i);
@@ -490,40 +473,32 @@ public class TestStrategyController {
 					rule.setDataType("Table");
 
 					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel")
-								.toString());
+						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 					}
 					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText")
-								.toString());
+						rule.setBeforeText(attribobj.get("beforeText").toString());
 
 					}
 					if (attribobj.containsKey("afterText")) {
 						rule.setAfterText(attribobj.get("afterText").toString());
 					}
 					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars")
-								.toString());
+						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
 					}
 					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn")
-								.toString());
+						rule.setFromColumn(attribobj.get("fromColumn").toString());
 					}
 					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj
-								.get("referenceColumn").toString());
+						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
 					}
 					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword")
-								.toString());
+						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
 					}
 					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName")
-								.toString());
+						rule.setSectionName(attribobj.get("sectionName").toString());
 					}
 					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation")
-								.toString());
+						rule.setEvaluation(attribobj.get("evaluation").toString());
 					}
 					if (attribobj.containsKey("operator")) {
 						rule.setOperator(attribobj.get("operator").toString());
@@ -541,8 +516,7 @@ public class TestStrategyController {
 			}
 
 			if (json.containsKey("section_attributes")) {
-				JSONArray attribarray = (JSONArray) json
-						.get("section_attributes");
+				JSONArray attribarray = (JSONArray) json.get("section_attributes");
 				for (int i = 0; i < attribarray.size(); i++) {
 					TestRules rule = new TestRules();
 					JSONObject attribobj = (JSONObject) attribarray.get(i);
@@ -550,40 +524,32 @@ public class TestStrategyController {
 					rule.setDataType("Section");
 
 					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel")
-								.toString());
+						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 					}
 					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText")
-								.toString());
+						rule.setBeforeText(attribobj.get("beforeText").toString());
 
 					}
 					if (attribobj.containsKey("afterText")) {
 						rule.setAfterText(attribobj.get("afterText").toString());
 					}
 					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars")
-								.toString());
+						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
 					}
 					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn")
-								.toString());
+						rule.setFromColumn(attribobj.get("fromColumn").toString());
 					}
 					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj
-								.get("referenceColumn").toString());
+						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
 					}
 					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword")
-								.toString());
+						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
 					}
 					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName")
-								.toString());
+						rule.setSectionName(attribobj.get("sectionName").toString());
 					}
 					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation")
-								.toString());
+						rule.setEvaluation(attribobj.get("evaluation").toString());
 					}
 					if (attribobj.containsKey("operator")) {
 						rule.setOperator(attribobj.get("operator").toString());
@@ -601,8 +567,7 @@ public class TestStrategyController {
 
 			if (json.containsKey("snippet_attributes")) {
 
-				JSONArray attribarray = (JSONArray) json
-						.get("snippet_attributes");
+				JSONArray attribarray = (JSONArray) json.get("snippet_attributes");
 				for (int i = 0; i < attribarray.size(); i++) {
 					TestRules rule = new TestRules();
 					JSONObject attribobj = (JSONObject) attribarray.get(i);
@@ -610,13 +575,11 @@ public class TestStrategyController {
 					rule.setDataType("Snippet");
 
 					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel")
-								.toString());
+						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 					}
 
 					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation")
-								.toString());
+						rule.setEvaluation(attribobj.get("evaluation").toString());
 					}
 
 					if (attribobj.containsKey("snippet")) {
@@ -631,8 +594,7 @@ public class TestStrategyController {
 
 			if (json.containsKey("keyword_attributes")) {
 
-				JSONArray attribarray = (JSONArray) json
-						.get("keyword_attributes");
+				JSONArray attribarray = (JSONArray) json.get("keyword_attributes");
 				for (int i = 0; i < attribarray.size(); i++) {
 					TestRules rule = new TestRules();
 					JSONObject attribobj = (JSONObject) attribarray.get(i);
@@ -640,13 +602,11 @@ public class TestStrategyController {
 					rule.setDataType("Keyword");
 
 					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel")
-								.toString());
+						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 					}
 
 					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation")
-								.toString());
+						rule.setEvaluation(attribobj.get("evaluation").toString());
 					}
 
 					if (attribobj.containsKey("keyword")) {
@@ -665,38 +625,33 @@ public class TestStrategyController {
 			List testNameCheck = new ArrayList<>();
 			testDetail.setTestrules(setrules);
 			try {
-				savetest1=testDetailsRepository.findAll();
-				
-				if(!(savetest1.isEmpty()))
-				{
-				for(int i=0; i<savetest1.size();i++)
-				{
-				String testName = savetest1.get(i).getTestName();
-				testNameCheck.add(testName);
+				savetest1 = testDetailsRepository.findAll();
+
+				if (!(savetest1.isEmpty())) {
+					for (int i = 0; i < savetest1.size(); i++) {
+						String testName = savetest1.get(i).getTestName();
+						testNameCheck.add(testName);
+					}
 				}
+				if (!(testNameCheck.contains(testDetail.getTestName()))) {
+
+					savetest = testDetailsRepository.save(testDetail);
+					str = "Test saved successfully";
+				} else {
+					str = "Test is Duplicate";
 				}
-			if(!(testNameCheck.contains(testDetail.getTestName())))
-			{
-				
-				savetest = testDetailsRepository.save(testDetail);
-				str = "Test saved successfully";
-			}else
-			{
-				str = "Test is Duplicate";
-			}
-				
+
 			} catch (DataIntegrityViolationException e) {
 				// TODO Auto-generated catch block
 				return Response.status(409).entity("Test is Duplicate").build();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				return Response.status(422).entity("Could not save service")
-						.build();
+				return Response.status(422).entity("Could not save service").build();
 			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println(e);
+			logger.error(e);
 		}
 		return Response.status(200).entity(str).build();
 	}
@@ -730,8 +685,7 @@ public class TestStrategyController {
 
 	@POST
 	@RequestMapping(value = "/edittestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response editBasicConfiguration(
-			@RequestBody String teststrategeeditRqst)
+	public Response editBasicConfiguration(@RequestBody String teststrategeeditRqst)
 			throws MySQLIntegrityConstraintViolationException {
 		RequestInfoDao dao = new RequestInfoDao();
 		String str = "";
@@ -755,8 +709,7 @@ public class TestStrategyController {
 				testDetail.setTestType(json.get("testType").toString());
 			}
 			if (json.containsKey("connectionProtocol")) {
-				testDetail.setTestConnectionProtocol(json.get(
-						"connectionProtocol").toString());
+				testDetail.setTestConnectionProtocol(json.get("connectionProtocol").toString());
 			}
 			if (json.containsKey("command")) {
 				testDetail.setTestCommand(json.get("command").toString());
@@ -771,6 +724,9 @@ public class TestStrategyController {
 			if (json.containsKey("model")) {
 				testDetail.setDeviceModel(json.get("model").toString());
 			}
+			if (json.containsKey("networkType")) {
+				testDetail.setNetworkType(json.get("networkType").toString());
+			}
 			if (json.containsKey("os")) {
 				testDetail.setOs(json.get("os").toString());
 			}
@@ -780,8 +736,7 @@ public class TestStrategyController {
 			if (json.containsKey("region")) {
 				testDetail.setRegion(json.get("region").toString());
 			}
-			String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss")
-					.format(new Date());
+			String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
 			testDetail.setCreatedOn(timeStamp);
 			testDetail.setCreatedBy("admin");
 
@@ -800,8 +755,7 @@ public class TestStrategyController {
 				}
 			}
 
-			Set<TestFeatureList> setFeatureList = new HashSet<TestFeatureList>(
-					list);
+			Set<TestFeatureList> setFeatureList = new HashSet<TestFeatureList>(list);
 			testDetail.setTestfeaturelist(setFeatureList);
 
 			List<TestRules> rulelst = new ArrayList<TestRules>();
@@ -816,40 +770,32 @@ public class TestStrategyController {
 					rule.setDataType("Text");
 
 					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel")
-								.toString());
+						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 					}
 					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText")
-								.toString());
+						rule.setBeforeText(attribobj.get("beforeText").toString());
 
 					}
 					if (attribobj.containsKey("afterText")) {
 						rule.setAfterText(attribobj.get("afterText").toString());
 					}
 					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars")
-								.toString());
+						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
 					}
 					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn")
-								.toString());
+						rule.setFromColumn(attribobj.get("fromColumn").toString());
 					}
 					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj
-								.get("referenceColumn").toString());
+						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
 					}
 					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword")
-								.toString());
+						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
 					}
 					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName")
-								.toString());
+						rule.setSectionName(attribobj.get("sectionName").toString());
 					}
 					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation")
-								.toString());
+						rule.setEvaluation(attribobj.get("evaluation").toString());
 					}
 					if (attribobj.containsKey("operator")) {
 						rule.setOperator(attribobj.get("operator").toString());
@@ -869,8 +815,7 @@ public class TestStrategyController {
 			}
 
 			if (json.containsKey("table_attributes")) {
-				JSONArray attribarray = (JSONArray) json
-						.get("table_attributes");
+				JSONArray attribarray = (JSONArray) json.get("table_attributes");
 				for (int i = 0; i < attribarray.size(); i++) {
 					TestRules rule = new TestRules();
 					JSONObject attribobj = (JSONObject) attribarray.get(i);
@@ -878,40 +823,32 @@ public class TestStrategyController {
 					rule.setDataType("Table");
 
 					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel")
-								.toString());
+						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 					}
 					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText")
-								.toString());
+						rule.setBeforeText(attribobj.get("beforeText").toString());
 
 					}
 					if (attribobj.containsKey("afterText")) {
 						rule.setAfterText(attribobj.get("afterText").toString());
 					}
 					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars")
-								.toString());
+						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
 					}
 					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn")
-								.toString());
+						rule.setFromColumn(attribobj.get("fromColumn").toString());
 					}
 					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj
-								.get("referenceColumn").toString());
+						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
 					}
 					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword")
-								.toString());
+						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
 					}
 					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName")
-								.toString());
+						rule.setSectionName(attribobj.get("sectionName").toString());
 					}
 					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation")
-								.toString());
+						rule.setEvaluation(attribobj.get("evaluation").toString());
 					}
 					if (attribobj.containsKey("operator")) {
 						rule.setOperator(attribobj.get("operator").toString());
@@ -930,8 +867,7 @@ public class TestStrategyController {
 			}
 
 			if (json.containsKey("section_attributes")) {
-				JSONArray attribarray = (JSONArray) json
-						.get("section_attributes");
+				JSONArray attribarray = (JSONArray) json.get("section_attributes");
 				for (int i = 0; i < attribarray.size(); i++) {
 					TestRules rule = new TestRules();
 					JSONObject attribobj = (JSONObject) attribarray.get(i);
@@ -939,40 +875,32 @@ public class TestStrategyController {
 					rule.setDataType("Section");
 
 					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel")
-								.toString());
+						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 					}
 					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText")
-								.toString());
+						rule.setBeforeText(attribobj.get("beforeText").toString());
 
 					}
 					if (attribobj.containsKey("afterText")) {
 						rule.setAfterText(attribobj.get("afterText").toString());
 					}
 					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars")
-								.toString());
+						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
 					}
 					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn")
-								.toString());
+						rule.setFromColumn(attribobj.get("fromColumn").toString());
 					}
 					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj
-								.get("referenceColumn").toString());
+						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
 					}
 					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword")
-								.toString());
+						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
 					}
 					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName")
-								.toString());
+						rule.setSectionName(attribobj.get("sectionName").toString());
 					}
 					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation")
-								.toString());
+						rule.setEvaluation(attribobj.get("evaluation").toString());
 					}
 					if (attribobj.containsKey("operator")) {
 						rule.setOperator(attribobj.get("operator").toString());
@@ -990,8 +918,7 @@ public class TestStrategyController {
 			}
 			if (json.containsKey("snippet_attributes")) {
 
-				JSONArray attribarray = (JSONArray) json
-						.get("snippet_attributes");
+				JSONArray attribarray = (JSONArray) json.get("snippet_attributes");
 				for (int i = 0; i < attribarray.size(); i++) {
 					TestRules rule = new TestRules();
 					JSONObject attribobj = (JSONObject) attribarray.get(i);
@@ -999,13 +926,11 @@ public class TestStrategyController {
 					rule.setDataType("Snippet");
 
 					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel")
-								.toString());
+						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 					}
 
 					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation")
-								.toString());
+						rule.setEvaluation(attribobj.get("evaluation").toString());
 					}
 
 					if (attribobj.containsKey("snippet")) {
@@ -1020,8 +945,7 @@ public class TestStrategyController {
 
 			if (json.containsKey("keyword_attributes")) {
 
-				JSONArray attribarray = (JSONArray) json
-						.get("keyword_attributes");
+				JSONArray attribarray = (JSONArray) json.get("keyword_attributes");
 				for (int i = 0; i < attribarray.size(); i++) {
 					TestRules rule = new TestRules();
 					JSONObject attribobj = (JSONObject) attribarray.get(i);
@@ -1029,13 +953,11 @@ public class TestStrategyController {
 					rule.setDataType("Keyword");
 
 					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel")
-								.toString());
+						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 					}
 
 					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation")
-								.toString());
+						rule.setEvaluation(attribobj.get("evaluation").toString());
 					}
 
 					if (attribobj.containsKey("keyword")) {
@@ -1049,8 +971,7 @@ public class TestStrategyController {
 			}
 
 			String testName = json.get("testName").toString();
-			List testNameForVersion = testDetailsRepository
-					.findByTestName(testName);
+			List testNameForVersion = testDetailsRepository.findByTestName(testName);
 
 			for (int l = 0; l < testNameForVersion.size(); l++) {
 				boolean is_enabled = false;
@@ -1074,13 +995,12 @@ public class TestStrategyController {
 				return Response.status(409).entity("Test is Duplicate").build();
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
-				return Response.status(422).entity("Could not edit test")
-						.build();
+				return Response.status(422).entity("Could not edit test").build();
 			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			System.out.println(e);
+			logger.error(e);
 		}
 		return Response.status(200).entity(str).build();
 	}
@@ -1128,8 +1048,7 @@ public class TestStrategyController {
 		for (int i = 0; i < mainList.size(); i++) {
 			if ((modelList.size() == 0)) {
 				model = new TestStrategeyVersioningJsonModel();
-				String[] testNameToSetArr = mainList.get(i).getTestName()
-						.split("_");
+				String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
 
 				model.setTestName(testNameToSetArr[0]);
 				model.setVersion(mainList.get(i).getVersion());
@@ -1144,6 +1063,7 @@ public class TestStrategyController {
 				model.setCreatedOn(mainList.get(i).getCreatedOn());
 				model.setCreatedBy(mainList.get(i).getCreatedBy());
 				model.setComment(mainList.get(i).getComment());
+				model.setNetworkType(mainList.get(i).getNetworkType());
 
 				TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
 				List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
@@ -1167,6 +1087,7 @@ public class TestStrategyController {
 				child.setCreatedOn(mainList.get(i).getCreatedOn());
 				child.setCreatedBy(mainList.get(i).getCreatedBy());
 				child.setComment(mainList.get(i).getComment());
+				child.setNetworkType(mainList.get(i).getNetworkType());
 
 				childList.add(child);
 				model.setChildList(childList);
@@ -1175,13 +1096,11 @@ public class TestStrategyController {
 
 				boolean flag = false;
 				for (int j = 0; j < modelList.size(); j++) {
-					String[] arrOfStrMain = mainList.get(i).getTestName()
-							.split("_");
+					String[] arrOfStrMain = mainList.get(i).getTestName().split("_");
 					// String[] arrOfStrModel =
 					// modelList.get(j).getTest_name().split("_");
 
-					if (arrOfStrMain[0].equalsIgnoreCase(modelList.get(j)
-							.getTestName())) {
+					if (arrOfStrMain[0].equalsIgnoreCase(modelList.get(j).getTestName())) {
 						flag = true;
 						List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
 						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
@@ -1206,37 +1125,32 @@ public class TestStrategyController {
 						child.setCreatedOn(mainList.get(i).getCreatedOn());
 						child.setCreatedBy(mainList.get(i).getCreatedBy());
 						child.setComment(mainList.get(i).getComment());
+						child.setNetworkType(mainList.get(i).getNetworkType());
 
 						childList = modelList.get(j).getChildList();
 						if (childList.size() == 0) {
 							childList.add(child);
 						} else {
 							boolean found = false;
-						
+
 							for (int k = 0; k < childList.size(); k++) {
-								if (childList
-										.get(k)
-										.getTestName()
-										.equalsIgnoreCase(
-												arrOfStrMain[testNameSize1 - 1])) {
+								if (childList.get(k).getTestName().equalsIgnoreCase(arrOfStrMain[testNameSize1 - 1])) {
 									found = true;
 								}
 							}
-							
-						
+
 							if (!found) {
 								childList.add(child);
 							}
 						}
 
 						modelList.get(j).setChildList(childList);
-						
+
 					}
 				}
 				if (flag == false) {
 					model = new TestStrategeyVersioningJsonModel();
-					String[] testNameToSetArr = mainList.get(i).getTestName()
-							.split("_");
+					String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
 
 					model.setTestName(testNameToSetArr[0]);
 					model.setVersion(mainList.get(i).getVersion());
@@ -1251,7 +1165,7 @@ public class TestStrategyController {
 					model.setCreatedOn(mainList.get(i).getCreatedOn());
 					model.setCreatedBy(mainList.get(i).getCreatedBy());
 					model.setComment(mainList.get(i).getComment());
-
+					model.setNetworkType(mainList.get(i).getNetworkType());
 					TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
 					List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
 
@@ -1274,6 +1188,7 @@ public class TestStrategyController {
 					child.setCreatedOn(mainList.get(i).getCreatedOn());
 					child.setCreatedBy(mainList.get(i).getCreatedBy());
 					child.setComment(mainList.get(i).getComment());
+					child.setNetworkType(mainList.get(i).getNetworkType());
 
 					childList.add(child);
 					model.setChildList(childList);
@@ -1288,27 +1203,21 @@ public class TestStrategyController {
 
 		// //This loop will iterate over all the children
 		for (int i = 0; i < mainList.size(); i++) {
-			
-			String[] testNameToSetArr = mainList.get(i).getTestName()
-					.split("_");
-			String testNameMain =testNameToSetArr[0]+testNameToSetArr[2];
-			String testNameToSet = testNameToSetArr[1]+"_"+testNameToSetArr[2];
-			
-			//mainList1 =dao.findByTestName(testNameUsed);
+
+			String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
+			String testNameMain = testNameToSetArr[0] + testNameToSetArr[2];
+			String testNameToSet = testNameToSetArr[1] + "_" + testNameToSetArr[2];
+
+			// mainList1 =dao.findByTestName(testNameUsed);
 
 			for (int j = 0; j < modelList.size(); j++) {
 				List<TestStrategeyVersioningJsonModel> childListToIterate = new ArrayList<TestStrategeyVersioningJsonModel>();
 				childListToIterate = modelList.get(j).getChildList();
-				String[] testNameToSetArr1 = modelList.get(j).getFullTestName()
-						.split("_");
-				String testNameChild =testNameToSetArr1[0]+testNameToSetArr1[2];
-				
+				String[] testNameToSetArr1 = modelList.get(j).getFullTestName().split("_");
+				String testNameChild = testNameToSetArr1[0] + testNameToSetArr1[2];
+
 				for (int k = 0; k < childListToIterate.size(); k++) {
-					if (mainList
-							.get(i)
-							.getTestName()
-							.equalsIgnoreCase(
-									childListToIterate.get(k).getFullTestName())) {
+					if (mainList.get(i).getTestName().equalsIgnoreCase(childListToIterate.get(k).getFullTestName())) {
 						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
 						child.setTestName(mainList.get(i).getVersion());
 						child.setTestName(testNameToSet);
@@ -1324,17 +1233,16 @@ public class TestStrategyController {
 						child.setCreatedOn(mainList.get(i).getCreatedOn());
 						child.setCreatedBy(mainList.get(i).getCreatedBy());
 						child.setComment(mainList.get(i).getComment());
+						child.setNetworkType(mainList.get(i).getNetworkType());
 
 						Boolean flag = mainList.get(i).isEnabled();
 						child.setEnabled(flag);
 
-						List<TestStrategeyVersioningJsonModel> childList = childListToIterate
-								.get(k).getChildList();
+						List<TestStrategeyVersioningJsonModel> childList = childListToIterate.get(k).getChildList();
 						childList.add(child);
 						break;
 
-					}else if(testNameMain.equals(testNameChild))
-					{
+					} else if (testNameMain.equals(testNameChild)) {
 
 						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
 						child.setTestName(mainList.get(i).getVersion());
@@ -1351,39 +1259,32 @@ public class TestStrategyController {
 						child.setCreatedOn(mainList.get(i).getCreatedOn());
 						child.setCreatedBy(mainList.get(i).getCreatedBy());
 						child.setComment(mainList.get(i).getComment());
+						child.setNetworkType(mainList.get(i).getNetworkType());
 
 						Boolean flag = mainList.get(i).isEnabled();
 						child.setEnabled(flag);
 
-						List<TestStrategeyVersioningJsonModel> childList = childListToIterate
-								.get(k).getChildList();
+						List<TestStrategeyVersioningJsonModel> childList = childListToIterate.get(k).getChildList();
 						childList.add(child);
 
-					
 					}
-					
-					}
+
+				}
 			}
 
 		}
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(modelList)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(modelList).build();
 
 	}
 
 	@SuppressWarnings({ "null", "unchecked" })
 	@POST
 	@RequestMapping(value = "/getTestnamesAndVersionList", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response getTestnamesAndVersionList(@RequestBody String request)
-			throws ParseException {
+	public Response getTestnamesAndVersionList(@RequestBody String request) throws ParseException {
 
 		JSONObject obj = new JSONObject();
 
@@ -1413,17 +1314,13 @@ public class TestStrategyController {
 
 		for (int i = 0; i < mainList.size(); i++) {
 			JSONObject arrayElementOneArrayElementTwo = new JSONObject();
-			String[] testNameToSetArr = mainList.get(i).getTestName()
-					.split("_");
+			String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
 
 			obj.put("combination", testNameToSetArr[0]);
-			
-			if(testNameToSetArr.length>=3)
-			{
-			isCheck = testNameToSetArr[1]+"_"+testNameToSetArr[2];
-			}
-			else
-			{
+
+			if (testNameToSetArr.length >= 3) {
+				isCheck = testNameToSetArr[1] + "_" + testNameToSetArr[2];
+			} else {
 				isCheck = testNameToSetArr[1];
 			}
 			if (isCheck.equals(secondCheck) || isCheck == null) {
@@ -1438,8 +1335,7 @@ public class TestStrategyController {
 				array = new JSONArray();
 				arrayElementOneArrayElementOne.put("TestName", isCheck);
 
-				mainList2 = dao.findByTestName(testNameUsed.concat("_"
-						+ isCheck));
+				mainList2 = dao.findByTestName(testNameUsed.concat("_" + isCheck));
 				for (int i1 = 0; i1 < mainList2.size(); i1++) {
 					array.add(mainList2.get(i1).getVersion());
 				}
@@ -1450,8 +1346,8 @@ public class TestStrategyController {
 			} else {
 				array = new JSONArray();
 				arrayElementOneArrayElementTwo.put("TestName", isCheck);
-				
-				mainList1 = dao.findByTestName(testNameUsed.concat("_")+isCheck);
+
+				mainList1 = dao.findByTestName(testNameUsed.concat("_") + isCheck);
 				for (int i1 = 0; i1 < mainList1.size(); i1++) {
 					array.add(mainList1.get(i1).getVersion());
 				}
@@ -1462,33 +1358,26 @@ public class TestStrategyController {
 				arrayElementOneArray.add(arrayElementOneArrayElementTwo);
 			}
 
-		
 		}
 		obj.put("testNameList", arrayElementOneArray);
 
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
 
 	@SuppressWarnings({ "null", "unchecked" })
 	@POST
 	@RequestMapping(value = "/getSearchTestList", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response getSearchTestList(@RequestBody String request)
-			throws ParseException {
+	public Response getSearchTestList(@RequestBody String request) throws ParseException {
 
 		JSONObject obj = new JSONObject();
 
-		String key = "", value="";
-	
+		String key = "", value = "";
+
 		JSONParser parser = new JSONParser();
 
 		JSONObject json = (JSONObject) parser.parse(request);
@@ -1499,52 +1388,33 @@ public class TestStrategyController {
 		RequestInfoDao dao = new RequestInfoDao();
 
 		List<TestDetail> mainList = new ArrayList<TestDetail>();
-		
 
 		if (value != null && !value.isEmpty()) {
 			/*
-			 * Search request based on Region, Vendor, Status, Model, Import
-			 * Id and Management IP
+			 * Search request based on Region, Vendor, Status, Model, Import Id and
+			 * Management IP
 			 */
 			if (key.equalsIgnoreCase("Device Type")) {
 				mainList = testDetailsRepository.findByDeviceType(value);
 
-			
-
 			} else if (key.equalsIgnoreCase("Vendor")) {
 				mainList = testDetailsRepository.findByVendor(value);
 
-				
-
-			}  else if (key.equalsIgnoreCase("Model")) {
+			} else if (key.equalsIgnoreCase("Model")) {
 				mainList = testDetailsRepository.findByDeviceModel(value);
 
-				
+			} else if (key.equalsIgnoreCase("OS")) {
+				mainList = testDetailsRepository.findByOs(value);
 
-			}  else if (key.equalsIgnoreCase("OS")) {
-				mainList = testDetailsRepository
-						.findByOs(value);
-
-				
-
-			}else if (key.equalsIgnoreCase("Test Name")) {
+			} else if (key.equalsIgnoreCase("Test Name")) {
 				mainList = dao.findByTestNameForSearch(value);
-				
-				
-				
+
+			} else if (key.equalsIgnoreCase("OS Version")) {
+				mainList = testDetailsRepository.findByOsVersion(value);
 
 			}
-			 else if (key.equalsIgnoreCase("OS Version")) {
-					mainList = testDetailsRepository
-							.findByOsVersion(value);
-
-					
-
-				}
 
 		}
-		
-		
 
 		int testNameSize = 0, testNameSize1 = 0;
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
@@ -1554,8 +1424,7 @@ public class TestStrategyController {
 		for (int i = 0; i < mainList.size(); i++) {
 			if ((modelList.size() == 0)) {
 				model = new TestStrategeyVersioningJsonModel();
-				String[] testNameToSetArr = mainList.get(i).getTestName()
-						.split("_");
+				String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
 
 				model.setTestName(testNameToSetArr[0]);
 				model.setVersion(mainList.get(i).getVersion());
@@ -1570,6 +1439,7 @@ public class TestStrategyController {
 				model.setCreatedOn(mainList.get(i).getCreatedOn());
 				model.setCreatedBy(mainList.get(i).getCreatedBy());
 				model.setComment(mainList.get(i).getComment());
+				model.setNetworkType(mainList.get(i).getNetworkType());
 
 				TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
 				List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
@@ -1593,6 +1463,7 @@ public class TestStrategyController {
 				child.setCreatedOn(mainList.get(i).getCreatedOn());
 				child.setCreatedBy(mainList.get(i).getCreatedBy());
 				child.setComment(mainList.get(i).getComment());
+				child.setNetworkType(mainList.get(i).getNetworkType());
 
 				childList.add(child);
 				model.setChildList(childList);
@@ -1601,13 +1472,11 @@ public class TestStrategyController {
 
 				boolean flag = false;
 				for (int j = 0; j < modelList.size(); j++) {
-					String[] arrOfStrMain = mainList.get(i).getTestName()
-							.split("_");
+					String[] arrOfStrMain = mainList.get(i).getTestName().split("_");
 					// String[] arrOfStrModel =
 					// modelList.get(j).getTest_name().split("_");
 
-					if (arrOfStrMain[0].equalsIgnoreCase(modelList.get(j)
-							.getTestName())) {
+					if (arrOfStrMain[0].equalsIgnoreCase(modelList.get(j).getTestName())) {
 						flag = true;
 						List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
 						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
@@ -1632,37 +1501,32 @@ public class TestStrategyController {
 						child.setCreatedOn(mainList.get(i).getCreatedOn());
 						child.setCreatedBy(mainList.get(i).getCreatedBy());
 						child.setComment(mainList.get(i).getComment());
+						child.setNetworkType(mainList.get(i).getNetworkType());
 
 						childList = modelList.get(j).getChildList();
 						if (childList.size() == 0) {
 							childList.add(child);
 						} else {
 							boolean found = false;
-						
+
 							for (int k = 0; k < childList.size(); k++) {
-								if (childList
-										.get(k)
-										.getTestName()
-										.equalsIgnoreCase(
-												arrOfStrMain[testNameSize1 - 1])) {
+								if (childList.get(k).getTestName().equalsIgnoreCase(arrOfStrMain[testNameSize1 - 1])) {
 									found = true;
 								}
 							}
-							
-						
+
 							if (!found) {
 								childList.add(child);
 							}
 						}
 
 						modelList.get(j).setChildList(childList);
-						
+
 					}
 				}
 				if (flag == false) {
 					model = new TestStrategeyVersioningJsonModel();
-					String[] testNameToSetArr = mainList.get(i).getTestName()
-							.split("_");
+					String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
 
 					model.setTestName(testNameToSetArr[0]);
 					model.setVersion(mainList.get(i).getVersion());
@@ -1677,6 +1541,7 @@ public class TestStrategyController {
 					model.setCreatedOn(mainList.get(i).getCreatedOn());
 					model.setCreatedBy(mainList.get(i).getCreatedBy());
 					model.setComment(mainList.get(i).getComment());
+					model.setNetworkType(mainList.get(i).getNetworkType());
 
 					TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
 					List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
@@ -1700,6 +1565,7 @@ public class TestStrategyController {
 					child.setCreatedOn(mainList.get(i).getCreatedOn());
 					child.setCreatedBy(mainList.get(i).getCreatedBy());
 					child.setComment(mainList.get(i).getComment());
+					child.setNetworkType(mainList.get(i).getNetworkType());
 
 					childList.add(child);
 					model.setChildList(childList);
@@ -1714,27 +1580,21 @@ public class TestStrategyController {
 
 		// //This loop will iterate over all the children
 		for (int i = 0; i < mainList.size(); i++) {
-			
-			String[] testNameToSetArr = mainList.get(i).getTestName()
-					.split("_");
-			String testNameMain =testNameToSetArr[0]+testNameToSetArr[2];
-			String testNameToSet = testNameToSetArr[1]+"_"+testNameToSetArr[2];
-			
-			//mainList1 =dao.findByTestName(testNameUsed);
+
+			String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
+			String testNameMain = testNameToSetArr[0] + testNameToSetArr[2];
+			String testNameToSet = testNameToSetArr[1] + "_" + testNameToSetArr[2];
+
+			// mainList1 =dao.findByTestName(testNameUsed);
 
 			for (int j = 0; j < modelList.size(); j++) {
 				List<TestStrategeyVersioningJsonModel> childListToIterate = new ArrayList<TestStrategeyVersioningJsonModel>();
 				childListToIterate = modelList.get(j).getChildList();
-				String[] testNameToSetArr1 = modelList.get(j).getFullTestName()
-						.split("_");
-				String testNameChild =testNameToSetArr1[0]+testNameToSetArr1[2];
-				
+				String[] testNameToSetArr1 = modelList.get(j).getFullTestName().split("_");
+				String testNameChild = testNameToSetArr1[0] + testNameToSetArr1[2];
+
 				for (int k = 0; k < childListToIterate.size(); k++) {
-					if (mainList
-							.get(i)
-							.getTestName()
-							.equalsIgnoreCase(
-									childListToIterate.get(k).getFullTestName())) {
+					if (mainList.get(i).getTestName().equalsIgnoreCase(childListToIterate.get(k).getFullTestName())) {
 						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
 						child.setTestName(mainList.get(i).getVersion());
 						child.setTestName(testNameToSet);
@@ -1750,17 +1610,16 @@ public class TestStrategyController {
 						child.setCreatedOn(mainList.get(i).getCreatedOn());
 						child.setCreatedBy(mainList.get(i).getCreatedBy());
 						child.setComment(mainList.get(i).getComment());
+						child.setNetworkType(mainList.get(i).getNetworkType());
 
 						Boolean flag = mainList.get(i).isEnabled();
 						child.setEnabled(flag);
 
-						List<TestStrategeyVersioningJsonModel> childList = childListToIterate
-								.get(k).getChildList();
+						List<TestStrategeyVersioningJsonModel> childList = childListToIterate.get(k).getChildList();
 						childList.add(child);
 						break;
 
-					}else if(testNameMain.equals(testNameChild))
-					{
+					} else if (testNameMain.equals(testNameChild)) {
 
 						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
 						child.setTestName(mainList.get(i).getVersion());
@@ -1777,45 +1636,37 @@ public class TestStrategyController {
 						child.setCreatedOn(mainList.get(i).getCreatedOn());
 						child.setCreatedBy(mainList.get(i).getCreatedBy());
 						child.setComment(mainList.get(i).getComment());
+						child.setNetworkType(mainList.get(i).getNetworkType());
 
 						Boolean flag = mainList.get(i).isEnabled();
 						child.setEnabled(flag);
 
-						List<TestStrategeyVersioningJsonModel> childList = childListToIterate
-								.get(k).getChildList();
+						List<TestStrategeyVersioningJsonModel> childList = childListToIterate.get(k).getChildList();
 						childList.add(child);
 
-					
 					}
-					
-					}
+
+				}
 			}
 
 		}
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(modelList)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(modelList).build();
 
 	}
-	
-	
+
 	@SuppressWarnings({ "null", "unchecked" })
 	@POST
 	@RequestMapping(value = "/getDeviceInfoByHostName", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response getDeviceInfo(@RequestBody String request)
-			throws ParseException {
+	public Response getDeviceInfo(@RequestBody String request) throws ParseException {
 
 		JSONObject obj = new JSONObject();
 
-		String key = "", value="";
-	
+		String key = "", value = "";
+
 		JSONParser parser = new JSONParser();
 
 		JSONObject json = (JSONObject) parser.parse(request);
@@ -1826,31 +1677,28 @@ public class TestStrategyController {
 		RequestInfoDao dao = new RequestInfoDao();
 
 		List<RequestInfoEntity> mainList = new ArrayList<RequestInfoEntity>();
-		
 
 		if (value != null && !value.isEmpty()) {
 			/*
-			 * Search request based on Region, Vendor, Status, Model, Import
-			 * Id and Management IP
+			 * Search request based on Region, Vendor, Status, Model, Import Id and
+			 * Management IP
 			 */
 			if (key.equalsIgnoreCase("Hostname")) {
 				mainList = requestInfoDetailsRepositories.findAllByHostName(value);
 			}
 		}
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(mainList)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(mainList).build();
 	}
-	
-	/*Dhanshri Mane*/
-	/*For new UI same logic and method only changes in JSON Formate  (getTestsForDevice)*/
+
+	/* Dhanshri Mane */
+	/*
+	 * For new UI same logic and method only changes in JSON Formate
+	 * (getTestsForDevice)
+	 */
 
 	@SuppressWarnings({ "null", "unchecked" })
 	@POST
@@ -1861,11 +1709,12 @@ public class TestStrategyController {
 		List<TestDetail> testDetailsListLatestVersion = new ArrayList<TestDetail>();
 		List<TestDetail> testDetailsFinal = new ArrayList<TestDetail>();
 		List<TestDetail> testDetailsListAllVersion = new ArrayList<TestDetail>();
-		List<PredefineTestDetailEntity> masterTestDetails=new ArrayList<>();
+		List<PredefineTestDetailEntity> masterTestDetails = new ArrayList<>();
 		HashSet<String> testNameList = new HashSet<>();
 		String response = null;
 
-		String deviceType = null, deviceModel = null, vendor = null, os = null, osVersion = null, region = null;
+		String deviceType = null, deviceModel = null, vendor = null, os = null, osVersion = null, region = null,
+				networkType = null, requestType = null;
 		JSONParser parser = new JSONParser();
 		JSONObject json;
 		List<String> featuresFromUI = new ArrayList<String>();
@@ -1900,18 +1749,40 @@ public class TestStrategyController {
 				region = json.get("region").toString();
 			}
 
+			if (json.containsKey("networkType")) {
+				networkType = json.get("networkType").toString();
+			}
+			if (json.containsKey("requestType")) {
+				requestType = json.get("requestType").toString().toLowerCase();
+			}
 			String version = null;
 			String testName = null;
-			masterTestDetails= predefineTestDetailsRepository.findAll();
+			masterTestDetails = predefineTestDetailsRepository.findAll();
 			testDetailsList = testDetailsRepository
-					.findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContaining(
-							deviceType, deviceModel, os, osVersion, vendor,
-							region);
-
-			
+					.findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(
+							deviceType, deviceModel, os, osVersion, vendor, region, networkType);
+			String testCategory = null;
 			for (int i = 0; i < testDetailsList.size(); i++) {
+				switch (requestType) {
+				case "config":
+					testNameList.add(testDetailsList.get(i).getTestName());
+					break;
+				case "test":
+					testCategory = testDetailsList.get(i).getTestCategory();
+					if (!testCategory.equals("Network Audit")) {
+						testNameList.add(testDetailsList.get(i).getTestName());
+					}
+					break;
+				case "audit":
+					testCategory = testDetailsList.get(i).getTestCategory();
+					if (testCategory.equals("Network Audit")) {
+						testNameList.add(testDetailsList.get(i).getTestName());
+					}
+					break;
 
-				testNameList.add(testDetailsList.get(i).getTestName());
+				default:
+					break;
+				}
 
 			}
 
@@ -1920,24 +1791,20 @@ public class TestStrategyController {
 				testName = itrator.next();
 				testDetailsListAllVersion = testDetailsRepository
 						.findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(
-								deviceType, deviceModel, os, osVersion, vendor,
-								region, testName);
+								deviceType, deviceModel, os, osVersion, vendor, region, testName);
 
 				for (int i = 0; i < testDetailsListAllVersion.size(); i++) {
 
-					if (testName.equals(testDetailsListAllVersion.get(i)
-							.getTestName())) {
+					if (testName.equals(testDetailsListAllVersion.get(i).getTestName())) {
 						version = testDetailsListAllVersion.get(i).getVersion();
 					}
 				}
 
 				testDetailsListLatestVersion = testDetailsRepository
 						.findByDeviceTypeAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
-								deviceType, deviceModel, os, osVersion, vendor,
-								region, version, testName);
+								deviceType, deviceModel, os, osVersion, vendor, region, version, testName);
 
-				if (null != testDetailsListLatestVersion
-						|| !testDetailsListLatestVersion.isEmpty()) {
+				if (null != testDetailsListLatestVersion || !testDetailsListLatestVersion.isEmpty()) {
 
 					int n = testDetailsListLatestVersion.size();
 
@@ -1951,17 +1818,15 @@ public class TestStrategyController {
 
 					if (featuresFromUI != null && featuresFromUI.size() > 0) {
 						for (int i = 0; i < aList.size(); i++) {
-							List<TestFeatureList> dbFeatures = testFeatureListRepository
-									.findByTestDetail(aList.get(i));
+							List<TestFeatureList> dbFeatures = testFeatureListRepository.findByTestDetail(aList.get(i));
 
 							for (int j = 0; j < dbFeatures.size(); j++) {
-								if (featuresFromUI.contains(dbFeatures.get(j)
-										.getTestFeature())) {
+								if (featuresFromUI.contains(dbFeatures.get(j).getTestFeature())) {
 									aList.get(i).setSelected(true);
 									aList.get(i).setDisabled(false);
 								}
 							}
-							System.out.println("");
+							logger.info("");
 						}
 					} else {
 						for (int i = 0; i < aList.size(); i++) {
@@ -1969,7 +1834,7 @@ public class TestStrategyController {
 							aList.get(i).setSelected(false);
 							aList.get(i).setDisabled(false);
 
-							System.out.println("");
+							logger.info("");
 						}
 					}
 
@@ -1987,18 +1852,17 @@ public class TestStrategyController {
 			response = "Unable read GUI input";
 			return Response.status(200).entity(response).build();
 		}
-		JSONObject testDetails= new JSONObject();
+		JSONObject testDetails = new JSONObject();
 		testDetails.put("default", masterTestDetails);
 		testDetails.put("dynamic", testDetailsFinal);
-		
+
 		return Response.status(200).entity(testDetails).build();
 	}
 
 	@POST
 	@RequestMapping(value = "/getAllVersion", method = { RequestMethod.POST,
 			RequestMethod.PUT }, produces = "application/json", consumes = "application/json")
-	public Response getAllVersion(@RequestBody String request)
-			throws ParseException {
+	public Response getAllVersion(@RequestBody String request) throws ParseException {
 		JSONObject obj = new JSONObject();
 		JSONArray arrayElementOneArray = new JSONArray();
 		HashSet<String> set = new HashSet();
@@ -2052,24 +1916,18 @@ public class TestStrategyController {
 		}
 
 		obj.put("VendorList", arrayElementOneArray);
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-	
+
 	@POST
 	@RequestMapping(value = "/searchAllRequest", method = { RequestMethod.POST,
 			RequestMethod.PUT }, produces = "application/json", consumes = "application/json")
-	public Response searchAllRequest(@RequestBody String request)
-			throws ParseException {
+	public Response searchAllRequest(@RequestBody String request) throws ParseException {
 		JSONObject obj = new JSONObject();
 		JSONArray arrayElementOneArray = new JSONArray();
 		DeviceDiscoveryEntity entity = new DeviceDiscoveryEntity();
@@ -2077,39 +1935,38 @@ public class TestStrategyController {
 		List<DeviceDiscoveryEntity> mainList = new ArrayList<DeviceDiscoveryEntity>();
 		List<DeviceDiscoveryEntity> mainList2 = new ArrayList<DeviceDiscoveryEntity>();
 		List<SiteInfoEntity> mainList1 = new ArrayList<SiteInfoEntity>();
-		String vendorName=null, vendorFamily=null, osVersion="", customer=null,region=null, site=null;
+		String vendorName = null, vendorFamily = null, osVersion = "", customer = null, region = null, site = null;
 
 		JSONParser parser = new JSONParser();
 
 		JSONObject json = (JSONObject) parser.parse(request);
 
 		vendorName = (String) json.get("vendor");
-		vendorFamily= (String) json.get("family");
-		osVersion=(String) json.get("osVersion");
-		customer =(String) json.get("customer");
-		region=(String) json.get("region");
-		site=(String) json.get("site");
-		
-		
+		vendorFamily = (String) json.get("family");
+		osVersion = (String) json.get("osVersion");
+		customer = (String) json.get("customer");
+		region = (String) json.get("region");
+		site = (String) json.get("site");
+
 		mainList = deviceDiscoveryRepository.findAllByDVendor(vendorName);
 
 		for (int i = 0; i < mainList.size(); i++) {
-			
-			String  osVersionNew =mainList.get(i).getdOsVersion();
-			
-			//mainList1 = siteInfoRepository.findAll();
-			String s="200";
-			int j=Integer.parseInt(osVersionNew);  
-			//Integer j=Integer.valueOf(osVersionNew); 
-			//int k=Integer.parseInt(osVersion); 
-			//Integer k=Integer.valueOf(osVersion); 
-			
-			//if(j < k)
+
+			String osVersionNew = mainList.get(i).getdOsVersion();
+
+			// mainList1 = siteInfoRepository.findAll();
+			String s = "200";
+			int j = Integer.parseInt(osVersionNew);
+			// Integer j=Integer.valueOf(osVersionNew);
+			// int k=Integer.parseInt(osVersion);
+			// Integer k=Integer.valueOf(osVersion);
+
+			// if(j < k)
 			{
 				entity.setdHostName(mainList.get(i).getdHostName());
 				entity.setdMgmtIp(mainList.get(i).getdMgmtIp());
 				entity.setdOs(mainList.get(i).getdOs());
-				//entity.setdOsVersion(osVersionNew);
+				// entity.setdOsVersion(osVersionNew);
 				entity.setdContact(mainList.get(i).getdContact());
 				entity1.setcCustName(mainList1.get(i).getcCustName());
 				entity.setdModel(mainList.get(i).getdModel());
@@ -2117,20 +1974,15 @@ public class TestStrategyController {
 				entity.setCustSiteId(entity1);
 				mainList2.add(entity);
 			}
-			
+
 		}
 
 		obj.put("Firmware Upgrade", mainList2);
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
 

@@ -18,6 +18,8 @@ import java.util.Scanner;
 
 import javax.ws.rs.POST;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -49,7 +51,7 @@ import com.techm.orion.utility.TextReport;
 @Controller
 @RequestMapping("/OsUpgrade")
 public class PostUpgradeHealthCheck extends Thread {
-
+	private static final Logger logger = LogManager.getLogger(PostUpgradeHealthCheck.class);
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -278,8 +280,7 @@ public class PostUpgradeHealthCheck extends Thread {
 				} else {
 					testToFail = "health_check";
 				}
-				boolean reachability = pingClass.cmdPingCall(host, requestinfo.getHostname(),
-						requestinfo.getRegion());
+				boolean reachability = pingClass.cmdPingCall(host, requestinfo.getHostname(), requestinfo.getRegion());
 				if (reachability) {
 					rechabilityTst = 1;
 				} else {
@@ -313,7 +314,7 @@ public class PostUpgradeHealthCheck extends Thread {
 							e.printStackTrace();
 						}
 					} else {
-						
+
 						ShowMemoryTest memoryTest = new ShowMemoryTest();
 						ShowPowerTest powerTest = new ShowPowerTest();
 						ShowCPUUsage cpu_usage = new ShowCPUUsage();
@@ -345,8 +346,8 @@ public class PostUpgradeHealthCheck extends Thread {
 						resultList.add(cpu_usage_comp);
 
 						HealthCheckReport healthCheckReport = new HealthCheckReport();
-						healthCheckReport.createReport(resultList, requestinfo.getHostname(),
-								requestinfo.getRegion(), type);
+						healthCheckReport.createReport(resultList, requestinfo.getHostname(), requestinfo.getRegion(),
+								type);
 
 						if (memoryResult.equalsIgnoreCase("pass") && powerResult.equalsIgnoreCase("pass")
 								&& cpu_usage_result.equalsIgnoreCase("pass")) {
@@ -379,8 +380,8 @@ public class PostUpgradeHealthCheck extends Thread {
 										Double.toString(requestinfo.getRequestVersion()), "health_check", "2",
 										"Failure");
 								requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()),
-										"Device Reachability Failure", "Failure", "Could not connect to the router.");
+										Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure",
+										"Failure", "Could not connect to the router.");
 							} else if (type.equalsIgnoreCase("Pre")) {
 								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2",
@@ -411,8 +412,7 @@ public class PostUpgradeHealthCheck extends Thread {
 								"Failure", "Could not connect to the router.");
 					} else if (type.equalsIgnoreCase("Pre")) {
 						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2",
-								"Failure");
+								Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2", "Failure");
 					} else {
 
 					}
@@ -427,8 +427,8 @@ public class PostUpgradeHealthCheck extends Thread {
 								Double.toString(requestinfo.getRequestVersion()));
 						responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES
 								.getProperty("responseDownloadPath");
-						TextReport.writeFile(
-								responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+						TextReport.writeFile(responseDownloadPath,
+								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_HealthCheck.txt",
 								response);
 						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
@@ -452,13 +452,14 @@ public class PostUpgradeHealthCheck extends Thread {
 		} catch (Exception e1) {
 			if (configRequest.getManagementIp() != null && !configRequest.getManagementIp().equals("")) {
 				e1.printStackTrace();
-				if (e1.getMessage().contains("invalid server's version string") || e1.getMessage().contains("Auth fail")) {
+				if (e1.getMessage().contains("invalid server's version string")
+						|| e1.getMessage().contains("Auth fail")) {
 					value = false;
 					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()), testToFail, "2", "Failure");
 					requestInfoDao.editRequestForReportIOSWebserviceInfo(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), "Device Reachability Failure", "Failure",
-							"Could not connect to the router.");
+							Double.toString(configRequest.getRequest_version()), "Device Reachability Failure",
+							"Failure", "Could not connect to the router.");
 
 					String response = "";
 					String responseDownloadPath = "";
@@ -478,7 +479,8 @@ public class PostUpgradeHealthCheck extends Thread {
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
 				e1.printStackTrace();
-				if (e1.getMessage().contains("invalid server's version string") || e1.getMessage().contains("Auth fail")) {
+				if (e1.getMessage().contains("invalid server's version string")
+						|| e1.getMessage().contains("Auth fail")) {
 					value = false;
 					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), testToFail, "2", "Failure");
@@ -501,7 +503,7 @@ public class PostUpgradeHealthCheck extends Thread {
 						e.printStackTrace();
 					}
 				}
-			
+
 			}
 		}
 		jsonArray = new Gson().toJson(value);
@@ -631,7 +633,7 @@ public class PostUpgradeHealthCheck extends Thread {
 
 		}
 		if (channel.isClosed()) {
-			System.out.println("exit-status: " + channel.getExitStatus());
+			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
 		try {
@@ -773,7 +775,7 @@ public class PostUpgradeHealthCheck extends Thread {
 		printResult(input, requestId, version);
 
 		while (s.hasNext()) {
-			System.out.println(s.nextLine());
+			logger.info(s.nextLine());
 		}
 		s.close();
 	}
@@ -788,10 +790,10 @@ public class PostUpgradeHealthCheck extends Thread {
 			int i = input.read(tmp, 0, SIZE);
 			if (i < 0)
 				break;
-			/* System.out.print(new String(tmp, 0, i)); */
+			/* logger.info(new String(tmp, 0, i)); */
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
-				System.out.print(s);
+				logger.info(s);
 				String filepath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//"
 						+ requestID + "V" + version + "_HealthCheck.txt";
 				File file = new File(filepath);
@@ -814,7 +816,7 @@ public class PostUpgradeHealthCheck extends Thread {
 
 		}
 		/*
-		 * if (channel.isClosed()) { System.out.println("exit-status: " +
+		 * if (channel.isClosed()) { logger.info("exit-status: " +
 		 * channel.getExitStatus());
 		 * 
 		 * }

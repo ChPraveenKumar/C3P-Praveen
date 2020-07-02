@@ -1,10 +1,17 @@
 package com.techm.orion.rest;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 class Base {
-private static void display() {
-System.out.println("Static or class method from Base");
-}
-public void print() {
-System.out.println("Non-static or instance method from Base");
-}
+	private static final Logger logger = LogManager.getLogger(Base.class);
+
+	private static void display() {
+
+		logger.info("Static or class method from Base");
+	}
+
+	public void print() {
+		logger.info("Non-static or instance method from Base");
+	}
 }

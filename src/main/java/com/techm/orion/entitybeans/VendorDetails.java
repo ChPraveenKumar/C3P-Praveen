@@ -4,11 +4,9 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-
 import javax.persistence.Table;
 
 /*
@@ -22,18 +20,21 @@ public class VendorDetails implements Serializable
 
 {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3381690641270278930L;
+
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
 	private int id;
-
 
 	@Column(name = "command")
 	private String command;
 
 	@Column(name = "priority")
 	private String priority;
-	
-	
+
 	@Column(name = "vendor")
 	private String vendor;
 

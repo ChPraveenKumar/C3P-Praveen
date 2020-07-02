@@ -13,20 +13,22 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @Table(name = "T_TPMGMT_GLBLIST_M_Vendor", uniqueConstraints = { @UniqueConstraint(columnNames = { "vendor" }) })
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class Vendors implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1025953642944910291L;
 
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
@@ -35,19 +37,18 @@ public class Vendors implements Serializable {
 	@Column(name = "vendor")
 	private String vendor;
 
-	
 	@Transient
-	private boolean value=false;
-	
+	private boolean value = false;
+
 	@Transient
-	private int vendor_id=0;
-	
+	private int vendor_id = 0;
+
 	@Transient
-	private String vendor_text=null;
-	
+	private String vendor_text = null;
+
 	@Transient
-	private boolean vendor_value=false;
-	
+	private boolean vendor_value = false;
+
 	public boolean getVendor_value() {
 		return vendor_value;
 	}
@@ -81,14 +82,13 @@ public class Vendors implements Serializable {
 	}
 
 	@JsonIgnore
-	@OneToMany(cascade = {CascadeType.ALL}, mappedBy = "vendor")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "vendor")
 	private Set<OS> os;
 
 	@JsonIgnore
-	@OneToMany(cascade = {CascadeType.ALL}, mappedBy = "vendor")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "vendor")
 	private Set<Models> models;
 
-	
 	public Set<Models> getModels() {
 		return models;
 	}
@@ -102,8 +102,6 @@ public class Vendors implements Serializable {
 	})
 
 	private Set<DeviceTypes> devicetypes = new HashSet<DeviceTypes>();
-
-	
 
 	public Set<OS> getOs() {
 		return os;

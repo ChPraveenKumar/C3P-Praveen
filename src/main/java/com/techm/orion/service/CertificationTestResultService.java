@@ -12,17 +12,16 @@ import com.techm.orion.repositories.CertificationTestResultRepository;
 @Configurable
 public class CertificationTestResultService {
 
-	 @Autowired
-	  CertificationTestResultRepository repo;
-	 
-	 RequestInfoDao dao=new RequestInfoDao();
-	 
-	 public CertificationTestResultEntity getRecordByRequestId(String requestId, String version)
-	 {
-		 CertificationTestResultEntity result=new CertificationTestResultEntity();
-		 
-		result=dao.findCertificationTestResultEntityByRequestID(requestId, version);
-		 //result=repo.findByAlphanumericReqIdAndVersion(requestId, version);
-		 return result;
-	 }
+	@Autowired
+	CertificationTestResultRepository repo;
+
+	RequestInfoDao dao = new RequestInfoDao();
+
+	public CertificationTestResultEntity getRecordByRequestId(String requestId, String version) {
+		CertificationTestResultEntity result = new CertificationTestResultEntity();
+
+		result = dao.findCertificationTestResultEntityByRequestID(requestId, version);
+		// result=repo.findByAlphanumericReqIdAndVersion(requestId, version);
+		return result;
+	}
 }

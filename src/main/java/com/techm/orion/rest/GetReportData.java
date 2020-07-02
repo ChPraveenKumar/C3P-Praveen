@@ -12,6 +12,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -46,12 +48,11 @@ import com.techm.orion.utility.ShowVersionTest;
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/GetReportData")
 public class GetReportData implements Observer {
-
+	private static final Logger logger = LogManager.getLogger(GetReportData.class);
 
 	@Autowired
 	RequestInfoDetailsDao requestDao;
 
-	
 	@POST
 	@RequestMapping(value = "/getReportDataforTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -71,6 +72,7 @@ public class GetReportData implements Observer {
 		String currentRouterVersion = "";
 		boolean isCheck = false;
 		JSONObject dilevaryMilestonesforOSupgrade = new JSONObject();
+		RequestInfoPojo requestinfo = new RequestInfoPojo();
 
 		try {
 			JSONParser parser = new JSONParser();
@@ -81,6 +83,7 @@ public class GetReportData implements Observer {
 			createConfigRequestDCM.setRequestId(json.get("requestID").toString());
 			createConfigRequestDCM.setTestType(json.get("testType").toString());
 			createConfigRequestDCM.setVersion_report(json.get("version").toString());
+			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(json.get("requestID").toString(), "1.0");
 
 			if (createConfigRequestDCM.getTestType().equalsIgnoreCase("deliverConfig")) {
 
@@ -130,14 +133,9 @@ public class GetReportData implements Observer {
 
 				}
 
-				String requesttype = json
-						.get("requestID")
-						.toString()
-						.substring(
-								0,
-								Math.min(json.get("requestID").toString()
-										.length(), 4));
-				if (requesttype.equalsIgnoreCase("OS")) {
+				String requesttype = json.get("requestID").toString().substring(0,
+						Math.min(json.get("requestID").toString().length(), 4));
+				if (requesttype.equalsIgnoreCase("SLGF")) {
 					RequestInfoDao requestInfoDao = new RequestInfoDao();
 					Float v = Float.parseFloat(json.get("version").toString());
 					DecimalFormat df = new DecimalFormat("0.0");
@@ -145,37 +143,29 @@ public class GetReportData implements Observer {
 					String version_decimal = df.format(v);
 					dilevaryMilestonesforOSupgrade = requestInfoDao
 							.get_dilevary_steps_status(json.get("requestID").toString(), version_decimal);
-				}else if(requesttype.equalsIgnoreCase("SLGB") || requesttype.equalsIgnoreCase("SLGC") ) { 
+				} else if (requesttype.equalsIgnoreCase("SLGB") || requesttype.equalsIgnoreCase("SLGC")) {
 					RequestInfoDao requestInfoDao = new RequestInfoDao();
-					isCheck = requestInfoDao
-							.get_dilevary_status(json.get("requestID")
-									.toString());
-					
-					if(isCheck)
-					{
-					obj.put(new String("backupStatus"), "Completed");
-					obj.put(new String("deliveryStatus"), "Completed");
-					obj.put(new String("status"), "Success");
+					isCheck = requestInfoDao.get_dilevary_status(json.get("requestID").toString());
+
+					if (isCheck) {
+						obj.put(new String("backupStatus"), "Completed");
+						obj.put(new String("deliveryStatus"), "Completed");
+						obj.put(new String("status"), "Success");
+					} else {
+						obj.put(new String("backupStatus"), "Failed");
+						obj.put(new String("deliveryStatus"), "Failed");
+						obj.put(new String("status"), "Failed");
+
 					}
-					else
-					{
-					obj.put(new String("backupStatus"), "Failed");
-					obj.put(new String("deliveryStatus"), "Failed");
-					obj.put(new String("status"), "Failed");
-						
-					}
-					
+
 				}
-				
-				
-				
-				
+
 				else {
 					// dilevary milestones will be null
 				}
 
 			} else {
-				jsonMessage = reportDetailsService.getDetailsForReport(createConfigRequestDCM);
+				jsonMessage = reportDetailsService.getDetailsForReport(createConfigRequestDCM, requestinfo);
 			}
 
 			if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")
@@ -200,7 +190,7 @@ public class GetReportData implements Observer {
 			obj.put(new String("DilevaryMilestones"), dilevaryMilestonesforOSupgrade);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -242,7 +232,7 @@ public class GetReportData implements Observer {
 
 					previousRouterVersion = entry.getValue();
 					String detailsStr = new Gson().toJson(previousRouterVersion);
-					obj.put(new String("previousRouterVersion"),detailsStr);
+					obj.put(new String("previousRouterVersion"), detailsStr);
 				}
 				if (entry.getKey() == "currentRouterVersion") {
 					currentRouterVersion = entry.getValue();
@@ -254,7 +244,7 @@ public class GetReportData implements Observer {
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -327,7 +317,7 @@ public class GetReportData implements Observer {
 			obj.put(new String("Hold"), holdReqs);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -394,7 +384,7 @@ public class GetReportData implements Observer {
 			// obj.put(new String("InProgress"), inprogressReqs);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -459,7 +449,7 @@ public class GetReportData implements Observer {
 			obj.put(new String("TotalRequests"), result.getJSONObject(6).getInt("totalCount"));
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -491,219 +481,185 @@ public class GetReportData implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-/*
-	@POST
-	@RequestMapping(value = "/customerReport", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public Response customerReport(@RequestBody String configRequest) {
-		JSONObject obj = new JSONObject();
-		RequestInfoDao dao = new RequestInfoDao();
-		try {
-
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(configRequest);
-
-			CreateConfigRequestDCM createConfigRequestDCM = new CreateConfigRequestDCM();
-
-			createConfigRequestDCM.setRequestId(json.get("requestID").toString());
-			createConfigRequestDCM.setTestType(json.get("testType").toString());
-			createConfigRequestDCM.setVersion_report(json.get("version").toString());
-			String version = createConfigRequestDCM.getVersion_report();
-
-			if (!version.contains(".")) {
-				version = version + ".0";
-			}
-			createConfigRequestDCM.setVersion_report(version);
-
-			String type = createConfigRequestDCM.getRequestId().substring(0,
-					Math.min(createConfigRequestDCM.getRequestId().length(), 4));
-
-			if (type.equalsIgnoreCase("OS")) {
-				CreateConfigRequest req = new CreateConfigRequest();
-				req = dao.getOSDilevarySteps(createConfigRequestDCM.getRequestId(),
-						createConfigRequestDCM.getVersion_report());
-				JSONArray os_upgrade_dilevary_step_array = new JSONArray();
-				JSONObject stepObj = new JSONObject();
-				if (req.getOs_upgrade_dilevary_post_login_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Login");
-					stepObj.put("status", req.getOs_upgrade_dilevary_post_login_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_flash_size_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Flash size availability");
-					stepObj.put("status", req.getOs_upgrade_dilevary_flash_size_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_backup_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Back up");
-					stepObj.put("status", req.getOs_upgrade_dilevary_backup_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_os_download_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "OS Download");
-					stepObj.put("status", req.getOs_upgrade_dilevary_os_download_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_boot_system_flash_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Boot system flash");
-					stepObj.put("status", req.getOs_upgrade_dilevary_boot_system_flash_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_reload_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Reload");
-					stepObj.put("status", req.getOs_upgrade_dilevary_reload_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_post_login_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Post login");
-					stepObj.put("status", req.getOs_upgrade_dilevary_post_login_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-
-				// Logic for health checks
-				ShowCPUUsage cpuUsage = new ShowCPUUsage();
-				ShowMemoryTest memoryInfo = new ShowMemoryTest();
-				ShowPowerTest powerTest = new ShowPowerTest();
-				ShowVersionTest versionTest = new ShowVersionTest();
-
-				CreateConfigRequest createConfigRequest = dao
-						.getRequestDetailFromDBForVersion(createConfigRequestDCM.getRequestId(), version);
-
-				createConfigRequest.setHostname(createConfigRequest.getHostname());
-				createConfigRequest.setSiteid(createConfigRequest.getSiteid());
-				createConfigRequest.setManagementIp(createConfigRequest.getManagementIp());
-				createConfigRequest.setCustomer(createConfigRequest.getCustomer());
-				createConfigRequest.setModel(createConfigRequest.getModel());
-
-				createConfigRequest.setPre_cpu_usage_percentage(cpuUsage.getCPUUsagePercentage(
-						createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Pre"));
-				createConfigRequest.setPre_memory_info(memoryInfo
-						.getMemoryUsed(createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Pre")
-						.toString());
-				createConfigRequest.setPre_power_info(powerTest.getPowerInfor(createConfigRequest.getHostname(),
-						createConfigRequest.getRegion(), "Pre"));
-				// createConfigRequest.setPre_version_info(versionTest.getVersion(createConfigRequest.getHostname(),createConfigRequest.getRegion(),"Pre"));
-
-				createConfigRequest.setPost_cpu_usage_percentage(cpuUsage.getCPUUsagePercentage(
-						createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Post"));
-				createConfigRequest.setPost_memory_info(memoryInfo
-						.getMemoryUsed(createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Post")
-						.toString());
-				createConfigRequest.setPost_power_info(powerTest.getPowerInfor(createConfigRequest.getHostname(),
-						createConfigRequest.getRegion(), "Post"));
-				// createConfigRequest.setPost_version_info(versionTest.getVersion(createConfigRequest.getHostname(),createConfigRequest.getRegion(),"Post"));
-
-				JSONArray healthCheckArray = new JSONArray();
-
-				JSONObject cpu = new JSONObject();
-				cpu.put("healthcheck", "CPU Usage");
-				cpu.put("preUpgradeValue", createConfigRequest.getPre_cpu_usage_percentage());
-				cpu.put("postUpgradeValue", createConfigRequest.getPost_cpu_usage_percentage());
-
-				if (createConfigRequest.getPre_cpu_usage_percentage() == 0
-						&& createConfigRequest.getPost_cpu_usage_percentage() == 0) {
-					cpu.put("outcome", "Pass");
-				} else if (createConfigRequest.getPre_cpu_usage_percentage() < 0
-						&& createConfigRequest.getPost_cpu_usage_percentage() < 0) {
-					cpu.put("outcome", "Fail");
-				}
-
-				healthCheckArray.put(cpu);
-
-				JSONObject mem = new JSONObject();
-				mem.put("healthcheck", "Memory Usage(%)");
-				mem.put("preUpgradeValue", createConfigRequest.getPre_memory_info());
-				mem.put("postUpgradeValue", createConfigRequest.getPost_memory_info());
-				if (Double.parseDouble(createConfigRequest.getPre_memory_info()) > 0
-						&& Double.parseDouble(createConfigRequest.getPost_memory_info()) > 0) {
-					mem.put("outcome", "Pass");
-				} else {
-					mem.put("outcome", "Fail");
-
-				}
-
-				healthCheckArray.put(mem);
-
-				JSONObject pow = new JSONObject();
-				pow.put("healthcheck", "Power Information");
-				pow.put("preUpgradeValue", createConfigRequest.getPre_power_info());
-				pow.put("postUpgradeValue", createConfigRequest.getPost_power_info());
-				if (createConfigRequest.getPre_power_info().equalsIgnoreCase("fail")
-						|| createConfigRequest.getPost_power_info().equalsIgnoreCase("fail")) {
-					pow.put("outcome", "Fail");
-				} else {
-					pow.put("outcome", "Pass");
-
-				}
-				healthCheckArray.put(pow);
-
-				obj.put("osUpgradeStatus", "1");
-				obj.put("Statusmessage", "Device upgraded Succesfully");
-
-				obj.put("OsupgradeSummary", os_upgrade_dilevary_step_array.toString());
-				obj.put("healthCheckSummary", healthCheckArray.toString());
-
-			} 	else if(type.equalsIgnoreCase("SLGB"))
-			{
-				obj=dao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
-			}else {
-				obj = dao.getStatusForCustomerReport(createConfigRequestDCM);
-			}
-
-			CreateConfigRequest reqDetail = dao.getRequestDetailFromDBForVersion(createConfigRequestDCM.getRequestId(),
-					version);
-			Map<String, String> resultForFlag = new HashMap<String, String>();
-			
-			if(type.equalsIgnoreCase("SNRC"))
-			{
-				reqDetail.setDeliever_config("Passed");
-			}
-			else if(type.equalsIgnoreCase("SLGC"))
-			{
-				reqDetail.setDeliever_config("Passed");
-
-			}
-			resultForFlag = dao.getRequestFlagForReport(reqDetail.getRequestId(), reqDetail.getRequest_version());
-			String flagForPrevalidation = "";
-			String flagFordelieverConfig = "";
-			for (Map.Entry<String, String> entry : resultForFlag.entrySet()) {
-				if (entry.getKey() == "flagForPrevalidation") {
-					flagForPrevalidation = entry.getValue();
-
-				}
-				if (entry.getKey() == "flagFordelieverConfig") {
-					flagFordelieverConfig = entry.getValue();
-				}
-
-			}
-
-			if (flagFordelieverConfig.equalsIgnoreCase("1")) {
-				reqDetail.setDeliever_config("Passed");
-			}
-			if (flagFordelieverConfig.equalsIgnoreCase("2")) {
-				reqDetail.setDeliever_config("Failed");
-			}
-			String detailsStr = new Gson().toJson(reqDetail);
-
-			List<String> out = new ArrayList<String>();
-			out.add(new Gson().toJson(reqDetail));
-			obj.put("details", out);
-		} catch (Exception e) {
-			System.out.println(e);
-		}
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-	}*/
+	/*
+	 * @POST
+	 * 
+	 * @RequestMapping(value = "/customerReport", method = RequestMethod.POST,
+	 * consumes = "application/json", produces = "application/json")
+	 * 
+	 * @ResponseBody public Response customerReport(@RequestBody String
+	 * configRequest) { JSONObject obj = new JSONObject(); RequestInfoDao dao = new
+	 * RequestInfoDao(); try {
+	 * 
+	 * JSONParser parser = new JSONParser(); JSONObject json = (JSONObject)
+	 * parser.parse(configRequest);
+	 * 
+	 * CreateConfigRequestDCM createConfigRequestDCM = new CreateConfigRequestDCM();
+	 * 
+	 * createConfigRequestDCM.setRequestId(json.get("requestID").toString());
+	 * createConfigRequestDCM.setTestType(json.get("testType").toString());
+	 * createConfigRequestDCM.setVersion_report(json.get("version").toString());
+	 * String version = createConfigRequestDCM.getVersion_report();
+	 * 
+	 * if (!version.contains(".")) { version = version + ".0"; }
+	 * createConfigRequestDCM.setVersion_report(version);
+	 * 
+	 * String type = createConfigRequestDCM.getRequestId().substring(0,
+	 * Math.min(createConfigRequestDCM.getRequestId().length(), 4));
+	 * 
+	 * if (type.equalsIgnoreCase("OS")) { CreateConfigRequest req = new
+	 * CreateConfigRequest(); req =
+	 * dao.getOSDilevarySteps(createConfigRequestDCM.getRequestId(),
+	 * createConfigRequestDCM.getVersion_report()); JSONArray
+	 * os_upgrade_dilevary_step_array = new JSONArray(); JSONObject stepObj = new
+	 * JSONObject(); if (req.getOs_upgrade_dilevary_post_login_flag() != null) {
+	 * stepObj.clear(); stepObj.put("step", "Login"); stepObj.put("status",
+	 * req.getOs_upgrade_dilevary_post_login_flag());
+	 * os_upgrade_dilevary_step_array.put(stepObj); } if
+	 * (req.getOs_upgrade_dilevary_flash_size_flag() != null) { stepObj.clear();
+	 * stepObj.put("step", "Flash size availability"); stepObj.put("status",
+	 * req.getOs_upgrade_dilevary_flash_size_flag());
+	 * os_upgrade_dilevary_step_array.put(stepObj); } if
+	 * (req.getOs_upgrade_dilevary_backup_flag() != null) { stepObj.clear();
+	 * stepObj.put("step", "Back up"); stepObj.put("status",
+	 * req.getOs_upgrade_dilevary_backup_flag());
+	 * os_upgrade_dilevary_step_array.put(stepObj); } if
+	 * (req.getOs_upgrade_dilevary_os_download_flag() != null) { stepObj.clear();
+	 * stepObj.put("step", "OS Download"); stepObj.put("status",
+	 * req.getOs_upgrade_dilevary_os_download_flag());
+	 * os_upgrade_dilevary_step_array.put(stepObj); } if
+	 * (req.getOs_upgrade_dilevary_boot_system_flash_flag() != null) {
+	 * stepObj.clear(); stepObj.put("step", "Boot system flash");
+	 * stepObj.put("status", req.getOs_upgrade_dilevary_boot_system_flash_flag());
+	 * os_upgrade_dilevary_step_array.put(stepObj); } if
+	 * (req.getOs_upgrade_dilevary_reload_flag() != null) { stepObj.clear();
+	 * stepObj.put("step", "Reload"); stepObj.put("status",
+	 * req.getOs_upgrade_dilevary_reload_flag());
+	 * os_upgrade_dilevary_step_array.put(stepObj); } if
+	 * (req.getOs_upgrade_dilevary_post_login_flag() != null) { stepObj.clear();
+	 * stepObj.put("step", "Post login"); stepObj.put("status",
+	 * req.getOs_upgrade_dilevary_post_login_flag());
+	 * os_upgrade_dilevary_step_array.put(stepObj); }
+	 * 
+	 * // Logic for health checks ShowCPUUsage cpuUsage = new ShowCPUUsage();
+	 * ShowMemoryTest memoryInfo = new ShowMemoryTest(); ShowPowerTest powerTest =
+	 * new ShowPowerTest(); ShowVersionTest versionTest = new ShowVersionTest();
+	 * 
+	 * CreateConfigRequest createConfigRequest = dao
+	 * .getRequestDetailFromDBForVersion(createConfigRequestDCM.getRequestId(),
+	 * version);
+	 * 
+	 * createConfigRequest.setHostname(createConfigRequest.getHostname());
+	 * createConfigRequest.setSiteid(createConfigRequest.getSiteid());
+	 * createConfigRequest.setManagementIp(createConfigRequest.getManagementIp());
+	 * createConfigRequest.setCustomer(createConfigRequest.getCustomer());
+	 * createConfigRequest.setModel(createConfigRequest.getModel());
+	 * 
+	 * createConfigRequest.setPre_cpu_usage_percentage(cpuUsage.
+	 * getCPUUsagePercentage( createConfigRequest.getHostname(),
+	 * createConfigRequest.getRegion(), "Pre"));
+	 * createConfigRequest.setPre_memory_info(memoryInfo
+	 * .getMemoryUsed(createConfigRequest.getHostname(),
+	 * createConfigRequest.getRegion(), "Pre") .toString());
+	 * createConfigRequest.setPre_power_info(powerTest.getPowerInfor(
+	 * createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Pre"));
+	 * // createConfigRequest.setPre_version_info(versionTest.getVersion(
+	 * createConfigRequest.getHostname(),createConfigRequest.getRegion(),"Pre"));
+	 * 
+	 * createConfigRequest.setPost_cpu_usage_percentage(cpuUsage.
+	 * getCPUUsagePercentage( createConfigRequest.getHostname(),
+	 * createConfigRequest.getRegion(), "Post"));
+	 * createConfigRequest.setPost_memory_info(memoryInfo
+	 * .getMemoryUsed(createConfigRequest.getHostname(),
+	 * createConfigRequest.getRegion(), "Post") .toString());
+	 * createConfigRequest.setPost_power_info(powerTest.getPowerInfor(
+	 * createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Post"));
+	 * // createConfigRequest.setPost_version_info(versionTest.getVersion(
+	 * createConfigRequest.getHostname(),createConfigRequest.getRegion(),"Post"));
+	 * 
+	 * JSONArray healthCheckArray = new JSONArray();
+	 * 
+	 * JSONObject cpu = new JSONObject(); cpu.put("healthcheck", "CPU Usage");
+	 * cpu.put("preUpgradeValue",
+	 * createConfigRequest.getPre_cpu_usage_percentage());
+	 * cpu.put("postUpgradeValue",
+	 * createConfigRequest.getPost_cpu_usage_percentage());
+	 * 
+	 * if (createConfigRequest.getPre_cpu_usage_percentage() == 0 &&
+	 * createConfigRequest.getPost_cpu_usage_percentage() == 0) { cpu.put("outcome",
+	 * "Pass"); } else if (createConfigRequest.getPre_cpu_usage_percentage() < 0 &&
+	 * createConfigRequest.getPost_cpu_usage_percentage() < 0) { cpu.put("outcome",
+	 * "Fail"); }
+	 * 
+	 * healthCheckArray.put(cpu);
+	 * 
+	 * JSONObject mem = new JSONObject(); mem.put("healthcheck", "Memory Usage(%)");
+	 * mem.put("preUpgradeValue", createConfigRequest.getPre_memory_info());
+	 * mem.put("postUpgradeValue", createConfigRequest.getPost_memory_info()); if
+	 * (Double.parseDouble(createConfigRequest.getPre_memory_info()) > 0 &&
+	 * Double.parseDouble(createConfigRequest.getPost_memory_info()) > 0) {
+	 * mem.put("outcome", "Pass"); } else { mem.put("outcome", "Fail");
+	 * 
+	 * }
+	 * 
+	 * healthCheckArray.put(mem);
+	 * 
+	 * JSONObject pow = new JSONObject(); pow.put("healthcheck",
+	 * "Power Information"); pow.put("preUpgradeValue",
+	 * createConfigRequest.getPre_power_info()); pow.put("postUpgradeValue",
+	 * createConfigRequest.getPost_power_info()); if
+	 * (createConfigRequest.getPre_power_info().equalsIgnoreCase("fail") ||
+	 * createConfigRequest.getPost_power_info().equalsIgnoreCase("fail")) {
+	 * pow.put("outcome", "Fail"); } else { pow.put("outcome", "Pass");
+	 * 
+	 * } healthCheckArray.put(pow);
+	 * 
+	 * obj.put("osUpgradeStatus", "1"); obj.put("Statusmessage",
+	 * "Device upgraded Succesfully");
+	 * 
+	 * obj.put("OsupgradeSummary", os_upgrade_dilevary_step_array.toString());
+	 * obj.put("healthCheckSummary", healthCheckArray.toString());
+	 * 
+	 * } else if(type.equalsIgnoreCase("SLGB")) {
+	 * obj=dao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
+	 * }else { obj = dao.getStatusForCustomerReport(createConfigRequestDCM); }
+	 * 
+	 * CreateConfigRequest reqDetail =
+	 * dao.getRequestDetailFromDBForVersion(createConfigRequestDCM.getRequestId(),
+	 * version); Map<String, String> resultForFlag = new HashMap<String, String>();
+	 * 
+	 * if(type.equalsIgnoreCase("SNRC")) { reqDetail.setDeliever_config("Passed"); }
+	 * else if(type.equalsIgnoreCase("SLGC")) {
+	 * reqDetail.setDeliever_config("Passed");
+	 * 
+	 * } resultForFlag = dao.getRequestFlagForReport(reqDetail.getRequestId(),
+	 * reqDetail.getRequest_version()); String flagForPrevalidation = ""; String
+	 * flagFordelieverConfig = ""; for (Map.Entry<String, String> entry :
+	 * resultForFlag.entrySet()) { if (entry.getKey() == "flagForPrevalidation") {
+	 * flagForPrevalidation = entry.getValue();
+	 * 
+	 * } if (entry.getKey() == "flagFordelieverConfig") { flagFordelieverConfig =
+	 * entry.getValue(); }
+	 * 
+	 * }
+	 * 
+	 * if (flagFordelieverConfig.equalsIgnoreCase("1")) {
+	 * reqDetail.setDeliever_config("Passed"); } if
+	 * (flagFordelieverConfig.equalsIgnoreCase("2")) {
+	 * reqDetail.setDeliever_config("Failed"); } String detailsStr = new
+	 * Gson().toJson(reqDetail);
+	 * 
+	 * List<String> out = new ArrayList<String>(); out.add(new
+	 * Gson().toJson(reqDetail)); obj.put("details", out); } catch (Exception e) {
+	 * logger.error(e); } return
+	 * Response.status(200).header("Access-Control-Allow-Origin", "*")
+	 * .header("Access-Control-Allow-Headers",
+	 * "origin, content-type, accept, authorization")
+	 * .header("Access-Control-Allow-Credentials", "true")
+	 * .header("Access-Control-Allow-Methods",
+	 * "GET, POST, PUT, DELETE, OPTIONS, HEAD") .header("Access-Control-Max-Age",
+	 * "1209600").entity(obj).build(); }
+	 */
 
 	@POST
 	@RequestMapping(value = "/getNetworkAuditReport", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -742,7 +698,7 @@ public class GetReportData implements Observer {
 			obj.put(new String("output"), resultObj);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -769,7 +725,7 @@ public class GetReportData implements Observer {
 		try {
 			detailsList = dcmConfigService.getAllDetails();
 			int totalReqs = detailsList.size();
-			System.out.println(totalReqs);
+			logger.info(totalReqs);
 
 			int configTotalReq = dcmConfigService.getRequestTypeData("SR%");
 			int configAndLegReq = dcmConfigService.getNetworkTypeRequest("SR%", "Legacy");
@@ -819,7 +775,7 @@ public class GetReportData implements Observer {
 			obj.put("backUp", bckupJson);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -904,7 +860,7 @@ public class GetReportData implements Observer {
 			obj.put(new String("scheduled"), scheduled);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -914,7 +870,7 @@ public class GetReportData implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-	
+
 	// to getbackup and deliver
 	@POST
 	@RequestMapping(value = "/getStartUpConfigData", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -955,7 +911,7 @@ public class GetReportData implements Observer {
 			}
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -965,9 +921,7 @@ public class GetReportData implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-	
-	
-	
+
 	@POST
 	@RequestMapping(value = "/customerReport", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -986,7 +940,7 @@ public class GetReportData implements Observer {
 			createConfigRequestDCM.setTestType(json.get("testType").toString());
 			String stringVersion = json.get("version").toString();
 			createConfigRequestDCM.setRequestVersion(Double.parseDouble(stringVersion));
-			 Double requestVersion = createConfigRequestDCM.getRequestVersion();
+			Double requestVersion = createConfigRequestDCM.getRequestVersion();
 
 			if (!stringVersion.contains(".")) {
 				stringVersion = stringVersion + ".0";
@@ -996,10 +950,9 @@ public class GetReportData implements Observer {
 			String type = createConfigRequestDCM.getAlphanumericReqId().substring(0,
 					Math.min(createConfigRequestDCM.getAlphanumericReqId().length(), 4));
 
-			if (type.equalsIgnoreCase("OS")) {
+			if (type.equalsIgnoreCase("SLGF")) {
 				CreateConfigRequest req = new CreateConfigRequest();
-				req = dao.getOSDilevarySteps(createConfigRequestDCM.getAlphanumericReqId(),
-						stringVersion);
+				req = dao.getOSDilevarySteps(createConfigRequestDCM.getAlphanumericReqId(), stringVersion);
 				JSONArray os_upgrade_dilevary_step_array = new JSONArray();
 				JSONObject stepObj = new JSONObject();
 				if (req.getOs_upgrade_dilevary_post_login_flag() != null) {
@@ -1050,15 +1003,19 @@ public class GetReportData implements Observer {
 				ShowMemoryTest memoryInfo = new ShowMemoryTest();
 				ShowPowerTest powerTest = new ShowPowerTest();
 				ShowVersionTest versionTest = new ShowVersionTest();
+				RequestInfoPojo reqDetail = requestDao.getRequestDetailTRequestInfoDBForVersion(
+						createConfigRequestDCM.getAlphanumericReqId(),
+						Double.toString(createConfigRequestDCM.getRequestVersion()));
 
 				CreateConfigRequest createConfigRequest = dao
 						.getRequestDetailFromDBForVersion(createConfigRequestDCM.getAlphanumericReqId(), stringVersion);
 
-				createConfigRequest.setHostname(createConfigRequest.getHostname());
-				createConfigRequest.setSiteid(createConfigRequest.getSiteid());
-				createConfigRequest.setManagementIp(createConfigRequest.getManagementIp());
-				createConfigRequest.setCustomer(createConfigRequest.getCustomer());
-				createConfigRequest.setModel(createConfigRequest.getModel());
+				createConfigRequest.setHostname(reqDetail.getHostname());
+				createConfigRequest.setSiteid(reqDetail.getSiteid());
+				createConfigRequest.setManagementIp(reqDetail.getManagementIp());
+				createConfigRequest.setCustomer(reqDetail.getCustomer());
+				createConfigRequest.setModel(reqDetail.getModel());
+				createConfigRequest.setRegion(reqDetail.getRegion());
 
 				createConfigRequest.setPre_cpu_usage_percentage(cpuUsage.getCPUUsagePercentage(
 						createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Pre"));
@@ -1122,27 +1079,34 @@ public class GetReportData implements Observer {
 				}
 				healthCheckArray.put(pow);
 
-				obj.put("osUpgradeStatus", "1");
+				// obj.put("osUpgradeStatus", "1");
+				obj.put("preVersionInfo", "12.4");
+
+				obj.put("postVersionInfo", "12.5");
+
 				obj.put("Statusmessage", "Device upgraded Succesfully");
 
 				obj.put("OsupgradeSummary", os_upgrade_dilevary_step_array.toString());
 				obj.put("healthCheckSummary", healthCheckArray.toString());
 
-			} 	else if(type.equalsIgnoreCase("SLGB"))
-			{
-				obj=dao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
-			}else {
+			} else if (type.equalsIgnoreCase("SLGB")) {
+				obj = dao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
+			} else {
 				obj = dao.getStatusForCustomerReport(createConfigRequestDCM);
 			}
 
-			
-			/*CreateConfigRequest reqDetail = dao.getRequestDetailFromDBForVersion(createConfigRequestDCM.getAlphanumericReqId(),
-					stringVersion);
-			*/
-			
-			 RequestInfoPojo reqDetail = requestDao.getRequestDetailTRequestInfoDBForVersion(createConfigRequestDCM.getAlphanumericReqId(), Double.toString(createConfigRequestDCM.getRequestVersion()));
+			/*
+			 * CreateConfigRequest reqDetail =
+			 * dao.getRequestDetailFromDBForVersion(createConfigRequestDCM.
+			 * getAlphanumericReqId(), stringVersion);
+			 */
+
+			RequestInfoPojo reqDetail = requestDao.getRequestDetailTRequestInfoDBForVersion(
+					createConfigRequestDCM.getAlphanumericReqId(),
+					Double.toString(createConfigRequestDCM.getRequestVersion()));
 			Map<String, String> resultForFlag = new HashMap<String, String>();
-			resultForFlag = dao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(),reqDetail.getRequestVersion());
+			resultForFlag = dao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(),
+					reqDetail.getRequestVersion());
 			String flagForPrevalidation = "";
 			String flagFordelieverConfig = "";
 			for (Map.Entry<String, String> entry : resultForFlag.entrySet()) {
@@ -1167,8 +1131,11 @@ public class GetReportData implements Observer {
 			List<String> out = new ArrayList<String>();
 			out.add(new Gson().toJson(reqDetail));
 			obj.put("details", out);
+			if (type.equalsIgnoreCase("SLGF")) {
+				obj.put("status", reqDetail.getStatus());
+			}
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")

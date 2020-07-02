@@ -43,7 +43,6 @@ public class DeviceTypeModel_Interfaces {
 		this.modelid = modelid;
 	}
 
-
 	public int getDeviceTypeid() {
 		return deviceTypeid;
 	}

@@ -11,6 +11,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -19,7 +21,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
@@ -30,7 +31,6 @@ import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.models.TemplateCommandJSONModel;
 import com.techm.orion.pojo.AddNewFeatureTemplateMngmntPojo;
-import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.MasterAttribPojo;
@@ -41,7 +41,7 @@ import com.techm.orion.service.TemplateManagementNewService;
 @Controller
 @RequestMapping("/TemplateManagementService")
 public class TemplateManagementService implements Observer {
-
+	private static final Logger logger = LogManager.getLogger(TemplateManagementService.class);
 	@Autowired
 	TemplateFeatureRepo templateFeatureRepo;
 
@@ -50,7 +50,7 @@ public class TemplateManagementService implements Observer {
 
 	@Autowired
 	TemplateSuggestionDao templateSuggestionDao;
-	
+
 	@Autowired
 	TemplateFeatureRepo templatefeatureRepo;
 
@@ -259,42 +259,44 @@ public class TemplateManagementService implements Observer {
 			JSONArray cmdArray = (JSONArray) (json.get("list"));
 			CommandPojo commandPojo = null;
 			List<CommandPojo> commandPojoList = new ArrayList<CommandPojo>();
-		
+
 			for (int i = 0; i < cmdArray.size(); i++) {
-				boolean flag= false;
+				boolean flag = false;
 				JSONObject obj1 = (JSONObject) cmdArray.get(i);
 
 				commandPojo = new CommandPojo();
-				/*If feature is newly added*/
+				/* If feature is newly added */
 				if (obj1.get("id").toString().contains("drop_") && obj1.get("id").toString().contains("dragN_")) {
 					String modId = obj1.get("id").toString().substring(0, obj1.get("id").toString().length() - 1);
 					String result = modId.substring(0, modId.indexOf("dragN_"));
 					result = result.replace("drop_", "").replace("dragN_", "");
-					boolean temp= false;
-					if(saveLeftPanelData!=null && !saveLeftPanelData.isEmpty()) {
-					for (CommandPojo pojo : saveLeftPanelData) {
-						/*Dhanshri Mane 14-1-2020 
-						 * feature is newly added but after basic configuration updated all data get the id from feature table and bind it to command id*/
-					if(pojo.getCommand_value().equals(obj1.get("commandValue"))){
-						if(pojo.getTempId().equals(result)) {
-							commandPojo.setCommand_id(pojo.getId());
-							commandPojo.setCommand_sequence_id(pojo.getCommandSequenceId());
-							saveLeftPanelData.remove(pojo);
-							temp=true;
-							break;
-						  }
-						}						
-					  }
-					}else {
+					boolean temp = false;
+					if (saveLeftPanelData != null && !saveLeftPanelData.isEmpty()) {
+						for (CommandPojo pojo : saveLeftPanelData) {
+							/*
+							 * Dhanshri Mane 14-1-2020 feature is newly added but after basic configuration
+							 * updated all data get the id from feature table and bind it to command id
+							 */
+							if (pojo.getCommand_value().equals(obj1.get("commandValue"))) {
+								if (pojo.getTempId().equals(result)) {
+									commandPojo.setCommand_id(pojo.getId());
+									commandPojo.setCommand_sequence_id(pojo.getCommandSequenceId());
+									saveLeftPanelData.remove(pojo);
+									temp = true;
+									break;
+								}
+							}
+						}
+					} else {
 						commandPojo.setCommand_id(result);
 						commandPojo.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
-						temp=true;
+						temp = true;
 					}
-					if(!temp) {
-					commandPojo.setCommand_id(result);
-					commandPojo.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
-					} 
-					}else {
+					if (!temp) {
+						commandPojo.setCommand_id(result);
+						commandPojo.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
+					}
+				} else {
 					if (saveLeftPanelData == null || saveLeftPanelData.isEmpty()) {
 						commandPojo.setCommand_id(obj1.get("id").toString());
 						commandPojo.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
@@ -306,15 +308,16 @@ public class TemplateManagementService implements Observer {
 								commandPojo.setCommand_id(pojo.getId());
 								commandPojo.setCommand_sequence_id(pojo.getCommandSequenceId());
 								saveLeftPanelData.remove(pojo);
-								flag= true;								
+								flag = true;
 								break;
 							}
 							continue;
 						}
-						if(!flag) {
+						if (!flag) {
 							commandPojo.setCommand_id(obj1.get("id").toString());
-							commandPojo.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
-							flag= false;
+							commandPojo
+									.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
+							flag = false;
 						}
 					}
 
@@ -364,8 +367,9 @@ public class TemplateManagementService implements Observer {
 			List<CommandPojo> commandPojoList1 = new ArrayList<CommandPojo>();
 			commandPojoList2 = new ArrayList<CommandPojo>();
 			/*
-			 * Dhanshri Mane 14-1-2020
-			 * get data for left panel and convert if data is old then convert it into addFeature service request and add as a new feature*/
+			 * Dhanshri Mane 14-1-2020 get data for left panel and convert if data is old
+			 * then convert it into addFeature service request and add as a new feature
+			 */
 			for (int i = 0; i < leftPanel.size(); i++) {
 
 				JSONObject obj1 = (JSONObject) leftPanel.get(i);
@@ -408,7 +412,7 @@ public class TemplateManagementService implements Observer {
 							attributeMapping.add(attribObj2);
 						}
 						obj.put("attribMappings", attributeMapping);
-						/*addNewFeatureForTemplate service*/
+						/* addNewFeatureForTemplate service */
 						Response addNewFeatureForTemplate = addNewFeatureForTemplate(obj.toString());
 						JSONObject responceOutput = (JSONObject) addNewFeatureForTemplate.getEntity();
 						String featureOutput = (String) responceOutput.get("output");
@@ -426,10 +430,10 @@ public class TemplateManagementService implements Observer {
 							commandPojo.setId(entity.get("id").toString());
 							commandPojo.setTempId(obj1.get("id").toString());
 							commandPojoList2.add(commandPojo);
-							
+
 						}
 						commandPojoLeftPanel.setId(entity.get("id").toString());
-						System.out.println(obj);
+						logger.info(obj);
 					} else {
 						commandPojoLeftPanel.setId(obj1.get("id").toString());
 					}
@@ -490,41 +494,41 @@ public class TemplateManagementService implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
-	
-	/*method added for view template Details*/
+	/* method added for view template Details */
 	@POST
 	@RequestMapping(value = "/viewTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response viewTemplate(@RequestBody String request) {
-		JSONObject basicDeatilsOfTemplate =null;
+		JSONObject basicDeatilsOfTemplate = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 			TemplateManagementDao dao = new TemplateManagementDao();
-			
-			String template= json.get("templateId").toString();
+
+			String template = json.get("templateId").toString();
 			String version = json.get("version").toString();
-			
-			String finaltemplate= template+"_V"+version;
-			 basicDeatilsOfTemplate = templateSuggestionDao.getBasicDeatilsOfTemplate(template,version);
-			 
-			 String seriesId = dao.getSeriesId(finaltemplate, null);
-			 seriesId=StringUtils.substringAfter(seriesId, "Generic_");
-			 System.out.println(seriesId);
-			 
-			 List<CommandPojo> cammands = dao.getCammandsBySeriesId(seriesId, finaltemplate);
-			 List<String> featureList =new ArrayList<>();
-			 featureList.add("Basic Configuration");
-			 
-			 featureList.addAll(templateSuggestionDao.getFeatureList(finaltemplate));
-			 basicDeatilsOfTemplate.put("featureList", featureList);
+
+			String finaltemplate = template + "_V" + version;
+			basicDeatilsOfTemplate = templateSuggestionDao.getBasicDeatilsOfTemplate(template, version);
+
+			String seriesId = dao.getSeriesId(finaltemplate, null);
+			seriesId = StringUtils.substringAfter(seriesId, "Generic_");
+			logger.info(seriesId);
+
+			List<CommandPojo> cammands = dao.getCammandsBySeriesId(seriesId, finaltemplate);
+			List<String> featureList = new ArrayList<>();
+			featureList.add("Basic Configuration");
+
+			featureList.addAll(templateSuggestionDao.getFeatureList(finaltemplate));
+			basicDeatilsOfTemplate.put("featureList", featureList);
 			for (String feature : featureList) {
-				if(!feature.contains("Basic")) {
+				if (!feature.contains("Basic")) {
 					TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
 							.findIdByComandDisplayFeatureAndCommandContains(feature, finaltemplate);
-					if(findIdByfeatureAndCammand!=null) {
-					List<CommandPojo> cammandByTemplateAndfeatureId = dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(),finaltemplate);
-					cammands.addAll(cammandByTemplateAndfeatureId);
+					if (findIdByfeatureAndCammand != null) {
+						List<CommandPojo> cammandByTemplateAndfeatureId = dao
+								.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(), finaltemplate);
+						cammands.addAll(cammandByTemplateAndfeatureId);
 					}
 				}
 			}
@@ -534,8 +538,8 @@ public class TemplateManagementService implements Observer {
 				finalCammands = finalCammands + cammand.getCommandValue();
 			}
 			basicDeatilsOfTemplate.put("commands", finalCammands);
-		}catch(Exception e) {
-			System.out.println(e);
+		} catch (Exception e) {
+			logger.error(e);
 		}
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
@@ -543,7 +547,7 @@ public class TemplateManagementService implements Observer {
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(basicDeatilsOfTemplate).build();
 	}
-	
+
 	@Override
 	public void update(Observable o, Object arg) {
 		// TODO Auto-generated method stub

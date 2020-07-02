@@ -1,33 +1,15 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Entity
 @Table(name = "c3p_t_device_discovery_result_device_details_flags")
@@ -54,8 +36,6 @@ public class DiscoveryResultDeviceDetailsFlagsEntity implements Serializable
 		this.id = id;
 	}
 
-	
-
 	@Column(name = "d_cpu_flag", length = 10)
 	private String dCpuFlag;
 
@@ -64,54 +44,54 @@ public class DiscoveryResultDeviceDetailsFlagsEntity implements Serializable
 
 	@Column(name = "d_drm_size", length = 10)
 	private String dDrmSizeFlag;
-	
+
 	@Column(name = "d_flash_size_flag", length = 10)
 	private String dFlashSizeFlag;
-	
+
 	@Column(name = "d_hostname_flag", length = 10)
 	private String dHostnameFlag;
-	
+
 	@Column(name = "d_ipaddrs_six_flag", length = 10)
 	private String dIpAddrsSixFlag;
-	
+
 	@Column(name = "d_image_file_flag", length = 10)
 	private String dImageFileFlag;
-	
+
 	@Column(name = "d_macaddress_flag", length = 10)
 	private String dMacaddressFlag;
-	
+
 	@Column(name = "d_mgmtip_flag", length = 10)
 	private String dMgmtipFlag;
-	
+
 	@Column(name = "d_model_flag", length = 10)
 	private String dModelFlag;
-	
+
 	@Column(name = "d_nvram_size_flag", length = 10)
 	private String dNvramSizeFlag;
-	
+
 	@Column(name = "d_os_flag", length = 10)
 	private String dOsFlag;
-	
+
 	@Column(name = "d_os_version_flag", length = 10)
 	private String dOsVersionFlag;
-	
+
 	@Column(name = "d_releasever_flag", length = 10)
 	private String dReleaseverFlag;
-	
+
 	@Column(name = "d_serial_number_flag", length = 10)
 	private String dSerialNumberFlag;
-	
+
 	@Column(name = "d_sries_flag", length = 10)
-	private String dSriesFlag ;
-	
+	private String dSriesFlag;
+
 	@Column(name = "d_upsince_flag", length = 10)
-	private String dUpsinceFlag ;
-	
+	private String dUpsinceFlag;
+
 	@Column(name = "d_vendor_flag", length = 10)
-	private String dVendorFlag ;
+	private String dVendorFlag;
 
 	@Column(name = "d_status_flag", length = 10)
-	private String dStatusFlag ;
+	private String dStatusFlag;
 
 	public String getdCpuFlag() {
 		return dCpuFlag;
@@ -264,6 +244,5 @@ public class DiscoveryResultDeviceDetailsFlagsEntity implements Serializable
 	public void setdStatusFlag(String dStatusFlag) {
 		this.dStatusFlag = dStatusFlag;
 	}
-	
 
 }

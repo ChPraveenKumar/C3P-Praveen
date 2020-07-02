@@ -16,22 +16,19 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-
 @Entity
 
 @Table(name = "T_TPMGMT_GLBLIST_M_OSversion", uniqueConstraints = { @UniqueConstraint(columnNames = { "osversion" }) })
-public class OSversion implements Serializable
+public class OSversion implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7522926754873724291L;
 
-{
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
 
-	
-	
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.ALL })
 	private Set<Models> models;
 
@@ -39,17 +36,17 @@ public class OSversion implements Serializable
 	private OS os;
 
 	@Transient
-	private boolean value=false;
-	
+	private boolean value = false;
+
 	@Transient
-	private int multi_osver_id=0;
-	
+	private int multi_osver_id = 0;
+
 	@Transient
 	private String multi_osver_text;
-	
+
 	@Transient
 	private boolean multi_osver_value;
-	
+
 	public boolean isMulti_osver_value() {
 		return multi_osver_value;
 	}

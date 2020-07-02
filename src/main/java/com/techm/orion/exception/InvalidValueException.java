@@ -1,7 +1,7 @@
 package com.techm.orion.exception;
 
-public class InvalidValueException extends Exception{
-	
+public class InvalidValueException extends Exception {
+
 	/**
 	 * 
 	 */
@@ -10,7 +10,7 @@ public class InvalidValueException extends Exception{
 	public InvalidValueException() {
 		super();
 	}
-	
+
 	public InvalidValueException(String errMsg) {
 		super(errMsg);
 	}

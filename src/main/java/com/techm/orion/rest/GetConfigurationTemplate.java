@@ -8,6 +8,8 @@ import java.util.List;
 import javax.ws.rs.POST;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +35,7 @@ import com.techm.orion.utility.InvokeFtl;
 @Controller
 @RequestMapping("/GetConfigurationTemplate")
 public class GetConfigurationTemplate {
-
+	private static final Logger logger = LogManager.getLogger(GetConfigurationTemplate.class);
 	@Autowired
 	AttribCreateConfigService service;
 
@@ -229,10 +231,10 @@ public class GetConfigurationTemplate {
 			 */
 			String seriesId = dcmConfigService.getSeriesId(createConfigRequest.getVendor(),
 					createConfigRequest.getDeviceType(), createConfigRequest.getModel());
-			/*Get Series according to template id*/
+			/* Get Series according to template id */
 			TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
-			seriesId=templatemanagementDao.getSeriesId(createConfigRequest.getTemplateID(), seriesId);
-			seriesId=StringUtils.substringAfter(seriesId, "Generic_");
+			seriesId = templatemanagementDao.getSeriesId(createConfigRequest.getTemplateID(), seriesId);
+			seriesId = StringUtils.substringAfter(seriesId, "Generic_");
 
 			List<AttribCreateConfigPojo> masterAttribute = new ArrayList<>();
 			List<AttribCreateConfigPojo> byAttribSeriesId = service.getByAttribSeriesId(seriesId);
@@ -253,7 +255,7 @@ public class GetConfigurationTemplate {
 			}
 			List<CommandPojo> cammandsBySeriesId = null;
 			// Getting Commands Using Series Id
-			if (createConfigRequest.getTemplateID() == null |createConfigRequest.getTemplateID() .equals("")) {
+			if (createConfigRequest.getTemplateID() == null | createConfigRequest.getTemplateID().equals("")) {
 				cammandsBySeriesId = dao.getCammandsBySeriesId(seriesId, null);
 			} else {
 				cammandsBySeriesId = dao.getCammandsBySeriesId(seriesId, createConfigRequest.getTemplateID());
@@ -262,7 +264,7 @@ public class GetConfigurationTemplate {
 			List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
 			List<CommandPojo> cammandByTemplate = new ArrayList<>();
 			for (String feature : featureList) {
-				String templateId=createConfigRequest.getTemplateID();
+				String templateId = createConfigRequest.getTemplateID();
 				TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
 						.findIdByComandDisplayFeatureAndCommandContains(feature, templateId);
 				List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = service
@@ -270,7 +272,8 @@ public class GetConfigurationTemplate {
 				if (byAttribTemplateAndFeatureName != null && !byAttribTemplateAndFeatureName.isEmpty()) {
 					templateAttribute.addAll(byAttribTemplateAndFeatureName);
 				}
-				cammandByTemplate.addAll(dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(),createConfigRequest.getTemplateID()));
+				cammandByTemplate.addAll(dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(),
+						createConfigRequest.getTemplateID()));
 			}
 
 			// Extract Json and map to CreateConfigPojo fields
@@ -712,7 +715,7 @@ public class GetConfigurationTemplate {
 				}
 
 			}
-			
+
 			/*
 			 * Create TemplateId for creating master configuration when template id is null
 			 * or empty
@@ -734,7 +737,7 @@ public class GetConfigurationTemplate {
 			obj.put(new String("output"), new String(data));
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return obj;

@@ -16,33 +16,37 @@ import javax.persistence.Table;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Table(name ="t_template_attrib_m_predefined_generic_attrbs")
+@Table(name = "t_template_attrib_m_predefined_generic_attrbs")
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class PredefinedGenericTemplateAttribEntity implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -807895768871611492L;
+
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
 	private int Id;
-	
+
 	@Column(name = "attrib_type")
 	private String attribType;
-	
+
 	@Column(name = "attrib_name")
 	private String attribName;
-	
+
 	@Column(name = "master_template_type")
 	private String masterTemplateType;
-	
+
 	@Column(name = "attrib_ui_component")
 	private String attribUIComponent;
-	
+
 	@Column(name = "attrib_validation")
-	private String attribValidation; 
-	
-	
-	@ManyToOne(fetch = FetchType.EAGER, cascade={CascadeType.ALL})
-	@JoinColumn(name="category_id")
+	private String attribValidation;
+
+	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
+	@JoinColumn(name = "category_id")
 	private CategoryMasterEntity categoryMaster;
-	
+
 	public int getId() {
 		return Id;
 	}
@@ -66,7 +70,7 @@ public class PredefinedGenericTemplateAttribEntity implements Serializable {
 	public void setAttribName(String attribName) {
 		this.attribName = attribName;
 	}
-	
+
 	public String getMasterTemplateType() {
 		return masterTemplateType;
 	}
@@ -97,5 +101,5 @@ public class PredefinedGenericTemplateAttribEntity implements Serializable {
 
 	public void setCategoryMaster(CategoryMasterEntity categoryMaster) {
 		this.categoryMaster = categoryMaster;
-	} 
+	}
 }

@@ -10,84 +10,81 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-
-
 @Entity
 @Table(name = "c3p_t_pre_def_tests")
-public class PredefineTestDetailEntity 
-{
+public class PredefineTestDetailEntity {
 
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
-	@Column(name="pd_td_id")
+	@Column(name = "pd_td_id")
 	private int id;
 
 	@Column(name = "pd_td_comment")
 	private String comment;
 
-	@Column(name = "pd_td_created_by",length=50,nullable=false)
+	@Column(name = "pd_td_created_by", length = 50, nullable = false)
 	@NotNull
 	private String createdBy;
 
-	@Column(name = "pd_td_created_on",length=20)
+	@Column(name = "pd_td_created_on", length = 20)
 	private Date createdOn;
 
-	@Column(name = "pd_td_device_model",length=30,nullable=false)
+	@Column(name = "pd_td_device_model", length = 30, nullable = false)
 	@NotNull
 	private String deviceModel;
 
-	@Column(name = "pd_td_device_type",length=20,nullable=false)
+	@Column(name = "pd_td_device_type", length = 20, nullable = false)
 	@NotNull
 	private String deviceType;
 
-	@Column(name = "pd_td_os",length=10,nullable=false)
+	@Column(name = "pd_td_os", length = 10, nullable = false)
 	@NotNull
 	private String os;
 
-	@Column(name = "pd_td_os_version",length=30,nullable=false)
+	@Column(name = "pd_td_os_version", length = 30, nullable = false)
 	@NotNull
 	private String osVersion;
 
-	@Column(name = "pd_td_region",length=30)
+	@Column(name = "pd_td_region", length = 30)
 	private String region;
 
-	@Column(name = "pd_td_test_category",length=30)
+	@Column(name = "pd_td_test_category", length = 30)
 	private String testCategory;
-	
+
 	@Column(name = "pd_td_test_command")
 	private String testCommand;
 
-	@Column(name = "pd_td_test_id",length=30,nullable=false)
+	@Column(name = "pd_td_test_id", length = 30, nullable = false)
 	@NotNull
 	private String testId;
 
-	@Column(name = "pd_td_test_name",length=50,nullable=false)
+	@Column(name = "pd_td_test_name", length = 50, nullable = false)
 	@NotNull
 	private String testName;
 
-	@Column(name = "pd_td_test_type",length=30)
+	@Column(name = "pd_td_test_type", length = 30)
 	private String testType;
 
-	@Column(name = "pd_td_vendor",length=20,nullable=false)
+	@Column(name = "pd_td_vendor", length = 20, nullable = false)
 	@NotNull
 	private String vendor;
-	
+
 	@Column(name = "pd_td_version")
 	private Double version;
 
 	@Column(name = "pd_td_is_enabled")
 	private boolean isEnabled = false;
 
-	@Column(name = "pd_td_reg_ex_filter_keywords",length=50)
+	@Column(name = "pd_td_reg_ex_filter_keywords", length = 50)
 	private String filterKeywords;
-	
+
 	@Column(name = "pd_td_training_data_path")
 	private String trainingDataPath;
-	
+
 	@Column(name = "pd_td_test_applicable_level")
 	private String testApplicableLevel;
-	
-	@Column(name = "pd_td_d_sries",length=30)
+
+	@Column(name = "pd_td_d_sries", length = 30)
 	private String d_sries;
 
 	public int getId() {
