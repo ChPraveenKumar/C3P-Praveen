@@ -15,8 +15,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.collections.ListUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.techm.orion.dao.RequestInfoDao;
@@ -42,8 +40,6 @@ import freemarker.template.Template;
  */
 
 public class InvokeFtl {
-	private static final Logger logger = LogManager.getLogger(InvokeFtl.class);
-	
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -993,12 +989,11 @@ public class InvokeFtl {
 		/* Arrange Commands with position */
 		finalCammandsList.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
 		String finalCammands = "";
-
 		for (CommandPojo cammands : finalCammandsList) {
 			finalCammands = finalCammands + cammands.getCommandValue();
 		}
 
-		logger.info(finalCammands);
+		System.out.println(finalCammands);
 		try {
 			// new Template is Save in NewTemplate Folder
 			TemplateManagementDetailsService.loadProperties();
@@ -1253,110 +1248,29 @@ public class InvokeFtl {
 		return res;
 
 	}
-
-	public String getStartUpRouterVersion(String requestId, String version) throws Exception {
+	public String getStartUpRouterVersion(String requestId,String version)
+			throws Exception {
 		InvokeFtl.loadProperties();
 		String content = "";
-		String filePath = "";
-		String newStr = "";
-		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			File file = new File(responseDownloadPath + "//" + requestId + "V" + version + "_StartupConfig.txt");
-			if (file.exists()) {
-				filePath = responseDownloadPath + "//" + requestId + "V" + version + "_StartupConfig.txt";
-				content = new String(Files.readAllBytes(Paths.get(filePath)));
-				content = content.substring(content.indexOf("run\r\n") + 5);
-				newStr = content.substring(0, content.lastIndexOf("end") + 3);
+		String filePath="";
+		String newStr="";
+		try 
+		{
+			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES
+					.getProperty("responseDownloadPath");
+			File file = new File(responseDownloadPath+"//"+requestId+"V"+version+"_StartupConfig.txt");
+			if(file.exists()){
+			filePath=responseDownloadPath+"//"+requestId+"V"+version+"_StartupConfig.txt";
+			content = new String ( Files.readAllBytes( Paths.get(filePath) ) );
+			content= content.substring(content.indexOf("run\r\n")+5);
+			newStr = content.substring(0, content.lastIndexOf("end")+3);
 			}
-		} catch (IOException e) {
+		} 
+		catch (IOException e) 
+		{
 			e.printStackTrace();
 		}
 		return newStr;
-	}
-
-	public void createFinalTemplateforBatch(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate,
-			List<AttribCreateConfigPojo> masterAttribute, List<AttribCreateConfigPojo> templateAttribute,
-			String templateId) {
-		String s = ")!" + '"' + '"' + "}";
-		if (masterAttribute != null) {
-			if (cammandsBySeriesId != null) {
-				for (CommandPojo cammand : cammandsBySeriesId) {
-					for (AttribCreateConfigPojo attrib : masterAttribute) {
-						if (attrib.getAttribType().equals("Master")) {
-							if (cammand.getCommandValue().contains("[" + attrib.getAttribLabel())) {
-
-								String attribName = attrib.getAttribName();
-								String newAttribName = attribName.replace(" ", "");
-								attribName = newAttribName.substring(0, 1).toLowerCase() + newAttribName.substring(1);
-								cammand.setCommandValue(cammand.getCommandValue().replace("[" + attrib.getAttribLabel(),
-										"${(configRequest." + attribName));
-								cammand.setCommandValue(cammand.getCommandValue().replace("]", s));
-								continue;
-							}
-						}
-					}
-					cammand.setCommandValue(cammand.getCommandValue().replace("[", "${(configRequest."));
-					cammand.setCommandValue(cammand.getCommandValue().replace("]", s));
-				}
-			}
-		}
-		if (templateAttribute != null) {
-
-			if (cammandByTemplate != null) {
-				for (CommandPojo templateCammand : cammandByTemplate) {
-					for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
-						if (templateAttrib.getAttribType().equals("Template")) {
-							if (templateCammand.getCommandValue().contains("[" + templateAttrib.getAttribLabel())) {
-								int id = Integer.parseInt(templateCammand.getId());
-								if (id == templateAttrib.getTemplateFeature().getId()) {
-									String attribName = templateAttrib.getAttribName();
-									String newAttribName = attribName.replace(" ", "");
-									attribName = newAttribName.substring(0, 1).toLowerCase()
-											+ newAttribName.substring(1);
-									templateCammand.setCommandValue(templateCammand.getCommandValue().replace(
-											"[" + templateAttrib.getAttribLabel(), "${(configRequest." + attribName));
-									templateCammand.setCommandValue(templateCammand.getCommandValue().replace("]", s));
-									continue;
-								}
-							}
-						}
-					}
-					templateCammand
-							.setCommandValue(templateCammand.getCommandValue().replace("[", "${(configRequest."));
-					templateCammand.setCommandValue(templateCammand.getCommandValue().replace("]", s));
-
-				}
-			}
-		}
-
-		List<CommandPojo> finalCammandsList = null;
-		if (cammandsBySeriesId != null) {
-			finalCammandsList = cammandsBySeriesId;
-			if (cammandByTemplate != null) {
-				finalCammandsList = ListUtils.union(cammandsBySeriesId, cammandByTemplate);
-			}
-		}
-
-		String finalCammands = "";
-		finalCammandsList = cammandByTemplate;
-		for (CommandPojo cammands : finalCammandsList) {
-			finalCammands = finalCammands + cammands.getCommandValue();
-		}
-
-		logger.info(finalCammands);
-		try {
-			// new Template is Save in NewTemplate Folder
-			TemplateManagementDetailsService.loadProperties();
-			String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
-					.getProperty("newtemplateCreationPath");
-
-			TextReport.writeFile(responseDownloadPath, templateId, finalCammands);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
 	}
 
 }

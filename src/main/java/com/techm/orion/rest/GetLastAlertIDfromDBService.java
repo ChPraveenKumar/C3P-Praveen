@@ -1,29 +1,34 @@
 package com.techm.orion.rest;
 
+import java.io.Console;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Spliterator;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
+import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.AlertInformation;
+import com.techm.orion.pojo.AlertInformationPojo;
 import com.techm.orion.repositories.AlertInformationRepository;
 
 @Controller
 @RequestMapping("/GetLastAlertID")
 public class GetLastAlertIDfromDBService implements Observer {
-	private static final Logger logger = LogManager.getLogger(GetLastAlertIDfromDBService.class);
+
 	/* Autowired JPA Repository */
 	@Autowired
 	public AlertInformationRepository alertInformationRepository;
@@ -46,14 +51,16 @@ public class GetLastAlertIDfromDBService implements Observer {
 
 		try {
 
-			List<AlertInformation> alertInfo = alertInformationRepository.findAll();
+			List<AlertInformation> alertInfo = alertInformationRepository
+					.findAll();
 
 			try {
 				// resultObject = requestInfoDao.getLastAlertId();
 				/* Iterating total list size to get last alert */
 				if (alertInfo.size() > 0) {
 
-					alertEntity.setAlertcode(separate(alertInfo.get(alertInfo.size() - 1).getAlertcode()));
+					alertEntity.setAlertcode(separate(alertInfo.get(
+							alertInfo.size() - 1).getAlertcode()));
 				} else {
 					alertEntity = new AlertInformation();
 					alertEntity.setAlertcode("0");
@@ -63,18 +70,23 @@ public class GetLastAlertIDfromDBService implements Observer {
 				obj.put(new String("LastID"), alertEntity.getAlertcode());
 
 			} catch (Exception e) {
-				logger.error(e);
+				System.out.println(e);
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+		return Response
+				.status(200)
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers",
+						"origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+				.header("Access-Control-Allow-Methods",
+						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj)
+				.build();
 	}
 
 	@Override

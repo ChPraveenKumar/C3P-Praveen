@@ -1,5 +1,7 @@
 package com.techm.orion.pojo;
 
+import java.util.List;
+
 public class PredefinedAttribResponsePojo {
 	
 	private String name;

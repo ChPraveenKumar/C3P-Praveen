@@ -7,10 +7,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY)
 public class ExcelToJSONConfigPojo  implements Serializable{
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1482103027833116573L;
 	private String variableName;
 	private String variable;
 	private String variableValue;

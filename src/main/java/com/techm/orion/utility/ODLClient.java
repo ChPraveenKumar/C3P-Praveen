@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -16,27 +17,29 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.techm.orion.rest.DeliverConfigurationAndBackupTest;
+import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 
 public class ODLClient {
-	private static final Logger logger = LogManager.getLogger(ODLClient.class);
 
 	private String ODL_URL = null;
 	private String ODL_METHOD_TYPE = null;
 	private String ODL_CONTENT_TYPE = null;
 	private String ODL_USER_CREDENTIALS = "admin:admin";
-	private String ODL_AUTH = "Basic " + new String(Base64.getEncoder().encode(ODL_USER_CREDENTIALS.getBytes()));
+	private String ODL_AUTH = "Basic "
+			+ new String(Base64.getEncoder().encode(
+					ODL_USER_CREDENTIALS.getBytes()));
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
-
 	public String doPostNetworkTopology(String endpoint, String requestBody, String contentType) {
 		String output = null;
 		ODL_METHOD_TYPE = "POST";
@@ -53,12 +56,14 @@ public class ODLClient {
 			conn.setRequestProperty("Authorization", ODL_AUTH);
 
 			/*
-			 * String input="<Employee><Name>Sunil</Name></<Employee>"; OutputStream
-			 * outputStream = conn.getOutputStream(); byte[] b = requestBody.getBytes();
-			 * outputStream.write(b); outputStream.flush(); outputStream.close();
+			 * String input="<Employee><Name>Sunil</Name></<Employee>";
+			 * OutputStream outputStream = conn.getOutputStream(); byte[] b =
+			 * requestBody.getBytes(); outputStream.write(b);
+			 * outputStream.flush(); outputStream.close();
 			 */
 
-			try (OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream())) {
+			try (OutputStreamWriter osw = new OutputStreamWriter(
+					conn.getOutputStream())) {
 				osw.write(requestBody);
 				osw.flush();
 			}
@@ -86,17 +91,19 @@ public class ODLClient {
 						output = "data-exists";
 						return output;
 					}
-					logger.info("sb=" + jsonObj);
+					System.out.println("sb=" + jsonObj);
 				} else {
-					throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
+					throw new RuntimeException("Failed : HTTP error code : "
+							+ conn.getResponseCode());
 				}
 			}
 
-			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(conn.getInputStream())));
 
-			logger.info("Output from ODL Server  .... \n");
+			System.out.println("Output from ODL Server  .... \n");
 			while ((output = br.readLine()) != null) {
-				logger.info(output);
+				System.out.println(output);
 			}
 			conn.disconnect();
 
@@ -126,47 +133,52 @@ public class ODLClient {
 			conn.setRequestProperty("Accept", "application/json");
 			conn.setRequestProperty("Authorization", ODL_AUTH);
 			if (conn.getResponseCode() != 200) {
-				/*
-				 * throw new RuntimeException("Failed : HTTP error code : " +
-				 * conn.getResponseCode());
-				 */
-				output = "Failure";
+				/*throw new RuntimeException("Failed : HTTP error code : "
+						+ conn.getResponseCode());*/
+				output="Failure";
 				return output;
-
+				
 			}
 
-			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+				(conn.getInputStream())));
 
-			logger.info("Output from Server .... \n");
+			System.out.println("Output from Server .... \n");
 			while ((output = br.readLine()) != null) {
 				sb.append(output);
 			}
 			JSONObject jsonObj = new JSONObject(sb.toString());
-			logger.info(jsonObj);
-			JSONObject networkTopology = jsonObj.getJSONObject("network-topology");
-			JSONArray topology = networkTopology.getJSONArray("topology");
-			List<String> nodeList = new ArrayList<String>();
-			for (int i = 0; i < topology.length(); i++) {
-				JSONObject tObj = topology.getJSONObject(i);
-				JSONArray nodes = tObj.getJSONArray("node");
-				for (int j = 0; j < nodes.length(); j++) {
-					JSONObject nObj = nodes.getJSONObject(j);
+			System.out.println(jsonObj);
+			JSONObject networkTopology=jsonObj.getJSONObject("network-topology");
+			JSONArray topology=networkTopology.getJSONArray("topology");
+			List<String>nodeList=new ArrayList<String>();
+			for(int i=0; i<topology.length();i++)
+			{
+				JSONObject tObj=topology.getJSONObject(i);
+				JSONArray nodes=tObj.getJSONArray("node");
+				for(int j=0; j<nodes.length();j++)
+				{
+					JSONObject nObj=nodes.getJSONObject(j);
 					nodeList.add(nObj.getString("node-id"));
-					JSONObject capabilities = nObj.getJSONObject("netconf-node-topology:available-capabilities");
-					JSONArray availableCap = capabilities.getJSONArray("available-capability");
+					JSONObject capabilities=nObj.getJSONObject("netconf-node-topology:available-capabilities");
+					JSONArray availableCap=capabilities.getJSONArray("available-capability");
 					StringBuilder sbcapabilities = new StringBuilder();
-					for (int k = 0; k < availableCap.length(); k++) {
+					for(int k=0;k<availableCap.length();k++)
+					{
 						sbcapabilities.append(availableCap.get(k));
 					}
-
+					
 				}
 			}
-			if (nodeList.size() > 0 && nodeList.contains("CSR1000v")) {
-				output = null;
-				output = "Success";
-			} else {
-				output = null;
-				output = "Failure";
+			if(nodeList.size()>0 && nodeList.contains("CSR1000v"))
+			{
+				output=null;
+				output="Success";
+			}
+			else
+			{
+				output=null;
+				output="Failure";
 			}
 			conn.disconnect();
 
@@ -182,7 +194,7 @@ public class ODLClient {
 
 	public boolean doGetODLBackUp(String requestID, String version, String endpoint, String step) {
 		String output = null;
-		boolean result = false;
+		boolean result=false;
 		ODL_METHOD_TYPE = "GET";
 		ODL_URL = endpoint;
 		URL url;
@@ -203,58 +215,62 @@ public class ODLClient {
 			conn.setRequestProperty("Accept", "application/json");
 			conn.setRequestProperty("Authorization", ODL_AUTH);
 			if (conn.getResponseCode() != 200) {
-				/*
-				 * throw new RuntimeException("Failed : HTTP error code : " +
-				 * conn.getResponseCode());
-				 */
-				output = "Failure";
-				if (output.equalsIgnoreCase("Failure")) {
+				/*throw new RuntimeException("Failed : HTTP error code : "
+						+ conn.getResponseCode());*/
+				output="Failure";
+				if(output.equalsIgnoreCase("Failure"))
+				{
 					return false;
 				}
 			}
 
-			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+				(conn.getInputStream())));
 
-			logger.info("Output from Server .... \n");
+			System.out.println("Output from Server .... \n");
 			while ((output = br.readLine()) != null) {
 				sb.append(output);
 			}
 			JSONObject jsonObj = new JSONObject(sb.toString());
-
-			String toWrite = sb.toString();
-			// String prev
-			// =readFileAsString(currentConfigPath+"\\"+RequestId+"_PreviousConfig.txt");
-			JsonParser parser1 = new JsonParser();
-			Gson gson1 = new GsonBuilder().setPrettyPrinting().create();
-			JsonElement el = (JsonElement) parser1.parse(toWrite);
-			toWrite = gson1.toJson(el); // done
-
-			String filepath = null;
-			if (step.equalsIgnoreCase("previous")) {
-				filepath = ODLClient.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//" + requestID + "V"
-						+ version + "_PreviousConfig.txt";
-			} else {
-				filepath = ODLClient.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//" + requestID + "V"
-						+ version + "_CurrentVersionConfig.txt";
+			
+			String toWrite=sb.toString();
+			// String  prev =readFileAsString(currentConfigPath+"\\"+RequestId+"_PreviousConfig.txt"); 
+             JsonParser parser1 = new JsonParser();
+             Gson gson1 = new GsonBuilder().setPrettyPrinting().create();
+             JsonElement el = (JsonElement) parser1.parse(toWrite);
+             toWrite = gson1.toJson(el); // done
+			 
+			 
+			String filepath=null;
+			if(step.equalsIgnoreCase("previous"))
+			{
+				filepath=ODLClient.TSA_PROPERTIES
+				.getProperty("responseDownloadPath")+"//"+requestID+"V"+version+"_PreviousConfig.txt";
 			}
-
+			else
+			{
+				filepath=ODLClient.TSA_PROPERTIES
+						.getProperty("responseDownloadPath")+"//"+requestID+"V"+version+"_CurrentVersionConfig.txt";
+			}
+		
 			File file = new File(filepath);
 
 			if (!file.exists()) {
 				file.createNewFile();
-
+				
 				fw = new FileWriter(file, true);
-				bw = new BufferedWriter(fw);
+    			bw = new BufferedWriter(fw);
 				bw.append(sb);
 				bw.close();
-			} else {
+			}
+			else{
 				fw = new FileWriter(file.getAbsoluteFile(), true);
-				bw = new BufferedWriter(fw);
+    			bw = new BufferedWriter(fw);
 				bw.append(sb);
 				bw.close();
 			}
 			conn.disconnect();
-			result = true;
+			result=true;
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -264,9 +280,9 @@ public class ODLClient {
 		}
 		return result;
 	}
-
 	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
+		InputStream tsaPropFile = Thread.currentThread()
+				.getContextClassLoader()
 				.getResourceAsStream(TSA_PROPERTIES_FILE);
 
 		try {
@@ -277,9 +293,9 @@ public class ODLClient {
 		}
 		return false;
 	}
-
-	public boolean doPUTDilevary(String requestId, String version, String url, String content) {
-		boolean result = false;
+	public boolean doPUTDilevary(String requestId, String version, String url, String content)
+	{
+		boolean result=false;
 		ODL_METHOD_TYPE = "PUT";
 		ODL_CONTENT_TYPE = "application/xml";
 		ODL_URL = url;
@@ -294,12 +310,15 @@ public class ODLClient {
 			conn.setRequestProperty("Authorization", ODL_AUTH);
 
 			/*
-			 * String input="<Employee><Name>Sunil</Name></<Employee>"; OutputStream
-			 * outputStream = conn.getOutputStream(); byte[] b = requestBody.getBytes();
-			 * outputStream.write(b); outputStream.flush(); outputStream.close();
+			 * String input="<Employee><Name>Sunil</Name></<Employee>";
+			 * OutputStream outputStream = conn.getOutputStream(); byte[] b =
+			 * requestBody.getBytes(); outputStream.write(b);
+			 * outputStream.flush(); outputStream.close();
 			 */
+			
 
-			try (OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream())) {
+			try (OutputStreamWriter osw = new OutputStreamWriter(
+					conn.getOutputStream())) {
 				osw.write(content);
 				osw.flush();
 			}
@@ -307,17 +326,19 @@ public class ODLClient {
 			StringBuilder sb = new StringBuilder();
 			if (conn.getResponseCode() != HttpURLConnection.HTTP_CREATED) {
 				if (conn.getResponseCode() == 200) {
-					result = true;
+					result=true;
 				} else {
-					result = false;
-					throw new RuntimeException("Failed : HTTP error code : " + conn.getResponseCode());
+					result=false;
+					throw new RuntimeException("Failed : HTTP error code : "
+							+ conn.getResponseCode());
 				}
 			}
 
-			BufferedReader br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(conn.getInputStream())));
 
-			logger.info("Output from ODL Server  .... \n");
-
+			System.out.println("Output from ODL Server  .... \n");
+			
 			conn.disconnect();
 
 		} catch (MalformedURLException e) {

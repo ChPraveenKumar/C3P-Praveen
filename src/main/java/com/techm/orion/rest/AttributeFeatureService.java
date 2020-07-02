@@ -4,14 +4,14 @@ import java.util.List;
 import java.util.Observer;
 
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,8 +23,7 @@ import com.techm.orion.service.AttributeFeatureNewService;
 @Controller
 @RequestMapping("/AttributeFeatureService")
 public abstract class AttributeFeatureService implements Observer {
-	private static final Logger logger = LogManager.getLogger(AttributeFeatureService.class);
-	
+
 	@POST
 	@RequestMapping(value = "/getFeaturesForAttributes", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -56,7 +55,7 @@ public abstract class AttributeFeatureService implements Observer {
 			}
 			obj.put(new String("attriList"), jsonArray);
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")

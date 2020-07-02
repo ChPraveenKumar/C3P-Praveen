@@ -1,16 +1,23 @@
 package com.techm.orion.rest;
 
+import java.io.IOException;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.ws.rs.POST;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.stereotype.Controller;
@@ -21,12 +28,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
+import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.webService.GetAllDetailsService;
 
 @Controller
 @RequestMapping("/ModifyConfiguration")
 public class ModifyConfigurationService implements Observer {
-	private static final Logger logger = LogManager.getLogger(ModifyConfigurationService.class);
+
 	@POST
 	@RequestMapping(value = "/modify", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -353,7 +362,7 @@ public class ModifyConfigurationService implements Observer {
 					configReqToSendToC3pCode.getRequest_version());
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return obj;

@@ -1,8 +1,11 @@
 package com.techm.orion.rest;
 
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,8 +15,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -41,7 +42,7 @@ import com.techm.orion.utility.InvokeFtl;
 
 @RestController
 public class RequestCreatorController {
-	private static final Logger logger = LogManager.getLogger(RequestCreatorController.class);
+
 	@Autowired
 	SiteInfoRepository siteRepo;
 
@@ -83,7 +84,7 @@ public class RequestCreatorController {
 				region.add(site.getcSiteRegion());
 			});
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 		return Response.status(200).entity(region).build();
 	}
@@ -103,7 +104,7 @@ public class RequestCreatorController {
 				siteNames.add(site.getcSiteName());
 			});
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 		return Response.status(200).entity(siteNames).build();
 	}
@@ -122,7 +123,7 @@ public class RequestCreatorController {
 	 * findCSiteNameByCCustName =
 	 * siteRepo.findByCCustNameAndCSiteName(customer,siteName);
 	 * findCSiteNameByCCustName.forEach(site -> { siteId.add(site.getcSiteId()); });
-	 * } catch (Exception e) { logger.error(e); } return
+	 * } catch (Exception e) { System.out.println(e); } return
 	 * Response.status(200).entity(siteId).build(); }
 	 */
 
@@ -139,7 +140,7 @@ public class RequestCreatorController {
 			String site = json.get("site").toString();
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 		return Response.status(200).entity("Abc").build();
 	}
@@ -173,7 +174,7 @@ public class RequestCreatorController {
 	 * siteName); siteList.forEach(site -> { DeviceDiscoveryEntity device =
 	 * deviceRepo.findByCustSiteIdId(site.getId());
 	 * vendorList.add(device.getdVendor()); }); } catch (Exception e) {
-	 * logger.error(e); } return
+	 * System.out.println(e); } return
 	 * Response.status(200).entity(vendorList).build(); }
 	 */
 
@@ -199,7 +200,7 @@ public class RequestCreatorController {
 
 			});
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 		return Response.status(200).entity(hostNameList).build();
 	}
@@ -232,7 +233,7 @@ public class RequestCreatorController {
 
 			});
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 		return Response.status(200).entity(deviceDetails).build();
 	}
@@ -336,7 +337,7 @@ public class RequestCreatorController {
 					vnfObject.put("featureName", feature);
 					vnfObject.put("featureAttributes", vnfattribJson);
 					fianlJson.add(vnfObject);
-					logger.info(fianlJson.toString());
+					System.out.println(fianlJson.toString());
 					
 				}
 				vnfFinalObject.put("dynamicAttribs", fianlJson);
@@ -853,7 +854,7 @@ public class RequestCreatorController {
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 		return obj;
 

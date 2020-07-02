@@ -1,7 +1,7 @@
 package com.techm.orion.entitybeans;
 
-import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -9,17 +9,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "c3p_t_request_info")
-public class RequestInfoEntity implements Serializable {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6260295956377478161L;
-
+public class RequestInfoEntity {
 	@Id
 	@Column(name = "r_info_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -29,22 +25,26 @@ public class RequestInfoEntity implements Serializable {
 	@Column(name = "r_os", length = 10, nullable = false)
 	private String os;
 
+
 	@Column(name = "r_device_name", length = 50)
 	private String deviceName;
 
+	
 	@Column(name = "r_request_owner", length = 50)
 	private String requestOwnerName;
 
 	@NotNull
 	@Column(name = "r_model", length = 30, nullable = false)
 	private String model;
-
+	
+	
 	@Column(name = "r_family", length = 30)
 	private String family;
 
 	@Column(name = "r_region", length = 30, nullable = false)
 	private String region;
 
+	
 	@Column(name = "r_service", length = 45)
 	private String service;
 
@@ -91,6 +91,7 @@ public class RequestInfoEntity implements Serializable {
 	@NotNull
 	private String deviceType;
 
+	
 	@Column(name = "r_end_date_of_processing")
 	private Timestamp endDateOfProcessing;
 
@@ -106,7 +107,7 @@ public class RequestInfoEntity implements Serializable {
 	@NotNull
 	private String requestCreatorName;
 
-	@Column(name = "r_request_elapsed_time", length = 10)
+	@Column(name = "r_request_elapsed_time", length = 10)	
 	private String requestElapsedTime;
 
 	@Column(name = "r_certification_selection_bit", length = 10, nullable = false)
@@ -168,45 +169,9 @@ public class RequestInfoEntity implements Serializable {
 
 	@Column(name = "r_restore_flag")
 	private Boolean restoreFlag;
-
+	
 	@Column(name = "r_start_up")
 	private Boolean StartUp;
-
-	@Transient
-	private String backUpScheduleTime;
-
-	@Transient
-	private Boolean commissionFlag;
-
-	@Transient
-	private Object selectedFeatures;
-
-	@Transient
-	private Object dynamicAttribs;
-
-	public Object getDynamicAttribs() {
-		return dynamicAttribs;
-	}
-
-	public void setDynamicAttribs(Object dynamicAttribs) {
-		this.dynamicAttribs = dynamicAttribs;
-	}
-
-	public Object getSelectedFeatures() {
-		return selectedFeatures;
-	}
-
-	public void setSelectedFeatures(Object selectedFeatures) {
-		this.selectedFeatures = selectedFeatures;
-	}
-
-	public String getBackUpScheduleTime() {
-		return backUpScheduleTime;
-	}
-
-	public void setBackUpScheduleTime(String backUpScheduleTime) {
-		this.backUpScheduleTime = backUpScheduleTime;
-	}
 
 	public Boolean getStartUp() {
 		return StartUp;
@@ -214,17 +179,6 @@ public class RequestInfoEntity implements Serializable {
 
 	public void setStartUp(Boolean startUp) {
 		StartUp = startUp;
-	}
-
-	@Column(name = "r_batch_id")
-	private String batchId;
-
-	public String getBatchId() {
-		return batchId;
-	}
-
-	public void setBatchId(String batchId) {
-		this.batchId = batchId;
 	}
 
 	public int getInfoId() {
@@ -243,12 +197,13 @@ public class RequestInfoEntity implements Serializable {
 		this.os = os;
 	}
 
-	/*
-	 * public String getDeviceName() { return deviceName; }
-	 * 
-	 * public void setDeviceName(String deviceName) { this.deviceName = deviceName;
-	 * }
-	 */
+	/*public String getDeviceName() {
+		return deviceName;
+	}
+
+	public void setDeviceName(String deviceName) {
+		this.deviceName = deviceName;
+	}*/
 
 	public String getModel() {
 		return model;
@@ -290,6 +245,7 @@ public class RequestInfoEntity implements Serializable {
 		this.hostName = hostName;
 	}
 
+	
 	public String getVendor() {
 		return vendor;
 	}
@@ -457,7 +413,6 @@ public class RequestInfoEntity implements Serializable {
 	public void setNetworkType(String networkType) {
 		this.networkType = networkType;
 	}
-
 	public String getImportSource() {
 		return importSource;
 	}
@@ -482,6 +437,7 @@ public class RequestInfoEntity implements Serializable {
 		this.importStatus = importStatus;
 	}
 
+	
 	public String getRequestType() {
 		return requestType;
 	}
@@ -522,6 +478,7 @@ public class RequestInfoEntity implements Serializable {
 		this.restoreFlag = restoreFlag;
 	}
 
+	
 	public Timestamp getDateofProcessing() {
 		return dateofProcessing;
 	}
@@ -529,6 +486,7 @@ public class RequestInfoEntity implements Serializable {
 	public void setDateofProcessing(Timestamp dateofProcessing) {
 		this.dateofProcessing = dateofProcessing;
 	}
+
 
 	public Timestamp getEndDateOfProcessing() {
 		return endDateOfProcessing;
@@ -569,13 +527,6 @@ public class RequestInfoEntity implements Serializable {
 	public void setFamily(String family) {
 		this.family = family;
 	}
-
-	public Boolean getCommissionFlag() {
-		return commissionFlag;
-	}
-
-	public void setCommissionFlag(Boolean commissionFlag) {
-		this.commissionFlag = commissionFlag;
-	}
-
+ 
+	
 }

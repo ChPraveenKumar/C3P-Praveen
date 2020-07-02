@@ -19,8 +19,6 @@ import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -66,7 +64,7 @@ import com.techm.orion.rest.RequestDetailsExport;
 /*Class to handle import (single, bulk file) validation, data save, milestone validation and communda flow invocation*/
 @Service
 public class ExcelReader {
-	private static final Logger logger = LogManager.getLogger(ExcelReader.class);
+
 	@Autowired
 	public RequestDetailsImportRepo requestDetailsImportRepo;
 
@@ -112,10 +110,12 @@ public class ExcelReader {
 	public boolean saveDataFromUploadFile(MultipartFile file) {
 
 		boolean isFlag = false;
-		String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+		String extension = FilenameUtils.getExtension(file
+				.getOriginalFilename());
 		if (extension.equalsIgnoreCase("csv")) {
 			isFlag = readDataFromCsv(file);
-		} else if (extension.equalsIgnoreCase("xls") || extension.equalsIgnoreCase("xlsx")) {
+		} else if (extension.equalsIgnoreCase("xls")
+				|| extension.equalsIgnoreCase("xlsx")) {
 			isFlag = readDataFromExcel(file);
 		}
 
@@ -199,9 +199,12 @@ public class ExcelReader {
 				for (int i = 1; i < numberOfCells; i++) {
 
 					if (i == 8 || i == 10) {
-						double cellValueAsDouble = row1.getCell(i).getNumericCellValue();
-						String cellValueAsStringDouble = Double.toString(cellValueAsDouble);
-						String cellValueAsString = cellValueAsStringDouble.substring(0, 4);
+						double cellValueAsDouble = row1.getCell(i)
+								.getNumericCellValue();
+						String cellValueAsStringDouble = Double
+								.toString(cellValueAsDouble);
+						String cellValueAsString = cellValueAsStringDouble
+								.substring(0, 4);
 						rowValue.add(cellValueAsString);
 					} else if (row1.getCell(i).getStringCellValue() == "") {
 						rowValue.add(null);
@@ -219,17 +222,21 @@ public class ExcelReader {
 
 				}
 				for (int i1 = 0; i1 < noOfRows; i1++) {
-					List<RequestDetailsEntity> requestDtlList = requestDetailsImportRepo.findAll();
+					List<RequestDetailsEntity> requestDtlList = requestDetailsImportRepo
+							.findAll();
 					requestDetailsEntity = new RequestDetailsEntity();
 					/* Setting up schedule time flag in DB */
 					if (header.contains("To Be Scheduled")) {
 						for (j = 0; j < header.size(); j++) {
-							if (header.get(j).equalsIgnoreCase("To Be Scheduled")) {
+							if (header.get(j).equalsIgnoreCase(
+									"To Be Scheduled")) {
 								if ((rowValue.get(j) == null)) {
-									requestDetailsEntity.setRequestType_Flag("M");
+									requestDetailsEntity
+											.setRequestType_Flag("M");
 									break;
 								} else {
-									requestDetailsEntity.setRequestType_Flag("S");
+									requestDetailsEntity
+											.setRequestType_Flag("S");
 									break;
 
 								}
@@ -244,157 +251,225 @@ public class ExcelReader {
 						// requestDetailsEntity = new RequestDetailsEntity();
 						String keyHeader = entry.getKey();
 
-						deviceInterfaceEntity.setRequestInfoId(requestDtlList.size() + 1);
-						internetInfoEntity.setRequestInfoId(requestDtlList.size() + 1);
-						routerVfEntity.setRequestInfoId(requestDtlList.size() + 1);
-						webServiceEntity.setRequestInfoId(requestDtlList.size() + 1);
-						requestDetailsEntity.setRequestinfoid(requestDtlList.size() + 1);
-						requestDetailsEntity.setRequestCreatorName(Global.loggedInUser);
+						deviceInterfaceEntity.setRequestInfoId(requestDtlList
+								.size() + 1);
+						internetInfoEntity.setRequestInfoId(requestDtlList
+								.size() + 1);
+						routerVfEntity
+								.setRequestInfoId(requestDtlList.size() + 1);
+						webServiceEntity
+								.setRequestInfoId(requestDtlList.size() + 1);
+						requestDetailsEntity.setRequestinfoid(requestDtlList
+								.size() + 1);
+						requestDetailsEntity
+								.setRequestCreatorName(Global.loggedInUser);
 						requestDetailsEntity.setRequestVersion(1.0);
-						requestDetailsEntity.setRequestOwner(Global.loggedInUser);
+						requestDetailsEntity
+								.setRequestOwner(Global.loggedInUser);
 
 						if (i1 == 0) {
-							requestDetailsEntity.setRequeststatus("In Progress");
-							requestInfoIdForBulk = requestDetailsEntity.getRequestinfoid();
+							requestDetailsEntity
+									.setRequeststatus("In Progress");
+							requestInfoIdForBulk = requestDetailsEntity
+									.getRequestinfoid();
 							requestDetailsEntity.setImportStatus("In Progress");
 						} else {
-							requestDetailsEntity.setRequeststatus("In Progress");
+							requestDetailsEntity
+									.setRequeststatus("In Progress");
 							requestDetailsEntity.setImportStatus("Awaiting");
 						}
-						requestDetailsEntity.setImportid((getAlphaNumericString(8)));
+						requestDetailsEntity
+								.setImportid((getAlphaNumericString(8)));
 
-						requestDetailsEntity.setImportsource(FilenameUtils.getExtension(file.getOriginalFilename()));
+						requestDetailsEntity.setImportsource(FilenameUtils
+								.getExtension(file.getOriginalFilename()));
 
 						if (keyHeader.equalsIgnoreCase("Hostname")) {
 
-							requestDetailsEntity.setHostname((entry.getValue()));
+							requestDetailsEntity
+									.setHostname((entry.getValue()));
 
 						} else if (keyHeader.equalsIgnoreCase("Customer Name*")) {
-							requestDetailsEntity.setCustomer((((entry.getValue()))));
+							requestDetailsEntity.setCustomer((((entry
+									.getValue()))));
 
 						} else if (keyHeader.equalsIgnoreCase("Site ID*")) {
-							requestDetailsEntity.setSiteid((((entry.getValue()))));
+							requestDetailsEntity
+									.setSiteid((((entry.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("Request Number")) {
 
 							if ((entry.getValue()) == null) {
-								requestDetailsEntity.setAlphanumericReqId(getAlphaNumericStringForSR(7));
+								requestDetailsEntity
+										.setAlphanumericReqId(getAlphaNumericStringForSR(7));
 							} else {
-								requestDetailsEntity.setAlphanumericReqId(getAlphaNumericStringForSR(7));
+								requestDetailsEntity
+										.setAlphanumericReqId(getAlphaNumericStringForSR(7));
 							}
 
 						}
 
 						else if (keyHeader.equalsIgnoreCase("Region*")) {
-							requestDetailsEntity.setRegion((((entry.getValue()))));
+							requestDetailsEntity
+									.setRegion((((entry.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("Vendor*")) {
-							requestDetailsEntity.setVendor((((entry.getValue()))));
+							requestDetailsEntity
+									.setVendor((((entry.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("Device Type*")) {
-							requestDetailsEntity.setDevice_type((((entry.getValue()))));
+							requestDetailsEntity.setDevice_type((((entry
+									.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("Model*")) {
-							requestDetailsEntity.setModel((((entry.getValue()))));
+							requestDetailsEntity
+									.setModel((((entry.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("OS*")) {
 							requestDetailsEntity.setOs((((entry.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("OS Version*")) {
-							requestDetailsEntity.setOs_version((((entry.getValue()))));
+							requestDetailsEntity.setOs_version((((entry
+									.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("Management IP*")) {
-							requestDetailsEntity.setManagementIp((((entry.getValue()))));
+							requestDetailsEntity.setManagementIp((((entry
+									.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("Service*")) {
-							requestDetailsEntity.setService((((entry.getValue()))));
+							requestDetailsEntity
+									.setService((((entry.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("Network Type*")) {
-							requestDetailsEntity.setNetwork_Type((((entry.getValue()))));
-						} else if (keyHeader.equalsIgnoreCase("To Be Scheduled")) {
-							requestDetailsEntity.setScheduledTime((((entry.getValue()))));
+							requestDetailsEntity.setNetwork_Type((((entry
+									.getValue()))));
+						} else if (keyHeader
+								.equalsIgnoreCase("To Be Scheduled")) {
+							requestDetailsEntity.setScheduledTime((((entry
+									.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("Template ID")) {
-							requestDetailsEntity.setTemplateIdUsed((((entry.getValue()))));
+							requestDetailsEntity.setTemplateIdUsed((((entry
+									.getValue()))));
 						} else if (keyHeader.equalsIgnoreCase("Banner")) {
-							requestDetailsEntity.setBanner(((((entry.getValue())))));
-						} else if (keyHeader.equalsIgnoreCase("LAN Interface Name")) {
-							requestDetailsEntity.setLanInterface(((((entry.getValue())))));
+							requestDetailsEntity
+									.setBanner(((((entry.getValue())))));
+						} else if (keyHeader
+								.equalsIgnoreCase("LAN Interface Name")) {
+							requestDetailsEntity.setLanInterface(((((entry
+									.getValue())))));
 						} else if (keyHeader.equalsIgnoreCase("LAN IP Address")) {
-							requestDetailsEntity.setLanIp(((((entry.getValue())))));
-						} else if (keyHeader.equalsIgnoreCase("LAN Subnet Mask")) {
-							requestDetailsEntity.setLanMaskAddress(((((entry.getValue())))));
-						} else if (keyHeader.equalsIgnoreCase("LAN Description")) {
-							requestDetailsEntity.setLanDescription(((((entry.getValue())))));
-						} else if (keyHeader.equalsIgnoreCase("Loopback Interface Name")) {
-							requestDetailsEntity.setLoopBackType(((((entry.getValue())))));
-						} else if (keyHeader.equalsIgnoreCase("Loopback IP Address")) {
-							requestDetailsEntity.setLoopbackIPaddress(((((entry.getValue())))));
-						} else if (keyHeader.equalsIgnoreCase("Loopback Subnet Mask")) {
-							requestDetailsEntity.setLoopbackSubnetMask(((((entry.getValue())))));
+							requestDetailsEntity
+									.setLanIp(((((entry.getValue())))));
+						} else if (keyHeader
+								.equalsIgnoreCase("LAN Subnet Mask")) {
+							requestDetailsEntity.setLanMaskAddress(((((entry
+									.getValue())))));
+						} else if (keyHeader
+								.equalsIgnoreCase("LAN Description")) {
+							requestDetailsEntity.setLanDescription(((((entry
+									.getValue())))));
+						} else if (keyHeader
+								.equalsIgnoreCase("Loopback Interface Name")) {
+							requestDetailsEntity.setLoopBackType(((((entry
+									.getValue())))));
+						} else if (keyHeader
+								.equalsIgnoreCase("Loopback IP Address")) {
+							requestDetailsEntity.setLoopbackIPaddress(((((entry
+									.getValue())))));
+						} else if (keyHeader
+								.equalsIgnoreCase("Loopback Subnet Mask")) {
+							requestDetailsEntity
+									.setLoopbackSubnetMask(((((entry.getValue())))));
 						} else if (keyHeader.equalsIgnoreCase("VRF Name")) {
-							requestDetailsEntity.setVrf_name(((((entry.getValue())))));
-						} else if (keyHeader.equalsIgnoreCase("SNMP HostAddress")) {
-							requestDetailsEntity.setSnmpHostAddress(((((entry.getValue())))));
+							requestDetailsEntity.setVrf_name(((((entry
+									.getValue())))));
+						} else if (keyHeader
+								.equalsIgnoreCase("SNMP HostAddress")) {
+							requestDetailsEntity.setSnmpHostAddress(((((entry
+									.getValue())))));
 						} else if (keyHeader.equalsIgnoreCase("SNMP String")) {
-							requestDetailsEntity.setSnmpString(((((entry.getValue())))));
+							requestDetailsEntity.setSnmpString(((((entry
+									.getValue())))));
 						}
 
-						else if (keyHeader.equalsIgnoreCase("WAN Interface Name")) {
+						else if (keyHeader
+								.equalsIgnoreCase("WAN Interface Name")) {
 
 							deviceInterfaceEntity.setName(entry.getValue());
 
-						} else if (keyHeader.equalsIgnoreCase("WAN Description")) {
+						} else if (keyHeader
+								.equalsIgnoreCase("WAN Description")) {
 
-							deviceInterfaceEntity.setDescription((entry.getValue()));
+							deviceInterfaceEntity.setDescription((entry
+									.getValue()));
 
 						} else if (keyHeader.equalsIgnoreCase("WAN IP Address")) {
 
 							deviceInterfaceEntity.setIp(((entry.getValue())));
 
-						} else if (keyHeader.equalsIgnoreCase("WAN Subnet Mask")) {
+						} else if (keyHeader
+								.equalsIgnoreCase("WAN Subnet Mask")) {
 
-							deviceInterfaceEntity.setMask((((entry.getValue()))));
+							deviceInterfaceEntity
+									.setMask((((entry.getValue()))));
 
 						} else if (keyHeader.equalsIgnoreCase("WAN Speed")) {
 
-							deviceInterfaceEntity.setSpeed((((entry.getValue()))));
+							deviceInterfaceEntity
+									.setSpeed((((entry.getValue()))));
 
-						} else if (keyHeader.equalsIgnoreCase("WAN Encapsulation")) {
+						} else if (keyHeader
+								.equalsIgnoreCase("WAN Encapsulation")) {
 
-							deviceInterfaceEntity.setEncapsulation((((entry.getValue()))));
+							deviceInterfaceEntity.setEncapsulation((((entry
+									.getValue()))));
 
 						} else if (keyHeader.equalsIgnoreCase("WAN Bandwidth")) {
 
-							deviceInterfaceEntity.setBandwidth((((entry.getValue()))));
+							deviceInterfaceEntity.setBandwidth((((entry
+									.getValue()))));
 
 						}
 
 						else if (keyHeader.equalsIgnoreCase("Routing Protocol")) {
 
-							internetInfoEntity.setRoutingProtocol((((entry.getValue()))));
+							internetInfoEntity.setRoutingProtocol((((entry
+									.getValue()))));
 
 						} else if (keyHeader.equalsIgnoreCase("BGP As Number")) {
 
-							internetInfoEntity.setAsNumber((((entry.getValue()))));
+							internetInfoEntity
+									.setAsNumber((((entry.getValue()))));
 
 						}
 
-						else if (keyHeader.equalsIgnoreCase("BGP Neighbor1 IP Address")) {
+						else if (keyHeader
+								.equalsIgnoreCase("BGP Neighbor1 IP Address")) {
 
-							internetInfoEntity.setNeighbor1((((entry.getValue()))));
+							internetInfoEntity
+									.setNeighbor1((((entry.getValue()))));
 
 						}
 
-						else if (keyHeader.equalsIgnoreCase("BGP Neighbor1 Remote AS")) {
+						else if (keyHeader
+								.equalsIgnoreCase("BGP Neighbor1 Remote AS")) {
 
-							internetInfoEntity.setNeighbor1RemoteAS((((entry.getValue()))));
+							internetInfoEntity.setNeighbor1RemoteAS((((entry
+									.getValue()))));
 
-						} else if (keyHeader.equalsIgnoreCase("BGP Neighbor2 IP Address")) {
+						} else if (keyHeader
+								.equalsIgnoreCase("BGP Neighbor2 IP Address")) {
 
-							internetInfoEntity.setNeighbor2((((entry.getValue()))));
+							internetInfoEntity
+									.setNeighbor2((((entry.getValue()))));
 
-						} else if (keyHeader.equalsIgnoreCase("BGP Neighbor2 Remote AS")) {
+						} else if (keyHeader
+								.equalsIgnoreCase("BGP Neighbor2 Remote AS")) {
 
-							internetInfoEntity.setNeighbor2RemoteAS((((entry.getValue()))));
+							internetInfoEntity.setNeighbor2RemoteAS((((entry
+									.getValue()))));
 
 						} else if (keyHeader.equalsIgnoreCase("BGP Network IP")) {
 
-							internetInfoEntity.setNetworkIp((((entry.getValue()))));
+							internetInfoEntity
+									.setNetworkIp((((entry.getValue()))));
 
-						} else if (keyHeader.equalsIgnoreCase("BGP Network IP Mask")) {
+						} else if (keyHeader
+								.equalsIgnoreCase("BGP Network IP Mask")) {
 
-							internetInfoEntity.setNetworkIpSubnetMask((((entry.getValue()))));
+							internetInfoEntity.setNetworkIpSubnetMask((((entry
+									.getValue()))));
 
 						}
 						webServiceEntity.setStart_test(1);
@@ -406,8 +481,11 @@ public class ExcelReader {
 						webServiceEntity.setCustomer_report(0);
 						webServiceEntity.setFilename(0);
 						webServiceEntity.setLatencyResultRes(0);
-						webServiceEntity.setAlphanumericReqId(requestDetailsEntity.getAlphanumericReqId());
-						webServiceEntity.setVersion(requestDetailsEntity.getRequestVersion());
+						webServiceEntity
+								.setAlphanumericReqId(requestDetailsEntity
+										.getAlphanumericReqId());
+						webServiceEntity.setVersion(requestDetailsEntity
+								.getRequestVersion());
 
 					}
 
@@ -419,21 +497,26 @@ public class ExcelReader {
 					webServiceRepo.save(webServiceEntity);
 
 				}
-				List<RequestDetailsEntity> requestByRequestStatus = requestDetailsImportRepo.findAll();
+				List<RequestDetailsEntity> requestByRequestStatus = requestDetailsImportRepo
+						.findAll();
 				Boolean isCheck = false;
 				int requestInfoId = 0;
 				/*
-				 * setting up "In Progress and Awaiting status" on Import Dash board
+				 * setting up "In Progress and Awaiting status" on Import Dash
+				 * board
 				 */
-				for (int i = (requestInfoIdForBulk - 1); i < requestByRequestStatus.size(); i++) {
-					String status = requestByRequestStatus.get(i).getImportStatus();
+				for (int i = (requestInfoIdForBulk - 1); i < requestByRequestStatus
+						.size(); i++) {
+					String status = requestByRequestStatus.get(i)
+							.getImportStatus();
 					if (status == null) {
 
 						continue;
 					}
 
 					else if (status.equals("In Progress")) {
-						requestInfoId = requestByRequestStatus.get(i).getRequestinfoid();
+						requestInfoId = requestByRequestStatus.get(i)
+								.getRequestinfoid();
 						isCheck = true;
 
 					}
@@ -441,32 +524,41 @@ public class ExcelReader {
 					while (isCheck) {
 
 						/*
-						 * calling validate method to perform milestone validation in back end
+						 * calling validate method to perform milestone
+						 * validation in back end
 						 */
 						validate(requestInfoId);
 						/* Bulk and single import request execution */
-						for (int i1 = (requestInfoIdForBulk - 1); i1 < requestByRequestStatus.size(); i1++) {
+						for (int i1 = (requestInfoIdForBulk - 1); i1 < requestByRequestStatus
+								.size(); i1++) {
 
-							String importStatusAfterValidation = requestByRequestStatus.get(i1).getImportStatus();
-							String milestoneAfterValidation = requestByRequestStatus.get(i1)
-									.getValidationMilestoneBits();
+							String importStatusAfterValidation = requestByRequestStatus
+									.get(i1).getImportStatus();
+							String milestoneAfterValidation = requestByRequestStatus
+									.get(i1).getValidationMilestoneBits();
 							if (importStatusAfterValidation == null) {
 
 								continue;
 							}
 							/*
-							 * Processing of one by one request on Import Dash Board
+							 * Processing of one by one request on Import Dash
+							 * Board
 							 */
-							else if ((importStatusAfterValidation.equals("Success")
-									|| importStatusAfterValidation.equals("Awaiting"))
+							else if ((importStatusAfterValidation
+									.equals("Success") || importStatusAfterValidation
+									.equals("Awaiting"))
 									&& milestoneAfterValidation.equals("11111")) {
-								requestInfoId = requestByRequestStatus.get(i1).getRequestinfoid();
+								requestInfoId = requestByRequestStatus.get(i1)
+										.getRequestinfoid();
 
-								if (importStatusAfterValidation.equals("Awaiting")) {
+								if (importStatusAfterValidation
+										.equals("Awaiting")) {
 
 									String importStatus = "Success";
 									int id = i1 + 1;
-									requestDetailsImportRepo.updateImportStatus(importStatus, id);
+									requestDetailsImportRepo
+											.updateImportStatus(importStatus,
+													id);
 								}
 
 								TemplateSuggestionDao templateUsgaeCount = new TemplateSuggestionDao();
@@ -477,90 +569,157 @@ public class ExcelReader {
 								DeviceInterfaceEntity ExportList2 = new DeviceInterfaceEntity();
 								InternetInfoEntity ExportList3 = new InternetInfoEntity();
 								/*
-								 * Setting variable values to push them on communda
+								 * Setting variable values to push them on
+								 * communda
 								 */
-								createConfig.setCustomer(requestByRequestStatus.get(i1).getCustomer());
-								createConfig.setBanner(requestByRequestStatus.get(i1).getBanner());
-								createConfig.setDeviceType(requestByRequestStatus.get(i1).getDevice_type());
-								createConfig.setModel(requestByRequestStatus.get(i1).getModel());
-								createConfig.setOs(requestByRequestStatus.get(i1).getOs());
-								createConfig.setRegion(requestByRequestStatus.get(i1).getRegion());
-								createConfig.setService(requestByRequestStatus.get(i1).getService());
-								createConfig.setOsVersion(requestByRequestStatus.get(i1).getOs_version());
+								createConfig.setCustomer(requestByRequestStatus
+										.get(i1).getCustomer());
+								createConfig.setBanner(requestByRequestStatus
+										.get(i1).getBanner());
+								createConfig
+										.setDeviceType(requestByRequestStatus
+												.get(i1).getDevice_type());
+								createConfig.setModel(requestByRequestStatus
+										.get(i1).getModel());
+								createConfig.setOs(requestByRequestStatus.get(
+										i1).getOs());
+								createConfig.setRegion(requestByRequestStatus
+										.get(i1).getRegion());
+								createConfig.setService(requestByRequestStatus
+										.get(i1).getService());
+								createConfig
+										.setOsVersion(requestByRequestStatus
+												.get(i1).getOs_version());
 								createConfig.setRequest_version(1.0);
 								createConfig.setVersion_report("1.0");
-								createConfig.setHostname(requestByRequestStatus.get(i1).getHostname());
-								createConfig.setVpn(requestByRequestStatus.get(i1).getVpn());
-								createConfig.setVendor(requestByRequestStatus.get(i1).getVendor());
-								createConfig.setVrfName(requestByRequestStatus.get(i1).getVrf_name());
+								createConfig.setHostname(requestByRequestStatus
+										.get(i1).getHostname());
+								createConfig.setVpn(requestByRequestStatus.get(
+										i1).getVpn());
+								createConfig.setVendor(requestByRequestStatus
+										.get(i1).getVendor());
+								createConfig.setVrfName(requestByRequestStatus
+										.get(i1).getVrf_name());
 								createConfig.setIsAutoProgress(false);
-								createConfig.setTemplateID(requestByRequestStatus.get(i1).getTemplateIdUsed());
-								createConfig.setManagementIp(requestByRequestStatus.get(i1).getManagementIp());
-								createConfig.setSiteid(requestByRequestStatus.get(i1).getSiteid());
-								createConfig.setEnablePassword(requestByRequestStatus.get(i1).getEnable_password());
-								createConfig.setRequestId(requestByRequestStatus.get(i1).getAlphanumericReqId());
-								createConfig.setImportsource(requestByRequestStatus.get(i1).getImportsource());
+								createConfig
+										.setTemplateID(requestByRequestStatus
+												.get(i1).getTemplateIdUsed());
+								createConfig
+										.setManagementIp(requestByRequestStatus
+												.get(i1).getManagementIp());
+								createConfig.setSiteid(requestByRequestStatus
+										.get(i1).getSiteid());
+								createConfig
+										.setEnablePassword(requestByRequestStatus
+												.get(i1).getEnable_password());
+								createConfig
+										.setRequestId(requestByRequestStatus
+												.get(i1).getAlphanumericReqId());
+								createConfig
+										.setImportsource(requestByRequestStatus
+												.get(i1).getImportsource());
 
 								ExportList2 = deviceInterfaceRepo
-										.findByRequestInfoId(requestByRequestStatus.get(i1).getRequestinfoid());
+										.findByRequestInfoId(requestByRequestStatus
+												.get(i1).getRequestinfoid());
 								ExportList3 = internetInfoRepo
-										.findByRequestInfoId(requestByRequestStatus.get(i1).getRequestinfoid());
+										.findByRequestInfoId(requestByRequestStatus
+												.get(i1).getRequestinfoid());
 
-								createConfig.setNetworkIp(ExportList3.getNetworkIp());
+								createConfig.setNetworkIp(ExportList3
+										.getNetworkIp());
 
-								createConfig.setNetworkIp(ExportList3.getNetworkIp());
-								createConfig.setNeighbor1(ExportList3.getNeighbor1());
-								createConfig.setNeighbor2(ExportList3.getNeighbor2());
-								createConfig.setNeighbor1_remoteAS(ExportList3.getNeighbor1RemoteAS());
-								createConfig.setNeighbor2_remoteAS(ExportList3.getNeighbor2RemoteAS());
-								createConfig.setNetworkIp_subnetMask(ExportList3.getNetworkIpSubnetMask());
-								createConfig.setRoutingProtocol(ExportList3.getRoutingProtocol());
-								createConfig.setBgpASNumber(ExportList3.getAsNumber());
+								createConfig.setNetworkIp(ExportList3
+										.getNetworkIp());
+								createConfig.setNeighbor1(ExportList3
+										.getNeighbor1());
+								createConfig.setNeighbor2(ExportList3
+										.getNeighbor2());
+								createConfig.setNeighbor1_remoteAS(ExportList3
+										.getNeighbor1RemoteAS());
+								createConfig.setNeighbor2_remoteAS(ExportList3
+										.getNeighbor2RemoteAS());
+								createConfig
+										.setNetworkIp_subnetMask(ExportList3
+												.getNetworkIpSubnetMask());
+								createConfig.setRoutingProtocol(ExportList3
+										.getRoutingProtocol());
+								createConfig.setBgpASNumber(ExportList3
+										.getAsNumber());
 
 								createConfig.setName(ExportList2.getName());
-								createConfig.setDescription(ExportList2.getDescription());
+								createConfig.setDescription(ExportList2
+										.getDescription());
 								createConfig.setIp(ExportList2.getIp());
 								createConfig.setMask(ExportList2.getMask());
 								createConfig.setSpeed(ExportList2.getSpeed());
-								createConfig.setBandwidth(ExportList2.getBandwidth());
-								createConfig.setEncapsulation(ExportList2.getEncapsulation());
-								createConfig.setLanInterface(requestByRequestStatus.get(i1).getLanInterface());
-								createConfig.setLanDescription(requestByRequestStatus.get(i1).getLanDescription());
-								createConfig.setLanIp(requestByRequestStatus.get(i1).getLanIp());
-								createConfig.setVpn(requestByRequestStatus.get(i1).getVpn());
-								createConfig.setLoopBackType(requestByRequestStatus.get(i1).getLoopBackType());
+								createConfig.setBandwidth(ExportList2
+										.getBandwidth());
+								createConfig.setEncapsulation(ExportList2
+										.getEncapsulation());
 								createConfig
-										.setLoopbackIPaddress(requestByRequestStatus.get(i1).getLoopbackIPaddress());
+										.setLanInterface(requestByRequestStatus
+												.get(i1).getLanInterface());
 								createConfig
-										.setLoopbackSubnetMask(requestByRequestStatus.get(i1).getLoopbackSubnetMask());
-								createConfig.setLanMaskAddress(requestByRequestStatus.get(i1).getLanMaskAddress());
-								createConfig.setRequestCreatedOn(requestByRequestStatus.get(i1).getDateofProcessing());
+										.setLanDescription(requestByRequestStatus
+												.get(i1).getLanDescription());
+								createConfig.setLanIp(requestByRequestStatus
+										.get(i1).getLanIp());
+								createConfig.setVpn(requestByRequestStatus.get(
+										i1).getVpn());
+								createConfig
+										.setLoopBackType(requestByRequestStatus
+												.get(i1).getLoopBackType());
+								createConfig
+										.setLoopbackIPaddress(requestByRequestStatus
+												.get(i1).getLoopbackIPaddress());
+								createConfig
+										.setLoopbackSubnetMask(requestByRequestStatus
+												.get(i1)
+												.getLoopbackSubnetMask());
+								createConfig
+										.setLanMaskAddress(requestByRequestStatus
+												.get(i1).getLanMaskAddress());
+								createConfig
+										.setRequestCreatedOn(requestByRequestStatus
+												.get(i1)
+												.getDateofProcessing());
 
-								if (requestByRequestStatus.get(i1).getScheduledTime() != null) {
-									createConfig.setScheduledTime(requestByRequestStatus.get(i1).getScheduledTime());
+								if (requestByRequestStatus.get(i1)
+										.getScheduledTime() != null) {
+									createConfig
+											.setScheduledTime(requestByRequestStatus
+													.get(i1).getScheduledTime());
 								}
 								/*
-								 * Generation of configuration and header file on local drive
+								 * Generation of configuration and header file
+								 * on local drive
 								 */
-								importSRDcmConfigService.createTemplate(createConfig);
+								importSRDcmConfigService
+										.createTemplate(createConfig);
 								/* Updating template uses data in Database */
-								String templateIdUsed = createConfig.getTemplateID();
-								templateUsgaeCount.insertTemplateUsageData(templateIdUsed);
+								String templateIdUsed = createConfig
+										.getTemplateID();
+								templateUsgaeCount
+										.insertTemplateUsageData(templateIdUsed);
 
 								if (templateIdUsed != null) {
 
 									int id = i1 + 1;
-									requestDetailsImportRepo.updateSuggestedTemplateId(templateIdUsed, id);
+									requestDetailsImportRepo
+											.updateSuggestedTemplateId(
+													templateIdUsed, id);
 								}
 
 								/*
-								 * Thread halt to restart communda in case of bulk SR
+								 * Thread halt to restart communda in case of
+								 * bulk SR
 								 */
 								try {
 
 									Thread.sleep(70000);
 								} catch (Exception e) {
-									logger.error(e);
+									System.out.println(e);
 								}
 								/* Invocation of communda flow */
 								TelnetCommunicationSSHImportSR telnetCommunicationSSHImportSR = new TelnetCommunicationSSHImportSR(
@@ -568,13 +727,14 @@ public class ExcelReader {
 								telnetCommunicationSSHImportSR.setDaemon(true);
 								telnetCommunicationSSHImportSR.start();
 								/*
-								 * Thread halt to process next SR before previous SR completion
+								 * Thread halt to process next SR before
+								 * previous SR completion
 								 */
 								try {
 
 									Thread.sleep(180000);
 								} catch (Exception e) {
-									logger.error(e);
+									System.out.println(e);
 								}
 
 							}
@@ -586,7 +746,7 @@ public class ExcelReader {
 				}
 			}
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 			return false;
 		}
 
@@ -596,7 +756,8 @@ public class ExcelReader {
 	/* Method call to check for .xls and .xlsx file type */
 	private Workbook getWorkBook(MultipartFile file) {
 		Workbook workbook = null;
-		String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+		String extension = FilenameUtils.getExtension(file
+				.getOriginalFilename());
 
 		try {
 			if (extension.equalsIgnoreCase("xls")) {
@@ -615,7 +776,8 @@ public class ExcelReader {
 	private boolean readDataFromCsv(MultipartFile file) {
 		try {
 
-			InputStreamReader reader = new InputStreamReader(file.getInputStream());
+			InputStreamReader reader = new InputStreamReader(
+					file.getInputStream());
 
 			int requestInfoIdForBulk = 0;
 			DeviceInterfaceEntity deviceInterfaceEntity = new DeviceInterfaceEntity();
@@ -654,14 +816,16 @@ public class ExcelReader {
 
 				for (int i1 = 0; i1 < header.size(); i1++) {
 
-					if (rowValue.get(i1).isEmpty() || rowValue.get(i1).equals("null")) {
+					if (rowValue.get(i1).isEmpty()
+							|| rowValue.get(i1).equals("null")) {
 						rowValue.set(i1, null);
 					}
 
 					map.put(header.get(i1), rowValue.get(i1));
 				}
 
-				List<RequestDetailsEntity> requestDtlList = requestDetailsImportRepo.findAll();
+				List<RequestDetailsEntity> requestDtlList = requestDetailsImportRepo
+						.findAll();
 				requestDetailsEntity = new RequestDetailsEntity();
 				/* Setting up schedule time flag in DB */
 				if (header.contains("To Be Scheduled")) {
@@ -686,42 +850,53 @@ public class ExcelReader {
 
 					String keyHeader = entry.getKey();
 
-					deviceInterfaceEntity.setRequestInfoId(requestDtlList.size() + 1);
-					internetInfoEntity.setRequestInfoId(requestDtlList.size() + 1);
+					deviceInterfaceEntity.setRequestInfoId(requestDtlList
+							.size() + 1);
+					internetInfoEntity
+							.setRequestInfoId(requestDtlList.size() + 1);
 					routerVfEntity.setRequestInfoId(requestDtlList.size() + 1);
-					webServiceEntity.setRequestInfoId(requestDtlList.size() + 1);
-					requestDetailsEntity.setRequestinfoid(requestDtlList.size() + 1);
-					requestDetailsEntity.setRequestCreatorName(Global.loggedInUser);
+					webServiceEntity
+							.setRequestInfoId(requestDtlList.size() + 1);
+					requestDetailsEntity
+							.setRequestinfoid(requestDtlList.size() + 1);
+					requestDetailsEntity
+							.setRequestCreatorName(Global.loggedInUser);
 					requestDetailsEntity.setRequestVersion(1.0);
 					requestDetailsEntity.setRequestOwner(Global.loggedInUser);
 
 					if (i == 1) {
 						requestDetailsEntity.setRequeststatus("In Progress");
-						requestInfoIdForBulk = requestDetailsEntity.getRequestinfoid();
+						requestInfoIdForBulk = requestDetailsEntity
+								.getRequestinfoid();
 						requestDetailsEntity.setImportStatus("In Progress");
 					} else {
 						requestDetailsEntity.setRequeststatus("In Progress");
 						requestDetailsEntity.setImportStatus("Awaiting");
 					}
-					requestDetailsEntity.setImportid((getAlphaNumericString(8)));
+					requestDetailsEntity
+							.setImportid((getAlphaNumericString(8)));
 
-					requestDetailsEntity.setImportsource(FilenameUtils.getExtension(file.getOriginalFilename()));
+					requestDetailsEntity.setImportsource(FilenameUtils
+							.getExtension(file.getOriginalFilename()));
 
 					if (keyHeader.equalsIgnoreCase("Hostname")) {
 
 						requestDetailsEntity.setHostname((entry.getValue()));
 
 					} else if (keyHeader.equalsIgnoreCase("Customer Name*")) {
-						requestDetailsEntity.setCustomer((((entry.getValue()))));
+						requestDetailsEntity
+								.setCustomer((((entry.getValue()))));
 
 					} else if (keyHeader.equalsIgnoreCase("Site ID*")) {
 						requestDetailsEntity.setSiteid((((entry.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("Request Number")) {
 
 						if ((entry.getValue()) == null) {
-							requestDetailsEntity.setAlphanumericReqId(getAlphaNumericStringForSR(7));
+							requestDetailsEntity
+									.setAlphanumericReqId(getAlphaNumericStringForSR(7));
 						} else {
-							requestDetailsEntity.setAlphanumericReqId(getAlphaNumericStringForSR(7));
+							requestDetailsEntity
+									.setAlphanumericReqId(getAlphaNumericStringForSR(7));
 						}
 
 					}
@@ -731,45 +906,64 @@ public class ExcelReader {
 					} else if (keyHeader.equalsIgnoreCase("Vendor*")) {
 						requestDetailsEntity.setVendor((((entry.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("Device Type*")) {
-						requestDetailsEntity.setDevice_type((((entry.getValue()))));
+						requestDetailsEntity
+								.setDevice_type((((entry.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("Model*")) {
 						requestDetailsEntity.setModel((((entry.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("OS*")) {
 						requestDetailsEntity.setOs((((entry.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("OS Version*")) {
-						requestDetailsEntity.setOs_version((((entry.getValue()))));
+						requestDetailsEntity
+								.setOs_version((((entry.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("Management IP*")) {
-						requestDetailsEntity.setManagementIp((((entry.getValue()))));
+						requestDetailsEntity.setManagementIp((((entry
+								.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("Service*")) {
 						requestDetailsEntity.setService((((entry.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("Network Type*")) {
-						requestDetailsEntity.setNetwork_Type((((entry.getValue()))));
+						requestDetailsEntity.setNetwork_Type((((entry
+								.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("To Be Scheduled")) {
-						requestDetailsEntity.setScheduledTime((((entry.getValue()))));
+						requestDetailsEntity.setScheduledTime((((entry
+								.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("Template ID")) {
-						requestDetailsEntity.setTemplateIdUsed((((entry.getValue()))));
+						requestDetailsEntity.setTemplateIdUsed((((entry
+								.getValue()))));
 					} else if (keyHeader.equalsIgnoreCase("Banner")) {
-						requestDetailsEntity.setBanner(((((entry.getValue())))));
+						requestDetailsEntity
+								.setBanner(((((entry.getValue())))));
 					} else if (keyHeader.equalsIgnoreCase("LAN Interface Name")) {
-						requestDetailsEntity.setLanInterface(((((entry.getValue())))));
+						requestDetailsEntity.setLanInterface(((((entry
+								.getValue())))));
 					} else if (keyHeader.equalsIgnoreCase("LAN IP Address")) {
 						requestDetailsEntity.setLanIp(((((entry.getValue())))));
 					} else if (keyHeader.equalsIgnoreCase("LAN Subnet Mask")) {
-						requestDetailsEntity.setLanMaskAddress(((((entry.getValue())))));
+						requestDetailsEntity.setLanMaskAddress(((((entry
+								.getValue())))));
 					} else if (keyHeader.equalsIgnoreCase("LAN Description")) {
-						requestDetailsEntity.setLanDescription(((((entry.getValue())))));
-					} else if (keyHeader.equalsIgnoreCase("Loopback Interface Name")) {
-						requestDetailsEntity.setLoopBackType(((((entry.getValue())))));
-					} else if (keyHeader.equalsIgnoreCase("Loopback IP Address")) {
-						requestDetailsEntity.setLoopbackIPaddress(((((entry.getValue())))));
-					} else if (keyHeader.equalsIgnoreCase("Loopback Subnet Mask")) {
-						requestDetailsEntity.setLoopbackSubnetMask(((((entry.getValue())))));
+						requestDetailsEntity.setLanDescription(((((entry
+								.getValue())))));
+					} else if (keyHeader
+							.equalsIgnoreCase("Loopback Interface Name")) {
+						requestDetailsEntity.setLoopBackType(((((entry
+								.getValue())))));
+					} else if (keyHeader
+							.equalsIgnoreCase("Loopback IP Address")) {
+						requestDetailsEntity.setLoopbackIPaddress(((((entry
+								.getValue())))));
+					} else if (keyHeader
+							.equalsIgnoreCase("Loopback Subnet Mask")) {
+						requestDetailsEntity.setLoopbackSubnetMask(((((entry
+								.getValue())))));
 					} else if (keyHeader.equalsIgnoreCase("VRF Name")) {
-						requestDetailsEntity.setVrf_name(((((entry.getValue())))));
+						requestDetailsEntity
+								.setVrf_name(((((entry.getValue())))));
 					} else if (keyHeader.equalsIgnoreCase("SNMP HostAddress")) {
-						requestDetailsEntity.setSnmpHostAddress(((((entry.getValue())))));
+						requestDetailsEntity.setSnmpHostAddress(((((entry
+								.getValue())))));
 					} else if (keyHeader.equalsIgnoreCase("SNMP String")) {
-						requestDetailsEntity.setSnmpString(((((entry.getValue())))));
+						requestDetailsEntity
+								.setSnmpString(((((entry.getValue())))));
 					}
 
 					else if (keyHeader.equalsIgnoreCase("WAN Interface Name")) {
@@ -778,7 +972,8 @@ public class ExcelReader {
 
 					} else if (keyHeader.equalsIgnoreCase("WAN Description")) {
 
-						deviceInterfaceEntity.setDescription((entry.getValue()));
+						deviceInterfaceEntity
+								.setDescription((entry.getValue()));
 
 					} else if (keyHeader.equalsIgnoreCase("WAN IP Address")) {
 
@@ -794,17 +989,20 @@ public class ExcelReader {
 
 					} else if (keyHeader.equalsIgnoreCase("WAN Encapsulation")) {
 
-						deviceInterfaceEntity.setEncapsulation((((entry.getValue()))));
+						deviceInterfaceEntity.setEncapsulation((((entry
+								.getValue()))));
 
 					} else if (keyHeader.equalsIgnoreCase("WAN Bandwidth")) {
 
-						deviceInterfaceEntity.setBandwidth((((entry.getValue()))));
+						deviceInterfaceEntity
+								.setBandwidth((((entry.getValue()))));
 
 					}
 
 					else if (keyHeader.equalsIgnoreCase("Routing Protocol")) {
 
-						internetInfoEntity.setRoutingProtocol((((entry.getValue()))));
+						internetInfoEntity.setRoutingProtocol((((entry
+								.getValue()))));
 
 					} else if (keyHeader.equalsIgnoreCase("BGP As Number")) {
 
@@ -812,31 +1010,39 @@ public class ExcelReader {
 
 					}
 
-					else if (keyHeader.equalsIgnoreCase("BGP Neighbor1 IP Address")) {
+					else if (keyHeader
+							.equalsIgnoreCase("BGP Neighbor1 IP Address")) {
 
 						internetInfoEntity.setNeighbor1((((entry.getValue()))));
 
 					}
 
-					else if (keyHeader.equalsIgnoreCase("BGP Neighbor1 Remote AS")) {
+					else if (keyHeader
+							.equalsIgnoreCase("BGP Neighbor1 Remote AS")) {
 
-						internetInfoEntity.setNeighbor1RemoteAS((((entry.getValue()))));
+						internetInfoEntity.setNeighbor1RemoteAS((((entry
+								.getValue()))));
 
-					} else if (keyHeader.equalsIgnoreCase("BGP Neighbor2 IP Address")) {
+					} else if (keyHeader
+							.equalsIgnoreCase("BGP Neighbor2 IP Address")) {
 
 						internetInfoEntity.setNeighbor2((((entry.getValue()))));
 
-					} else if (keyHeader.equalsIgnoreCase("BGP Neighbor2 Remote AS")) {
+					} else if (keyHeader
+							.equalsIgnoreCase("BGP Neighbor2 Remote AS")) {
 
-						internetInfoEntity.setNeighbor2RemoteAS((((entry.getValue()))));
+						internetInfoEntity.setNeighbor2RemoteAS((((entry
+								.getValue()))));
 
 					} else if (keyHeader.equalsIgnoreCase("BGP Network IP")) {
 
 						internetInfoEntity.setNetworkIp((((entry.getValue()))));
 
-					} else if (keyHeader.equalsIgnoreCase("BGP Network IP Mask")) {
+					} else if (keyHeader
+							.equalsIgnoreCase("BGP Network IP Mask")) {
 
-						internetInfoEntity.setNetworkIpSubnetMask((((entry.getValue()))));
+						internetInfoEntity.setNetworkIpSubnetMask((((entry
+								.getValue()))));
 
 					}
 					webServiceEntity.setStart_test(1);
@@ -848,8 +1054,10 @@ public class ExcelReader {
 					webServiceEntity.setCustomer_report(0);
 					webServiceEntity.setFilename(0);
 					webServiceEntity.setLatencyResultRes(0);
-					webServiceEntity.setAlphanumericReqId(requestDetailsEntity.getAlphanumericReqId());
-					webServiceEntity.setVersion(requestDetailsEntity.getRequestVersion());
+					webServiceEntity.setAlphanumericReqId(requestDetailsEntity
+							.getAlphanumericReqId());
+					webServiceEntity.setVersion(requestDetailsEntity
+							.getRequestVersion());
 
 				}
 
@@ -861,11 +1069,13 @@ public class ExcelReader {
 				webServiceRepo.save(webServiceEntity);
 
 			}
-			List<RequestDetailsEntity> requestByRequestStatus = requestDetailsImportRepo.findAll();
+			List<RequestDetailsEntity> requestByRequestStatus = requestDetailsImportRepo
+					.findAll();
 			Boolean isCheck = false;
 			int requestInfoId = 0;
 			/* setting up "In Progress and Awaiting status" on Import Dash board */
-			for (int i = (requestInfoIdForBulk - 1); i < requestByRequestStatus.size(); i++) {
+			for (int i = (requestInfoIdForBulk - 1); i < requestByRequestStatus
+					.size(); i++) {
 				String status = requestByRequestStatus.get(i).getImportStatus();
 				if (status == null) {
 
@@ -873,36 +1083,43 @@ public class ExcelReader {
 				}
 
 				else if (status.equals("In Progress")) {
-					requestInfoId = requestByRequestStatus.get(i).getRequestinfoid();
+					requestInfoId = requestByRequestStatus.get(i)
+							.getRequestinfoid();
 					isCheck = true;
 
 				}
 				while (isCheck) {
 
 					/*
-					 * calling validate method to perform milestone validation in back end
+					 * calling validate method to perform milestone validation
+					 * in back end
 					 */
 					validate(requestInfoId);
 					/* Bulk and single import request execution */
-					for (int i1 = (requestInfoIdForBulk - 1); i1 < requestByRequestStatus.size(); i1++) {
+					for (int i1 = (requestInfoIdForBulk - 1); i1 < requestByRequestStatus
+							.size(); i1++) {
 
-						String importStatusAfterValidation = requestByRequestStatus.get(i1).getImportStatus();
-						String milestoneAfterValidation = requestByRequestStatus.get(i1).getValidationMilestoneBits();
+						String importStatusAfterValidation = requestByRequestStatus
+								.get(i1).getImportStatus();
+						String milestoneAfterValidation = requestByRequestStatus
+								.get(i1).getValidationMilestoneBits();
 						if (importStatusAfterValidation == null) {
 
 							continue;
 						}
 						/* Processing of one by one request on Import Dash Board */
-						else if ((importStatusAfterValidation.equals("Success")
-								|| importStatusAfterValidation.equals("Awaiting"))
+						else if ((importStatusAfterValidation.equals("Success") || importStatusAfterValidation
+								.equals("Awaiting"))
 								&& milestoneAfterValidation.equals("11111")) {
-							requestInfoId = requestByRequestStatus.get(i1).getRequestinfoid();
+							requestInfoId = requestByRequestStatus.get(i1)
+									.getRequestinfoid();
 
 							if (importStatusAfterValidation.equals("Awaiting")) {
 
 								String importStatus = "Success";
 								int id = i1 + 1;
-								requestDetailsImportRepo.updateImportStatus(importStatus, id);
+								requestDetailsImportRepo.updateImportStatus(
+										importStatus, id);
 							}
 
 							TemplateSuggestionDao templateUsgaeCount = new TemplateSuggestionDao();
@@ -913,87 +1130,144 @@ public class ExcelReader {
 							DeviceInterfaceEntity ExportList2 = new DeviceInterfaceEntity();
 							InternetInfoEntity ExportList3 = new InternetInfoEntity();
 							/* Setting variable values to push them on communda */
-							createConfig.setCustomer(requestByRequestStatus.get(i1).getCustomer());
-							createConfig.setBanner(requestByRequestStatus.get(i1).getBanner());
-							createConfig.setDeviceType(requestByRequestStatus.get(i1).getDevice_type());
-							createConfig.setModel(requestByRequestStatus.get(i1).getModel());
-							createConfig.setOs(requestByRequestStatus.get(i1).getOs());
-							createConfig.setRegion(requestByRequestStatus.get(i1).getRegion());
-							createConfig.setService(requestByRequestStatus.get(i1).getService());
-							createConfig.setOsVersion(requestByRequestStatus.get(i1).getOs_version());
+							createConfig.setCustomer(requestByRequestStatus
+									.get(i1).getCustomer());
+							createConfig.setBanner(requestByRequestStatus.get(
+									i1).getBanner());
+							createConfig.setDeviceType(requestByRequestStatus
+									.get(i1).getDevice_type());
+							createConfig.setModel(requestByRequestStatus
+									.get(i1).getModel());
+							createConfig.setOs(requestByRequestStatus.get(i1)
+									.getOs());
+							createConfig.setRegion(requestByRequestStatus.get(
+									i1).getRegion());
+							createConfig.setService(requestByRequestStatus.get(
+									i1).getService());
+							createConfig.setOsVersion(requestByRequestStatus
+									.get(i1).getOs_version());
 							createConfig.setRequest_version(1.0);
 							createConfig.setVersion_report("1.0");
-							createConfig.setHostname(requestByRequestStatus.get(i1).getHostname());
-							createConfig.setVpn(requestByRequestStatus.get(i1).getVpn());
-							createConfig.setVendor(requestByRequestStatus.get(i1).getVendor());
-							createConfig.setVrfName(requestByRequestStatus.get(i1).getVrf_name());
+							createConfig.setHostname(requestByRequestStatus
+									.get(i1).getHostname());
+							createConfig.setVpn(requestByRequestStatus.get(i1)
+									.getVpn());
+							createConfig.setVendor(requestByRequestStatus.get(
+									i1).getVendor());
+							createConfig.setVrfName(requestByRequestStatus.get(
+									i1).getVrf_name());
 							createConfig.setIsAutoProgress(false);
-							createConfig.setTemplateID(requestByRequestStatus.get(i1).getTemplateIdUsed());
-							createConfig.setManagementIp(requestByRequestStatus.get(i1).getManagementIp());
-							createConfig.setSiteid(requestByRequestStatus.get(i1).getSiteid());
-							createConfig.setEnablePassword(requestByRequestStatus.get(i1).getEnable_password());
-							createConfig.setRequestId(requestByRequestStatus.get(i1).getAlphanumericReqId());
-							createConfig.setImportsource(requestByRequestStatus.get(i1).getImportsource());
+							createConfig.setTemplateID(requestByRequestStatus
+									.get(i1).getTemplateIdUsed());
+							createConfig.setManagementIp(requestByRequestStatus
+									.get(i1).getManagementIp());
+							createConfig.setSiteid(requestByRequestStatus.get(
+									i1).getSiteid());
+							createConfig
+									.setEnablePassword(requestByRequestStatus
+											.get(i1).getEnable_password());
+							createConfig.setRequestId(requestByRequestStatus
+									.get(i1).getAlphanumericReqId());
+							createConfig.setImportsource(requestByRequestStatus
+									.get(i1).getImportsource());
 
 							ExportList2 = deviceInterfaceRepo
-									.findByRequestInfoId(requestByRequestStatus.get(i1).getRequestinfoid());
+									.findByRequestInfoId(requestByRequestStatus
+											.get(i1).getRequestinfoid());
 							ExportList3 = internetInfoRepo
-									.findByRequestInfoId(requestByRequestStatus.get(i1).getRequestinfoid());
+									.findByRequestInfoId(requestByRequestStatus
+											.get(i1).getRequestinfoid());
 
-							createConfig.setNetworkIp(ExportList3.getNetworkIp());
+							createConfig.setNetworkIp(ExportList3
+									.getNetworkIp());
 
-							createConfig.setNetworkIp(ExportList3.getNetworkIp());
-							createConfig.setNeighbor1(ExportList3.getNeighbor1());
-							createConfig.setNeighbor2(ExportList3.getNeighbor2());
-							createConfig.setNeighbor1_remoteAS(ExportList3.getNeighbor1RemoteAS());
-							createConfig.setNeighbor2_remoteAS(ExportList3.getNeighbor2RemoteAS());
-							createConfig.setNetworkIp_subnetMask(ExportList3.getNetworkIpSubnetMask());
-							createConfig.setRoutingProtocol(ExportList3.getRoutingProtocol());
-							createConfig.setBgpASNumber(ExportList3.getAsNumber());
+							createConfig.setNetworkIp(ExportList3
+									.getNetworkIp());
+							createConfig.setNeighbor1(ExportList3
+									.getNeighbor1());
+							createConfig.setNeighbor2(ExportList3
+									.getNeighbor2());
+							createConfig.setNeighbor1_remoteAS(ExportList3
+									.getNeighbor1RemoteAS());
+							createConfig.setNeighbor2_remoteAS(ExportList3
+									.getNeighbor2RemoteAS());
+							createConfig.setNetworkIp_subnetMask(ExportList3
+									.getNetworkIpSubnetMask());
+							createConfig.setRoutingProtocol(ExportList3
+									.getRoutingProtocol());
+							createConfig.setBgpASNumber(ExportList3
+									.getAsNumber());
 
 							createConfig.setName(ExportList2.getName());
-							createConfig.setDescription(ExportList2.getDescription());
+							createConfig.setDescription(ExportList2
+									.getDescription());
 							createConfig.setIp(ExportList2.getIp());
 							createConfig.setMask(ExportList2.getMask());
 							createConfig.setSpeed(ExportList2.getSpeed());
-							createConfig.setBandwidth(ExportList2.getBandwidth());
-							createConfig.setEncapsulation(ExportList2.getEncapsulation());
-							createConfig.setLanInterface(requestByRequestStatus.get(i1).getLanInterface());
-							createConfig.setLanDescription(requestByRequestStatus.get(i1).getLanDescription());
-							createConfig.setLanIp(requestByRequestStatus.get(i1).getLanIp());
-							createConfig.setVpn(requestByRequestStatus.get(i1).getVpn());
-							createConfig.setLoopBackType(requestByRequestStatus.get(i1).getLoopBackType());
-							createConfig.setLoopbackIPaddress(requestByRequestStatus.get(i1).getLoopbackIPaddress());
-							createConfig.setLoopbackSubnetMask(requestByRequestStatus.get(i1).getLoopbackSubnetMask());
-							createConfig.setLanMaskAddress(requestByRequestStatus.get(i1).getLanMaskAddress());
-							createConfig.setRequestCreatedOn(requestByRequestStatus.get(i1).getDateofProcessing());
+							createConfig.setBandwidth(ExportList2
+									.getBandwidth());
+							createConfig.setEncapsulation(ExportList2
+									.getEncapsulation());
+							createConfig.setLanInterface(requestByRequestStatus
+									.get(i1).getLanInterface());
+							createConfig
+									.setLanDescription(requestByRequestStatus
+											.get(i1).getLanDescription());
+							createConfig.setLanIp(requestByRequestStatus
+									.get(i1).getLanIp());
+							createConfig.setVpn(requestByRequestStatus.get(i1)
+									.getVpn());
+							createConfig.setLoopBackType(requestByRequestStatus
+									.get(i1).getLoopBackType());
+							createConfig
+									.setLoopbackIPaddress(requestByRequestStatus
+											.get(i1).getLoopbackIPaddress());
+							createConfig
+									.setLoopbackSubnetMask(requestByRequestStatus
+											.get(i1).getLoopbackSubnetMask());
+							createConfig
+									.setLanMaskAddress(requestByRequestStatus
+											.get(i1).getLanMaskAddress());
+							createConfig
+									.setRequestCreatedOn(requestByRequestStatus
+											.get(i1).getDateofProcessing());
 
-							if (requestByRequestStatus.get(i1).getScheduledTime() != null) {
-								createConfig.setScheduledTime(requestByRequestStatus.get(i1).getScheduledTime());
+							if (requestByRequestStatus.get(i1)
+									.getScheduledTime() != null) {
+								createConfig
+										.setScheduledTime(requestByRequestStatus
+												.get(i1).getScheduledTime());
 							}
 
 							/*
-							 * Generation of configuration and header file on local drive
+							 * Generation of configuration and header file on
+							 * local drive
 							 */
-							importSRDcmConfigService.createTemplate(createConfig);
+							importSRDcmConfigService
+									.createTemplate(createConfig);
 							/* Updating template uses data in Database */
-							String templateIdUsed = createConfig.getTemplateID();
-							templateUsgaeCount.insertTemplateUsageData(templateIdUsed);
+							String templateIdUsed = createConfig
+									.getTemplateID();
+							templateUsgaeCount
+									.insertTemplateUsageData(templateIdUsed);
 
 							if (templateIdUsed != null) {
 
 								int id = i1 + 1;
-								requestDetailsImportRepo.updateSuggestedTemplateId(templateIdUsed, id);
+								requestDetailsImportRepo
+										.updateSuggestedTemplateId(
+												templateIdUsed, id);
 							}
 
 							/*
-							 * Thread halt to restart communda in case of bulk SR
+							 * Thread halt to restart communda in case of bulk
+							 * SR
 							 */
 							try {
 
 								Thread.sleep(70000);
 							} catch (Exception e) {
-								logger.error(e);
+								System.out.println(e);
 							}
 							/* Invocation of communda flow */
 							TelnetCommunicationSSHImportSR telnetCommunicationSSHImportSR = new TelnetCommunicationSSHImportSR(
@@ -1001,13 +1275,14 @@ public class ExcelReader {
 							telnetCommunicationSSHImportSR.setDaemon(true);
 							telnetCommunicationSSHImportSR.start();
 							/*
-							 * Thread halt to process next SR before previous SR completion
+							 * Thread halt to process next SR before previous SR
+							 * completion
 							 */
 							try {
 
 								Thread.sleep(180000);
 							} catch (Exception e) {
-								logger.error(e);
+								System.out.println(e);
 							}
 
 						}
@@ -1019,7 +1294,7 @@ public class ExcelReader {
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 			return false;
 		}
 
@@ -1062,13 +1337,15 @@ public class ExcelReader {
 	}
 
 	/* Method call for milestone validation */
-	public void validate(@RequestParam int request_info_id)
-			throws IOException, SQLException, ParseException, java.text.ParseException {
+	public void validate(@RequestParam int request_info_id) throws IOException,
+			SQLException, ParseException, java.text.ParseException {
 
 		RequestDetailsEntity ExportList = new RequestDetailsEntity();
-		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
+		ExportList = requestDetailsExportRepo
+				.findByrequestinfoid(request_info_id);
 
-		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
+		ExportList = requestDetailsExportRepo
+				.findByrequestinfoid(request_info_id);
 		String Status = ExportList.getImportStatus();
 
 		if (Status.equals("In Progress")) {
@@ -1077,7 +1354,8 @@ public class ExcelReader {
 			int request_info_id_new = request_info_id + 1;
 			while (MileStone == 1) {
 
-				ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id_new);
+				ExportList = requestDetailsExportRepo
+						.findByrequestinfoid(request_info_id_new);
 				MileStone = ValidMilestone(request_info_id_new);
 				request_info_id_new = request_info_id_new + 1;
 			}
@@ -1086,11 +1364,12 @@ public class ExcelReader {
 	}
 
 	/* Method call to set certification bits */
-	public int ValidMilestone(int request_info_id)
-			throws IOException, SQLException, ParseException, java.text.ParseException {
+	public int ValidMilestone(int request_info_id) throws IOException,
+			SQLException, ParseException, java.text.ParseException {
 		int TemplateData = 0, DataValidation = 0, TestandTurn = 0, Scheduler = 0, MileStoneData = 0, DataFormat = 0;
 		RequestDetailsEntity ExportList = new RequestDetailsEntity();
-		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
+		ExportList = requestDetailsExportRepo
+				.findByrequestinfoid(request_info_id);
 		String Status = ExportList.getRequeststatus();
 		List<String> ValidationMilestoneBits = new ArrayList<String>();
 		int DataFormatt = validateImport(request_info_id);
@@ -1120,18 +1399,21 @@ public class ExcelReader {
 					ValidationMilestoneBits.set(4, "2");
 					TestandTurn = validateTest(request_info_id);
 
-					if (TemplateData == 1 && DataValidation == 1 && TestandTurn == 1) {
+					if (TemplateData == 1 && DataValidation == 1
+							&& TestandTurn == 1) {
 						ValidationMilestoneBits.set(3, "1");
 
 						ValidationMilestoneBits.set(4, "0");
 
 						Scheduler = validateScheduler(request_info_id);
-						if (TemplateData == 1 && DataValidation == 1 && TestandTurn == 1 && Scheduler == 1) {
+						if (TemplateData == 1 && DataValidation == 1
+								&& TestandTurn == 1 && Scheduler == 1) {
 							ValidationMilestoneBits.set(4, "1");
 
 							int request_info_id_new = request_info_id + 1;
 
-							ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id_new);
+							ExportList = requestDetailsExportRepo
+									.findByrequestinfoid(request_info_id_new);
 							if (ExportList == null) {
 								DataFormat = 0;
 							} else {
@@ -1142,11 +1424,13 @@ public class ExcelReader {
 							}
 
 						}
-						if (TemplateData == 1 && DataValidation == 1 && TestandTurn == 1 && Scheduler == 3) {
+						if (TemplateData == 1 && DataValidation == 1
+								&& TestandTurn == 1 && Scheduler == 3) {
 							ValidationMilestoneBits.set(4, "3");
 							int request_info_id_new = request_info_id + 1;
 
-							ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id_new);
+							ExportList = requestDetailsExportRepo
+									.findByrequestinfoid(request_info_id_new);
 							if (ExportList == null) {
 								DataFormat = 0;
 							} else {
@@ -1165,7 +1449,8 @@ public class ExcelReader {
 
 		if (Status != null) {
 			int request_info_id_new = request_info_id + 1;
-			ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id_new);
+			ExportList = requestDetailsExportRepo
+					.findByrequestinfoid(request_info_id_new);
 			if (ExportList == null) {
 				DataFormat = 0;
 			} else {
@@ -1177,13 +1462,14 @@ public class ExcelReader {
 
 		}
 		int request_info_id_new = request_info_id;
-		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id_new);
+		ExportList = requestDetailsExportRepo
+				.findByrequestinfoid(request_info_id_new);
 		String[] stringArray1 = new String[ValidationMilestoneBits.size()];
-		logger.info("Validation Milestone Bits");
+		System.out.println("Validation Milestone Bits");
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < ValidationMilestoneBits.size(); i++) {
 			stringArray1[i] = ValidationMilestoneBits.get(i);
-			logger.info(stringArray1[i]);
+			System.out.println(stringArray1[i]);
 			sb.append(stringArray1[i]);
 		}
 		ExportList.setValidationMilestoneBits(sb.toString());
@@ -1209,7 +1495,8 @@ public class ExcelReader {
 		int Datavalid = 0;
 		try {
 
-			ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
+			ExportList = requestDetailsExportRepo
+					.findByrequestinfoid(request_info_id);
 
 			List<String> vendorlist = vendorRepository.findVendors();
 			List<String> devicelist = deviceTypeRepository.findDevice();
@@ -1217,7 +1504,8 @@ public class ExcelReader {
 			List<String> oslist = oSRepository.findOs();
 			List<String> osVersionlist = oSversionRepository.findOsVersion();
 			List<String> regionlist = regionsRepository.findRegion();
-			ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
+			ExportList = requestDetailsExportRepo
+					.findByrequestinfoid(request_info_id);
 
 			String Device = ExportList.getDevice_type();
 			String vendor = ExportList.getVendor();
@@ -1237,7 +1525,7 @@ public class ExcelReader {
 				if (string.equals(Vendor)) {
 
 					flag1 = true;
-					logger.info("Matched VENDOR");
+					System.out.println("Matched VENDOR");
 				}
 
 			}
@@ -1255,7 +1543,7 @@ public class ExcelReader {
 				if (string.equals(DeviceType)) {
 
 					flag2 = true;
-					logger.info("Matched device");
+					System.out.println("Matched device");
 
 				}
 
@@ -1273,7 +1561,7 @@ public class ExcelReader {
 				if (string.equals(Model)) {
 
 					flag3 = true;
-					logger.info("Matched model");
+					System.out.println("Matched model");
 				}
 
 			}
@@ -1290,7 +1578,7 @@ public class ExcelReader {
 				if (string.equals(Os)) {
 
 					flag4 = true;
-					logger.info("Matched os");
+					System.out.println("Matched os");
 				}
 
 			}
@@ -1309,7 +1597,7 @@ public class ExcelReader {
 				if (string.equals(OsVersion)) {
 
 					flag5 = true;
-					logger.info("Matched os version");
+					System.out.println("Matched os version");
 				}
 
 			}
@@ -1341,7 +1629,8 @@ public class ExcelReader {
 			String MessageReport = "";
 			names.put("Request Id", request_id);
 
-			if (flag1 == true && flag2 == true && flag3 == true && flag4 == true && flag5 == true && flag6 == true) {
+			if (flag1 == true && flag2 == true && flag3 == true
+					&& flag4 == true && flag5 == true && flag6 == true) {
 				Datavalid = 1;
 
 			} else {
@@ -1358,7 +1647,7 @@ public class ExcelReader {
 			obj.put(new String("output"), jsonArray);
 			obj.put(new String("Datavalid"), Datavalid);
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return Datavalid;
@@ -1367,7 +1656,8 @@ public class ExcelReader {
 
 	/* Method for template suggestion */
 	@SuppressWarnings({ "unchecked", "unchecked", "unchecked", "unchecked" })
-	public int validateTemplate(int request_info_id) throws IOException, SQLException, ParseException {
+	public int validateTemplate(int request_info_id) throws IOException,
+			SQLException, ParseException {
 		int TemplateSuggesstion = 0;
 
 		JSONObject obj = new JSONObject();
@@ -1383,7 +1673,8 @@ public class ExcelReader {
 
 		RequestDetailsExport.loadProperties();
 
-		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
+		ExportList = requestDetailsExportRepo
+				.findByrequestinfoid(request_info_id);
 		ExportList2 = deviceInterfaceRepo.findByRequestInfoId(request_info_id);
 		ExportList3 = internetInfoRepo.findByRequestInfoId(request_info_id);
 
@@ -1400,7 +1691,8 @@ public class ExcelReader {
 
 		if (isNullOrEmpty(Template_id)) {
 			RequestDetailsExport.loadProperties();
-			String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("templateCreationPath") + "\\" + Template_id;
+			String path = RequestDetailsExport.TSA_PROPERTIES
+					.getProperty("templateCreationPath") + "\\" + Template_id;
 			File file = new File(path);
 			String template = null;
 			DcmConfigService dcmConfigService = new DcmConfigService();
@@ -1412,11 +1704,16 @@ public class ExcelReader {
 			createConfigRequestDCM.setRegion(ExportList.getRegion());
 			createConfigRequestDCM.setVendor(ExportList.getVendor());
 
-			String templateId = dcmConfigService.getTemplateName(createConfigRequestDCM.getRegion(),
-					createConfigRequestDCM.getVendor(), createConfigRequestDCM.getModel(),
-					createConfigRequestDCM.getOs(), createConfigRequestDCM.getOsVersion());
-			String Template_id1 = ExportList.getTemplateIdUsed().substring(0, 14);
-			String versionLastString = ExportList.getTemplateIdUsed().substring(18, 19);
+			String templateId = dcmConfigService.getTemplateName(
+					createConfigRequestDCM.getRegion(),
+					createConfigRequestDCM.getVendor(),
+					createConfigRequestDCM.getModel(),
+					createConfigRequestDCM.getOs(),
+					createConfigRequestDCM.getOsVersion());
+			String Template_id1 = ExportList.getTemplateIdUsed().substring(0,
+					14);
+			String versionLastString = ExportList.getTemplateIdUsed()
+					.substring(18, 19);
 
 			int versionLastNumber = Integer.parseInt(versionLastString);
 
@@ -1428,22 +1725,24 @@ public class ExcelReader {
 					for (int i = 0; i <= versionLastNumber; i++) {
 
 						String str1 = Integer.toString(i);
-						String Template_id_check = Template_id1.concat("_V1.").concat(str1);
-						TemplateList1 = templateFeatureRepo.findByCommand(Template_id_check);
+						String Template_id_check = Template_id1.concat("_V1.")
+								.concat(str1);
+						TemplateList1 = templateFeatureRepo
+								.findByCommand(Template_id_check);
 
 						feature_list.add(TemplateList1);
 
 					}
 
-					logger.info("Features present in Given Template:");
+					System.out.println("Features present in Given Template:");
 
 					String Basic = "Basic Configuration";
 					feature_list.add(Basic);
 
 					List<String> feature = validateFeatures(request_info_id);
-					logger.info("Features present in Import:");
+					System.out.println("Features present in Import:");
 					for (int i = 0; i < feature.size(); i++) {
-						logger.info(feature.get(i));
+						System.out.println(feature.get(i));
 					}
 
 					List<List<String>> list = Arrays.asList(feature_list);
@@ -1455,24 +1754,26 @@ public class ExcelReader {
 					Collections.sort(one);
 					Collections.sort(two);
 
-					logger.info(one.containsAll(two));
+					System.out.println(one.containsAll(two));
 					boolean compare = one.containsAll(two);
 
 					if (compare == true) {
-						logger.info("present");
+						System.out.println("present");
 					} else {
-						logger.info("not present");
+						System.out.println("not present");
 						flag2 = 0;
 					}
 
 					if (flag2 == 0) {
-						logger.info("Features Dont Match");
+						System.out.println("Features Dont Match");
 						flag = false;
-						logger.info("Invalid");
+						System.out.println("Invalid");
 						obj.put(new String("Result"), "Failure");
-						obj.put(new String("Message"), "C3P does not support this template");
+						obj.put(new String("Message"),
+								"C3P does not support this template");
 						TemplateSuggesstion = 0;
-						obj.put(new String("TemplateSuggesstion"), TemplateSuggesstion);
+						obj.put(new String("TemplateSuggesstion"),
+								TemplateSuggesstion);
 						String MessageReport = "Template Validation Failed";
 						ExportList.setImportStatus(MessageReport);
 						requestDetailsExportRepo.save(ExportList);
@@ -1483,29 +1784,33 @@ public class ExcelReader {
 						obj.put(new String("Result"), "Success");
 						obj.put(new String("Message"), "");
 						TemplateSuggesstion = 1;
-						obj.put(new String("TemplateSuggesstion"), TemplateSuggesstion);
+						obj.put(new String("TemplateSuggesstion"),
+								TemplateSuggesstion);
 					}
 
 				}
 
 				else {
-					logger.info("No Approved template Found");
+					System.out.println("No Approved template Found");
 					flag = false;
-					logger.info("Invalid");
+					System.out.println("Invalid");
 					obj.put(new String("Result"), "Failure");
-					obj.put(new String("Message"), "C3P does not support this template");
+					obj.put(new String("Message"),
+							"C3P does not support this template");
 					TemplateSuggesstion = 0;
-					obj.put(new String("TemplateSuggesstion"), TemplateSuggesstion);
+					obj.put(new String("TemplateSuggesstion"),
+							TemplateSuggesstion);
 					String MessageReport = "Template Validation Failed";
 					ExportList.setImportStatus(MessageReport);
 					requestDetailsExportRepo.save(ExportList);
 				}
 			} else {
-				logger.info("Template DO Not Match Device Details");
+				System.out.println("Template DO Not Match Device Details");
 				flag = false;
-				logger.info("Invalid");
+				System.out.println("Invalid");
 				obj.put(new String("Result"), "Failure");
-				obj.put(new String("Message"), "C3P does not support this template");
+				obj.put(new String("Message"),
+						"C3P does not support this template");
 				TemplateSuggesstion = 0;
 				obj.put(new String("TemplateSuggesstion"), TemplateSuggesstion);
 				String MessageReport = "Template Validation Failed";
@@ -1535,16 +1840,19 @@ public class ExcelReader {
 				createConfigRequestDCM.setRegion(ExportList.getRegion());
 				createConfigRequestDCM.setVendor(ExportList.getVendor());
 
-				String templateId = dcmConfigService.getTemplateName(createConfigRequestDCM.getRegion(),
-						createConfigRequestDCM.getVendor(), createConfigRequestDCM.getModel(),
-						createConfigRequestDCM.getOs(), createConfigRequestDCM.getOsVersion());
+				String templateId = dcmConfigService.getTemplateName(
+						createConfigRequestDCM.getRegion(),
+						createConfigRequestDCM.getVendor(),
+						createConfigRequestDCM.getModel(),
+						createConfigRequestDCM.getOs(),
+						createConfigRequestDCM.getOsVersion());
 
 				List<String> feat1 = validateFeatures(request_info_id);
 
-				logger.info("Features present in Import:");
+				System.out.println("Features present in Import:");
 				for (int i = 0; i < feat1.size(); i++) {
 
-					logger.info(feat1.get(i));
+					System.out.println(feat1.get(i));
 				}
 
 				if (feat1.size() > 0) {
@@ -1561,14 +1869,15 @@ public class ExcelReader {
 					obj.put(new String("templateId"), templateId);
 				} else {
 					obj.put(new String("Result"), "Failure");
-					obj.put(new String("Message"), "No features Present.Create the template first");
+					obj.put(new String("Message"),
+							"No features Present.Create the template first");
 					obj.put(new String("featureList"), null);
 				}
 
 			}
 
 			catch (Exception e) {
-				logger.error(e);
+				System.out.println(e);
 			}
 			String jsonList = "";
 			String TemplateList = "";
@@ -1591,9 +1900,12 @@ public class ExcelReader {
 				createConfigRequestDCM.setRegion(ExportList.getRegion());
 				createConfigRequestDCM.setVendor(ExportList.getVendor());
 
-				String templateId = dcmConfigService.getTemplateName(createConfigRequestDCM.getRegion(),
-						createConfigRequestDCM.getVendor(), createConfigRequestDCM.getModel(),
-						createConfigRequestDCM.getOs(), createConfigRequestDCM.getOsVersion());
+				String templateId = dcmConfigService.getTemplateName(
+						createConfigRequestDCM.getRegion(),
+						createConfigRequestDCM.getVendor(),
+						createConfigRequestDCM.getModel(),
+						createConfigRequestDCM.getOs(),
+						createConfigRequestDCM.getOsVersion());
 
 				String[] features = feat1.toArray(new String[feat1.size()]);
 
@@ -1604,7 +1916,7 @@ public class ExcelReader {
 					templateList.add(template.getTemplateId());
 
 				}
-				logger.info("List of Templates Present:" + templateList);
+				System.out.println("List of Templates Present:" + templateList);
 
 				jsonList = new Gson().toJson(templateBasicConfigurationPojo);
 				if (!(jsonList.equals("[]"))) {
@@ -1613,10 +1925,13 @@ public class ExcelReader {
 					obj.put(new String("Result"), "Success");
 					obj.put(new String("Message"), "Success");
 					ExportList.setTemplateIdUsed(TemplateList);
-					logger.info("Matched Template Found for Selected features");
+					System.out
+							.println("Matched Template Found for Selected features");
 					if (TemplateList != null) {
 						RequestDetailsExport.loadProperties();
-						String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("templateCreationPath") + "\\"
+						String path = RequestDetailsExport.TSA_PROPERTIES
+								.getProperty("templateCreationPath")
+								+ "\\"
 								+ TemplateList;
 						File file = new File(path);
 						String template = null;
@@ -1628,40 +1943,49 @@ public class ExcelReader {
 							obj.put(new String("Message"), "");
 							TemplateSuggesstion = 1;
 
-							obj.put(new String("TemplateSuggesstion"), TemplateSuggesstion);
-							logger.info("Approved Template Found for Selected features");
+							obj.put(new String("TemplateSuggesstion"),
+									TemplateSuggesstion);
+							System.out
+									.println("Approved Template Found for Selected features");
 
 						} else {
 							flag = false;
-							logger.info("No Approved Template Found for Selected features");
-							logger.info("Invalid");
+							System.out
+									.println("No Approved Template Found for Selected features");
+							System.out.println("Invalid");
 							obj.put(new String("Result"), "Failure");
-							obj.put(new String("Message"), "C3P does not support this template");
+							obj.put(new String("Message"),
+									"C3P does not support this template");
 							TemplateSuggesstion = 0;
-							obj.put(new String("TemplateSuggesstion"), TemplateSuggesstion);
+							obj.put(new String("TemplateSuggesstion"),
+									TemplateSuggesstion);
 							String MessageReport = "Template Validation Failed";
 							ExportList.setImportStatus(MessageReport);
 							requestDetailsExportRepo.save(ExportList);
 						}
 
 						TemplateSuggesstion = 1;
-						obj.put(new String("TemplateSuggesstion"), TemplateSuggesstion);
+						obj.put(new String("TemplateSuggesstion"),
+								TemplateSuggesstion);
 
 					}
 				} else {
 					obj.put(new String("Result"), "Failure");
-					obj.put(new String("Message"), "No Data.Create the template first");
+					obj.put(new String("Message"),
+							"No Data.Create the template first");
 					obj.put(new String("TemplateDetailList"), null);
 					TemplateSuggesstion = 0;
-					obj.put(new String("TemplateSuggesstion"), TemplateSuggesstion);
+					obj.put(new String("TemplateSuggesstion"),
+							TemplateSuggesstion);
 					String MessageReport = "Template Validation Failed";
 					ExportList.setImportStatus(MessageReport);
 					requestDetailsExportRepo.save(ExportList);
-					logger.info("No Matched Template Found for Selected features");
+					System.out
+							.println("No Matched Template Found for Selected features");
 				}
 
 			} catch (Exception e) {
-				logger.error(e);
+				System.out.println(e);
 			}
 
 		}
@@ -1683,7 +2007,8 @@ public class ExcelReader {
 		RequestDetailsEntity ExportList = new RequestDetailsEntity();
 		DeviceInterfaceEntity ExportList2 = new DeviceInterfaceEntity();
 		InternetInfoEntity ExportList3 = new InternetInfoEntity();
-		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
+		ExportList = requestDetailsExportRepo
+				.findByrequestinfoid(request_info_id);
 
 		try {
 			RequestDetailsExport.loadProperties();
@@ -1700,7 +2025,7 @@ public class ExcelReader {
 
 			stringArray[j] = Validation.get(j);
 			if (stringArray[j].equals("0")) {
-				logger.info("INVALID DATA REPORT");
+				System.out.println("INVALID DATA REPORT");
 				result = "InValid";
 				break;
 			} else if (stringArray[j].equals("1")) {
@@ -1727,7 +2052,8 @@ public class ExcelReader {
 	}
 
 	/* Method call for test validation */
-	public int validateTest(@RequestParam int request_info_id) throws IOException, SQLException {
+	public int validateTest(@RequestParam int request_info_id)
+			throws IOException, SQLException {
 		int TestAndTurnUp = 0;
 		RequestDetailsEntity entity = new RequestDetailsEntity();
 		Gson gson = new Gson();
@@ -1740,7 +2066,8 @@ public class ExcelReader {
 
 		RequestDetailsExport.loadProperties();
 
-		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
+		ExportList = requestDetailsExportRepo
+				.findByrequestinfoid(request_info_id);
 
 		List<String> Validation = validateDataFeatures(request_info_id);
 
@@ -1765,15 +2092,15 @@ public class ExcelReader {
 				CertificationImportFlag.set(3, "1"); // BGP
 
 			}
-			// logger.info(stringArray[j]);
+			// System.out.println(stringArray[j]);
 		}
 
 		String[] stringArray1 = new String[CertificationImportFlag.size()];
-		logger.info("Certification Flag");
+		System.out.println("Certification Flag");
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < CertificationImportFlag.size(); i++) {
 			stringArray1[i] = CertificationImportFlag.get(i);
-			logger.info(stringArray1[i]);
+			System.out.println(stringArray1[i]);
 			sb.append(stringArray1[i]);
 		}
 
@@ -1800,8 +2127,8 @@ public class ExcelReader {
 	}
 
 	/* Method call for scheduler */
-	public int validateScheduler(int request_info_id)
-			throws IOException, SQLException, java.text.ParseException, ParseException {
+	public int validateScheduler(int request_info_id) throws IOException,
+			SQLException, java.text.ParseException, ParseException {
 		int Scheduler = 0;
 		RequestDetailsEntity entity = new RequestDetailsEntity();
 		Gson gson = new Gson();
@@ -1814,7 +2141,8 @@ public class ExcelReader {
 
 		RequestDetailsExport.loadProperties();
 
-		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
+		ExportList = requestDetailsExportRepo
+				.findByrequestinfoid(request_info_id);
 		String Scheduled;
 		String Result = null, Message;
 		String RunNow;
@@ -1823,9 +2151,10 @@ public class ExcelReader {
 
 		{
 
-			DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			DateTimeFormatter dtf = DateTimeFormatter
+					.ofPattern("yyyy-MM-dd HH:mm:ss");
 			LocalDateTime now = LocalDateTime.now();
-			logger.info(dtf.format(now));
+			System.out.println(dtf.format(now));
 
 			RunNow = dtf.format(now);
 			ExportList.setDateofProcessing(RunNow);
@@ -1854,7 +2183,7 @@ public class ExcelReader {
 					path1 = Scheduled.substring(0, 18);
 				}
 
-				logger.info(path1);
+				System.out.println(path1);
 			} else {
 
 				path1 = Scheduled;
@@ -1863,18 +2192,19 @@ public class ExcelReader {
 			String Timeset = null;
 			int match = 0;
 
-			if (path1.matches(
-					"^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])\\s([0-1]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)\\s*$")) {
+			if (path1
+					.matches("^\\d{4}\\-(0?[1-9]|1[012])\\-(0?[1-9]|[12][0-9]|3[01])\\s([0-1]\\d|2[0-3]):([0-5]\\d):([0-5]\\d)\\s*$")) {
 				flag = true;
 				Timeset = Scheduled.substring(0, 19);
-				logger.info(Timeset);
+				System.out.println(Timeset);
 				match = 1;
-			} else if (path1.matches("^\\d{1,2}\\/\\d{1,2}\\/\\d{4}\\s([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$")) {
+			} else if (path1
+					.matches("^\\d{1,2}\\/\\d{1,2}\\/\\d{4}\\s([0-9]|0[0-9]|1[0-9]|2[0-3]):[0-5][0-9]$")) {
 				flag = true;
 				match = 2;
 				if (Scheduled.length() > 20) {
 					String Timesetnew = Scheduled.substring(0, 20);
-					logger.info(Timesetnew);
+					System.out.println(Timesetnew);
 				}
 				String Timesetnew = Scheduled;
 
@@ -1883,42 +2213,47 @@ public class ExcelReader {
 				Date d2 = df.parse(Timesetnew);
 				Timeset = df2.format(d2);
 
-				logger.info(Timeset);
+				System.out.println(Timeset);
 
 			} else {
 				flag = false;
-				logger.info("Invalid Date Format");
+				System.out.println("Invalid Date Format");
 				Result = "Failed";
 			}
 
 			if (flag == true) {
-				DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+				DateTimeFormatter dtf = DateTimeFormatter
+						.ofPattern("yyyy-MM-dd HH:mm:ss");
 				LocalDateTime now = LocalDateTime.now();
-				logger.info(dtf.format(now));
+				System.out.println(dtf.format(now));
 				RunNow = dtf.format(now);
 
 				int Value = compareDates(RunNow, Timeset);
 				if (Value == 1) {
-					logger.info("Scheduled Date is VALID and after Current Date");
+					System.out
+							.println("Scheduled Date is VALID and after Current Date");
 
 					String Timesetnew = ExportList.getScheduledTime();
 					if (match == 1) {
-						Timesetnew = ExportList.getScheduledTime().substring(0, 19);
-						logger.info(Timesetnew);
+						Timesetnew = ExportList.getScheduledTime().substring(0,
+								19);
+						System.out.println(Timesetnew);
 
 					} else if (match == 2) {
 
 						Timesetnew = Scheduled;
 						Timeset = Timesetnew;
-						DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+						DateFormat df2 = new SimpleDateFormat(
+								"yyyy-MM-dd HH:mm:ss");
 						DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm");
 						Date d2 = df.parse(Timesetnew);
 						Timeset = df2.format(d2);
 
-						logger.info(Timeset);
+						System.out.println(Timeset);
 					}
 
-					DateTimeFormatter dtf1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+					DateTimeFormatter dtf1 = DateTimeFormatter
+							.ofPattern("yyyy-MM-dd HH:mm:ss");
 					LocalDateTime nowSchedule = LocalDateTime.now();
 					RunNow = dtf.format(nowSchedule);
 
@@ -1934,7 +2269,7 @@ public class ExcelReader {
 					Message = "Valid Scheduled Time";
 					obj.put(new String("Message"), Message);
 				} else {
-					logger.info("Date of processing is NOT VALID");
+					System.out.println("Date of processing is NOT VALID");
 
 					obj.put(new String("SchedulerResult"), "Failure");
 					Result = "Invalid";
@@ -1995,19 +2330,22 @@ public class ExcelReader {
 		DeviceInterfaceEntity ExportList2 = new DeviceInterfaceEntity();
 		InternetInfoEntity ExportList3 = new InternetInfoEntity();
 
-		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
-		ExportList2 = deviceInterfaceRepo.findByRequestInfoId(ExportList.getRequestinfoid());
-		ExportList3 = internetInfoRepo.findByRequestInfoId(ExportList.getRequestinfoid());
+		ExportList = requestDetailsExportRepo
+				.findByrequestinfoid(request_info_id);
+		ExportList2 = deviceInterfaceRepo.findByRequestInfoId(ExportList
+				.getRequestinfoid());
+		ExportList3 = internetInfoRepo.findByRequestInfoId(ExportList
+				.getRequestinfoid());
 
 		InetAddressValidator ipValidator = new InetAddressValidator();
 
 		List<String> Valid = new ArrayList<String>();
 		List<String> feat1 = validateFeatures(request_info_id);
 		String[] stringArray1 = new String[feat1.size()];
-		logger.info("Features for Validation");
+		System.out.println("Features for Validation");
 		for (int i = 0; i < feat1.size(); i++) {
 			stringArray1[i] = feat1.get(i);
-			logger.info(stringArray1[i]);
+			System.out.println(stringArray1[i]);
 		}
 
 		boolean flagwan, flaglan, flagloop, flagrout, flagenable, flagsnmp, flagbanner, flagvrf = false;
@@ -2020,37 +2358,40 @@ public class ExcelReader {
 			if (stringArray1[i].equals("WAN Interface"))
 
 			{
-				if ((isNullOrEmpty(ExportList2.getName())) & (isNullOrEmpty(ExportList2.getDescription()))
-						& ((ipValidator.isValid(ExportList2.getIp()))) & ((ipValidator.isValid(ExportList2.getMask())))
+				if ((isNullOrEmpty(ExportList2.getName()))
+						& (isNullOrEmpty(ExportList2.getDescription()))
+						& ((ipValidator.isValid(ExportList2.getIp())))
+						& ((ipValidator.isValid(ExportList2.getMask())))
 						& (isNullOrEmpty(ExportList2.getEncapsulation()))
 						& (isNullOrEmpty(ExportList2.getBandwidth()))) {
 					flagwan = true;
 					String wan = "WAN Interface";
-					logger.info("WAN feature is  VALID");
+					System.out.println("WAN feature is  VALID");
 
 					Valid.add(0, "1");
 					Valid.add(1, wan);
 
 				} else {
 
-					logger.info("WAN feature is INVALID");
+					System.out.println("WAN feature is INVALID");
 
 					Valid.add(0, "0");
 				}
 			}
 			if (stringArray1[i].equals("LAN Interface")) {
-				if ((isNullOrEmpty(ExportList.getLanDescription())) & (isNullOrEmpty(ExportList.getLanInterface()))
+				if ((isNullOrEmpty(ExportList.getLanDescription()))
+						& (isNullOrEmpty(ExportList.getLanInterface()))
 						& (ipValidator.isValid(ExportList.getLanIp()))
 						& (ipValidator.isValid(ExportList.getLanMaskAddress()))) {
 					flaglan = true;
 					String lan = "LAN Interface";
-					logger.info("LAN feature is VALID");
+					System.out.println("LAN feature is VALID");
 
 					Valid.add(0, "1");
 					Valid.add(1, lan);
 
 				} else {
-					logger.info("LAN feature is INVALID");
+					System.out.println("LAN feature is INVALID");
 
 					Valid.add(0, "0");
 				}
@@ -2058,17 +2399,18 @@ public class ExcelReader {
 			if (stringArray1[i].equals("Loopback Interface")) {
 
 				if ((isNullOrEmpty(ExportList.getLoopbackIPaddress()))
-						& (ipValidator.isValid(ExportList.getLoopbackSubnetMask()))
+						& (ipValidator.isValid(ExportList
+								.getLoopbackSubnetMask()))
 						& (isNullOrEmpty(ExportList.getLoopBackType()))) {
 					flagloop = true;
 					String loop = "Loopback Interface";
-					logger.info("Loopback feature is VALID");
+					System.out.println("Loopback feature is VALID");
 
 					Valid.add(0, "1");
 					Valid.add(1, loop);
 
 				} else {
-					logger.info("Loopback feature is INVALID");
+					System.out.println("Loopback feature is INVALID");
 
 					Valid.add(0, "0");
 				}
@@ -2076,23 +2418,25 @@ public class ExcelReader {
 
 			if (stringArray1[i].equals("Routing Protocol")) {
 				int asnumber = Integer.parseInt(ExportList3.getAsNumber());
-				if ((isNullOrEmpty(ExportList3.getRoutingProtocol())) & (isNullOrEmpty(ExportList3.getAsNumber()))
+				if ((isNullOrEmpty(ExportList3.getRoutingProtocol()))
+						& (isNullOrEmpty(ExportList3.getAsNumber()))
 						& (isNullOrEmpty(ExportList3.getNeighbor1()))
 						& (isNullOrEmpty(ExportList3.getNeighbor1RemoteAS()))
 						& (isNullOrEmpty(ExportList3.getNeighbor2()))
 						& (isNullOrEmpty(ExportList3.getNeighbor2RemoteAS()))
-						& (ipValidator.isValid(ExportList3.getNetworkIpSubnetMask()))
+						& (ipValidator.isValid(ExportList3
+								.getNetworkIpSubnetMask()))
 						& (ipValidator.isValid(ExportList3.getNetworkIp()))) {
 					flagrout = true;
 					String rout = "Routing Protocol";
-					logger.info("BGP feature is VALID");
+					System.out.println("BGP feature is VALID");
 
 					Valid.add(0, "1");
 					Valid.add(1, rout);
 
 				} else {
 
-					logger.info("Routing Protocol feature is INVALID");
+					System.out.println("Routing Protocol feature is INVALID");
 
 					Valid.add(0, "0");
 				}
@@ -2103,29 +2447,30 @@ public class ExcelReader {
 				if ((isNullOrEmpty(ExportList.getEnable_password()))) {
 					flagenable = true;
 					String pass = "Enable Password";
-					logger.info("Enable password feature is VALID");
+					System.out.println("Enable password feature is VALID");
 
 					Valid.add(0, "1");
 					Valid.add(1, pass);
 
 				} else {
-					logger.info("Enable Password feature is INVALID");
+					System.out.println("Enable Password feature is INVALID");
 
 					Valid.add(0, "0");
 				}
 			}
 
 			if (stringArray1[i].equals("SNMP")) {
-				if ((isNullOrEmpty(ExportList.getSnmpString())) & (!(ExportList.getSnmpHostAddress().isEmpty()))) {
+				if ((isNullOrEmpty(ExportList.getSnmpString()))
+						& (!(ExportList.getSnmpHostAddress().isEmpty()))) {
 					flagsnmp = true;
 					String snmp = "SNMP";
-					logger.info("snmp feature is VALID");
+					System.out.println("snmp feature is VALID");
 
 					Valid.add(0, "1");
 					Valid.add(1, snmp);
 
 				} else {
-					logger.info("SNMP feature is INVALID");
+					System.out.println("SNMP feature is INVALID");
 
 					Valid.add(0, "0");
 				}
@@ -2135,14 +2480,14 @@ public class ExcelReader {
 				if ((isNullOrEmpty(ExportList.getBanner()))) {
 					flagbanner = true;
 					String banner = "Banner";
-					logger.info("Banner feature is VALID");
+					System.out.println("Banner feature is VALID");
 
 					Valid.add(0, "1");
 					Valid.add(1, banner);
 
 				} else {
 
-					logger.info("Banner feature is INVALID");
+					System.out.println("Banner feature is INVALID");
 
 					Valid.add(0, "0");
 				}
@@ -2153,19 +2498,19 @@ public class ExcelReader {
 
 					flagvrf = true;
 					String vrf = "VRF";
-					logger.info("vrf feature is VALID");
+					System.out.println("vrf feature is VALID");
 
 					Valid.add(0, "1");
 					Valid.add(1, vrf);
 
 				} else {
-					logger.info("VRF feature is NOT VALID");
+					System.out.println("VRF feature is NOT VALID");
 
 					Valid.add(0, "0");
 				}
 			}
 			if (stringArray1[i].equals("Basic Configuration")) {
-				logger.info("Basic Configuration is VALID");
+				System.out.println("Basic Configuration is VALID");
 				String bc = "Basic Configuration";
 				Valid.add(0, "1");
 				Valid.add(1, bc);
@@ -2185,92 +2530,102 @@ public class ExcelReader {
 		DeviceInterfaceEntity ExportList2 = new DeviceInterfaceEntity();
 		InternetInfoEntity ExportList3 = new InternetInfoEntity();
 
-		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
+		ExportList = requestDetailsExportRepo
+				.findByrequestinfoid(request_info_id);
 		ExportList2 = deviceInterfaceRepo.findByRequestInfoId(request_info_id);
 		ExportList3 = internetInfoRepo.findByRequestInfoId(request_info_id);
 
-		if ((isNullOrEmpty(ExportList2.getName())) || (isNullOrEmpty(ExportList2.getDescription()))
-				|| (isNullOrEmpty(ExportList2.getIp())) || (isNullOrEmpty(ExportList2.getMask()))
-				|| (isNullOrEmpty(ExportList2.getEncapsulation())) || (isNullOrEmpty(ExportList2.getBandwidth()))) {
+		if ((isNullOrEmpty(ExportList2.getName()))
+				|| (isNullOrEmpty(ExportList2.getDescription()))
+				|| (isNullOrEmpty(ExportList2.getIp()))
+				|| (isNullOrEmpty(ExportList2.getMask()))
+				|| (isNullOrEmpty(ExportList2.getEncapsulation()))
+				|| (isNullOrEmpty(ExportList2.getBandwidth()))) {
 			flagwan = true;
 			String wan = "WAN Interface";
-			logger.info("WAN feature is PRESENT");
+			System.out.println("WAN feature is PRESENT");
 			feat.add(wan);
 
 		} else {
-			logger.info("WAN feature is NOT PRESENT");
+			System.out.println("WAN feature is NOT PRESENT");
 		}
 
-		if ((isNullOrEmpty(ExportList.getLanDescription())) || (isNullOrEmpty(ExportList.getLanInterface()))
-				|| (isNullOrEmpty(ExportList.getLanIp())) || (isNullOrEmpty(ExportList.getLanMaskAddress()))) {
+		if ((isNullOrEmpty(ExportList.getLanDescription()))
+				|| (isNullOrEmpty(ExportList.getLanInterface()))
+				|| (isNullOrEmpty(ExportList.getLanIp()))
+				|| (isNullOrEmpty(ExportList.getLanMaskAddress()))) {
 			flaglan = true;
 			String lan = "LAN Interface";
-			logger.info("LAN feature is PRESENT");
+			System.out.println("LAN feature is PRESENT");
 			feat.add(lan);
 		} else {
-			logger.info("LAN feature is NOT PRESENT");
+			System.out.println("LAN feature is NOT PRESENT");
 		}
 
-		if ((isNullOrEmpty(ExportList.getLoopbackIPaddress())) || (isNullOrEmpty(ExportList.getLoopbackSubnetMask()))
+		if ((isNullOrEmpty(ExportList.getLoopbackIPaddress()))
+				|| (isNullOrEmpty(ExportList.getLoopbackSubnetMask()))
 				|| (isNullOrEmpty(ExportList.getLoopBackType()))) {
 			flagloop = true;
 			String loop = "Loopback Interface";
-			logger.info("Loopback feature is PRESENT");
+			System.out.println("Loopback feature is PRESENT");
 			feat.add(loop);
 
 		} else {
-			logger.info("Loopback feature is NOT PRESENT");
+			System.out.println("Loopback feature is NOT PRESENT");
 		}
 		if ((isNullOrEmpty(ExportList3.getRoutingProtocol()))
 				// || (isNullOrEmpty(ExportList3.getAsNumber()))
-				|| (isNullOrEmpty(ExportList3.getNeighbor1())) || (isNullOrEmpty(ExportList3.getNeighbor1RemoteAS()))
-				|| (isNullOrEmpty(ExportList3.getNeighbor2())) || (isNullOrEmpty(ExportList3.getNeighbor2RemoteAS()))
+				|| (isNullOrEmpty(ExportList3.getNeighbor1()))
+				|| (isNullOrEmpty(ExportList3.getNeighbor1RemoteAS()))
+				|| (isNullOrEmpty(ExportList3.getNeighbor2()))
+				|| (isNullOrEmpty(ExportList3.getNeighbor2RemoteAS()))
 				|| (isNullOrEmpty(ExportList3.getNetworkIpSubnetMask()))) {
 			flagrout = true;
 			String rout = "Routing Protocol";
-			logger.info("Routing Protocol feature is PRESENT");
+			System.out.println("Routing Protocol feature is PRESENT");
 			feat.add(rout);
 
 		} else {
-			logger.info("BGP feature is NOT PRESENT");
+			System.out.println("BGP feature is NOT PRESENT");
 		}
 		if (isNullOrEmpty(ExportList.getEnable_password())) {
 			flagenable = true;
 			String pass = "Enable Password";
-			logger.info("Enable Password feature is PRESENT");
+			System.out.println("Enable Password feature is PRESENT");
 			feat.add(pass);
 
 		} else {
-			logger.info("Enable password feature is NOT PRESENT");
+			System.out.println("Enable password feature is NOT PRESENT");
 		}
 
-		if ((isNullOrEmpty(ExportList.getSnmpString())) || (isNullOrEmpty(ExportList.getSnmpHostAddress()))) {
+		if ((isNullOrEmpty(ExportList.getSnmpString()))
+				|| (isNullOrEmpty(ExportList.getSnmpHostAddress()))) {
 			flagsnmp = true;
 			String snmp = "SNMP";
-			logger.info("SNMP feature is PRESENT");
+			System.out.println("SNMP feature is PRESENT");
 			feat.add(snmp);
 
 		} else {
-			logger.info("snmp feature is NOT PRESENT");
+			System.out.println("snmp feature is NOT PRESENT");
 		}
 
 		if (isNullOrEmpty(ExportList.getBanner())) {
 			flagbanner = true;
 			String banner = "Banner";
-			logger.info("Banner feature is PRESENT");
+			System.out.println("Banner feature is PRESENT");
 			feat.add(banner);
 
 		} else {
-			logger.info("banner feature is NOT PRESENT");
+			System.out.println("banner feature is NOT PRESENT");
 		}
 		if (isNullOrEmpty(ExportList.getVrf_name())) {
 			flagvrf = true;
 			String vrf = "VRF";
-			logger.info("VRF feature is PRESENT");
+			System.out.println("VRF feature is PRESENT");
 			feat.add(vrf);
 
 		} else {
-			logger.info("vrf feature is NOT PRESENT");
+			System.out.println("vrf feature is NOT PRESENT");
 		}
 		String Basic = "Basic Configuration";
 		feat.add(Basic);
@@ -2279,26 +2634,31 @@ public class ExcelReader {
 	}
 
 	/* Method call to compare two dates in case of schedule request */
-	public static int compareDates(String d1, String d2) throws java.text.ParseException, ParseException {
+	public static int compareDates(String d1, String d2)
+			throws java.text.ParseException, ParseException {
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date date1 = sdf.parse(d1);
 		Date date2 = sdf.parse(d2);
 
-		logger.info("Current Time:" + sdf.format(date1));
-		logger.info("Scheduled Time:" + sdf.format(date2));
+		System.out.println("Current Time:" + sdf.format(date1));
+		System.out.println("Scheduled Time:" + sdf.format(date2));
+		System.out.println();
 
 		int Valid = 0;
 
 		if (date1.before(date2)) {
-			logger.info("Scheduled time is after Current time");
+			System.out.println("Scheduled time is after Current time");
 			Valid = 1;
 		}
+
 		if (date1.after(date2)) {
-			logger.info("Scheduled time is before Current time");
-			logger.info("Invalid");
+			System.out.println("Scheduled time is before Current time");
+			System.out.println("Invalid");
 			Valid = 0;
 		}
+
+		System.out.println();
 		return Valid;
 	}
 

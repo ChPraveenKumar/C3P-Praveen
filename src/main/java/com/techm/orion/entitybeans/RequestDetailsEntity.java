@@ -19,85 +19,111 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class RequestDetailsEntity implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -9062339565299224552L;
-
 	@Id
 	@Column(name = "request_info_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int requestinfoid;
 
+	
 	public int getRequestinfoid() {
 		return requestinfoid;
 	}
+
+
 
 	public void setRequestinfoid(int requestinfoid) {
 		this.requestinfoid = requestinfoid;
 	}
 
 	@Column(name = "alphanumeric_req_id")
-	private String alphanumericReqId;
+	private String 	alphanumericReqId;
+	
 
 	@Column(name = "import_status")
-	private String importStatus;
+    private String importStatus;
 
+	
 	@Column(name = "restore_flag")
-	private boolean restoreFlag = false;
-
+	private boolean restoreFlag=false;
+	
 	@Column(name = "recurring_flag")
-	private boolean recurringFlag = false;
-
+	private boolean recurringFlag=false;
+	
+	
 	@Column(name = "baselined_flag")
-	private boolean baselinedFlag = false;
+	private boolean baselinedFlag=false;
+
+
 
 	public boolean isRestoreFlag() {
 		return restoreFlag;
 	}
 
+
+
 	public void setRestoreFlag(boolean restoreFlag) {
 		this.restoreFlag = restoreFlag;
 	}
+
+
 
 	public boolean isRecurringFlag() {
 		return recurringFlag;
 	}
 
+
+
 	public void setRecurringFlag(boolean recurringFlag) {
 		this.recurringFlag = recurringFlag;
 	}
+
+
 
 	public boolean isBaselinedFlag() {
 		return baselinedFlag;
 	}
 
+
+
 	public void setBaselinedFlag(boolean baselinedFlag) {
 		this.baselinedFlag = baselinedFlag;
 	}
+
+
 
 	public String getImportStatus() {
 		return importStatus;
 	}
 
+
+
 	public void setImportStatus(String importStatus) {
 		this.importStatus = importStatus;
 	}
 
+
+
 	public String getAlphanumericReqId() {
 		return alphanumericReqId;
 	}
+
+
 
 	public void setAlphanumericReqId(String alphanumericReqId) {
 		this.alphanumericReqId = alphanumericReqId;
 	}
 
 	@Column(name = "importid")
-	private String importid;
+	private String 	importid;
+	
+
+
 
 	public String getImportid() {
 		return importid;
 	}
+
+
 
 	public void setImportid(String importid) {
 		this.importid = importid;
@@ -105,26 +131,33 @@ public class RequestDetailsEntity implements Serializable {
 
 	@Column(name = "hostname")
 	private String hostname;
-
+	
+	
 	@Column(name = "customer")
-	private String customer;
+	private String customer;	
 
 	public String getCustomer() {
 		return customer;
 	}
-
 	public void setCustomer(String customer) {
 		this.customer = customer;
 	}
 
 	@Column(name = "siteid")
 	private String siteid;
-
+	
+	
 	@Column(name = "region")
 	private String region;
-
+	
+	
 	@Column(name = "Os")
 	private String os;
+
+	
+	
+	
+
 
 	public String getOs() {
 		return os;
@@ -143,11 +176,15 @@ public class RequestDetailsEntity implements Serializable {
 	@Column(name = "model")
 	private String model;
 
+
+
 	@Column(name = "service")
 	private String service;
 
 	@Column(name = "os_version")
 	private String os_version;
+
+
 
 	@Column(name = "enable_password")
 	private String enable_password;
@@ -157,23 +194,28 @@ public class RequestDetailsEntity implements Serializable {
 
 	@Column(name = "isautoprogress")
 	private Boolean isAutoProgress;
-
+	
 	@Column(name = "networktype")
 	private String Network_Type;
 
-	/*
-	 * @Column(name = "WAN_Resiliency") private String WAN_Resiliency;
-	 * 
-	 * 
-	 * public String getWAN_Resiliency() { return WAN_Resiliency; }
-	 * 
-	 * public void setWAN_Resiliency(String wAN_Resiliency) { WAN_Resiliency =
-	 * wAN_Resiliency; }
-	 */
+	
+/*	@Column(name = "WAN_Resiliency")
+	private String WAN_Resiliency;
+	
+	
+	public String getWAN_Resiliency() {
+		return WAN_Resiliency;
+	}
+
+	public void setWAN_Resiliency(String wAN_Resiliency) {
+		WAN_Resiliency = wAN_Resiliency;
+	}*/
 
 	public String getNetwork_Type() {
 		return Network_Type;
 	}
+	
+	
 
 	public void setNetwork_Type(String network_Type) {
 		Network_Type = network_Type;
@@ -182,7 +224,7 @@ public class RequestDetailsEntity implements Serializable {
 	public Boolean getIsAutoProgress() {
 		return isAutoProgress;
 	}
-
+	
 	public void setIsAutoProgress(Boolean isAutoProgress) {
 		this.isAutoProgress = isAutoProgress;
 	}
@@ -193,6 +235,12 @@ public class RequestDetailsEntity implements Serializable {
 	@Column(name = "vendor")
 	private String vendor;
 
+
+
+
+
+
+
 	@Column(name = "request_status")
 	private String requeststatus;
 
@@ -200,12 +248,16 @@ public class RequestDetailsEntity implements Serializable {
 		return requeststatus;
 	}
 
+
+
 	public void setRequeststatus(String requeststatus) {
 		this.requeststatus = requeststatus;
 	}
 
 	@Column(name = "managementip")
 	private String managementIp;
+
+
 
 	@Column(name = "device_type")
 	private String device_type;
@@ -269,17 +321,20 @@ public class RequestDetailsEntity implements Serializable {
 
 	@Column(name = "readFE")
 	private int readFE;
+	
 
-	/*
-	 * @javax.persistence.OneToOne(mappedBy ="requestDetailsEntity") private
-	 * DeviceInterfaceEntity DeviceInterfaceEntity;
-	 * 
-	 * public DeviceInterfaceEntity getDeviceInterfaceEntity() { return
-	 * DeviceInterfaceEntity; }
-	 * 
-	 * public void setDeviceInterfaceEntity(DeviceInterfaceEntity
-	 * deviceInterfaceEntity) { DeviceInterfaceEntity = deviceInterfaceEntity; }
-	 */
+	
+/*	
+	@javax.persistence.OneToOne(mappedBy ="requestDetailsEntity")
+	 private DeviceInterfaceEntity DeviceInterfaceEntity;
+
+	public DeviceInterfaceEntity getDeviceInterfaceEntity() {
+		return DeviceInterfaceEntity;
+	}
+
+	public void setDeviceInterfaceEntity(DeviceInterfaceEntity deviceInterfaceEntity) {
+		DeviceInterfaceEntity = deviceInterfaceEntity;
+	}*/
 
 	@Column(name = "readSE")
 	private int readSE;
@@ -293,39 +348,46 @@ public class RequestDetailsEntity implements Serializable {
 	@Column(name = "temp_processing_time")
 	private String temp_processing_time;
 
-	/*
-	 * @Column(name = "OwnerRequest") private String OwnerRequest;
-	 */
+/*	@Column(name = "OwnerRequest")
+	private String OwnerRequest;*/
+	
+/*	@Column(name = "wan1_interface_name")
+	private String 	WAN1_Interface_Name;
+	
+	@Column(name = "wan1_ip_address")
+	private String 	WAN1_IP_Address;
+	
+	@Column(name = "wan1_subnet_mask")
+	private String 	WAN1_Subnet_Mask;
+*/
 
-	/*
-	 * @Column(name = "wan1_interface_name") private String WAN1_Interface_Name;
-	 * 
-	 * @Column(name = "wan1_ip_address") private String WAN1_IP_Address;
-	 * 
-	 * @Column(name = "wan1_subnet_mask") private String WAN1_Subnet_Mask;
-	 */
-
-	/*
-	 * @Column(name = "filetype") private String fileType;
-	 */
-
+	
+/*	@Column(name = "filetype")
+	private String fileType;*/
+	
 	@Column(name = "importsource")
 	private String importsource;
-
+	
 	@Column(name = "validationmilestonebits")
 	private String ValidationMilestoneBits;
-
+	
 	public String getValidationMilestoneBits() {
 		return ValidationMilestoneBits;
 	}
+
+
 
 	public void setValidationMilestoneBits(String validationMilestoneBits) {
 		ValidationMilestoneBits = validationMilestoneBits;
 	}
 
+
+
 	public String getImportsource() {
 		return importsource;
 	}
+
+
 
 	public void setImportsource(String importsource) {
 		this.importsource = importsource;
@@ -333,52 +395,83 @@ public class RequestDetailsEntity implements Serializable {
 
 	@Transient
 	private MultipartFile file;
+	
+/*	@Column(name = "WAN1_Bandwidth")
+	private String WAN1_Bandwidth;
+	
+	@Column(name = "WAN2_Interface_Name")
+	private String WAN2_Interface_Name;
+	
+	@Column(name = "WAN2_IP_Address")
+	private String WAN2_IP_Address;
+	
+	@Column(name = "WAN2_Subnet_Mask")
+	private String WAN2_Subnet_Mask;
 
-	/*
-	 * @Column(name = "WAN1_Bandwidth") private String WAN1_Bandwidth;
-	 * 
-	 * @Column(name = "WAN2_Interface_Name") private String WAN2_Interface_Name;
-	 * 
-	 * @Column(name = "WAN2_IP_Address") private String WAN2_IP_Address;
-	 * 
-	 * @Column(name = "WAN2_Subnet_Mask") private String WAN2_Subnet_Mask;
-	 * 
-	 * @Column(name = "WAN2_Bandwidth") private String WAN2_Bandwidth;
-	 */
-	/*
-	 * @OneToOne private InternetInfoEntity BGPInfo;
-	 * 
-	 * public InternetInfoEntity getBGPInfo() { return BGPInfo; }
-	 * 
-	 * public void setBGPInfo(InternetInfoEntity bGPInfo) { BGPInfo = bGPInfo; }
-	 */
+	@Column(name = "WAN2_Bandwidth")
+	private String 	WAN2_Bandwidth;
+	*/
+/*	@OneToOne
+	private InternetInfoEntity BGPInfo;
 
-	/*
-	 * public String getWAN2_Bandwidth() { return WAN2_Bandwidth; }
-	 * 
-	 * public void setWAN2_Bandwidth(String wAN2_Bandwidth) { WAN2_Bandwidth =
-	 * wAN2_Bandwidth; }
-	 * 
-	 * public String getWAN2_Subnet_Mask() { return WAN2_Subnet_Mask; }
-	 * 
-	 * public void setWAN2_Subnet_Mask(String wAN2_Subnet_Mask) { WAN2_Subnet_Mask =
-	 * wAN2_Subnet_Mask; }
-	 * 
-	 * public String getWAN2_IP_Address() { return WAN2_IP_Address; }
-	 * 
-	 * public void setWAN2_IP_Address(String wAN2_IP_Address) { WAN2_IP_Address =
-	 * wAN2_IP_Address; }
-	 * 
-	 * public String getWAN2_Interface_Name() { return WAN2_Interface_Name; }
-	 * 
-	 * public void setWAN2_Interface_Name(String wAN2_Interface_Name) {
-	 * WAN2_Interface_Name = wAN2_Interface_Name; }
-	 * 
-	 * public String getWAN1_Bandwidth() { return WAN1_Bandwidth; }
-	 * 
-	 * public void setWAN1_Bandwidth(String wAN1_Bandwidth) { WAN1_Bandwidth =
-	 * wAN1_Bandwidth; }
-	 */
+	public InternetInfoEntity getBGPInfo() {
+		return BGPInfo;
+	}
+
+	public void setBGPInfo(InternetInfoEntity bGPInfo) {
+		BGPInfo = bGPInfo;
+	}*/
+
+/*	public String getWAN2_Bandwidth() {
+		return WAN2_Bandwidth;
+	}
+
+	public void setWAN2_Bandwidth(String wAN2_Bandwidth) {
+		WAN2_Bandwidth = wAN2_Bandwidth;
+	}
+
+	public String getWAN2_Subnet_Mask() {
+		return WAN2_Subnet_Mask;
+	}
+
+	public void setWAN2_Subnet_Mask(String wAN2_Subnet_Mask) {
+		WAN2_Subnet_Mask = wAN2_Subnet_Mask;
+	}
+
+	public String getWAN2_IP_Address() {
+		return WAN2_IP_Address;
+	}
+
+	public void setWAN2_IP_Address(String wAN2_IP_Address) {
+		WAN2_IP_Address = wAN2_IP_Address;
+	}
+
+	public String getWAN2_Interface_Name() {
+		return WAN2_Interface_Name;
+	}
+
+	public void setWAN2_Interface_Name(String wAN2_Interface_Name) {
+		WAN2_Interface_Name = wAN2_Interface_Name;
+	}
+
+	public String getWAN1_Bandwidth() {
+		return WAN1_Bandwidth;
+	}
+
+	public void setWAN1_Bandwidth(String wAN1_Bandwidth) {
+		WAN1_Bandwidth = wAN1_Bandwidth;
+	}*/
+
+	
+	
+
+
+
+	
+	
+	
+	
+
 
 	public MultipartFile getFile() {
 		return file;
@@ -388,38 +481,47 @@ public class RequestDetailsEntity implements Serializable {
 		this.file = file;
 	}
 
-	/*
-	 * public String getFileType() { return fileType; }
-	 * 
-	 * public void setFileType(String fileType) { this.fileType = fileType; }
-	 */
+/*	public String getFileType() {
+		return fileType;
+	}
 
-	/*
-	 * public String getWAN1_Subnet_Mask() { return WAN1_Subnet_Mask; }
-	 */
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
+	}*/
 
-	/*
-	 * public void setWAN1_Subnet_Mask(String WAN1_Subnet_Mask) { WAN1_Subnet_Mask =
-	 * WAN1_Subnet_Mask; }
-	 */
 
-	/*
-	 * public String getWAN1_IP_Address() { return WAN1_IP_Address; }
-	 * 
-	 * public void setWAN1_IP_Address(String wAN1_IP_Address) { WAN1_IP_Address =
-	 * wAN1_IP_Address; }
-	 * 
-	 * public String getWAN1_Interface_Name() { return WAN1_Interface_Name; }
-	 * 
-	 * public void setWAN1_Interface_Name(String wAN1_Interface_Name) {
-	 * WAN1_Interface_Name = wAN1_Interface_Name; }
-	 */
-	/*
-	 * public String getOwnerRequest() { return OwnerRequest; }
-	 * 
-	 * public void setOwnerRequest(String ownerRequest) { OwnerRequest =
-	 * ownerRequest; }
-	 */
+
+/*	public String getWAN1_Subnet_Mask() {
+		return WAN1_Subnet_Mask;
+	}*/
+
+/*	public void setWAN1_Subnet_Mask(String WAN1_Subnet_Mask) {
+		WAN1_Subnet_Mask = WAN1_Subnet_Mask;
+	}*/
+
+/*	public String getWAN1_IP_Address() {
+		return WAN1_IP_Address;
+	}
+
+	public void setWAN1_IP_Address(String wAN1_IP_Address) {
+		WAN1_IP_Address = wAN1_IP_Address;
+	}
+
+	public String getWAN1_Interface_Name() {
+		return WAN1_Interface_Name;
+	}
+
+	public void setWAN1_Interface_Name(String wAN1_Interface_Name) {
+		WAN1_Interface_Name = wAN1_Interface_Name;
+	}
+*/
+/*	public String getOwnerRequest() {
+		return OwnerRequest;
+	}
+
+	public void setOwnerRequest(String ownerRequest) {
+		OwnerRequest = ownerRequest;
+	}*/
 
 	public String getBanner() {
 		return banner;
@@ -440,6 +542,8 @@ public class RequestDetailsEntity implements Serializable {
 	public String getModel() {
 		return model;
 	}
+	
+
 
 	public void setModel(String model) {
 		this.model = model;
@@ -493,13 +597,15 @@ public class RequestDetailsEntity implements Serializable {
 		this.vrf_name = vrf_name;
 	}
 
-	/*
-	 * public String getDate_of_processing() { return date_of_processing; }
-	 * 
-	 * public void setDate_of_processing(String date_of_processing) {
-	 * this.date_of_processing = date_of_processing; }
-	 */
+	/*public String getDate_of_processing() {
+		return date_of_processing;
+	}
 
+	public void setDate_of_processing(String date_of_processing) {
+		this.date_of_processing = date_of_processing;
+	}*/
+
+	
 	public String getVendor() {
 		return vendor;
 	}
@@ -516,6 +622,8 @@ public class RequestDetailsEntity implements Serializable {
 		this.vendor = vendor;
 	}
 
+
+
 	public String getSiteid() {
 		return siteid;
 	}
@@ -523,6 +631,8 @@ public class RequestDetailsEntity implements Serializable {
 	public void setSiteid(String siteid) {
 		this.siteid = siteid;
 	}
+
+
 
 	public String getManagementIp() {
 		return managementIp;
@@ -556,6 +666,8 @@ public class RequestDetailsEntity implements Serializable {
 		this.end_date_of_processing = end_date_of_processing;
 	}
 
+
+
 	public double getRequestVersion() {
 		return requestVersion;
 	}
@@ -572,13 +684,18 @@ public class RequestDetailsEntity implements Serializable {
 		this.request_parent_version = request_parent_version;
 	}
 
+
 	public String getRequestCreatorName() {
 		return requestCreatorName;
 	}
 
+
+
 	public void setRequestCreatorName(String requestCreatorName) {
 		this.requestCreatorName = requestCreatorName;
 	}
+
+
 
 	public String getRequest_elapsed_time() {
 		return request_elapsed_time;

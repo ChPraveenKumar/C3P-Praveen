@@ -8,30 +8,30 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.entitybeans.CertificationTestResultEntity;
 import com.techm.orion.pojo.CreateConfigRequest;
+import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.PreValidateTest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.CertificationTestResultRepository;
+import com.techm.orion.repositories.DeviceDiscoveryDashboardRepository;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TextReport;
 
 @Controller
 public class PrevalidationTestServiceImpl {
-	private static final Logger logger = LogManager.getLogger(PrevalidationTestServiceImpl.class);
-
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 	/* public static void main(String[] args) throws Exception */
 
 	@Autowired
 	public CertificationTestResultRepository certificationRepo;
-
+	
 	@SuppressWarnings("null")
 	public boolean PreValidation(CreateConfigRequest configRequest, String version, String mountStatus)
 			throws Exception {
@@ -110,12 +110,12 @@ public class PrevalidationTestServiceImpl {
 		}
 		preValidateTest.setDeviceReachableStatus("Pass");
 
-		requestInfoDao.updatePrevalidationValues(configRequest.getRequestId(), version,
-				preValidateTest.getVendorActualValue(), preValidateTest.getVendorGUIValue(),
-				preValidateTest.getOsVersionActualValue(), preValidateTest.getOsVersionGUIValue(),
-				preValidateTest.getModelActualValue(), preValidateTest.getModelGUIValue());
+		requestInfoDao.updatePrevalidationValues(configRequest.getRequestId(),
+				version,preValidateTest.getVendorActualValue(),preValidateTest.getVendorGUIValue(),
+				preValidateTest.getOsVersionActualValue(),preValidateTest.getOsVersionGUIValue(),preValidateTest.getModelActualValue(),
+				preValidateTest.getModelGUIValue());
 		store = store.toUpperCase();
-		logger.info(store);
+		System.out.println(store);
 
 		if (mountStatus != null) {
 			if (mountStatus.equalsIgnoreCase("Pass")) {
@@ -296,6 +296,7 @@ public class PrevalidationTestServiceImpl {
 		 * for(int j=0;j<data1.length;j++) {
 		 */
 
+		
 		if (!comp[0].equalsIgnoreCase("")) {
 			preValidateTest.setVendorGUIValue(configRequest.getVendor());
 			preValidateTest.setVendorActualValue(comp[0]);
@@ -312,6 +313,9 @@ public class PrevalidationTestServiceImpl {
 			preValidateTest.setOsVersionActualValue(comp[2].substring(0, 4));
 
 		}
+		
+		
+
 
 		/* } */
 
@@ -330,13 +334,13 @@ public class PrevalidationTestServiceImpl {
 		preValidateTest.setDeviceReachableStatus("Pass");
 
 		requestInfoDao.updatePrevalidationValues(configRequest.getAlphanumericReqId(),
-				Double.toString(configRequest.getRequestVersion()), preValidateTest.getVendorActualValue(),
-				preValidateTest.getVendorGUIValue(), preValidateTest.getOsVersionActualValue(),
-				preValidateTest.getOsVersionGUIValue(), preValidateTest.getModelActualValue(),
+				Double.toString(configRequest.getRequestVersion()),preValidateTest.getVendorActualValue(),preValidateTest.getVendorGUIValue(),
+				preValidateTest.getOsVersionActualValue(),preValidateTest.getOsVersionGUIValue(),preValidateTest.getModelActualValue(),
 				preValidateTest.getModelGUIValue());
-
+		
+		
 		store = store.toUpperCase();
-		logger.info(store);
+		System.out.println(store);
 
 		if (mountStatus != null) {
 			if (mountStatus.equalsIgnoreCase("Pass")) {

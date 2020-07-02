@@ -20,24 +20,25 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 //test commit
 
 @Entity
-@Table(name = "T_TPMGMT_GLBLIST_M_OS", uniqueConstraints = { @UniqueConstraint(columnNames = { "os" }) })
-// @Table(name = "T_TPMGMT_GLBLIST_M_OS")
-public class OS implements Serializable {
+@Table(name = "T_TPMGMT_GLBLIST_M_OS",uniqueConstraints = { @UniqueConstraint(columnNames = { "os" }) })
+//@Table(name = "T_TPMGMT_GLBLIST_M_OS")
+public class OS implements  Serializable
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7009111125783900258L;
+{
+	
+	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Id 
+     private int id;
 
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	@Id
-	private int id;
-
+	
 	private String os;
+	
 
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "vendor_id")
 	private Vendors vendor;
+
+	
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "os")
@@ -66,6 +67,7 @@ public class OS implements Serializable {
 	public void setOs(String os) {
 		this.os = os;
 	}
+	
 
 	public Vendors getVendor() {
 		return vendor;
@@ -75,4 +77,7 @@ public class OS implements Serializable {
 		this.vendor = vendor;
 	}
 
+
 }
+
+

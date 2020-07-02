@@ -1,5 +1,9 @@
 package com.techm.orion.pojo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
+@JsonInclude(value=Include.NON_NULL)
 public class ServiceRequestPojo {
 
 	private String customer;
@@ -13,12 +17,6 @@ public class ServiceRequestPojo {
 	private String dateOfProcessing;
 	private String status;
 	private double requestVersion;
-	private String batchId;
-	private boolean startup;
-	private String batchStatus;
-	private String executionMode;
-	private String lastExecution;
-	private String nextExecution;
 	
 	public String getCustomer() {
 		return customer;
@@ -86,42 +84,6 @@ public class ServiceRequestPojo {
 	public void setRequestVersion(double requestVersion) {
 		this.requestVersion = requestVersion;
 	}
-	public String getBatchId() {
-		return batchId;
-	}
-	public void setBatchId(String batchId) {
-		this.batchId = batchId;
-	}
-	public boolean isStartup() {
-		return startup;
-	}
-	public void setStartup(boolean startup) {
-		this.startup = startup;
-	}
-	public String getBatchStatus() {
-		return batchStatus;
-	}
-	public void setBatchStatus(String batchStatus) {
-		this.batchStatus = batchStatus;
-	}
-	public String getLastExecution() {
-		return lastExecution;
-	}
-	public void setLastExecution(String lastExecution) {
-		this.lastExecution = lastExecution;
-	}
-	public String getNextExecution() {
-		return nextExecution;
-	}
-	public void setNextExecution(String nextExecution) {
-		this.nextExecution = nextExecution;
-	}
-	public String getExecutionMode() {
-		return executionMode;
-	}
-	public void setExecutionMode(String executionMode) {
-		this.executionMode = executionMode;
-	}
-		
+	
 }
 

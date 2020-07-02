@@ -9,8 +9,6 @@ import java.util.Map;
 import javax.ws.rs.POST;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -21,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
@@ -38,8 +37,6 @@ import com.techm.orion.utility.InvokeFtl;
 @Controller
 @RequestMapping("/ConfigurationManagement")
 public class ConfigurationManagement {
-	private static final Logger logger = LogManager.getLogger(ConfigurationManagement.class);
-	
 	@Autowired
 	AttribCreateConfigService service;
 
@@ -61,7 +58,7 @@ public class ConfigurationManagement {
 	public JSONObject createConfigurationDcm(@RequestBody String configRequest) {
 		// DcmConfigService dcmConfigService=new DcmConfigService();
 		JSONObject obj = new JSONObject();
-		String requestType = null;
+		String jsonMessage = "", requestType = null;
 		String requestIdForConfig = "";
 		String res = "false";
 		String data = "Failure";
@@ -109,7 +106,7 @@ public class ConfigurationManagement {
 				}
 			
 			}
-			if(!requestType.equals("Test") && !requestType.equals("Audit")) {
+			if(!requestType.equals("Test")) {
 			// template suggestion
 			if (json.get("requestType").equals("SLGB")) {
 				configReqToSendToC3pCode.setTemplateID(json.get("templateID").toString());
@@ -143,7 +140,7 @@ public class ConfigurationManagement {
 			// This version is 1 is this will be freshly created request every time so
 			// parent will be 1.
 			configReqToSendToC3pCode.setRequestParentVersion(1.0);
-			
+			ObjectMapper mapper = new ObjectMapper();
 			/*
 			 * CreateConfigRequestDCM mappedObj = mapper.readValue(configRequest,
 			 * CreateConfigRequestDCM.class);
@@ -184,7 +181,17 @@ public class ConfigurationManagement {
 					}
 
 					String bit = "1" + "0" + "1" + "0" + defaultObj.get("Throughput").toString() + "1" + "1";
-					logger.info(bit);
+
+					/*
+					 * String bit = defaultObj.get("Interfaces status").toString() +
+					 * defaultObj.get("WAN Interface").toString() +
+					 * defaultObj.get("Platform & IOS").toString() +
+					 * defaultObj.get("BGP neighbor").toString() +
+					 * defaultObj.get("Throughput").toString() +
+					 * defaultObj.get("FrameLoss").toString() +
+					 * defaultObj.get("Latency").toString();
+					 */
+					System.out.println(bit);
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 
 				}
@@ -1105,7 +1112,7 @@ public class ConfigurationManagement {
 											break;
 										}
 										if (attribName.equals("Attrib21")) {
-											configReqToSendToC3pCode.setAttrib21(attriValue);
+											configReqToSendToC3pCode.setAttrib11(attriValue);
 											break;
 										}
 										if (attribName.equals("Attrib22")) {
@@ -1205,7 +1212,7 @@ public class ConfigurationManagement {
 											break;
 										}
 										if (attribName.equals("Attrib46")) {
-											configReqToSendToC3pCode.setAttrib46(attriValue);
+											configReqToSendToC3pCode.setAttrib36(attriValue);
 											break;
 										}
 										if (attribName.equals("Attrib47")) {
@@ -1234,6 +1241,7 @@ public class ConfigurationManagement {
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList);
+				System.out.println("log");
 
 			} else {
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null);
@@ -1258,7 +1266,7 @@ public class ConfigurationManagement {
 			obj.put(new String("version"), configReqToSendToC3pCode.getRequestVersion());
 
 		} catch (Exception e) {
-			logger.error(e);
+			e.printStackTrace();
 		}
 
 		return obj;

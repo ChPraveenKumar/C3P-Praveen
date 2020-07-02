@@ -15,7 +15,7 @@ public class CreateConfigEntity {
 	@Id
 	private int id;
 
-	// Which is given from Master Attribute
+	//Which is given from Master Attribute
 	@Column(name = "master_label_id")
 	private int masterLabelId;
 
@@ -67,5 +67,6 @@ public class CreateConfigEntity {
 	public void setMasterLabelValue(String masterLabelValue) {
 		this.masterLabelValue = masterLabelValue;
 	}
+
 
 }

@@ -29,11 +29,10 @@ public class UserEntity {
 	@Column(name = "user_status")
 	private int userStatus;
 
-	/*
-	 * @Column(name = "privilegelevel") private int privilegeLevel;
-	 */
-
-	@ManyToMany(mappedBy = "users")
+	/*@Column(name = "privilegelevel")
+	private int privilegeLevel;*/
+	
+	@ManyToMany(mappedBy="users")
 	private List<DeviceDiscoveryEntity> devices = new ArrayList<DeviceDiscoveryEntity>();
 
 	public int getUserId() {
@@ -68,12 +67,13 @@ public class UserEntity {
 		this.userStatus = userStatus;
 	}
 
-	/*
-	 * public int getPrivilegeLevel() { return privilegeLevel; }
-	 * 
-	 * public void setPrivilegeLevel(int privilegeLevel) { this.privilegeLevel =
-	 * privilegeLevel; }
-	 */
+	/*public int getPrivilegeLevel() {
+		return privilegeLevel;
+	}
+
+	public void setPrivilegeLevel(int privilegeLevel) {
+		this.privilegeLevel = privilegeLevel;
+	}*/
 
 	public List<DeviceDiscoveryEntity> getDevices() {
 		return devices;
@@ -82,5 +82,6 @@ public class UserEntity {
 	public void setDevices(List<DeviceDiscoveryEntity> devices) {
 		this.devices = devices;
 	}
-
+	
+	
 }

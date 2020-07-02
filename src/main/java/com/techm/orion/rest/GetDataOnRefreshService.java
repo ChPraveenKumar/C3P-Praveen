@@ -6,8 +6,6 @@ import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,7 +22,7 @@ import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 @Controller
 @RequestMapping("/GetNotificationsService")
 public class GetDataOnRefreshService {
-	private static final Logger logger = LogManager.getLogger(GetDataOnRefreshService.class);
+
 	@Autowired
 	RequestInfoDetailsDao requestInfoDao;
 
@@ -35,7 +33,7 @@ public class GetDataOnRefreshService {
 	public Response getAll() {
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
 
-		logger.info("in Refresh");
+		System.out.println("in Refresh");
 		JSONObject obj = new JSONObject();
 		int notificationCount = 0;
 		List<TemplateBasicConfigurationPojo> list = null;

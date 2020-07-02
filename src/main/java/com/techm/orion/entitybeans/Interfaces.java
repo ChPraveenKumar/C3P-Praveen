@@ -1,5 +1,7 @@
 package com.techm.orion.entitybeans;
 
+import java.util.Set;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -10,6 +12,8 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+
+
 
 @Entity
 @Table(name = "T_TPMGMT_GLBLIST_M_Interfaces")
@@ -22,16 +26,17 @@ public class Interfaces
 
 	@Column(name = "interfaces")
 	private String interfaces;
-
+	
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
 	private DeviceTypes devicetypes;
+	
+	
+	@Transient
+	private boolean value=false;
 
 	@Transient
-	private boolean value = false;
-
-	@Transient
-	private int multi_intf_id = 0;
-
+	private int multi_intf_id=0;
+	
 	@Transient
 	private String multi_intf_text;
 

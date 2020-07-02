@@ -9,15 +9,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -37,7 +37,6 @@ import com.techm.orion.webService.GetAllDetailsService;
 @Controller
 @RequestMapping("/GetAllRequestTreeJSONService")
 public class GetAllRequestTreeJSONService implements Observer {
-	private static final Logger logger = LogManager.getLogger(GetAllRequestTreeJSONService.class);
     List<ElapsedTimeFormatPojo> elapsedtimings;
 
     @GET
@@ -128,7 +127,7 @@ public class GetAllRequestTreeJSONService implements Observer {
 	    	countPojoObj.setRequestObj(detailsList.get(i));
 	    	countPojo.add(countPojoObj);
 	    	countedObject.add(detailsList.get(i));
-	    	logger.info("Object ->"+detailsList.get(i).getDisplay_request_id()+" "+count);
+	    	System.out.println("Object ->"+detailsList.get(i).getDisplay_request_id()+" "+count);
 	    	}
 	    }
 	    //Logic to construct JSON Model...................................................................................................
@@ -211,7 +210,7 @@ public class GetAllRequestTreeJSONService implements Observer {
 	    obj.put("AvgElapsedTime",String.format("%02d", hours)+":"+String.format("%02d", minutes)+":"+ String.format("%02d", seconds));
 	    obj.put("TotalRequests", detailsList.size());
 	} catch (Exception e) {
-		logger.error(e);
+	    System.out.println(e);
 	}
 
 	return Response

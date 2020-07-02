@@ -2,6 +2,7 @@ package com.techm.orion.rest;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,18 +20,19 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Properties;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.XML;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -44,9 +46,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
+import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.hubspot.jinjava.Jinjava;
 import com.jcraft.jsch.Channel;
@@ -55,13 +64,19 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.TempVNFAttribEntity;
 import com.techm.orion.entitybeans.TempVNFEntity;
 import com.techm.orion.entitybeans.TestDetail;
+import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
+import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoPojo;
+import com.techm.orion.pojo.RequestInfoSO;
+import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.pojo.UserValidationResultDetailPojo;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.PrevalidationTestServiceImpl;
@@ -75,8 +90,6 @@ import com.techm.orion.utility.VNFHelper;
 @RequestMapping("/vnfservices")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class VnfConfigService implements Observer {
-	private static final Logger logger = LogManager.getLogger(VnfConfigService.class);
-
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 	@Autowired
@@ -88,8 +101,8 @@ public class VnfConfigService implements Observer {
 	@Autowired
 	RequestInfoDao requestInfoDao;
 
-	@Autowired
-	TestStrategeyAnalyser analyser;
+	@Autowired 
+	TestStrategeyAnalyser analyser;	
 
 	@SuppressWarnings({ "unchecked", "null" })
 	@POST
@@ -110,9 +123,9 @@ public class VnfConfigService implements Observer {
 		 * DocumentBuilder dBuilder = dbFactory.newDocumentBuilder(); Document doc =
 		 * dBuilder.parse(file); doc.getDocumentElement().normalize();
 		 * 
-		 * logger.info("Root element :" +
+		 * System.out.println("Root element :" +
 		 * doc.getDocumentElement().getNodeName()); NodeList nList =
-		 * doc.getElementsByTagName("interface"); logger.info("");
+		 * doc.getElementsByTagName("interface"); System.out.println("");
 		 * 
 		 * 
 		 * } catch (IOException e) { // TODO Auto-generated catch block
@@ -130,7 +143,7 @@ public class VnfConfigService implements Observer {
 			JSONObject json = (JSONObject) parser.parse(params);
 			List<TempVNFEntity> list = new ArrayList<TempVNFEntity>();
 
-			logger.info("");
+			System.out.println("");
 			if (json.containsKey("dynamicAttribs")) {
 				JSONArray array = (JSONArray) json.get("dynamicAttribs");
 				for (int i = 0; i < array.size(); i++) {
@@ -332,7 +345,7 @@ public class VnfConfigService implements Observer {
 				String formattedXML = prettyPrintXml(renderedTemplate);
 				obj.put("data", formattedXML);
 
-				logger.info(obj.toString());
+				System.out.println(obj.toString());
 				/*
 				 * DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 				 * DocumentBuilder docBuilder = docFactory.newDocumentBuilder(); Document doc =
@@ -377,7 +390,7 @@ public class VnfConfigService implements Observer {
 
 			}
 
-			logger.info("");
+			System.out.println("");
 
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -452,7 +465,7 @@ public class VnfConfigService implements Observer {
 						String password = userPojo.getPassword();
 						String port = VnfConfigService.TSA_PROPERTIES.getProperty("portSSH");
 
-						logger.info("port " + port + "host " + host);
+						System.out.println("port " + port + "host " + host);
 						JSch jsch = new JSch();
 						Channel channel = null;
 						Session session = jsch.getSession("c3pteam", "10.62.0.27", Integer.parseInt(port));
@@ -469,7 +482,7 @@ public class VnfConfigService implements Observer {
 						OutputStream ops = channel.getOutputStream();
 
 						PrintStream ps = new PrintStream(ops, true);
-						logger.info("Channel Connected to machine " + host + " server");
+						System.out.println("Channel Connected to machine " + host + " server");
 						channel.connect();
 						InputStream input = channel.getInputStream();
 						ps.println("show version");
@@ -602,7 +615,7 @@ public class VnfConfigService implements Observer {
 						String password = userPojo.getPassword();
 						String port = VnfConfigService.TSA_PROPERTIES.getProperty("portSSH");
 
-						logger.info("port " + port + "host " + host);
+						System.out.println("port " + port + "host " + host);
 						JSch jsch = new JSch();
 						Channel channel = null;
 						Session session = jsch.getSession("c3pteam", "10.62.0.27", Integer.parseInt(port));
@@ -619,7 +632,7 @@ public class VnfConfigService implements Observer {
 						OutputStream ops = channel.getOutputStream();
 
 						PrintStream ps = new PrintStream(ops, true);
-						logger.info("Channel Connected to machine " + host + " server");
+						System.out.println("Channel Connected to machine " + host + " server");
 						channel.connect();
 						InputStream input = channel.getInputStream();
 						ps.println("show version");
@@ -743,7 +756,7 @@ public class VnfConfigService implements Observer {
 
 				// TODO Auto-generated catch block
 
-				logger.info(e1.getMessage());
+				System.out.print(e1.getMessage());
 
 				if (e1.getMessage().contains("invalid server's version string")
 						|| e1.getMessage().contains("Auth fail")) {
@@ -796,14 +809,15 @@ public class VnfConfigService implements Observer {
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				// TODO Auto-generated catch block
 
-				logger.info(e1.getMessage());
+				System.out.print(e1.getMessage());
 
 				if (e1.getMessage().contains("invalid server's version string")
 						|| e1.getMessage().contains("Auth fail")) {
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
+							"Failure");
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "2_Authentication");
 					String response = "";
@@ -813,9 +827,8 @@ public class VnfConfigService implements Observer {
 						response = invokeFtl.generateAuthenticationFailure(requestinfo);
 
 						responseDownloadPath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
-								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
+						TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+								+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 								response);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
@@ -826,7 +839,8 @@ public class VnfConfigService implements Observer {
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
+							"Failure");
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "2");
 					String response = "";
@@ -836,9 +850,8 @@ public class VnfConfigService implements Observer {
 						response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
 
 						responseDownloadPath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
-								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
+						TextReport.writeFile(responseDownloadPath,requestinfo.getAlphanumericReqId() + "V"
+								+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 								response);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
@@ -931,7 +944,7 @@ public class VnfConfigService implements Observer {
 						+ defaultObj.get("Platform & IOS").toString() + defaultObj.get("BGP neighbor").toString()
 						+ defaultObj.get("Throughput").toString() + defaultObj.get("FrameLoss").toString()
 						+ defaultObj.get("Latency").toString();
-				logger.info(bit);
+				System.out.println(bit);
 				configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 
 			}
@@ -1073,10 +1086,10 @@ public class VnfConfigService implements Observer {
 			int i = input.read(tmp, 0, SIZE);
 			if (i < 0)
 				break;
-			/* logger.info(new String(tmp, 0, i)); */
+			/* System.out.print(new String(tmp, 0, i)); */
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
-				// logger.info(str);
+				// System.out.print(str);
 				String filepath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//" + requestID
 						+ "V" + version + "_VersionInfo.txt";
 				File file = new File(filepath);
@@ -1099,7 +1112,7 @@ public class VnfConfigService implements Observer {
 
 		}
 		if (channel.isClosed()) {
-			logger.info("exit-status: " + channel.getExitStatus());
+			System.out.println("exit-status: " + channel.getExitStatus());
 
 		}
 		try {

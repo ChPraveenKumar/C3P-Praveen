@@ -2,9 +2,11 @@ package com.techm.orion.repositories;
 
 import java.util.List;
 
+import org.jboss.logging.annotations.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -12,7 +14,8 @@ import com.techm.orion.entitybeans.RequestDetailsEntity;
 
 /*JPA Repository to store data from uploaded file into database*/
 @Repository
-public interface RequestDetailsImportRepo extends JpaRepository<RequestDetailsEntity, Long> {
+public interface RequestDetailsImportRepo extends
+		JpaRepository<RequestDetailsEntity, Long> {
 
 	/* Query for wild card search based on region */
 	String searchRegion = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.region LIKE %?1%";
@@ -76,11 +79,13 @@ public interface RequestDetailsImportRepo extends JpaRepository<RequestDetailsEn
 
 	@Query(value = searchRequestId, nativeQuery = true)
 	List<RequestDetailsEntity> findByAlphanumericReqId(String value);
-
+	
 	/* Query for wild card search based on Request Id */
 	String searchDeviceType = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.device_type LIKE %?1%";
 
 	@Query(value = searchDeviceType, nativeQuery = true)
 	List<RequestDetailsEntity> findByDeviceType(String value);
+
+	
 
 }
