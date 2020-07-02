@@ -1,7 +1,6 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -10,59 +9,49 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Entity
-
 @Table(name = "c3p_t_device_discovery_result_device_interfaces")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 
-public class DiscoveryResultDeviceInterfaceEntity implements Serializable
+public class DiscoveryResultDeviceInterfaceEntity implements Serializable{
 
-{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1769060151919107827L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
 
-	@Column(name = "i_int_name" , length = 50)
+	@Column(name = "i_int_name", length = 50)
 	private String iIntName;
 
-	@Column(name = "i_int_description" , length = 50)
+	@Column(name = "i_int_description", length = 50)
 	private String iIntDescription;
-	
-	@Column(name = "i_int_ipaddr" , length = 50)
+
+	@Column(name = "i_int_ipaddr", length = 50)
 	private String iIntIpaddr;
-	
-	@Column(name = "i_int_subnet" , length = 50)
+
+	@Column(name = "i_int_subnet", length = 50)
 	private String iIntSubnet;
-	
-	@Column(name = "i_int_ipv6addr" , length = 50)
+
+	@Column(name = "i_int_ipv6addr", length = 50)
 	private String iIntIpv6addr;
-	
-	@Column(name = "i_int_prefix" , length = 50)
+
+	@Column(name = "i_int_prefix", length = 50)
 	private String iIntPrefix;
-	
-	@Column(name = "i_int_admin_stat" , length = 50)
+
+	@Column(name = "i_int_admin_stat", length = 50)
 	private String iIntAdminStat;
-	
-	
+
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	private DiscoveryResultDeviceDetailsEntity device;
-
-
 
 	public DiscoveryResultDeviceDetailsEntity getDevice() {
 		return device;
@@ -152,9 +141,9 @@ public class DiscoveryResultDeviceInterfaceEntity implements Serializable
 		this.iIntPhyAddr = iIntPhyAddr;
 	}
 
-	@Column(name = "i_int_Oper_stat" , length = 50)
+	@Column(name = "i_int_Oper_stat", length = 50)
 	private String iIntOperStat;
-	
-	@Column(name = "i_int_phy_addr" , length = 50)
+
+	@Column(name = "i_int_phy_addr", length = 50)
 	private String iIntPhyAddr;
 }

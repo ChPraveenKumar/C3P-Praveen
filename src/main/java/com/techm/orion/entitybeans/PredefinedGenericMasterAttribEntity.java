@@ -1,7 +1,6 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -12,40 +11,43 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Table(name ="t_attrib_funct_m_predefined_generic_attrbs")
+@Table(name = "t_attrib_funct_m_predefined_generic_attrbs")
 @JsonIgnoreProperties(ignoreUnknown = false)
-public class PredefinedGenericMasterAttribEntity implements Serializable{
-	
+public class PredefinedGenericMasterAttribEntity implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -816868644732796783L;
+
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
 	private int Id;
-	
+
 	@Column(name = "attrib_type")
 	private String attribType;
-	
+
 	@Column(name = "attrib_name")
 	private String attribName;
-	
+
 	@Column(name = "master_template_type")
 	private String masterTemplateType;
-	
+
 	@Column(name = "attrib_ui_component")
 	private String attribUIComponent;
-	
+
 	@Column(name = "attrib_validation")
-	private String attribValidation; 
-	
-	
-	@ManyToOne(fetch = FetchType.EAGER, cascade={CascadeType.ALL})
-	@JoinColumn(name="category_id")
+	private String attribValidation;
+
+	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
+	@JoinColumn(name = "category_id")
 	private CategoryMasterEntity categoryMaster;
-	
+
 	public int getId() {
 		return Id;
 	}
@@ -69,7 +71,7 @@ public class PredefinedGenericMasterAttribEntity implements Serializable{
 	public void setAttribName(String attribName) {
 		this.attribName = attribName;
 	}
-	
+
 	public String getMasterTemplateType() {
 		return masterTemplateType;
 	}
@@ -100,5 +102,5 @@ public class PredefinedGenericMasterAttribEntity implements Serializable{
 
 	public void setCategoryMaster(CategoryMasterEntity categoryMaster) {
 		this.categoryMaster = categoryMaster;
-	} 
+	}
 }

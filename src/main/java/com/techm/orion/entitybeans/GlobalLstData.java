@@ -10,11 +10,16 @@ import javax.persistence.Table;
 @Table(name = "T_TPMGMT_GLBLIST_M_Globallistmetadata")
 public class GlobalLstData implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1229253495484124079L;
+
 	@Id
 	private int id;
 
 	private String globallist;
-	
+
 	private String url;
 
 	public String getUrl() {
@@ -40,6 +45,5 @@ public class GlobalLstData implements Serializable {
 	public void setGloballist(String globallist) {
 		this.globallist = globallist;
 	}
-
 
 }

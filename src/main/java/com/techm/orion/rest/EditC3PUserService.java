@@ -6,6 +6,8 @@ import java.util.Observer;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,145 +23,127 @@ import com.techm.orion.pojo.UserValidationResultDetailPojo;
 @Controller
 @RequestMapping("/editUser")
 public class EditC3PUserService implements Observer {
+	private static final Logger logger = LogManager.getLogger(EditC3PUserService.class);
+	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
-    RequestInfoDao requestInfoDao = new RequestInfoDao();
+	@POST
+	@RequestMapping(value = "/isUserPresent", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response isUserPresent(@RequestBody String userDetails) {
 
-    @POST
-    @RequestMapping(value = "/isUserPresent", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-    @ResponseBody
-    public Response isUserPresent(@RequestBody String userDetails) {
-
-	JSONObject obj = new JSONObject();
-	String jsonMessage = "";
-	String jsonArray = "";
-	UserValidationResultDetailPojo ip;
-	String username = null, password = null;
-	boolean res=false;
-	try {
-	    Gson gson = new Gson();
-	    UserPojo dto = gson.fromJson(userDetails,
-		    UserPojo.class);
-	    username = dto.getUsername();
-	    password = dto.getPassword();
-	    //List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
-	    if (username != null && !username.isEmpty()) {
+		JSONObject obj = new JSONObject();
+		String jsonArray = "";
+		UserValidationResultDetailPojo ip;
+		String username = null, password = null;
+		
 		try {
-		    // quick fix for json not getting serialized
-		    
-		    ip = requestInfoDao.checkUsersDB(username,
-			    password);
-		    if(ip.getMessage().equalsIgnoreCase("Success"))
-		    {
-			ip.setMessage("User exists");
-			ip.setResult(true);
-		    }
-		    else
-		    {
-			ip.setMessage("User does not exist");
-			ip.setResult(false);
-		    }
-		    jsonArray = new Gson().toJson(ip);
-		    obj.put(new String("Message"), ip.getMessage());
-		    obj.put(new String("Result"), ip.isResult());
+			Gson gson = new Gson();
+			UserPojo dto = gson.fromJson(userDetails, UserPojo.class);
+			username = dto.getUsername();
+			password = dto.getPassword();
+			// List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
+			if (username != null && !username.isEmpty()) {
+				try {
+					// quick fix for json not getting serialized
 
+					ip = requestInfoDao.checkUsersDB(username, password);
+					if (ip.getMessage().equalsIgnoreCase("Success")) {
+						ip.setMessage("User exists");
+						ip.setResult(true);
+					} else {
+						ip.setMessage("User does not exist");
+						ip.setResult(false);
+					}
+					jsonArray = new Gson().toJson(ip);
+					obj.put(new String("Message"), ip.getMessage());
+					obj.put(new String("Result"), ip.isResult());
+
+				} catch (Exception e) {
+					logger.error(e);
+				}
+			} else {
+				try {
+					/*
+					 * detailsList = requestInfoDao.getAllResquestsFromDB(); jsonArray = new
+					 * Gson().toJson(detailsList); obj.put(new String("output"), jsonArray);
+					 */
+				} catch (Exception e) {
+					logger.error(e);
+				}
+			}
 		} catch (Exception e) {
-		    System.out.println(e);
+			logger.error(e);
 		}
-	    } else {
-		try {
-		    /*detailsList = requestInfoDao.getAllResquestsFromDB();
-		    jsonArray = new Gson().toJson(detailsList);
-		    obj.put(new String("output"), jsonArray);*/
-		} catch (Exception e) {
-		    System.out.print(e);
-		}
-	    }
-	} catch (Exception e) {
-	    System.out.println(e);
+
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+				.header("Access-Control-Allow-Credentials", "true")
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
-	return Response
-		.status(200)
-		.header("Access-Control-Allow-Origin", "*")
-		.header("Access-Control-Allow-Headers",
-			"origin, content-type, accept, authorization")
-		.header("Access-Control-Allow-Credentials", "true")
-		.header("Access-Control-Allow-Methods",
-			"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-		.header("Access-Control-Max-Age", "1209600").entity(obj)
-		.build();
-    }
+	@Override
+	public void update(Observable o, Object arg) {
+		// TODO Auto-generated method stub
 
-    @Override
-    public void update(Observable o, Object arg) {
-	// TODO Auto-generated method stub
-
-    }
-    //To be written properly RUCHITA
-    @POST
-    @RequestMapping(value = "/editUserRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-    @ResponseBody
-    public Response editUser(@RequestBody String userDetails) {
-
-	JSONObject obj = new JSONObject();
-	String jsonMessage = "";
-	String jsonArray = "";
-	UserValidationResultDetailPojo ip;
-	String username = null, password = null;
-	boolean res=false;
-	try {
-	    Gson gson = new Gson();
-	    UserPojo dto = gson.fromJson(userDetails,
-		    UserPojo.class);
-	    username = dto.getUsername();
-	    password = dto.getPassword();
-	    //List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
-	    if (username != null && !username.isEmpty()) {
-		try {
-		    // quick fix for json not getting serialized
-		    
-		    ip = requestInfoDao.checkUsersDB(username,
-			    password);
-		    if(ip.getMessage().equalsIgnoreCase("Success"))
-		    {
-			ip.setMessage("User exists");
-			ip.setResult(true);
-		    }
-		    else
-		    {
-			ip.setMessage("User does not exist");
-			ip.setResult(false);
-		    }
-		    jsonArray = new Gson().toJson(ip);
-		    obj.put(new String("Message"), ip.getMessage());
-		    obj.put(new String("Result"), ip.isResult());
-
-		} catch (Exception e) {
-		    System.out.println(e);
-		}
-	    } else {
-		try {
-		    /*detailsList = requestInfoDao.getAllResquestsFromDB();
-		    jsonArray = new Gson().toJson(detailsList);
-		    obj.put(new String("output"), jsonArray);*/
-		} catch (Exception e) {
-		    System.out.print(e);
-		}
-	    }
-	} catch (Exception e) {
-	    System.out.println(e);
 	}
 
-	return Response
-		.status(200)
-		.header("Access-Control-Allow-Origin", "*")
-		.header("Access-Control-Allow-Headers",
-			"origin, content-type, accept, authorization")
-		.header("Access-Control-Allow-Credentials", "true")
-		.header("Access-Control-Allow-Methods",
-			"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-		.header("Access-Control-Max-Age", "1209600").entity(obj)
-		.build();
-    }
+	// To be written properly RUCHITA
+	@POST
+	@RequestMapping(value = "/editUserRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response editUser(@RequestBody String userDetails) {
+
+		JSONObject obj = new JSONObject();
+		String jsonMessage = "";
+		String jsonArray = "";
+		UserValidationResultDetailPojo ip;
+		String username = null, password = null;
+		boolean res = false;
+		try {
+			Gson gson = new Gson();
+			UserPojo dto = gson.fromJson(userDetails, UserPojo.class);
+			username = dto.getUsername();
+			password = dto.getPassword();
+			// List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
+			if (username != null && !username.isEmpty()) {
+				try {
+					// quick fix for json not getting serialized
+
+					ip = requestInfoDao.checkUsersDB(username, password);
+					if (ip.getMessage().equalsIgnoreCase("Success")) {
+						ip.setMessage("User exists");
+						ip.setResult(true);
+					} else {
+						ip.setMessage("User does not exist");
+						ip.setResult(false);
+					}
+					jsonArray = new Gson().toJson(ip);
+					obj.put(new String("Message"), ip.getMessage());
+					obj.put(new String("Result"), ip.isResult());
+
+				} catch (Exception e) {
+					logger.error(e);
+				}
+			} else {
+				try {
+					/*
+					 * detailsList = requestInfoDao.getAllResquestsFromDB(); jsonArray = new
+					 * Gson().toJson(detailsList); obj.put(new String("output"), jsonArray);
+					 */
+				} catch (Exception e) {
+					logger.error(e);
+				}
+			}
+		} catch (Exception e) {
+			logger.error(e);
+		}
+
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+				.header("Access-Control-Allow-Credentials", "true")
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+	}
 
 }

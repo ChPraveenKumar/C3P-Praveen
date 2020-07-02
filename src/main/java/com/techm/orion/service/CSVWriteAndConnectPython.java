@@ -3,7 +3,6 @@ package com.techm.orion.service;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,11 +10,15 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Properties;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.techm.orion.pojo.CreateConfigRequest;
-import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 
 public class CSVWriteAndConnectPython {
+	private static final Logger logger = LogManager.getLogger(CSVWriteAndConnectPython.class);
+
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -67,7 +70,7 @@ public class CSVWriteAndConnectPython {
 				String[] throuhput = line.split(cvsSplitBy);
 				if (throuhput[5] != null) {
 					result = throuhput[5];
-					System.out.println(result);
+					logger.info(result);
 				} else {
 					result = "Test not conducted";
 				}
@@ -142,7 +145,7 @@ public class CSVWriteAndConnectPython {
 				String[] throuhput = line.split(cvsSplitBy);
 				if (throuhput[5] != null) {
 					result = throuhput[5];
-					System.out.println(result);
+					logger.info(result);
 				} else {
 					result = "Test not conducted";
 				}

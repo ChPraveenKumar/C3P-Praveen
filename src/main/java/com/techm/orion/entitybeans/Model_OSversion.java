@@ -14,13 +14,11 @@ import javax.persistence.UniqueConstraint;
 @Table(name = "T_TPMGMT_GLBLIST_J_model_OSversion", uniqueConstraints = {
 		@UniqueConstraint(columnNames = { "Model_id", "OSversion_id" }) })
 public class Model_OSversion {
-	
-	
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
 
-	
 	@Column(name = "Model_id")
 	private int modelid;
 
@@ -28,9 +26,8 @@ public class Model_OSversion {
 	private int osversionid;
 
 	@Transient
-	boolean modelValue=false;
-	
-	
+	boolean modelValue = false;
+
 	public boolean isModelValue() {
 		return modelValue;
 	}
@@ -62,6 +59,5 @@ public class Model_OSversion {
 	public void setOsversionid(int osversionid) {
 		this.osversionid = osversionid;
 	}
-	
 
 }

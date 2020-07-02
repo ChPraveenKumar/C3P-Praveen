@@ -8,6 +8,8 @@ import java.util.Observer;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -26,14 +28,14 @@ import com.techm.orion.service.DcmConfigService;
 @RequestMapping("/GetAllIpamData")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class GetAllIPAMData implements Observer {
-
+	private static final Logger logger = LogManager.getLogger(GetAllIPAMData.class);
 	@Autowired
 	EIPAMEntityRepository eipamEntityRepository;
 
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
 	@GET
-	
+
 	@RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	public Response getAll() {
@@ -42,42 +44,35 @@ public class GetAllIPAMData implements Observer {
 		String jsonMessage = "";
 		String jsonArray = "";
 
-		
 		EIPAMEntity entity = new EIPAMEntity();
 		List<EIPAMEntity> detailsList = new ArrayList<EIPAMEntity>();
 		DcmConfigService dcmConfigService = new DcmConfigService();
 		boolean ipvalue;
 		try {
 			detailsList = eipamEntityRepository.findAll();
-		    if(1==entity.getStatus()){
-		    	
+			if (1 == entity.getStatus()) {
+
 				entity.setIpUsed(true);
-				ipvalue =true;
-				
-				} 
-			else {
+				ipvalue = true;
+
+			} else {
 				entity.setIpUsed(false);
-				ipvalue =false;
-				}
-		    
+				ipvalue = false;
+			}
+
 			obj.put(new String("ipStatus"), ipvalue);
 			jsonArray = new Gson().toJson(detailsList);
 			obj.put(new String("output"), jsonArray);
-		
+
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
 	@Override

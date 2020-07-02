@@ -24,7 +24,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 // @Table(name = "T_TPMGMT_GLBLIST_M_DeviceType")
 public class DeviceTypes implements Serializable {
 
-	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7559005140557345736L;
+
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Id
 	private int id;
@@ -33,18 +37,16 @@ public class DeviceTypes implements Serializable {
 	private String devicetype;
 
 	@JsonIgnore
-	@OneToMany(cascade = {CascadeType.ALL}, mappedBy = "devicetype")
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "devicetype")
 
 	private Set<Models> models;
-	
 
-	@ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.ALL})
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.ALL })
 	private Set<Vendors> vendors = new HashSet<Vendors>();
-	
+
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, mappedBy = "devicetypes")
 	private Set<Interfaces> interfaces;
-
 
 	public Set<Interfaces> getInterfaces() {
 		return interfaces;
@@ -53,7 +55,6 @@ public class DeviceTypes implements Serializable {
 	public void setInterfaces(Set<Interfaces> interfaces) {
 		this.interfaces = interfaces;
 	}
-
 
 	public Set<Models> getModels() {
 		return models;

@@ -10,10 +10,12 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -21,14 +23,13 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 
 public class ShowPowerTest {
-
+	private static final Logger logger = LogManager.getLogger(ShowPowerTest.class);
 
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
+
 	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread()
-				.getContextClassLoader()
-				.getResourceAsStream(PROPERTIES_FILE);
+		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
 
 		try {
 			PROPERTIES.load(PropFile);
@@ -38,47 +39,39 @@ public class ShowPowerTest {
 		}
 		return false;
 	}
-	public String powerInfo(String ip, String username, String password,String routername, String region,String type) throws IOException
-	{
-		String result=null;
+
+	public String powerInfo(String ip, String username, String password, String routername, String region, String type)
+			throws IOException {
+		String result = null;
 		ShowPowerTest.loadProperties();
-		String port = ShowPowerTest.PROPERTIES
-				.getProperty("portSSH");
+		String port = ShowPowerTest.PROPERTIES.getProperty("portSSH");
 		try {
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(username, ip,
-					Integer.parseInt(port));
-			
+			Session session = jsch.getSession(username, ip, Integer.parseInt(port));
+
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try 
-			{
+			try {
 				Thread.sleep(10000);
-			} catch (Exception ee) 
-			{
+			} catch (Exception ee) {
 			}
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 
 			PrintStream ps = new PrintStream(ops, true);
-			System.out.println("Channel Connected to machine " +  ip
-					+ " server for power test");
+			logger.info("Channel Connected to machine " + ip + " server for power test");
 			channel.connect();
 			InputStream input = channel.getInputStream();
 			ps.println("sh environment all");
-			try 
-			{
+			try {
 				Thread.sleep(5000);
-			} catch (Exception ee) 
-			{
+			} catch (Exception ee) {
 			}
-			result=printPowerInfo(input, channel,
-					routername,
-					region,type);
+			result = printPowerInfo(input, channel, routername, region, type);
 			channel.disconnect();
 			session.disconnect();
 		} catch (NumberFormatException e) {
@@ -93,79 +86,63 @@ public class ShowPowerTest {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}		return result;
-		
+		}
+		return result;
+
 	}
-	public String getPowerInfor(String hostname,String region,String type)
-	{
-		String result=null;
+
+	public String getPowerInfor(String hostname, String region, String type) {
+		String result = null;
 		try {
 			ShowPowerTest.loadProperties();
-			String filepath=null;
-			
-			if(type.equalsIgnoreCase("Pre"))
-			{
-			filepath = ShowPowerTest.PROPERTIES
-					.getProperty("responseDownloadPathHealthCheckFolder")
-					+ "//"+"Pre_"+ hostname
-					+ "_" + region + "_PowerInfo.txt";
+			String filepath = null;
+
+			if (type.equalsIgnoreCase("Pre")) {
+				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + "Pre_"
+						+ hostname + "_" + region + "_PowerInfo.txt";
+			} else {
+				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + type
+						+ "_" + hostname + "_" + region + "_PowerInfo.txt";
 			}
-			else
-			{
-				filepath = ShowPowerTest.PROPERTIES
-						.getProperty("responseDownloadPathHealthCheckFolder")
-						+ "//"+type+"_"
-						+ hostname
-						+ "_" + region + "_PowerInfo.txt";
-			}
-			if(filepath!=null)
-			{
-				String text=readFile(filepath);
+			if (filepath != null) {
+				String text = readFile(filepath);
 				Scanner scanner = new Scanner(text);
-				List<String>linesToValidate=new ArrayList<String>();
-				int count=0;
-				while(scanner.hasNext())
-				{
-					if(count<=4)
-					{
-					linesToValidate.add(scanner.nextLine());
-					count++;
-					}
-					else
-					{
+				List<String> linesToValidate = new ArrayList<String>();
+				int count = 0;
+				while (scanner.hasNext()) {
+					if (count <= 4) {
+						linesToValidate.add(scanner.nextLine());
+						count++;
+					} else {
 						break;
 					}
 				}
-				
-				for(int k=0;k<linesToValidate.size();k++)
-				{
-					if(linesToValidate.get(k).contains("Unit is on"))
-					{
-						result=linesToValidate.get(k);
+
+				for (int k = 0; k < linesToValidate.size(); k++) {
+					if (linesToValidate.get(k).contains("Unit is on")) {
+						result = linesToValidate.get(k);
 						break;
-					}
-					else
-					{
-						result=linesToValidate.get(k);
+					} else {
+						result = linesToValidate.get(k);
 					}
 				}
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			return "fail";
-			//e.printStackTrace();
+			// e.printStackTrace();
 		}
 
 		return result;
 	}
-	public String printPowerInfo(InputStream input, Channel channel,
-			String routername, String region,String type) throws Exception {
-		
-		String result=null;
-		
-		boolean value=false;
-		
-		
+
+	public String printPowerInfo(InputStream input, Channel channel, String routername, String region, String type)
+			throws Exception {
+
+		String result = null;
+
+		boolean value = false;
+
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 		int SIZE = 1024;
@@ -175,16 +152,13 @@ public class ShowPowerTest {
 			int i = input.read(tmp, 0, SIZE);
 			if (i < 0)
 				break;
-			/* System.out.print(new String(tmp, 0, i)); */
-			String filepath=null;
+			/* logger.info(new String(tmp, 0, i)); */
+			String filepath = null;
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
-				// System.out.print(str);
-				 filepath = ShowPowerTest.PROPERTIES
-						.getProperty("responseDownloadPathHealthCheckFolder")
-						+ "//"+type+"_"
-						+ routername
-						+ "_" + region + "_PowerInfo.txt";
+				// logger.info(str);
+				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + type
+						+ "_" + routername + "_" + region + "_PowerInfo.txt";
 				File file = new File(filepath);
 
 				// if file doesnt exists, then create it
@@ -202,69 +176,58 @@ public class ShowPowerTest {
 					bw.close();
 				}
 			}
-			
-			String text=readFile(filepath);
+
+			String text = readFile(filepath);
 			Scanner scanner = new Scanner(text);
-			List<String>linesToValidate=new ArrayList<String>();
-			int count=0;
-			while(scanner.hasNext())
-			{
-				if(count<=4)
-				{
-				linesToValidate.add(scanner.nextLine());
-				count++;
-				}
-				else
-				{
+			List<String> linesToValidate = new ArrayList<String>();
+			int count = 0;
+			while (scanner.hasNext()) {
+				if (count <= 4) {
+					linesToValidate.add(scanner.nextLine());
+					count++;
+				} else {
 					break;
 				}
 			}
-			
-			for(int k=0;k<linesToValidate.size();k++)
-			{
-				if(linesToValidate.get(k).contains("Unit is on"))
-				{
-					result="Pass";
+
+			for (int k = 0; k < linesToValidate.size(); k++) {
+				if (linesToValidate.get(k).contains("Unit is on")) {
+					result = "Pass";
 					break;
-				}
-				else
-				{
-					result=linesToValidate.get(k);
+				} else {
+					result = linesToValidate.get(k);
 				}
 			}
-			
-		
-	
-	        
+
 		}
 		if (channel.isClosed()) {
-			System.out.println("exit-status: " + channel.getExitStatus());
+			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
 		try {
 			Thread.sleep(1000);
 		} catch (Exception ee) {
 		}
-		
+
 		return result;
 
 	}
-		
-	private static String readFile(String path) throws IOException {
-		 
-        BufferedReader br = new BufferedReader(new FileReader(path));
-        try {
-            StringBuilder sb = new StringBuilder();
-            String line = br.readLine();
 
-            while (line != null) {
-                sb.append(line);
-                sb.append("\n");
-                line = br.readLine();
-            }
-            return sb.toString();
-        } finally {
-            br.close();
-        }
-}
+	private static String readFile(String path) throws IOException {
+
+		BufferedReader br = new BufferedReader(new FileReader(path));
+		try {
+			StringBuilder sb = new StringBuilder();
+			String line = br.readLine();
+
+			while (line != null) {
+				sb.append(line);
+				sb.append("\n");
+				line = br.readLine();
+			}
+			return sb.toString();
+		} finally {
+			br.close();
+		}
+	}
 }

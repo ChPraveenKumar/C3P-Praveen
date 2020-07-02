@@ -22,6 +22,8 @@ import java.util.Scanner;
 
 import javax.ws.rs.POST;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -51,7 +53,7 @@ import com.techm.orion.utility.TextReport;
 @Controller
 @RequestMapping("/OthersCheckTestValidation")
 public class OthersCheckTestValidation extends Thread {
-
+	private static final Logger logger = LogManager.getLogger(OthersCheckTestValidation.class);
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -60,8 +62,8 @@ public class OthersCheckTestValidation extends Thread {
 
 	@Autowired
 	RequestInfoDetailsDao requestDao;
-	
-	@Autowired 
+
+	@Autowired
 	TestStrategeyAnalyser analyser;
 
 	@POST
@@ -89,7 +91,10 @@ public class OthersCheckTestValidation extends Thread {
 
 		String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
 
-		if (!(type.equals("SLGB"))) {
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
+		if (!((type.equals("SLGB") || (type.equals("SLGM"))))) {
 
 			try {
 				configRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
@@ -107,7 +112,7 @@ public class OthersCheckTestValidation extends Thread {
 					String host = configRequest.getManagementIp();
 					UserPojo userPojo = new UserPojo();
 					userPojo = requestInfoDao.getRouterCredentials();
-					System.out.println("Request ID in others test validation" + RequestId);
+					logger.info("Request ID in others test validation" + RequestId);
 					String user = null;
 					String password = null;
 					String port = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("portSSH");
@@ -123,18 +128,17 @@ public class OthersCheckTestValidation extends Thread {
 						password = userPojo.getPassword();
 					}
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC")) {
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGM")
+							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
-						System.out.println("Password for healthcheck " + password + "user " + user + "host " + host
+						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
 								+ "Port " + port);
 						session.setConfig(config);
 						session.setPassword(password);
 						session.connect();
-						System.out.println("After session.connect others milestone");
+						logger.info("After session.connect others milestone");
 						try {
 							Thread.sleep(10000);
 						} catch (Exception ee) {
@@ -145,7 +149,7 @@ public class OthersCheckTestValidation extends Thread {
 							OutputStream ops = channel.getOutputStream();
 
 							PrintStream ps = new PrintStream(ops, true);
-							System.out.println("Channel Connected to machine " + host + " server");
+							logger.info("Channel Connected to machine " + host + " server");
 							channel.connect();
 							InputStream input = channel.getInputStream();
 
@@ -221,7 +225,7 @@ public class OthersCheckTestValidation extends Thread {
 										status);
 							}
 
-							System.out.println("DONE");
+							logger.info("DONE");
 							channel.disconnect();
 							session.disconnect();
 							value = true;
@@ -242,13 +246,13 @@ public class OthersCheckTestValidation extends Thread {
 								Thread.sleep(15000);
 							} catch (Exception ee) {
 							}
-							System.out.println("DONE");
+							logger.info("DONE");
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 						} catch (IOException ex) {
-							System.out.println("Error in others check first catch " + ex.getMessage());
-							System.out.println("Error trace " + ex.getStackTrace());
-							System.out.println("" + ex.getCause());
+							logger.info("Error in others check first catch " + ex.getMessage());
+							logger.info("Error trace " + ex.getStackTrace());
+							logger.info("" + ex.getCause());
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 							requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
@@ -281,13 +285,12 @@ public class OthersCheckTestValidation extends Thread {
 					}
 
 				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					String statusVAlue = requestDao.getPreviousMileStoneStatus(
-							requestinfo.getAlphanumericReqId(),
+					String statusVAlue = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
 
 					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "others_test", "4", statusVAlue);
-				
+
 					requestinfo.setAlphanumericReqId(RequestId);
 					requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 
@@ -297,7 +300,7 @@ public class OthersCheckTestValidation extends Thread {
 					String host = requestinfo.getManagementIp();
 					UserPojo userPojo = new UserPojo();
 					userPojo = requestInfoDao.getRouterCredentials();
-					System.out.println("Request ID in others test validation" + RequestId);
+					logger.info("Request ID in others test validation" + RequestId);
 					String user = null;
 					String password = null;
 					String port = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("portSSH");
@@ -312,18 +315,17 @@ public class OthersCheckTestValidation extends Thread {
 						password = userPojo.getPassword();
 					}
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC")) {
-						JSch jsch = new JSch();
-						Channel channel = null;
-						Session session = jsch.getSession(user, host, Integer.parseInt(port));
+							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGM")
+							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
+						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
-						System.out.println("Password for healthcheck " + password + "user " + user + "host " + host
+						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
 								+ "Port " + port);
 						session.setConfig(config);
 						session.setPassword(password);
 						session.connect();
-						System.out.println("After session.connect others milestone");
+						logger.info("After session.connect others milestone");
 						try {
 							Thread.sleep(10000);
 						} catch (Exception ee) {
@@ -332,7 +334,7 @@ public class OthersCheckTestValidation extends Thread {
 							channel = session.openChannel("shell");
 							OutputStream ops = channel.getOutputStream();
 							PrintStream ps = new PrintStream(ops, true);
-							System.out.println("Channel Connected to machine " + host + " server");
+							logger.info("Channel Connected to machine " + host + " server");
 							channel.connect();
 							InputStream input = channel.getInputStream();
 
@@ -401,15 +403,16 @@ public class OthersCheckTestValidation extends Thread {
 								String status = requestDao.getPreviousMileStoneStatus(
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 								String switchh = "1";
-								int statusData=requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+								int statusData = requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "others_test");
-								if(statusData!=3) {
-								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "others_test", "1", status);
+								if (statusData != 3) {
+									requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+											Double.toString(requestinfo.getRequestVersion()), "others_test", "1",
+											status);
 								}
 							}
 
-							System.out.println("DONE");
+							logger.info("DONE");
 							channel.disconnect();
 							session.disconnect();
 							value = true;
@@ -427,16 +430,16 @@ public class OthersCheckTestValidation extends Thread {
 							}
 							session.disconnect();
 							try {
-								Thread.sleep(15000);
+								Thread.sleep(1500);
 							} catch (Exception ee) {
 							}
-							System.out.println("DONE");
+							logger.info("DONE");
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 						} catch (IOException ex) {
-							System.out.println("Error in others check first catch " + ex.getMessage());
-							System.out.println("Error trace " + ex.getStackTrace());
-							System.out.println("" + ex.getCause());
+							logger.info("Error in others check first catch " + ex.getMessage());
+							logger.info("Error trace " + ex.getStackTrace());
+							logger.info("" + ex.getCause());
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -471,8 +474,8 @@ public class OthersCheckTestValidation extends Thread {
 			// when reachability fails
 			catch (Exception ex) {
 				if (configRequest.getManagementIp() != null && !configRequest.getManagementIp().equals("")) {
-					System.out.println("Error in health check send catch " + ex.getMessage());
-					System.out.println("Error trace " + ex.getStackTrace());
+					logger.info("Error in health check send catch " + ex.getMessage());
+					logger.info("Error trace " + ex.getStackTrace());
 					ex.printStackTrace();
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
@@ -501,8 +504,8 @@ public class OthersCheckTestValidation extends Thread {
 					}
 
 				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					System.out.println("Error in health check send catch " + ex.getMessage());
-					System.out.println("Error trace " + ex.getStackTrace());
+					logger.info("Error in health check send catch " + ex.getMessage());
+					logger.info("Error trace " + ex.getStackTrace());
 					ex.printStackTrace();
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
@@ -530,6 +533,25 @@ public class OthersCheckTestValidation extends Thread {
 
 					}
 
+				}
+			}
+			finally {
+
+				if (channel != null) {
+					try {
+					session = channel.getSession();
+					
+					if (channel.getExitStatus() == -1) {
+						
+							Thread.sleep(5000);
+						
+					}
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+					channel.disconnect();
+					session.disconnect();
+				
 				}
 			}
 		} else {
@@ -677,7 +699,7 @@ public class OthersCheckTestValidation extends Thread {
 
 		}
 		if (channel.isClosed()) {
-			System.out.println("exit-status: " + channel.getExitStatus());
+			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
 		try {
@@ -799,8 +821,8 @@ public class OthersCheckTestValidation extends Thread {
 
 			String commandToPing = "ping " + managementIp + " -n 20";
 			p_stdin.write(commandToPing);
-			System.out.println("command To Ping : " + commandToPing);
-			System.out.println("Management IP : " + managementIp);
+			logger.info("command To Ping : " + commandToPing);
+			logger.info("Management IP : " + managementIp);
 
 			p_stdin.newLine();
 			p_stdin.flush();
@@ -823,7 +845,7 @@ public class OthersCheckTestValidation extends Thread {
 		printResult(input, requestId, version);
 
 		while (s.hasNext()) {
-			System.out.println(s.nextLine());
+			logger.info(s.nextLine());
 		}
 		s.close();
 	}
@@ -838,10 +860,10 @@ public class OthersCheckTestValidation extends Thread {
 			int i = input.read(tmp, 0, SIZE);
 			if (i < 0)
 				break;
-			/* System.out.print(new String(tmp, 0, i)); */
+			/* logger.info(new String(tmp, 0, i)); */
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
-				System.out.print(s);
+				logger.info(s);
 				String filepath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//"
 						+ requestID + "V" + version + "_CustomTests.txt";
 				File file = new File(filepath);
@@ -864,7 +886,7 @@ public class OthersCheckTestValidation extends Thread {
 
 		}
 		/*
-		 * if (channel.isClosed()) { System.out.println("exit-status: " +
+		 * if (channel.isClosed()) { logger.info("exit-status: " +
 		 * channel.getExitStatus());
 		 * 
 		 * }

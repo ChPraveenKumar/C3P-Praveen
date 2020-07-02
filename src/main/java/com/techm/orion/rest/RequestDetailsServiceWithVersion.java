@@ -10,6 +10,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -26,18 +28,22 @@ import com.google.gson.JsonParseException;
 import com.techm.orion.dao.RequestDetails;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
-import com.techm.orion.pojo.CertificationTestPojo;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.pojo.ReoprtFlags;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.SearchParamPojo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 
 @RestController
 @RequestMapping("/requestDetails")
 public class RequestDetailsServiceWithVersion {
+	private static final Logger logger = LogManager.getLogger(RequestDetailsServiceWithVersion.class);
 	@Autowired
 	RequestInfoDetailsDao requestRedao;
 
-	
+	@Autowired
+	DeviceDiscoveryRepository deviceInforepo;
+
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -52,15 +58,32 @@ public class RequestDetailsServiceWithVersion {
 			value = dto.getValue();
 			version = dto.getVersion();
 			List<RequestInfoCreateConfig> detailsList = new ArrayList<RequestInfoCreateConfig>();
-			
+
 			if (value != null && !value.isEmpty()) {
 				try {
 					detailsList = requestRedao.getRequestWithVersion(key, value, version);
+					for (RequestInfoCreateConfig request : detailsList) {
+
+						DeviceDiscoveryEntity device = deviceInforepo.findByDHostName(request.getHostname());
+						if (device.getdDeComm().equalsIgnoreCase("0")) {
+							request.setCommissionFlag("Commission");
+						} else if (device.getdDeComm().equalsIgnoreCase("1")) {
+							request.setCommissionFlag("Decommission");
+
+						} else if (device.getdDeComm().equalsIgnoreCase("2"))
+
+						{
+							request.setCommissionFlag("Commission");
+
+						}
+					}
+
 					jsonArray = new Gson().toJson(detailsList);
+
 					obj.put(new String("output"), jsonArray);
-					
+
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error(e);
 				}
 			} else {
 				try {
@@ -68,11 +91,11 @@ public class RequestDetailsServiceWithVersion {
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
 				} catch (Exception e) {
-					System.out.print(e);
+					logger.info(e);
 				}
 			}
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -81,12 +104,11 @@ public class RequestDetailsServiceWithVersion {
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
-	
 
-    @POST
-    @RequestMapping(value = "/refreshmilestones", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-    @ResponseBody
-    public Response refreshmilestones(@RequestBody String searchParameters) {
+	@POST
+	@RequestMapping(value = "/refreshmilestones", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response refreshmilestones(@RequestBody String searchParameters) {
 
 		RequestInfoDao requestValue = new RequestInfoDao();
 		JSONObject obj = new JSONObject();
@@ -262,19 +284,17 @@ public class RequestDetailsServiceWithVersion {
 					}
 
 					jsonArrayReports = new Gson().toJson(reoportflagllistforselectedRecord);
-					 jsonArray = new Gson().toJson(detailsList.iterator().next().getStatus().toString());
-					    obj.put(new String("status"), jsonArray.replaceAll("^\"|\"$", ""));
-					    if(detailsList.iterator().next().getSceheduledTime() != null)
-					    {
-					    	jsonArray = new Gson().toJson(detailsList.iterator().next().getSceheduledTime().toString());
-						    obj.put(new String("scheduleTime"), jsonArray.replaceAll("^\"|\"$", "").replaceAll("\\\\", ""));
-					    }   
-					    if(detailsList.iterator().next().getRequestElapsedTime() != null)
-					    {
-					    	jsonArray = new Gson().toJson(detailsList.iterator().next().getRequestElapsedTime().toString());
-						    obj.put(new String("elapsedTime"), jsonArray.replaceAll("^\"|\"$", ""));
-						    
-					    } 
+					jsonArray = new Gson().toJson(detailsList.iterator().next().getStatus().toString());
+					obj.put(new String("status"), jsonArray.replaceAll("^\"|\"$", ""));
+					if (detailsList.iterator().next().getSceheduledTime() != null) {
+						jsonArray = new Gson().toJson(detailsList.iterator().next().getSceheduledTime().toString());
+						obj.put(new String("scheduleTime"), jsonArray.replaceAll("^\"|\"$", "").replaceAll("\\\\", ""));
+					}
+					if (detailsList.iterator().next().getRequestElapsedTime() != null) {
+						jsonArray = new Gson().toJson(detailsList.iterator().next().getRequestElapsedTime().toString());
+						obj.put(new String("elapsedTime"), jsonArray.replaceAll("^\"|\"$", ""));
+
+					}
 					String test = new Gson().toJson(jsonArrayForTest);
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
@@ -283,7 +303,7 @@ public class RequestDetailsServiceWithVersion {
 					obj.put(new String("DilevaryMilestones"), dilevaryMilestonesforOSupgrade);
 
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error(e);
 				}
 			} else {
 				try {
@@ -291,11 +311,11 @@ public class RequestDetailsServiceWithVersion {
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
 				} catch (Exception e) {
-					System.out.print(e);
+					logger.info(e);
 				}
 			}
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -303,11 +323,10 @@ public class RequestDetailsServiceWithVersion {
 				.header("Access-Control-Allow-Credentials", "true")
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-	
-    	
-    }	
-    
-    @POST
+
+	}
+
+	@POST
 	@RequestMapping(value = "/getFeatureDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getFeatureDetails(@RequestBody String requestDetails) {
@@ -320,13 +339,13 @@ public class RequestDetailsServiceWithVersion {
 			featureDetails = dao.getFeatureDetails(requestId);
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return Response.status(200).entity(featureDetails).build();
 
 	}
-    
-    @POST
+
+	@POST
 	@RequestMapping(value = "/getTestAndDiagnosisDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getTestAndDiagnosisDetailsDuplicateLatest(@RequestBody String testDetails)
@@ -334,7 +353,7 @@ public class RequestDetailsServiceWithVersion {
 
 		JSONParser parser = new JSONParser();
 		JSONObject json;
-		JSONArray selectedTest= new JSONArray();
+		JSONArray selectedTest = new JSONArray();
 
 		try {
 			// parse testDeatils and get request Id
@@ -347,28 +366,28 @@ public class RequestDetailsServiceWithVersion {
 			RequestInfoDao requestinfoDao = new RequestInfoDao();
 			for (String testName : splitTestAndDiagnosis) {
 				if (testName.contains("testName")) {
-					JSONObject tests= new JSONObject();
-					if(testName.contains("\"}]")) {
-						testName=StringUtils.substringBetween(testName, "\"testName\":\"", "\"}]");	
-					}else {
-						testName=StringUtils.substringBetween(testName, "\"testName\":\"","\"}");
-					}					
-					String combination=StringUtils.substringBefore(testName, "_");
+					JSONObject tests = new JSONObject();
+					if (testName.contains("\"}]")) {
+						testName = StringUtils.substringBetween(testName, "\"testName\":\"", "\"}]");
+					} else {
+						testName = StringUtils.substringBetween(testName, "\"testName\":\"", "\"}");
+					}
+					String combination = StringUtils.substringBefore(testName, "_");
 					String name = StringUtils.substringAfter(testName, "_");
-					name=StringUtils.substringBeforeLast(name, "_");	
-					String version=StringUtils.substringAfterLast(testName, "_");
+					name = StringUtils.substringBeforeLast(name, "_");
+					String version = StringUtils.substringAfterLast(testName, "_");
 					tests.put("combination", combination);
 					tests.put("testName", name);
 					tests.put("version", version);
 					int status = requestinfoDao.getTestDetails(requestId, testName);
-					tests.put("status",status);
-					selectedTest.add(tests);					
+					tests.put("status", status);
+					selectedTest.add(tests);
 				}
 			}
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 		return Response.status(200).entity(selectedTest).build();
 	}
-    
+
 }

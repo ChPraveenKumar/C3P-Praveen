@@ -17,14 +17,12 @@ public class CategoryMasterServiceImpl implements CategoryMasterService {
 
 	@Override
 	public List<CategoryMasterPojo> getAll() {
-		return new CategoryMasterResponseMapper()
-				.getAllCategoryMapper(categoryDao.findAll());
+		return new CategoryMasterResponseMapper().getAllCategoryMapper(categoryDao.findAll());
 	}
 
 	@Override
 	public CategoryMasterPojo getByCategoryName(String categoryName) {
-		return new CategoryMasterResponseMapper().getCategoryMapper(categoryDao
-				.findByCategoryName(categoryName));
+		return new CategoryMasterResponseMapper().getCategoryMapper(categoryDao.findByCategoryName(categoryName));
 	}
 
 }

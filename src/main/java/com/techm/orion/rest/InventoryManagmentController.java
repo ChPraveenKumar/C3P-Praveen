@@ -6,6 +6,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,63 +26,58 @@ public class InventoryManagmentController {
 
 	@Autowired
 	InventoryManagmentService service;
-	
+
 	@GET
 	@RequestMapping(value = "/getVendors", method = RequestMethod.GET, produces = "application/json")
 	public Response getVendors() {
 
-		return Response.status(200).entity(service.getAllDeviceDescoverdForVendor())
-				.build();
+		return Response.status(200).entity(service.getAllDeviceDescoverdForVendor()).build();
 
 	}
+
 	@GET
 	@RequestMapping(value = "/getCustomers", method = RequestMethod.GET, produces = "application/json")
 	public Response getCustomers() {
-		return Response.status(200).entity(service.getAllDeviceDescoverdForCustomer())
-				.build();
+		return Response.status(200).entity(service.getAllDeviceDescoverdForCustomer()).build();
 
 	}
+
 	@GET
 	@RequestMapping(value = "/getUserCustomerInfo", method = RequestMethod.GET, produces = "application/json")
 	public Response getUserCustomerInfo() {
-		return Response.status(200).entity(service.getMyCustomersDevice())
-				.build();
+		return Response.status(200).entity(service.getMyCustomersDevice()).build();
 
 	}
-	
-	
+
 	@GET
 	@RequestMapping(value = "/getUserVendorInfo", method = RequestMethod.GET, produces = "application/json")
 	public Response getUserVendorInfo() {
-		return Response.status(200).entity(service.getMyVendorsDevice())
-				.build();
+		return Response.status(200).entity(service.getMyVendorsDevice()).build();
 
 	}
-	
+
 	@GET
 	@RequestMapping(value = "/getAllCustomersDeviceInfo", method = RequestMethod.GET, produces = "application/json")
 	public Response getAllCustomersDeviceInfo() {
-		return Response.status(200).entity(service.getAllDevice())
-				.build();
+		return Response.status(200).entity(service.getAllDevice()).build();
 
 	}
-	
+
 	@POST
 	@RequestMapping(value = "/getRequestDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getRequestDetails(@RequestBody String hostName) {
 		List<ServiceRequestPojo> requestDeatils = null;
 		try {
-		JSONParser parser = new JSONParser();
-		JSONObject json = (JSONObject) parser.parse(hostName);
-		String host=json.get("hostName").toString();
-		requestDeatils = service.getRequestDeatils(host);
-		}catch(Exception e) {
-			
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(hostName);
+			String host = json.get("hostName").toString();
+			requestDeatils = service.getRequestDeatils(host);
+		} catch (Exception e) {
+
 		}
-		return Response.status(200).entity(requestDeatils)
-				.build();	
-		
-	}	
-	
+		return Response.status(200).entity(requestDeatils).build();
+
+	}
+
 }

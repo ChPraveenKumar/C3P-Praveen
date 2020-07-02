@@ -15,6 +15,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.XML;
 
 import com.google.common.collect.Maps;
@@ -24,11 +26,12 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.rest.VnfConfigService;
 
 public class VNFHelper {
+	private static final Logger logger = LogManager.getLogger(VNFHelper.class);
+
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
 
-	public String saveXML(String data, String requestId,
-			CreateConfigRequestDCM createConfigRequestDcm) {
+	public String saveXML(String data, String requestId, CreateConfigRequestDCM createConfigRequestDcm) {
 		boolean result = true;
 		String filepath = null, filepath2 = null;
 		BufferedWriter bw = null;
@@ -37,16 +40,10 @@ public class VNFHelper {
 		byte[] tmp = new byte[SIZE];
 		try {
 			VNFHelper.loadProperties();
-			filepath = VNFHelper.PROPERTIES
-					.getProperty("VnfConfigCreationPath")
-					+ "//"
-					+ requestId
+			filepath = VNFHelper.PROPERTIES.getProperty("VnfConfigCreationPath") + "//" + requestId
 					+ "_Configuration.xml";
 
-			filepath2 = VNFHelper.PROPERTIES
-					.getProperty("VnfConfigCreationPath")
-					+ "//"
-					+ requestId
+			filepath2 = VNFHelper.PROPERTIES.getProperty("VnfConfigCreationPath") + "//" + requestId
 					+ "_ConfigurationToPush.xml";
 			File file = new File(filepath);
 			File file1 = new File(filepath2);
@@ -102,32 +99,26 @@ public class VNFHelper {
 
 	public boolean pushOnVnfDevice(String file) {
 		boolean result = true;
-		String[] cmd = { "python",
-				"D:\\configuration_files\\pythonScript\\editscript.py", file };
+		String[] cmd = { "python", "D:\\configuration_files\\pythonScript\\editscript.py", file };
 		Process p;
 		try {
 			p = Runtime.getRuntime().exec(cmd);
 
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					p.getInputStream()));
+			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			String ret = in.readLine();
 
-			BufferedReader bre = new BufferedReader(new InputStreamReader(
-					p.getErrorStream()));
+			BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			String line;
 			if (bre.readLine() == null) {
 
 				// success
-				System.out.println("" + ret);
+				logger.info("" + ret);
 			} else {
-				System.out.println("" + bre.readLine());
-				if(bre.readLine().contains("File exists") ||bre.readLine().contains("File exist"))
-				{
-					result=true;
-				}
-				else
-				{
-				result=false;
+				logger.info("" + bre.readLine());
+				if (bre.readLine().contains("File exists") || bre.readLine().contains("File exist")) {
+					result = true;
+				} else {
+					result = false;
 				}
 			}
 			bre.close();
@@ -138,17 +129,15 @@ public class VNFHelper {
 		return result;
 	}
 
-	public boolean cmdPingCall(String managementIp, String routername,
-			String region) throws Exception {
+	public boolean cmdPingCall(String managementIp, String routername, String region) throws Exception {
 		ProcessBuilder builder = new ProcessBuilder("cmd.exe");
 		Process p = null;
 		boolean flag = true;
 		try {
 			p = builder.start();
-			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(
-					p.getOutputStream()));
+			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
 			String commandToPing = "ping " + managementIp + " -n 20";
-			System.out.print("Management ip " + managementIp);
+			logger.info("Management ip " + managementIp);
 			p_stdin.write(commandToPing);
 			p_stdin.newLine();
 			p_stdin.flush();
@@ -173,8 +162,7 @@ public class VNFHelper {
 		return flag;
 	}
 
-	private boolean printResult(InputStream input, String routername,
-			String region) throws Exception {
+	private boolean printResult(InputStream input, String routername, String region) throws Exception {
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 		int SIZE = 1024;
@@ -185,7 +173,7 @@ public class VNFHelper {
 			int i = input.read(tmp, 0, SIZE);
 			if (i < 0)
 				break;
-			 System.out.print(new String(tmp, 0, i)); 
+			logger.info(new String(tmp, 0, i));
 			String s = new String(tmp, 0, i);
 			if (!(s.equals("")) && s.contains("Destination host unreachable")) {
 
@@ -194,17 +182,13 @@ public class VNFHelper {
 			} else if (!(s.equals("")) && s.contains("Request timed out.")) {
 				flag = false;
 
-			} else if (!(s.equals(""))
-					&& s.contains("Destination net unreachable")) {
+			} else if (!(s.equals("")) && s.contains("Destination net unreachable")) {
 				flag = false;
 
 			}
 			VNFHelper.loadProperties();
-			String filepath = VNFHelper.PROPERTIES
-					.getProperty("responseDownloadPath")
-					+ "//"
-					+ routername
-					+ "_" + region + "_Reachability.txt";
+			String filepath = VNFHelper.PROPERTIES.getProperty("responseDownloadPath") + "//" + routername + "_"
+					+ region + "_Reachability.txt";
 			File file = new File(filepath);
 
 			// if file doesnt exists, then create it
@@ -232,11 +216,10 @@ public class VNFHelper {
 	public String loadXMLPayload(String filename) {
 		String output = null;
 		ClassLoader classLoader = getClass().getClassLoader();
-		try (InputStream inputStream = classLoader
-				.getResourceAsStream(filename)) {
+		try (InputStream inputStream = classLoader.getResourceAsStream(filename)) {
 
 			output = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-			System.out.println("Payload read from resources: " + output);
+			logger.info("Payload read from resources: " + output);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -258,8 +241,7 @@ public class VNFHelper {
 	}
 
 	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(PROPERTIES_FILE);
+		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
 
 		try {
 			PROPERTIES.load(PropFile);
@@ -277,152 +259,122 @@ public class VNFHelper {
 
 		org.json.JSONObject xmlJSONObj = XML.toJSONObject(xml);
 
-		ClassLoader classLoader = new VnfConfigService().getClass()
-				.getClassLoader();
+		ClassLoader classLoader = new VnfConfigService().getClass().getClassLoader();
 
 		org.json.JSONObject configobj = xmlJSONObj.getJSONObject("config");
 		org.json.JSONObject nativeobj = configobj.getJSONObject("native");
 
 		if (type.equalsIgnoreCase("Loopback")) {
 			InputStream is = VnfConfigService.class.getResourceAsStream("/LoopbackODLTemplate.xml");
-			
-			File file = new File(classLoader.getResource(
-					"LoopbackODLTemplate.xml").getFile());
 
-			org.json.JSONObject interfaceObj = nativeobj
-					.getJSONObject("interface");
-			org.json.JSONObject loopbackObj = interfaceObj
-					.getJSONObject("Loopback");
-			if(!loopbackObj.get("name").toString().isEmpty())
-			{
-			context.put("LOOPBACK_INDEX" , loopbackObj.getInt("name"));
+			File file = new File(classLoader.getResource("LoopbackODLTemplate.xml").getFile());
+
+			org.json.JSONObject interfaceObj = nativeobj.getJSONObject("interface");
+			org.json.JSONObject loopbackObj = interfaceObj.getJSONObject("Loopback");
+			if (!loopbackObj.get("name").toString().isEmpty()) {
+				context.put("LOOPBACK_INDEX", loopbackObj.getInt("name"));
 			}
-			if(!loopbackObj.get("description").toString().isEmpty())
-			{
-			context.put("LB_DESCRIPTION" , loopbackObj.getString("description"));
+			if (!loopbackObj.get("description").toString().isEmpty()) {
+				context.put("LB_DESCRIPTION", loopbackObj.getString("description"));
 			}
-			org.json.JSONObject ipObj = loopbackObj
-					.getJSONObject("ip");
-			org.json.JSONObject addressesObj = ipObj
-					.getJSONObject("address");
-			org.json.JSONObject primaryObj = addressesObj
-					.getJSONObject("primary");
-			
-			if(!primaryObj.get("address").toString().isEmpty())
-			{
-			context.put("LB_IP_ADDRESS" , primaryObj.getString("address"));
+			org.json.JSONObject ipObj = loopbackObj.getJSONObject("ip");
+			org.json.JSONObject addressesObj = ipObj.getJSONObject("address");
+			org.json.JSONObject primaryObj = addressesObj.getJSONObject("primary");
+
+			if (!primaryObj.get("address").toString().isEmpty()) {
+				context.put("LB_IP_ADDRESS", primaryObj.getString("address"));
 			}
-			if(!primaryObj.get("mask").toString().isEmpty())
-			{
-			context.put("LB_SUBNET_MASK" , primaryObj.getString("mask"));
+			if (!primaryObj.get("mask").toString().isEmpty()) {
+				context.put("LB_SUBNET_MASK", primaryObj.getString("mask"));
 			}
 			String contents;
-			
+
 			try {
-				output=IOUtils.toString(is, "UTF-8");
+				output = IOUtils.toString(is, "UTF-8");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-				contents = is.toString();
-				String renderedTemplate = jinjava.render(output, context);
-				
-				output=renderedTemplate;
+			contents = is.toString();
+			String renderedTemplate = jinjava.render(output, context);
 
-			System.out.println("log");
+			output = renderedTemplate;
+
+			logger.info("log");
 		} else if (type.equalsIgnoreCase("Multilink")) {
 			InputStream is = VnfConfigService.class.getResourceAsStream("/MultilinkODLTemplate.xml");
-			
-			File file = new File(classLoader.getResource(
-					"MultilinkODLTemplate.xml").getFile());
-			org.json.JSONObject interfaceObj = nativeobj
-					.getJSONObject("interface");
-			org.json.JSONObject loopbackObj = interfaceObj
-					.getJSONObject("Multilink");
-			if(!loopbackObj.get("name").toString().isEmpty())
-			{
-			context.put("MULTILINK_INDEX" , loopbackObj.getInt("name"));
+
+			File file = new File(classLoader.getResource("MultilinkODLTemplate.xml").getFile());
+			org.json.JSONObject interfaceObj = nativeobj.getJSONObject("interface");
+			org.json.JSONObject loopbackObj = interfaceObj.getJSONObject("Multilink");
+			if (!loopbackObj.get("name").toString().isEmpty()) {
+				context.put("MULTILINK_INDEX", loopbackObj.getInt("name"));
 			}
-			if(!loopbackObj.get("description").toString().isEmpty())
-			{
-			context.put("ML_DESCRIPTION" , loopbackObj.getString("description"));
+			if (!loopbackObj.get("description").toString().isEmpty()) {
+				context.put("ML_DESCRIPTION", loopbackObj.getString("description"));
 			}
-			org.json.JSONObject ipObj = loopbackObj
-					.getJSONObject("ip");
-			org.json.JSONObject addressesObj = ipObj
-					.getJSONObject("address");
-			org.json.JSONObject primaryObj = addressesObj
-					.getJSONObject("primary");
-			if(!primaryObj.get("address").toString().isEmpty())
-			{
-			context.put("ML_IP_ADDRESS" , primaryObj.getString("address"));
+			org.json.JSONObject ipObj = loopbackObj.getJSONObject("ip");
+			org.json.JSONObject addressesObj = ipObj.getJSONObject("address");
+			org.json.JSONObject primaryObj = addressesObj.getJSONObject("primary");
+			if (!primaryObj.get("address").toString().isEmpty()) {
+				context.put("ML_IP_ADDRESS", primaryObj.getString("address"));
 			}
-			if(!primaryObj.get("mask").toString().isEmpty())
-			{
-			context.put("ML_SUBNET_MASK" , primaryObj.getString("mask"));
+			if (!primaryObj.get("mask").toString().isEmpty()) {
+				context.put("ML_SUBNET_MASK", primaryObj.getString("mask"));
 			}
 			String contents;
 			try {
-				output=IOUtils.toString(is, "UTF-8");
+				output = IOUtils.toString(is, "UTF-8");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-				contents = is.toString();
-				String renderedTemplate = jinjava.render(output, context);
-				
-				output=renderedTemplate;
+			contents = is.toString();
+			String renderedTemplate = jinjava.render(output, context);
+
+			output = renderedTemplate;
 		} else if (type.equalsIgnoreCase("Virtual-Template")) {
 			InputStream is = VnfConfigService.class.getResourceAsStream("/Virtual-TemplateODL.xml");
-			
-			File file = new File(classLoader.getResource(
-					"Virtual-TemplateODL.xml").getFile());
-			org.json.JSONObject interfaceObj = nativeobj
-					.getJSONObject("interface");
-			org.json.JSONObject loopbackObj = interfaceObj
-					.getJSONObject("Virtual-Template");
-			
-			if(!loopbackObj.get("name").toString().isEmpty())
-			{
-			context.put("VT_INDEX" , loopbackObj.getInt("name"));
+
+			File file = new File(classLoader.getResource("Virtual-TemplateODL.xml").getFile());
+			org.json.JSONObject interfaceObj = nativeobj.getJSONObject("interface");
+			org.json.JSONObject loopbackObj = interfaceObj.getJSONObject("Virtual-Template");
+
+			if (!loopbackObj.get("name").toString().isEmpty()) {
+				context.put("VT_INDEX", loopbackObj.getInt("name"));
 			}
-			if(!loopbackObj.get("description").toString().isEmpty())
-			{
-			context.put("VT_DESCRIPTION" , loopbackObj.getString("description"));
+			if (!loopbackObj.get("description").toString().isEmpty()) {
+				context.put("VT_DESCRIPTION", loopbackObj.getString("description"));
 			}
-			org.json.JSONObject ipObj = loopbackObj
-					.getJSONObject("ip");
-			org.json.JSONObject addressesObj = ipObj
-					.getJSONObject("address");
-			org.json.JSONObject primaryObj = addressesObj
-					.getJSONObject("primary");
-			
-			if(!primaryObj.get("address").toString().isEmpty())
-			{
-			context.put("VT_IP_ADDRESS" , primaryObj.getString("address"));
+			org.json.JSONObject ipObj = loopbackObj.getJSONObject("ip");
+			org.json.JSONObject addressesObj = ipObj.getJSONObject("address");
+			org.json.JSONObject primaryObj = addressesObj.getJSONObject("primary");
+
+			if (!primaryObj.get("address").toString().isEmpty()) {
+				context.put("VT_IP_ADDRESS", primaryObj.getString("address"));
 			}
-			if(!primaryObj.get("mask").toString().isEmpty())
-			{
-			context.put("VT_SUBNET_MASK" , primaryObj.getString("mask"));
+			if (!primaryObj.get("mask").toString().isEmpty()) {
+				context.put("VT_SUBNET_MASK", primaryObj.getString("mask"));
 			}
 			String contents;
 			try {
-				output=IOUtils.toString(is, "UTF-8");
+				output = IOUtils.toString(is, "UTF-8");
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-				contents = is.toString();
-				String renderedTemplate = jinjava.render(output, context);
-				
-				output=renderedTemplate;
-	
+			contents = is.toString();
+			String renderedTemplate = jinjava.render(output, context);
+
+			output = renderedTemplate;
+
 		} else if (type.equalsIgnoreCase("BGP")) {
 
 		}
 		return output;
 	}
-//method overloding for UIRevamp
+
+	// method overloding for UIRevamp
 	public String saveXML(String data, String requestId, RequestInfoPojo requestInfoSO) {
 		boolean result = true;
 		String filepath = null, filepath2 = null;
@@ -432,16 +384,10 @@ public class VNFHelper {
 		byte[] tmp = new byte[SIZE];
 		try {
 			VNFHelper.loadProperties();
-			filepath = VNFHelper.PROPERTIES
-					.getProperty("VnfConfigCreationPath")
-					+ "//"
-					+ requestId
+			filepath = VNFHelper.PROPERTIES.getProperty("VnfConfigCreationPath") + "//" + requestId
 					+ "_Configuration.xml";
 
-			filepath2 = VNFHelper.PROPERTIES
-					.getProperty("VnfConfigCreationPath")
-					+ "//"
-					+ requestId
+			filepath2 = VNFHelper.PROPERTIES.getProperty("VnfConfigCreationPath") + "//" + requestId
 					+ "_ConfigurationToPush.xml";
 			File file = new File(filepath);
 			File file1 = new File(filepath2);
@@ -493,6 +439,5 @@ public class VNFHelper {
 		}
 		return filepath2;
 
-	
 	}
 }

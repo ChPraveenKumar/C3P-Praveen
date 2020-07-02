@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.rest.CamundaServiceCreateReq;
@@ -41,8 +40,8 @@ public class TelnetCommunicationSSH extends Thread {
 							Double.toString(configRequest.getRequest_version()), configRequest.getRequestType());
 					return;
 				}
-					camundaServiceCreateReq.uploadToServer(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), configRequest.getRequestType());				
+				camundaServiceCreateReq.uploadToServer(configRequest.getRequestId(),
+						Double.toString(configRequest.getRequest_version()), configRequest.getRequestType());
 			}
 			if (request != null) {
 				if (request.getSceheduledTime().equalsIgnoreCase("")) {
@@ -50,8 +49,8 @@ public class TelnetCommunicationSSH extends Thread {
 							Double.toString(request.getRequestVersion()), request.getRequestType());
 					return;
 				}
-					camundaServiceCreateReq.uploadToServer(request.getAlphanumericReqId(),
-							Double.toString(request.getRequestVersion()), request.getRequestType());
+				camundaServiceCreateReq.uploadToServer(request.getAlphanumericReqId(),
+						Double.toString(request.getRequestVersion()), request.getRequestType());
 
 			}
 

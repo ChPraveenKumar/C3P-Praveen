@@ -15,55 +15,55 @@ public class SiteInfoEntity {
 	@Id
 	@Column(name = "id")
 	private int id;
-	
+
 	@Column(name = "c_site_name")
 	private String cSiteName;
-	
+
 	@Column(name = "c_site_id")
 	private String cSiteId;
-	
+
 	@Column(name = "c_cust_id")
 	private String cCustId;
-	
+
 	@Column(name = "c_cust_name")
 	private String cCustName;
-	
+
 	@Column(name = "c_site_region")
 	private String cSiteRegion;
-	
+
 	@Column(name = "c_site_subregion")
 	private String cSiteSubRegion;
-	
+
 	@Column(name = "c_site_market")
 	private String cSiteMarket;
-	
+
 	@Column(name = "c_site_contact")
 	private String cSiteContact;
-	
+
 	@Column(name = "c_site_contactemail")
 	private String cSiteContactEmail;
-	
+
 	@Column(name = "c_site_contactphone")
 	private String cSiteContactPhone;
-	
+
 	@Column(name = "c_site_addressline1")
 	private String cSiteAddressLine1;
-	
+
 	@Column(name = "c_site_addressline2")
 	private String cSIteAddressLine2;
-	
+
 	@Column(name = "c_site_city")
 	private String cSiteCity;
-	
+
 	@Column(name = "c_site_zip")
 	private String cSiteZip;
-	
+
 	@Column(name = "c_site_state")
 	private String cSiteState;
-	
+
 	@Column(name = "c_site_country")
 	private String cSiteCountry;
-	
+
 	@Column(name = "c_site_status")
 	private String cSiteStatus;
 
@@ -210,6 +210,5 @@ public class SiteInfoEntity {
 	public void setcSiteId(String cSiteId) {
 		this.cSiteId = cSiteId;
 	}
-	
-	
+
 }

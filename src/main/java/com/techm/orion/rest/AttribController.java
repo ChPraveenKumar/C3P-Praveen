@@ -8,6 +8,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +36,8 @@ import com.techm.orion.service.CategoryMasterService;
 @RestController
 @RequestMapping(value = "/attrib")
 public class AttribController {
-
+	private static final Logger logger = LogManager.getLogger(AddNewAlertNotificationService.class);
+	
 	@Autowired
 	AttribSevice attribSevice;
 
@@ -152,7 +155,7 @@ public class AttribController {
 			build = Response.status(200).entity(jsonValue).build();
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return build;
@@ -201,7 +204,7 @@ public class AttribController {
 			build = Response.status(200).entity(jsonValue).build();
 
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error(e);
 		}
 
 		return build;

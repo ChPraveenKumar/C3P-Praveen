@@ -11,21 +11,21 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-
 @Entity
 @Table(name = "misarpeso")
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class RouterVfEntity implements Serializable {
 
-
-
-	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8603010472745038447L;
 
 	@Id
 	@Column(name = "request_info_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int requestInfoId;
-	
+
 	public int getRequestInfoId() {
 		return requestInfoId;
 	}
@@ -33,19 +33,15 @@ public class RouterVfEntity implements Serializable {
 	public void setRequestInfoId(int requestInfoId) {
 		this.requestInfoId = requestInfoId;
 	}
-	
-	
-	@Column(name = "routervrfvpndip")
-    private String routerVrfVpnDIp;
-	
-	@Column(name = "routervrfvpndgateway")
-    private String routerVrfVpnDGateway;
-	
-	@Column(name = "fastethernetip")
-    private String fastEthernetIp;
-	
-	
 
+	@Column(name = "routervrfvpndip")
+	private String routerVrfVpnDIp;
+
+	@Column(name = "routervrfvpndgateway")
+	private String routerVrfVpnDGateway;
+
+	@Column(name = "fastethernetip")
+	private String fastEthernetIp;
 
 	public String getRouterVrfVpnDIp() {
 		return routerVrfVpnDIp;
@@ -72,4 +68,3 @@ public class RouterVfEntity implements Serializable {
 	}
 
 }
-

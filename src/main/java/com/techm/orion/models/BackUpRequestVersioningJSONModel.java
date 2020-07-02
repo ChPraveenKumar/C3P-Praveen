@@ -3,11 +3,7 @@ package com.techm.orion.models;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.persistence.Column;
-
 import com.techm.orion.entitybeans.RequestDetailsBackUpAndRestoreEntity;
-import com.techm.orion.entitybeans.RequestDetailsEntity;
-import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 
 public class BackUpRequestVersioningJSONModel {
 
@@ -34,8 +30,7 @@ public class BackUpRequestVersioningJSONModel {
 		this.device_type = device_type;
 	}
 
-	public void setChildList(
-			List<RequestDetailsBackUpAndRestoreEntity> childList) {
+	public void setChildList(List<RequestDetailsBackUpAndRestoreEntity> childList) {
 		this.childList = childList;
 	}
 

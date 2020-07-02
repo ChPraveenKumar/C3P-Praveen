@@ -1,27 +1,14 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Entity
@@ -29,42 +16,43 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @Table(name = "c3p_t_device_discovery_result_device_interfaces_flags")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 
-public class DiscoveryResultDeviceInterfaceFlagsEntity implements Serializable
+public class DiscoveryResultDeviceInterfaceFlagsEntity implements Serializable {
 
-{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4083730281451877139L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
 
-	@Column(name = "i_int_name_flag" , length = 10)
+	@Column(name = "i_int_name_flag", length = 10)
 	private String iIntNameFlag;
 
-	@Column(name = "i_int_description_flag" , length = 10)
+	@Column(name = "i_int_description_flag", length = 10)
 	private String iIntDescriptionFlag;
-	
-	@Column(name = "i_int_ipaddr_flag" , length = 10)
-	private String iIntIpaddrFlag;
-	
-	@Column(name = "i_int_subnet_flag" , length = 10)
-	private String iIntSubnetFlag;
-	
-	@Column(name = "i_int_ipv6addr_flag" , length = 10)
-	private String iIntIpv6addrFlag;
-	
-	@Column(name = "i_int_prefix_flag" , length = 10)
-	private String iIntPrefixFlag;
-	
-	@Column(name = "i_int_admin_stat_flag" , length = 10)
-	private String iIntAdminStat_flag;
-	
-	@Column(name = "i_int_Oper_stat_flag" , length = 10)
-	private String iIntOperStatFlag;
-	
-	@Column(name = "i_int_phy_addr_flag" , length = 10)
-	private String iIntPhyAddrFlag;
 
-	
+	@Column(name = "i_int_ipaddr_flag", length = 10)
+	private String iIntIpaddrFlag;
+
+	@Column(name = "i_int_subnet_flag", length = 10)
+	private String iIntSubnetFlag;
+
+	@Column(name = "i_int_ipv6addr_flag", length = 10)
+	private String iIntIpv6addrFlag;
+
+	@Column(name = "i_int_prefix_flag", length = 10)
+	private String iIntPrefixFlag;
+
+	@Column(name = "i_int_admin_stat_flag", length = 10)
+	private String iIntAdminStat_flag;
+
+	@Column(name = "i_int_Oper_stat_flag", length = 10)
+	private String iIntOperStatFlag;
+
+	@Column(name = "i_int_phy_addr_flag", length = 10)
+	private String iIntPhyAddrFlag;
 
 	public int getId() {
 		return id;
