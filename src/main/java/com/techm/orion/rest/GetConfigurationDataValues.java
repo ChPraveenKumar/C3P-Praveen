@@ -9,8 +9,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -22,13 +20,14 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.pojo.AlertInformationPojo;
 import com.techm.orion.pojo.ConfigurationDataValuePojo;
 import com.techm.orion.service.DcmConfigService;
 
 @Controller
 @RequestMapping("/GetConfigurationData")
 public class GetConfigurationDataValues implements Observer {
-	private static final Logger logger = LogManager.getLogger(GetConfigurationDataValues.class);
+
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
 	@GET
@@ -38,6 +37,7 @@ public class GetConfigurationDataValues implements Observer {
 
 		JSONObject obj = new JSONObject();
 		JSONArray array=new JSONArray();
+		String jsonMessage = "";
 		String jsonArray = "";
 
 		List<ConfigurationDataValuePojo> list = new ArrayList<ConfigurationDataValuePojo>();
@@ -57,7 +57,7 @@ public class GetConfigurationDataValues implements Observer {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return Response
@@ -106,7 +106,7 @@ public class GetConfigurationDataValues implements Observer {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return Response
@@ -265,7 +265,7 @@ public class GetConfigurationDataValues implements Observer {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return Response

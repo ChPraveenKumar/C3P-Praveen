@@ -1,5 +1,7 @@
 package com.techm.orion.pojo;
 
+import java.util.ArrayList;
+
 public class ColumnChartPojo {
 	private int[] data = new int[6];
 	public ColumnChartPojo() {

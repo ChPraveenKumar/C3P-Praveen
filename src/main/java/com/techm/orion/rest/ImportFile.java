@@ -11,13 +11,15 @@ import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+
 import org.springframework.stereotype.Controller;
+
 import org.springframework.web.bind.annotation.ModelAttribute;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -30,9 +32,15 @@ import com.techm.orion.ValidatorConfigService.ExcelFileValidation;
 import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.DeviceInterfaceRepo;
+import com.techm.orion.repositories.DeviceTypeRepository;
 import com.techm.orion.repositories.InternetInfoRepo;
+import com.techm.orion.repositories.ModelsRepository;
+import com.techm.orion.repositories.OSRepository;
+import com.techm.orion.repositories.OSversionRepository;
+import com.techm.orion.repositories.RequestDetailsExportRepo;
 import com.techm.orion.repositories.RequestDetailsImportRepo;
 import com.techm.orion.repositories.RouterVfRepo;
+import com.techm.orion.repositories.VendorRepository;
 import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.ExcelReader;
 import com.techm.orion.service.StorageService;
@@ -42,7 +50,7 @@ import com.techm.orion.service.StorageService;
 @Controller
 @RequestMapping("/ImportFile")
 public class ImportFile {
-	private static final Logger logger = LogManager.getLogger(ImportFile.class);
+
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 	List<String> files = new ArrayList<String>();
@@ -65,6 +73,7 @@ public class ImportFile {
 	@Autowired
 	private ExcelReader excelReader;
 
+
 	@Autowired
 	StorageService storageService;
 
@@ -83,7 +92,8 @@ public class ImportFile {
 		try {
 
 			List<RequestDetailsEntity> requestDetailFinal = new ArrayList<RequestDetailsEntity>();
-			List<RequestDetailsEntity> requestDetail = requestDetailsImportRepo.findAll();
+			List<RequestDetailsEntity> requestDetail = requestDetailsImportRepo
+					.findAll();
 
 			/* Iterating loop for required UI field for each request */
 			for (int i = 0; i < requestDetail.size(); i++) {
@@ -91,21 +101,31 @@ public class ImportFile {
 
 					RequestDetailsEntity requestDetailsEntity = new RequestDetailsEntity();
 
-					requestDetailsEntity.setImportid(requestDetail.get(i).getImportid());
+					requestDetailsEntity.setImportid(requestDetail.get(i)
+							.getImportid());
 
-					requestDetailsEntity.setRegion(requestDetail.get(i).getRegion());
+					requestDetailsEntity.setRegion(requestDetail.get(i)
+							.getRegion());
 
-					requestDetailsEntity.setVendor(requestDetail.get(i).getVendor());
+					requestDetailsEntity.setVendor(requestDetail.get(i)
+							.getVendor());
 
-					requestDetailsEntity.setModel(requestDetail.get(i).getModel());
+					requestDetailsEntity.setModel(requestDetail.get(i)
+							.getModel());
 
-					requestDetailsEntity.setRequestinfoid(requestDetail.get(i).getRequestinfoid());
+					requestDetailsEntity.setRequestinfoid(requestDetail.get(i)
+							.getRequestinfoid());
 
-					requestDetailsEntity.setImportStatus(requestDetail.get(i).getImportStatus());
-					requestDetailsEntity.setDateofProcessing((requestDetail.get(i).getDateofProcessing()));
-					requestDetailsEntity.setHostname(((requestDetail.get(i).getHostname())));
+					requestDetailsEntity.setImportStatus(requestDetail.get(i)
+							.getImportStatus());
+					requestDetailsEntity.setDateofProcessing((requestDetail
+							.get(i).getDateofProcessing()));
+					requestDetailsEntity.setHostname(((requestDetail.get(i)
+							.getHostname())));
 					requestDetailsEntity.setManagementIp(requestDetail.get(i).getManagementIp());
-					requestDetailsEntity.setRequestCreatorName((((requestDetail.get(i).getRequestCreatorName()))));
+					requestDetailsEntity
+							.setRequestCreatorName((((requestDetail.get(i)
+									.getRequestCreatorName()))));
 
 					requestDetailFinal.add(requestDetailsEntity);
 
@@ -115,14 +135,19 @@ public class ImportFile {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+		return Response
+				.status(200)
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers",
+						"origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+				.header("Access-Control-Allow-Methods",
+						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj)
+				.build();
 	}
 
 	/* Web service call to upload file on local storage and save in Database */
@@ -157,15 +182,16 @@ public class ImportFile {
 
 		try {
 
-			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
+			SearchParamPojo dto = gson.fromJson(searchParameters,
+					SearchParamPojo.class);
 
 			key = dto.getKey();
 			value = dto.getValue();
 
 			if (value != null && !value.isEmpty()) {
 				/*
-				 * Search request based on Region, Vendor, Status, Model, Import Id and
-				 * Management IP
+				 * Search request based on Region, Vendor, Status, Model, Import
+				 * Id and Management IP
 				 */
 				if (key.equalsIgnoreCase("Region")) {
 					detailsList = requestDetailsImportRepo.findByRegion(value);
@@ -180,7 +206,8 @@ public class ImportFile {
 					flag = true;
 
 				} else if (key.equalsIgnoreCase("Status")) {
-					detailsList = requestDetailsImportRepo.findByImportStatus(value);
+					detailsList = requestDetailsImportRepo
+							.findByImportStatus(value);
 
 					detailsListFinal = searchImportDashboard(detailsList);
 					flag = true;
@@ -192,13 +219,15 @@ public class ImportFile {
 					flag = true;
 
 				} else if (key.equalsIgnoreCase("Import ID")) {
-					detailsList = requestDetailsImportRepo.findByImportid(value);
+					detailsList = requestDetailsImportRepo
+							.findByImportid(value);
 
 					detailsListFinal = searchImportDashboard(detailsList);
 					flag = true;
 
 				} else if (key.equalsIgnoreCase("Management IP")) {
-					detailsList = requestDetailsImportRepo.findByManagementIp(value);
+					detailsList = requestDetailsImportRepo
+							.findByManagementIp(value);
 
 					detailsListFinal = searchImportDashboard(detailsList);
 					flag = true;
@@ -222,38 +251,50 @@ public class ImportFile {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 
 		}
 
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+		return Response
+				.status(200)
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers",
+						"origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+				.header("Access-Control-Allow-Methods",
+						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj)
+				.build();
 	}
 
 	/* Method to iterate over all possible search result */
-	private List<RequestDetailsEntity> searchImportDashboard(List<RequestDetailsEntity> detailsList) {
+	private List<RequestDetailsEntity> searchImportDashboard(
+			List<RequestDetailsEntity> detailsList) {
 
 		List<RequestDetailsEntity> detailsListFinalAfterSave = new ArrayList<RequestDetailsEntity>();
 		for (int i = 0; i < detailsList.size(); i++) {
 			if (!(detailsList.get(i).getImportsource().equals("Manual"))) {
 				RequestDetailsEntity requestDetailsEntity = new RequestDetailsEntity();
 
-				requestDetailsEntity.setImportid(detailsList.get(i).getImportid());
+				requestDetailsEntity.setImportid(detailsList.get(i)
+						.getImportid());
 
 				requestDetailsEntity.setRegion(detailsList.get(i).getRegion());
 
 				requestDetailsEntity.setVendor(detailsList.get(i).getVendor());
 
 				requestDetailsEntity.setModel(detailsList.get(i).getModel());
-				requestDetailsEntity.setManagementIp(detailsList.get(i).getManagementIp());
+				requestDetailsEntity.setManagementIp(detailsList.get(i)
+						.getManagementIp());
 
-				requestDetailsEntity.setImportStatus((detailsList.get(i).getImportStatus()));
-				requestDetailsEntity.setDateofProcessing((detailsList.get(i).getDateofProcessing()));
-				requestDetailsEntity.setHostname(((detailsList.get(i).getHostname())));
-				requestDetailsEntity.setDateofProcessing((((detailsList.get(i).getRequestCreatorName()))));
+				requestDetailsEntity.setImportStatus((detailsList.get(i)
+						.getImportStatus()));
+				requestDetailsEntity.setDateofProcessing((detailsList.get(i)
+						.getDateofProcessing()));
+				requestDetailsEntity.setHostname(((detailsList.get(i)
+						.getHostname())));
+				requestDetailsEntity.setDateofProcessing((((detailsList
+						.get(i).getRequestCreatorName()))));
 
 				detailsListFinalAfterSave.add(requestDetailsEntity);
 
@@ -268,7 +309,8 @@ public class ImportFile {
 	@POST
 	@RequestMapping(value = "/fileValidation", method = RequestMethod.POST)
 	@ResponseBody
-	public Response handleFileValidation(@RequestParam("file") MultipartFile file) {
+	public Response handleFileValidation(
+			@RequestParam("file") MultipartFile file) {
 
 		JSONObject obj = new JSONObject();
 
@@ -277,12 +319,14 @@ public class ImportFile {
 			String FILE_NAME = file.getOriginalFilename();
 			/* Loading file path from properties file */
 			ImportFile.loadProperties();
-			String FILE_LOCAL_PATH = ImportFile.TSA_PROPERTIES.getProperty("importFilePath");
+			String FILE_LOCAL_PATH = ImportFile.TSA_PROPERTIES
+					.getProperty("importFilePath");
 			String fileNameAsImport = getAlphaNumericString(8);
 			/* Storing file on local system */
 			storageService.store(file, fileNameAsImport);
 			/* Updating file name with alphanumeric number */
-			String TOTAL_FILE_PATH = FILE_LOCAL_PATH.concat(fileNameAsImport.concat("_").concat(FILE_NAME));
+			String TOTAL_FILE_PATH = FILE_LOCAL_PATH.concat(fileNameAsImport
+					.concat("_").concat(FILE_NAME));
 
 			files.add(file.getOriginalFilename());
 
@@ -291,7 +335,8 @@ public class ImportFile {
 
 			ExcelFileValidation fileValidation = new ExcelFileValidation();
 
-			String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+			String extension = FilenameUtils.getExtension(file
+					.getOriginalFilename());
 
 			Resource filePath = storageService.loadFile(TOTAL_FILE_PATH);
 
@@ -310,65 +355,81 @@ public class ImportFile {
 
 			if (flag) {
 
-				String validateFileColumn = fileValidation.validateColumnXLSX(filePath);
+				String validateFileColumn = fileValidation
+						.validateColumnXLSX(filePath);
 				if (validateFileColumn.equals("Valid")) {
-					String validateNoOfRequest = fileValidation.validateNoOfRequestXLSX(filePath);
+					String validateNoOfRequest = fileValidation
+							.validateNoOfRequestXLSX(filePath);
 					if (validateNoOfRequest.equals("Valid Single Request")) {
 
 						obj.put(new String("response"), "True");
 						obj.put(new String("message"), "Valid Single Request");
 
-					} else if (validateNoOfRequest.equals("Invalid Single Request")) {
+					} else if (validateNoOfRequest
+							.equals("Invalid Single Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"),
+								"Invalid file format detected");
 
-					} else if (validateNoOfRequest.equals("Valid Multiple Request")) {
+					} else if (validateNoOfRequest
+							.equals("Valid Multiple Request")) {
 
 						obj.put(new String("response"), "True");
 						obj.put(new String("message"), "Valid Multiple Request");
-					} else if (validateNoOfRequest.equals("Invalid Multiple Request")) {
+					} else if (validateNoOfRequest
+							.equals("Invalid Multiple Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"),
+								"Invalid file format detected");
 
 					}
 
 				} else {
 
 					obj.put(new String("response"), "False");
-					obj.put(new String("message"), "Invalid file format detected");
+					obj.put(new String("message"),
+							"Invalid file format detected");
 
 				}
 			} else if (flagCSV) {
-				String validateFileColumn = fileValidation.validateColumnCSV(filePath);
+				String validateFileColumn = fileValidation
+						.validateColumnCSV(filePath);
 				if (validateFileColumn.equals("Valid")) {
-					String validateNoOfRequest = fileValidation.validateNoOfRequestCSV(filePath);
+					String validateNoOfRequest = fileValidation
+							.validateNoOfRequestCSV(filePath);
 					if (validateNoOfRequest.equals("Valid Single Request")) {
 
 						obj.put(new String("response"), "True");
 						obj.put(new String("message"), "Valid Single Request");
 
-					} else if (validateNoOfRequest.equals("Invalid Single Request")) {
+					} else if (validateNoOfRequest
+							.equals("Invalid Single Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"),
+								"Invalid file format detected");
 
-					} else if (validateNoOfRequest.equals("Valid Multiple Request")) {
+					} else if (validateNoOfRequest
+							.equals("Valid Multiple Request")) {
 
 						obj.put(new String("response"), "True");
 						obj.put(new String("message"), "Valid Multiple Request");
-					} else if (validateNoOfRequest.equals("Invalid Multiple Request")) {
+					} else if (validateNoOfRequest
+							.equals("Invalid Multiple Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"),
+								"Invalid file format detected");
 
 					}
 
 				} else {
 
 					obj.put(new String("response"), "False");
-					obj.put(new String("message"), "Invalid file format detected");
+					obj.put(new String("message"),
+							"Invalid file format detected");
 
 				}
 			}
@@ -379,17 +440,23 @@ public class ImportFile {
 			obj.put(new String("message"), "Invalid file type detected");
 
 		}
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+		return Response
+				.status(200)
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers",
+						"origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+				.header("Access-Control-Allow-Methods",
+						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj)
+				.build();
 
 	}
 
 	/* Method to properties file */
 	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
+		InputStream tsaPropFile = Thread.currentThread()
+				.getContextClassLoader()
 				.getResourceAsStream(TSA_PROPERTIES_FILE);
 
 		try {

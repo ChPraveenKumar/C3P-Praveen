@@ -17,13 +17,16 @@ public class CategoryDropDownServiceImpl implements CategoryDropDownService {
 
 	@Override
 	public List<CategoryDropDownPojo> getAll() {
-		return new CategoryDropDownResponseMapper().getAllCategoryDropDownMapper(dao.findAll());
+		return new CategoryDropDownResponseMapper()
+				.getAllCategoryDropDownMapper(dao.findAll());
 	}
 
 	@Override
 	public List<CategoryDropDownPojo> getAllByCategoryName(String categoryName) {
+		System.out.println(dao.findAllByCategoryCategoryName(categoryName).toString());
 		return new CategoryDropDownResponseMapper()
-				.getAllCategoryDropDownMapper(dao.findAllByCategoryCategoryName(categoryName));
+				.getAllCategoryDropDownMapper(dao
+						.findAllByCategoryCategoryName(categoryName));
 	}
 
 }

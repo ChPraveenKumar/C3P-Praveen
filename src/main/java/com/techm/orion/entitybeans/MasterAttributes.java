@@ -18,11 +18,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class MasterAttributes implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -7850663199291299010L;
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
@@ -50,14 +45,13 @@ public class MasterAttributes implements Serializable {
 
 	@Column(name = "series_id")
 	private String seriesId;
-
-	/*
-	 * @Column(name = "feature_id") private int featureId;
-	 */
-
-	/* Pankaj */
+	
+	/*@Column(name = "feature_id")
+	private int featureId;*/
+	
+	/*Pankaj*/
 	@ManyToOne
-	@JoinColumn(name = "feature_id")
+	@JoinColumn(name="feature_id")
 	private TemplateFeatureEntity templateFeature;
 
 	public int getId() {
@@ -147,10 +141,14 @@ public class MasterAttributes implements Serializable {
 		this.templateFeature = templateFeature;
 	}
 
-	/*
-	 * public int getFeatureId() { return featureId; }
-	 * 
-	 * public void setFeatureId(int featureId) { this.featureId = featureId; }
-	 */
+	/*public int getFeatureId() {
+		return featureId;
+	}
 
+	public void setFeatureId(int featureId) {
+		this.featureId = featureId;
+	}*/
+	
+	
+	
 }

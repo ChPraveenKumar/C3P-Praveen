@@ -81,7 +81,8 @@ public class RequestSchedulerForNewAndModify {
 		return "Request submitted Sucessfully";
 
 	}
-
+	
+	
 	public String createNewReScheduledRequestService(CreateConfigRequestDCM configRequest) throws IOException {
 
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
@@ -93,10 +94,8 @@ public class RequestSchedulerForNewAndModify {
 					Double.toString(configRequest.getRequest_version()));
 			configRequest.setRequest_parent_version(configRequestData.getRequest_parent_version());
 
-			/*
-			 * requestSchedulerDao.RunScheduledRequestUpdate(configRequest.getRequestId(),
-			 * Double.toString(configRequest.getRequest_version()));
-			 */
+			/*requestSchedulerDao.RunScheduledRequestUpdate(configRequest.getRequestId(),
+					Double.toString(configRequest.getRequest_version()));*/
 			TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest);
 			telnetCommunicationSSH.setDaemon(true);
 			telnetCommunicationSSH.start();
@@ -109,6 +108,7 @@ public class RequestSchedulerForNewAndModify {
 		return "Request submitted Sucessfully";
 
 	}
+
 
 	public String abortScheduledRequestDB(String requestId, String version) {
 

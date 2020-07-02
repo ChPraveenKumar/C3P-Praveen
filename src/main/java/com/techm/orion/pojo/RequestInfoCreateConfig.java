@@ -2,6 +2,8 @@ package com.techm.orion.pojo;
 
 import java.sql.Timestamp;
 
+import javax.xml.bind.annotation.XmlElement;
+
 public class RequestInfoCreateConfig {
 
 	private int infoId;
@@ -84,17 +86,9 @@ public class RequestInfoCreateConfig {
 	
 	private boolean startUp;
 
-	private String commissionFlag;
+	
 
 
-
-	public String getCommissionFlag() {
-		return commissionFlag;
-	}
-
-	public void setCommissionFlag(String commissionFlag) {
-		this.commissionFlag = commissionFlag;
-	}
 
 	public boolean isStartUp() {
 		return startUp;

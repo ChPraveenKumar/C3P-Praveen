@@ -16,8 +16,6 @@ import java.util.Observer;
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
@@ -35,151 +33,169 @@ import com.techm.orion.webService.GetAllDetailsService;
 @Controller
 @RequestMapping("/GetAllRequestService")
 public class GetAllRequestService implements Observer {
-	private static final Logger logger = LogManager.getLogger(GetAllRequestService.class);
-	List<ElapsedTimeFormatPojo> elapsedtimings;
+    List<ElapsedTimeFormatPojo> elapsedtimings;
 
-	@GET
-	@RequestMapping(value = "/GetAllRequests", method = RequestMethod.GET, produces = "application/json")
-	@ResponseBody
-	public Response GetAllRequests() {
-		DcmConfigService dcmConfigService = new DcmConfigService();
-		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
-		String jsonArray = "";
-		int success = 0, failure = 0;
-		SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-		List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
-		try {
-			// quick fix for json not getting serialized
+    @GET
+    @RequestMapping(value = "/GetAllRequests", method = RequestMethod.GET, produces = "application/json")
+    @ResponseBody
+    public Response GetAllRequests() {
+	DcmConfigService dcmConfigService = new DcmConfigService();
+	JSONObject obj = new JSONObject();
+	String jsonMessage = "";
+	String jsonArray = "";
+	int success = 0, failure = 0;
+	SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+	List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
+	try {
+	    // quick fix for json not getting serialized
 
-			detailsList = dcmConfigService.getAllDetails();
+	    detailsList = dcmConfigService.getAllDetails();
+	    
+	    //Constructing json object to include versioning----------------------------------------------------------------------------------------------
+	    JSONObject requestListJsonObject = new JSONObject();
+	    
+	    
+	    elapsedtimings = new ArrayList<ElapsedTimeFormatPojo>();
+	    // Logic to give number of success and filure requests
+	    for (int i = 0; i < detailsList.size(); i++) {
+		if (!StringUtils.isEmpty(detailsList.get(i).getStatus())) {
+		    if (detailsList.get(i).getStatus()
+			    .equalsIgnoreCase("Success")) {
+			success++;
+			
+			
+			//Throws null pointer exception as it does not have end date of processing!!!!!!!!!!!!!!!!!!!!!!!!!
+			
+			
+			Date d1 = null;
+			Date d2 = null;
+			d1 = format.parse(detailsList.get(i)
+				.getDateOfProcessing());
+			d2 = format.parse(detailsList.get(i)
+				.getEndDateofProcessing());
 
-			// Constructing json object to include
-			// versioning----------------------------------------------------------------------------------------------
-			JSONObject requestListJsonObject = new JSONObject();
+			detailsList.get(i).setElapsedTime(
+				getElapsedTime(d1, d2));
 
-			elapsedtimings = new ArrayList<ElapsedTimeFormatPojo>();
-			// Logic to give number of success and filure requests
-			for (int i = 0; i < detailsList.size(); i++) {
-				if (!StringUtils.isEmpty(detailsList.get(i).getStatus())) {
-					if (detailsList.get(i).getStatus().equalsIgnoreCase("Success")) {
-						success++;
-
-						// Throws null pointer exception as it does not have end date of
-						// processing!!!!!!!!!!!!!!!!!!!!!!!!!
-
-						Date d1 = null;
-						Date d2 = null;
-						d1 = format.parse(detailsList.get(i).getDateOfProcessing());
-						d2 = format.parse(detailsList.get(i).getEndDateofProcessing());
-
-						detailsList.get(i).setElapsedTime(getElapsedTime(d1, d2));
-
-					} else {
-						failure++;
-					}
-				} else {
-					failure++;
-				}
-			}
-
-			Collections.sort(elapsedtimings, new Comparator<ElapsedTimeFormatPojo>() {
-
-				@Override
-				public int compare(ElapsedTimeFormatPojo o1, ElapsedTimeFormatPojo o2) {
-					// TODO Auto-generated method stub
-					if (o1.getElapsedTimeinMinutes() > o2.getElapsedTimeinMinutes()) {
-						return -1;
-					} else if (o1.getElapsedTimeinMinutes() < o2.getElapsedTimeinMinutes()) {
-						return 1;
-					}
-					return 0;
-				}
-			});
-			Collections.reverse(detailsList);
-			jsonArray = new Gson().toJson(detailsList);
-			int hours, minutes, seconds;
-			if (elapsedtimings.size() > 0) {
-				int avgT = elapsedtimings.get(elapsedtimings.size() - 1).getElapsedTimeinMinutes()
-						+ elapsedtimings.get(0).getElapsedTimeinMinutes() / 2;
-				hours = avgT / 60; // since both are ints, you get an int
-				minutes = avgT % 60;
-				BigDecimal secondsPrecision = new BigDecimal((avgT - Math.floor(avgT)) * 100).setScale(2,
-						RoundingMode.HALF_UP);
-				seconds = secondsPrecision.intValue();
-			} else {
-				hours = 0;
-				minutes = 0;
-				seconds = 0;
-			}
-
-			obj.put(new String("output"), jsonArray);
-			obj.put("SuccessfulRequests", success);
-			obj.put("FailureRequests", failure);
-			if (elapsedtimings.size() > 0) {
-				obj.put("MinElapsedTime", elapsedtimings.get(elapsedtimings.size() - 1).getDisplayTime());
-				obj.put("MaxElapsedTime", elapsedtimings.get(0).getDisplayTime());
-			} else {
-				obj.put("MinElapsedTime", "00");
-				obj.put("MaxElapsedTime", "00");
-			}
-			obj.put("AvgElapsedTime", String.format("%02d", hours) + ":" + String.format("%02d", minutes) + ":"
-					+ String.format("%02d", seconds));
-			obj.put("TotalRequests", detailsList.size());
-		} catch (Exception e) {
-			logger.error(e);
+		    } else {
+			failure++;
+		    }
+		} else {
+		    failure++;
 		}
+	    }
 
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+	    Collections.sort(elapsedtimings,new Comparator<ElapsedTimeFormatPojo>() {
 
+		@Override
+		public int compare(ElapsedTimeFormatPojo o1, ElapsedTimeFormatPojo o2) {
+		    // TODO Auto-generated method stub
+		    if (o1.getElapsedTimeinMinutes() > o2.getElapsedTimeinMinutes()) {
+		        return -1;
+		    } else if (o1.getElapsedTimeinMinutes() < o2.getElapsedTimeinMinutes()) {
+		        return 1;
+		    }
+		    return 0;
+		}
+	    });
+	    Collections.reverse(detailsList);
+	    jsonArray = new Gson().toJson(detailsList);
+	    int hours,minutes,seconds;
+	    if(elapsedtimings.size()>0)
+	    {
+	    int avgT=elapsedtimings.get(elapsedtimings.size() - 1).getElapsedTimeinMinutes()+elapsedtimings.get(0).getElapsedTimeinMinutes()/2;
+	    hours = avgT / 60; //since both are ints, you get an int
+	    minutes =avgT % 60;
+	    BigDecimal secondsPrecision = new BigDecimal((avgT - Math.floor(avgT)) * 100).setScale(2, RoundingMode.HALF_UP);
+	    seconds = secondsPrecision.intValue();
+	    }
+	    else
+	    {
+	    	hours=0;
+	    	minutes=0;
+	    	seconds=0;
+	    }
+	   
+
+	    obj.put(new String("output"), jsonArray);
+	    obj.put("SuccessfulRequests", success);
+	    obj.put("FailureRequests", failure);
+	    if(elapsedtimings.size()>0)
+	    {
+	    obj.put("MinElapsedTime", elapsedtimings.get(elapsedtimings.size() - 1).getDisplayTime());
+	    obj.put("MaxElapsedTime",
+		    elapsedtimings.get(0).getDisplayTime());
+	    }
+	    else
+	    {
+	    	 obj.put("MinElapsedTime", "00");
+	 	    obj.put("MaxElapsedTime",
+	 		   "00");
+	    }
+	    obj.put("AvgElapsedTime",String.format("%02d", hours)+":"+String.format("%02d", minutes)+":"+ String.format("%02d", seconds));
+	    obj.put("TotalRequests", detailsList.size());
+	} catch (Exception e) {
+	    System.out.println(e);
 	}
 
-	private String getElapsedTime(Date d1, Date d2) {
-		String elapsedtime = null;
-		// in milliseconds
-		long diff = d2.getTime() - d1.getTime();
+	return Response
+		.status(200)
+		.header("Access-Control-Allow-Origin", "*")
+		.header("Access-Control-Allow-Headers",
+			"origin, content-type, accept, authorization")
+		.header("Access-Control-Allow-Credentials", "true")
+		.header("Access-Control-Allow-Methods",
+			"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+		.header("Access-Control-Max-Age", "1209600").entity(obj)
+		.build();
 
-		long diffSeconds = diff / 1000 % 60;
-		long diffMinutes = diff / (60 * 1000) % 60;
-		long diffHours = diff / (60 * 60 * 1000) % 24;
-		long diffDays = diff / (24 * 60 * 60 * 1000);
+    }
 
-		long daymin = diffDays * 1440;
-		long hourmin = diffHours * 60;
-		long secmin = (long) (diffSeconds * 0.016);
-		long totalMins = daymin + hourmin + diffMinutes + secmin;
+    private String getElapsedTime(Date d1, Date d2) {
+	String elapsedtime = null;
+	// in milliseconds
+	long diff = d2.getTime() - d1.getTime();
 
-		long dayTohours = diffDays * 24;
+	long diffSeconds = diff / 1000 % 60;
+	long diffMinutes = diff / (60 * 1000) % 60;
+	long diffHours = diff / (60 * 60 * 1000) % 24;
+	long diffDays = diff / (24 * 60 * 60 * 1000);
+	
+	
+	long daymin = diffDays * 1440;
+	long hourmin = diffHours * 60;
+	long secmin = (long) (diffSeconds * 0.016);
+	long totalMins = daymin + hourmin + diffMinutes + secmin;
 
-		DecimalFormat formatter = new DecimalFormat("00");
-		String sec = formatter.format(diffSeconds);
-		String min = formatter.format(diffMinutes);
-		String hrs = formatter.format(diffHours + dayTohours);
+	long dayTohours=diffDays * 24;
+	
+	DecimalFormat formatter = new DecimalFormat("00");
+	String sec = formatter.format(diffSeconds);
+	String min = formatter.format(diffMinutes);
+	String hrs = formatter.format(diffHours+dayTohours);
+	
+	elapsedtime = hrs+":"+min+":"+sec;
+	
+	ElapsedTimeFormatPojo time=new ElapsedTimeFormatPojo();
+	time.setDisplayTime(elapsedtime);
+	time.setElapsedTimeinMinutes((int)totalMins);
+	elapsedtimings.add(time);
+	return elapsedtime;
+    }
 
-		elapsedtime = hrs + ":" + min + ":" + sec;
+    public String getProcessId(CreateConfigRequestDCM configRequest)
+	    throws IOException {
 
-		ElapsedTimeFormatPojo time = new ElapsedTimeFormatPojo();
-		time.setDisplayTime(elapsedtime);
-		time.setElapsedTimeinMinutes((int) totalMins);
-		elapsedtimings.add(time);
-		return elapsedtime;
-	}
+	GetAllDetailsService gads = new GetAllDetailsService();
+	String requestIdForProcess = gads
+		.createProcessForConfiguration(configRequest);
 
-	public String getProcessId(CreateConfigRequestDCM configRequest) throws IOException {
+	return requestIdForProcess;
+    }
 
-		GetAllDetailsService gads = new GetAllDetailsService();
-		String requestIdForProcess = gads.createProcessForConfiguration(configRequest);
+    @Override
+    public void update(Observable arg0, Object arg1) {
+	// TODO Auto-generated method stub
 
-		return requestIdForProcess;
-	}
-
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
-
-	}
+    }
 }

@@ -4,8 +4,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+
 import com.techm.orion.entitybeans.SiteInfoEntity;
 
 @Repository
@@ -23,15 +22,7 @@ public interface SiteInfoRepository extends JpaRepository<SiteInfoEntity, Long> 
 	SiteInfoEntity findCSiteIdByCSiteName(String siteName);
 	
 	List<SiteInfoEntity> findCSiteIdByCCustNameAndCSiteRegionAndCSiteName(String customer, String region, String site);
-
-	@Query("SELECT distinct cCustName FROM SiteInfoEntity ")
-	List<SiteInfoEntity> findCustomerDetails();
 	
-	@Query("SELECT distinct concat(substring(cSiteRegion, 1, 3), '-',cSiteName) as cSiteName FROM SiteInfoEntity where "
-			+ "cCustName IN (:cCustName) AND  cSiteRegion IN (:cSiteRegion)")
-	List<SiteInfoEntity> findSitesDetails(@Param("cCustName") List cCustName , @Param("cSiteRegion") List cSiteRegion);
 	
-	@Query("SELECT distinct cSiteRegion FROM SiteInfoEntity where cCustName IN (:cCustName)")
-	List<SiteInfoEntity> findRegionDetails(@Param("cCustName") List cCustName);		
 	
 }

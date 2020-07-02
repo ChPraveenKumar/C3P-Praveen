@@ -9,8 +9,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -20,158 +18,214 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.entitybeans.TestDetail;
+import com.techm.orion.pojo.AlertInformationPojo;
 import com.techm.orion.pojo.FirmwareUpgradeDetail;
+import com.techm.orion.pojo.RequestInfoSO;
+import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.utility.ExcelToJSONConverter;
+import com.techm.orion.utility.HealthCheckReport;
+import com.techm.orion.utility.PingTest;
+import com.techm.orion.utility.ShowCPUUsage;
+import com.techm.orion.utility.ShowInventoryTest;
+import com.techm.orion.utility.ShowMemoryTest;
+import com.techm.orion.utility.ShowPowerTest;
+import com.techm.orion.utility.ShowVersionTest;
 import com.techm.orion.utility.XMLToJSONConverter;
 
 @Controller
 @RequestMapping("/GetAllXMLData")
 public class GetXMLDataService implements Observer {
-	private static final Logger logger = LogManager.getLogger(GetXMLDataService.class);
 
-	@POST
-	@RequestMapping(value = "/get", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+
+    	@POST
+    	@RequestMapping(value = "/get",method = RequestMethod.POST,consumes = "application/json", produces = "application/json")
+    	
 	@ResponseBody
-	public Response getAll(@RequestBody String requestParams) {
+    public Response getAll(@RequestBody String requestParams) {
 
-		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
-		String jsonArray = "";
-		// RequestInfoSO requestObj=null;
-		String value = "";
-		JSONObject flags = new JSONObject();
+	JSONObject obj = new JSONObject();
+	String jsonMessage = "";
+	String jsonArray="";
+	//RequestInfoSO requestObj=null;
+	String value="";
+	JSONObject flags=new JSONObject();
 
-		org.json.JSONObject resultJSON = null;
-		try {
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(requestParams);
-			if (json.containsKey("orderID")) {
-				XMLToJSONConverter xmlReader = new XMLToJSONConverter();
-				value = json.get("orderID").toString();
-				resultJSON = xmlReader.getDataForOrder(value);
+	org.json.JSONObject resultJSON=null;
+	try {
+		JSONParser parser = new JSONParser(); 
+		JSONObject json = (JSONObject) parser.parse(requestParams);
+		if(json.containsKey("orderID"))
+		{
+			XMLToJSONConverter xmlReader= new XMLToJSONConverter();
+			 value=json.get("orderID").toString();
+			 resultJSON=xmlReader.getDataForOrder(value);
 
-			}
+		}
+		
+		
+		if(resultJSON==null)
+		{
+			 obj.put(new String("output"), "");
+			 obj.put(new String("errormessage"), "Invalid order id");
+			 obj.put(new String("status"), false);
 
-			if (resultJSON == null) {
-				obj.put(new String("output"), "");
-				obj.put(new String("errormessage"), "Invalid order id");
-				obj.put(new String("status"), false);
 
-			} else {
-				org.json.JSONObject interfaceandroutingobject = resultJSON.getJSONObject("interfaceRoutingInfo");
-				org.json.JSONObject routingobject = new org.json.JSONObject();
-				org.json.JSONObject waninterfaceobject = new org.json.JSONObject();
-				org.json.JSONObject vpnobject = new org.json.JSONObject();
-				org.json.JSONObject loopbackobject = new org.json.JSONObject();
-				org.json.JSONObject snmpobject = new org.json.JSONObject();
-				org.json.JSONObject enablepasswordobject = new org.json.JSONObject();
-				org.json.JSONObject bannerobject = new org.json.JSONObject();
-				org.json.JSONObject informationObject = new org.json.JSONObject();
-				org.json.JSONObject lanInterfaceObjectS = new org.json.JSONObject();
-				if (interfaceandroutingobject.length() > 0) {
-					routingobject = interfaceandroutingobject.getJSONObject("routing");
-					if (routingobject.length() > 0) {
-						flags.put("routingObj", true);
-					} else {
-						flags.put("routingObj", false);
-					}
-					waninterfaceobject = interfaceandroutingobject.getJSONObject("wanInterface");
-					if (waninterfaceobject.length() > 0) {
-						flags.put("wanInterfaceObj", true);
 
-					} else {
-						flags.put("wanInterfaceObj", false);
-
-					}
-					vpnobject = interfaceandroutingobject.getJSONObject("vpn");
-					if (vpnobject.length() > 0) {
-						flags.put("vpnObj", true);
-
-					} else {
-						flags.put("vpnObj", false);
-
-					}
-					loopbackobject = interfaceandroutingobject.getJSONObject("loopbackInterface");
-					if (loopbackobject.length() > 0) {
-						flags.put("loopbackInt", true);
-
-					} else {
-						flags.put("loopbackInt", false);
-
-					}
-
-					snmpobject = interfaceandroutingobject.getJSONObject("snmp");
-					if (snmpobject.length() > 0) {
-						flags.put("snmp", true);
-
-					} else {
-						flags.put("snmp", false);
-
-					}
-					int enablepasswordobjectS = 0;
-					enablepasswordobjectS = interfaceandroutingobject.getInt("enablePassword");
-					if (enablepasswordobjectS != 0) {
-						flags.put("enablePassword", true);
-
-					} else {
-						flags.put("enablePassword", false);
-
-					}
-					String bannerobjectS = interfaceandroutingobject.getString("banner");
-					if (!bannerobjectS.isEmpty()) {
-						flags.put("banner", true);
-
-					} else {
-						flags.put("banner", false);
-
-					}
-					lanInterfaceObjectS = interfaceandroutingobject.getJSONObject("lanInterface");
-					if (lanInterfaceObjectS.length() > 0) {
-						flags.put("lanInterface", true);
-
-					} else {
-						flags.put("lanInterface", false);
-
-					}
-
-					interfaceandroutingobject.put("InformationStatus", flags);
-
-				} else {
+		}
+		else
+		{
+			org.json.JSONObject interfaceandroutingobject=resultJSON.getJSONObject("interfaceRoutingInfo");
+			org.json.JSONObject routingobject=new org.json.JSONObject();
+			org.json.JSONObject  waninterfaceobject=new org.json.JSONObject();
+			org.json.JSONObject  vpnobject=new org.json.JSONObject();
+			org.json.JSONObject  loopbackobject=new org.json.JSONObject();
+			org.json.JSONObject  snmpobject=new org.json.JSONObject();
+			org.json.JSONObject  enablepasswordobject=new org.json.JSONObject();
+			org.json.JSONObject  bannerobject=new org.json.JSONObject();
+			org.json.JSONObject  informationObject=new org.json.JSONObject();
+			org.json.JSONObject lanInterfaceObjectS=new org.json.JSONObject();
+			if(interfaceandroutingobject.length()>0)
+			{
+				routingobject=interfaceandroutingobject.getJSONObject("routing");
+				if(routingobject.length()>0)
+				{
+					flags.put("routingObj", true);
+				}
+				else
+				{
 					flags.put("routingObj", false);
-					flags.put("wanInterfaceObj", false);
-					flags.put("vpnObj", false);
-					flags.put("loopbackInt", false);
-					flags.put("snmp", false);
-					flags.put("enablePassword", false);
-					flags.put("banner", false);
-					flags.put("lanInterface", false);
-					interfaceandroutingobject.put("InformationStatus", flags);
+				}
+				waninterfaceobject=interfaceandroutingobject.getJSONObject("wanInterface");
+				if(waninterfaceobject.length()>0)
+				{
+					flags.put("wanInterfaceObj", true);
 
 				}
+				else
+				{
+					flags.put("wanInterfaceObj", false);
 
-				obj.put(new String("output"), resultJSON.toString());
-				obj.put(new String("errormessage"), "");
-				obj.put(new String("status"), true);
+				}
+				vpnobject=interfaceandroutingobject.getJSONObject("vpn");
+				if(vpnobject.length()>0)
+				{
+					flags.put("vpnObj", true);
+
+				}
+				else
+				{
+					flags.put("vpnObj", false);
+
+				}
+				loopbackobject=interfaceandroutingobject.getJSONObject("loopbackInterface");
+				if(loopbackobject.length()>0)
+				{
+					flags.put("loopbackInt", true);
+
+				}
+				else
+				{
+					flags.put("loopbackInt", false);
+
+				}
+				
+				snmpobject=interfaceandroutingobject.getJSONObject("snmp");
+				if(snmpobject.length()>0)
+				{
+					flags.put("snmp", true);
+
+				}
+				else
+				{
+					flags.put("snmp", false);
+
+				}
+				int enablepasswordobjectS=0;
+				enablepasswordobjectS=interfaceandroutingobject.getInt("enablePassword");
+				if(enablepasswordobjectS!=0)
+				{
+					flags.put("enablePassword", true);
+
+				}
+				else
+				{
+					flags.put("enablePassword", false);
+
+				}
+				String bannerobjectS=interfaceandroutingobject.getString("banner");
+				if(!bannerobjectS.isEmpty())
+				{
+					flags.put("banner", true);
+
+				}
+				else
+				{
+					flags.put("banner", false);
+
+				}
+				lanInterfaceObjectS=interfaceandroutingobject.getJSONObject("lanInterface");
+				if(lanInterfaceObjectS.length()>0)
+				{
+					flags.put("lanInterface", true);
+
+				}
+				else
+				{
+					flags.put("lanInterface", false);
+
+				}
+				
+				interfaceandroutingobject.put("InformationStatus", flags);
 
 			}
-			logger.info("JSON" + value);
+			else
+			{
+				flags.put("routingObj", false);
+				flags.put("wanInterfaceObj", false);
+				flags.put("vpnObj", false);
+				flags.put("loopbackInt", false);
+				flags.put("snmp", false);
+				flags.put("enablePassword", false);
+				flags.put("banner", false);
+				flags.put("lanInterface", false);
+				interfaceandroutingobject.put("InformationStatus", flags);
 
+			}
+			
+			 obj.put(new String("output"),resultJSON.toString());
+			 obj.put(new String("errormessage"), "");
+			 obj.put(new String("status"), true);
+
+		}
+		 System.out.println("JSON"+value);
+	    
 		} catch (Exception e) {
-			logger.error(e);
+		    System.out.println(e);
 		}
 
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-	}
-
-	@GET
-	@RequestMapping(value = "/get", method = RequestMethod.GET, produces = "application/json")
-	public @ResponseBody JSONObject getAllOSUpgrade(@RequestParam String ipaddress, String zipcode) {
+	return Response
+		.status(200)
+		.header("Access-Control-Allow-Origin", "*")
+		.header("Access-Control-Allow-Headers",
+			"origin, content-type, accept, authorization")
+		.header("Access-Control-Allow-Credentials", "true")
+		.header("Access-Control-Allow-Methods",
+			"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+		.header("Access-Control-Max-Age", "1209600").entity(obj)
+		.build();
+    }
+    	
+    	@GET
+        @RequestMapping(value = "/get",method = RequestMethod.GET, produces = "application/json")
+        public @ResponseBody JSONObject getAllOSUpgrade(@RequestParam String ipaddress,String zipcode) {
 
 		JSONObject obj = new JSONObject();
 		String jsonMessage = "";
@@ -188,114 +242,131 @@ public class GetXMLDataService implements Observer {
 			JSONArray csrarray = new JSONArray();
 			csrarray = resultJSON.getJSONArray("CSR");
 
-			if (csrarray.length() > 0) {
+			if(csrarray.length()>0)
+			{
 				obj.put(new String("output"), csrarray.toString());
 				obj.put(new String("errormessage"), "");
 				obj.put(new String("status"), true);
 
-			} else {
+			}
+			else
+			{
 				obj.put(new String("output"), "");
-				obj.put(new String("errormessage"), "Records not found.");
+				obj.put(new String("errormessage"),
+						"Records not found.");
 				obj.put(new String("status"), false);
 			}
+			
+			
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return obj;
 
-	}
+        }
+    	@SuppressWarnings({ "null", "unchecked" })
+    	@POST
+    	@RequestMapping(value = "/getDeviceDetail", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    	public Response getTestnamesAndVersionList(@RequestBody String request)
+    			throws ParseException {
 
-	@SuppressWarnings({ "null", "unchecked" })
-	@POST
-	@RequestMapping(value = "/getDeviceDetail", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response getTestnamesAndVersionList(@RequestBody String request) throws ParseException {
+    		JSONObject obj = new JSONObject();
 
-		JSONObject obj = new JSONObject();
+    		String vendorName = "";
+    		String[] testNameFinal = null;
 
-		String vendorName = "";
-		String[] testNameFinal = null;
+    		JSONParser parser = new JSONParser();
 
-		JSONParser parser = new JSONParser();
+    		JSONObject json = (JSONObject) parser.parse(request);
 
-		JSONObject json = (JSONObject) parser.parse(request);
+    		vendorName = (String) json.get("vendor");
+    		
+    		List<FirmwareUpgradeDetail> mainList = new ArrayList<FirmwareUpgradeDetail>();
+    
 
-		vendorName = (String) json.get("vendor");
+    		RequestInfoDao dao = new RequestInfoDao();
+    		JSONArray array;
 
-		List<FirmwareUpgradeDetail> mainList = new ArrayList<FirmwareUpgradeDetail>();
+    		mainList = dao.findByVendorName(vendorName);
 
-		RequestInfoDao dao = new RequestInfoDao();
-		JSONArray array;
+    		String isCheck = null, secondCheck = null;
+    		int count = 0;
+    		JSONArray arrayElementOneArray = new JSONArray();
 
-		mainList = dao.findByVendorName(vendorName);
+    		for (int i = 0; i < mainList.size(); i++) {
+    			JSONObject arrayElementOneArrayElementTwo = new JSONObject();
+    			String[] testNameToSetArr = mainList.get(i).getVendor()
+    					.split("_");
 
-		String isCheck = null, secondCheck = null;
-		int count = 0;
-		JSONArray arrayElementOneArray = new JSONArray();
+    			obj.put("combination", testNameToSetArr[0]);
+    			
+    			if(testNameToSetArr.length>=3)
+    			{
+    			isCheck = testNameToSetArr[1]+"_"+testNameToSetArr[2];
+    			}
+    			else
+    			{
+    				isCheck = testNameToSetArr[1];
+    			}
+    			if (isCheck.equals(secondCheck) || isCheck == null) {
 
-		for (int i = 0; i < mainList.size(); i++) {
-			JSONObject arrayElementOneArrayElementTwo = new JSONObject();
-			String[] testNameToSetArr = mainList.get(i).getVendor().split("_");
+    				continue;
 
-			obj.put("combination", testNameToSetArr[0]);
+    			}
 
-			if (testNameToSetArr.length >= 3) {
-				isCheck = testNameToSetArr[1] + "_" + testNameToSetArr[2];
-			} else {
-				isCheck = testNameToSetArr[1];
-			}
-			if (isCheck.equals(secondCheck) || isCheck == null) {
+    			else if (count > 0) {
 
-				continue;
+    				JSONObject arrayElementOneArrayElementOne = new JSONObject();
+    				array = new JSONArray();
+    				arrayElementOneArrayElementOne.put("TestName", isCheck);
 
-			}
+    				mainList = dao.findByVendorName(vendorName);
+    				for (int i1 = 0; i1 < mainList.size(); i1++) {
+    					 //array.add(mainList.get(i1).getOs_version());
+    				}
+    				arrayElementOneArrayElementOne.put("versions", array);
 
-			else if (count > 0) {
+    				secondCheck = isCheck;
+    				//arrayElementOneArray.add(arrayElementOneArrayElementOne);
+    				
+    			} else {
+    				array = new JSONArray();
+    				arrayElementOneArrayElementTwo.put("TestName", isCheck);
+    				
+    				mainList = dao.findByVendorName(vendorName);
+    				for (int i1 = 0; i1 < mainList.size(); i1++) {
+    					//array.add(mainList.get(i1).getOs_version());
+    				}
 
-				JSONObject arrayElementOneArrayElementOne = new JSONObject();
-				array = new JSONArray();
-				arrayElementOneArrayElementOne.put("TestName", isCheck);
+    				arrayElementOneArrayElementTwo.put("versions", array);
+    				secondCheck = isCheck;
+    				count++;
+    				//arrayElementOneArray.add(arrayElementOneArrayElementTwo);
+    			}
 
-				mainList = dao.findByVendorName(vendorName);
-				for (int i1 = 0; i1 < mainList.size(); i1++) {
-					// array.add(mainList.get(i1).getOs_version());
-				}
-				arrayElementOneArrayElementOne.put("versions", array);
+    		
+    		}
+    		obj.put("testNameList", arrayElementOneArray);
 
-				secondCheck = isCheck;
-				// arrayElementOneArray.add(arrayElementOneArrayElementOne);
+    		return Response
+    				.status(200)
+    				.header("Access-Control-Allow-Origin", "*")
+    				.header("Access-Control-Allow-Headers",
+    						"origin, content-type, accept, authorization")
+    				.header("Access-Control-Allow-Credentials", "true")
+    				.header("Access-Control-Allow-Methods",
+    						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+    				.header("Access-Control-Max-Age", "1209600").entity(obj)
+    				.build();
 
-			} else {
-				array = new JSONArray();
-				arrayElementOneArrayElementTwo.put("TestName", isCheck);
+    	}
 
-				mainList = dao.findByVendorName(vendorName);
-				for (int i1 = 0; i1 < mainList.size(); i1++) {
-					// array.add(mainList.get(i1).getOs_version());
-				}
+    @Override
+    public void update(Observable o, Object arg) {
+	// TODO Auto-generated method stub
 
-				arrayElementOneArrayElementTwo.put("versions", array);
-				secondCheck = isCheck;
-				count++;
-				// arrayElementOneArray.add(arrayElementOneArrayElementTwo);
-			}
-
-		}
-		obj.put("testNameList", arrayElementOneArray);
-
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-
-	}
-
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-
-	}
+    }
 
 }

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 /*Class to store uploaded file on local drive/system*/
@@ -19,15 +20,17 @@ public class StorageService {
 
 	Logger log = LoggerFactory.getLogger(this.getClass().getName());
 	/* Root location to store file on system */
-	private final Path rootLocation = Paths.get("D:/configuration_files/ImportedFiles/");
+	private final Path rootLocation = Paths
+			.get("D:/configuration_files/ImportedFiles/");
 
 	/* Method call to store file */
 	public void store(MultipartFile file, String fileNameAsImport) {
 
 		try {
 
-			Files.copy(file.getInputStream(),
-					this.rootLocation.resolve(fileNameAsImport.concat("_").concat(file.getOriginalFilename())));
+			Files.copy(file.getInputStream(), this.rootLocation
+					.resolve(fileNameAsImport.concat("_").concat(
+							file.getOriginalFilename())));
 
 		} catch (Exception e) {
 

@@ -1,69 +1,85 @@
 package com.techm.orion.rest;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.LineNumberReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.UUID;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
-import com.techm.orion.entitybeans.BatchIdEntity;
-import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.dao.TemplateManagementDao;
+import com.techm.orion.entitybeans.DeviceInterfaceEntity;
+import com.techm.orion.entitybeans.InternetInfoEntity;
 import com.techm.orion.entitybeans.RequestDetailsBackUpAndRestoreEntity;
 import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
-import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.VendorDetails;
 import com.techm.orion.models.BackUpRequestVersioningJSONModel;
-import com.techm.orion.pojo.BatchPojo;
+import com.techm.orion.models.TemplateVersioningJSONModel;
+import com.techm.orion.pojo.AttribCreateConfigPojo;
+import com.techm.orion.pojo.CreateConfigPojo;
+import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
-import com.techm.orion.pojo.Global;
-import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.SearchParamPojo;
-import com.techm.orion.repositories.BatchInfoRepo;
-import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.DeviceInterfaceRepo;
 import com.techm.orion.repositories.InternetInfoRepo;
 import com.techm.orion.repositories.RequestDetailsBackUpAndRestoreRepo;
 import com.techm.orion.repositories.RequestDetailsImportRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.RouterVfRepo;
-import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.VendorDetailsRepository;
 import com.techm.orion.repositories.WebServiceRepo;
+import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.service.ErrorCodeValidationDeliveryTest;
+import com.techm.orion.service.TemplateManagementDetailsService;
+import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.TextReport;
 
 @Controller
 @RequestMapping("/BackUpConfigurationAndTest")
 public class BackUpAndRestoreController {
-	
-	private static final Logger logger = LogManager.getLogger(BackUpAndRestoreController.class);
-	
+
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -95,25 +111,10 @@ public class BackUpAndRestoreController {
 
 	@Autowired
 	ConfigMngmntService myObj;
-	
-
-	
-	
-	@Autowired
-	public DeviceDiscoveryRepository deviceDiscoveryRepository;
 
 	@Autowired
 	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
-
-	@Autowired
-	RequestInfoDao dao;
-
-	@Autowired
-	public BatchInfoRepo batchInfoRepo;
-
-	@Autowired
-	public SiteInfoRepository siteInfoRepository;
-
+	
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getVendorCheck", method = RequestMethod.POST, produces = "application/json")
@@ -145,7 +146,7 @@ public class BackUpAndRestoreController {
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return Response.status(200).entity(str).build();
@@ -183,7 +184,7 @@ public class BackUpAndRestoreController {
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return Response.status(200).entity(str).build();
@@ -279,7 +280,7 @@ public class BackUpAndRestoreController {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return Response
@@ -334,7 +335,7 @@ public class BackUpAndRestoreController {
 			str = "Baseline version reset successfully";
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return Response.status(200).entity(str).build();
@@ -347,12 +348,18 @@ public class BackUpAndRestoreController {
 			@RequestBody String configRequest) {
 
 		JSONObject obj = new JSONObject();
-		String hostName = "", managementIp = "", scheduledTime = "", alphaneumeric_req_id = "";
+		String hostName = "", managementIp = "",scheduledTime="";
 		Boolean startup;
+		
+	
+		int requestInfoId = 0;
+		List<RequestInfoEntity> requestDetail = null;
+		List<RequestInfoEntity> requestDetail1 = null;
+		List<RequestInfoEntity> requestDetail2 = null;
 
-		List<DeviceDiscoveryEntity> requestDetail = null;
+		InternetInfoEntity internetRequestDetail = null;
 
-		Timestamp timestamp = null;
+		DeviceInterfaceEntity deviceInterfaceDetail = null;
 
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -366,80 +373,121 @@ public class BackUpAndRestoreController {
 
 			hostName = json.get("hostname").toString();
 			managementIp = json.get("managementIp").toString();
+			
+			scheduledTime= json.get("scheduleDate").toString();
+			
+			
 
-			scheduledTime = json.get("scheduleDate").toString();
+			requestDetail1 = requestInfoDetailsRepositories
+					.findByHostNameAndManagmentIP(hostName, managementIp);
 
-			requestDetail = deviceDiscoveryRepository
-					.findByDHostNameAndDMgmtIp(hostName, managementIp);
+			int requestinfoid = 0;
+
+			for (int i = 0; i < requestDetail1.size(); i++) {
+
+				requestinfoid = requestDetail1.get(i).getInfoId();
+
+			}
+
+			requestDetail = requestInfoDetailsRepositories
+					.findByInfoId(requestinfoid);
+			
 
 			for (int i = 0; i < requestDetail.size(); i++) {
 
-				RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
+				requestInfoId = requestDetail.get(i).getInfoId();
 
-				requestInfoEntity.setRequestType("SLGB");
-				alphaneumeric_req_id = "SLGB-"
-						+ UUID.randomUUID().toString().toUpperCase()
-								.substring(0, 7);
-				requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
+				configReqToSendToC3pCode.setRequestType("SLGB");
+				configReqToSendToC3pCode.setNetworkType(requestDetail.get(i).getNetworkType());
 
+				configReqToSendToC3pCode.setTemplateID(requestDetail.get(i)
+						.getTemplateUsed());
+
+				configReqToSendToC3pCode.setCustomer(requestDetail.get(i)
+						.getCustomer());
+				configReqToSendToC3pCode.setSiteid(requestDetail.get(i)
+						.getSiteId());
 				Boolean isStartUp = (Boolean) json.get("startup");
-				requestInfoEntity.setStartUp(isStartUp);
-				LocalDateTime nowDate = LocalDateTime.now();
-				timestamp = Timestamp.valueOf(nowDate);
-				requestInfoEntity.setDateofProcessing(timestamp);
+				configReqToSendToC3pCode.setIsStartUp(isStartUp);
+				
+				configReqToSendToC3pCode.setRequestType_Flag(requestDetail.get(i).getRequestTypeFlag());
+				
+				configReqToSendToC3pCode.setDeviceType(requestDetail.get(i)
+						.getDeviceType());
+				configReqToSendToC3pCode.setModel(requestDetail.get(i)
+						.getModel());
+				configReqToSendToC3pCode.setOs(requestDetail.get(i).getOs());
 
-				requestInfoEntity.setBatchId(null);
+				configReqToSendToC3pCode.setOsVersion(requestDetail.get(i)
+						.getOsVersion());
+				configReqToSendToC3pCode.setService(requestDetail.get(i).getService());
 
-				requestInfoEntity.setCustomer(requestDetail.get(i)
-						.getCustSiteId().getcCustName());
+				configReqToSendToC3pCode.setSiteName(requestDetail.get(i).getSiteName());
+				
 
-				requestInfoEntity.setSiteId(requestDetail.get(i)
-						.getCustSiteId().getcSiteId());
+				configReqToSendToC3pCode.setManagementIp(requestDetail.get(i)
+						.getManagmentIP());
 
-				requestInfoEntity
-						.setDeviceType(requestDetail.get(i).getdType());
+			
 
-				requestInfoEntity.setModel(requestDetail.get(i).getdModel());
+				configReqToSendToC3pCode.setRequest_creator_name(requestDetail
+						.get(i).getRequestOwnerName());
 
-				requestInfoEntity.setOs(requestDetail.get(i).getdOs());
 
-				requestInfoEntity.setOsVersion(requestDetail.get(i)
-						.getdOsVersion());
-
-				requestInfoEntity.setManagmentIP(requestDetail.get(i)
-						.getdMgmtIp());
-
-				requestInfoEntity.setRegion(requestDetail.get(i)
-						.getCustSiteId().getcSiteRegion());
-
-				requestInfoEntity.setService(requestDetail.get(i)
-						.getdVNFSupport());
-
-				requestInfoEntity.setHostName(requestDetail.get(i)
-						.getdHostName());
-
-				requestInfoEntity.setVendor(requestDetail.get(i).getdVendor());
-
-				requestInfoEntity.setNetworkType(requestDetail.get(i)
-						.getdVNFSupport());
-
-				requestInfoEntity.setRequestVersion(1.0);
-
-				requestInfoEntity.setSiteName(requestDetail.get(i)
-						.getCustSiteId().getcSiteName());
-				requestInfoEntity.setCertificationSelectionBit("1010011");
-				requestInfoEntity.setRequestParentVersion(1.0);
-				requestInfoEntity.setRequestTypeFlag("M");
-
-				requestInfoEntity.setRequestCreatorName("admin");
-
-				if (!(scheduledTime.isEmpty())) {
-					requestInfoEntity.setBackUpScheduleTime(scheduledTime);
+				configReqToSendToC3pCode.setRegion(requestDetail.get(i)
+						.getRegion());
+				configReqToSendToC3pCode.setService(requestDetail.get(i)
+						.getService());
+				configReqToSendToC3pCode.setHostname(requestDetail.get(i)
+						.getHostName());
+			
+				configReqToSendToC3pCode.setVendor(requestDetail.get(i)
+						.getVendor());
+			
+				configReqToSendToC3pCode.setRequest_version(1.0);
+				
+				configReqToSendToC3pCode.setRequest_creator_name(requestDetail.get(i).getRequestCreatorName());
+				
+				configReqToSendToC3pCode.setRequest_parent_version(1.0);
+				configReqToSendToC3pCode.setStatus(requestDetail.get(i).getStatus());
+				configReqToSendToC3pCode.setFamily(requestDetail.get(i).getFamily());
+				configReqToSendToC3pCode.setDateofProcessing(requestDetail.get(i).getDateofProcessing());
+				
+				if(!(scheduledTime.isEmpty()))
+				{
+				configReqToSendToC3pCode.setBackUpScheduleTime(scheduledTime);
 				}
 				String jsonString = mapper
-						.writeValueAsString(requestInfoEntity);
+						.writeValueAsString(configReqToSendToC3pCode);
 
 				obj = myObj.createConfigurationDcm(jsonString);
+
+				requestDetail2 = requestInfoDetailsRepositories
+						.findByHostNameAndManagmentIP(hostName, managementIp);
+
+				for (int i1 = 0; i1 < requestDetail2.size(); i1++) {
+
+					String type = requestDetail2
+							.get(i1)
+							.getAlphanumericReqId()
+							.substring(
+									0,
+									Math.min(requestDetail2.get(i1)
+											.getAlphanumericReqId().length(), 4));
+
+					if (type.equals("SLGB")
+							&& (!(requestDetail2.get(i1).getIsBaselineFlag()))) {
+						requestDetail2.get(i1).setIsBaselineFlag(true);
+						requestInfoDetailsRepositories.save(requestDetail2);
+
+						break;
+
+					} else if (type.equals("SLGB")
+							&& ((requestDetail2.get(i1).getIsBaselineFlag()))) {
+						break;
+					}
+
+				}
 
 				obj.put("output", "Backup Request created successfully");
 
@@ -545,7 +593,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 
 		}
 
@@ -647,460 +695,10 @@ public class BackUpAndRestoreController {
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return versioningModel;
 
 	}
-
-	@POST
-	@RequestMapping(value = "/batchBackUpAndRestore", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public JSONObject batchBackUpAndRestore(@RequestBody String configRequest) {
-
-		JSONObject obj = new JSONObject();
-		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "";
-
-		Map<String, String> result = new HashMap<String, String>();
-
-		List<DeviceDiscoveryEntity> requestDetail = null;
-		List<SiteInfoEntity> requestDetail1 = null;
-
-		BatchIdEntity batchIdEntity = new BatchIdEntity();
-
-		String tempHostName = null;
-		Double request_version = 1.0;
-		;
-		boolean tempStartUp = false;
-		Timestamp timestamp = null;
-
-		RequestInfoPojo requestInfoPojo = new RequestInfoPojo();
-		final String batchId = "BI-"
-				+ UUID.randomUUID().toString().toUpperCase().substring(0, 7);
-
-		try {
-
-			Gson gson = new Gson();
-
-			BatchPojo[] userArray = gson.fromJson(configRequest,
-					BatchPojo[].class);
-
-			for (int j = 0; j < userArray.length; j++) {
-
-				tempHostName = userArray[j].getHostname();
-				tempStartUp = userArray[j].isStartup();
-				tempManagementIp = userArray[j].getManagementIp();
-
-				requestDetail = deviceDiscoveryRepository
-						.findByDHostNameAndDMgmtIp(tempHostName,
-								tempManagementIp);
-
-				for (int i = 0; i < requestDetail.size(); i++) {
-					RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
-
-					requestInfoEntity.setRequestType("SLGB");
-					alphaneumeric_req_id = "SLGB-"
-							+ UUID.randomUUID().toString().toUpperCase()
-									.substring(0, 7);
-					requestInfoEntity
-							.setAlphanumericReqId(alphaneumeric_req_id);
-
-					/*
-					 * SiteInfoEntity tempId = requestDetail.get(i)
-					 * .getCustSiteId();
-					 * 
-					 * requestDetail1 =
-					 * siteInfoRepository.findByCCustId(tempId);
-					 */
-
-					if (j == 0) {
-
-						requestInfoEntity.setStatus("In Progress");
-					} else {
-
-						requestInfoEntity.setStatus("Awaiting");
-					}
-					LocalDateTime nowDate = LocalDateTime.now();
-					timestamp = Timestamp.valueOf(nowDate);
-					requestInfoEntity.setDateofProcessing(timestamp);
-					/*
-					 * if ((requestDetail.get(i).getSceheduledTime()) != null) {
-					 * 
-					 * timestamp = Timestamp.valueOf(requestDetail.get(i)
-					 * .getSceheduledTime().toString());
-					 * requestInfoEntity.setSceheduledTime(timestamp); }
-					 */
-
-					requestInfoEntity.setBatchId(batchId);
-
-					requestInfoEntity.setCustomer(requestDetail.get(i)
-							.getCustSiteId().getcCustName());
-
-					requestInfoEntity.setSiteId(requestDetail.get(i)
-							.getCustSiteId().getcSiteId());
-
-					requestInfoEntity.setDeviceType(requestDetail.get(i)
-							.getdType());
-
-					requestInfoEntity
-							.setModel(requestDetail.get(i).getdModel());
-
-					requestInfoEntity.setOs(requestDetail.get(i).getdOs());
-
-					requestInfoEntity.setOsVersion(requestDetail.get(i)
-							.getdOsVersion());
-
-					requestInfoEntity.setManagmentIP(requestDetail.get(i)
-							.getdMgmtIp());
-
-					requestInfoEntity.setRegion(requestDetail.get(i)
-							.getCustSiteId().getcSiteRegion());
-
-					requestInfoEntity.setService(requestDetail.get(i)
-							.getdVNFSupport());
-
-					requestInfoEntity.setHostName(requestDetail.get(i)
-							.getdHostName());
-
-					requestInfoEntity.setVendor(requestDetail.get(i)
-							.getdVendor());
-
-					requestInfoEntity.setNetworkType(requestDetail.get(i)
-							.getdVNFSupport());
-
-					requestInfoEntity.setRequestVersion(request_version);
-
-					requestInfoEntity.setSiteName(requestDetail.get(i)
-							.getCustSiteId().getcSiteName());
-					requestInfoEntity.setCertificationSelectionBit("1010011");
-					requestInfoEntity.setRequestParentVersion(1.0);
-					requestInfoEntity.setRequestTypeFlag("M");
-
-					requestInfoEntity
-							.setRequestCreatorName(Global.loggedInUser);
-
-					requestInfoEntity.setStartUp(tempStartUp);
-
-					if (!(scheduledTime.isEmpty())) {
-
-						timestamp = Timestamp.valueOf(scheduledTime);
-						requestInfoEntity.setSceheduledTime(timestamp);
-					}
-					batchIdEntity.setBatchStatus("In Progress");
-
-					batchIdEntity.setBatchId(batchId);
-
-					batchIdEntity.setRequestInfoEntity(requestInfoEntity);
-
-					requestInfoDetailsRepositories.save(requestInfoEntity);
-
-					dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id,
-							Double.toString(request_version));
-					dao.addCertificationTestForRequest(alphaneumeric_req_id,
-							Double.toString(request_version), "0");
-					// result = dao.insertRequestInDB(requestInfoPojo);
-					batchInfoRepo.save(batchIdEntity);
-
-				}
-			}
-
-			obj.put("batchId", batchId);
-			obj.put("output", "Batch Request created successfully");
-		}
-
-		catch (Exception e) {
-			logger.error(e);
-		}
-		return obj;
-
-	}
-
-	@GET
-	@RequestMapping(value = "/getAllRequest", method = RequestMethod.GET, produces = "application/json")
-	public Response getAllRequest() {
-		JSONObject obj = new JSONObject();
-		String jsonArray = "";
-
-		List<RequestInfoEntity> detailsList = new ArrayList<RequestInfoEntity>();
-
-		detailsList = requestInfoDetailsRepositories.findAll();
-
-		jsonArray = new Gson().toJson(detailsList);
-		obj.put(new String("output"), jsonArray);
-
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
-
-	}
-
-	@GET
-	@RequestMapping(value = "/getAllBatchRequest", method = RequestMethod.GET, produces = "application/json")
-	public Response getAllBatchId() {
-		JSONObject obj = new JSONObject();
-		String jsonArray = "";
-
-		List<RequestInfoEntity> detailsList = new ArrayList<RequestInfoEntity>();
-		List<RequestInfoEntity> detailsList1 = new ArrayList<RequestInfoEntity>();
-
-		detailsList = requestInfoDetailsRepositories.findAll();
-
-		for (int i = 0; i < detailsList.size(); i++) {
-			if (!(detailsList.get(i).getBatchId().equals(""))) {
-				String tempId = detailsList.get(i).getAlphanumericReqId();
-				detailsList1 = requestInfoDetailsRepositories
-						.findAllByAlphanumericReqId(tempId);
-			}
-		}
-
-		jsonArray = new Gson().toJson(detailsList1);
-		obj.put(new String("output"), jsonArray);
-
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
-
-	}
-
-	@POST
-	@RequestMapping(value = "/getSingleBatch", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public Response getSingleBatchRequest(@RequestBody String configRequest) {
-
-		JSONObject obj = new JSONObject();
-		String batchId = "", jsonArray = "";
-
-		List<RequestInfoEntity> detailsList = new ArrayList<RequestInfoEntity>();
-
-		try {
-
-			JSONParser parser = new JSONParser();
-
-			JSONObject json = (JSONObject) parser.parse(configRequest);
-
-			CreateConfigRequestDCM configReqToSendToC3pCode = new CreateConfigRequestDCM();
-
-			batchId = json.get("batchId").toString();
-
-			detailsList = requestInfoDetailsRepositories.findByBatchId(batchId);
-
-		} catch (Exception e) {
-
-		}
-		jsonArray = new Gson().toJson(detailsList);
-		obj.put(new String("output"), jsonArray);
-
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
-
-	}
-
-	@POST
-	@RequestMapping(value = "/batchConfig", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public JSONObject batchConfig(@RequestBody String configRequest)
-			throws ParseException {
-
-		JSONObject obj = new JSONObject();
-		CreateConfigRequestDCM configRequestTemplate =  new CreateConfigRequestDCM();
-
-		JsonArray attribJson = null;
-		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null, templateId = null, requestType = "Config MACD",templateIdUsed=null;
-
-		HashMap<String, String> map = new HashMap<String, String>();
-		ArrayList<String> tempRequest = new ArrayList<String>();
-		ArrayList<String> tempRequest1 = new ArrayList<String>();
-
-		//ArrayList<String> selectedFeatures = new ArrayList<String>();
-		org.json.simple.JSONObject dynamicAttribs = new org.json.simple.JSONObject();
-
-		JSONParser parser = new JSONParser();
-		JSONObject json = (JSONObject) parser.parse(configRequest);
-
-		JsonObject jsonObject = new JsonParser().parse(configRequest)
-				.getAsJsonObject();
-
-		attribJson = jsonObject.getAsJsonArray("requests");
-
-		for (int n = 0; n < attribJson.size(); n++) {
-			tempHostName = attribJson.get(n).getAsJsonObject().get("hostname")
-					.getAsString();
-			tempManagementIp = attribJson.get(n).getAsJsonObject()
-					.get("managementIp").getAsString();
-			templateId = attribJson.get(n).getAsJsonObject().get("templateId")
-					.getAsString();
-			map.put(tempHostName, tempManagementIp);
-			tempRequest.add(templateId);
-		}
-
-	
-
-	
-
-		List<DeviceDiscoveryEntity> requestDetail = null;
-		ObjectMapper mapper = new ObjectMapper();
-
-		BatchIdEntity batchIdEntity = new BatchIdEntity();
-
-		Double request_version = 1.0;
-
-		Timestamp timestamp = null;
-		String temp = null;
-
-		final String batchId = "BI-"
-				+ UUID.randomUUID().toString().toUpperCase().substring(0, 7);
-
-		try {
-
-			for (int j = 0; j < tempRequest.size(); j++) {
-
-				for (Map.Entry m : map.entrySet()) {
-
-					tempHostName = (String) m.getKey();
-					tempManagementIp = (String) m.getValue();
-
-					temp = tempHostName;
-
-					if (tempRequest1.contains(temp)) {
-
-						continue;
-					}
-
-					tempRequest1.add(tempHostName);
-
-					requestDetail = deviceDiscoveryRepository
-							.findByDHostNameAndDMgmtIp(tempHostName,
-									tempManagementIp);
-
-					for (int i = 0; i < requestDetail.size(); i++) {
-						RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
-
-						requestInfoEntity.setRequestType(requestType);
-						alphaneumeric_req_id = "SLGM-"
-								+ UUID.randomUUID().toString().toUpperCase()
-										.substring(0, 7);
-						requestInfoEntity
-								.setAlphanumericReqId(alphaneumeric_req_id);
-
-						if (j == 0) {
-
-							requestInfoEntity.setStatus("In Progress");
-						} else {
-
-							requestInfoEntity.setStatus("Awaiting");
-						}
-						LocalDateTime nowDate = LocalDateTime.now();
-						timestamp = Timestamp.valueOf(nowDate);
-						requestInfoEntity.setDateofProcessing(timestamp);
-						requestInfoEntity.setTemplateUsed(templateId);
-						requestInfoEntity.setSelectedFeatures(json.get("selectedFeatures"));
-
-						requestInfoEntity.setDynamicAttribs(json
-								.get("dynamicAttribs"));
-
-						requestInfoEntity.setBatchId(batchId);
-
-						requestInfoEntity.setCustomer(requestDetail.get(i)
-								.getCustSiteId().getcCustName());
-
-						requestInfoEntity.setSiteId(requestDetail.get(i)
-								.getCustSiteId().getcSiteId());
-
-						requestInfoEntity.setDeviceType(requestDetail.get(i)
-								.getdType());
-
-						requestInfoEntity.setModel(requestDetail.get(i)
-								.getdModel());
-
-						requestInfoEntity.setOs(requestDetail.get(i).getdOs());
-
-						requestInfoEntity.setOsVersion(requestDetail.get(i)
-								.getdOsVersion());
-
-						requestInfoEntity.setManagmentIP(requestDetail.get(i)
-								.getdMgmtIp());
-
-						requestInfoEntity.setRegion(requestDetail.get(i)
-								.getCustSiteId().getcSiteRegion());
-
-						requestInfoEntity.setService(requestDetail.get(i)
-								.getdVNFSupport());
-
-						requestInfoEntity.setHostName(requestDetail.get(i)
-								.getdHostName());
-
-						requestInfoEntity.setVendor(requestDetail.get(i)
-								.getdVendor());
-
-						requestInfoEntity.setNetworkType(requestDetail.get(i)
-								.getdVNFSupport());
-
-						requestInfoEntity.setRequestVersion(request_version);
-						requestInfoEntity.setFamily(requestDetail.get(i).getdSeries());
-						requestInfoEntity.setStartUp(false);
-
-						requestInfoEntity.setSiteName(requestDetail.get(i)
-								.getCustSiteId().getcSiteName());
-						requestInfoEntity
-								.setCertificationSelectionBit("1010011");
-						requestInfoEntity.setRequestParentVersion(1.0);
-						requestInfoEntity.setRequestTypeFlag("M");
-						
-						
-
-						requestInfoEntity.setRequestCreatorName("admin");
-
-						if (!(scheduledTime.isEmpty())) {
-
-							timestamp = Timestamp.valueOf(scheduledTime);
-							requestInfoEntity.setSceheduledTime(timestamp);
-						}
-						
-		
-
-						String jsonString = mapper
-								.writeValueAsString(requestInfoEntity);
-
-					
-						myObj.getTemplateId(jsonString);
-						
-					
-					}
-					break;
-				}
-			}
-			obj.put("batchId", batchId);
-			obj.put("output", "Batch Request created successfully");
-		}
-
-		catch (Exception e) {
-			logger.error(e);
-		}
-		return obj;
-
-	}
-
 }

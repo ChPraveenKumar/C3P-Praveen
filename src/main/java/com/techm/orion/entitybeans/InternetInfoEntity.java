@@ -11,44 +11,41 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+
 @Entity
 @Table(name = "internetlcvrfso")
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class InternetInfoEntity implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3926648751908180050L;
-
 	@Id
 	@Column(name = "request_info_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int requestInfoId;
-
+	
 	@Column(name = "networkip")
-	private String networkIp;
-
+    private String networkIp;
+	
 	@Column(name = "asnumber")
-	private String asNumber;
-
+    private String asNumber;
+	
 	@Column(name = "neighbor1")
-	private String neighbor1;
-
+    private String neighbor1;
+	
 	@Column(name = "neighbor2")
-	private String neighbor2;
-
+    private String neighbor2;
+	
 	@Column(name = "neighbor1_remoteAS")
-	private String neighbor1RemoteAS;
-
+    private String neighbor1RemoteAS;
+	
 	@Column(name = "neighbor2_remoteAS")
-	private String neighbor2RemoteAS;
-
+    private String neighbor2RemoteAS;
+	
 	@Column(name = "networkip_subnetmask")
-	private String networkIpSubnetMask;
+    private String networkIpSubnetMask;
 
 	@Column(name = "routingprotocol")
-	private String routingProtocol;
+    private String routingProtocol;
+	
 
 	public int getRequestInfoId() {
 		return requestInfoId;
@@ -121,5 +118,7 @@ public class InternetInfoEntity implements Serializable {
 	public void setRoutingProtocol(String routingProtocol) {
 		this.routingProtocol = routingProtocol;
 	}
+	
 
+	
 }

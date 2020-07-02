@@ -216,7 +216,7 @@ public class DataValidationImport implements Observer {
 					// allMatch = true;
 
 					flag1 = true;
-					logger.info("Matched VENDOR");
+					System.out.println("Matched VENDOR");
 				}
 
 			}
@@ -233,7 +233,7 @@ public class DataValidationImport implements Observer {
 				if (string.equals(DeviceType)) {
 
 					flag2 = true;
-					logger.info("Matched device");
+					System.out.println("Matched device");
 
 				}
 
@@ -251,7 +251,7 @@ public class DataValidationImport implements Observer {
 				if (string.equals(Model)) {
 
 					flag3 = true;
-					logger.info("Matched model");
+					System.out.println("Matched model");
 				}
 
 			}
@@ -268,7 +268,7 @@ public class DataValidationImport implements Observer {
 				if (string.equals(Os)) {
 
 					flag4 = true;
-					logger.info("Matched os");
+					System.out.println("Matched os");
 				}
 
 			}
@@ -287,7 +287,7 @@ public class DataValidationImport implements Observer {
 				if (string.equals(OsVersion)) {
 
 					flag5 = true;
-					logger.info("Matched os version");
+					System.out.println("Matched os version");
 				}
 
 			}
@@ -322,7 +322,7 @@ public class DataValidationImport implements Observer {
 			obj.put(new String("output"), jsonArray);
 			obj.put(new String("Datavalid"), Datavalid);
 		} catch (Exception e) {
-			logger.error(e);
+			System.out.println(e);
 		}
 
 		return Response
@@ -395,7 +395,7 @@ public class DataValidationImport implements Observer {
 
 			} else {
 				flag = false;
-				logger.info("Invalid");
+				System.out.println("Invalid");
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
 						"C3P does not support this template");
@@ -442,10 +442,10 @@ public class DataValidationImport implements Observer {
 				List<String> feat1 = validateFeatures(request_info_id);
 
 				// String[] featuresList = new String[feat1.size()];
-				logger.info("Features present in Import:");
+				System.out.println("Features present in Import:");
 				for (int i = 0; i < feat1.size(); i++) {
 					// featuresList[i] = feat1.get(i);
-					logger.info(feat1.get(i));
+					System.out.println(feat1.get(i));
 				}
 
 				if (feat1.size() > 0) {
@@ -470,7 +470,7 @@ public class DataValidationImport implements Observer {
 			}
 
 			catch (Exception e) {
-				logger.error(e);
+				System.out.println(e);
 			}
 			String jsonList = "";
 			String TemplateList = "";
@@ -520,7 +520,7 @@ public class DataValidationImport implements Observer {
 				for (TemplateBasicConfigurationPojo template : templateBasicConfigurationPojo) {
 					templateList.add(template.getTemplateId());
 				}
-				logger.info("List of Templates Present:" + templateList);
+				System.out.println("List of Templates Present:" + templateList);
 				jsonList = new Gson().toJson(templateBasicConfigurationPojo);
 				if (!(jsonList.equals("[]"))) {
 
@@ -528,7 +528,7 @@ public class DataValidationImport implements Observer {
 					obj.put(new String("Result"), "Success");
 					obj.put(new String("Message"), "Success");
 					ExportList.setTemplateIdUsed(TemplateList);
-					logger.info("Matched Template Found for Selected features");
+					System.out.println("Matched Template Found for Selected features");
 					if (TemplateList != null) {
 						RequestDetailsExport.loadProperties();
 						String path = RequestDetailsExport.TSA_PROPERTIES
@@ -546,12 +546,12 @@ public class DataValidationImport implements Observer {
 							TemplateSuggesstion = 1;
 							obj.put(new String("TemplateSuggesstion"),
 									TemplateSuggesstion);
-							logger.info("Approved Template Found for Selected features");
+							System.out.println("Approved Template Found for Selected features");
 
 						} else {
 							flag = false;
-							logger.info("No Approved Template Found for Selected features");
-							logger.info("Invalid");
+							System.out.println("No Approved Template Found for Selected features");
+							System.out.println("Invalid");
 							obj.put(new String("Result"), "Failure");
 							obj.put(new String("Message"),
 									"C3P does not support this template");
@@ -579,11 +579,11 @@ public class DataValidationImport implements Observer {
 							TemplateSuggesstion);
 					String MessageReport = "Template Validation Failed";
 					ExportList.setRequeststatus(MessageReport);
-					logger.info("No Matched Template Found for Selected features");
+					System.out.println("No Matched Template Found for Selected features");
 				}
 
 			} catch (Exception e) {
-				logger.error(e);
+				System.out.println(e);
 			}
 
 		}
@@ -635,10 +635,10 @@ public class DataValidationImport implements Observer {
 		List<String> Valid = new ArrayList<String>();
 		List<String> feat1 = validateFeatures(request_info_id);
 		String[] stringArray1 = new String[feat1.size()];
-		logger.info("Features for Validation");
+		System.out.println("Features for Validation");
 		for (int i = 0; i < feat1.size(); i++) {
 			stringArray1[i] = feat1.get(i);
-			logger.info(stringArray1[i]);
+			System.out.println(stringArray1[i]);
 		}
 
 		boolean flagwan, flaglan, flagloop, flagrout, flagenable, flagsnmp, flagbanner, flagvrf = false;
@@ -658,13 +658,13 @@ public class DataValidationImport implements Observer {
 						& (isNullOrEmpty(ExportList2.getBandwidth()))) {
 					flagwan = true;
 					String wan = "WAN Interface";
-					logger.info("WAN feature is  VALID");
+					System.out.println("WAN feature is  VALID");
 
 					Valid.add("1");
 					feat.add(wan);
 				} else {
 
-					logger.info("WAN feature is INVALID");
+					System.out.println("WAN feature is INVALID");
 					// result="Valid";
 
 					Valid.add("0");
@@ -677,13 +677,13 @@ public class DataValidationImport implements Observer {
 						& (ipValidator.isValid(ExportList.getLanMaskAddress()))) {
 					flaglan = true;
 					String lan = "LAN Interface";
-					logger.info("LAN feature is VALID");
+					System.out.println("LAN feature is VALID");
 					// result="Valid";
 					feat.add(lan);
 					Valid.add("1");
 
 				} else {
-					logger.info("LAN feature is INVALID");
+					System.out.println("LAN feature is INVALID");
 					// result="InValid";
 					Valid.add("0");
 				}
@@ -696,13 +696,13 @@ public class DataValidationImport implements Observer {
 						& (isNullOrEmpty(ExportList.getLoopBackType()))) {
 					flagloop = true;
 					String loop = "Loopback Interface";
-					logger.info("Loopback feature is VALID");
+					System.out.println("Loopback feature is VALID");
 					// result="Valid";
 					feat.add(loop);
 					Valid.add("1");
 
 				} else {
-					logger.info("Loopback feature is INVALID");
+					System.out.println("Loopback feature is INVALID");
 					// result="InValid";
 					Valid.add("0");
 				}
@@ -721,14 +721,14 @@ public class DataValidationImport implements Observer {
 						& (ipValidator.isValid(ExportList3.getNetworkIp()))) {
 					flagrout = true;
 					String rout = "Routing Protocol";
-					logger.info("BGP feature is VALID");
+					System.out.println("BGP feature is VALID");
 					// result="Valid";
 					feat.add(rout);
 					Valid.add("1");
 
 				} else {
 
-					logger.info("Routing Protocol feature is INVALID");
+					System.out.println("Routing Protocol feature is INVALID");
 					// result="InValid";
 					Valid.add("0");
 				}
@@ -739,13 +739,13 @@ public class DataValidationImport implements Observer {
 				if ((isNullOrEmpty(ExportList.getEnable_password()))) {
 					flagenable = true;
 					String pass = "Enable Password";
-					logger.info("Enable password feature is VALID");
+					System.out.println("Enable password feature is VALID");
 					feat.add(pass);
 					// result="Valid";
 					Valid.add("1");
 
 				} else {
-					logger.info("Enable Password feature is INVALID");
+					System.out.println("Enable Password feature is INVALID");
 					// result="InValid";
 					Valid.add("0");
 				}
@@ -756,13 +756,13 @@ public class DataValidationImport implements Observer {
 						& (!(ExportList.getSnmpHostAddress().isEmpty()))) {
 					flagsnmp = true;
 					String snmp = "SNMP";
-					logger.info("snmp feature is VALID");
+					System.out.println("snmp feature is VALID");
 					feat.add(snmp);
 					// result="Valid";
 					Valid.add("1");
 
 				} else {
-					logger.info("SNMP feature is INVALID");
+					System.out.println("SNMP feature is INVALID");
 					// result="InValid";
 					Valid.add("0");
 				}
@@ -772,14 +772,14 @@ public class DataValidationImport implements Observer {
 				if ((isNullOrEmpty(ExportList.getBanner()))) {
 					flagbanner = true;
 					String banner = "Banner";
-					logger.info("Banner feature is VALID");
+					System.out.println("Banner feature is VALID");
 					feat.add(banner);
 					// result="Valid";
 					Valid.add("1");
 
 				} else {
 
-					logger.info("Banner feature is INVALID");
+					System.out.println("Banner feature is INVALID");
 					// result="InValid";
 					Valid.add("0");
 				}
@@ -790,19 +790,19 @@ public class DataValidationImport implements Observer {
 
 					flagvrf = true;
 					String vrf = "VRF";
-					logger.info("vrf feature is VALID");
+					System.out.println("vrf feature is VALID");
 					feat.add(vrf);
 					// result="Valid";
 					Valid.add("1");
 
 				} else {
-					logger.info("VRF feature is NOT VALID");
+					System.out.println("VRF feature is NOT VALID");
 					// result="InValid";
 					Valid.add("0");
 				}
 			}
 			if (stringArray1[i].equals("Basic Configuration")) {
-				logger.info("");
+				System.out.println("");
 			}
 
 		}
@@ -813,14 +813,14 @@ public class DataValidationImport implements Observer {
 			stringArray[j] = Valid.get(j);
 
 			if (stringArray[j].equals("0")) {
-				logger.info("INVALID DATA REPORT");
+				System.out.println("INVALID DATA REPORT");
 				result = "InValid";
 				break;
 			} else {
 				result = "Valid";
 			}
 
-			// logger.info(stringArray[j]);
+			// System.out.println(stringArray[j]);
 		}
 
 		if (result == "Valid") {
@@ -929,10 +929,10 @@ public class DataValidationImport implements Observer {
 				String[] features = Arrays.copyOf(objNames, objNames.length,
 						String[].class);
 
-				logger.info("ArrayList converted to String array");
+				System.out.println("ArrayList converted to String array");
 
 				for (int i = 0; i < features.length; i++) {
-					logger.info(features[i]);
+					System.out.println(features[i]);
 
 				}
 
@@ -941,7 +941,7 @@ public class DataValidationImport implements Observer {
 
 				obj.put(new String("TestAndTurnUp"), TestAndTurnUp);
 			} catch (Exception e) {
-				logger.error(e);
+				System.out.println(e);
 			}
 		}
 		return Response
@@ -987,7 +987,7 @@ public class DataValidationImport implements Observer {
 			DateTimeFormatter dtf = DateTimeFormatter
 					.ofPattern("yyyy-MM-dd HH:mm:ss");
 			LocalDateTime now = LocalDateTime.now();
-			logger.info(dtf.format(now));
+			System.out.println(dtf.format(now));
 
 			RunNow = dtf.format(now);
 			ExportList.setDate_of_processing(RunNow);
@@ -1011,7 +1011,7 @@ public class DataValidationImport implements Observer {
 				Message = "Invalid Date Format";
 				String MessageReport = "Scheduled Time Validation Failed";
 				ExportList.setRequeststatus(MessageReport);
-				logger.info("Invalid Date Format");
+				System.out.println("Invalid Date Format");
 				obj.put(new String("Message"), Message);
 			}
 
@@ -1020,15 +1020,15 @@ public class DataValidationImport implements Observer {
 				DateTimeFormatter dtf = DateTimeFormatter
 						.ofPattern("yyyy-MM-dd HH:mm:ss");
 				LocalDateTime now = LocalDateTime.now();
-				logger.info(dtf.format(now));
+				System.out.println(dtf.format(now));
 				RunNow = dtf.format(now);
 
 				String Timeset = Scheduled.substring(0, 19);
-				logger.info(Timeset);
+				System.out.println(Timeset);
 
 				int Value = compareDates(RunNow, Timeset);
 				if (Value == 1) {
-					logger.info("Date is VALID after Current Date");
+					System.out.println("Date is VALID after Current Date");
 					Scheduled = ExportList.getScheduledTime().substring(0, 19);
 					ExportList.setDate_of_processing(Scheduled);
 					requestDetailsExportRepo.save(ExportList);
@@ -1038,7 +1038,7 @@ public class DataValidationImport implements Observer {
 					Message = "Valid Scheduled Time";
 					obj.put(new String("Message"), Message);
 				} else {
-					logger.info("Date of processing is NOT VALID");
+					System.out.println("Date of processing is NOT VALID");
 				
 					obj.put(new String("SchedulerResult"), "Failure");
 					Result = "InValid";
@@ -1097,11 +1097,11 @@ public class DataValidationImport implements Observer {
 				|| (isNullOrEmpty(ExportList2.getBandwidth()))) {
 			flagwan = true;
 			String wan = "WAN Interface";
-			logger.info("WAN feature is PRESENT");
+			System.out.println("WAN feature is PRESENT");
 			feat.add(wan);
 
 		} else {
-			logger.info("WAN feature is NOT PRESENT");
+			System.out.println("WAN feature is NOT PRESENT");
 		}
 
 		if ((isNullOrEmpty(ExportList.getLanDescription()))
@@ -1110,10 +1110,10 @@ public class DataValidationImport implements Observer {
 				|| (isNullOrEmpty(ExportList.getLanMaskAddress()))) {
 			flaglan = true;
 			String lan = "LAN Interface";
-			logger.info("LAN feature is PRESENT");
+			System.out.println("LAN feature is PRESENT");
 			feat.add(lan);
 		} else {
-			logger.info("LAN feature is NOT PRESENT");
+			System.out.println("LAN feature is NOT PRESENT");
 		}
 
 		if ((isNullOrEmpty(ExportList.getLoopbackIPaddress()))
@@ -1121,11 +1121,11 @@ public class DataValidationImport implements Observer {
 				|| (isNullOrEmpty(ExportList.getLoopBackType()))) {
 			flagloop = true;
 			String loop = "Loopback Interface";
-			logger.info("Loopback feature is PRESENT");
+			System.out.println("Loopback feature is PRESENT");
 			feat.add(loop);
 
 		} else {
-			logger.info("Loopback feature is NOT PRESENT");
+			System.out.println("Loopback feature is NOT PRESENT");
 		}
 		if ((isNullOrEmpty(ExportList3.getRoutingProtocol()))
 				// || (isNullOrEmpty(ExportList3.getAsNumber()))
@@ -1136,50 +1136,50 @@ public class DataValidationImport implements Observer {
 				|| (isNullOrEmpty(ExportList3.getNetworkIpSubnetMask()))) {
 			flagrout = true;
 			String rout = "Routing Protocol";
-			logger.info("Routing Protocol feature is PRESENT");
+			System.out.println("Routing Protocol feature is PRESENT");
 			feat.add(rout);
 
 		} else {
-			logger.info("BGP feature is NOT PRESENT");
+			System.out.println("BGP feature is NOT PRESENT");
 		}
 		if (isNullOrEmpty(ExportList.getEnable_password())) {
 			flagenable = true;
 			String pass = "Enable Password";
-			logger.info("Enable Password feature is PRESENT");
+			System.out.println("Enable Password feature is PRESENT");
 			feat.add(pass);
 
 		} else {
-			logger.info("Enable password feature is NOT PRESENT");
+			System.out.println("Enable password feature is NOT PRESENT");
 		}
 
 		if ((isNullOrEmpty(ExportList.getSnmpString()))
 				|| (isNullOrEmpty(ExportList.getSnmpHostAddress()))) {
 			flagsnmp = true;
 			String snmp = "SNMP";
-			logger.info("SNMP feature is PRESENT");
+			System.out.println("SNMP feature is PRESENT");
 			feat.add(snmp);
 
 		} else {
-			logger.info("snmp feature is NOT PRESENT");
+			System.out.println("snmp feature is NOT PRESENT");
 		}
 
 		if (isNullOrEmpty(ExportList.getBanner())) {
 			flagbanner = true;
 			String banner = "Banner";
-			logger.info("Banner feature is PRESENT");
+			System.out.println("Banner feature is PRESENT");
 			feat.add(banner);
 
 		} else {
-			logger.info("banner feature is NOT PRESENT");
+			System.out.println("banner feature is NOT PRESENT");
 		}
 		if (isNullOrEmpty(ExportList.getVrf_name())) {
 			flagvrf = true;
 			String vrf = "VRF";
-			logger.info("VRF feature is PRESENT");
+			System.out.println("VRF feature is PRESENT");
 			feat.add(vrf);
 
 		} else {
-			logger.info("vrf feature is NOT PRESENT");
+			System.out.println("vrf feature is NOT PRESENT");
 		}
 		String Basic = "Basic Configuration";
 		feat.add(Basic);
@@ -1195,9 +1195,9 @@ public class DataValidationImport implements Observer {
 		Date date1 = sdf.parse(d1);
 		Date date2 = sdf.parse(d2);
 
-		logger.info("Date1" + sdf.format(date1));
-		logger.info("Date2" + sdf.format(date2));
-		logger.info();
+		System.out.println("Date1" + sdf.format(date1));
+		System.out.println("Date2" + sdf.format(date2));
+		System.out.println();
 
 		// Create 2 dates ends
 		// 1
@@ -1206,21 +1206,21 @@ public class DataValidationImport implements Observer {
 		// comparing
 		// after() will return true if and only if date1 is after date 2
 		if (date1.before(date2)) {
-			logger.info("Date1 is after Date2");
+			System.out.println("Date1 is after Date2");
 			Valid = 1;
 		}
 		// before() will return true if and only if date1 is before date2
 		if (date1.after(date2)) {
-			logger.info("Invalid");
+			System.out.println("Invalid");
 			Valid = 0;
 		}
 
 		// equals() returns true if both the dates are equal
 		// if(date1.equals(date2)){
-		// logger.info("Date1 is equal Date2");
+		// System.out.println("Date1 is equal Date2");
 		// }
 
-		logger.info();
+		System.out.println();
 		return Valid;
 	}
 

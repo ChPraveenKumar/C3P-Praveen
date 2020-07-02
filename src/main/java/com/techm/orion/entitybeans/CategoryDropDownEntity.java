@@ -63,7 +63,8 @@ public class CategoryDropDownEntity implements Serializable {
 		this.category = category;
 	}
 
-	public CategoryDropDownEntity(int id, String attribValue, int attribParentValue, CategoryMasterEntity category) {
+	public CategoryDropDownEntity(int id, String attribValue,
+			int attribParentValue, CategoryMasterEntity category) {
 		super();
 		this.id = id;
 		this.attribValue = attribValue;
@@ -78,8 +79,11 @@ public class CategoryDropDownEntity implements Serializable {
 
 	@Override
 	public String toString() {
-		return "CategoryDropDownEntity [id=" + id + ", attribValue=" + attribValue + ", attribParentValue="
-				+ attribParentValue + ", category=" + category + "]";
+		return "CategoryDropDownEntity [id=" + id + ", attribValue="
+				+ attribValue + ", attribParentValue=" + attribParentValue
+				+ ", category=" + category + "]";
 	}
+	
+	
 
 }

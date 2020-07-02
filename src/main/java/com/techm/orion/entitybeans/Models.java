@@ -15,18 +15,16 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 
 @Table(name = "T_TPMGMT_GLBLIST_M_Models")
-public class Models implements Serializable{
+public class Models implements Serializable
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 5025867950425502343L;
+{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -47,15 +45,16 @@ public class Models implements Serializable{
 	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "models")
 	private Set<OSversion> osversion;
 
-	@Transient
-	boolean value = false;
 
+	@Transient
+	boolean value=false;
+	
 	@Transient
 	private int multi_model_id;
-
+	
 	@Transient
 	private boolean multi_model_value;
-
+	
 	public boolean getMulti_model_value() {
 		return multi_model_value;
 	}
@@ -82,7 +81,7 @@ public class Models implements Serializable{
 
 	@Transient
 	private String multi_model_text;
-
+	
 	public boolean isValue() {
 		return value;
 	}

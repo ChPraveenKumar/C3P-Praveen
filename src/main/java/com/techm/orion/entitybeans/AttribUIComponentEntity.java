@@ -1,5 +1,7 @@
 package com.techm.orion.entitybeans;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,12 +14,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Entity
 @Table(name = "t_attrib_funct_m_ui_component")
 @JsonIgnoreProperties(ignoreUnknown = false)
-public class AttribUIComponentEntity {
-
-	@GeneratedValue(strategy = GenerationType.AUTO)
+public class AttribUIComponentEntity implements Serializable{
+	
+	@GeneratedValue(strategy = GenerationType.AUTO) 
 	@Id
 	private int Id;
-
+	
 	@Column(name = "ui_component_name")
 	private String uiComponentName;
 

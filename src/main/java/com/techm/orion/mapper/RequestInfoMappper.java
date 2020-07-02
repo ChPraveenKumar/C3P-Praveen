@@ -1,6 +1,8 @@
 package com.techm.orion.mapper;
 
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -76,6 +78,7 @@ public class RequestInfoMappper {
 				 */
 				request.setRequestElapsedTime(entity.getRequestElapsedTime());
 			} else if (entity.getStatus().equalsIgnoreCase("Scheduled")) {
+				SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 				Timestamp scheduledTime = entity.getSceheduledTime();
 
 				if (scheduledTime != null) {

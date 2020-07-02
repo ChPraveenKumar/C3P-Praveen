@@ -11,24 +11,23 @@ import com.techm.orion.pojo.AttribCreateConfigJson;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CategoryDropDownPojo;
 import com.techm.orion.service.CategoryDropDownService;
-
 @Component
 public class AttribCreateConfigResponceMapper {
-
-	@Autowired
-	CategoryDropDownService categoryDropDownservice;
-
+	
+	@Autowired 
+	CategoryDropDownService  categoryDropDownservice;
+	
 	public AttribCreateConfigPojo getAttribTemplateSuggestionMapper(MasterAttributes entity) {
 		AttribCreateConfigPojo pojo = new AttribCreateConfigPojo();
-		pojo.setId(entity.getId());
-		pojo.setAttribName(entity.getName());
+		pojo.setId(entity.getId()); 
+		pojo.setAttribName(entity.getName()); 
 		pojo.setAttribUIComponent(entity.getUiComponent());
 		pojo.setAttribSeriesId(entity.getSeriesId());
-		pojo.setAttribTemplateId(entity.getTemplateId());
+		pojo.setAttribTemplateId(entity.getTemplateId()); 
 		pojo.setAttribValidations(entity.getValidations().replace("[", "").replace("]", "").split(", "));
 		pojo.setAttribType(entity.getAttribType());
 		pojo.setAttribLabel(entity.getLabel());
-		pojo.setAttribCategoty(entity.getCategory());
+		pojo.setAttribCategoty(entity.getCategory()); 
 		pojo.setTemplateFeature(entity.getTemplateFeature());
 		return pojo;
 	}
@@ -42,9 +41,10 @@ public class AttribCreateConfigResponceMapper {
 		return pojo;
 	}
 
-	public List<AttribCreateConfigJson> convertAttribPojoToJson(List<AttribCreateConfigPojo> pojoList) {
+	
+	public List<AttribCreateConfigJson> convertAttribPojoToJson(List<AttribCreateConfigPojo> pojoList){
 		List<AttribCreateConfigJson> jsonList = new ArrayList<AttribCreateConfigJson>();
-
+		
 		for (AttribCreateConfigPojo entity : pojoList) {
 
 			AttribCreateConfigJson attribJson = new AttribCreateConfigJson();
@@ -57,7 +57,7 @@ public class AttribCreateConfigResponceMapper {
 			attribJson.setType(entity.getAttribType());
 			attribJson.setSeriesId(entity.getAttribSeriesId());
 			attribJson.setTemplateId(entity.getAttribTemplateId());
-			// using Category Name find all category Value
+			// using Category Name find all category Value 
 			if (entity.getAttribCategoty() != null) {
 				List<CategoryDropDownPojo> allByCategoryName = categoryDropDownservice
 						.getAllByCategoryName(entity.getAttribCategoty());
@@ -67,8 +67,10 @@ public class AttribCreateConfigResponceMapper {
 			jsonList.add(attribJson);
 
 		}
-
+		
 		return jsonList;
-
+		
+		
 	}
 }
+

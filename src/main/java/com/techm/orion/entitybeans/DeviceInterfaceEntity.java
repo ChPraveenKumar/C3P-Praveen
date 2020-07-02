@@ -11,15 +11,13 @@ import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+
 @Entity
 @Table(name = "deviceinterfaceso")
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class DeviceInterfaceEntity implements Serializable {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 8124650031637581846L;
+
 
 	public int getRequestInfoId() {
 		return requestInfoId;
@@ -33,27 +31,30 @@ public class DeviceInterfaceEntity implements Serializable {
 	@Column(name = "request_info_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int requestInfoId;
-
+	
 	@Column(name = "name")
-	private String name;
-
+    private String name;
+	
 	@Column(name = "description")
-	private String description;
-
+    private String description;
+	
 	@Column(name = "ip")
-	private String ip;
-
+    private String ip;
+	
 	@Column(name = "mask")
-	private String mask;
-
+    private String mask;
+	
 	@Column(name = "speed")
-	private String speed;
-
+    private String speed;
+	
 	@Column(name = "encapsulation")
-	private String encapsulation;
-
+    private String encapsulation;
+	
 	@Column(name = "Bandwidth")
-	private String Bandwidth;
+    private String Bandwidth;
+
+	
+	
 
 	public String getName() {
 		return name;
@@ -110,5 +111,5 @@ public class DeviceInterfaceEntity implements Serializable {
 	public void setBandwidth(String bandwidth) {
 		Bandwidth = bandwidth;
 	}
-
+	
 }

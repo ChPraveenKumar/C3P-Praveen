@@ -29,12 +29,13 @@ public class RequestDetails {
 	PreparedStatement preparedStmt = null;
 	private Connection connection;
 	Statement statement;
-
+ 
 	/*
-	 * Owner: Rahul Tiwari Module: TestAndDiagnosis Logic: Get test name and version
-	 * based on request id custom tests
+	 * Owner: Rahul Tiwari Module: TestAndDiagnosis Logic: Get test name and version based on request id
+	 * custom tests
 	 */
-	public String getTestAndDiagnosisDetails(String requestId) throws SQLException {
+	public String getTestAndDiagnosisDetails(String requestId)
+			throws SQLException {
 		StringBuilder builder = new StringBuilder();
 		connection = ConnectionFactory.getConnection();
 
@@ -58,10 +59,11 @@ public class RequestDetails {
 	}
 
 	/*
-	 * Owner: Rahul Tiwari Module: Request Details Logic: Get configuration feature
-	 * name and value based on requestid and tempalteId custom tests
+	 * Owner: Rahul Tiwari Module: Request Details Logic: Get configuration feature name and value based on requestid and tempalteId
+	 * custom tests
 	 */
-	public Map<String, String> getConfigurationFeatureList(String requestId, String templateId) throws SQLException {
+	public Map<String, String> getConfigurationFeatureList(String requestId,
+			String templateId) throws SQLException {
 		Map<String, String> map = new TreeMap<String, String>();
 		connection = ConnectionFactory.getConnection();
 
@@ -78,7 +80,8 @@ public class RequestDetails {
 
 			resultSet = preparedStmt.executeQuery();
 			while (resultSet.next()) {
-				map.put(resultSet.getString("name"), resultSet.getString("value"));
+				map.put(resultSet.getString("name"),
+						resultSet.getString("value"));
 
 			}
 			preparedStmt.close();
@@ -91,10 +94,11 @@ public class RequestDetails {
 	}
 
 	/*
-	 * Owner: Rahul Tiwari Module: Request Details Logic: Get configuration feature
-	 * name based on request id, temaplate id custom tests
+	 * Owner: Rahul Tiwari Module: Request Details Logic: Get configuration feature name based on request id, temaplate id 
+	 * custom tests
 	 */
-	public List<String> getConfigurationFeature(String requestId, String templateId) throws SQLException {
+	public List<String> getConfigurationFeature(String requestId,
+			String templateId) throws SQLException {
 		List<String> list = new ArrayList<String>();
 
 		connection = ConnectionFactory.getConnection();
@@ -124,11 +128,11 @@ public class RequestDetails {
 	}
 
 	/*
-	 * Owner: Rahul Tiwari Module: Request Details Logic: Get configuration feature
-	 * details based on request id, temaplate id and feature custom tests
+	 * Owner: Rahul Tiwari Module: Request Details Logic: Get configuration feature details based on request id, temaplate id and feature
+	 * custom tests
 	 */
-	public Map<String, String> getConfigurationFeatureDetails(String requestId, String templateId, String feature)
-			throws SQLException {
+	public Map<String, String> getConfigurationFeatureDetails(String requestId,
+			String templateId, String feature) throws SQLException {
 		Map<String, String> map = new TreeMap<String, String>();
 		List<String> list = new ArrayList<String>();
 
@@ -148,7 +152,8 @@ public class RequestDetails {
 
 			resultSet = preparedStmt.executeQuery();
 			while (resultSet.next()) {
-				map.put(resultSet.getString("name"), resultSet.getString("value"));
+				map.put(resultSet.getString("name"),
+						resultSet.getString("value"));
 
 			}
 			preparedStmt.close();
@@ -159,9 +164,9 @@ public class RequestDetails {
 		}
 		return map;
 	}
-
+	
 	/* Dhanshri Mane get Configuration details and attribute value */
-	public JSONArray getFeatureDetails(String requestId) throws SQLException {
+	public 	JSONArray getFeatureDetails(String requestId) throws SQLException {
 
 		connection = ConnectionFactory.getConnection();
 		JSONArray finalObject = new JSONArray();
@@ -177,7 +182,7 @@ public class RequestDetails {
 				featureName.add(resultSet.getString("feature"));
 			}
 			ResultSet resultSet1 = null;
-			for (String feature : featureName) {
+			for(String feature :featureName) {
 				resultSet1 = preparedStmt.executeQuery();
 				try {
 					JSONObject featureObject = new JSONObject();
@@ -190,14 +195,14 @@ public class RequestDetails {
 							attributeValue.put("name", resultSet1.getString("name"));
 							attributeValue.put("value", resultSet1.getString("value"));
 							finalFeatureObject.add(attributeValue);
-						}
+						}						
 					}
 					featureObject.put("featureValue", finalFeatureObject);
 					finalObject.add(featureObject);
 				} catch (SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
+				}	
 			}
 			preparedStmt.close();
 		} finally {
@@ -208,3 +213,5 @@ public class RequestDetails {
 		return finalObject;
 	}
 }
+
+

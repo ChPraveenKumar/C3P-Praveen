@@ -22,8 +22,6 @@ import java.util.Scanner;
 
 import javax.ws.rs.POST;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -53,7 +51,7 @@ import com.techm.orion.utility.TextReport;
 @Controller
 @RequestMapping("/HealthCheckTestValidation")
 public class HealthCheckTestValidation extends Thread {
-	private static final Logger logger = LogManager.getLogger(HealthCheckTestValidation.class);
+
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -62,13 +60,10 @@ public class HealthCheckTestValidation extends Thread {
 
 	@Autowired
 	RequestInfoDetailsDao requestDao;
-
-	@Autowired
-	TestStrategeyAnalyser analyser;
-
-	@Autowired
-	private PostUpgradeHealthCheck postUpgradeHealthCheck;
-
+	
+	@Autowired 
+	TestStrategeyAnalyser analyser;	
+	
 	@POST
 	@RequestMapping(value = "/healthcheckCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -93,10 +88,7 @@ public class HealthCheckTestValidation extends Thread {
 
 		String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
 
-		JSch jsch = new JSch();
-		Channel channel = null;
-		Session session = null;
-		if (!((type.equals("SLGB") || (type.equals("SLGM"))))) {
+		if (!(type.equals("SLGB"))) {
 
 			try {
 				configRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
@@ -115,7 +107,7 @@ public class HealthCheckTestValidation extends Thread {
 					String host = configRequest.getManagementIp();
 					UserPojo userPojo = new UserPojo();
 					userPojo = requestInfoDao.getRouterCredentials();
-					logger.info("Request ID in health test validation" + RequestId);
+					System.out.println("Request ID in health test validation" + RequestId);
 					String user = null, password = null;
 
 					user = userPojo.getUsername();
@@ -133,18 +125,18 @@ public class HealthCheckTestValidation extends Thread {
 					String privateKeyPath = HealthCheckTestValidation.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
 
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")
-							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
-							|| type.equalsIgnoreCase("SNNM")) {
-						session = jsch.getSession(user, host, Integer.parseInt(port));
+							|| type.equalsIgnoreCase("SNNC")) {
+						JSch jsch = new JSch();
+						Channel channel = null;
+						Session session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
-						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
+						System.out.println("Password for healthcheck " + password + "user " + user + "host " + host
 								+ "Port " + port);
 						session.setConfig(config);
 						session.setPassword(password);
 						session.connect();
-						logger.info("After session.connect 1");
+						System.out.println("After session.connect 1");
 						try {
 							Thread.sleep(10000);
 						} catch (Exception ee) {
@@ -155,9 +147,21 @@ public class HealthCheckTestValidation extends Thread {
 							OutputStream ops = channel.getOutputStream();
 
 							PrintStream ps = new PrintStream(ops, true);
-							logger.info("Channel Connected to machine " + host + " server");
+							System.out.println("Channel Connected to machine " + host + " server");
 							channel.connect();
 							InputStream input = channel.getInputStream();
+
+							/*
+							 * session = jsch.getSession(user, host, Integer.parseInt(port)); config = new
+							 * Properties(); config.put("StrictHostKeyChecking", "no");
+							 * session.setConfig(config); session.setPassword(password); session.connect();
+							 * System.out.println("After session.connect 2"); channel =
+							 * session.openChannel("shell"); ops = channel.getOutputStream();
+							 * 
+							 * ps = new PrintStream(ops, true);
+							 * 
+							 * channel.connect();
+							 */
 
 							if (configRequest.getCertificationBit().substring(5, 6).equalsIgnoreCase("1")
 									|| configRequest.getCertificationBit().substring(6).equalsIgnoreCase("1")) {
@@ -338,7 +342,7 @@ public class HealthCheckTestValidation extends Thread {
 								/* finalReportTestSSH.FlagCheckTest(configRequest); */
 
 							}
-							logger.info("DONE");
+							System.out.println("DONE");
 							channel.disconnect();
 							session.disconnect();
 							value = true;// hardcoded for default tests
@@ -356,7 +360,7 @@ public class HealthCheckTestValidation extends Thread {
 							}
 							channel.disconnect();
 							session.disconnect();
-							logger.info("DONE");
+							System.out.println("DONE");
 							if (!channel.isClosed()) {
 								channel.disconnect();
 							}
@@ -365,13 +369,13 @@ public class HealthCheckTestValidation extends Thread {
 								Thread.sleep(15000);
 							} catch (Exception ee) {
 							}
-							logger.info("DONE");
+							System.out.println("DONE");
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 						} catch (IOException ex) {
-							logger.info("Error in health check first catch " + ex.getMessage());
-							logger.info("Error trace " + ex.getStackTrace());
-							logger.info("" + ex.getCause());
+							System.out.println("Error in health check first catch " + ex.getMessage());
+							System.out.println("Error trace " + ex.getStackTrace());
+							System.out.println("" + ex.getCause());
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 							requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
@@ -398,18 +402,18 @@ public class HealthCheckTestValidation extends Thread {
 						}
 
 						session.disconnect();
-						channel.disconnect();
 					} else if (type.equalsIgnoreCase("SLGF")) {
-						obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
-
+						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
+						obj = osHealthChk.healthcheckCommandTest(request, "POST");
 					}
 
 				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					String statusVAlue = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
+					String statusVAlue = requestDao.getPreviousMileStoneStatus(
+							requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
 					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "health_check", "4", statusVAlue);
-
+							Double.toString(requestinfo.getRequestVersion()), "health_check", "4", statusVAlue);				
+				
 					requestinfo.setAlphanumericReqId(RequestId);
 					requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 
@@ -422,7 +426,7 @@ public class HealthCheckTestValidation extends Thread {
 					String host = requestinfo.getManagementIp();
 					UserPojo userPojo = new UserPojo();
 					userPojo = requestInfoDao.getRouterCredentials();
-					logger.info("Request ID in health test validation" + RequestId);
+					System.out.println("Request ID in health test validation" + RequestId);
 					String user = null, password = null;
 
 					user = userPojo.getUsername();
@@ -437,20 +441,18 @@ public class HealthCheckTestValidation extends Thread {
 					String port = HealthCheckTestValidation.TSA_PROPERTIES.getProperty("portSSH");
 
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")
-							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
-							|| type.equalsIgnoreCase("SNNM")) {
-						
-						
-						session = jsch.getSession(user, host, Integer.parseInt(port));
+							|| type.equalsIgnoreCase("SNNC")) {
+						JSch jsch = new JSch();
+						Channel channel = null;
+						Session session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
-						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
+						System.out.println("Password for healthcheck " + password + "user " + user + "host " + host
 								+ "Port " + port);
 						session.setConfig(config);
 						session.setPassword(password);
 						session.connect();
-						logger.info("After session.connect 1");
+						System.out.println("After session.connect 1");
 						try {
 							Thread.sleep(10000);
 						} catch (Exception ee) {
@@ -461,15 +463,14 @@ public class HealthCheckTestValidation extends Thread {
 							OutputStream ops = channel.getOutputStream();
 
 							PrintStream ps = new PrintStream(ops, true);
-							logger.info("Channel Connected to machine " + host + " server");
+							System.out.println("Channel Connected to machine " + host + " server");
 							channel.connect();
 							InputStream input = channel.getInputStream();
 
 							if (requestinfo.getCertificationSelectionBit().substring(5, 6).equalsIgnoreCase("1")
 									|| requestinfo.getCertificationSelectionBit().substring(6).equalsIgnoreCase("1")) {
 								cmdPingCall(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()),
-										requestinfo.getManagementIp());
+										Double.toString(requestinfo.getRequestVersion()), requestinfo.getManagementIp());
 								printResult(input, requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()));
 								printResult(input, requestinfo.getAlphanumericReqId(),
@@ -517,8 +518,7 @@ public class HealthCheckTestValidation extends Thread {
 								}
 
 								cmdCall(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()),
-										requestinfo.getManagementIp());
+										Double.toString(requestinfo.getRequestVersion()), requestinfo.getManagementIp());
 								try {
 									Thread.sleep(1000);
 								} catch (Exception ee) {
@@ -603,12 +603,11 @@ public class HealthCheckTestValidation extends Thread {
 								String status = requestDao.getPreviousMileStoneStatus(
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 
-								int statusData = requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+								int statusData=requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "health_check");
-								if (statusData != 3) {
-									requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-											Double.toString(requestinfo.getRequestVersion()), "health_check", "1",
-											status);
+								if(statusData!=3) {
+								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "health_check", "1", status);
 								}
 							} else if (resultAnalyser.equalsIgnoreCase("Fail")) {
 								// db call for flag set false
@@ -632,18 +631,17 @@ public class HealthCheckTestValidation extends Thread {
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 								String switchh = "1";
 
-								int statusData = requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+								int statusData=requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "health_check");
-								if (statusData != 3) {
-									requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-											Double.toString(requestinfo.getRequestVersion()), "health_check", "1",
-											status);
+								if(statusData!=3) {
+								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "health_check", "1", status);
 								}
 								// to create final report if success
 								/* finalReportTestSSH.FlagCheckTest(configRequest); */
 
 							}
-							logger.info("DONE");
+							System.out.println("DONE");
 							channel.disconnect();
 							session.disconnect();
 							value = true;// hardcoded for default tests
@@ -661,22 +659,22 @@ public class HealthCheckTestValidation extends Thread {
 							}
 							channel.disconnect();
 							session.disconnect();
-							logger.info("DONE");
+							System.out.println("DONE");
 							if (!channel.isClosed()) {
 								channel.disconnect();
 							}
 							session.disconnect();
 							try {
-								Thread.sleep(5000);
+								Thread.sleep(15000);
 							} catch (Exception ee) {
 							}
-							logger.info("DONE");
+							System.out.println("DONE");
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 						} catch (IOException ex) {
-							logger.info("Error in health check first catch " + ex.getMessage());
-							logger.info("Error trace " + ex.getStackTrace());
-							logger.info("" + ex.getCause());
+							System.out.println("Error in health check first catch " + ex.getMessage());
+							System.out.println("Error trace " + ex.getStackTrace());
+							System.out.println("" + ex.getCause());
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -704,9 +702,8 @@ public class HealthCheckTestValidation extends Thread {
 
 						session.disconnect();
 					} else if (type.equalsIgnoreCase("SLGF")) {
-						
-						obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
-
+						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
+						obj = osHealthChk.healthcheckCommandTest(request, "POST");
 					}
 
 				}
@@ -715,8 +712,8 @@ public class HealthCheckTestValidation extends Thread {
 			catch (Exception ex) {
 				if (configRequest.getManagementIp() != null && !configRequest.getManagementIp().equals("")) {
 
-					logger.info("Error in health check send catch " + ex.getMessage());
-					logger.info("Error trace " + ex.getStackTrace());
+					System.out.println("Error in health check send catch " + ex.getMessage());
+					System.out.println("Error trace " + ex.getStackTrace());
 					ex.printStackTrace();
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
@@ -745,8 +742,8 @@ public class HealthCheckTestValidation extends Thread {
 					}
 
 				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					logger.info("Error in health check send catch " + ex.getMessage());
-					logger.info("Error trace " + ex.getStackTrace());
+					System.out.println("Error in health check send catch " + ex.getMessage());
+					System.out.println("Error trace " + ex.getStackTrace());
 					ex.printStackTrace();
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
@@ -776,25 +773,6 @@ public class HealthCheckTestValidation extends Thread {
 
 				}
 			}
-			finally {
-
-				if (channel != null) {
-					try {
-					session = channel.getSession();
-					
-					if (channel.getExitStatus() == -1) {
-						
-							Thread.sleep(5000);
-						
-					}
-					} catch (Exception e) {
-						System.out.println(e);
-					}
-					channel.disconnect();
-					session.disconnect();
-				
-				}
-			}
 		} else {
 			value = true;
 
@@ -803,7 +781,15 @@ public class HealthCheckTestValidation extends Thread {
 
 		}
 
-		
+		/*
+		 * return Response .status(200) .header("Access-Control-Allow-Origin", "*")
+		 * .header("Access-Control-Allow-Headers",
+		 * "origin, content-type, accept, authorization")
+		 * .header("Access-Control-Allow-Credentials", "true")
+		 * .header("Access-Control-Allow-Methods",
+		 * "GET, POST, PUT, DELETE, OPTIONS, HEAD") .header("Access-Control-Max-Age",
+		 * "1209600").entity(obj) .build();
+		 */
 
 		return obj;
 
@@ -932,7 +918,7 @@ public class HealthCheckTestValidation extends Thread {
 
 		}
 		if (channel.isClosed()) {
-			logger.info("exit-status: " + channel.getExitStatus());
+			System.out.println("exit-status: " + channel.getExitStatus());
 
 		}
 		try {
@@ -1054,8 +1040,8 @@ public class HealthCheckTestValidation extends Thread {
 
 			String commandToPing = "ping " + managementIp + " -n 20";
 			p_stdin.write(commandToPing);
-			logger.info("command To Ping : " + commandToPing);
-			logger.info("Management IP : " + managementIp);
+			System.out.println("command To Ping : " + commandToPing);
+			System.out.println("Management IP : " + managementIp);
 
 			p_stdin.newLine();
 			p_stdin.flush();
@@ -1078,7 +1064,7 @@ public class HealthCheckTestValidation extends Thread {
 		printResult(input, requestId, version);
 
 		while (s.hasNext()) {
-			logger.info(s.nextLine());
+			System.out.println(s.nextLine());
 		}
 		s.close();
 	}
@@ -1093,10 +1079,10 @@ public class HealthCheckTestValidation extends Thread {
 			int i = input.read(tmp, 0, SIZE);
 			if (i < 0)
 				break;
-			/* logger.info(new String(tmp, 0, i)); */
+			/* System.out.print(new String(tmp, 0, i)); */
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
-				logger.info(s);
+				System.out.print(s);
 				String filepath = HealthCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//"
 						+ requestID + "V" + version + "_HealthCheck.txt";
 				File file = new File(filepath);
@@ -1119,7 +1105,7 @@ public class HealthCheckTestValidation extends Thread {
 
 		}
 		/*
-		 * if (channel.isClosed()) { logger.info("exit-status: " +
+		 * if (channel.isClosed()) { System.out.println("exit-status: " +
 		 * channel.getExitStatus());
 		 * 
 		 * }
