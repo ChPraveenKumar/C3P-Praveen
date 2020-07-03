@@ -22,7 +22,12 @@ public class CamundaServiceTemplateApproval {
 	@SuppressWarnings("unchecked")
 	public void completeApprovalFlow(String userTaskId, String status,
 			String comment) {
-		
+		try {
+			CamundaServiceTemplateApproval.loadProperties();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		String serverPath = CamundaServiceTemplateApproval.TSA_PROPERTIES
 				.getProperty("serverPath");
 		String query = serverPath +"/engine-rest/task/"
@@ -75,6 +80,7 @@ public class CamundaServiceTemplateApproval {
 	@SuppressWarnings("unchecked")
 	public void initiateApprovalFlow(String templateId, String version,
 			String approver) throws IOException, JSONException {
+		CamundaServiceTemplateApproval.loadProperties();
 
 		String serverPath = CamundaServiceTemplateApproval.TSA_PROPERTIES
 				.getProperty("serverPath");
