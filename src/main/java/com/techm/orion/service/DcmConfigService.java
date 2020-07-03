@@ -1003,6 +1003,23 @@ public class DcmConfigService {
 		return templateid;
 	}
 
+	public String getTemplateName(String region, String vendor, String model) {
+		String templateid = null;
+		
+		if(model.equalsIgnoreCase(""))
+		{
+		templateid = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase();
+		}
+		else
+		{
+		templateid = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase() + model.substring(0, 2).toUpperCase();
+
+		}
+		
+
+		return templateid;
+	}
+
 	public List<String> listFilesForFolder(final File folder) {
 		List<String> list = new ArrayList<String>();
 		for (final File fileEntry : folder.listFiles()) {

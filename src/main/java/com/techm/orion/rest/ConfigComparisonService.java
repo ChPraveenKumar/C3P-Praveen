@@ -71,7 +71,7 @@ public class ConfigComparisonService implements Observer {
 			// String requestId="SR-DC394C0";
 			String snippet = dao.getSnippet(data_type, label, test_name);
 			// write it to temp file StandardConfiguration.txt
-			String filepath1 = standardConfigPath + "\\StandardConfiguration.txt";
+			String filepath1 = standardConfigPath + "/StandardConfiguration.txt";
 			FileWriter fw1 = null;
 			BufferedWriter bw1 = null;
 			File file1 = new File(filepath1);
@@ -93,8 +93,8 @@ public class ConfigComparisonService implements Observer {
 			}
 
 			// Create temp current version file
-			String filepath2 = currentConfigPath + "\\" + requestId + "V1.0" + "_CurrentVersionConfig.txt";
-			String tempFilePath = currentConfigPath + "\\" + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt";
+			String filepath2 = currentConfigPath + "/" + requestId + "V1.0" + "_CurrentVersionConfig.txt";
+			String tempFilePath = currentConfigPath + "/" + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt";
 			File tempFile = new File(tempFilePath);
 			FileWriter fw = new FileWriter(tempFilePath);
 			if (!tempFile.exists()) {
@@ -129,16 +129,16 @@ public class ConfigComparisonService implements Observer {
 			// copy them to temp file
 
 			// if destination html file exists delete it and create new
-			File destFile = new File(comparisonFolder + "\\" + requestId + "V1.0" + "_ComparisonSnippet" + ".html");
+			File destFile = new File(comparisonFolder + "/" + requestId + "V1.0" + "_ComparisonSnippet" + ".html");
 			if (!destFile.exists()) {
 			} else {
 				destFile.delete();
 			}
 
-			String[] cmd = { "python", pythonScriptFolder + "\\filediff.py", "-m",
-					standardConfigPath + "\\StandardConfiguration.txt",
-					currentConfigPath + "\\" + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt",
-					comparisonFolder + "\\" + requestId + "V1.0" + "_ComparisonSnippet" + ".html" };
+			String[] cmd = { "python", pythonScriptFolder + "/filediff.py", "-m",
+					standardConfigPath + "/StandardConfiguration.txt",
+					currentConfigPath + "/" + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt",
+					comparisonFolder + "/" + requestId + "V1.0" + "_ComparisonSnippet" + ".html" };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -149,7 +149,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + "\\" + requestId + "V1.0" + "_ComparisonSnippet" + ".html";
+				outputFile = comparisonFolder + "/" + requestId + "V1.0" + "_ComparisonSnippet" + ".html";
 				StringBuilder bldr = new StringBuilder();
 				String str;
 
@@ -166,8 +166,8 @@ public class ConfigComparisonService implements Observer {
 
 				String jsonArray = gson.toJson(content);
 				content = getFormattedDoc(content, "snippet",
-						currentConfigPath + "\\" + RequestId + "_PreviousConfig.txt",
-						currentConfigPath + "\\" + RequestId + "_CurrentVersionConfig.txt");
+						currentConfigPath + "/" + RequestId + "_PreviousConfig.txt",
+						currentConfigPath + "/" + RequestId + "_CurrentVersionConfig.txt");
 
 				obj.put(new String("output"), content);
 			} else {
@@ -229,7 +229,7 @@ public class ConfigComparisonService implements Observer {
 			// String requestId="SR-DC394C0";
 			String snippet = dao.getSnippet(data_type, label, test_name);
 			// write it to temp file StandardConfiguration.txt
-			String filepath1 = standardConfigPath + "\\StandardConfiguration.txt";
+			String filepath1 = standardConfigPath + "/StandardConfiguration.txt";
 			FileWriter fw1 = null;
 			BufferedWriter bw1 = null;
 			File file1 = new File(filepath1);
@@ -251,8 +251,8 @@ public class ConfigComparisonService implements Observer {
 			}
 
 			// Create temp current version file
-			String filepath2 = currentConfigPath + "\\" + requestId + "V1.0" + "_CurrentVersionConfig.txt";
-			String tempFilePath = currentConfigPath + "\\" + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt";
+			String filepath2 = currentConfigPath + "/" + requestId + "V1.0" + "_CurrentVersionConfig.txt";
+			String tempFilePath = currentConfigPath + "/" + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt";
 			File tempFile = new File(tempFilePath);
 			FileWriter fw = new FileWriter(tempFilePath);
 			if (!tempFile.exists()) {
@@ -287,16 +287,16 @@ public class ConfigComparisonService implements Observer {
 			// copy them to temp file
 
 			// if destination html file exists delete it and create new
-			File destFile = new File(comparisonFolder + "\\" + requestId + "V1.0" + "_ComparisonSnippet" + ".html");
+			File destFile = new File(comparisonFolder + "/" + requestId + "V1.0" + "_ComparisonSnippet" + ".html");
 			if (!destFile.exists()) {
 			} else {
 				destFile.delete();
 			}
 
-			String[] cmd = { "python", pythonScriptFolder + "\\filediff.py", "-m",
-					standardConfigPath + "\\StandardConfiguration.txt",
-					currentConfigPath + "\\" + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt",
-					comparisonFolder + "\\" + requestId + "V1.0" + "_ComparisonSnippet" + ".html" };
+			String[] cmd = { "python", pythonScriptFolder + "/filediff.py", "-m",
+					standardConfigPath + "/StandardConfiguration.txt",
+					currentConfigPath + "/" + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt",
+					comparisonFolder + "/" + requestId + "V1.0" + "_ComparisonSnippet" + ".html" };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -307,7 +307,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + "\\" + requestId + "V1.0" + "_ComparisonSnippet" + ".html";
+				outputFile = comparisonFolder + "/" + requestId + "V1.0" + "_ComparisonSnippet" + ".html";
 				StringBuilder bldr = new StringBuilder();
 				String str;
 
@@ -324,8 +324,8 @@ public class ConfigComparisonService implements Observer {
 
 				String jsonArray = gson.toJson(content);
 				content = getFormattedDoc(content, "snippet",
-						currentConfigPath + "\\" + RequestId + "_PreviousConfig.txt",
-						currentConfigPath + "\\" + RequestId + "_CurrentVersionConfig.txt");
+						currentConfigPath + "/" + RequestId + "_PreviousConfig.txt",
+						currentConfigPath + "/" + RequestId + "_CurrentVersionConfig.txt");
 
 				obj.put(new String("output"), content);
 			} else {
@@ -368,9 +368,9 @@ public class ConfigComparisonService implements Observer {
 			String RequestId = json.get("requestID").toString();
 			String keyword = json.get("keyword").toString();
 			String outputFile = null;
-			String[] cmd = { "python", pythonScriptFolder + "\\keywordSearchFiltered.py", "-m",
-					currentConfigPath + "\\" + RequestId + "V1.0" + "_CurrentVersionConfig.txt",
-					comparisonFolder + "\\" + RequestId + "_KeywordNetworkAudit" + ".html", keyword };
+			String[] cmd = { "python", pythonScriptFolder + "/keywordSearchFiltered.py", "-m",
+					currentConfigPath + "/" + RequestId + "V1.0" + "_CurrentVersionConfig.txt",
+					comparisonFolder + "/" + RequestId + "_KeywordNetworkAudit" + ".html", keyword };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -381,7 +381,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + "\\" + RequestId + "_KeywordFinalReport" + ".html";
+				outputFile = comparisonFolder + "/" + RequestId + "_KeywordFinalReport" + ".html";
 				StringBuilder bldr = new StringBuilder();
 				String str;
 
@@ -438,9 +438,9 @@ public class ConfigComparisonService implements Observer {
 			String RequestId = json.get("requestID").toString();
 			String keyword = json.get("keyword").toString();
 			String outputFile = null;
-			String[] cmd = { "python", pythonScriptFolder + "\\keywordSearchFiltered.py", "-m",
-					currentConfigPath + "\\" + RequestId + "V1.0" + "_CurrentVersionConfig.txt",
-					comparisonFolder + "\\" + RequestId + "_KeywordFinalReport" + ".html", keyword };
+			String[] cmd = { "python", pythonScriptFolder + "/keywordSearchFiltered.py", "-m",
+					currentConfigPath + "/" + RequestId + "V1.0" + "_CurrentVersionConfig.txt",
+					comparisonFolder + "/" + RequestId + "_KeywordFinalReport" + ".html", keyword };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -451,7 +451,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + "\\" + RequestId + "_KeywordFinalReport" + ".html";
+				outputFile = comparisonFolder + "/" + RequestId + "_KeywordFinalReport" + ".html";
 
 				StringBuilder bldr = new StringBuilder();
 				String str;
@@ -513,10 +513,10 @@ public class ConfigComparisonService implements Observer {
 			String outputFile = null;
 
 			// copy them to temp file
-			String[] cmd = { "python", pythonScriptFolder + "\\filediff.py", "-m",
-					currentConfigPath + "\\" + RequestId + "_PreviousConfig.txt",
-					currentConfigPath + "\\" + RequestId + "_CurrentVersionConfig.txt",
-					comparisonFolder + "\\" + RequestId + "_Comparison" + ".html" };
+			String[] cmd = { "python", pythonScriptFolder + "/filediff.py", "-m",
+					currentConfigPath + "/" + RequestId + "_PreviousConfig.txt",
+					currentConfigPath + "/" + RequestId + "_CurrentVersionConfig.txt",
+					comparisonFolder + "/" + RequestId + "_Comparison" + ".html" };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -527,7 +527,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + "\\" + RequestId + "_Comparison" + ".html";
+				outputFile = comparisonFolder + "/" + RequestId + "_Comparison" + ".html";
 				StringBuilder bldr = new StringBuilder();
 				String str;
 
@@ -544,8 +544,8 @@ public class ConfigComparisonService implements Observer {
 
 				String jsonArray = gson.toJson(content);
 				content = getFormattedDoc(content, "sr_backup",
-						currentConfigPath + "\\" + RequestId + "_PreviousConfig.txt",
-						currentConfigPath + "\\" + RequestId + "_CurrentVersionConfig.txt");
+						currentConfigPath + "/" + RequestId + "_PreviousConfig.txt",
+						currentConfigPath + "/" + RequestId + "_CurrentVersionConfig.txt");
 
 				obj.put(new String("output"), jsonArray);
 			} else {
@@ -591,10 +591,10 @@ public class ConfigComparisonService implements Observer {
 			String outputFile = null;
 
 			// copy them to temp file
-			String[] cmd = { "python", pythonScriptFolder + "\\filediff.py", "-m",
-					currentConfigPath + "\\" + RequestId1 + "V1.0" + "_PreviousConfig.txt",
-					currentConfigPath + "\\" + RequestId2 + "V1.0" + "_PreviousConfig.txt",
-					comparisonFolder + "\\" + RequestId1 + "_Comparison" + ".html" };
+			String[] cmd = { "python", pythonScriptFolder + "/filediff.py", "-m",
+					currentConfigPath + "/" + RequestId1 + "V1.0" + "_PreviousConfig.txt",
+					currentConfigPath + "/" + RequestId2 + "V1.0" + "_PreviousConfig.txt",
+					comparisonFolder + "/" + RequestId1 + "_Comparison" + ".html" };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -605,7 +605,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + "\\" + RequestId1 + "_Comparison" + ".html";
+				outputFile = comparisonFolder + "/" + RequestId1 + "_Comparison" + ".html";
 				StringBuilder bldr = new StringBuilder();
 				String str;
 

@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.techm.orion.utility.TSALabels;
+
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/GenerateReport")
@@ -41,7 +43,7 @@ public class GenerateReport {
 			throws IOException, ParseException {
 		Response build = null;
 		// Provide the path of python script file location
-		String pythonScriptFolder = "D:\\PDF_Ptyhon_Folder\\inputfile.py";
+		//String pythonScriptFolder = "D:/PDF_Ptyhon_Folder/inputfile.py";
 
 		// Provide the path of html file location
 		String home = System.getProperty("user.home");
@@ -53,7 +55,7 @@ public class GenerateReport {
 		String requestId = null;
 		String version = null;
 
-		File pythonFileCheck = new File(pythonScriptFolder);
+		File pythonFileCheck = new File(TSALabels.PYTHON_SCRIPT_PATH.getValue());
 		try {
 			if (!pythonFileCheck.exists()) {
 				throw new Exception("file is not found!");
@@ -73,11 +75,11 @@ public class GenerateReport {
 			// To Generate pdf file from html file using python with path from
 			// where we need to read html file and write PDF File
 			String[] cmd = { "python", pythonFileCheck.getPath(), downloadHtmlFilePath.getPath(),
-					home + "\\" + "Downloads" + "\\" + requestId + "_" + fileName + "_" + "V" + version + ".pdf" };
+					home + "/" + "Downloads" + "/" + requestId + "_" + fileName + "_" + "V" + version + ".pdf" };
 			Process processInstance = Runtime.getRuntime().exec(cmd);
 
 			File file = new File(
-					home + "\\" + "Downloads" + "\\" + requestId + "_" + fileName + "_" + "V" + version + ".pdf");
+					home + "/" + "Downloads" + "/" + requestId + "_" + fileName + "_" + "V" + version + ".pdf");
 			if (!file.exists()) {
 				response.setHeader("error", "file not found");
 

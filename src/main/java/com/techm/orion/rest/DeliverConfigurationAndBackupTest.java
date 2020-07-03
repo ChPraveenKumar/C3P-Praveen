@@ -432,8 +432,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					} catch (Exception ee) {
 					}
 
-					channel.disconnect();
-					session.disconnect();
+				
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGC")
@@ -1188,16 +1187,14 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							value = false;
 						}
 
-						channel.disconnect();
-						session.disconnect();
+						
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 
 					} catch (Exception ee) {
 					}
 
-					channel.disconnect();
-					session.disconnect();
+				
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 				} else if (json.get("requestType").toString().equalsIgnoreCase("SLGC")

@@ -99,7 +99,7 @@ public class VNFHelper {
 
 	public boolean pushOnVnfDevice(String file) {
 		boolean result = true;
-		String[] cmd = { "python", "D:\\configuration_files\\pythonScript\\editscript.py", file };
+		String[] cmd = { "python", TSALabels.PYTHON_SCRIPT_PATH.getValue()+"\\editscript.py", file };
 		Process p;
 		try {
 			p = Runtime.getRuntime().exec(cmd);

@@ -1,6 +1,7 @@
 package com.techm.orion.rest;
 
 import java.sql.Connection;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.mysql.jdbc.Statement;
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.EIPAMEntity;

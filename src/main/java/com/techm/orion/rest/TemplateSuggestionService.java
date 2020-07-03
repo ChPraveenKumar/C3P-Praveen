@@ -366,68 +366,210 @@ public class TemplateSuggestionService implements Observer {
 	/* Dhanshri Mane */
 	/* Get Attribute Related MACD Features and template Id */
 	@POST
-	@RequestMapping(value = "/getAttribForMACD", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public Response getAttribForMACD(@RequestBody String featuresList) {
+    @RequestMapping(value = "/getAttribForMACD", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @ResponseBody
+    public Response getAttribForMACD(@RequestBody String featuresList) {
+        DcmConfigService dcmConfigService = new DcmConfigService();
+        // TemplateSuggestionDao templateSuggestionDao=new TemplateSuggestionDao();
+        JSONObject obj = new JSONObject();
 
+ 
+
+        try {
+
+ 
+
+            JSONParser parser = new JSONParser();
+            JSONObject json = (JSONObject) parser.parse(featuresList);
+            org.json.simple.JSONArray jsonArr = (org.json.simple.JSONArray) json.get("featureList");
+
+ 
+
+            List<String> list = new ArrayList<String>();
+            TemplateManagementDao dao = new TemplateManagementDao();
+            // String templateId = json.get("templateId").toString();
+
+ 
+
+            for (int i = 0; i < jsonArr.size(); i++) {
+                JSONObject arrObj = (JSONObject) jsonArr.get(i);
+                list.add(arrObj.get("value").toString());
+            }
+            String region = json.get("region").toString();
+            String vendor = json.get("vendor").toString();
+            String networkFunction = json.get("networkFunction").toString();
+            String deviceFamily = json.get("deviceFamily").toString();
+            String model = json.get("model").toString();
+            String requestType = json.get("requestType").toString();
+
+ 
+
+            String templateId = dcmConfigService.getTemplateName(region, vendor, model);
+
+ 
+
+            String templateIdValue = null;
+            if (!list.isEmpty() && list != null) {
+                String[] features = list.toArray(new String[list.size()]);
+                List<TemplateBasicConfigurationPojo> templateBasicConfigurationPojo = templateSuggestionDao
+                        .getDataGrid(features, templateId);
+                for (int i = 0; i < templateBasicConfigurationPojo.size(); i++) {
+                    if (networkFunction.equals(templateBasicConfigurationPojo.get(i).getNetworkType())) {
+                        templateIdValue = templateBasicConfigurationPojo.get(i).getTemplateId();
+                    }
+                }
+            }
+            List<TemplateAttribPojo> templateAttrib = new ArrayList<>();
+            String finalCommands =null;
+            if (templateIdValue != null) {
+                String[] features = list.toArray(new String[list.size()]);
+                templateAttrib = templateSuggestionDao.getDynamicAttribDataGrid(features, templateIdValue);
+
+ 
+
+                List<CommandPojo> cammandByTemplate = new ArrayList<>();
+                for (String feature : features) {
+
+ 
+
+                    TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
+                            .findIdByComandDisplayFeatureAndCommandContains(feature, templateIdValue);
+                    cammandByTemplate.addAll(
+                            dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(), templateIdValue));
+                }
+                finalCommands="";
+                for (CommandPojo command : cammandByTemplate) {
+                    finalCommands = finalCommands + command.getCommandValue();
+                }
+            }
+            if (!templateAttrib.isEmpty() && templateAttrib != null) {
+                obj.put(new String("features"), templateAttrib);
+                obj.put(new String("commands"), finalCommands);
+                obj.put(new String("templateId"), templateIdValue);
+                obj.put(new String("Result"), "Success");
+                obj.put(new String("Message"), "Success");
+            } else if (templateAttrib.isEmpty() && templateAttrib == null || templateIdValue != null) {
+                obj.put(new String("commands"), finalCommands);
+                obj.put(new String("templateId"), templateIdValue);
+                obj.put(new String("Result"), "Success");
+                obj.put(new String("Message"), "Success");
+            }
+            else {
+                obj.put(new String("Result"), "Failure");
+                obj.put(new String("Message"), "No Data.Create the template first");
+                obj.put(new String("TemplateDetailList"), null);
+            }
+
+ 
+
+        } catch (Exception e) {
+            logger.error(e);
+        }
+        return Response.status(200).header("Access-Control-Allow-Origin", "*")
+                .header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+                .header("Access-Control-Allow-Credentials", "true")
+                .header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+                .header("Access-Control-Max-Age", "1209600").entity(obj).build();
+
+ 
+
+    }
+	
+	
+	@POST
+	@RequestMapping(value = "/getFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response getFeaturesForDeviceDetailDynamic(@RequestBody String configRequest) {
+		DcmConfigService dcmConfigService = new DcmConfigService();
 		// TemplateSuggestionDao templateSuggestionDao=new TemplateSuggestionDao();
 		JSONObject obj = new JSONObject();
+		String jsonArray = "";
+		String networkType = null, requestType=null;
+		JSONArray array = new JSONArray();
 
-		String jsonAttrib = "";
-
+		JSONObject jsonObj;
 		try {
 
 			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(featuresList);
-			org.json.simple.JSONArray jsonArr = (org.json.simple.JSONArray) json.get("featureList");
+			org.json.simple.JSONArray jsoninput = (org.json.simple.JSONArray) parser.parse(configRequest);
 
-			List<String> list = new ArrayList<String>();
-			TemplateManagementDao dao = new TemplateManagementDao();
-			String templateId = json.get("templateId").toString();
+			CreateConfigRequestDCM createConfigRequestDCM = new CreateConfigRequestDCM();
+			
+			for(int i=0; i<jsoninput.size();i++)
+			{
+				JSONObject inpobj=(JSONObject) jsoninput.get(i);
+				if(inpobj.get("key").toString().equalsIgnoreCase("region"))
+				{
+					createConfigRequestDCM.setRegion(inpobj.get("value").toString().toUpperCase());
+				}
+				if(inpobj.get("key").toString().equalsIgnoreCase("vendor"))
+				{
+					createConfigRequestDCM.setVendor((inpobj.get("value").toString().toUpperCase()));				
+				}
+				if(inpobj.get("key").toString().equalsIgnoreCase("networkFunction"))
+				{
+					networkType = inpobj.get("value").toString();
+				}
+				
+				if(inpobj.get("key").toString().equalsIgnoreCase("deviceFamily"))
+				{
+					
+				}
+				if(inpobj.get("key").toString().equalsIgnoreCase("model"))
+				{
+					createConfigRequestDCM.setModel((inpobj.get("value").toString().toUpperCase()));
 
-			for (int i = 0; i < jsonArr.size(); i++) {
-				JSONObject arrObj = (JSONObject) jsonArr.get(i);
-				list.add(arrObj.get("value").toString());
-			}
-			String templateIdValue = null;
-			if (!list.isEmpty() && list != null) {
-				String[] features = list.toArray(new String[list.size()]);
-				List<TemplateBasicConfigurationPojo> templateBasicConfigurationPojo = templateSuggestionDao
-						.getDataGrid(features, templateId);
-				for (int i = 0; i < templateBasicConfigurationPojo.size(); i++) {
-					templateIdValue = templateBasicConfigurationPojo.get(i).getTemplateId();
+				}
+				if(inpobj.get("key").toString().equalsIgnoreCase("requestType"))
+				{
+					requestType = inpobj.get("value").toString();
 				}
 			}
-			String[] features = list.toArray(new String[list.size()]);
-			List<TemplateAttribPojo> templateAttrib = templateSuggestionDao.getDynamicAttribDataGrid(features,
-					templateIdValue);
+			
+			
+			/*createConfigRequestDCM.setModel(json.get("model").toString());
+			createConfigRequestDCM.setOs(json.get("os").toString());
+			createConfigRequestDCM.setOsVersion(json.get("osVersion").toString());
 
-			List<CommandPojo> cammandByTemplate = new ArrayList<>();
-			for (String feature : features) {
+			createConfigRequestDCM.setRegion(json.get("region").toString().toUpperCase());
 
-				TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
-						.findIdByComandDisplayFeatureAndCommandContains(feature, templateId);
-				cammandByTemplate.addAll(
-						dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(), templateIdValue));
-			}
-			String finalCommands = "";
-			for (CommandPojo command : cammandByTemplate) {
-				finalCommands = finalCommands + command.getCommandValue();
-			}
+			createConfigRequestDCM.setVendor(json.get("vendor").toString().toUpperCase());*/
 
-			jsonAttrib = new Gson().toJson(templateAttrib);
-			if (!jsonAttrib.isEmpty() && templateAttrib != null) {
-				obj.put(new String("features"), templateAttrib);
-				obj.put(new String("commands"), finalCommands);
-				obj.put(new String("templateId"), templateIdValue);
+			String templateId = dcmConfigService.getTemplateName(createConfigRequestDCM.getRegion(),
+					createConfigRequestDCM.getVendor(), createConfigRequestDCM.getModel());
+
+			
+
+			List<String> getFfeatureList = templateSuggestionDao.getListOfFeaturesForDeviceDetail(templateId,
+					networkType, requestType);
+			Set<String> uniqueFeatureList = new HashSet<>(getFfeatureList);
+			// uniqueFeatureList.addAll(getFfeatureList);
+			List<String> featureList = new ArrayList<>(uniqueFeatureList);
+			// featureList.addAll(uniqueFeatureList);
+
+			if (featureList.size() > 0) {
+				for (int i = 0; i < featureList.size(); i++) {
+					
+
+					if(requestType.equalsIgnoreCase("Config MACD") && !featureList.get(i).equalsIgnoreCase("Basic Configuration"))
+					{
+						jsonObj = new JSONObject();
+						jsonObj.put("value", featureList.get(i));	
+						array.put(jsonObj);
+					}
+					
+
+					
+				}
+				jsonArray = array.toString();
 				obj.put(new String("Result"), "Success");
 				obj.put(new String("Message"), "Success");
-			}
-
-			else {
+				obj.put(new String("featureList"), jsonArray);
+				obj.put(new String("templateId"), templateId);
+			} else {
 				obj.put(new String("Result"), "Failure");
-				obj.put(new String("Message"), "No Data.Create the template first");
-				obj.put(new String("TemplateDetailList"), null);
+				obj.put(new String("Message"), "No features Present.Create the template first");
+				obj.put(new String("featureList"), null);
 			}
 
 		} catch (Exception e) {

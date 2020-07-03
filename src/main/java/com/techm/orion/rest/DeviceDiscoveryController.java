@@ -139,7 +139,7 @@ public class DeviceDiscoveryController implements Observer {
 				int cidr = convertNetmaskToCIDR(netmask);
 				logger.info("Cidr" + cidr);
 				String paramCidr = Integer.toString(cidr);
-				String[] cmdIPCalc = { "python", pythonScriptFolder + "\\ip_range_calculate.py", "-m", startIp,
+				String[] cmdIPCalc = { "python", pythonScriptFolder + "/ip_range_calculate.py", "-m", startIp,
 						paramCidr };
 
 				p = Runtime.getRuntime().exec(cmdIPCalc);
@@ -512,8 +512,8 @@ public class DeviceDiscoveryController implements Observer {
 		JSONObject deviceinfo = new JSONObject();
 
 		try {
-			String[] cmd = { "python", pythonScriptFolder + "\\walkDeviceInventory.py", "-m",
-					snmpDump + "\\" + discoveryName + ".txt", ipAddress };
+			String[] cmd = { "python", pythonScriptFolder + "/walkDeviceInventory.py", "-m",
+					snmpDump + "/" + discoveryName + ".txt", ipAddress };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -569,8 +569,8 @@ public class DeviceDiscoveryController implements Observer {
 		JSONParser parser = new JSONParser();
 		JSONObject interfaceinfo = new JSONObject();
 		try {
-			String[] cmd1 = { "python", pythonScriptFolder + "\\walkDeviceInterfaces.py", "-m",
-					snmpDump + "\\" + discoveryName + "Interfaces.txt", ipAddress };
+			String[] cmd1 = { "python", pythonScriptFolder + "/walkDeviceInterfaces.py", "-m",
+					snmpDump + "/" + discoveryName + "Interfaces.txt", ipAddress };
 
 			Process p1 = Runtime.getRuntime().exec(cmd1);
 			BufferedReader in1 = new BufferedReader(new InputStreamReader(p1.getInputStream()));

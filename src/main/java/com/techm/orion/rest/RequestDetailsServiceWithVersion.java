@@ -156,8 +156,8 @@ public class RequestDetailsServiceWithVersion {
 					detailsList = requestRedao.getRequestWithVersion(key, value, version);
 					reoportflagllist = requestValue.getReportsInfoForAllRequestsDB();
 					certificationBit = requestRedao.getCertificationtestvalidation(value);
-					String type = value.substring(0, Math.min(value.length(), 2));
-					if (type.equalsIgnoreCase("OS")) {
+					String type = value.substring(0, Math.min(value.length(), 4));
+					if (type.equalsIgnoreCase("SLGF")) {
 						Float v = Float.parseFloat(version);
 						DecimalFormat df = new DecimalFormat("0.0");
 						df.setMaximumFractionDigits(1);

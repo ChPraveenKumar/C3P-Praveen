@@ -1675,7 +1675,7 @@ public class TestStrategeyAnalyser {
 					else if (rules.get(i).getDataType().equalsIgnoreCase("Keyword")) {
 						String configFolderPath = TestStrategeyAnalyser.PROPERTIES.getProperty("responseDownloadPath");
 						File filePath = new File(
-								configFolderPath + "\\" + requestID + "V1.0" + "_CurrentVersionConfig.txt");
+								configFolderPath + "/" + requestID + "V1.0" + "_CurrentVersionConfig.txt");
 						String[] words = null;
 						String result = null, resultText = null;
 						FileReader fileReader = new FileReader(filePath);

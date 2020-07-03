@@ -1,3 +1,4 @@
+
 package com.techm.orion.service;
 
 import java.sql.Timestamp;
@@ -5,23 +6,32 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.GET;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.BatchIdEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
+import com.techm.orion.entitybeans.WebServiceEntity;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.WebServiceRepo;
 
-//@RequestMapping("/Test")
+/*  @Controller
+  
+  @RequestMapping("/searchdeviceinventoryNew")*/
+
 @Controller
 public class RequestInfoScheduler {
-	private static final Logger logger = LogManager.getLogger(NetworkTestSSH.class);
+
 	@Autowired
 	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
@@ -31,20 +41,26 @@ public class RequestInfoScheduler {
 	@Autowired
 	RequestInfoDao dao;
 
+	@Autowired
+	public WebServiceRepo webServiceRepo;
+
+	private static final Logger logger = LogManager.getLogger(RequestInfoScheduler.class);
+
 	/*
 	 * @GET
 	 * 
-	 * @RequestMapping(value = "/getAllRequest", method = RequestMethod.GET,
+	 * @RequestMapping(value = "/getAllBatchRequest", method = RequestMethod.GET,
 	 * produces = "application/json")
 	 */
-	
+
 	@Scheduled(cron = "0/5 * * * * *")
 	public void fetchDBJob() {
 		CreateConfigRequestDCM configRequest = new CreateConfigRequestDCM();
-		String tempBatchId = null;
+		String tempBatchId = null, tempId = null;
 		List<BatchIdEntity> entity = batchInfoRepo.findAll();
 
 		List<RequestInfoEntity> detailsList = new ArrayList<RequestInfoEntity>();
+		WebServiceEntity obj = new WebServiceEntity();
 
 		for (int i = 0; i < entity.size(); i++) {
 
@@ -68,40 +84,106 @@ public class RequestInfoScheduler {
 						configRequest.setRequest_version(detailsList.get(j).getRequestVersion());
 						configRequest.setRequestType(detailsList.get(j).getRequestType());
 
-						logger.info(detailsList.get(j).getAlphanumericReqId());
+						if ((detailsList.get(j).getRequestType().equals("SLGB"))) {
 
-						if (!(detailsList.get(j).getRequestType().equals("Config MACD"))) {
+							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
-							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest);
-							telnetCommunicationSSH.setDaemon(true);
-							telnetCommunicationSSH.start();
+								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+										configRequest);
+								telnetCommunicationSSH.setDaemon(true);
+								telnetCommunicationSSH.start();
+								System.out.println(timestamp.toString());
 
-							try {
+								try {
 
-								Thread.sleep(100000);
-							} catch (Exception e) {
-								logger.error(e);
+									Thread.sleep(27000);
+								} catch (Exception e) {
+									logger.error(e);
+								}
+								obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
+
+								int applicationTest = obj.getApplication_test();
+
+								if (applicationTest == 2) {
+
+									dao.updateBatchRequestStatus(detailsList.get(j).getAlphanumericReqId());
+								}
+
+								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
+
+								try {
+
+									Thread.sleep(35000);
+								} catch (Exception e) {
+									logger.error(e);
+								}
+
 							}
-						} else {
+						} else if (detailsList.get(j).getRequestType().equals("Config MACD")) {
+							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
-							try {
+								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+										configRequest);
+								telnetCommunicationSSH.setDaemon(true);
+								telnetCommunicationSSH.start();
 
-								Thread.sleep(5000);
-							} catch (Exception e) {
-								logger.error(e);
+								try {
+
+									Thread.sleep(30000);
+								} catch (Exception e) {
+									logger.error(e);
+								}
+								obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
+
+								int applicationTest = obj.getApplication_test();
+
+								if (applicationTest == 2) {
+									dao.updateBatchRequestStatus(detailsList.get(j).getAlphanumericReqId());
+								}
+
+								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
+								try {
+
+									Thread.sleep(35000);
+								} catch (Exception e) {
+									logger.error(e);
+								}
+							}
+						} else if (detailsList.get(j).getRequestType().equals("Test")) {
+
+							if ((detailsList.get(j).getExecutionStatus() == false)) {
+
+					
+								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+										configRequest);
+								telnetCommunicationSSH.setDaemon(true);
+								telnetCommunicationSSH.start();
+
+								try {
+
+									Thread.sleep(30000);
+								} catch (Exception e) {
+									logger.error(e);
+								}
+								obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
+
+								int applicationTest = obj.getApplication_test();
+
+								if (applicationTest == 2) {
+									dao.updateBatchRequestStatus(detailsList.get(j).getAlphanumericReqId());
+								}
+
+								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
+								try {
+
+									Thread.sleep(35000);
+								} catch (Exception e) {
+									logger.error(e);
+								}
 							}
 
-							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest);
-							telnetCommunicationSSH.setDaemon(true);
-							telnetCommunicationSSH.start();
-
-							try {
-
-								Thread.sleep(100000);
-							} catch (Exception e) {
-								logger.error(e);
-							}
 						}
+
 					}
 				}
 			}
@@ -115,12 +197,11 @@ public class RequestInfoScheduler {
 
 				detailsList = requestInfoDetailsRepositories.findByBatchId(tempBatchId);
 				for (int j = 0; j < detailsList.size(); j++) {
-					if (detailsList.get(j).getStatus().equals("Success")
-							|| detailsList.get(j).getStatus().equals("Failure")) {
-						boolean tempStatus = dao.updateBatchStatus(tempBatchId);
 
-					}
+					boolean tempStatus = dao.updateBatchStatus(tempBatchId);
+
 				}
+
 			}
 		}
 

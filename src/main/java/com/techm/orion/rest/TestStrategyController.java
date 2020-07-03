@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.mysql.jdbc.exceptions.jdbc4.MySQLIntegrityConstraintViolationException;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.PredefineTestDetailEntity;
@@ -336,7 +335,7 @@ public class TestStrategyController {
 	@POST
 	@RequestMapping(value = "/savetestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response saveBasicConfiguration(@RequestBody String teststrategesaveRqst)
-			throws MySQLIntegrityConstraintViolationException {
+			 {
 
 		String str = "";
 		JSONParser parser = new JSONParser();
@@ -686,7 +685,7 @@ public class TestStrategyController {
 	@POST
 	@RequestMapping(value = "/edittestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response editBasicConfiguration(@RequestBody String teststrategeeditRqst)
-			throws MySQLIntegrityConstraintViolationException {
+			{
 		RequestInfoDao dao = new RequestInfoDao();
 		String str = "";
 		JSONParser parser = new JSONParser();
@@ -1008,7 +1007,7 @@ public class TestStrategyController {
 	@POST
 	@RequestMapping(value = "/networkAuditReport", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response networkAuditReport(@RequestBody String teststrategeeditRqst)
-			throws MySQLIntegrityConstraintViolationException {
+			{
 
 		JSONParser parser = new JSONParser();
 		try {

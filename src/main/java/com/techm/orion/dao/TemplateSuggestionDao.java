@@ -188,77 +188,99 @@ public class TemplateSuggestionDao {
 
 	public List<TemplateBasicConfigurationPojo> getDataGrid(String[] feature, String templateId) {
 
-		String query = createQuery(feature.length);
+		 
 
-		// String length=feature.length;
-		String query1 = "select * from templateconfig_basic_details  where concat(TempId,'_V',templateVersion) in(Select command_feature_template_id from c3p_template_transaction_feature_list where id in("
-				+ query
-				+ ") and command_feature_template_id like ?  group by command_feature_template_id having count(distinct id)=?) and templateStatus='Approved'";
-		logger.info("Query=" + query1);
-		connection = ConnectionFactory.getConnection();
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		List<TemplateBasicConfigurationPojo> listTemplate = new ArrayList<TemplateBasicConfigurationPojo>();
-		TemplateBasicConfigurationPojo templateData;
-		List<String> getVersionListForTemplate = new ArrayList<String>();
-		try {
-			ps = connection.prepareStatement(query1);
+        String query = createQuery(feature.length);
 
-			for (int i = 1; i <= feature.length; i++) {
-				ps.setString(i, feature[i - 1]);
-			}
-			ps.setString(feature.length + 1, templateId + '%');
-			List<String> list = Arrays.asList(feature);
+ 
 
-			if (list.contains("Routing Protocol")) {
-				// ps.setString(feature.length+2, String.valueOf(feature.length+2)); /* comment
-				// as not getting routing protocol template suggestion*/
-				ps.setString(feature.length + 2,
-						String.valueOf(feature.length)); /* added for getting routing protocol template suggestion */
-			} else {
-				ps.setString(feature.length + 2, String.valueOf(feature.length));
-			}
-			rs = ps.executeQuery();
+        // String length=feature.length;
+        String query1 = "select * from templateconfig_basic_details  where concat(TempId,'_V',templateVersion) in(Select command_feature_template_id from c3p_template_transaction_feature_list where id in("
+                + query
+                + ") and command_feature_template_id like ?  group by command_feature_template_id having count(distinct id)=?) and templateStatus='Approved'";
+        logger.info("Query=" + query1);
+        connection = ConnectionFactory.getConnection();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<TemplateBasicConfigurationPojo> listTemplate = new ArrayList<TemplateBasicConfigurationPojo>();
+        TemplateBasicConfigurationPojo templateData;
+        List<String> getVersionListForTemplate = new ArrayList<String>();
+        try {
+            ps = connection.prepareStatement(query1);
 
-			while (rs.next()) {
-				templateData = new TemplateBasicConfigurationPojo();
-				templateData.setTemplateId(rs.getString("TempId").concat("_V").concat(rs.getString("templateVersion")));
-				templateData.setComment(rs.getString("comment_section"));
-				getVersionListForTemplate.add(rs.getString("templateVersion"));
-				listTemplate.add(templateData);
-			}
-			// int versionSize=getVersionListForTemplate.size();
+ 
 
-			String bestTemplate = getBestTemplate(getVersionListForTemplate, templateId);
-			for (Iterator iterator = listTemplate.iterator(); iterator.hasNext();) {
-				TemplateBasicConfigurationPojo templateBasicConfigurationPojo = (TemplateBasicConfigurationPojo) iterator
-						.next();
+            for (int i = 1; i <= feature.length; i++) {
+                ps.setString(i, feature[i - 1]);
+            }
+            ps.setString(feature.length + 1, templateId + '%');
+            List<String> list = Arrays.asList(feature);
 
-				if (templateBasicConfigurationPojo.getTemplateId().equalsIgnoreCase(bestTemplate)) {
-					templateBasicConfigurationPojo.setEnabled(true);
-				} else {
-					templateBasicConfigurationPojo.setEnabled(false);
-				}
+ 
 
-			}
+            if (list.contains("Routing Protocol")) {
+                // ps.setString(feature.length+2, String.valueOf(feature.length+2)); /* comment
+                // as not getting routing protocol template suggestion*/
+                ps.setString(feature.length + 2,
+                        String.valueOf(feature.length)); /* added for getting routing protocol template suggestion */
+            } else {
+                ps.setString(feature.length + 2, String.valueOf(feature.length));
+            }
+            rs = ps.executeQuery();
 
-			try {
-				rs.close();
-			} catch (SQLException e) {
-			}
+ 
 
-		} catch (SQLException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ps.close();
-				connection.close();
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return listTemplate;
-	}
+            while (rs.next()) {
+                templateData = new TemplateBasicConfigurationPojo();
+                templateData.setTemplateId(rs.getString("TempId").concat("_V").concat(rs.getString("templateVersion")));
+                templateData.setComment(rs.getString("comment_section"));
+                templateData.setNetworkType(rs.getString("networkType"));
+                getVersionListForTemplate.add(rs.getString("templateVersion"));
+                listTemplate.add(templateData);
+            }
+            // int versionSize=getVersionListForTemplate.size();
+
+ 
+
+            String bestTemplate = getBestTemplate(getVersionListForTemplate, templateId);
+            for (Iterator iterator = listTemplate.iterator(); iterator.hasNext();) {
+                TemplateBasicConfigurationPojo templateBasicConfigurationPojo = (TemplateBasicConfigurationPojo) iterator
+                        .next();
+
+ 
+
+                if (templateBasicConfigurationPojo.getTemplateId().equalsIgnoreCase(bestTemplate)) {
+                    templateBasicConfigurationPojo.setEnabled(true);
+                } else {
+                    templateBasicConfigurationPojo.setEnabled(false);
+                }
+
+ 
+
+            }
+
+ 
+
+            try {
+                rs.close();
+            } catch (SQLException e) {
+            }
+
+ 
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                ps.close();
+                connection.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return listTemplate;
+    }
+ 
 
 	private String createQuery(int length) {
 		String query = "select id from c3p_template_master_feature_list where command_parent_feature in(";
@@ -665,6 +687,85 @@ public class TemplateSuggestionDao {
 				featureList.add(rs.getString("comand_display_feature"));
 			}
 			preparedStmt.close();
+		} finally {
+			DBUtil.close(rs);
+			DBUtil.close(preparedStmt);
+			DBUtil.close(connection);
+		}
+		return featureList;
+	}
+	
+	public List<String> getListOfFeaturesForDeviceDetail(String tempId, String networkType, String requestType) throws SQLException {
+		connection = ConnectionFactory.getConnection();
+		ResultSet rs = null;
+		PreparedStatement preparedStmt = null;
+		String query = null;
+		String query1 = null;
+		List<String> featureList = new ArrayList<String>();
+
+		List<Integer> featuresChecked = new ArrayList<Integer>();
+		try {
+
+			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(TempId, '_V', templateVersion) from templateconfig_basic_details where templateStatus='Approved' and TempId LIKE ?)";
+			String query2 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId LIKE ?";
+
+			preparedStmt = connection.prepareStatement(query2);
+			preparedStmt.setString(1, tempId+"%");
+
+			rs = preparedStmt.executeQuery();
+			Set<String> networkTypeList = new HashSet<>();
+			while (rs.next()) {
+				networkTypeList.add(rs.getString("networkType"));
+			}
+			preparedStmt.close();
+			if (networkTypeList.size() == 1) {
+				for (String data : networkTypeList) {
+					if (data.equals(networkType)) {
+						preparedStmt = connection.prepareStatement(query);
+						preparedStmt.setString(1, tempId+"%");
+
+						rs = preparedStmt.executeQuery();
+						while (rs.next()) {
+							featuresChecked.add(rs.getInt("id"));
+							// itemsToAdd.add(rs.getString("tempCmd.Parent_name"));
+
+						}
+						preparedStmt.close();
+						query1 = "select * from c3p_template_master_feature_list where id=?";
+						for (int i = 0; i < featuresChecked.size(); i++) {
+
+							preparedStmt = connection.prepareStatement(query1);
+
+							preparedStmt.setInt(1, featuresChecked.get(i));
+							rs = preparedStmt.executeQuery();
+							while (rs.next()) {
+								boolean isPresent = false;
+								if (rs.getInt("hasParent") == 1) {
+									if (featureList.size() > 0) {
+										for (int j = 0; j < featureList.size(); j++) {
+											if (rs.getString("command_parent_feature")
+													.equalsIgnoreCase(featureList.get(j))) {
+												isPresent = true;
+												break;
+											}
+										}
+										if (!isPresent) {
+											featureList.add(rs.getString("command_parent_feature"));
+
+										}
+									} else {
+										featureList.add(rs.getString("command_parent_feature"));
+									}
+								} else if (rs.getInt("hasParent") == 0) {
+									featureList.add(rs.getString("comand_display_feature"));
+								}
+							}
+						}
+					}
+
+				}
+			}
+
 		} finally {
 			DBUtil.close(rs);
 			DBUtil.close(preparedStmt);

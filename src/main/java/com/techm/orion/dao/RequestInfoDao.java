@@ -6493,7 +6493,7 @@ public class RequestInfoDao {
 
 			if (path != null) {
 				String downloadPath = RequestInfoDao.TSA_PROPERTIES.getProperty("faqDocPath");
-				filePath = downloadPath + path + "\\" + page + ".txt";
+				filePath = downloadPath + path + "/" + page + ".txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				return content;
 			} else {
@@ -9078,7 +9078,7 @@ public class RequestInfoDao {
 		String Os = null, model = null, region = null, service = null, version = null, hostname = null,
 				alphaneumeric_req_id = null, customer = null, siteName = null, siteId = null, vendor = null,
 				deviceType = null, vpn = null;
-		String request_creator_name = null, batchId = null, requestStatus = null;
+		String request_creator_name = null, batchId = null, requestStatus = null,certificationSelectionBit=null;
 		String managementIP = null, scheduledTime = null, templateId = null;
 		String zipcode = null, managed = null, downtimerequired = null, lastupgradedon = null, networktype = null;
 		double request_version = 0, request_parent_version = 0;
@@ -9095,6 +9095,11 @@ public class RequestInfoDao {
 				alphaneumeric_req_id = "SLGM-" + UUID.randomUUID().toString().toUpperCase();
 
 			}
+			else if(requestInfoSO.getRequestType().equalsIgnoreCase("Test")
+					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF"))
+			{
+				alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase();
+			}
 
 			alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
 			hmap.put("requestID", alphaneumeric_req_id);
@@ -9105,7 +9110,10 @@ public class RequestInfoDao {
 			if (requestInfoSO.getModel() != null || requestInfoSO.getModel() != "") {
 				model = requestInfoSO.getModel();
 			}
-
+			if (requestInfoSO.getCertificationSelectionBit() != null
+					|| requestInfoSO.getCertificationSelectionBit() != "") {
+				certificationSelectionBit = requestInfoSO.getCertificationSelectionBit();
+			}
 			if (requestInfoSO.getRegion() != null || requestInfoSO.getRegion() != "") {
 				region = requestInfoSO.getRegion();
 			}
@@ -9246,7 +9254,14 @@ public class RequestInfoDao {
 			} else {
 				requestEntity.setStartUp(false);
 			}
+			if (requestInfoSO.getRequestType().equalsIgnoreCase("Config MACD")
+					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 			requestEntity.setCertificationSelectionBit("1010111");
+			}
+			else
+			{
+				requestEntity.setCertificationSelectionBit(certificationSelectionBit);
+			}
 
 			requestEntity.setRequestElapsedTime("00:00:00");
 
@@ -9302,4 +9317,49 @@ public class RequestInfoDao {
 		hmap.put("result", "false");
 		return hmap;
 	}
+	public final boolean updateBatchRequestStatus(String requestId) {
+        boolean result = false;
+        connection = ConnectionFactory.getConnection();
+        String sql = "update c3p_t_request_info set r_status= 'Failure' where r_alphanumeric_req_id=?";
+        try {
+               PreparedStatement ps = connection.prepareStatement(sql);
+
+               ps.setString(1, requestId);
+               
+               int i = ps.executeUpdate();
+               if (i == 1) {
+                     result = true;
+
+               } else {
+                     result = false;
+               }
+        } catch (SQLException e) {
+
+               result = false;
+        }
+        return result;
+ }
+	
+	public final boolean updateRequestExecutionStatus(String requestId) {
+        boolean result = false;
+        connection = ConnectionFactory.getConnection();
+        String sql = "update c3p_t_request_info set r_execution_status= true where r_alphanumeric_req_id=?";
+        try {
+               PreparedStatement ps = connection.prepareStatement(sql);
+
+               ps.setString(1, requestId);
+               
+               int i = ps.executeUpdate();
+               if (i == 1) {
+                     result = true;
+
+               } else {
+                     result = false;
+               }
+        } catch (SQLException e) {
+
+               result = false;
+        }
+        return result;
+ }
 }

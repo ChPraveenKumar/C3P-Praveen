@@ -183,6 +183,43 @@ public class RequestInfoEntity implements Serializable {
 
 	@Transient
 	private Object dynamicAttribs;
+	
+	
+	@Column(name = "r_execution_status")
+	private boolean executionStatus;
+
+	@Transient
+	private Object certificationTests;
+	
+	@Transient
+	private Object batchSize;
+
+
+
+	public Object getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(Object batchSize) {
+		this.batchSize = batchSize;
+	}
+
+	public Object getCertificationTests() {
+		return certificationTests;
+	}
+
+	public void setCertificationTests(Object certificationTests) {
+		this.certificationTests = certificationTests;
+	}
+
+	public boolean getExecutionStatus() {
+		return executionStatus;
+	}
+
+	public void setExecutionStatus(boolean executionStatus) {
+		this.executionStatus = executionStatus;
+	}
+
 
 	public Object getDynamicAttribs() {
 		return dynamicAttribs;

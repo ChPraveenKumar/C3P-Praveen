@@ -354,10 +354,7 @@ public class ConfigMngmntService implements Observer {
 			configReqToSendToC3pCode.setRequestCreatedOn(strDate);
 
 			JSONObject certificationTestFlag = (JSONObject) json.get("certificationOptionListFlags");
-			if (!(json.get("batchId").toString().isEmpty())) {
-				configReqToSendToC3pCode.setBatchId(json.get("batchId").toString());
-			}
-
+		
 			if (!(requestType.equals("SLGB"))) {
 				if (json.get("requestType").equals("Config MACD") && (json.get("batchId").toString().isEmpty())) {
 					if (certificationTestFlag.containsKey("defaults")) {

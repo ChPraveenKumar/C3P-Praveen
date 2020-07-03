@@ -34,7 +34,7 @@ public class DownloadBasicConfigFile {
 			@RequestParam String version) {
 		try {
 			DownloadBasicConfigFile.loadProperties();
-			String path = DownloadBasicConfigFile.TSA_PROPERTIES.getProperty("responseDownloadPath") + "\\" + requestId
+			String path = DownloadBasicConfigFile.TSA_PROPERTIES.getProperty("responseDownloadPath") + "/" + requestId
 					+ "V" + version + "_basicConfiguration.txt";
 			File file = new File(path);
 			if (!file.exists()) {

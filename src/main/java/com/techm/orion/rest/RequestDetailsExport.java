@@ -102,7 +102,7 @@ public class RequestDetailsExport implements Observer {
 
 		DcmConfigService dcmConfigService = new DcmConfigService();
 		RequestDetailsExport.loadProperties();
-		String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("exportDownloadPath") + "\\" + alphanumericReqId
+		String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("exportDownloadPath") + "/" + alphanumericReqId
 				+ "_RequestExport.csv";
 		File file = new File(path);
 		try {
@@ -346,7 +346,7 @@ public class RequestDetailsExport implements Observer {
 
 		DcmConfigService dcmConfigService = new DcmConfigService();
 		RequestDetailsExport.loadProperties();
-		String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("exportDownloadPath") + "\\" + alphanumericReqId
+		String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("exportDownloadPath") + "/" + alphanumericReqId
 				+ "_RequestExport.xlsx";
 		File file = new File(path);
 		try {

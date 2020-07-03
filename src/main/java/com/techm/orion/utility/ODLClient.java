@@ -223,7 +223,7 @@ public class ODLClient {
 
 			String toWrite = sb.toString();
 			// String prev
-			// =readFileAsString(currentConfigPath+"\\"+RequestId+"_PreviousConfig.txt");
+			// =readFileAsString(currentConfigPath+"/"+RequestId+"_PreviousConfig.txt");
 			JsonParser parser1 = new JsonParser();
 			Gson gson1 = new GsonBuilder().setPrettyPrinting().create();
 			JsonElement el = (JsonElement) parser1.parse(toWrite);
