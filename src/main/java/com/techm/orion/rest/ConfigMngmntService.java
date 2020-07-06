@@ -1529,6 +1529,7 @@ public class ConfigMngmntService implements Observer {
 		GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
 		TemplateManagementDao dao = new TemplateManagementDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
+		Map<String, String> result = null;
 
 		try {
 
@@ -1550,8 +1551,15 @@ public class ConfigMngmntService implements Observer {
 				configReqToSendToC3pCode.setStatus(json.get("status").toString());
 
 			}
+			if(!(requestType.equals("Config MACD")))
+			{
+			if (json.containsKey("batchSize")) {
+				configReqToSendToC3pCode.setBatchSize(json.get("batchSize").toString());
 
-			if (json.containsKey("batchId")) {
+			}
+			}
+
+			if (json.containsKey("batchId")&&(json.get("batchId")!=null)) {
 				configReqToSendToC3pCode.setBatchId(json.get("batchId").toString());
 
 			}
@@ -1632,6 +1640,56 @@ public class ConfigMngmntService implements Observer {
 			} else {
 				configReqToSendToC3pCode.setSceheduledTime("");
 			}
+			
+			if(requestType.equals("Test")||requestType.equals("Audit"))
+			{
+				
+				
+				JSONObject certificationTestFlag = (JSONObject) json.get("certificationTests");
+
+				if (!(requestType.equals("SLGB"))) {
+
+					if (certificationTestFlag.containsKey("default")) {
+						// flag test selection
+						JSONObject defaultObj = (JSONObject) certificationTestFlag.get("default");
+
+						if (defaultObj.get("Throughput").toString().equals("1")) {
+							configReqToSendToC3pCode.setThroughputTest(defaultObj.get("Throughput").toString());
+						}
+
+						String bit = "1" + "0" + "1" + "0" + defaultObj.get("Throughput").toString() + "1" + "1";
+						logger.info(bit);
+						configReqToSendToC3pCode.setCertificationSelectionBit(bit);
+
+					}
+				}
+
+				if (!(requestType.equals("SLGB"))) {
+
+					if (certificationTestFlag.containsKey("dynamic")) {
+						JSONArray dynamicArray = (JSONArray) certificationTestFlag.get("dynamic");
+						JSONArray toSaveArray = new JSONArray();
+
+						for (int i = 0; i < dynamicArray.size(); i++) {
+							JSONObject arrayObj = (JSONObject) dynamicArray.get(i);
+							long isSelected = (long) arrayObj.get("selected");
+							if (isSelected == 1) {
+								toSaveArray.add(arrayObj);
+							}
+						}
+
+						String testsSelected = toSaveArray.toString();
+						configReqToSendToC3pCode.setTestsSelected(testsSelected);
+
+					}
+				}
+			}
+			else
+			{
+				configReqToSendToC3pCode.setCertificationSelectionBit(json.get("certificationSelectionBit").toString());
+			}
+			
+	
 
 			try {
 
@@ -1644,7 +1702,7 @@ public class ConfigMngmntService implements Observer {
 				e.printStackTrace();
 			}
 
-			Map<String, String> result = null;
+		
 			if (configReqToSendToC3pCode.getRequestType().contains("Config")
 					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("PNF")) {
 
@@ -2142,11 +2200,14 @@ public class ConfigMngmntService implements Observer {
 					}
 				}
 
-				invokeFtl.createFinalTemplate(null, cammandByTemplate, null, templateAttribute,
+				invokeFtl.createFinalTemplateforBatch(null, cammandByTemplate,
+						null, templateAttribute,
 						configReqToSendToC3pCode.getTemplateID());
-				data = getConfigurationTemplateService.generateTemplate(configReqToSendToC3pCode);
+				data = getConfigurationTemplateService
+						.generateTemplate(configReqToSendToC3pCode);
 
-				result = dcmConfigService.updateBatchConfig(configReqToSendToC3pCode, createConfigList);
+				result = dcmConfigService.updateBatchConfig(
+						configReqToSendToC3pCode, createConfigList);
 
 			} else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("NETCONF")
 					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")
@@ -2507,7 +2568,7 @@ public class ConfigMngmntService implements Observer {
 				logger.info("log");
 
 			} else {
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null);
+				result = dcmConfigService.updateBatchConfig(configReqToSendToC3pCode, null);
 			}
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -2529,10 +2590,9 @@ public class ConfigMngmntService implements Observer {
 			e.printStackTrace();
 		}
 
-		return obj;
+		return requestIdForConfig;
 
 	}
-
 	private void createTemplateId(RequestInfoPojo configReqToSendToC3pCode, String seriesId,
 			List<AttribCreateConfigPojo> masterAttribute) {
 		String templateName = "";

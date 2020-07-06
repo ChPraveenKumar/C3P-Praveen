@@ -259,6 +259,17 @@ public class RequestInfoPojo {
 	private String post_version_info = null;
 	
 	private Boolean StartUp;
+	
+	private Object batchSize;
+
+	public Object getBatchSize() {
+		return batchSize;
+	}
+
+	public void setBatchSize(Object batchSize) {
+		this.batchSize = batchSize;
+	}
+
 
 	public Boolean getStartUp() {
 		return StartUp;

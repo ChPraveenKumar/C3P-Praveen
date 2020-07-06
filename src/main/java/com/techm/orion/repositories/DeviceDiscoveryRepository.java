@@ -166,5 +166,34 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	// a.dVendor=? order by a.dDatePolled desc Limit 0, 5")
 	// List<DeviceDiscoveryEntity> findByTop(String model,String vendor);
 	List<DeviceDiscoveryEntity> findByDHostNameAndDMgmtIp(String tempHostName, String tempManagementIp);
+	
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendor(
+			String customer, String region, String vendortosearch);
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupport(
+			String customer, String region, String vendortosearch,
+			String networktosearch);
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteName(
+			String customer, String region, String vendortosearch,
+			String networktosearch, String sitetosearch);
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDSeries(
+			String customer, String region, String vendortosearch,
+			String networktosearch, String sitetosearch, String devicetosearch);
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDSeriesAndDModel(
+			String customer, String region, String vendortosearch,
+			String networktosearch, String sitetosearch, String devicetosearch,
+			String modeltosearch);
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDModel(
+			String customer, String region, String vendortosearch,
+			String networktosearch, String sitetosearch, String modeltosearch);
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDSeriesAndDModel(
+			String customer, String region, String vendortosearch,
+			String networktosearch, String devicetosearch, String modeltosearch);
+
+	List<DeviceDiscoveryEntity> findAllByCustSiteId(int temp);
+	List<DeviceDiscoveryEntity> findAllByDVendorAndDSeries(String vendor,
+			String deviceFamily);
+	
+
+
 
 }

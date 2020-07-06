@@ -149,7 +149,7 @@ public class RequestInfoScheduler {
 									logger.error(e);
 								}
 							}
-						} else if (detailsList.get(j).getRequestType().equals("Test")) {
+						} else if (detailsList.get(j).getRequestType().equals("Test") ||detailsList.get(j).getRequestType().equals("Audit") ) {
 
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
@@ -161,7 +161,7 @@ public class RequestInfoScheduler {
 
 								try {
 
-									Thread.sleep(30000);
+									Thread.sleep(80000);
 								} catch (Exception e) {
 									logger.error(e);
 								}
@@ -176,7 +176,7 @@ public class RequestInfoScheduler {
 								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
 								try {
 
-									Thread.sleep(35000);
+									Thread.sleep(100000);
 								} catch (Exception e) {
 									logger.error(e);
 								}

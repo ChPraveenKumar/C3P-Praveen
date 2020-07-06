@@ -61,9 +61,9 @@ import com.techm.orion.service.DcmConfigService;
 @Controller
 @RequestMapping("/BackUpConfigurationAndTest")
 public class BackUpAndRestoreController {
-	
+
 	private static final Logger logger = LogManager.getLogger(BackUpAndRestoreController.class);
-	
+
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -95,10 +95,7 @@ public class BackUpAndRestoreController {
 
 	@Autowired
 	ConfigMngmntService myObj;
-	
 
-	
-	
 	@Autowired
 	public DeviceDiscoveryRepository deviceDiscoveryRepository;
 
@@ -213,8 +210,7 @@ public class BackUpAndRestoreController {
 				boolean objectPrsent = false;
 				if (versioningModel.size() > 0) {
 					for (int j = 0; j < versioningModel.size(); j++) {
-						if (versioningModel.get(j).getHostname()
-								.equalsIgnoreCase(list.get(i).getHostname())) {
+						if (versioningModel.get(j).getHostname().equalsIgnoreCase(list.get(i).getHostname())) {
 							objectPrsent = true;
 							break;
 						}
@@ -222,53 +218,38 @@ public class BackUpAndRestoreController {
 				}
 
 				objToAdd = list.get(i);
-				String backUpRequestCheck = objToAdd.getAlphanumericReqId()
-						.substring(0, 4);
+				String backUpRequestCheck = objToAdd.getAlphanumericReqId().substring(0, 4);
 
-				if (objectPrsent == false
-						&& backUpRequestCheck.contains("SLGB")) {
+				if (objectPrsent == false && backUpRequestCheck.contains("SLGB")) {
 					versioningModelObject = new BackUpRequestVersioningJSONModel();
 					objToAdd = new RequestDetailsBackUpAndRestoreEntity();
 					objToAdd = list.get(i);
 					versioningModelObject.setHostname(objToAdd.getHostname());
 
 					versioningModelObject.setVendor(objToAdd.getVendor());
-					versioningModelObject.setDevice_type(objToAdd
-							.getDevice_type());
+					versioningModelObject.setDevice_type(objToAdd.getDevice_type());
 
 					versioningModelObject.setModel(objToAdd.getModel());
 
-					versioningModelObject.setManagementIp(objToAdd
-							.getManagementIp());
+					versioningModelObject.setManagementIp(objToAdd.getManagementIp());
 					versioningModelObject.setModel(objToAdd.getModel());
 
-					versioningModelObject.setRequest_creator_name(objToAdd
-							.getRequest_creator_name());
+					versioningModelObject.setRequest_creator_name(objToAdd.getRequest_creator_name());
 
 					versioningModelChildList = new ArrayList<RequestDetailsBackUpAndRestoreEntity>();
 					for (int k = 0; k < list.size(); k++) {
 
-						requestType = list
-								.get(k)
-								.getAlphanumericReqId()
-								.substring(
-										0,
-										Math.min(list.get(k)
-												.getAlphanumericReqId()
-												.length(), 4));
+						requestType = list.get(k).getAlphanumericReqId().substring(0,
+								Math.min(list.get(k).getAlphanumericReqId().length(), 4));
 
-						if (list.get(k)
-								.getHostname()
-								.equalsIgnoreCase(
-										versioningModelObject.getHostname())
+						if (list.get(k).getHostname().equalsIgnoreCase(versioningModelObject.getHostname())
 								&& requestType.equals("SLGB")) {
 							versioningModelChildList.add(list.get(k));
 						}
 					}
 					Collections.reverse(versioningModelChildList);
 
-					versioningModelObject
-							.setChildList(versioningModelChildList);
+					versioningModelObject.setChildList(versioningModelChildList);
 					versioningModel.add(versioningModelObject);
 
 				}
@@ -282,16 +263,11 @@ public class BackUpAndRestoreController {
 			logger.error(e);
 		}
 
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
 
@@ -313,12 +289,10 @@ public class BackUpAndRestoreController {
 			hostName = obj.get("hostname").toString();
 			requestId = obj.get("alphanumericReqId").toString();
 
-			baseLineVersionList = requestDetailsBackUpAndRestoreRepo
-					.findByHostname(hostName);
+			baseLineVersionList = requestDetailsBackUpAndRestoreRepo.findByHostname(hostName);
 			for (int i = 0; i < baseLineVersionList.size(); i++) {
 
-				requestIdToCheck = baseLineVersionList.get(i)
-						.getAlphanumericReqId();
+				requestIdToCheck = baseLineVersionList.get(i).getAlphanumericReqId();
 
 				if (requestIdToCheck.equals(requestId)) {
 					baseLineVersionList.get(i).setBaselinedFlag(true);
@@ -343,8 +317,7 @@ public class BackUpAndRestoreController {
 	@POST
 	@RequestMapping(value = "/createConfigurationDcmBackUpAndRestore", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public JSONObject createConfigurationDcmBackUpAndRestore(
-			@RequestBody String configRequest) {
+	public JSONObject createConfigurationDcmBackUpAndRestore(@RequestBody String configRequest) {
 
 		JSONObject obj = new JSONObject();
 		String hostName = "", managementIp = "", scheduledTime = "", alphaneumeric_req_id = "";
@@ -369,17 +342,14 @@ public class BackUpAndRestoreController {
 
 			scheduledTime = json.get("scheduleDate").toString();
 
-			requestDetail = deviceDiscoveryRepository
-					.findByDHostNameAndDMgmtIp(hostName, managementIp);
+			requestDetail = deviceDiscoveryRepository.findByDHostNameAndDMgmtIp(hostName, managementIp);
 
 			for (int i = 0; i < requestDetail.size(); i++) {
 
 				RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
 
 				requestInfoEntity.setRequestType("SLGB");
-				alphaneumeric_req_id = "SLGB-"
-						+ UUID.randomUUID().toString().toUpperCase()
-								.substring(0, 7);
+				alphaneumeric_req_id = "SLGB-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
 				requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
 
 				Boolean isStartUp = (Boolean) json.get("startup");
@@ -390,43 +360,33 @@ public class BackUpAndRestoreController {
 
 				requestInfoEntity.setBatchId(null);
 
-				requestInfoEntity.setCustomer(requestDetail.get(i)
-						.getCustSiteId().getcCustName());
+				requestInfoEntity.setCustomer(requestDetail.get(i).getCustSiteId().getcCustName());
 
-				requestInfoEntity.setSiteId(requestDetail.get(i)
-						.getCustSiteId().getcSiteId());
+				requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-				requestInfoEntity
-						.setDeviceType(requestDetail.get(i).getdType());
+				requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 				requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
 				requestInfoEntity.setOs(requestDetail.get(i).getdOs());
 
-				requestInfoEntity.setOsVersion(requestDetail.get(i)
-						.getdOsVersion());
+				requestInfoEntity.setOsVersion(requestDetail.get(i).getdOsVersion());
 
-				requestInfoEntity.setManagmentIP(requestDetail.get(i)
-						.getdMgmtIp());
+				requestInfoEntity.setManagmentIP(requestDetail.get(i).getdMgmtIp());
 
-				requestInfoEntity.setRegion(requestDetail.get(i)
-						.getCustSiteId().getcSiteRegion());
+				requestInfoEntity.setRegion(requestDetail.get(i).getCustSiteId().getcSiteRegion());
 
-				requestInfoEntity.setService(requestDetail.get(i)
-						.getdVNFSupport());
+				requestInfoEntity.setService(requestDetail.get(i).getdVNFSupport());
 
-				requestInfoEntity.setHostName(requestDetail.get(i)
-						.getdHostName());
+				requestInfoEntity.setHostName(requestDetail.get(i).getdHostName());
 
 				requestInfoEntity.setVendor(requestDetail.get(i).getdVendor());
 
-				requestInfoEntity.setNetworkType(requestDetail.get(i)
-						.getdVNFSupport());
+				requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
 
 				requestInfoEntity.setRequestVersion(1.0);
 
-				requestInfoEntity.setSiteName(requestDetail.get(i)
-						.getCustSiteId().getcSiteName());
+				requestInfoEntity.setSiteName(requestDetail.get(i).getCustSiteId().getcSiteName());
 				requestInfoEntity.setCertificationSelectionBit("1010011");
 				requestInfoEntity.setRequestParentVersion(1.0);
 				requestInfoEntity.setRequestTypeFlag("M");
@@ -436,8 +396,7 @@ public class BackUpAndRestoreController {
 				if (!(scheduledTime.isEmpty())) {
 					requestInfoEntity.setBackUpScheduleTime(scheduledTime);
 				}
-				String jsonString = mapper
-						.writeValueAsString(requestInfoEntity);
+				String jsonString = mapper.writeValueAsString(requestInfoEntity);
 
 				obj = myObj.createConfigurationDcm(jsonString);
 
@@ -473,55 +432,48 @@ public class BackUpAndRestoreController {
 
 		try {
 
-			SearchParamPojo dto = gson.fromJson(searchParameters,
-					SearchParamPojo.class);
+			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
 
 			key = dto.getKey();
 			value = dto.getValue();
 
 			if (value != null && !value.isEmpty()) {
 				/*
-				 * Search request based on Region, Vendor, Status, Model, Host
-				 * Name and Management IP
+				 * Search request based on Region, Vendor, Status, Model, Host Name and
+				 * Management IP
 				 */
 				if (key.equalsIgnoreCase("Request ID")) {
-					detailsList = requestDetailsBackUpAndRestoreRepo
-							.findByAlphanumericReqId(value);
+					detailsList = requestDetailsBackUpAndRestoreRepo.findByAlphanumericReqId(value);
 
 					detailsListFinal = searchImportDashboard(detailsList);
 					flag = true;
 
 				} else if (key.equalsIgnoreCase("Vendor")) {
-					detailsList = requestDetailsBackUpAndRestoreRepo
-							.findByVendor(value);
+					detailsList = requestDetailsBackUpAndRestoreRepo.findByVendor(value);
 
 					detailsListFinal = searchImportDashboard(detailsList);
 					flag = true;
 
 				} else if (key.equalsIgnoreCase("Device Type")) {
-					detailsList = requestDetailsBackUpAndRestoreRepo
-							.findByDeviceType(value);
+					detailsList = requestDetailsBackUpAndRestoreRepo.findByDeviceType(value);
 
 					detailsListFinal = searchImportDashboard(detailsList);
 					flag = true;
 
 				} else if (key.equalsIgnoreCase("Model")) {
-					detailsList = requestDetailsBackUpAndRestoreRepo
-							.findByModel(value);
+					detailsList = requestDetailsBackUpAndRestoreRepo.findByModel(value);
 
 					detailsListFinal = searchImportDashboard(detailsList);
 					flag = true;
 
 				} else if (key.equalsIgnoreCase("Hostname")) {
-					detailsList = requestDetailsBackUpAndRestoreRepo
-							.findByHostname(value);
+					detailsList = requestDetailsBackUpAndRestoreRepo.findByHostname(value);
 
 					detailsListFinal = searchImportDashboard(detailsList);
 					flag = true;
 
 				} else if (key.equalsIgnoreCase("IP Address")) {
-					detailsList = requestDetailsBackUpAndRestoreRepo
-							.findByManagementIp(value);
+					detailsList = requestDetailsBackUpAndRestoreRepo.findByManagementIp(value);
 
 					detailsListFinal = searchImportDashboard(detailsList);
 					flag = true;
@@ -549,16 +501,11 @@ public class BackUpAndRestoreController {
 
 		}
 
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
 	/* Method to iterate over all possible search result */
@@ -584,8 +531,7 @@ public class BackUpAndRestoreController {
 				boolean objectPrsent = false;
 				if (versioningModel.size() > 0) {
 					for (int j = 0; j < versioningModel.size(); j++) {
-						if (versioningModel.get(j).getHostname()
-								.equalsIgnoreCase(list.get(i).getHostname())) {
+						if (versioningModel.get(j).getHostname().equalsIgnoreCase(list.get(i).getHostname())) {
 							objectPrsent = true;
 							break;
 						}
@@ -593,53 +539,38 @@ public class BackUpAndRestoreController {
 				}
 
 				objToAdd = list.get(i);
-				String backUpRequestCheck = objToAdd.getAlphanumericReqId()
-						.substring(0, 4);
+				String backUpRequestCheck = objToAdd.getAlphanumericReqId().substring(0, 4);
 
-				if (objectPrsent == false
-						&& backUpRequestCheck.contains("SLGB")) {
+				if (objectPrsent == false && backUpRequestCheck.contains("SLGB")) {
 					versioningModelObject = new BackUpRequestVersioningJSONModel();
 					objToAdd = new RequestDetailsBackUpAndRestoreEntity();
 					objToAdd = list.get(i);
 					versioningModelObject.setHostname(objToAdd.getHostname());
 
 					versioningModelObject.setVendor(objToAdd.getVendor());
-					versioningModelObject.setDevice_type(objToAdd
-							.getDevice_type());
+					versioningModelObject.setDevice_type(objToAdd.getDevice_type());
 
 					versioningModelObject.setModel(objToAdd.getModel());
 
-					versioningModelObject.setManagementIp(objToAdd
-							.getManagementIp());
+					versioningModelObject.setManagementIp(objToAdd.getManagementIp());
 					versioningModelObject.setModel(objToAdd.getModel());
 
-					versioningModelObject.setRequest_creator_name(objToAdd
-							.getRequest_creator_name());
+					versioningModelObject.setRequest_creator_name(objToAdd.getRequest_creator_name());
 
 					versioningModelChildList = new ArrayList<RequestDetailsBackUpAndRestoreEntity>();
 					for (int k = 0; k < list.size(); k++) {
 
-						requestType = list
-								.get(k)
-								.getAlphanumericReqId()
-								.substring(
-										0,
-										Math.min(list.get(k)
-												.getAlphanumericReqId()
-												.length(), 4));
+						requestType = list.get(k).getAlphanumericReqId().substring(0,
+								Math.min(list.get(k).getAlphanumericReqId().length(), 4));
 
-						if (list.get(k)
-								.getHostname()
-								.equalsIgnoreCase(
-										versioningModelObject.getHostname())
+						if (list.get(k).getHostname().equalsIgnoreCase(versioningModelObject.getHostname())
 								&& requestType.equals("SLGB")) {
 							versioningModelChildList.add(list.get(k));
 						}
 					}
 					Collections.reverse(versioningModelChildList);
 
-					versioningModelObject
-							.setChildList(versioningModelChildList);
+					versioningModelObject.setChildList(versioningModelChildList);
 					versioningModel.add(versioningModelObject);
 
 				}
@@ -676,15 +607,13 @@ public class BackUpAndRestoreController {
 		Timestamp timestamp = null;
 
 		RequestInfoPojo requestInfoPojo = new RequestInfoPojo();
-		final String batchId = "BI-"
-				+ UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+		final String batchId = "BI-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
 
 		try {
 
 			Gson gson = new Gson();
 
-			BatchPojo[] userArray = gson.fromJson(configRequest,
-					BatchPojo[].class);
+			BatchPojo[] userArray = gson.fromJson(configRequest, BatchPojo[].class);
 
 			for (int j = 0; j < userArray.length; j++) {
 
@@ -692,26 +621,19 @@ public class BackUpAndRestoreController {
 				tempStartUp = userArray[j].isStartup();
 				tempManagementIp = userArray[j].getManagementIp();
 
-				requestDetail = deviceDiscoveryRepository
-						.findByDHostNameAndDMgmtIp(tempHostName,
-								tempManagementIp);
+				requestDetail = deviceDiscoveryRepository.findByDHostNameAndDMgmtIp(tempHostName, tempManagementIp);
 
 				for (int i = 0; i < requestDetail.size(); i++) {
 					RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
 
 					requestInfoEntity.setRequestType("SLGB");
-					alphaneumeric_req_id = "SLGB-"
-							+ UUID.randomUUID().toString().toUpperCase()
-									.substring(0, 7);
-					requestInfoEntity
-							.setAlphanumericReqId(alphaneumeric_req_id);
+					alphaneumeric_req_id = "SLGB-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+					requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
 
 					/*
-					 * SiteInfoEntity tempId = requestDetail.get(i)
-					 * .getCustSiteId();
+					 * SiteInfoEntity tempId = requestDetail.get(i) .getCustSiteId();
 					 * 
-					 * requestDetail1 =
-					 * siteInfoRepository.findByCCustId(tempId);
+					 * requestDetail1 = siteInfoRepository.findByCCustId(tempId);
 					 */
 
 					if (j == 0) {
@@ -734,51 +656,38 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setBatchId(batchId);
 
-					requestInfoEntity.setCustomer(requestDetail.get(i)
-							.getCustSiteId().getcCustName());
+					requestInfoEntity.setCustomer(requestDetail.get(i).getCustSiteId().getcCustName());
 
-					requestInfoEntity.setSiteId(requestDetail.get(i)
-							.getCustSiteId().getcSiteId());
+					requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-					requestInfoEntity.setDeviceType(requestDetail.get(i)
-							.getdType());
+					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
-					requestInfoEntity
-							.setModel(requestDetail.get(i).getdModel());
+					requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
 					requestInfoEntity.setOs(requestDetail.get(i).getdOs());
 
-					requestInfoEntity.setOsVersion(requestDetail.get(i)
-							.getdOsVersion());
+					requestInfoEntity.setOsVersion(requestDetail.get(i).getdOsVersion());
 
-					requestInfoEntity.setManagmentIP(requestDetail.get(i)
-							.getdMgmtIp());
+					requestInfoEntity.setManagmentIP(requestDetail.get(i).getdMgmtIp());
 
-					requestInfoEntity.setRegion(requestDetail.get(i)
-							.getCustSiteId().getcSiteRegion());
+					requestInfoEntity.setRegion(requestDetail.get(i).getCustSiteId().getcSiteRegion());
 
-					requestInfoEntity.setService(requestDetail.get(i)
-							.getdVNFSupport());
+					requestInfoEntity.setService(requestDetail.get(i).getdVNFSupport());
 
-					requestInfoEntity.setHostName(requestDetail.get(i)
-							.getdHostName());
+					requestInfoEntity.setHostName(requestDetail.get(i).getdHostName());
 
-					requestInfoEntity.setVendor(requestDetail.get(i)
-							.getdVendor());
+					requestInfoEntity.setVendor(requestDetail.get(i).getdVendor());
 
-					requestInfoEntity.setNetworkType(requestDetail.get(i)
-							.getdVNFSupport());
+					requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
 
 					requestInfoEntity.setRequestVersion(request_version);
 
-					requestInfoEntity.setSiteName(requestDetail.get(i)
-							.getCustSiteId().getcSiteName());
+					requestInfoEntity.setSiteName(requestDetail.get(i).getCustSiteId().getcSiteName());
 					requestInfoEntity.setCertificationSelectionBit("1010011");
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
 
-					requestInfoEntity
-							.setRequestCreatorName(Global.loggedInUser);
+					requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
 
 					requestInfoEntity.setStartUp(tempStartUp);
 
@@ -795,10 +704,8 @@ public class BackUpAndRestoreController {
 
 					requestInfoDetailsRepositories.save(requestInfoEntity);
 
-					dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id,
-							Double.toString(request_version));
-					dao.addCertificationTestForRequest(alphaneumeric_req_id,
-							Double.toString(request_version), "0");
+					dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
+					dao.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
 					// result = dao.insertRequestInDB(requestInfoPojo);
 					batchInfoRepo.save(batchIdEntity);
 
@@ -829,16 +736,11 @@ public class BackUpAndRestoreController {
 		jsonArray = new Gson().toJson(detailsList);
 		obj.put(new String("output"), jsonArray);
 
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
 
@@ -856,24 +758,18 @@ public class BackUpAndRestoreController {
 		for (int i = 0; i < detailsList.size(); i++) {
 			if (!(detailsList.get(i).getBatchId().equals(""))) {
 				String tempId = detailsList.get(i).getAlphanumericReqId();
-				detailsList1 = requestInfoDetailsRepositories
-						.findAllByAlphanumericReqId(tempId);
+				detailsList1 = requestInfoDetailsRepositories.findAllByAlphanumericReqId(tempId);
 			}
 		}
 
 		jsonArray = new Gson().toJson(detailsList1);
 		obj.put(new String("output"), jsonArray);
 
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
 
@@ -905,73 +801,54 @@ public class BackUpAndRestoreController {
 		jsonArray = new Gson().toJson(detailsList);
 		obj.put(new String("output"), jsonArray);
 
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/batchConfig", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public JSONObject batchConfig(@RequestBody String configRequest)
-			throws ParseException {
+	public JSONObject batchConfig(@RequestBody String configRequest) throws ParseException {
 
 		JSONObject obj = new JSONObject();
-		CreateConfigRequestDCM configRequestTemplate =  new CreateConfigRequestDCM();
 
 		JsonArray attribJson = null;
-		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null, templateId = null, requestType = "Config MACD",templateIdUsed=null;
+		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
+				templateId = null, requestType = "Config MACD";
 
 		HashMap<String, String> map = new HashMap<String, String>();
 		ArrayList<String> tempRequest = new ArrayList<String>();
 		ArrayList<String> tempRequest1 = new ArrayList<String>();
 
-		//ArrayList<String> selectedFeatures = new ArrayList<String>();
-		org.json.simple.JSONObject dynamicAttribs = new org.json.simple.JSONObject();
-
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(configRequest);
 
-		JsonObject jsonObject = new JsonParser().parse(configRequest)
-				.getAsJsonObject();
+		JsonObject jsonObject = new JsonParser().parse(configRequest).getAsJsonObject();
 
 		attribJson = jsonObject.getAsJsonArray("requests");
 
 		for (int n = 0; n < attribJson.size(); n++) {
-			tempHostName = attribJson.get(n).getAsJsonObject().get("hostname")
-					.getAsString();
-			tempManagementIp = attribJson.get(n).getAsJsonObject()
-					.get("managementIp").getAsString();
-			templateId = attribJson.get(n).getAsJsonObject().get("templateId")
-					.getAsString();
+			tempHostName = attribJson.get(n).getAsJsonObject().get("hostname").getAsString();
+			tempManagementIp = attribJson.get(n).getAsJsonObject().get("managementIp").getAsString();
+			templateId = attribJson.get(n).getAsJsonObject().get("templateId").getAsString();
 			map.put(tempHostName, tempManagementIp);
 			tempRequest.add(templateId);
 		}
 
-	
-
-	
-
 		List<DeviceDiscoveryEntity> requestDetail = null;
 		ObjectMapper mapper = new ObjectMapper();
-
-		BatchIdEntity batchIdEntity = new BatchIdEntity();
 
 		Double request_version = 1.0;
 
 		Timestamp timestamp = null;
 		String temp = null;
 
-		final String batchId = "BI-"
-				+ UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+		final String batchId = "BI-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
 
 		try {
 
@@ -991,19 +868,14 @@ public class BackUpAndRestoreController {
 
 					tempRequest1.add(tempHostName);
 
-					requestDetail = deviceDiscoveryRepository
-							.findByDHostNameAndDMgmtIp(tempHostName,
-									tempManagementIp);
+					requestDetail = deviceDiscoveryRepository.findByDHostNameAndDMgmtIp(tempHostName, tempManagementIp);
 
 					for (int i = 0; i < requestDetail.size(); i++) {
 						RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
 
 						requestInfoEntity.setRequestType(requestType);
-						alphaneumeric_req_id = "SLGM-"
-								+ UUID.randomUUID().toString().toUpperCase()
-										.substring(0, 7);
-						requestInfoEntity
-								.setAlphanumericReqId(alphaneumeric_req_id);
+						alphaneumeric_req_id = "SLGC-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+						requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
 
 						if (j == 0) {
 
@@ -1018,58 +890,42 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setTemplateUsed(templateId);
 						requestInfoEntity.setSelectedFeatures(json.get("selectedFeatures"));
 
-						requestInfoEntity.setDynamicAttribs(json
-								.get("dynamicAttribs"));
+						requestInfoEntity.setDynamicAttribs(json.get("dynamicAttribs"));
 
 						requestInfoEntity.setBatchId(batchId);
 
-						requestInfoEntity.setCustomer(requestDetail.get(i)
-								.getCustSiteId().getcCustName());
+						requestInfoEntity.setCustomer(requestDetail.get(i).getCustSiteId().getcCustName());
 
-						requestInfoEntity.setSiteId(requestDetail.get(i)
-								.getCustSiteId().getcSiteId());
+						requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-						requestInfoEntity.setDeviceType(requestDetail.get(i)
-								.getdType());
+						requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
-						requestInfoEntity.setModel(requestDetail.get(i)
-								.getdModel());
+						requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
 						requestInfoEntity.setOs(requestDetail.get(i).getdOs());
 
-						requestInfoEntity.setOsVersion(requestDetail.get(i)
-								.getdOsVersion());
+						requestInfoEntity.setOsVersion(requestDetail.get(i).getdOsVersion());
 
-						requestInfoEntity.setManagmentIP(requestDetail.get(i)
-								.getdMgmtIp());
+						requestInfoEntity.setManagmentIP(requestDetail.get(i).getdMgmtIp());
 
-						requestInfoEntity.setRegion(requestDetail.get(i)
-								.getCustSiteId().getcSiteRegion());
+						requestInfoEntity.setRegion(requestDetail.get(i).getCustSiteId().getcSiteRegion());
 
-						requestInfoEntity.setService(requestDetail.get(i)
-								.getdVNFSupport());
+						requestInfoEntity.setService(requestDetail.get(i).getdVNFSupport());
 
-						requestInfoEntity.setHostName(requestDetail.get(i)
-								.getdHostName());
+						requestInfoEntity.setHostName(requestDetail.get(i).getdHostName());
 
-						requestInfoEntity.setVendor(requestDetail.get(i)
-								.getdVendor());
+						requestInfoEntity.setVendor(requestDetail.get(i).getdVendor());
 
-						requestInfoEntity.setNetworkType(requestDetail.get(i)
-								.getdVNFSupport());
+						requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
 
 						requestInfoEntity.setRequestVersion(request_version);
 						requestInfoEntity.setFamily(requestDetail.get(i).getdSeries());
 						requestInfoEntity.setStartUp(false);
 
-						requestInfoEntity.setSiteName(requestDetail.get(i)
-								.getCustSiteId().getcSiteName());
-						requestInfoEntity
-								.setCertificationSelectionBit("1010011");
+						requestInfoEntity.setSiteName(requestDetail.get(i).getCustSiteId().getcSiteName());
+						requestInfoEntity.setCertificationSelectionBit("1010011");
 						requestInfoEntity.setRequestParentVersion(1.0);
 						requestInfoEntity.setRequestTypeFlag("M");
-						
-						
 
 						requestInfoEntity.setRequestCreatorName("admin");
 
@@ -1078,22 +934,174 @@ public class BackUpAndRestoreController {
 							timestamp = Timestamp.valueOf(scheduledTime);
 							requestInfoEntity.setSceheduledTime(timestamp);
 						}
-						
-		
 
-						String jsonString = mapper
-								.writeValueAsString(requestInfoEntity);
+						String jsonString = mapper.writeValueAsString(requestInfoEntity);
 
-					
 						myObj.getTemplateId(jsonString);
-						
-					
+
 					}
 					break;
 				}
 			}
 			obj.put("batchId", batchId);
 			obj.put("output", "Batch Request created successfully");
+		}
+
+		catch (Exception e) {
+			logger.error(e);
+		}
+		return obj;
+
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@POST
+	@RequestMapping(value = "/batchTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject batchTest(@RequestBody String configRequest) throws ParseException {
+
+		JSONObject obj = new JSONObject();
+
+		JsonArray attribJson = null;
+		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
+				templateId = null, requestType = null,requestId=null;
+
+		HashMap<String, String> map = new HashMap<String, String>();
+
+		ArrayList<String> tempRequest1 = new ArrayList<String>();
+		int j = 0;
+
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(configRequest);
+
+		JsonObject jsonObject = new JsonParser().parse(configRequest).getAsJsonObject();
+
+		attribJson = jsonObject.getAsJsonArray("requests");
+
+		for (int n = 0; n < attribJson.size(); n++) {
+			tempHostName = attribJson.get(n).getAsJsonObject().get("hostname").getAsString();
+			tempManagementIp = attribJson.get(n).getAsJsonObject().get("managementIp").getAsString();
+			requestType = attribJson.get(n).getAsJsonObject().get("requestType").getAsString();
+			map.put(tempHostName, tempManagementIp);
+
+		}
+
+		List<DeviceDiscoveryEntity> requestDetail = null;
+		ObjectMapper mapper = new ObjectMapper();
+
+		Double request_version = 1.0;
+
+		Timestamp timestamp = null;
+		String temp = null;
+
+		final String batchId = "BI-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+
+		try {
+
+			for (Map.Entry m : map.entrySet()) {
+
+				tempHostName = (String) m.getKey();
+				tempManagementIp = (String) m.getValue();
+
+				temp = tempHostName;
+
+				if (tempRequest1.contains(temp)) {
+
+					continue;
+				}
+
+				tempRequest1.add(tempHostName);
+
+				requestDetail = deviceDiscoveryRepository.findByDHostNameAndDMgmtIp(tempHostName, tempManagementIp);
+
+				for (int i = 0; i < requestDetail.size(); i++) {
+					RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
+
+					if (map.size() > 1) {
+
+						requestInfoEntity.setBatchId(batchId);
+
+					}
+
+					if (j == 0) {
+
+						requestInfoEntity.setStatus("In Progress");
+					} else {
+
+						requestInfoEntity.setStatus("Awaiting");
+
+					}
+
+					LocalDateTime nowDate = LocalDateTime.now();
+					timestamp = Timestamp.valueOf(nowDate);
+					requestInfoEntity.setDateofProcessing(timestamp);
+					requestInfoEntity.setTemplateUsed(templateId);
+					requestInfoEntity.setCertificationTests(json.get("certificationTests"));
+
+					requestInfoEntity.setBatchSize(map.size());
+
+					requestInfoEntity.setRequestType(requestType);
+					alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+					requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
+
+					requestInfoEntity.setCustomer(requestDetail.get(i).getCustSiteId().getcCustName());
+
+					requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
+
+					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+
+					requestInfoEntity.setModel(requestDetail.get(i).getdModel());
+
+					requestInfoEntity.setOs(requestDetail.get(i).getdOs());
+
+					requestInfoEntity.setOsVersion(requestDetail.get(i).getdOsVersion());
+
+					requestInfoEntity.setManagmentIP(requestDetail.get(i).getdMgmtIp());
+
+					requestInfoEntity.setRegion(requestDetail.get(i).getCustSiteId().getcSiteRegion());
+
+					requestInfoEntity.setService(requestDetail.get(i).getdVNFSupport());
+
+					requestInfoEntity.setHostName(requestDetail.get(i).getdHostName());
+
+					requestInfoEntity.setVendor(requestDetail.get(i).getdVendor());
+
+					requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
+
+					requestInfoEntity.setRequestVersion(request_version);
+					requestInfoEntity.setFamily(requestDetail.get(i).getdSeries());
+					requestInfoEntity.setStartUp(false);
+
+					requestInfoEntity.setSiteName(requestDetail.get(i).getCustSiteId().getcSiteName());
+					requestInfoEntity.setCertificationSelectionBit("1010011");
+					requestInfoEntity.setRequestParentVersion(1.0);
+					requestInfoEntity.setRequestTypeFlag("M");
+
+					requestInfoEntity.setRequestCreatorName("admin");
+
+					if (!(scheduledTime.isEmpty())) {
+
+						timestamp = Timestamp.valueOf(scheduledTime);
+						requestInfoEntity.setSceheduledTime(timestamp);
+					}
+
+					String jsonString = mapper.writeValueAsString(requestInfoEntity);
+
+					requestId=myObj.getTemplateId(jsonString);
+
+					j++;
+				}
+
+			}
+			if (j == 1) {
+
+				obj.put("output", "Request created successfully");
+				obj.put(new String("requestId"), new String(requestId));
+				obj.put(new String("version"), "1.0");
+			} else {
+				obj.put("batchId", batchId);
+				obj.put("output", "Batch Request created successfully");
+			}
 		}
 
 		catch (Exception e) {

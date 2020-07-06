@@ -8322,7 +8322,6 @@ public class RequestInfoDao {
 		hmap.put("result", "false");
 		return hmap;
 	}
-
 	public List<TestDetail> findByTestName(String testNameUsed) {
 		connection = ConnectionFactory.getConnection();
 		String query = null, testName = null, version = null;
@@ -9100,6 +9099,13 @@ public class RequestInfoDao {
 			{
 				alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase();
 			}
+			 else if (requestInfoSO.getRequestType().equalsIgnoreCase("Audit")
+						&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+					alphaneumeric_req_id = "SLGA-" + UUID.randomUUID().toString().toUpperCase();
+
+				}
+
+			
 
 			alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
 			hmap.put("requestID", alphaneumeric_req_id);
@@ -9110,10 +9116,12 @@ public class RequestInfoDao {
 			if (requestInfoSO.getModel() != null || requestInfoSO.getModel() != "") {
 				model = requestInfoSO.getModel();
 			}
+			
 			if (requestInfoSO.getCertificationSelectionBit() != null
 					|| requestInfoSO.getCertificationSelectionBit() != "") {
 				certificationSelectionBit = requestInfoSO.getCertificationSelectionBit();
 			}
+
 			if (requestInfoSO.getRegion() != null || requestInfoSO.getRegion() != "") {
 				region = requestInfoSO.getRegion();
 			}
@@ -9254,6 +9262,7 @@ public class RequestInfoDao {
 			} else {
 				requestEntity.setStartUp(false);
 			}
+			
 			if (requestInfoSO.getRequestType().equalsIgnoreCase("Config MACD")
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 			requestEntity.setCertificationSelectionBit("1010111");

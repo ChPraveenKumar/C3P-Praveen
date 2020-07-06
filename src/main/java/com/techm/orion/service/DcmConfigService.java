@@ -1657,11 +1657,88 @@ public class DcmConfigService {
 			Map<String, Object> variables = new HashMap<String, Object>();
 
 			variables.put("createConfigRequest", requestInfoSO);
+			requestType=requestInfoSO.getRequestType();
 			if (variables.containsKey("createConfigRequest") && !variables.isEmpty()
 					&& requestInfoSO.getSceheduledTime().equalsIgnoreCase("")) {
 				// requestInfoSO.setStatus("In Progress");
+				
+				if(requestType.equals("Config MACD"))
+				{
+			       	result = dao.insertRequestInDB(requestInfoSO);
+                	for (Map.Entry<String, String> entry : result.entrySet()) {
+    					if (entry.getKey() == "requestID") {
 
+    						requestIdForConfig = entry.getValue();
+    						requestInfoSO.setAlphanumericReqId(requestIdForConfig);
+    					}
+    					if (entry.getKey() == "result") {
+    						res = entry.getValue();
+    					}
+
+    				}
+                	
+            		if (pojoList != null) {
+    					if (pojoList.isEmpty()) {
+    					}
+
+    					else {
+    						for (CreateConfigPojo pojo : pojoList) {
+    							pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
+    							saveDynamicAttribValue(pojo);
+    						}
+    					}
+    				}
+    				
+    				createTemplate(requestInfoSO);
+    				
+    				TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(requestInfoSO);
+					telnetCommunicationSSH.setDaemon(true);
+					telnetCommunicationSSH.start();
+    				
+				}
+				else
+				{
+                if(requestInfoSO.getBatchSize().equals("1"))
+                {
+                	result = dao.insertRequestInDB(requestInfoSO);
+                	for (Map.Entry<String, String> entry : result.entrySet()) {
+    					if (entry.getKey() == "requestID") {
+
+    						requestIdForConfig = entry.getValue();
+    						requestInfoSO.setAlphanumericReqId(requestIdForConfig);
+    					}
+    					if (entry.getKey() == "result") {
+    						res = entry.getValue();
+    					}
+
+    				}
+    				
+    				if(requestType.equals("Test") ||requestType.equals("Audit"))
+    				{
+    				int testStrategyDBUpdate = dao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
+    						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType());
+    				// int testStrategyResultsDB=requestInfoDao.
+    				JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
+    				for (int i = 0; i < array.length(); i++) {
+    					org.json.JSONObject obj = array.getJSONObject(i);
+    					String testname = obj.getString("testName");
+    					String reqid = requestInfoSO.getAlphanumericReqId();
+
+    				}
+    				if (testStrategyDBUpdate > 0) {
+    					output = "true";
+    				} else {
+    					output = "false";
+    				}
+    				}
+    				TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(requestInfoSO);
+					telnetCommunicationSSH.setDaemon(true);
+					telnetCommunicationSSH.start();
+                }
+                else
+                {
 				result = dao.insertBatchConfigRequestInDB(requestInfoSO);
+              
 
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))) {
@@ -1680,7 +1757,26 @@ public class DcmConfigService {
 					}
 
 				}
-
+				
+				if(requestType.equals("Test")||requestType.equals("Audit"))
+				{
+				int testStrategyDBUpdate = dao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
+						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType());
+				// int testStrategyResultsDB=requestInfoDao.
+				JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
+				for (int i = 0; i < array.length(); i++) {
+					org.json.JSONObject obj = array.getJSONObject(i);
+					String testname = obj.getString("testName");
+					String reqid = requestInfoSO.getAlphanumericReqId();
+					// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
+					// "", "",obj.getString("testName"));
+				}
+				if (testStrategyDBUpdate > 0) {
+					output = "true";
+				} else {
+					output = "false";
+				}
+				}
 				if (pojoList != null) {
 					if (pojoList.isEmpty()) {
 					}
@@ -1692,9 +1788,13 @@ public class DcmConfigService {
 						}
 					}
 				}
+				if(!(requestType.equals("Test")))
+				{
 				createTemplate(requestInfoSO);
+				}
 			}
-
+				}
+			  }
 		} catch (Exception e) {
 			logger.error(e);
 		}
