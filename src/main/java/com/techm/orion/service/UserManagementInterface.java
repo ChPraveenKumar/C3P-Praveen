@@ -21,10 +21,10 @@ public interface UserManagementInterface {
 	List<UserManagementEntity> getAllManager() throws Exception ; 
 	GenericResponse getUserView(String userName) throws Exception ; 
 	GenericResponse updateUser(String userData) throws Exception;
-	List<SiteInfoEntity>  getCustomerDetails() throws Exception ; 
-	List<SiteInfoEntity>  getSitesDetails(List custName, List regionName) throws Exception ; 
-	List<SiteInfoEntity>  getRegionDetails(List custName) throws Exception ; 
-	List<PasswordPolicy>  getPasswordPolicy() throws Exception ; 
+	List<SiteInfoEntity> getCustomerDetails() throws Exception ; 
+	List<SiteInfoEntity> getSitesDetails(List custName, List regionName) throws Exception ; 
+	List<SiteInfoEntity> getRegionDetails(List custName) throws Exception ; 
+	List<PasswordPolicy> getPasswordPolicy() throws Exception ; 
 	List<UserManagementEntity> getAllUserView() throws Exception ; 
 	GenericResponse  checkUserNamePassword(String userName, String password) throws Exception ; 
 	int resetPassword(String userName);

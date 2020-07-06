@@ -3,7 +3,6 @@ package com.techm.orion.serviceImpl;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.TimeZone;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -16,10 +15,8 @@ import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.entitybeans.UserRole;
 import com.techm.orion.exception.GenericResponse;
-import com.techm.orion.repositories.ModuleRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.UserManagementRepository;
-import com.techm.orion.repositories.WorkGroupRepository;
 import com.techm.orion.service.UserManagementInterface;
 import com.techm.orion.utility.PasswordEncryption;
 
@@ -32,17 +29,7 @@ public class UserManagementImpl implements UserManagementInterface {
 	private UserManagementRepository userManagementRepository;
 
 	@Autowired
-	private WorkGroupRepository workGroupRepository;
-
-	@Autowired
-	private ModuleRepository moduleRepository;
-
-	@Autowired
 	private SiteInfoRepository siteInfoRepository;
-
-	/*
-	 * @Autowired private PrivilegeLevelRepository privilegeLevelRepository;
-	 */
 
 	@Autowired
 	private UserManagementEntity userManagementEntity;
@@ -63,13 +50,12 @@ public class UserManagementImpl implements UserManagementInterface {
 		JSONObject module = new JSONObject();
 		JSONObject deviceGroup = new JSONObject();
 		JSONObject customerAndSites = null;
-		JSONObject workGroup = new JSONObject();
+		//JSONObject workGroup = new JSONObject();
 		String userName = "", role = "", firstName = "", lastName = "", email = "", password = "", timezone = "",
-				status = "", manager = "", devicegroup = "", customersites = "", subordinate = "", userId = null,
-				message = null, workgroupname = null, modulename = null, workGroupName = null, encryptedPass = null;
-		long phone = 0, mobile = 0, id = 0;
-		JSONArray toSaveArray = new JSONArray();
-		String testsSelected = toSaveArray.toString();
+				baseLocation = "", authentication="", manager = "",  userId = null,
+				address = null,  workGroupName = null, encryptedPass = null,
+				phone =null, mobile =null, workGroup=null;
+		long id = 0;
 		List<UserManagementEntity> userManager = null;
 		UserManagementEntity userCreate2 = null;
 
@@ -81,8 +67,8 @@ public class UserManagementImpl implements UserManagementInterface {
 			 * json will be empty It will work when
 			 * "workGroup":{"workgroupname":""},
 			 */
-			workGroup = (JSONObject) json.get("workGroup");
-			if (workGroup.get("workGroupName").toString().isEmpty()) {
+			workGroup = (String) json.get("workGroup");
+			if (workGroup.isEmpty()) {
 				if (json.get("role").equals("enoc_user"))
 					workGroupName = "ENOC_USERS_ALL";
 				else if (json.get("role").equals("seuser"))
@@ -94,7 +80,7 @@ public class UserManagementImpl implements UserManagementInterface {
 				else if (json.get("role").toString().equalsIgnoreCase("admin"))
 					workGroupName = "ADMIN_ALL";
 			} else
-				workGroup = (JSONObject) json.get("workGroup");
+				workGroup = (String) json.get("workGroup");
 
 			module = (JSONObject) json.get("module");
 			role = (String) json.get("role");
@@ -102,38 +88,42 @@ public class UserManagementImpl implements UserManagementInterface {
 			firstName = (String) json.get("firstName");
 			lastName = (String) json.get("lastName");
 			email = (String) json.get("email");
-			phone = (long) json.get("phone");
-			mobile = (long) json.get("mobile");
-			password = (String) json.get("password");
-			encryptedPass = passEncrypt.getMd5(password);
+			phone = (String) json.get("phone");
+			mobile = (String) json.get("mobile");
+			encryptedPass = passEncrypt.getMd5(userName);
 			timezone = (String) json.get("timezone");
-			status = (String) json.get("status");
+			address = (String) json.get("address");
+			baseLocation = (String) json.get("baseLocation");
+			authentication = (String) json.get("authentication");
 			manager = (String) json.get("manager");
 			userId = (String) json.get("id");
 			deviceGroup = (JSONObject) json.get("deviceGroup");
-			customerAndSites = (JSONObject) json.get("customerAndSites");
+			JSONArray custRegionSite = (JSONArray) json.get("customerAndSites");
 
 			userManagementEntity.setRole(role);
 			userManagementEntity.setId(id);
 			userManagementEntity.setFirstName(firstName);
 			userManagementEntity.setLastName(lastName);
 			userManagementEntity.setEmail(email);
-			userManagementEntity.setCurrentPassword(passEncrypt.getMd5(password));
+			userManagementEntity.setCurrentPassword(encryptedPass);
 			userManagementEntity.setPhone(phone);
 			userManagementEntity.setMobile(mobile);
 			userManagementEntity.setManagerName(manager);
-			userManagementEntity.setTimeZone(TimeZone.getDefault());
-			userManagementEntity.setStatus(status);
+			userManagementEntity.setTimeZone(timezone);
+			userManagementEntity.setStatus("active");
+			userManagementEntity.setAuthentication(authentication);
+			userManagementEntity.setBaseLocation(baseLocation);
+			userManagementEntity.setAddress(address);
 			userManagementEntity.setUserName(userName);
 			userManagementEntity.setModuleInfo(module.toString());
 			userManagementEntity.setDeviceGroup(deviceGroup.toString());
 			if (role.equals("enoc_user"))
-				userManagementEntity.setCustomerSites(customerAndSites.toString());
+				userManagementEntity.setCustomerSites(custRegionSite.toString());
 			else
 				userManagementEntity.setCustomerSites(null);
 
 			// It will work when "workGroup":{"workgroupname":""},
-			if (workGroup.get("workGroupName").toString().isEmpty())
+			if (workGroup.isEmpty())
 				userManagementEntity.setWorkGroup(workGroupName);
 			else
 				userManagementEntity.setWorkGroup(workGroup.toString());
@@ -233,7 +223,9 @@ public class UserManagementImpl implements UserManagementInterface {
 	public GenericResponse getUserView(String userName) throws Exception {
 		GenericResponse response = new GenericResponse();
 		JSONParser parser = new JSONParser();
-		JSONObject jsonModule = null, jsonCustAndSites = null;
+		JSONObject jsonModule = null;
+		JSONArray jsonCustAndSites = new JSONArray();
+		Object obj =null;
 		List<UserManagementEntity> userDetails = userManagementRepository.findUserDetails(userName);
 		UserManagementEntity userInfo = userDetails.get(0);
 
@@ -243,8 +235,9 @@ public class UserManagementImpl implements UserManagementInterface {
 		if (moduleDetails != null)
 			jsonModule = (JSONObject) parser.parse(moduleDetails);
 		if (customerAndSitesDetails != null)
-			jsonCustAndSites = (JSONObject) parser.parse(customerAndSitesDetails);
-
+			obj =  parser.parse(customerAndSitesDetails);
+		
+		jsonCustAndSites.add(obj);
 		String managerId = userManagementRepository.findOneByManagerName(userName);
 		String managerName = userManagementRepository.findManagerName(managerId);
 		response.put("userDetails", userDetails);
@@ -287,38 +280,32 @@ public class UserManagementImpl implements UserManagementInterface {
 		JSONParser parser = new JSONParser();
 		JSONObject module = new JSONObject();
 		JSONObject deviceGroup = new JSONObject();
-		JSONObject customerAndSites = new JSONObject();
-		JSONObject workGroup = new JSONObject();
-		String userName = "", role = "", firstName = "", lastName = "", email = "", password = "", timezone = "",
-				status = "", manager = "", devicegroup = "", customersites = "", subordinate = "", message = null,
-				workgroupname = null, modulename = null, workGroupName = null, assignManager = null,
-				encryptedPass = null;
+		String userName = "", role = "", firstName = "", lastName = "", email = "",  timezone = "",status = "", manager = "",
+			     assignManager = null, phone =null, mobile =null, workGroup=null, address=null, baseLocation=null, authentication=null;
 		long userId = 0;
-		long phone = 0, mobile = 0, id = 0;
-		JSONArray toSaveArray = new JSONArray();
-		String testsSelected = toSaveArray.toString();
 
 		try {
 			JSONObject json = (JSONObject) parser.parse(userData);
 
-			workGroup = (JSONObject) json.get("workGroup");
+			workGroup = (String) json.get("workGroup");
 			module = (JSONObject) json.get("module");
 			role = (String) json.get("role");
 			userName = (String) json.get("userName");
 			firstName = (String) json.get("firstName");
 			lastName = (String) json.get("lastName");
 			email = (String) json.get("email");
-			phone = (long) json.get("phone");
-			mobile = (long) json.get("mobile");
-			password = (String) json.get("password");
-			encryptedPass = passEncrypt.getMd5(password);
+			phone = (String) json.get("phone");
+			mobile = (String) json.get("mobile");
+			address = (String) json.get("address");
+			baseLocation = (String) json.get("baseLocation");
+			authentication = (String) json.get("authentication");
 			timezone = (String) json.get("timezone");
 			status = (String) json.get("status");
 			manager = (String) json.get("manager");
 			assignManager = (String) json.get("assignManager");
 			userId = (long) json.get("id");
 			deviceGroup = (JSONObject) json.get("deviceGroup");
-			customerAndSites = (JSONObject) json.get("customerAndSites");
+			JSONArray custRegionSite = (JSONArray) json.get("customerAndSites");
 
 			UserManagementEntity userDetails = userManagementRepository.findById(userId);
 
@@ -334,30 +321,22 @@ public class UserManagementImpl implements UserManagementInterface {
 			if (!email.isEmpty())
 				userDetails.setEmail(email);
 
-			if (!password.isEmpty())
-				userDetails.setCurrentPassword(encryptedPass);
-
-			if (phone != 0)
+			if (!phone.isEmpty())
 				userDetails.setPhone(phone);
 
-			if (mobile != 0)
+			if (!mobile.isEmpty())
 				userDetails.setMobile(mobile);
 
 			if (!manager.isEmpty())
 				userDetails.setManagerName(manager);
 
-			/*
-			 * if(!userId.isEmpty())
-			 * userCreate.setTimeZone(TimeZone.getDefault());
-			 */
-
+			 if(!timezone.isEmpty())
+				 userDetails.setTimeZone(timezone);
+			 
 			if (!status.isEmpty())
 				userDetails.setStatus(status);
 
-			if (!userName.isEmpty())
-				// userDetails.setUserName(userName);
-
-				if (manager.isEmpty() && !assignManager.isEmpty())
+			if (manager.isEmpty() && !assignManager.isEmpty())
 					userDetails.setManagerName(assignManager);
 
 			if (!module.isEmpty())
@@ -366,29 +345,22 @@ public class UserManagementImpl implements UserManagementInterface {
 			if (!deviceGroup.isEmpty())
 				userDetails.setDeviceGroup(deviceGroup.toString());
 
-			if (!customerAndSites.get("customerName").toString().isEmpty() && role.equals("enoc_user"))
-				userDetails.setCustomerSites(customerAndSites.toString());
+			if (!custRegionSite.isEmpty() && role.equals("enoc_user"))
+				userDetails.setCustomerSites(custRegionSite.toString());
 			else
 				userDetails.setCustomerSites(null);
 
-			if (!workGroup.get("workGroupName").toString().isEmpty())
+			if (!workGroup.isEmpty())
 				userDetails.setWorkGroup(workGroup.toString());
-
-			if (!password.isEmpty()) {
-				String currentPass = userManagementRepository.findOneByCurrentPassword(userName);
-				String previousPass = userManagementRepository.findOneByPreviousPassword(userName);
-				String lastPreviousPass = userManagementRepository.findOneByLastPreviousPassword(userName);
-				if (encryptedPass.equalsIgnoreCase(currentPass) || encryptedPass.equalsIgnoreCase(previousPass)
-						|| encryptedPass.equalsIgnoreCase(lastPreviousPass))
-					throw new Exception("old password not accepted ");
-
-				List<UserManagementEntity> userManagers = userManagementRepository.findByUserName(userName);
-				UserManagementEntity u1 = userManagers.get(0);
-				String pass = u1.getCurrentPassword();
-				u1.setPreviousPassword(currentPass);
-				if (previousPass != null)
-					u1.setLastPreviousPassword(previousPass);
-			}
+			
+			if (!authentication.isEmpty())
+				userDetails.setAuthentication(authentication);
+			
+			if (!address.isEmpty())
+				userDetails.setAddress(address);	
+			
+			if (!baseLocation.isEmpty())
+				userDetails.setBaseLocation(baseLocation);
 
 			if (status.equalsIgnoreCase("active")) {
 				String managerNameFromUI = userDetails.getManagerName();
@@ -640,14 +612,74 @@ public class UserManagementImpl implements UserManagementInterface {
 		inActiveUserCount = userManagementRepository.countInActiveUser();
 		return inActiveUserCount;
 	}
-
+	
+	/*
+	 * When user become inactive then all its sub ordinate will assign to just immediate super supervisor 
+	 * lockAndUnlockUser(java.lang.String, java.lang.String)
+	 */
 	@Override
 	public int lockAndUnlockUser(String userName, String action) {
+		List<UserManagementEntity> userDetails =null, userManagerDetails=null;
+		UserManagementEntity userInfo =null, managerInfo=null;
+		String subordinateInfo =null, userManager=null, managerSubordinateInfo=null, userSubordinate="", managerSubordinate="";
 		int success = 0;
+		
 		if (!userName.isEmpty()) {
-			List<UserManagementEntity> userDetails = userManagementRepository.findByUserName(userName);
-			if (!userDetails.isEmpty())
+			userDetails = userManagementRepository.findByUserName(userName);
+			userInfo = userDetails.get(0);
+			subordinateInfo = userInfo.getSubOrdinate();		
+			userManager = userInfo.getManagerName();
+			
+			if(subordinateInfo ==null && !userDetails.isEmpty())
 				success = userManagementRepository.activeUser(action, userName);
+			else
+			{
+				if(userManager !=null && action.equalsIgnoreCase("inactive"))
+				{
+					userManagerDetails = userManagementRepository.findByUserName(userManager);
+					managerInfo = userManagerDetails.get(0);
+					managerSubordinateInfo = managerInfo.getSubOrdinate();
+				}
+				else
+				{
+					userManagerDetails = userManagementRepository.findByUserName("admin");
+					managerInfo = userManagerDetails.get(0);
+					managerSubordinateInfo = managerInfo.getSubOrdinate();
+				}
+				
+				if (subordinateInfo != null && action.equalsIgnoreCase("inactive")) {
+					String subordiateArr[] = subordinateInfo.split(",");
+					for (String subordiateDetails : subordiateArr) {
+						if (!subordiateDetails.equals(userName)) {
+							if (userSubordinate.isEmpty())
+								userSubordinate = subordiateDetails;
+							else
+								userSubordinate = userSubordinate + "," + subordiateDetails;
+						}
+					}
+				}
+				if (managerSubordinateInfo != null && action.equalsIgnoreCase("inactive")) {
+
+					if (managerSubordinateInfo.isEmpty())
+						managerSubordinate = userName;
+					else
+						managerSubordinate = managerSubordinateInfo + "," + userSubordinate;
+				}
+				
+				if (managerSubordinateInfo == null && action.equalsIgnoreCase("inactive"))
+					managerSubordinate = userSubordinate;
+				
+				// update previvous manager sub
+				
+				if (!userDetails.isEmpty()){
+					success = userManagementRepository.activeUser(action, userName);
+					if (success>0 && action.equalsIgnoreCase("inactive"))
+					{
+						userManagementRepository.userSubordinate(userName);
+						userManagementRepository.managerSubordinate(managerSubordinate, userManager);
+					}
+				}
+			}
 		}
 		return success;
 	}

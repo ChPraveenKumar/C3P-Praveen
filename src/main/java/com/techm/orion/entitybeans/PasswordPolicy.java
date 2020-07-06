@@ -32,7 +32,7 @@ public class PasswordPolicy implements Serializable {
 	@Column(name="complexity")
 	private String Complexity;
 	
-	@Column(name="match")
+	@Column(name="match_password")
 	private String match;
 	
 	@Column(name="lockout")

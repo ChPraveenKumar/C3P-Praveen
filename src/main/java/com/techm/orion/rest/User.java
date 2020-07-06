@@ -1,5 +1,6 @@
 package com.techm.orion.rest;
 
+import java.util.ArrayList;
 import java.util.List;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -21,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.techm.orion.entitybeans.Module;
 import com.techm.orion.entitybeans.PasswordPolicy;
+import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.exception.GenericResponse;
 import com.techm.orion.pojo.UserPojo;
@@ -335,32 +337,49 @@ public class User {
 	}
 	
 	/*
-	 * Create service for getting sites name based on customer and region for user management
-	 */	 	 
+	 * Create service for getting sites name based on customer and region for
+	 * user management
+	 */
 	@POST
 	@RequestMapping(value = "/sites", method = RequestMethod.POST, produces = "application/json")
-	public ResponseEntity<JSONObject> getSitesDetails(
-			@RequestBody String custAndRegionName) {
+	public ResponseEntity<JSONObject> getSitesDetails(@RequestBody String custAndRegionName) {
 
+		logger.info("\n" + "Inside getting sites information Service");
 		GenericResponse res = new GenericResponse();
 		JSONObject obj = new JSONObject();
 		JSONParser parser = new JSONParser();
 		JSONObject json = new JSONObject();
 		JSONObject resObj = new JSONObject();
-		List sitesList = null;
+		JSONObject object = new JSONObject();
+		JSONArray outputArray = new JSONArray();
+		List<SiteInfoEntity> sitesInfo = new ArrayList<SiteInfoEntity>();
+		List<SiteInfoEntity> siteList = null;
 		try {
 			json = (JSONObject) parser.parse(custAndRegionName);
 			JSONArray customersName = (JSONArray) json.get("custName");
 			JSONArray regionsName = (JSONArray) json.get("regionName");
-			logger.info("\n" + "Inside getting sites information Service");
-			sitesList = userCreateInterface.getSitesDetails(customersName,
-					regionsName);
+
+			siteList = userCreateInterface.getSitesDetails(customersName, regionsName);
+			for (Object siteEntity : siteList) {
+				object = new JSONObject();
+				Object[] col = (Object[]) siteEntity;
+				SiteInfoEntity siteInfo = new SiteInfoEntity();
+				siteInfo.setcCustName(col[0].toString());
+				siteInfo.setcSiteName(col[1].toString());
+				siteInfo.setcSiteRegion(col[2].toString());
+				sitesInfo.add(siteInfo);
+				object.put("name", siteInfo.getcCustName());
+				object.put("site", siteInfo.getcSiteName());
+				object.put("region", siteInfo.getcSiteRegion());
+				outputArray.add(object);
+			}
+			
 			if (res.containsKey("errorText")) {
 				obj.put("error", res.get("errorText"));
 				obj.put("data", "");
 			} else {
 				obj.put("error", "");
-				obj.put("siteName", sitesList);
+				obj.put("siteName", outputArray);
 			}
 		} catch (Exception e) {
 			logger.error("\n" + "exception of sites information Service" + e.getMessage());
@@ -370,7 +389,7 @@ public class User {
 		resObj.put("result", obj);
 		return new ResponseEntity<JSONObject>(resObj, HttpStatus.OK);
 	}
-	
+
 	/*
 	 * Create service for getting region name based on customer for user management
 	 */	 	 

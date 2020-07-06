@@ -2,17 +2,12 @@ package com.techm.orion.repositories;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-
 import javax.transaction.Transactional;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
 import com.techm.orion.entitybeans.PasswordPolicy;
 import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.entitybeans.UserRole;
@@ -29,7 +24,8 @@ public interface UserManagementRepository extends JpaRepository<UserManagementEn
 	@Query("SELECT subOrdinate FROM UserManagementEntity")
 	List<UserManagementEntity>  findAllSubOrdinate();
 	
-	@Query("SELECT new com.techm.orion.entitybeans.UserManagementEntity (userName, CONCAT(lastName, ' ',firstName ) AS name) FROM UserManagementEntity")
+	@Query("SELECT new com.techm.orion.entitybeans.UserManagementEntity (userName, CONCAT(lastName, ' ',firstName ) AS name) "
+			+ "FROM UserManagementEntity where status='active' AND userName !='admin'")
 	List<UserManagementEntity> findAllManager();
 	
 	@Query("SELECT userRole FROM UserRole")
@@ -71,10 +67,10 @@ public interface UserManagementRepository extends JpaRepository<UserManagementEn
 	
 	@Query("SELECT new com.techm.orion.entitybeans.UserManagementEntity (id, role, firstName, lastName,  email,  phone,  mobile, userName,"
 			+ " timeZone,  status, managerName,  accountNonLocked, attempts, attemptsLastModified,  subOrdinate,  workGroup, createdDate,  "
-			+ " updatedDate) FROM UserManagementEntity")
+			+ " updatedDate, address, authentication, baseLocation) FROM UserManagementEntity where userName !='admin'")
 	List<UserManagementEntity>  findByAllUser();
 	
-	@Query("SELECT count(status) FROM UserManagementEntity where status='active'")
+	@Query("SELECT count(status) FROM UserManagementEntity where status='active' AND userName !='admin'")
 	int countActiveUser();
 	
 	@Query("SELECT count(status) FROM UserManagementEntity where status='inactive'")
@@ -109,4 +105,14 @@ public interface UserManagementRepository extends JpaRepository<UserManagementEn
 	@Modifying(clearAutomatically = true)
 	@Query("UPDATE  UserManagementEntity SET status = :status where userName = :userName")
 	int activeUser(@Param("status") String status ,@Param("userName") String userName);
+	
+	@Transactional
+	@Modifying(clearAutomatically = true)
+	@Query("UPDATE  UserManagementEntity SET subOrdinate = '' where userName = :userName")
+	int userSubordinate(@Param("userName") String userName);
+	
+	@Transactional
+	@Modifying(clearAutomatically = true)
+	@Query("UPDATE  UserManagementEntity SET subOrdinate = :subOrdinate where userName = :userName")
+	int managerSubordinate(@Param("subOrdinate") String subOrdinate ,@Param("userName") String userName);
 }
