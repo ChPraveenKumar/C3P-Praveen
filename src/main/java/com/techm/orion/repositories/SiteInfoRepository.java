@@ -31,6 +31,11 @@ public interface SiteInfoRepository extends JpaRepository<SiteInfoEntity, Long> 
 			+ "cCustName IN (:cCustName) AND  cSiteRegion IN (:cSiteRegion)")
 	List<SiteInfoEntity> findSitesDetails(@Param("cCustName") List cCustName , @Param("cSiteRegion") List cSiteRegion);
 	
+	@Query("SELECT distinct concat(substring(cSiteRegion, 1, 3), '-',cSiteName) as cSiteName, cSiteName, cSiteRegion"
+			+ " FROM SiteInfoEntity where "
+			+ "cCustName IN (:cCustName) AND  cSiteRegion IN (:cSiteRegion)")
+	List<SiteInfoEntity> findSitesDetailsInfo(@Param("cCustName") List cCustName , @Param("cSiteRegion") List cSiteRegion);
+	
 	@Query("SELECT distinct cSiteRegion FROM SiteInfoEntity where cCustName IN (:cCustName)")
 	List<SiteInfoEntity> findRegionDetails(@Param("cCustName") List cCustName);		
 	
