@@ -1664,7 +1664,7 @@ public class DcmConfigService {
 				
 				if(requestType.equals("Config MACD"))
 				{
-			       	result = dao.insertRequestInDB(requestInfoSO);
+			       	result = dao.insertBatchConfigRequestInDB(requestInfoSO);
                 	for (Map.Entry<String, String> entry : result.entrySet()) {
     					if (entry.getKey() == "requestID") {
 
@@ -1691,9 +1691,7 @@ public class DcmConfigService {
     				
     				createTemplate(requestInfoSO);
     				
-    				TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(requestInfoSO);
-					telnetCommunicationSSH.setDaemon(true);
-					telnetCommunicationSSH.start();
+    			
     				
 				}
 				else
