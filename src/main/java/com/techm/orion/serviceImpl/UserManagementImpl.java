@@ -258,7 +258,7 @@ public class UserManagementImpl implements UserManagementInterface {
 
 	@Override
 	public List<SiteInfoEntity> getSitesDetails(List custName, List regionName) throws Exception {
-		List<SiteInfoEntity> sitesDetails = siteInfoRepository.findSitesDetails(custName, regionName);
+		List<SiteInfoEntity> sitesDetails = siteInfoRepository.findSitesDetailsInfo(custName, regionName);
 		return sitesDetails;
 	}
 
