@@ -46,14 +46,15 @@ public class RequestInfoScheduler {
 
 	private static final Logger logger = LogManager.getLogger(RequestInfoScheduler.class);
 
+
 	/*
 	 * @GET
 	 * 
 	 * @RequestMapping(value = "/getAllBatchRequest", method = RequestMethod.GET,
 	 * produces = "application/json")
 	 */
-
-	@Scheduled(cron = "0/5 * * * * *")
+	
+	@Scheduled(cron = "0/5 * * * * *")	
 	public void fetchDBJob() {
 		CreateConfigRequestDCM configRequest = new CreateConfigRequestDCM();
 		String tempBatchId = null, tempId = null;
@@ -88,11 +89,16 @@ public class RequestInfoScheduler {
 
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
-								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-										configRequest);
-								telnetCommunicationSSH.setDaemon(true);
-								telnetCommunicationSSH.start();
-								System.out.println(timestamp.toString());
+								try {
+									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+											configRequest);
+									telnetCommunicationSSH.setDaemon(true);
+									telnetCommunicationSSH.start();
+									System.out.println(timestamp.toString());
+								} catch (Exception e) {
+
+									logger.error(e);
+								}
 
 								try {
 
@@ -122,11 +128,15 @@ public class RequestInfoScheduler {
 						} else if (detailsList.get(j).getRequestType().equals("Config MACD")) {
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
-								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-										configRequest);
-								telnetCommunicationSSH.setDaemon(true);
-								telnetCommunicationSSH.start();
+								try {
+									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+											configRequest);
+									telnetCommunicationSSH.setDaemon(true);
+									telnetCommunicationSSH.start();
+								} catch (Exception e) {
 
+									logger.error(e);
+								}
 								try {
 
 									Thread.sleep(30000);
@@ -144,21 +154,26 @@ public class RequestInfoScheduler {
 								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
 								try {
 
-									Thread.sleep(35000);
+									Thread.sleep(45000);
 								} catch (Exception e) {
 									logger.error(e);
 								}
 							}
-						} else if (detailsList.get(j).getRequestType().equals("Test") ||detailsList.get(j).getRequestType().equals("Audit") ) {
+						} else if (detailsList.get(j).getRequestType().equals("Test")
+								|| detailsList.get(j).getRequestType().equals("Audit")) {
 
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
-					
-								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-										configRequest);
-								telnetCommunicationSSH.setDaemon(true);
-								telnetCommunicationSSH.start();
+								try {
 
+									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+											configRequest);
+									telnetCommunicationSSH.setDaemon(true);
+									telnetCommunicationSSH.start();
+								} catch (Exception e) {
+
+									logger.error(e);
+								}
 								try {
 
 									Thread.sleep(80000);
