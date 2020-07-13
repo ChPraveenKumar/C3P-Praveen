@@ -140,12 +140,20 @@ public class DeviceDiscoveryEntity {
 	@Column(name = "d_decomm_time")
 	private String dDecommTime;
 
-	@Column(name = "d_decomm_reason")
-	private String dDecommReason;
+	@Column(name = "d_snmp_cred_profile")
+	private String dSnmpCredProfile;
 
 	@Column(name = "d_new_device", columnDefinition = "int default 0")
 	private int dNewDevice;
 
+	@Column(name = "d_SSH_cred_profile")
+	private String dSshCredProfile;
+	
+	@Column(name = "d_TELNET_cred_profile")
+	private String dTelnetCredProfile;
+	
+	@Column(name = "d_decomm_reason")
+	private String dDecommReason;
 	@Transient
 	private String dSystemDescription;
 
@@ -166,7 +174,7 @@ public class DeviceDiscoveryEntity {
 	@OneToOne(cascade = { CascadeType.ALL })
 	@JoinColumn(name = "d_dis_id")
 	private DiscoveryResultDeviceDetailsEntity dDisResultid;
-
+	
 	public JSONArray getContactDetails() {
 		return contactDetails;
 	}
@@ -181,6 +189,30 @@ public class DeviceDiscoveryEntity {
 
 	public void setdStatus(String dStatus) {
 		this.dStatus = dStatus;
+	}
+
+	public String getdSnmpCredProfile() {
+		return dSnmpCredProfile;
+	}
+
+	public void setdSnmpCredProfile(String dSnmpCredProfile) {
+		this.dSnmpCredProfile = dSnmpCredProfile;
+	}
+
+	public String getdSshCredProfile() {
+		return dSshCredProfile;
+	}
+
+	public void setdSshCredProfile(String dSshCredProfile) {
+		this.dSshCredProfile = dSshCredProfile;
+	}
+
+	public String getdTelnetCredProfile() {
+		return dTelnetCredProfile;
+	}
+
+	public void setdTelnetCredProfile(String dTelnetCredProfile) {
+		this.dTelnetCredProfile = dTelnetCredProfile;
 	}
 
 	@Transient
@@ -582,5 +614,4 @@ public class DeviceDiscoveryEntity {
 	public void setdDisResultid(DiscoveryResultDeviceDetailsEntity dDisResultid) {
 		this.dDisResultid = dDisResultid;
 	}
-
 }

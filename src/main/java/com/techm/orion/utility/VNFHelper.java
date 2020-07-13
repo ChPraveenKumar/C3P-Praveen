@@ -11,6 +11,8 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -21,6 +23,9 @@ import org.json.XML;
 
 import com.google.common.collect.Maps;
 import com.hubspot.jinjava.Jinjava;
+import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.entitybeans.TestDetail;
+import com.techm.orion.entitybeans.TestRules;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.rest.VnfConfigService;
@@ -439,5 +444,441 @@ public class VNFHelper {
 		}
 		return filepath2;
 
+	}
+	public Boolean performTest(TestDetail test, RequestInfoPojo requestinfo, String user, String pwd) throws IOException
+	{
+		RequestInfoDao dao = new RequestInfoDao();
+		List<String>output=new ArrayList<String>();
+		boolean result = false;
+		File file=null;
+		String pathxml=null;
+		String filterType=test.getTestCommand().replaceAll("\\s", "").toLowerCase();
+		ClassLoader classLoader = new VnfConfigService().getClass().getClassLoader();
+		
+			 file = new File(TSALabels.PYTHON_SCRIPT_PATH.getValue()+"\\"+filterType+"filter.xml");
+			 pathxml=file.getPath();
+			//String output1 = new String(Files.readAllBytes(Paths.get(path)));			
+			logger.info(filterType+"filter.xml picked");
+	
+		//get rules
+		
+		List<TestRules> rules = new ArrayList<TestRules>();
+		rules = test.getListRules();
+		for (int i = 0; i < rules.size(); i++) {
+			if (rules.get(i).getDataType().equalsIgnoreCase("Text"))
+			{
+				output=new ArrayList<String>();
+				String filtertosearch = rules.get(i).getBeforeText();
+				//python netconf_get_rpc.py -a 10.62.0.27 -u c3pteam -p csr1000v -k enabled -f 
+				String[] cmd = { "python", TSALabels.PYTHON_SCRIPT_PATH.getValue()+"\\netconf_get_rpc.py ","-a" ,requestinfo.getManagementIp(),"-u",user,"-p",pwd,"-k",filtertosearch,"-f",pathxml };
+				Process p;
+				try {
+					p = Runtime.getRuntime().exec(cmd);
+
+					BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+					//String ret = in.readLine();
+
+					BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+					String line;
+					if (bre.readLine() == null) {
+
+						while ((line = in.readLine()) != null) {
+				            output.add(line);
+				        }
+						
+					} else {
+						logger.info("" + bre.readLine());
+			            output.add("Error");
+
+						if (bre.readLine().contains("File exists") || bre.readLine().contains("File exist")) {
+							//result = true;
+							
+						} else {
+							//result = false;
+						}
+					}
+					bre.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			
+			String isEvaluationRequired = rules.get(i).getEvaluation();
+			if (isEvaluationRequired.equalsIgnoreCase("true"))
+			{
+				String resultText=null;
+				String evaluationOperator = rules.get(i).getOperator();
+				String op=String.join(",", output);
+				String requestID=requestinfo.getAlphanumericReqId();
+				if (evaluationOperator.equalsIgnoreCase("Text Starts with")) {
+					String value1 = rules.get(i).getValue1();
+
+					if (op.startsWith(value1)) {
+						// pass the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Passed", resultText, op, "Text starts with: " + value1, "N/A",
+								rules.get(i).getDataType());
+					} else {
+						// fail the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, op, "Text starts with: " + value1,
+								"Failed to match", rules.get(i).getDataType());
+					}
+				} else if (evaluationOperator.equalsIgnoreCase("=")) {
+					String value1 = rules.get(i).getValue1();
+					if (op.equals(value1)) {
+						// pass the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Passed", resultText, op, "Is equal to (=): " + value1, "N/A",
+								rules.get(i).getDataType());
+					} else {
+						// fail the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, op, "Is equal to (=): " + value1,
+								"Failed to match", rules.get(i).getDataType());
+					}
+				} else if (evaluationOperator.equalsIgnoreCase("Between")) {
+					String value1 = rules.get(i).getValue1();
+					String value2 = rules.get(i).getValue2();
+
+					try {
+						int val1 = Integer.parseInt(value1);
+						int val2 = Integer.parseInt(value2);
+						int out = Integer.parseInt(op.trim());
+						if (out >= val1 && out <= val2) {
+							// pass the test
+							
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Passed", resultText, op, "Between: " + value1 + " & " + value2,
+									"N/A", rules.get(i).getDataType());
+						} else {
+							// fail the test
+						
+
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Failed", resultText, op, "Between: " + value1 + " & " + value2,
+									"Failed to match", rules.get(i).getDataType());
+						}
+					} catch (Exception e) {
+						// fail the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, "Unable to process the rule",
+								"Between: " + value1 + " & " + value2, "Error in rule processing",
+								rules.get(i).getDataType());
+					}
+
+				} else if (evaluationOperator.equalsIgnoreCase(">")) {
+					String value1 = rules.get(i).getValue1();
+					// String value2=rules.get(i).getValue2();
+
+					try {
+						int val1 = Integer.parseInt(value1);
+						// int val2=Integer.parseInt(value2);
+						int out = Integer.parseInt(op.trim());
+						if (out > val1) {
+							// pass the test
+							
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Passed", resultText, op, "Greater than (>): " + value1, "N/A",
+									rules.get(i).getDataType());
+						} else {
+							// fail the test
+							
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Failed", resultText, op, "Greater than (>): " + value1,
+									"Failed to match", rules.get(i).getDataType());
+						}
+					} catch (Exception e) {
+						// fail the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, "Unable to process the rule",
+								"Greater than (>): " + value1, "Error in rule processing",
+								rules.get(i).getDataType());
+					}
+				} else if (evaluationOperator.equalsIgnoreCase("<")) {
+					String value1 = rules.get(i).getValue1();
+					// String value2=rules.get(i).getValue2();
+
+					try {
+						int val1 = Integer.parseInt(value1);
+						// int val2=Integer.parseInt(value2);
+						int out = Integer.parseInt(op.trim());
+						if (out < val1) {
+							// pass the test
+							
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Passed", resultText, op, "Less than (<): " + value1, "N/A",
+									rules.get(i).getDataType());
+						} else {
+							// fail the test
+							
+
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Failed", resultText, op, "Less than (<): " + value1,
+									"Failed to match", rules.get(i).getDataType());
+						}
+					} catch (Exception e) {
+						// fail the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, "Unable to process the rule",
+								"Less than (<): " + value1, "Error in rule processing",
+								rules.get(i).getDataType());
+					}
+				} else if (evaluationOperator.equalsIgnoreCase(">=")) {
+					String value1 = rules.get(i).getValue1();
+					// String value2=rules.get(i).getValue2();
+
+					try {
+						int val1 = Integer.parseInt(value1);
+						// int val2=Integer.parseInt(value2);
+						int out = Integer.parseInt(op.trim());
+						if (out >= val1) {
+							// pass the test
+							
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Passed", resultText, op,
+									"Greater than or equals to (>=): " + value1, "N/A",
+									rules.get(i).getDataType());
+						} else {
+							// fail the test
+							
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Failed", resultText, op,
+									"Greater than or equals to (>=): " + value1, "Failed to match",
+									rules.get(i).getDataType());
+						}
+					} catch (Exception e) {
+						// fail the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, "Unable to process the rule",
+								"Greater than or equals to (>=): " + value1, "Error in rule processing",
+								rules.get(i).getDataType());
+					}
+				} else if (evaluationOperator.equalsIgnoreCase("<=")) {
+					String value1 = rules.get(i).getValue1();
+					// String value2=rules.get(i).getValue2();
+
+					try {
+						int val1 = Integer.parseInt(value1);
+						// int val2=Integer.parseInt(value2);
+						int out = Integer.parseInt(op.trim());
+						if (out <= val1) {
+							// pass the test
+							
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Passed", resultText, op,
+									"Less than or equals to (<=): " + value1, "N/A",
+									rules.get(i).getDataType());
+						} else {
+							// fail the test
+						
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Failed", resultText, op,
+									"Less than or equals to (<=): " + value1, "Failed to match",
+									rules.get(i).getDataType());
+						}
+					} catch (Exception e) {
+						// fail the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, "Unable to process the rule",
+								"Less than or equals to (<=): " + value1, "Error in rule processing",
+								rules.get(i).getDataType());
+					}
+				} else if (evaluationOperator.equalsIgnoreCase("<>")) {
+					String value1 = rules.get(i).getValue1();
+					// String value2=rules.get(i).getValue2();
+
+					try {
+						int val1 = Integer.parseInt(value1);
+						// int val2=Integer.parseInt(value2);
+						int out = Integer.parseInt(op.trim());
+						if (out != val1) {
+							// pass the test
+							
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Passed", resultText, op, "Is not equal to  (<>): " + value1,
+									"N/A", rules.get(i).getDataType());
+						} else {
+							// fail the test
+							
+
+							resultText = rules.get(i).getReportedLabel();
+							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+									test.getTestName(), test.getTestCategory(),
+
+									"Failed", resultText, op, "Is not equal to  (<>): " + value1,
+									"Failed to match", rules.get(i).getDataType());
+						}
+					} catch (Exception e) {
+						// fail the test
+						
+
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, "Unable to process the rule",
+								"Is not equal to  (<>): " + value1, "Error in rule processing",
+								rules.get(i).getDataType());
+					}
+				} else if (evaluationOperator.equalsIgnoreCase("Text matches excatly")) {
+					String value1 = rules.get(i).getValue1();
+					if (op.toLowerCase().equalsIgnoreCase(value1.toLowerCase())) {
+						// pass the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Passed", resultText, op, "Text matches excatly: " + value1, "N/A",
+								rules.get(i).getDataType());
+					} else {
+						// fail the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, op, "Text matches excatly: " + value1,
+								"Failed to match", rules.get(i).getDataType());
+					}
+				} else if (evaluationOperator.equalsIgnoreCase("Text ends with")) {
+					String value1 = rules.get(i).getValue1();
+					if (op.endsWith(value1)) {
+						// pass the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Passed", resultText, op, "Text ends with: " + value1, "N/A",
+								rules.get(i).getDataType());
+					} else {
+						// fail the test
+						
+
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, op, "Text ends with: " + value1,
+								"Failed to match", rules.get(i).getDataType());
+					}
+				} else if (evaluationOperator.equalsIgnoreCase("Text contains")) {
+					String value1 = rules.get(i).getValue1();
+					if (op.contains(value1)) {
+						// pass the test
+						
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Passed", resultText, op, "Text contains: " + value1, "N/A",
+								rules.get(i).getDataType());
+					} else {
+						// fail the test
+					
+						resultText = rules.get(i).getReportedLabel();
+						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								test.getTestCategory(),
+
+								"Failed", resultText, op, "Text contains: " + value1,
+								"Failed to match", rules.get(i).getDataType());
+					}
+				} else {
+					// Incorrect operator message fail the test
+					
+					resultText = rules.get(i).getReportedLabel();
+					result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+							test.getTestCategory(),
+
+							"Failed", resultText, op, "Invalid operator", "Failed",
+							rules.get(i).getDataType());
+				}
+			
+				
+			}
+			else
+			{
+				String resultText = rules.get(i).getReportedLabel();
+				result = dao.updateTestStrategeyConfigResultsTable(requestinfo.getAlphanumericReqId(), test.getTestName(),
+						test.getTestCategory(), "Passed", resultText, String.join(",", output), "N/A", "",
+						rules.get(i).getDataType());
+			}
+		}
+		
+		
+		return result;
+		
 	}
 }

@@ -109,7 +109,7 @@ public class NetworkAuditTest extends Thread {
 					String sshPrivateKeyFilePath = NetworkAuditTest.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
 					String host = configRequest.getManagementIp();
 					UserPojo userPojo = new UserPojo();
-					userPojo = requestInfoDao.getRouterCredentials();
+					userPojo = requestInfoDao.getRouterCredentials(host);
 					logger.info("Request ID in Network audit test validation" + RequestId);
 					String user = userPojo.getUsername();
 					String password = userPojo.getPassword();
@@ -290,7 +290,7 @@ public class NetworkAuditTest extends Thread {
 					String sshPrivateKeyFilePath = NetworkAuditTest.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
 					String host = requestinfo.getManagementIp();
 					UserPojo userPojo = new UserPojo();
-					userPojo = requestInfoDao.getRouterCredentials();
+					userPojo = requestInfoDao.getRouterCredentials(host);
 					logger.info("Request ID in Network audit test validation" + RequestId);
 					String user = userPojo.getUsername();
 					String password = userPojo.getPassword();

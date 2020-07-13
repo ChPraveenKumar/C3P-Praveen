@@ -1988,7 +1988,43 @@ public class RequestInfoDao {
 		return userList;
 
 	}
+	public final UserPojo getRouterCredentials(String mgmtip) throws IOException {
 
+		connection = ConnectionFactory.getConnection();
+		ResultSet rs = null;
+
+		UserPojo userList = new UserPojo();
+		try {
+			String query = "SELECT * FROM routeruserdevicemanagementtable where mgmtip=?";
+			//statement = connection.createStatement();
+			//rs = statement.executeQuery(query);
+
+			
+			PreparedStatement pst = null;
+			
+
+				pst = connection.prepareStatement(query);
+				pst.setString(1, mgmtip);
+				
+				rs = pst.executeQuery();
+				if (rs.next()) {
+
+					userList.setUsername(rs.getString("router_username"));
+					userList.setPassword(rs.getString("router_password"));
+				}
+			
+			
+			
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+
+		}
+
+		return userList;
+
+	}
 	public boolean addNewUserToDB(String username, String pass) {
 		connection = ConnectionFactory.getConnection();
 
@@ -8088,7 +8124,11 @@ public class RequestInfoDao {
 			} else if (requestInfoSO.getRequestType().equalsIgnoreCase("SLGB")
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGB-" + UUID.randomUUID().toString().toUpperCase();
-			} else {
+			} else if (requestInfoSO.getRequestType().equalsIgnoreCase("Test")
+					&& requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {
+				alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase();
+
+			}else {
 				alphaneumeric_req_id = "SLGC-" + UUID.randomUUID().toString().toUpperCase();
 			}
 			// alphaneumeric_req_id = request.getProcessID();
@@ -8455,7 +8495,37 @@ public class RequestInfoDao {
 		return requestInfoList;
 
 	}
+	public List checkForDeviceLock(String requestId, String managementIp, String TestType) {
+		connection = ConnectionFactory.getConnection();
+		String query = null;
 
+		ResultSet rs = null;
+		PreparedStatement pst = null;
+		List deviceLockList = new ArrayList<>();
+
+		try {
+			if (TestType.equalsIgnoreCase("DeviceTest")) {
+				query = "Select * from DeviceLocked_ManagementIP where management_ip=?";
+				pst = connection.prepareStatement(query);
+				pst.setString(1,managementIp);
+				rs = pst.executeQuery();
+				while (rs.next()) {
+
+					requestId = rs.getString("locked_by");
+					deviceLockList.add(requestId);
+
+				}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DBUtil.close(rs);
+			DBUtil.close(statement);
+			DBUtil.close(connection);
+		}
+		return deviceLockList;
+	}
 
 	public String deleteForDeviceLock(String locked_by) {
 
@@ -9340,38 +9410,5 @@ public class RequestInfoDao {
         }
         return result;
  }
-	
-	public List checkForDeviceLock(String requestId, String managementIp, String TestType) {
-        connection = ConnectionFactory.getConnection();
-        String query = null;
-
-        ResultSet rs = null;
-        PreparedStatement pst = null;
-        List deviceLockList = new ArrayList<>();
-
-        try {
-              if (TestType.equalsIgnoreCase("DeviceTest")) {
-                    query = "Select * from DeviceLocked_ManagementIP where management_ip=?";
-                    pst = connection.prepareStatement(query);
-                    pst.setString(1,managementIp);
-                    rs = pst.executeQuery();
-                    while (rs.next()) {
-
-                          requestId = rs.getString("locked_by");
-                          deviceLockList.add(requestId);
-
-                    }
-              }
-        } catch (SQLException e) {
-              // TODO Auto-generated catch block
-              e.printStackTrace();
-        } finally {
-              DBUtil.close(rs);
-              DBUtil.close(statement);
-              DBUtil.close(connection);
-        }
-        return deviceLockList;
-  }
-
 
 }

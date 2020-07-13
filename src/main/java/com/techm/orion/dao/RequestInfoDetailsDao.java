@@ -234,6 +234,7 @@ public class RequestInfoDetailsDao {
 				pojo.setCertificationSelectionBit(entity.getCertificationSelectionBit());
 				pojo.setHostname(entity.getHostName());
 				pojo.setStatus(entity.getStatus());
+				pojo.setNetworkType(entity.getNetworkType());
 
 			}
 		} catch (Exception e) {

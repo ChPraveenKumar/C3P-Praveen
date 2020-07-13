@@ -204,18 +204,20 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 						String host = createConfigRequest.getManagementIp();
 						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials();
+						userPojo = requestInfoDao.getRouterCredentials(host);
 
 						String user = null;
 						String password = null;
 
-						if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
+						user = userPojo.getUsername();
+						password = userPojo.getPassword();
+						/*if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
 							user = "c3pteam";
 							password = "csr1000v";
 						} else {
 							user = userPojo.getUsername();
 							password = userPojo.getPassword();
-						}
+						}*/
 						String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("portSSH");
 
 						session = jsch.getSession(user, host, Integer.parseInt(port));
@@ -326,7 +328,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 						String host = createConfigRequest.getManagementIp();
 						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials();
+						userPojo = requestInfoDao.getRouterCredentials(host);
 
 						String user = userPojo.getUsername();
 						String password = userPojo.getPassword();
@@ -540,18 +542,20 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 						String host = requestinfo.getManagementIp();
 						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials();
+						userPojo = requestInfoDao.getRouterCredentials(host);
 
 						String user = null;
 						String password = null;
 
-						if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
+						user = userPojo.getUsername();
+						password = userPojo.getPassword();
+						/*if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
 							user = "c3pteam";
 							password = "csr1000v";
 						} else {
 							user = userPojo.getUsername();
 							password = userPojo.getPassword();
-						}
+						}*/
 						String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("portSSH");
 
 						// port="22";
@@ -663,7 +667,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 						String host = requestinfo.getManagementIp();
 						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials();
+						userPojo = requestInfoDao.getRouterCredentials(host);
 
 						String user = userPojo.getUsername();
 						String password = userPojo.getPassword();

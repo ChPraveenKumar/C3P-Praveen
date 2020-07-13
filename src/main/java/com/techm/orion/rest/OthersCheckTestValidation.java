@@ -40,15 +40,19 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.CSVWriteAndConnectPython;
 import com.techm.orion.service.RegexTestHealthCheck;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.VNFHelper;
 
 @Controller
 @RequestMapping("/OthersCheckTestValidation")
@@ -66,6 +70,9 @@ public class OthersCheckTestValidation extends Thread {
 	@Autowired
 	TestStrategeyAnalyser analyser;
 
+	@Autowired
+	DeviceDiscoveryRepository deviceRepo;
+	
 	@POST
 	@RequestMapping(value = "/otherscheckCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -111,7 +118,7 @@ public class OthersCheckTestValidation extends Thread {
 							.getProperty("sshPrivateKeyPath");
 					String host = configRequest.getManagementIp();
 					UserPojo userPojo = new UserPojo();
-					userPojo = requestInfoDao.getRouterCredentials();
+					userPojo = requestInfoDao.getRouterCredentials(host);
 					logger.info("Request ID in others test validation" + RequestId);
 					String user = null;
 					String password = null;
@@ -120,13 +127,15 @@ public class OthersCheckTestValidation extends Thread {
 
 					String privateKeyPath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
 
-					if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
+					user = userPojo.getUsername();
+					password = userPojo.getPassword();
+					/*if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 						user = "c3pteam";
 						password = "csr1000v";
 					} else {
 						user = userPojo.getUsername();
 						password = userPojo.getPassword();
-					}
+					}*/
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
 							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGM")
 							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
@@ -180,20 +189,39 @@ public class OthersCheckTestValidation extends Thread {
 								if (finallistOfTests.size() > 0) {
 									results = new ArrayList<Boolean>();
 									for (int i = 0; i < finallistOfTests.size(); i++) {
+									
 										// conduct and analyse the tests
-										ps.println("terminal length 0");
-										ps.println(finallistOfTests.get(i).getTestCommand());
-										try {
-											Thread.sleep(8000);
-										} catch (Exception ee) {
+										DeviceDiscoveryEntity device = deviceRepo
+												.findByDHostName(requestinfo.getHostname().toUpperCase());
+										if(device.getdConnect().equalsIgnoreCase("NETCONF"))
+										{
+											VNFHelper helper=new VNFHelper();
+											helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
 										}
-										// printResult(input,
-										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-										Boolean res = analyser.printAndAnalyse(input, channel,
-												configRequest.getRequestId(),
-												Double.toString(configRequest.getRequest_version()),
-												finallistOfTests.get(i), "Others Test");
-										results.add(res);
+										else if(device.getdConnect().equalsIgnoreCase("RESTCONF"))
+										{
+											ODLClient client=new ODLClient();
+											client.performTest(finallistOfTests.get(i),requestinfo, user, password);
+										}
+										else
+										{
+											// conduct and analyse the tests
+											ps.println("terminal length 0");
+											ps.println(finallistOfTests.get(i).getTestCommand());
+											try {
+												Thread.sleep(8000);
+											} catch (Exception ee) {
+											}
+											// printResult(input,
+											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
+											Boolean res = analyser.printAndAnalyse(input, channel,
+													requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()),
+													finallistOfTests.get(i), "Others Test");
+											results.add(res);
+										}
+									
+								
 									}
 								} else {
 
@@ -299,7 +327,7 @@ public class OthersCheckTestValidation extends Thread {
 							.getProperty("sshPrivateKeyPath");
 					String host = requestinfo.getManagementIp();
 					UserPojo userPojo = new UserPojo();
-					userPojo = requestInfoDao.getRouterCredentials();
+					userPojo = requestInfoDao.getRouterCredentials(host);
 					logger.info("Request ID in others test validation" + RequestId);
 					String user = null;
 					String password = null;
@@ -307,13 +335,15 @@ public class OthersCheckTestValidation extends Thread {
 
 					String privateKeyPath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
 
-					if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
+					user = userPojo.getUsername();
+					password = userPojo.getPassword();
+					/*if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 						user = "c3pteam";
 						password = "csr1000v";
 					} else {
 						user = userPojo.getUsername();
 						password = userPojo.getPassword();
-					}
+					}*/
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
 							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGM")
 							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
@@ -365,20 +395,39 @@ public class OthersCheckTestValidation extends Thread {
 								if (finallistOfTests.size() > 0) {
 									results = new ArrayList<Boolean>();
 									for (int i = 0; i < finallistOfTests.size(); i++) {
-										// conduct and analyse the tests
-										ps.println("terminal length 0");
-										ps.println(finallistOfTests.get(i).getTestCommand());
-										try {
-											Thread.sleep(8000);
-										} catch (Exception ee) {
-										}
-										// printResult(input,
-										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-										Boolean res = analyser.printAndAnalyse(input, channel,
-												requestinfo.getAlphanumericReqId(),
-												Double.toString(requestinfo.getRequestVersion()),
-												finallistOfTests.get(i), "Others Test");
-										results.add(res);
+									
+											// conduct and analyse the tests
+											DeviceDiscoveryEntity device = deviceRepo
+													.findByDHostName(requestinfo.getHostname().toUpperCase());
+											if(device.getdConnect().equalsIgnoreCase("NETCONF"))
+											{
+												VNFHelper helper=new VNFHelper();
+												helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											}
+											else if(device.getdConnect().equalsIgnoreCase("RESTCONF"))
+											{
+												ODLClient client=new ODLClient();
+												client.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											}
+											else
+											{
+												// conduct and analyse the tests
+												ps.println("terminal length 0");
+												ps.println(finallistOfTests.get(i).getTestCommand());
+												try {
+													Thread.sleep(8000);
+												} catch (Exception ee) {
+												}
+												// printResult(input,
+												// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
+												Boolean res = analyser.printAndAnalyse(input, channel,
+														requestinfo.getAlphanumericReqId(),
+														Double.toString(requestinfo.getRequestVersion()),
+														finallistOfTests.get(i), "Others Test");
+												results.add(res);
+											}
+										
+									
 									}
 								} else {
 

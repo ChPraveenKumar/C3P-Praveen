@@ -1380,23 +1380,33 @@ public class DcmConfigService {
 						telnetCommunicationSSH.start();
 						// telnetCommunicationSSH.connectToRouter(configRequest);
 					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {
-						VNFHelper helper = new VNFHelper();
+					VNFHelper helper = new VNFHelper();
 						if (requestInfoSO.getVnfConfig() != null) {
-							String filepath = helper.saveXML(requestInfoSO.getVnfConfig(), requestIdForConfig,
-									requestInfoSO);
-							if (filepath != null) {
+							if(!requestInfoSO.getRequestType().equalsIgnoreCase("Test"))
+							{
+								String filepath = helper.saveXML(requestInfoSO.getVnfConfig(), requestIdForConfig,
+										requestInfoSO);
+								if (filepath != null) {
 
+									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+											requestInfoSO);
+									telnetCommunicationSSH.setDaemon(true);
+									telnetCommunicationSSH.start();
+
+								} else {
+									validateMessage = "Failure due to invalid input";
+
+								}
+							}
+						}
+							else
+							{
 								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 										requestInfoSO);
 								telnetCommunicationSSH.setDaemon(true);
 								telnetCommunicationSSH.start();
-
-							} else {
-								validateMessage = "Failure due to invalid input";
-
 							}
-						}
-
+							
 					}
 
 					/*

@@ -35,13 +35,17 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.VNFHelper;
 
 @Controller
 @RequestMapping("/NetworkTestValidation")
@@ -59,6 +63,9 @@ public class NetworkTestValidation extends Thread {
 	@Autowired
 	TestStrategeyAnalyser analyser;
 
+	@Autowired
+	DeviceDiscoveryRepository deviceRepo;
+	
 	@POST
 	@RequestMapping(value = "/networkCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -101,18 +108,18 @@ public class NetworkTestValidation extends Thread {
 						NetworkTestValidation.loadProperties();
 						String host = configRequest.getManagementIp();
 						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials();
+						userPojo = requestInfoDao.getRouterCredentials(host);
 						String user = null, password = null;
 
 						user = userPojo.getUsername();
 						password = userPojo.getPassword();
-						if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
+						/*if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 							user = "c3pteam";
 							password = "csr1000v";
 						} else {
 							user = userPojo.getUsername();
 							password = userPojo.getPassword();
-						}
+						}*/
 						String port = NetworkTestValidation.TSA_PROPERTIES.getProperty("portSSH");
 						ArrayList<String> commandToPush = new ArrayList<String>();
 
@@ -352,17 +359,17 @@ public class NetworkTestValidation extends Thread {
 						NetworkTestValidation.loadProperties();
 						String host = requestinfo.getManagementIp();
 						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials();
+						userPojo = requestInfoDao.getRouterCredentials(host);
 						String user = null, password = null;
 						user = userPojo.getUsername();
 						password = userPojo.getPassword();
-						if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
+						/*if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 							user = "c3pteam";
 							password = "csr1000v";
 						} else {
 							user = userPojo.getUsername();
 							password = userPojo.getPassword();
-						}
+						}*/
 						String port = NetworkTestValidation.TSA_PROPERTIES.getProperty("portSSH");
 						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
@@ -456,21 +463,40 @@ public class NetworkTestValidation extends Thread {
 								if (finallistOfTests.size() > 0) {
 									results = new ArrayList<Boolean>();
 									for (int i = 0; i < finallistOfTests.size(); i++) {
+									
+
 
 										// conduct and analyse the tests
-										ps.println(finallistOfTests.get(i).getTestCommand());
-										try {
-											Thread.sleep(6000);
-										} catch (Exception ee) {
+										DeviceDiscoveryEntity device = deviceRepo
+												.findByDHostName(requestinfo.getHostname().toUpperCase());
+										if(device.getdConnect().equalsIgnoreCase("NETCONF"))
+										{
+											VNFHelper helper=new VNFHelper();
+											helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
 										}
+										else if(device.getdConnect().equalsIgnoreCase("RESTCONF"))
+										{
+											ODLClient client=new ODLClient();
+											client.performTest(finallistOfTests.get(i),requestinfo, user, password);
+										}
+										else
+										{
+											ps.println(finallistOfTests.get(i).getTestCommand());
+											try {
+												Thread.sleep(6000);
+											} catch (Exception ee) {
+											}
 
-										// printResult(input,
-										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-										Boolean res = analyser.printAndAnalyse(input, channel,
-												requestinfo.getAlphanumericReqId(),
-												Double.toString(requestinfo.getRequestVersion()),
-												finallistOfTests.get(i), "Network Test");
-										results.add(res);
+											// printResult(input,
+											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
+											Boolean res = analyser.printAndAnalyse(input, channel,
+													requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()),
+													finallistOfTests.get(i), "Network Test");
+											results.add(res);
+										}
+									
+									
 									}
 								}
 
