@@ -8456,37 +8456,6 @@ public class RequestInfoDao {
 
 	}
 
-	public List checkForDeviceLock(String requestId, String managementIp, String TestType) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-
-		ResultSet rs = null;
-		PreparedStatement pst = null;
-		List deviceLockList = new ArrayList<>();
-
-		try {
-			if (TestType.equalsIgnoreCase("DeviceTest")) {
-				query = "Select * from DeviceLocked_ManagementIP";
-				pst = connection.prepareStatement(query);
-
-				rs = pst.executeQuery();
-				while (rs.next()) {
-
-					requestId = rs.getString("locked_by");
-					deviceLockList.add(requestId);
-
-				}
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
-		}
-		return deviceLockList;
-	}
 
 	public String deleteForDeviceLock(String locked_by) {
 
@@ -9371,4 +9340,38 @@ public class RequestInfoDao {
         }
         return result;
  }
+	
+	public List checkForDeviceLock(String requestId, String managementIp, String TestType) {
+        connection = ConnectionFactory.getConnection();
+        String query = null;
+
+        ResultSet rs = null;
+        PreparedStatement pst = null;
+        List deviceLockList = new ArrayList<>();
+
+        try {
+              if (TestType.equalsIgnoreCase("DeviceTest")) {
+                    query = "Select * from DeviceLocked_ManagementIP where management_ip=?";
+                    pst = connection.prepareStatement(query);
+                    pst.setString(1,managementIp);
+                    rs = pst.executeQuery();
+                    while (rs.next()) {
+
+                          requestId = rs.getString("locked_by");
+                          deviceLockList.add(requestId);
+
+                    }
+              }
+        } catch (SQLException e) {
+              // TODO Auto-generated catch block
+              e.printStackTrace();
+        } finally {
+              DBUtil.close(rs);
+              DBUtil.close(statement);
+              DBUtil.close(connection);
+        }
+        return deviceLockList;
+  }
+
+
 }

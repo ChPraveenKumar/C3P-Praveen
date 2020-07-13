@@ -1043,7 +1043,7 @@ public class FinalReportForTTUTest extends Thread {
 
 				// Require requestId and version from camunda
 
-				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA") || type.equalsIgnoreCase("SLGM") ) {
+				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA") || type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SLGB")) {
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
 					if (deviceLocked) {
