@@ -208,4 +208,11 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	@Query(value = "update c3p_deviceinfo set d_dis_id = :resultDevice where d_Id = :deviceId", nativeQuery = true)
 	int updateDescripancyId(@Param("resultDevice") int resultDevice, @Param("deviceId") int deviceId);
 
+
+	List<DeviceDiscoveryEntity> findByDSshCredProfile(String profileName);
+
+	List<DeviceDiscoveryEntity> findByDTelnetCredProfile(String profileName);
+
+	List<DeviceDiscoveryEntity> findByDSnmpCredProfile(String profileName);
+
 }
