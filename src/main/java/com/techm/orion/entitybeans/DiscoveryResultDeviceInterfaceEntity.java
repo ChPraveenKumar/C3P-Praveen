@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -52,6 +53,10 @@ public class DiscoveryResultDeviceInterfaceEntity implements Serializable{
 
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	private DiscoveryResultDeviceDetailsEntity device;
+	
+	@OneToOne(mappedBy="iIntDisResult",cascade = { CascadeType.ALL })
+	private DiscoveryResultDeviceInterfaceFlagsEntity flagsEntity;
+	
 
 	public DiscoveryResultDeviceDetailsEntity getDevice() {
 		return device;
@@ -146,4 +151,15 @@ public class DiscoveryResultDeviceInterfaceEntity implements Serializable{
 
 	@Column(name = "i_int_phy_addr", length = 50)
 	private String iIntPhyAddr;
+
+
+	public DiscoveryResultDeviceInterfaceFlagsEntity getFlagsEntity() {
+		return flagsEntity;
+	}
+
+	public void setFlagsEntity(DiscoveryResultDeviceInterfaceFlagsEntity flagsEntity) {
+		this.flagsEntity = flagsEntity;
+	}
+	
+	
 }

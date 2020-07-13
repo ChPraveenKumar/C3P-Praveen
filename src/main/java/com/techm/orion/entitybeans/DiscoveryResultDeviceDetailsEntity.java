@@ -13,11 +13,16 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+/**
+ * @author DM00631464
+ *
+ */
 @Entity
 @Table(name = "c3p_t_device_discovery_result_device_details")
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -115,6 +120,12 @@ public class DiscoveryResultDeviceDetailsEntity implements Serializable
 
 	@Column(name = "d_inventoried", length = 10)
 	private String dInventoried;
+
+	@Column(name = "d_site", length = 50)
+	private String site;
+
+	@Column(name = "d_customer", length = 50)
+	private String customer;
 
 	public String getdInventoried() {
 		return dInventoried;
@@ -276,9 +287,28 @@ public class DiscoveryResultDeviceDetailsEntity implements Serializable
 		this.dVendor = dVendor;
 	}
 
+	public String getSite() {
+		return site;
+	}
+
+	public void setSite(String site) {
+		this.site = site;
+	}
+
+	public String getCustomer() {
+		return customer;
+	}
+
+	public void setCustomer(String customer) {
+		this.customer = customer;
+	}
+
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "discovery_id")
 	private DeviceDiscoveryDashboardEntity deviceDiscoveryDashboardEntity;
+
+	@OneToOne(mappedBy = "dDisResult",cascade = { CascadeType.ALL })
+	private DiscoveryResultDeviceDetailsFlagsEntity flagsEntity;
 
 	public DeviceDiscoveryDashboardEntity getDeviceDiscoveryDashboardEntity() {
 		return deviceDiscoveryDashboardEntity;
@@ -287,4 +317,13 @@ public class DiscoveryResultDeviceDetailsEntity implements Serializable
 	public void setDeviceDiscoveryDashboardEntity(DeviceDiscoveryDashboardEntity deviceDiscoveryDashboardEntity) {
 		this.deviceDiscoveryDashboardEntity = deviceDiscoveryDashboardEntity;
 	}
+
+	public DiscoveryResultDeviceDetailsFlagsEntity getFlagsEntity() {
+		return flagsEntity;
+	}
+
+	public void setFlagsEntity(DiscoveryResultDeviceDetailsFlagsEntity flagsEntity) {
+		this.flagsEntity = flagsEntity;
+	}
+
 }

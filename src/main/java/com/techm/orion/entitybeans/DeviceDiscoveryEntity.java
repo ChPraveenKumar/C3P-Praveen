@@ -15,6 +15,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -161,6 +162,10 @@ public class DeviceDiscoveryEntity {
 
 	@Transient
 	private JSONArray contactDetails;
+
+	@OneToOne(cascade = { CascadeType.ALL })
+	@JoinColumn(name = "d_dis_id")
+	private DiscoveryResultDeviceDetailsEntity dDisResultid;
 
 	public JSONArray getContactDetails() {
 		return contactDetails;
@@ -568,6 +573,14 @@ public class DeviceDiscoveryEntity {
 
 	public void setdDecommReason(String dDecommReason) {
 		this.dDecommReason = dDecommReason;
+	}
+
+	public DiscoveryResultDeviceDetailsEntity getdDisResultid() {
+		return dDisResultid;
+	}
+
+	public void setdDisResultid(DiscoveryResultDeviceDetailsEntity dDisResultid) {
+		this.dDisResultid = dDisResultid;
 	}
 
 }

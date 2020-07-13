@@ -3,14 +3,17 @@ package com.techm.orion.repositories;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 
 @Repository
+@Transactional
 public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscoveryEntity, Long> {
 
 	List<DeviceDiscoveryEntity> findAllByDVendor(String vendor);
@@ -166,34 +169,43 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	// a.dVendor=? order by a.dDatePolled desc Limit 0, 5")
 	// List<DeviceDiscoveryEntity> findByTop(String model,String vendor);
 	List<DeviceDiscoveryEntity> findByDHostNameAndDMgmtIp(String tempHostName, String tempManagementIp);
-	
-	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendor(
-			String customer, String region, String vendortosearch);
+
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendor(String customer,
+			String region, String vendortosearch);
+
 	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupport(
-			String customer, String region, String vendortosearch,
-			String networktosearch);
+			String customer, String region, String vendortosearch, String networktosearch);
+
 	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteName(
-			String customer, String region, String vendortosearch,
-			String networktosearch, String sitetosearch);
+			String customer, String region, String vendortosearch, String networktosearch, String sitetosearch);
+
 	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDSeries(
-			String customer, String region, String vendortosearch,
-			String networktosearch, String sitetosearch, String devicetosearch);
+			String customer, String region, String vendortosearch, String networktosearch, String sitetosearch,
+			String devicetosearch);
+
 	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDSeriesAndDModel(
-			String customer, String region, String vendortosearch,
-			String networktosearch, String sitetosearch, String devicetosearch,
-			String modeltosearch);
+			String customer, String region, String vendortosearch, String networktosearch, String sitetosearch,
+			String devicetosearch, String modeltosearch);
+
 	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDModel(
-			String customer, String region, String vendortosearch,
-			String networktosearch, String sitetosearch, String modeltosearch);
+			String customer, String region, String vendortosearch, String networktosearch, String sitetosearch,
+			String modeltosearch);
+
 	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDSeriesAndDModel(
-			String customer, String region, String vendortosearch,
-			String networktosearch, String devicetosearch, String modeltosearch);
+			String customer, String region, String vendortosearch, String networktosearch, String devicetosearch,
+			String modeltosearch);
 
 	List<DeviceDiscoveryEntity> findAllByCustSiteId(int temp);
-	List<DeviceDiscoveryEntity> findAllByDVendorAndDSeries(String vendor,
-			String deviceFamily);
+
+	List<DeviceDiscoveryEntity> findAllByDVendorAndDSeries(String vendor, String deviceFamily);
+
+	@Query(value = "select * from c3p_deviceinfo where d_mgmtip= :mgmtip and d_hostname= :hostName ", nativeQuery = true)
+	DeviceDiscoveryEntity findHostNameAndMgmtip(@Param("mgmtip") String mgmtip, @Param("hostName") String hostNAme);
 	
+	DeviceDiscoveryEntity findBydId(int id);
 
-
+	@Modifying
+	@Query(value = "update c3p_deviceinfo set d_dis_id = :resultDevice where d_Id = :deviceId", nativeQuery = true)
+	int updateDescripancyId(@Param("resultDevice") int resultDevice, @Param("deviceId") int deviceId);
 
 }

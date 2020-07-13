@@ -41,7 +41,9 @@ import com.techm.orion.entitybeans.DeviceDiscoveryDashboardEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryInterfaceEntity;
 import com.techm.orion.entitybeans.DiscoveryResultDeviceDetailsEntity;
+import com.techm.orion.entitybeans.DiscoveryResultDeviceDetailsFlagsEntity;
 import com.techm.orion.entitybeans.DiscoveryResultDeviceInterfaceEntity;
+import com.techm.orion.entitybeans.DiscoveryResultDeviceInterfaceFlagsEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.DeviceDiscoveryDashboardRepository;
@@ -334,13 +336,15 @@ public class DeviceDiscoveryController implements Observer {
 				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
 				object.put("vendor", getAllDevice.get(i).getdVendor());
 				object.put("status", "Available");
-				object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
+				if (getAllDevice.get(i).getCustSiteId() != null) {
+					object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
+					SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
+					object.put("site", site.getcSiteName());
+					object.put("region", site.getcSiteRegion());
+
+				}
 				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
 				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
-
-				SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
-				object.put("site", site.getcSiteName());
-				object.put("region", site.getcSiteRegion());
 
 				object.put("requests", requests.size());
 				if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("0")) {
@@ -401,12 +405,13 @@ public class DeviceDiscoveryController implements Observer {
 
 			for (int i = 0; i < interfaceListInventory.size(); i++) {
 				interfaceListInventory.get(i).setDevice(null);
-
-				String getiIntSubnet = interfaceListInventory.get(i).getiIntSubnet();
-				InetAddress netmask = InetAddress.getByName(getiIntSubnet);
-				int cidr = convertNetmaskToCIDR(netmask);
-				String finalIpAddress = interfaceListInventory.get(i).getiIntIpaddr() + " / " + cidr;
-				interfaceListInventory.get(i).setiIntIpaddr(finalIpAddress);
+				if (interfaceListInventory.get(i).getiIntSubnet() != null) {
+					String getiIntSubnet = interfaceListInventory.get(i).getiIntSubnet();
+					InetAddress netmask = InetAddress.getByName(getiIntSubnet);
+					int cidr = convertNetmaskToCIDR(netmask);
+					String finalIpAddress = interfaceListInventory.get(i).getiIntIpaddr() + " / " + cidr;
+					interfaceListInventory.get(i).setiIntIpaddr(finalIpAddress);
+				}
 			}
 			for (int j = 0; j < inventoryList.size(); j++) {
 
@@ -641,6 +646,7 @@ public class DeviceDiscoveryController implements Observer {
 			String hostname = "USTXCECI7200NY" + UUID.randomUUID().toString().toUpperCase();
 			hostname = hostname.substring(0, 15) + "-2";
 			dumpDeviceDetails.setdHostname(hostname);
+			DiscoveryResultDeviceDetailsFlagsEntity flagsEntity = new DiscoveryResultDeviceDetailsFlagsEntity();
 
 			List<DiscoveryResultDeviceInterfaceEntity> interfacesList = new ArrayList<DiscoveryResultDeviceInterfaceEntity>();
 
@@ -648,6 +654,7 @@ public class DeviceDiscoveryController implements Observer {
 					interfacesList);
 
 			dumpDeviceDetails.setInterfaces(interfacesList);
+			dumpDeviceDetails.setFlagsEntity(flagsEntity);
 			discoveryResultDeviceDetailsRepo.save(dumpDeviceDetails);
 
 		} else {
@@ -687,12 +694,14 @@ public class DeviceDiscoveryController implements Observer {
 			JSONArray statusjsonarray = (JSONArray) data.get("status");
 
 			for (int i = 0; i < interfacesjsonarray.size(); i++) {
+				DiscoveryResultDeviceInterfaceFlagsEntity flags = new DiscoveryResultDeviceInterfaceFlagsEntity();
 				DiscoveryResultDeviceInterfaceEntity ent = new DiscoveryResultDeviceInterfaceEntity();
 				ent.setiIntName(interfacesjsonarray.get(i).toString());
 				ent.setiIntDescription(descriptionjsonarray.get(i).toString());
 				ent.setiIntAdminStat(statusjsonarray.get(i).toString());
 				ent.setDevice(dumpDeviceDetails);
-
+				ent.setFlagsEntity(flags);
+				flags.setiIntDisResult(ent);
 				interfacesList.add(ent);
 			}
 
@@ -700,7 +709,9 @@ public class DeviceDiscoveryController implements Observer {
 					interfacesList);
 
 			dumpDeviceDetails.setInterfaces(interfacesList);
-
+			DiscoveryResultDeviceDetailsFlagsEntity flagsEntity = new DiscoveryResultDeviceDetailsFlagsEntity();
+			flagsEntity.setdDisResult(dumpDeviceDetails);
+			dumpDeviceDetails.setFlagsEntity(flagsEntity);
 			discoveryResultDeviceDetailsRepo.save(dumpDeviceDetails);
 		}
 		return managementIp;

@@ -207,12 +207,28 @@ public class TestStrategeyAnalyser {
 						String beforeText = rules.get(i).getBeforeText();
 						String afterText = rules.get(i).getAfterText();
 						String noOfChars = rules.get(i).getNumberOfChars();
+						final String[] metaCharacters = { "\\", "^", "$", "{", "}", "[", "]", "(", ")", ".", "*", "+",
+								"?", "|", "<", ">", "-", "&", "%" };
+
+						for (int j = 0; j < metaCharacters.length; j++) {
+							if (beforeText != null) {
+								if (beforeText.contains(metaCharacters[j])) {
+									beforeText = "\\" + beforeText;
+								}
+							}
+							if (afterText != null) {
+								if (afterText.contains(metaCharacters[j])) {
+									afterText = "\\" + afterText;
+								}
+							}
+						}
 						if (!noOfChars.isEmpty()) {
 							chars = Integer.parseInt(noOfChars);
 						}
 
 						if (!beforeText.isEmpty() && !afterText.isEmpty()) {
-							Pattern pattern = Pattern.compile(beforeText + "(.*?)" + afterText, Pattern.MULTILINE);
+							String value = beforeText + "(.*?)" + afterText;
+							Pattern pattern = Pattern.compile(value, Pattern.MULTILINE);
 							Matcher matcher = pattern.matcher(text);
 							while (matcher.find()) {
 								output = matcher.group(1);

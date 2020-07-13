@@ -20,4 +20,5 @@ public interface DeviceDiscoveryDashboardRepository extends JpaRepository<Device
 	// @Param("devicetype") String devicetype,
 	// @Param("vendor") String vendor);
 	DeviceDiscoveryDashboardEntity findById(int id);
+	
 }

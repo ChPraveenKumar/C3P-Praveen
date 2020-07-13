@@ -49,7 +49,7 @@ public class DeviceDiscoveryInterfaceEntity implements Serializable {
 	@Column(name = "i_int_prefix", length = 3)
 	private String iIntPrefix;
 
-	@Column(name = "i_int_admin_stat", length = 16)
+	@Column(name = "i_int_admin_stat")
 	private String iIntAdminStat;
 
 	@Column(name = "i_int_Oper_stat", length = 16)

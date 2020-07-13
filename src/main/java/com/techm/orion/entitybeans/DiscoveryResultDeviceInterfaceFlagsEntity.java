@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -28,31 +30,35 @@ public class DiscoveryResultDeviceInterfaceFlagsEntity implements Serializable {
 	private int id;
 
 	@Column(name = "i_int_name_flag", length = 10)
-	private String iIntNameFlag;
+	private String iIntNameFlag="0";
 
 	@Column(name = "i_int_description_flag", length = 10)
-	private String iIntDescriptionFlag;
+	private String iIntDescriptionFlag="0";
 
 	@Column(name = "i_int_ipaddr_flag", length = 10)
-	private String iIntIpaddrFlag;
+	private String iIntIpaddrFlag="0";
 
 	@Column(name = "i_int_subnet_flag", length = 10)
-	private String iIntSubnetFlag;
+	private String iIntSubnetFlag="0";
 
 	@Column(name = "i_int_ipv6addr_flag", length = 10)
-	private String iIntIpv6addrFlag;
+	private String iIntIpv6addrFlag="0";
 
 	@Column(name = "i_int_prefix_flag", length = 10)
-	private String iIntPrefixFlag;
+	private String iIntPrefixFlag="0";
 
 	@Column(name = "i_int_admin_stat_flag", length = 10)
-	private String iIntAdminStat_flag;
+	private String iIntAdminStat_flag="0";
 
 	@Column(name = "i_int_Oper_stat_flag", length = 10)
-	private String iIntOperStatFlag;
+	private String iIntOperStatFlag="0";
 
 	@Column(name = "i_int_phy_addr_flag", length = 10)
-	private String iIntPhyAddrFlag;
+	private String iIntPhyAddrFlag="0";
+
+	@OneToOne
+	@JoinColumn(name="i_int_dis_result")
+	private DiscoveryResultDeviceInterfaceEntity iIntDisResult;
 
 	public int getId() {
 		return id;
@@ -133,4 +139,15 @@ public class DiscoveryResultDeviceInterfaceFlagsEntity implements Serializable {
 	public void setiIntPhyAddrFlag(String iIntPhyAddrFlag) {
 		this.iIntPhyAddrFlag = iIntPhyAddrFlag;
 	}
+
+	public DiscoveryResultDeviceInterfaceEntity getiIntDisResult() {
+		return iIntDisResult;
+	}
+
+	public void setiIntDisResult(DiscoveryResultDeviceInterfaceEntity iIntDisResult) {
+		this.iIntDisResult = iIntDisResult;
+	}
+
+	
+	
 }
