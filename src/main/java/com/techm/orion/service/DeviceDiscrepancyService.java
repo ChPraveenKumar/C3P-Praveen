@@ -50,10 +50,7 @@ public class DeviceDiscrepancyService {
 		JSONObject finalObject = new JSONObject();
 		JSONArray discrepancyArray = new JSONArray();
 
-		List<DiscoveryResultDeviceDetailsEntity> deviceList = discoveryResultRepo
-				.findByDeviceDiscoveryDashboardEntityDiscoveryName(discoveryName);
-
-		deviceList.forEach(device -> {
+		discoveryResultRepo.findByDeviceDiscoveryDashboardEntityDiscoveryName(discoveryName).forEach(device -> {
 			JSONObject discripancyObject = new JSONObject();
 			boolean[] flag = { false };
 			if (device.getdHostname() != null && device.getdHostname() != "") {
