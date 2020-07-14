@@ -87,14 +87,10 @@ public class ConfigurationManagement {
 			if (!json.get("networkType").toString().equals("")&& json.get("networkType") != null) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
-					
-					if(!json.containsKey("requestType"))
-					{
 					DeviceDiscoveryEntity device = deviceRepo
-								.findByDHostName(json.get("hostname").toString().toUpperCase());
+							.findByDHostName(json.get("hostname").toString().toUpperCase());
 					requestType = device.getdConnect();
 					configReqToSendToC3pCode.setRequestType(requestType);
-					}
 				} else {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
@@ -258,13 +254,17 @@ public class ConfigurationManagement {
 				 * create SeriesId for getting master configuration Commands and master
 				 * Atrribute
 				 */
-				String seriesId = dcmConfigService.getSeriesId(configReqToSendToC3pCode.getVendor(),
+				String seriesIdValue = dcmConfigService.getSeriesId(configReqToSendToC3pCode.getVendor(),
 						configReqToSendToC3pCode.getDeviceType(), configReqToSendToC3pCode.getModel());
+				String seriesId;
 				/* Get Series according to template id */
 				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
-				seriesId = templatemanagementDao.getSeriesId(configReqToSendToC3pCode.getTemplateID(), seriesId);
+				seriesId = templatemanagementDao.getSeriesId(configReqToSendToC3pCode.getTemplateID(), seriesIdValue);
+				if(seriesId!=null) {
 				seriesId = StringUtils.substringAfter(seriesId, "Generic_");
-
+				}else {
+					seriesId=seriesIdValue;
+				}
 				List<AttribCreateConfigPojo> masterAttribute = new ArrayList<>();
 				List<AttribCreateConfigPojo> byAttribSeriesId = service.getByAttribSeriesId(seriesId);
 				if (byAttribSeriesId != null && !byAttribSeriesId.isEmpty()) {
@@ -1239,16 +1239,7 @@ public class ConfigurationManagement {
 				// attribute data
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList);
 
-			}
-			else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("Test")
-					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF"))
-			{
-				
-					
-					result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null);
-				
-			}
-			else {
+			} else {
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null);
 			}
 
