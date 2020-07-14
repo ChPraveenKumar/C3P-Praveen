@@ -42,7 +42,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			UserPojo userPojo = new UserPojo();
-			userPojo = requestInfoDao.getRouterCredentials();
+			userPojo = requestInfoDao.getRouterCredentials(host);
 
 			String user = userPojo.getUsername();
 			String password = userPojo.getPassword();
@@ -383,7 +383,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			UserPojo userPojo = new UserPojo();
-			userPojo = requestInfoDao.getRouterCredentials();
+			userPojo = requestInfoDao.getRouterCredentials(host);
 
 			String user = userPojo.getUsername();
 			String password = userPojo.getPassword();
@@ -464,7 +464,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			UserPojo userPojo = new UserPojo();
-			userPojo = requestInfoDao.getRouterCredentials();
+			userPojo = requestInfoDao.getRouterCredentials(host);
 
 			String user = userPojo.getUsername();
 			String password = userPojo.getPassword();

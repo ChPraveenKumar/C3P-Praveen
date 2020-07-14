@@ -484,7 +484,7 @@ public class RequestInfoDetailsDao {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = requestinfo.getManagementIp();
 			UserPojo userPojo = new UserPojo();
-			userPojo = requestInfoDao.getRouterCredentials();
+			userPojo = requestInfoDao.getRouterCredentials(host);
 			String user, password;
 
 			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
@@ -493,13 +493,15 @@ public class RequestInfoDetailsDao {
 					Math.min(requestinfo.getAlphanumericReqId().length(), 4));
 			JSch jsch = new JSch();
 
-			if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
+			user = userPojo.getUsername();
+			password = userPojo.getPassword();
+			/*if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
 				user = "c3pteam";
 				password = "csr1000v";
 			} else {
 				user = userPojo.getUsername();
 				password = userPojo.getPassword();
-			}
+			}*/
 			Channel channel = null;
 			Session session = jsch.getSession(user, host, Integer.parseInt(port));
 			Properties config = new Properties();
