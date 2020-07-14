@@ -112,7 +112,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				DeliverConfigurationAndBackupTest.loadProperties();
 				String host = createConfigRequest.getManagementIp();
 				UserPojo userPojo = new UserPojo();
-				userPojo = requestInfoDao.getRouterCredentials();
+				userPojo = requestInfoDao.getRouterCredentials(host);
 
 				String user = userPojo.getUsername();
 				String password = userPojo.getPassword();
@@ -876,7 +876,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				DeliverConfigurationAndBackupTest.loadProperties();
 				String host = requestinfo.getManagementIp();
 				UserPojo userPojo = new UserPojo();
-				userPojo = requestInfoDao.getRouterCredentials();
+				userPojo = requestInfoDao.getRouterCredentials(host);
 
 				String user = userPojo.getUsername();
 				String password = userPojo.getPassword();
