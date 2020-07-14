@@ -1398,6 +1398,13 @@ public class DcmConfigService {
 
 								}
 							}
+							else
+							{
+								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+										requestInfoSO);
+								telnetCommunicationSSH.setDaemon(true);
+								telnetCommunicationSSH.start();
+							}
 						}
 							else
 							{

@@ -87,10 +87,14 @@ public class ConfigurationManagement {
 			if (!json.get("networkType").toString().equals("")&& json.get("networkType") != null) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
+					
+					if(!json.containsKey("requestType"))
+					{
 					DeviceDiscoveryEntity device = deviceRepo
-							.findByDHostName(json.get("hostname").toString().toUpperCase());
+								.findByDHostName(json.get("hostname").toString().toUpperCase());
 					requestType = device.getdConnect();
 					configReqToSendToC3pCode.setRequestType(requestType);
+					}
 				} else {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
@@ -1235,7 +1239,16 @@ public class ConfigurationManagement {
 				// attribute data
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList);
 
-			} else {
+			}
+			else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("Test")
+					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF"))
+			{
+				
+					
+					result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null);
+				
+			}
+			else {
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null);
 			}
 
