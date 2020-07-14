@@ -213,7 +213,11 @@ public class RequestInfoScheduler {
 				detailsList = requestInfoDetailsRepositories.findByBatchId(tempBatchId);
 				for (int j = 0; j < detailsList.size(); j++) {
 
+					if(detailsList.get(j).getExecutionStatus()==true)
+					{
+
 					boolean tempStatus = dao.updateBatchStatus(tempBatchId);
+					 }
 
 				}
 
