@@ -960,16 +960,17 @@ public class InvokeFtl {
 				for (CommandPojo templateCammand : cammandByTemplate) {
 					for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
 						if (templateAttrib.getAttribType().equals("Template")) {
-							if (templateCammand.getCommandValue().contains("[" + templateAttrib.getAttribLabel())) {
-								int id = Integer.parseInt(templateCammand.getId());
+							if (templateCammand.getCommandValue().contains("[" + templateAttrib.getAttribLabel()+"]")) {
+								int id = Integer.parseInt(templateCammand.getId());								
 								if (id == templateAttrib.getTemplateFeature().getId()) {
+									String Str = "[" + templateAttrib.getAttribLabel()+"]";										
 									String attribName = templateAttrib.getAttribName();
 									String newAttribName = attribName.replace(" ", "");
 									attribName = newAttribName.substring(0, 1).toLowerCase()
 											+ newAttribName.substring(1);
+									Str=Str.replace(Str, "${(configRequest." + attribName+s);
 									templateCammand.setCommandValue(templateCammand.getCommandValue().replace(
-											"[" + templateAttrib.getAttribLabel(), "${(configRequest." + attribName));
-									templateCammand.setCommandValue(templateCammand.getCommandValue().replace("]", s));
+											"[" + templateAttrib.getAttribLabel()+"]", Str));
 									continue;
 								}
 							}
@@ -1309,13 +1310,14 @@ public class InvokeFtl {
 							if (templateCammand.getCommandValue().contains("[" + templateAttrib.getAttribLabel())) {
 								int id = Integer.parseInt(templateCammand.getId());
 								if (id == templateAttrib.getTemplateFeature().getId()) {
+									String Str = "[" + templateAttrib.getAttribLabel()+"]";										
 									String attribName = templateAttrib.getAttribName();
 									String newAttribName = attribName.replace(" ", "");
 									attribName = newAttribName.substring(0, 1).toLowerCase()
 											+ newAttribName.substring(1);
+									Str=Str.replace(Str, "${(configRequest." + attribName+s);
 									templateCammand.setCommandValue(templateCammand.getCommandValue().replace(
-											"[" + templateAttrib.getAttribLabel(), "${(configRequest." + attribName));
-									templateCammand.setCommandValue(templateCammand.getCommandValue().replace("]", s));
+											"[" + templateAttrib.getAttribLabel()+"]", Str));
 									continue;
 								}
 							}
