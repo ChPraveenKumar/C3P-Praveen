@@ -805,6 +805,7 @@ public class ConfigurationManagement {
 						String attribLabel = object.get("label").toString();
 						String attriValue = object.get("value").toString();
 						String attribType = object.get("type").toString();
+						String attib = object.get("name").toString();
 //						for (AttribCreateConfigPojo attrib : masterAttribute) {
 //
 //							if (attribLabel.contains(attrib.getAttribLabel())) {
@@ -925,16 +926,15 @@ public class ConfigurationManagement {
 						for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
 
 							if (attribLabel.contains(templateAttrib.getAttribLabel())) {
-								String attribName = templateAttrib.getAttribName();
-
-								CreateConfigPojo createConfigPojo = new CreateConfigPojo();
-								createConfigPojo.setMasterLabelId(templateAttrib.getId());
-								createConfigPojo.setMasterLabelValue(attriValue);
-								createConfigPojo.setTemplateId(configReqToSendToC3pCode.getTemplateID());
-								createConfigList.add(createConfigPojo);
+								String attribName = templateAttrib.getAttribName();								
 								if (templateAttrib.getAttribType().equals("Template")) {
 									if (attribType.equals("Template")) {
-
+										if (attib.equals(attribName)) {
+										CreateConfigPojo createConfigPojo = new CreateConfigPojo();
+										createConfigPojo.setMasterLabelId(templateAttrib.getId());
+										createConfigPojo.setMasterLabelValue(attriValue);
+										createConfigPojo.setTemplateId(configReqToSendToC3pCode.getTemplateID());
+										createConfigList.add(createConfigPojo);
 										if (attribName.equals("LANInterfaceIP1")) {
 											configReqToSendToC3pCode.setlANInterfaceIP1(attriValue);
 											break;
@@ -1232,6 +1232,7 @@ public class ConfigurationManagement {
 										if (attribName.equals("Attrib50")) {
 											configReqToSendToC3pCode.setAttrib50(attriValue);
 											break;
+										}
 										}
 
 									}
