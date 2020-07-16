@@ -87,27 +87,32 @@ public class ConfigurationManagement {
 			if (!json.get("networkType").toString().equals("")&& json.get("networkType") != null) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
+					
+					if(!json.containsKey("requestType"))
+					{
 					DeviceDiscoveryEntity device = deviceRepo
-							.findByDHostName(json.get("hostname").toString().toUpperCase());
+								.findByDHostName(json.get("hostname").toString().toUpperCase());
 					requestType = device.getdConnect();
 					configReqToSendToC3pCode.setRequestType(requestType);
+					}
 				} else {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
-
 			} else {
 				DeviceDiscoveryEntity networkfunctio = deviceRepo.findDVNFSupportByDHostName(configReqToSendToC3pCode.getHostname());
-				configReqToSendToC3pCode.setNetworkType(networkfunctio.getdVNFSupport());
+				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
+					
+					if(!json.containsKey("requestType"))
+					{
 					DeviceDiscoveryEntity device = deviceRepo
-							.findByDHostName(json.get("hostname").toString().toUpperCase());
+								.findByDHostName(json.get("hostname").toString().toUpperCase());
 					requestType = device.getdConnect();
 					configReqToSendToC3pCode.setRequestType(requestType);
-
+					}
 				} else {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
-			
 			}
 			if(!requestType.equals("Test") && !requestType.equals("Audit")) {
 			// template suggestion

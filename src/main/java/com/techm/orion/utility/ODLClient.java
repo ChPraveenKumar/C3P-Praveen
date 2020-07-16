@@ -372,6 +372,16 @@ public class ODLClient {
 				 url = new URL(TSALabels.ODL_TEST_INTERFACE_BANDWIDTH.getValue());
 
 			}
+			else if(filterType.equalsIgnoreCase("NEGOTIATION TEST"))
+			{
+				 url = new URL(TSALabels.ODL_TEST_NEGOTIATION_TEST.getValue());
+
+			}
+			else if(filterType.equalsIgnoreCase("BANDWIDTH TEST"))
+			{
+				 url = new URL(TSALabels.ODL_TEST_BANDWIDTH_TEST.getValue());
+
+			}
 			if(url!=null)
 			{
 			
