@@ -32,6 +32,7 @@ public class RequestDetailsResponseMapper {
 		if(allRequestDetails!=null) {
 		allRequestDetails.forEach(request -> {
 			ServiceRequestPojo req = new ServiceRequestPojo();
+			req.setInfoId(request.getInfoId());
 			req.setAlpha_numeric_req_id(request.getAlphanumericReqId());
 			req.setRequest_creator_name(request.getRequestCreatorName());
 			req.setHostname(request.getHostName());
