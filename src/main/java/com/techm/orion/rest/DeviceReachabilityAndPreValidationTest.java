@@ -979,8 +979,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					// notification
 					String type = createConfigRequest.getRequestId().substring(0,
 							Math.min(createConfigRequest.getRequestId().length(), 4));
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")
+					if (type.equalsIgnoreCase("SLGC")|| type.equalsIgnoreCase("SNRC")
+							|| type.equalsIgnoreCase("SNNC") 
 							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
 							|| type.equalsIgnoreCase("SNNM") || type.equalsIgnoreCase("SLGF")) {
 						String response = "";
@@ -1166,9 +1166,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					// notification
 					String type = requestinfo.getAlphanumericReqId().substring(0,
 							Math.min(requestinfo.getAlphanumericReqId().length(), 4));
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGM")
-							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
+					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGM")) {
 						String response = "";
 						String responseDownloadPath = "";
 						try {
@@ -1228,7 +1226,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 						}
-					} else if (type.equalsIgnoreCase("SLGB")) {
+					} else if (type.equalsIgnoreCase("SLGB") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA")|| type.equalsIgnoreCase("SNRC")
+							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM") ) {
 
 						String response = "";
 						String responseDownloadPath = "";
@@ -1257,10 +1256,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									response);
 
 							// CODE TO ASSIGN REQUEST TO FE
-							requestDao.changeRequestOwner(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "feuser");
+							/*requestDao.changeRequestOwner(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "feuser");*/
 							requestDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "In Progress");
+									Double.toString(requestinfo.getRequestVersion()), "Failure");
 							value = false;
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
@@ -1421,7 +1420,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			p = builder.start();
 			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
 			logger.info("reachability mngmntip " + managementIp);
-			String commandToPing = "ping " + managementIp + " -n";
+			String commandToPing = "ping " + managementIp;
 			p_stdin.write(commandToPing);
 			p_stdin.newLine();
 			p_stdin.flush();

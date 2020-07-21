@@ -641,7 +641,7 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setStatus("In Progress");
 					} else {
 
-						requestInfoEntity.setStatus("Awaiting");
+						requestInfoEntity.setStatus("In Progress");
 					}
 					LocalDateTime nowDate = LocalDateTime.now();
 					timestamp = Timestamp.valueOf(nowDate);
@@ -1028,7 +1028,7 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setStatus("In Progress");
 					} else {
 
-						requestInfoEntity.setStatus("Awaiting");
+						requestInfoEntity.setStatus("In Progress");
 
 					}
 

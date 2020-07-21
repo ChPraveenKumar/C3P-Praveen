@@ -69,13 +69,28 @@ public class RequestInfoScheduler {
 				tempBatchId = entity.get(i).getBatchId();
 
 				detailsList = requestInfoDetailsRepositories.findByBatchId(tempBatchId);
+				/*Loop addition for parallel execution
+				 * Owner: Ruchita Salvi
+				 * Algo as below
+				 */
+				//Get execution status for all requests in batch
+				//If execution status for all is true then check status of request
+				//if anyone request is in progress then batch is in progress
+				//If anyone no request is in progress then batch is completed
 
+				List<Boolean>exec_status=new ArrayList<Boolean>();
+				detailsList.forEach(item -> {
+					exec_status.add(item.getExecutionStatus());
+
+				});
+				if(exec_status.contains(false))
+				{
+				
 				for (int j = 0; j < detailsList.size(); j++) {
+					/*if (detailsList.get(j).getStatus().equals("In Progress")
+							|| detailsList.get(j).getStatus().equals("Awaiting"))*/
 
-					if (detailsList.get(j).getStatus().equals("In Progress")
-							|| detailsList.get(j).getStatus().equals("Awaiting"))
-
-					{
+					//{
 						configRequest.setRequestId(detailsList.get(j).getAlphanumericReqId());
 
 						LocalDateTime nowDate = LocalDateTime.now();
@@ -99,7 +114,11 @@ public class RequestInfoScheduler {
 
 									logger.error(e);
 								}
-
+								
+								obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
+								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
+								
+								/*
 								try {
 
 									Thread.sleep(27000);
@@ -123,7 +142,7 @@ public class RequestInfoScheduler {
 								} catch (Exception e) {
 									logger.error(e);
 								}
-
+								*/
 							}
 						} else if (detailsList.get(j).getRequestType().equals("Config MACD")) {
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
@@ -137,7 +156,11 @@ public class RequestInfoScheduler {
 
 									logger.error(e);
 								}
-								try {
+								
+								obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
+								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
+								
+								/*try {
 
 									Thread.sleep(30000);
 								} catch (Exception e) {
@@ -157,7 +180,7 @@ public class RequestInfoScheduler {
 									Thread.sleep(45000);
 								} catch (Exception e) {
 									logger.error(e);
-								}
+								}*/
 							}
 						} else if (detailsList.get(j).getRequestType().equals("Test")
 								|| detailsList.get(j).getRequestType().equals("Audit")) {
@@ -174,13 +197,15 @@ public class RequestInfoScheduler {
 
 									logger.error(e);
 								}
-								try {
+								obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
+								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
+								/*try {
 
 									Thread.sleep(80000);
 								} catch (Exception e) {
 									logger.error(e);
-								}
-								obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
+								}*/
+								/*obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
 
 								int applicationTest = obj.getApplication_test();
 
@@ -194,18 +219,40 @@ public class RequestInfoScheduler {
 									Thread.sleep(100000);
 								} catch (Exception e) {
 									logger.error(e);
-								}
+								}*/
 							}
 
 						}
 
+					//}
+				}
+				}
+				else
+				{
+					List<String>req_status=new ArrayList<String>();
+					detailsList.forEach(item -> {
+						req_status.add(item.getStatus());
+
+					});
+					
+					if(req_status.contains("In Progress"))
+					{
+						//Set batch status in progress
+						
+
 					}
+					else
+					{
+						//set batch status Completed
+						dao.updateBatchStatus(tempBatchId);
+					}
+					
 				}
 			}
 
 		}
 
-		for (int i = 0; i < entity.size(); i++) {
+		/*for (int i = 0; i < entity.size(); i++) {
 
 			if (entity.get(i).getBatchStatus().equals("In Progress")) {
 				tempBatchId = entity.get(i).getBatchId();
@@ -222,7 +269,7 @@ public class RequestInfoScheduler {
 				}
 
 			}
-		}
+		}*/
 
 	}
 

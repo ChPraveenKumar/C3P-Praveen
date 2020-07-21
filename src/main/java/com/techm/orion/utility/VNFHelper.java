@@ -509,6 +509,7 @@ public class VNFHelper {
 			{
 				String resultText=null;
 				String evaluationOperator = rules.get(i).getOperator();
+				String formattedOp=String.join(",",output);
 				String op=String.join(",", output);
 				String requestID=requestinfo.getAlphanumericReqId();
 				if (evaluationOperator.equalsIgnoreCase("Text Starts with")) {
@@ -521,7 +522,7 @@ public class VNFHelper {
 						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
-								"Passed", resultText, op, "Text starts with: " + value1, "N/A",
+								"Passed", resultText, formattedOp, "Text starts with: " + value1, "N/A",
 								rules.get(i).getDataType());
 					} else {
 						// fail the test
@@ -530,7 +531,7 @@ public class VNFHelper {
 						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
-								"Failed", resultText, op, "Text starts with: " + value1,
+								"Failed", resultText, formattedOp, "Text starts with: " + value1,
 								"Failed to match", rules.get(i).getDataType());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("=")) {
@@ -542,7 +543,7 @@ public class VNFHelper {
 						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
-								"Passed", resultText, op, "Is equal to (=): " + value1, "N/A",
+								"Passed", resultText, formattedOp, "Is equal to (=): " + value1, "N/A",
 								rules.get(i).getDataType());
 					} else {
 						// fail the test
@@ -551,7 +552,7 @@ public class VNFHelper {
 						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
-								"Failed", resultText, op, "Is equal to (=): " + value1,
+								"Failed", resultText, formattedOp, "Is equal to (=): " + value1,
 								"Failed to match", rules.get(i).getDataType());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("Between")) {
@@ -569,7 +570,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Passed", resultText, op, "Between: " + value1 + " & " + value2,
+									"Passed", resultText, formattedOp, "Between: " + value1 + " & " + value2,
 									"N/A", rules.get(i).getDataType());
 						} else {
 							// fail the test
@@ -579,7 +580,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Failed", resultText, op, "Between: " + value1 + " & " + value2,
+									"Failed", resultText,formattedOp, "Between: " + value1 + " & " + value2,
 									"Failed to match", rules.get(i).getDataType());
 						}
 					} catch (Exception e) {
@@ -609,7 +610,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Passed", resultText, op, "Greater than (>): " + value1, "N/A",
+									"Passed", resultText, formattedOp, "Greater than (>): " + value1, "N/A",
 									rules.get(i).getDataType());
 						} else {
 							// fail the test
@@ -618,7 +619,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Failed", resultText, op, "Greater than (>): " + value1,
+									"Failed", resultText,formattedOp, "Greater than (>): " + value1,
 									"Failed to match", rules.get(i).getDataType());
 						}
 					} catch (Exception e) {
@@ -647,7 +648,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Passed", resultText, op, "Less than (<): " + value1, "N/A",
+									"Passed", resultText, formattedOp, "Less than (<): " + value1, "N/A",
 									rules.get(i).getDataType());
 						} else {
 							// fail the test
@@ -657,7 +658,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Failed", resultText, op, "Less than (<): " + value1,
+									"Failed", resultText, formattedOp, "Less than (<): " + value1,
 									"Failed to match", rules.get(i).getDataType());
 						}
 					} catch (Exception e) {
@@ -686,7 +687,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Passed", resultText, op,
+									"Passed", resultText, formattedOp,
 									"Greater than or equals to (>=): " + value1, "N/A",
 									rules.get(i).getDataType());
 						} else {
@@ -696,7 +697,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Failed", resultText, op,
+									"Failed", resultText, formattedOp,
 									"Greater than or equals to (>=): " + value1, "Failed to match",
 									rules.get(i).getDataType());
 						}
@@ -726,7 +727,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Passed", resultText, op,
+									"Passed", resultText, formattedOp,
 									"Less than or equals to (<=): " + value1, "N/A",
 									rules.get(i).getDataType());
 						} else {
@@ -736,7 +737,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Failed", resultText, op,
+									"Failed", resultText, formattedOp,
 									"Less than or equals to (<=): " + value1, "Failed to match",
 									rules.get(i).getDataType());
 						}
@@ -766,7 +767,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Passed", resultText, op, "Is not equal to  (<>): " + value1,
+									"Passed", resultText, formattedOp, "Is not equal to  (<>): " + value1,
 									"N/A", rules.get(i).getDataType());
 						} else {
 							// fail the test
@@ -776,7 +777,7 @@ public class VNFHelper {
 							result = dao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
-									"Failed", resultText, op, "Is not equal to  (<>): " + value1,
+									"Failed", resultText,formattedOp, "Is not equal to  (<>): " + value1,
 									"Failed to match", rules.get(i).getDataType());
 						}
 					} catch (Exception e) {
@@ -800,7 +801,7 @@ public class VNFHelper {
 						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
-								"Passed", resultText, op, "Text matches excatly: " + value1, "N/A",
+								"Passed", resultText, formattedOp, "Text matches excatly: " + value1, "N/A",
 								rules.get(i).getDataType());
 					} else {
 						// fail the test
@@ -809,7 +810,7 @@ public class VNFHelper {
 						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
-								"Failed", resultText, op, "Text matches excatly: " + value1,
+								"Failed", resultText, formattedOp, "Text matches excatly: " + value1,
 								"Failed to match", rules.get(i).getDataType());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("Text ends with")) {
@@ -821,7 +822,7 @@ public class VNFHelper {
 						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
-								"Passed", resultText, op, "Text ends with: " + value1, "N/A",
+								"Passed", resultText, formattedOp, "Text ends with: " + value1, "N/A",
 								rules.get(i).getDataType());
 					} else {
 						// fail the test
@@ -831,7 +832,7 @@ public class VNFHelper {
 						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
-								"Failed", resultText, op, "Text ends with: " + value1,
+								"Failed", resultText, formattedOp, "Text ends with: " + value1,
 								"Failed to match", rules.get(i).getDataType());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("Text contains")) {
@@ -843,7 +844,7 @@ public class VNFHelper {
 						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
-								"Passed", resultText, op, "Text contains: " + value1, "N/A",
+								"Passed", resultText, formattedOp, "Text contains: " + value1, "N/A",
 								rules.get(i).getDataType());
 					} else {
 						// fail the test
@@ -852,7 +853,7 @@ public class VNFHelper {
 						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
-								"Failed", resultText, op, "Text contains: " + value1,
+								"Failed", resultText, formattedOp, "Text contains: " + value1,
 								"Failed to match", rules.get(i).getDataType());
 					}
 				} else {
@@ -862,7 +863,7 @@ public class VNFHelper {
 					result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 							test.getTestCategory(),
 
-							"Failed", resultText, op, "Invalid operator", "Failed",
+							"Failed", resultText, formattedOp, "Invalid operator", "Failed",
 							rules.get(i).getDataType());
 				}
 			

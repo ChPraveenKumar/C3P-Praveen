@@ -16,25 +16,25 @@ public interface RequestDetailsBackUpAndRestoreRepo extends JpaRepository<Reques
 	List<RequestDetailsBackUpAndRestoreEntity> findByAlphanumericReqId(String requestId);
 
 	/* Query for wild card search based on Vendor */
-	String searchVendor = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.vendor LIKE %?1%";
+	String searchVendor = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.vendor LIKE %?1%";
 
 	@Query(value = searchVendor, nativeQuery = true)
 	List<RequestDetailsBackUpAndRestoreEntity> findByVendor(String vendor);
 
 	/* Query for wild card search based on Request Id */
-	String searchDeviceType = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.device_type LIKE %?1%";
+	String searchDeviceType = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.device_type LIKE %?1%";
 
 	@Query(value = searchDeviceType, nativeQuery = true)
 	List<RequestDetailsBackUpAndRestoreEntity> findByDeviceType(String value);
 
 	/* Query for wild card search based on Model */
-	String searchModel = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.model LIKE %?1%";
+	String searchModel = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.model LIKE %?1%";
 
 	@Query(value = searchModel, nativeQuery = true)
 	List<RequestDetailsBackUpAndRestoreEntity> findByModel(String model);
 
 	/* Query for wild card search based on Management IP */
-	String searchManagementIp = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.managementIp LIKE %?1%";
+	String searchManagementIp = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.managementIp LIKE %?1%";
 
 	@Query(value = searchManagementIp, nativeQuery = true)
 	List<RequestDetailsBackUpAndRestoreEntity> findByManagementIp(String value);

@@ -64,7 +64,7 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 
 	List<DeviceDiscoveryEntity> findDModelByDVendor(String vendor);
 
-	@Query(value = "SELECT d_hostname FROM requestinfo.c3p_deviceinfo where d_vendor=:vendor and d_model=:model", nativeQuery = true)
+	@Query(value = "SELECT d_hostname FROM c3pdbschema.c3p_deviceinfo where d_vendor=:vendor and d_model=:model", nativeQuery = true)
 	List<String> findAllDHostNameByDModelAndDVendor(@Param("model") String model, @Param("vendor") String vendor);
 
 	List<DeviceDiscoveryEntity> findBydHostName(String dHostname);

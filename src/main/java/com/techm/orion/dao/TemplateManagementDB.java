@@ -491,7 +491,7 @@ public class TemplateManagementDB {
 		ResultSet rs1 = null;
 		boolean isAlredyPresent = false;
 		try {
-			query1 = "SELECT * FROM requestinfo.c3p_template_transaction_command_list where command_template_id = ?";
+			query1 = "SELECT * FROM c3pdbschema.c3p_template_transaction_command_list where command_template_id = ?";
 			preparedStmt = connection.prepareStatement(query1);
 			preparedStmt.setString(1, templateAndVersion);
 			rs1 = preparedStmt.executeQuery();

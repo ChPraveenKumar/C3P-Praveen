@@ -2244,27 +2244,27 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		String query = null;
 		if (key.equalsIgnoreCase("Template ID")) {
-			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId LIKE ? and templateVersion LIKE ?";
+			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempId LIKE ? and templateVersion LIKE ?";
 		} else if (key.equalsIgnoreCase("Device Type")) {
-			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempDeviceType LIKE ?";
+			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempDeviceType LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Vendor")) {
-			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempVendor LIKE ?";
+			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempVendor LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Model")) {
-			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempModel LIKE ?";
+			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempModel LIKE ?";
 
 		} else if (key.equalsIgnoreCase("OS")) {
-			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempDeviceOs LIKE ?";
+			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempDeviceOs LIKE ?";
 
 		} else if (key.equalsIgnoreCase("OS Version")) {
-			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempOsVersion LIKE ?";
+			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempOsVersion LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Status")) {
-			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE templateStatus LIKE ?";
+			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE templateStatus LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Approver")) {
-			query = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE templateApprover LIKE ?";
+			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE templateApprover LIKE ?";
 
 		}
 		ResultSet rs = null;

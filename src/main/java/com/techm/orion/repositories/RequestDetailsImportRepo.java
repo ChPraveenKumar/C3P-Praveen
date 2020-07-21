@@ -15,37 +15,37 @@ import com.techm.orion.entitybeans.RequestDetailsEntity;
 public interface RequestDetailsImportRepo extends JpaRepository<RequestDetailsEntity, Long> {
 
 	/* Query for wild card search based on region */
-	String searchRegion = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.region LIKE %?1%";
+	String searchRegion = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.region LIKE %?1%";
 
 	@Query(value = searchRegion, nativeQuery = true)
 	List<RequestDetailsEntity> findByRegion(String region);
 
 	/* Query for wild card search based on Import ID */
-	String searchImportId = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.importid LIKE %?1%";
+	String searchImportId = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.importid LIKE %?1%";
 
 	@Query(value = searchImportId, nativeQuery = true)
 	List<RequestDetailsEntity> findByImportid(String importid);
 
 	/* Query for wild card search based on Vendor */
-	String searchVendor = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.vendor LIKE %?1%";
+	String searchVendor = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.vendor LIKE %?1%";
 
 	@Query(value = searchVendor, nativeQuery = true)
 	List<RequestDetailsEntity> findByVendor(String vendor);
 
 	/* Query for wild card search based on Model */
-	String searchModel = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.model LIKE %?1%";
+	String searchModel = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.model LIKE %?1%";
 
 	@Query(value = searchModel, nativeQuery = true)
 	List<RequestDetailsEntity> findByModel(String model);
 
 	/* Query for wild card search based on Status */
-	String searchStaus = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.import_status LIKE %?1%";
+	String searchStaus = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.import_status LIKE %?1%";
 
 	@Query(value = searchStaus, nativeQuery = true)
 	List<RequestDetailsEntity> findByImportStatus(String status);
 
 	/* Query for wild card search based on Management IP */
-	String searchManagementIp = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.managementIp LIKE %?1%";
+	String searchManagementIp = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.managementIp LIKE %?1%";
 
 	@Query(value = searchManagementIp, nativeQuery = true)
 	List<RequestDetailsEntity> findByManagementIp(String value);
@@ -72,13 +72,13 @@ public interface RequestDetailsImportRepo extends JpaRepository<RequestDetailsEn
 	List<RequestDetailsEntity> findByRequestinfoid(int requestinfoid);
 
 	/* Query for wild card search based on Request Id */
-	String searchRequestId = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.alphanumeric_req_id LIKE %?1%";
+	String searchRequestId = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.alphanumeric_req_id LIKE %?1%";
 
 	@Query(value = searchRequestId, nativeQuery = true)
 	List<RequestDetailsEntity> findByAlphanumericReqId(String value);
 
 	/* Query for wild card search based on Request Id */
-	String searchDeviceType = "SELECT * FROM RequestInfo.RequestInfoSO e WHERE e.device_type LIKE %?1%";
+	String searchDeviceType = "SELECT * FROM c3pdbschema.RequestInfoSO e WHERE e.device_type LIKE %?1%";
 
 	@Query(value = searchDeviceType, nativeQuery = true)
 	List<RequestDetailsEntity> findByDeviceType(String value);

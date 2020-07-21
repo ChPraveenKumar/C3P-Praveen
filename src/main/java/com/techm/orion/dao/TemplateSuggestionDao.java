@@ -57,7 +57,7 @@ public class TemplateSuggestionDao {
 		try {
 
 			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(TempId, '_V', templateVersion) from templateconfig_basic_details where templateStatus='Approved' and TempId= ?)";
-			String query2 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId=?";
+			String query2 = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempId=?";
 
 			preparedStmt = connection.prepareStatement(query2);
 			preparedStmt.setString(1, tempId);
@@ -303,7 +303,7 @@ public class TemplateSuggestionDao {
 
 		try {
 
-			String query1 = "SELECT * FROM requestinfo.template_usage_data WHERE templateId = ? and Version = ?";
+			String query1 = "SELECT * FROM c3pdbschema.template_usage_data WHERE templateId = ? and Version = ?";
 
 			PreparedStatement ps = connection.prepareStatement(query1);
 
@@ -357,7 +357,7 @@ public class TemplateSuggestionDao {
 
 		try {
 
-			String query1 = "SELECT * FROM requestinfo.template_usage_data WHERE templateId = ? and Version = ?";
+			String query1 = "SELECT * FROM c3pdbschema.template_usage_data WHERE templateId = ? and Version = ?";
 
 			PreparedStatement ps = connection.prepareStatement(query1);
 
@@ -418,7 +418,7 @@ public class TemplateSuggestionDao {
 
 		try {
 
-			String query1 = "SELECT * FROM requestinfo.errorcodedata WHERE suggestion=?";
+			String query1 = "SELECT * FROM c3pdbschema.errorcodedata WHERE suggestion=?";
 
 			PreparedStatement ps = connection.prepareStatement(query1);
 
@@ -443,7 +443,7 @@ public class TemplateSuggestionDao {
 		String query = createQueryForVersion(templateVersionList.size());
 		try {
 
-			String query1 = "SELECT * FROM requestinfo.template_usage_data WHERE " + query
+			String query1 = "SELECT * FROM c3pdbschema.template_usage_data WHERE " + query
 					+ " and templateId = ? order by Total_Success_Ratio desc,id desc LIMIT 0,1";
 
 			PreparedStatement ps = connection.prepareStatement(query1);
@@ -608,8 +608,8 @@ public class TemplateSuggestionDao {
 		ResultSet rs = null;
 		List<String> versionList = new ArrayList<>();
 		try {
-			String query1 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId=? And templateVersion=?";
-			String query2 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId=? order by templateVersion asc;";
+			String query1 = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempId=? And templateVersion=?";
+			String query2 = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempId=? order by templateVersion asc;";
 
 			PreparedStatement ps = connection.prepareStatement(query1);
 			ps.setString(1, templateId);
@@ -678,7 +678,7 @@ public class TemplateSuggestionDao {
 		List<String> featureList = new ArrayList<String>();
 
 		try {
-			query = "SELECT * FROM requestinfo.c3p_template_master_feature_list where is_Save=\"1\" and command_type=?";
+			query = "SELECT * FROM c3pdbschema.c3p_template_master_feature_list where is_Save=\"1\" and command_type=?";
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, tempId);
 
@@ -707,7 +707,7 @@ public class TemplateSuggestionDao {
 		try {
 
 			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(TempId, '_V', templateVersion) from templateconfig_basic_details where templateStatus='Approved' and TempId LIKE ?)";
-			String query2 = "SELECT * FROM requestinfo.templateconfig_basic_details WHERE TempId LIKE ?";
+			String query2 = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempId LIKE ?";
 
 			preparedStmt = connection.prepareStatement(query2);
 			preparedStmt.setString(1, tempId+"%");

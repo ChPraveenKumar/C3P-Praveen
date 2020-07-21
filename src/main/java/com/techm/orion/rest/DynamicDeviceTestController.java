@@ -1,5 +1,10 @@
 package com.techm.orion.rest;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -19,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.techm.orion.utility.PingTest;
+import com.techm.orion.utility.TSALabels;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
@@ -62,6 +68,78 @@ public class DynamicDeviceTestController implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj)
 				.build();
 	}
+	
+	
+	@POST
+	@RequestMapping(value = "/traceroute", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response traceroute(@RequestBody String request) {
+		JSONObject obj = new JSONObject();
+		JSONParser parser = new JSONParser();
+		StringBuilder sb =null; 
+		JSONObject json;
+		try {
+			json = (JSONObject) parser.parse(request);
+		
+		String mgmtIp = json.get("managementIp").toString();
+		//String siteId= json.get("siteId").toString();
+		//String region=json.get("region").toString();
+		
+		String[] cmd = {"python", TSALabels.PYTHON_SCRIPT_PATH.getValue()+"\\nativeTraceroute.py",mgmtIp};
+		Process p;
+		try {
+			sb=new 
+                    StringBuilder(); 
+			p = Runtime.getRuntime().exec(cmd);
+
+			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+			BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+			String line;
+			if (bre.readLine() == null) {
+
+				while ((line = in.readLine()) != null) {
+					sb.append(line+"\n");
+		        }
+				
+			} else {
+				logger.info("" + bre.readLine());
+	            sb.append("Error");
+				if (bre.readLine().contains("File exists") || bre.readLine().contains("File exist")) {
+					//result = true;
+					
+				} else {
+					//result = false;
+				}
+			}
+			bre.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		//boolean result=pingHelper.cmdPingCall(mgmtIp, siteId, region);
+		//String response = pingHelper.readResult(mgmtIp, siteId, region);
+		obj.put("data", sb);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return Response
+				.status(200)
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers",
+						"origin, content-type, accept, authorization")
+				.header("Access-Control-Allow-Credentials", "true")
+				.header("Access-Control-Allow-Methods",
+						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj)
+				.build();
+	}
+
+	
+	
 	@Override
 	public void update(Observable o, Object arg) {
 		// TODO Auto-generated method stub
