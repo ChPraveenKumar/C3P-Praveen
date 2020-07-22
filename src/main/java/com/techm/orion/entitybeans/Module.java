@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Entity
-@Table(name="modules")
+@Table(name="c3p_t_modules")
 public class Module {
 	
 	@Id
