@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 @Component
 @Entity
-@Table(name = "user_mgt", uniqueConstraints = @UniqueConstraint(columnNames = { "user_name" }))
+@Table(name = "c3p_t_user_mgt", uniqueConstraints = @UniqueConstraint(columnNames = { "user_name" }))
 public class UserManagementEntity implements Serializable {
 
 	private static final long serialVersionUID = 1L;
