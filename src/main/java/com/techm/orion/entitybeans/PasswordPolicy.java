@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Entity
-@Table(name="password_policy")
+@Table(name="c3p_t_password_policy")
 public class PasswordPolicy implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
