@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Entity
-@Table(name="workgroups")
+@Table(name="c3p_t_workgroups")
 public class WorkGroup {
 	
 	@Id
