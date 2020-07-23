@@ -304,7 +304,7 @@ public class RequestSchedulerDao {
 				rowId = rs.getString("request_info_id");
 
 			}
-			query = "delete from webserviceInfo where alphanumeric_req_id = ? and version = ? ";
+			query = "delete from webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 
 			pst = connection.prepareStatement(query);
 			pst.setString(1, requestId);

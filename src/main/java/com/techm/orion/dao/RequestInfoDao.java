@@ -1261,7 +1261,7 @@ public class RequestInfoDao {
 
 	public boolean addRequestIDtoWebserviceInfo(String alphanumeric_req_id, String request_version) {
 		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO webserviceInfo(start_test,generate_config,deliever_config,health_checkup,network_test,application_test,customer_report,filename,latencyResultRes,alphanumeric_req_id,version,pre_health_checkup,others_test)"
+		String sql = "INSERT INTO webserviceinfo(start_test,generate_config,deliever_config,health_checkup,network_test,application_test,customer_report,filename,latencyResultRes,alphanumeric_req_id,version,pre_health_checkup,others_test)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
 		try {
@@ -1295,7 +1295,7 @@ public class RequestInfoDao {
 
 	public boolean checkDB(String requestId) {
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM webserviceInfo";
+		String query = "SELECT * FROM webserviceinfo";
 		// String query =
 		// "INSERT INTO request_detail(request_id, request_date,
 		// request_status,request_model,request_device_name,request_source) VALUES(2,
@@ -1350,7 +1350,7 @@ public class RequestInfoDao {
 
 	public List<ReoprtFlags> getReportsInfoForAllRequestsDB() {
 		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM webserviceInfo";
+		String query = "SELECT * FROM webserviceinfo";
 
 		ResultSet rs = null;
 		ReoprtFlags flags = null;
@@ -1438,7 +1438,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String query1 = null;
-		query = "update webserviceInfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ? ";
+		query = "update webserviceinfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ? ";
 		PreparedStatement preparedStmt;
 		try {
 			preparedStmt = connection.prepareStatement(query);
@@ -1464,32 +1464,32 @@ public class RequestInfoDao {
 		String query2 = null;
 
 		if (field.equalsIgnoreCase("health_check")) {
-			query = "update webserviceInfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliver_configuration")) {
-			query = "update webserviceInfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("network_test")) {
-			query = "update webserviceInfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliever_config")) {
-			query = "update webserviceInfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 
 		else if (field.equalsIgnoreCase("Application_test")) {
-			query = "update webserviceInfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("customer_report")) {
-			query = "update webserviceInfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("generate_configuration")) {
-			query = "update webserviceInfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("pre_health_checkup")) {
-			query = "update webserviceInfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("others_test")) {
-			query = "update webserviceInfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
 
 		} else if (field.equalsIgnoreCase("network_audit")) {
-			query = "update webserviceInfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
 
 		}
 
@@ -5127,7 +5127,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		String suggestionForErrorDesc = "";
 		try {
-			query = "update webserviceInfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ?";
+			query = "update webserviceinfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ?";
 
 			preparedStmt = connection.prepareStatement(query);
 
@@ -5203,7 +5203,7 @@ public class RequestInfoDao {
 		ErrorValidationPojo errorValidationPojo = new ErrorValidationPojo();
 		connection = ConnectionFactory.getConnection();
 		String query = null;
-		query = "Select * from webserviceInfo  where alphanumeric_req_id = ? and version = ?";
+		query = "Select * from webserviceinfo  where alphanumeric_req_id = ? and version = ?";
 		ResultSet rs = null;
 		PreparedStatement pst = null;
 
@@ -6305,7 +6305,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		PreparedStatement preparedStmt;
 		int rs = 0;
-		String query = "update webserviceInfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
+		String query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, "0");
