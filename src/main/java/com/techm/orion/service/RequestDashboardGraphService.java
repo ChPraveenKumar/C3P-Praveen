@@ -11,7 +11,10 @@ import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.techm.orion.repositories.DeviceDiscoveryDashboardRepository;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+
 /*Dhanshri Mane: Added For Request Dashboard*/
 @Service
 public class RequestDashboardGraphService {
@@ -24,7 +27,10 @@ public class RequestDashboardGraphService {
 	RequestInfoDetailsRepositories repo;
 
 	@Autowired
-	RequestDashboardGridService gridService;
+	DeviceDiscoveryRepository discoveryRepo;
+
+	@Autowired
+	public DeviceDiscoveryDashboardRepository deviceDiscoveryDashboardRepo;
 
 	public JSONObject getTotals(String customer, String region, String site, String vendor, String type,
 			String dashboardType) {
@@ -53,12 +59,13 @@ public class RequestDashboardGraphService {
 		JSONObject dateWiseCount = getDateWiseCount(customer, region, site, vendor, dashboardType, loggedUser);
 		JSONObject finalJson = new JSONObject();
 		finalJson.put("totalInfo", totalInfo);
-		 finalJson.put("dateWiseStatus", dateWiseCount);
+		finalJson.put("dateWiseStatus", dateWiseCount);
 		finalJson.put("typesOfRequest", requestCout);
 
 		return finalJson;
 	}
-/*Get Customer,Region,Site Count*/
+
+	/* Get Customer,Region,Site Count */
 	private JSONObject getTotaCount(String customer, String region, String site, String vendor, String dashboardType,
 			String loggedUser) {
 		long startMethod = System.currentTimeMillis();
@@ -161,22 +168,21 @@ public class RequestDashboardGraphService {
 
 	}
 
-	private JSONObject getDateWiseCount(String customer, String region, String site, String vendor, String dashboardType,
-			String loggedUser) {
+	private JSONObject getDateWiseCount(String customer, String region, String site, String vendor,
+			String dashboardType, String loggedUser) {
 		List<String> DateList = new ArrayList<>();
 		int dateOfSuccesRequest = 0;
 		int dateOfInprogressRequest = 0;
 		int dateOfOnScheduledRequest = 0;
 		int dateOffailuarRequest = 0;
-				
-		List<Integer> successCount= new ArrayList<>();
-		List<Integer> inprogressCount= new ArrayList<>();
-		List<Integer> failurCount= new ArrayList<>();
-		List<Integer> scheduleCount= new ArrayList<>();
+
+		List<Integer> successCount = new ArrayList<>();
+		List<Integer> inprogressCount = new ArrayList<>();
+		List<Integer> failurCount = new ArrayList<>();
+		List<Integer> scheduleCount = new ArrayList<>();
 		List<Integer> holdCount = new ArrayList<>();
-		List<String> dateList = new ArrayList<>();	
-		
-		
+		List<String> dateList = new ArrayList<>();
+
 		switch (dashboardType) {
 		case "individual":
 			DateList = repo.getRequestDateWithIndividual(loggedUser, customer, region, site, vendor);
@@ -185,17 +191,17 @@ public class RequestDashboardGraphService {
 						date + "%", "Success");
 				dateOfInprogressRequest = repo.getStatusWiseCountWithIndividual(loggedUser, customer, region, site,
 						vendor, date + "%", "In Progress");
-				dateOfOnScheduledRequest= repo.getStatusWiseCountWithIndividual(loggedUser, customer, region, site,
+				dateOfOnScheduledRequest = repo.getStatusWiseCountWithIndividual(loggedUser, customer, region, site,
 						vendor, date + "%", "Scheduled");
-				dateOffailuarRequest=repo.getStatusWiseCountWithIndividual(loggedUser, customer, region, site,
-						vendor, date + "%", "Failure");
+				dateOffailuarRequest = repo.getStatusWiseCountWithIndividual(loggedUser, customer, region, site, vendor,
+						date + "%", "Failure");
 				successCount.add(dateOfSuccesRequest);
 				inprogressCount.add(dateOfInprogressRequest);
 				scheduleCount.add(dateOfOnScheduledRequest);
-				failurCount.add(dateOffailuarRequest);	
+				failurCount.add(dateOffailuarRequest);
 				holdCount.add(0);
-				
-				String day = getDay(StringUtils.substring(date,5, 7));
+
+				String day = getDay(StringUtils.substring(date, 5, 7));
 				String dayDate = StringUtils.substringAfterLast(date, "-") + " " + day;
 				dateList.add(dayDate);
 			}
@@ -207,17 +213,17 @@ public class RequestDashboardGraphService {
 						date + "%", "Success");
 				dateOfInprogressRequest = repo.getStatusWiseCountWithBatch(loggedUser, customer, region, site, vendor,
 						date + "%", "In Progress");
-				dateOfOnScheduledRequest= repo.getStatusWiseCountWithBatch(loggedUser, customer, region, site,
-						vendor, date + "%", "Scheduled");
-				dateOffailuarRequest=repo.getStatusWiseCountWithBatch(loggedUser, customer, region, site,
-						vendor, date + "%", "Failure");
+				dateOfOnScheduledRequest = repo.getStatusWiseCountWithBatch(loggedUser, customer, region, site, vendor,
+						date + "%", "Scheduled");
+				dateOffailuarRequest = repo.getStatusWiseCountWithBatch(loggedUser, customer, region, site, vendor,
+						date + "%", "Failure");
 				successCount.add(dateOfSuccesRequest);
 				inprogressCount.add(dateOfInprogressRequest);
 				scheduleCount.add(dateOfOnScheduledRequest);
-				failurCount.add(dateOffailuarRequest);				
+				failurCount.add(dateOffailuarRequest);
 				holdCount.add(0);
-				
-				String day = getDay(StringUtils.substring(date,5, 7));
+
+				String day = getDay(StringUtils.substring(date, 5, 7));
 				String dayDate = StringUtils.substringAfterLast(date, "-") + " " + day;
 				dateList.add(dayDate);
 			}
@@ -229,23 +235,23 @@ public class RequestDashboardGraphService {
 						"Success");
 				dateOfInprogressRequest = repo.getStatusWiseCount(loggedUser, customer, region, site, vendor,
 						date + "%", "In Progress");
-				dateOfOnScheduledRequest= repo.getStatusWiseCount(loggedUser, customer, region, site,
-						vendor, date + "%", "Scheduled");
-				dateOffailuarRequest=repo.getStatusWiseCount(loggedUser, customer, region, site,
-						vendor, date + "%", "Failure");
+				dateOfOnScheduledRequest = repo.getStatusWiseCount(loggedUser, customer, region, site, vendor,
+						date + "%", "Scheduled");
+				dateOffailuarRequest = repo.getStatusWiseCount(loggedUser, customer, region, site, vendor, date + "%",
+						"Failure");
 				successCount.add(dateOfSuccesRequest);
 				inprogressCount.add(dateOfInprogressRequest);
 				scheduleCount.add(dateOfOnScheduledRequest);
-				failurCount.add(dateOffailuarRequest);				
+				failurCount.add(dateOffailuarRequest);
 				holdCount.add(0);
-				
-				String day = getDay(StringUtils.substring(date,5, 7));
+
+				String day = getDay(StringUtils.substring(date, 5, 7));
 				String dayDate = StringUtils.substringAfterLast(date, "-") + " " + day;
 				dateList.add(dayDate);
 			}
 			break;
 		}
-		
+
 		JSONObject categoryObject = new JSONObject();
 		JSONObject dateOfSuccess = new JSONObject();
 		JSONObject dateOfinprogress = new JSONObject();
@@ -263,7 +269,7 @@ public class RequestDashboardGraphService {
 		dateOffailed.put("name", "failed");
 		dateOffailed.put("data", failurCount);
 		categoryObject.put("category", dateList);
-		
+
 		JSONArray array = new JSONArray();
 		array.add(dateOfSuccess);
 		array.add(dateOfinprogress);
@@ -272,10 +278,9 @@ public class RequestDashboardGraphService {
 		array.add(dateOffailed);
 		categoryObject.put("series", array);
 		return categoryObject;
-		
 
 	}
-	
+
 	private String getDay(String date) {
 		String day = null;
 		switch (date) {
@@ -317,5 +322,50 @@ public class RequestDashboardGraphService {
 			break;
 		}
 		return day;
+	}
+
+	public JSONObject getDataCount(String type) {
+		String loggedUser = null;
+		if (type.equals("my")) {
+			loggedUser = dcmConfigService.getLogedInUserName();
+		} else {
+			loggedUser = "%";
+		}
+		JSONObject finalJson = new JSONObject();
+		finalJson.put("requestCount", getRequestCout("%", "%", "%", "%", "All", loggedUser));
+		finalJson.put("statusCount", getStatusCount(loggedUser));
+		finalJson.put("Devices", getDeviceCount());
+		return finalJson;
+	}
+
+	public JSONObject getDeviceDiscoverStatus(String type) {
+		JSONObject deviceCountObjet = new JSONObject();
+		String loggedUser = null;
+		if (type.equals("my")) {
+			loggedUser = dcmConfigService.getLogedInUserName();
+		} else {
+			loggedUser = "%";
+		}
+		deviceCountObjet.put("completed", deviceDiscoveryDashboardRepo.getRequestStatusCount("Completed", loggedUser));
+		deviceCountObjet.put("scheduled", deviceDiscoveryDashboardRepo.getRequestStatusCount("Scheduled", loggedUser));
+		return deviceCountObjet;
+	}
+
+	private JSONObject getDeviceCount() {
+		JSONObject deviceCountObjet = new JSONObject();
+		deviceCountObjet.put("active", discoveryRepo.getDeviceStatusCount("Pass"));
+		deviceCountObjet.put("inactive", discoveryRepo.getDeviceStatusCount("Fail"));
+		deviceCountObjet.put("total", discoveryRepo.getDeviceCount());
+		return deviceCountObjet;
+	}
+
+	private JSONObject getStatusCount(String loggedUser) {
+		JSONObject requestStatusCount = new JSONObject();
+		requestStatusCount.put("success", repo.getRequestStatusCount("Success", loggedUser));
+		requestStatusCount.put("in Progress", repo.getRequestStatusCount("In Progress", loggedUser));
+		requestStatusCount.put("scheduled", repo.getRequestStatusCount("Scheduled", loggedUser));
+		requestStatusCount.put("hold", repo.getRequestStatusCount("Hold", loggedUser));
+		requestStatusCount.put("fail", repo.getRequestStatusCount("Failure", loggedUser));
+		return requestStatusCount;
 	}
 }

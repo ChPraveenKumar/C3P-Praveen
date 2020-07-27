@@ -1005,17 +1005,14 @@ public class DcmConfigService {
 
 	public String getTemplateName(String region, String vendor, String model) {
 		String templateid = null;
-		
-		if(model.equalsIgnoreCase(""))
-		{
-		templateid = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase();
-		}
-		else
-		{
-		templateid = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase() + model.substring(0, 2).toUpperCase();
+
+		if (model.equalsIgnoreCase("")) {
+			templateid = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase();
+		} else {
+			templateid = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase()
+					+ model.substring(0, 2).toUpperCase();
 
 		}
-		
 
 		return templateid;
 	}
@@ -1380,10 +1377,9 @@ public class DcmConfigService {
 						telnetCommunicationSSH.start();
 						// telnetCommunicationSSH.connectToRouter(configRequest);
 					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {
-					VNFHelper helper = new VNFHelper();
+						VNFHelper helper = new VNFHelper();
 						if (requestInfoSO.getVnfConfig() != null) {
-							if(!requestInfoSO.getRequestType().equalsIgnoreCase("Test"))
-							{
+							if (!requestInfoSO.getRequestType().equalsIgnoreCase("Test")) {
 								String filepath = helper.saveXML(requestInfoSO.getVnfConfig(), requestIdForConfig,
 										requestInfoSO);
 								if (filepath != null) {
@@ -1397,23 +1393,18 @@ public class DcmConfigService {
 									validateMessage = "Failure due to invalid input";
 
 								}
-							}
-							else
-							{
+							} else {
 								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 										requestInfoSO);
 								telnetCommunicationSSH.setDaemon(true);
 								telnetCommunicationSSH.start();
 							}
+						} else {
+							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(requestInfoSO);
+							telnetCommunicationSSH.setDaemon(true);
+							telnetCommunicationSSH.start();
 						}
-							else
-							{
-								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-										requestInfoSO);
-								telnetCommunicationSSH.setDaemon(true);
-								telnetCommunicationSSH.start();
-							}
-							
+
 					}
 
 					/*
@@ -1674,142 +1665,144 @@ public class DcmConfigService {
 			Map<String, Object> variables = new HashMap<String, Object>();
 
 			variables.put("createConfigRequest", requestInfoSO);
-			requestType=requestInfoSO.getRequestType();
+			requestType = requestInfoSO.getRequestType();
 			if (variables.containsKey("createConfigRequest") && !variables.isEmpty()
 					&& requestInfoSO.getSceheduledTime().equalsIgnoreCase("")) {
 				// requestInfoSO.setStatus("In Progress");
-				
-				if(requestType.equals("Config MACD"))
-				{
-			       	result = dao.insertBatchConfigRequestInDB(requestInfoSO);
-                	for (Map.Entry<String, String> entry : result.entrySet()) {
-    					if (entry.getKey() == "requestID") {
 
-    						requestIdForConfig = entry.getValue();
-    						requestInfoSO.setAlphanumericReqId(requestIdForConfig);
-    					}
-    					if (entry.getKey() == "result") {
-    						res = entry.getValue();
-    					}
+				// if (requestType.equals("Config MACD")) {
+				// result = dao.insertBatchConfigRequestInDB(requestInfoSO);
+				// for (Map.Entry<String, String> entry : result.entrySet()) {
+				// if (entry.getKey() == "requestID") {
+				//
+				// requestIdForConfig = entry.getValue();
+				// requestInfoSO.setAlphanumericReqId(requestIdForConfig);
+				// }
+				// if (entry.getKey() == "result") {
+				// res = entry.getValue();
+				// }
+				//
+				// }
+				//
+				// if (pojoList != null) {
+				// if (pojoList.isEmpty()) {
+				// }
+				//
+				// else {
+				// for (CreateConfigPojo pojo : pojoList) {
+				// pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
+				// saveDynamicAttribValue(pojo);
+				// }
+				// }
+				// }
+				//
+				// createTemplate(requestInfoSO);
+				//
+				// } else {
+				if (requestInfoSO.getBatchSize().equals("1")) {
+					result = dao.insertRequestInDB(requestInfoSO);
+					for (Map.Entry<String, String> entry : result.entrySet()) {
+						if (entry.getKey() == "requestID") {
 
-    				}
-                	
-            		if (pojoList != null) {
-    					if (pojoList.isEmpty()) {
-    					}
+							requestIdForConfig = entry.getValue();
+							requestInfoSO.setAlphanumericReqId(requestIdForConfig);
+						}
+						if (entry.getKey() == "result") {
+							res = entry.getValue();
+						}
 
-    					else {
-    						for (CreateConfigPojo pojo : pojoList) {
-    							pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
-    							saveDynamicAttribValue(pojo);
-    						}
-    					}
-    				}
-    				
-    				createTemplate(requestInfoSO);
-    				
-    			
-    				
-				}
-				else
-				{
-                if(requestInfoSO.getBatchSize().equals("1"))
-                {
-                	result = dao.insertRequestInDB(requestInfoSO);
-                	for (Map.Entry<String, String> entry : result.entrySet()) {
-    					if (entry.getKey() == "requestID") {
-
-    						requestIdForConfig = entry.getValue();
-    						requestInfoSO.setAlphanumericReqId(requestIdForConfig);
-    					}
-    					if (entry.getKey() == "result") {
-    						res = entry.getValue();
-    					}
-
-    				}
-    				
-    				if(requestType.equals("Test") ||requestType.equals("Audit"))
-    				{
-    				int testStrategyDBUpdate = dao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
-    						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType());
-    				// int testStrategyResultsDB=requestInfoDao.
-    				JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
-    				for (int i = 0; i < array.length(); i++) {
-    					org.json.JSONObject obj = array.getJSONObject(i);
-    					String testname = obj.getString("testName");
-    					String reqid = requestInfoSO.getAlphanumericReqId();
-
-    				}
-    				if (testStrategyDBUpdate > 0) {
-    					output = "true";
-    				} else {
-    					output = "false";
-    				}
-    				}
-    				TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(requestInfoSO);
-					telnetCommunicationSSH.setDaemon(true);
-					telnetCommunicationSSH.start();
-                }
-                else
-                {
-				result = dao.insertBatchConfigRequestInDB(requestInfoSO);
-              
-
-				requestType = requestInfoSO.getRequestType();
-				if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))) {
-					if (!requestInfoSO.getTemplateID().isEmpty())
-						templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateID());
-				}
-
-				for (Map.Entry<String, String> entry : result.entrySet()) {
-					if (entry.getKey() == "requestID") {
-
-						requestIdForConfig = entry.getValue();
-						requestInfoSO.setAlphanumericReqId(requestIdForConfig);
-					}
-					if (entry.getKey() == "result") {
-						res = entry.getValue();
 					}
 
-				}
-				
-				if(requestType.equals("Test")||requestType.equals("Audit"))
-				{
-				int testStrategyDBUpdate = dao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
-						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType());
-				// int testStrategyResultsDB=requestInfoDao.
-				JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
-				for (int i = 0; i < array.length(); i++) {
-					org.json.JSONObject obj = array.getJSONObject(i);
-					String testname = obj.getString("testName");
-					String reqid = requestInfoSO.getAlphanumericReqId();
-					// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
-					// "", "",obj.getString("testName"));
-				}
-				if (testStrategyDBUpdate > 0) {
-					output = "true";
-				} else {
-					output = "false";
-				}
-				}
-				if (pojoList != null) {
-					if (pojoList.isEmpty()) {
-					}
+					if (requestType.equals("Test") || requestType.equals("Audit")) {
+						int testStrategyDBUpdate = dao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
+								requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType());
+						// int testStrategyResultsDB=requestInfoDao.
+						JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
+						for (int i = 0; i < array.length(); i++) {
+							org.json.JSONObject obj = array.getJSONObject(i);
+							String testname = obj.getString("testName");
+							String reqid = requestInfoSO.getAlphanumericReqId();
 
-					else {
-						for (CreateConfigPojo pojo : pojoList) {
-							pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
-							saveDynamicAttribValue(pojo);
+						}
+						if (testStrategyDBUpdate > 0) {
+							output = "true";
+						} else {
+							output = "false";
 						}
 					}
-				}
-				if(!(requestType.equals("Test")))
-				{
-				createTemplate(requestInfoSO);
+					if (pojoList != null) {
+						if (pojoList.isEmpty()) {
+						}
+
+						else {
+							for (CreateConfigPojo pojo : pojoList) {
+								pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
+								saveDynamicAttribValue(pojo);
+							}
+						}
+					}
+					if (!(requestType.equals("Test"))) {
+						createTemplate(requestInfoSO);
+					}
+					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(requestInfoSO);
+					telnetCommunicationSSH.setDaemon(true);
+					telnetCommunicationSSH.start();
+				} else {
+					result = dao.insertBatchConfigRequestInDB(requestInfoSO);
+
+					requestType = requestInfoSO.getRequestType();
+					if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))) {
+						if (!requestInfoSO.getTemplateID().isEmpty())
+							templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateID());
+					}
+
+					for (Map.Entry<String, String> entry : result.entrySet()) {
+						if (entry.getKey() == "requestID") {
+
+							requestIdForConfig = entry.getValue();
+							requestInfoSO.setAlphanumericReqId(requestIdForConfig);
+						}
+						if (entry.getKey() == "result") {
+							res = entry.getValue();
+						}
+
+					}
+
+					if (requestType.equals("Test") || requestType.equals("Audit")) {
+						int testStrategyDBUpdate = dao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
+								requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType());
+						// int testStrategyResultsDB=requestInfoDao.
+						JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
+						for (int i = 0; i < array.length(); i++) {
+							org.json.JSONObject obj = array.getJSONObject(i);
+							String testname = obj.getString("testName");
+							String reqid = requestInfoSO.getAlphanumericReqId();
+							// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
+							// "", "",obj.getString("testName"));
+						}
+						if (testStrategyDBUpdate > 0) {
+							output = "true";
+						} else {
+							output = "false";
+						}
+					}
+					if (pojoList != null) {
+						if (pojoList.isEmpty()) {
+						}
+
+						else {
+							for (CreateConfigPojo pojo : pojoList) {
+								pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
+								saveDynamicAttribValue(pojo);
+							}
+						}
+					}
+					if (!(requestType.equals("Test"))) {
+						createTemplate(requestInfoSO);
+					}
 				}
 			}
-				}
-			  }
+			// }
 		} catch (Exception e) {
 			logger.error(e);
 		}

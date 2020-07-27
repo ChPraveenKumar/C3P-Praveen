@@ -170,4 +170,32 @@ public class RequestDashboardControll {
 		}
 		return null;
 	}
+	
+	@POST
+	@RequestMapping(value = "/getDataCount", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject getDataCount(@RequestBody String request) {
+		JSONParser parser = new JSONParser();
+		try {
+			JSONObject json = (JSONObject) parser.parse(request);
+			return graphService.getDataCount(json.get("type").toString());
+		} catch (ParseException e) {
+			logger.info(e);
+		}
+		return null;
+	}
+	
+	@POST
+	@RequestMapping(value = "/getDeviceCount", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject getDeviceCount(@RequestBody String request) {
+		JSONParser parser = new JSONParser();
+		try {
+			JSONObject json = (JSONObject) parser.parse(request);
+			return graphService.getDeviceDiscoverStatus(json.get("type").toString());
+		} catch (ParseException e) {
+			logger.info(e);
+		}
+		return null;
+	}
 }

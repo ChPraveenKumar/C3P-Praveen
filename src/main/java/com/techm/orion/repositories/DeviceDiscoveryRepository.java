@@ -199,6 +199,13 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 
 	List<DeviceDiscoveryEntity> findAllByDVendorAndDSeries(String vendor, String deviceFamily);
 
+	List<DeviceDiscoveryEntity> findByDSshCredProfile(String profileName);
+
+	List<DeviceDiscoveryEntity> findByDTelnetCredProfile(String profileName);
+
+	List<DeviceDiscoveryEntity> findByDSnmpCredProfile(String profileName);
+
+	/*Dhanshri Mane*/
 	@Query(value = "select * from c3p_deviceinfo where d_mgmtip= :mgmtip and d_hostname= :hostName ", nativeQuery = true)
 	DeviceDiscoveryEntity findHostNameAndMgmtip(@Param("mgmtip") String mgmtip, @Param("hostName") String hostNAme);
 	
@@ -208,11 +215,11 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	@Query(value = "update c3p_deviceinfo set d_dis_id = :resultDevice where d_Id = :deviceId", nativeQuery = true)
 	int updateDescripancyId(@Param("resultDevice") int resultDevice, @Param("deviceId") int deviceId);
 
-
-	List<DeviceDiscoveryEntity> findByDSshCredProfile(String profileName);
-
-	List<DeviceDiscoveryEntity> findByDTelnetCredProfile(String profileName);
-
-	List<DeviceDiscoveryEntity> findByDSnmpCredProfile(String profileName);
-
+	@Query(value = "select count(d_auto_status) from c3p_deviceinfo where d_auto_status=:status", nativeQuery = true)
+	int  getDeviceStatusCount( @Param("status") String status);
+	
+	@Query(value = "select count(d_id) from c3p_deviceinfo", nativeQuery = true)
+	int  getDeviceCount();
+	
+	/**/
 }

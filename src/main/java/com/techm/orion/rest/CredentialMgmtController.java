@@ -138,22 +138,22 @@ public class CredentialMgmtController {
 
 
 		String profileName = null, type = null;
-		int count = 0;
+		
 
 		credentialManagementList = credentialManagementRepo.findAll();
 
 		for (int i = 0; i < credentialManagementList.size(); i++) {
-
+			int count = 0;
 			profileName = credentialManagementList.get(i).getProfileName();
 			type = credentialManagementList.get(i).getProfileType();
 
-			if (type.equals("SSH")) {
+			if (type.equalsIgnoreCase("SSH")) {
 				hostNameList = deviceDiscoveryRepository.findByDSshCredProfile(profileName);
 				count = hostNameList.size();
-			} else if (type.equals("Telnet")) {
+			} else if (type.equalsIgnoreCase("Telnet")) {
 				hostNameList = deviceDiscoveryRepository.findByDTelnetCredProfile(profileName);
 				count = hostNameList.size();
-			} else if (type.equals("SNMP")) {
+			} else if (type.equalsIgnoreCase("SNMP")) {
 				hostNameList = deviceDiscoveryRepository.findByDSnmpCredProfile(profileName);
 				count = hostNameList.size();
 			}
@@ -190,13 +190,13 @@ public class CredentialMgmtController {
 			profileName = obj.get("profileName").toString();
 			profileType = obj.get("profileType").toString();
 
-			if (profileType.equals("SSH")) {
+			if (profileType.equalsIgnoreCase("SSH")) {
 				hostNameList = deviceDiscoveryRepository.findByDSshCredProfile(profileName);
 
-			} else if (profileType.equals("Telnet")) {
+			} else if (profileType.equalsIgnoreCase("Telnet")) {
 				hostNameList = deviceDiscoveryRepository.findByDTelnetCredProfile(profileName);
 
-			} else if (profileType.equals("SNMP")) {
+			} else if (profileType.equalsIgnoreCase("SNMP")) {
 				hostNameList = deviceDiscoveryRepository.findByDSnmpCredProfile(profileName);
 
 			}
@@ -238,13 +238,13 @@ public class CredentialMgmtController {
 			profileName = obj.get("profileName").toString();
 			profileType = obj.get("profileType").toString();
 
-			if (profileType.equals("SSH")) {
+			if (profileType.equalsIgnoreCase("SSH")) {
 				hostNameList = deviceDiscoveryRepository.findByDSshCredProfile(profileName);
 
-			} else if (profileType.equals("Telnet")) {
+			} else if (profileType.equalsIgnoreCase("Telnet")) {
 				hostNameList = deviceDiscoveryRepository.findByDTelnetCredProfile(profileName);
 
-			} else if (profileType.equals("SNMP")) {
+			} else if (profileType.equalsIgnoreCase("SNMP")) {
 				hostNameList = deviceDiscoveryRepository.findByDSnmpCredProfile(profileName);
 
 			}

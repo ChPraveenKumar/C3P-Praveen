@@ -819,7 +819,7 @@ public class BackUpAndRestoreController {
 
 		JsonArray attribJson = null;
 		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
-				templateId = null, requestType = "Config MACD";
+				templateId = null, requestType = "Config MACD", requestId = null;
 
 		HashMap<String, String> map = new HashMap<String, String>();
 		ArrayList<String> tempRequest = new ArrayList<String>();
@@ -849,6 +849,7 @@ public class BackUpAndRestoreController {
 		String temp = null;
 
 		final String batchId = "BI-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+		int k = 0;
 
 		try {
 
@@ -874,11 +875,7 @@ public class BackUpAndRestoreController {
 						RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
 
 						requestInfoEntity.setRequestType(requestType);
-						alphaneumeric_req_id = "SLGC-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
-						requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
-
 						if (j == 0) {
-
 							requestInfoEntity.setStatus("In Progress");
 						} else {
 
@@ -893,7 +890,7 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setDynamicAttribs(json.get("dynamicAttribs"));
 
 						requestInfoEntity.setBatchId(batchId);
-
+						requestInfoEntity.setBatchSize(map.size());
 						requestInfoEntity.setCustomer(requestDetail.get(i).getCustSiteId().getcCustName());
 
 						requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
@@ -937,14 +934,22 @@ public class BackUpAndRestoreController {
 
 						String jsonString = mapper.writeValueAsString(requestInfoEntity);
 
-						myObj.getTemplateId(jsonString);
-
+						requestId = myObj.getTemplateId(jsonString);
+						k++;
 					}
 					break;
 				}
 			}
-			obj.put("batchId", batchId);
-			obj.put("output", "Batch Request created successfully");
+			if (k == 1) {
+				obj.put("output", "Request created successfully");
+				obj.put(new String("requestId"), new String(requestId));
+				obj.put(new String("version"), "1.0");
+			} else {
+
+				obj.put("batchId", batchId);
+				obj.put("output", "Batch Request created successfully");
+
+			}
 		}
 
 		catch (Exception e) {
@@ -964,7 +969,7 @@ public class BackUpAndRestoreController {
 
 		JsonArray attribJson = null;
 		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
-				templateId = null, requestType = null,requestId=null;
+				templateId = null, requestType = null, requestId = null;
 
 		HashMap<String, String> map = new HashMap<String, String>();
 
@@ -1087,7 +1092,7 @@ public class BackUpAndRestoreController {
 
 					String jsonString = mapper.writeValueAsString(requestInfoEntity);
 
-					requestId=myObj.getTemplateId(jsonString);
+					requestId = myObj.getTemplateId(jsonString);
 
 					j++;
 				}

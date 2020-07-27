@@ -1988,6 +1988,7 @@ public class RequestInfoDao {
 		return userList;
 
 	}
+
 	public final UserPojo getRouterCredentials(String mgmtip) throws IOException {
 
 		connection = ConnectionFactory.getConnection();
@@ -1996,25 +1997,21 @@ public class RequestInfoDao {
 		UserPojo userList = new UserPojo();
 		try {
 			String query = "SELECT * FROM routeruserdevicemanagementtable where mgmtip=?";
-			//statement = connection.createStatement();
-			//rs = statement.executeQuery(query);
+			// statement = connection.createStatement();
+			// rs = statement.executeQuery(query);
 
-			
 			PreparedStatement pst = null;
-			
 
-				pst = connection.prepareStatement(query);
-				pst.setString(1, mgmtip);
-				
-				rs = pst.executeQuery();
-				if (rs.next()) {
+			pst = connection.prepareStatement(query);
+			pst.setString(1, mgmtip);
 
-					userList.setUsername(rs.getString("router_username"));
-					userList.setPassword(rs.getString("router_password"));
-				}
-			
-			
-			
+			rs = pst.executeQuery();
+			if (rs.next()) {
+
+				userList.setUsername(rs.getString("router_username"));
+				userList.setPassword(rs.getString("router_password"));
+			}
+
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -2025,6 +2022,7 @@ public class RequestInfoDao {
 		return userList;
 
 	}
+
 	public boolean addNewUserToDB(String username, String pass) {
 		connection = ConnectionFactory.getConnection();
 
@@ -7231,7 +7229,7 @@ public class RequestInfoDao {
 
 					obj.put("status", rs.getString("TestResult"));
 					obj.put("CollectedValue", rs.getString("CollectedValue").replace(",", "$"));
-					//obj.put("CollectedValue", rs.getString("CollectedValue"));
+					// obj.put("CollectedValue", rs.getString("CollectedValue"));
 
 					obj.put("EvaluationCriteria", rs.getString("EvaluationCriteria"));
 
@@ -8110,7 +8108,6 @@ public class RequestInfoDao {
 				alphaneumeric_req_id = "SLGA-" + UUID.randomUUID().toString().toUpperCase();
 
 			}
-
 			else if (requestInfoSO.getRequestType().equalsIgnoreCase("RESTCONF")
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {
 				alphaneumeric_req_id = "SNRC-" + UUID.randomUUID().toString().toUpperCase();
@@ -8130,7 +8127,10 @@ public class RequestInfoDao {
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {
 				alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase();
 
-			}else {
+			} else if (requestInfoSO.getRequestType().equalsIgnoreCase("Config MACD")) {
+				alphaneumeric_req_id = "SLGM-" + UUID.randomUUID().toString().toUpperCase();
+
+			} else {
 				alphaneumeric_req_id = "SLGC-" + UUID.randomUUID().toString().toUpperCase();
 			}
 			// alphaneumeric_req_id = request.getProcessID();
@@ -8364,6 +8364,7 @@ public class RequestInfoDao {
 		hmap.put("result", "false");
 		return hmap;
 	}
+
 	public List<TestDetail> findByTestName(String testNameUsed) {
 		connection = ConnectionFactory.getConnection();
 		String query = null, testName = null, version = null;
@@ -8497,6 +8498,7 @@ public class RequestInfoDao {
 		return requestInfoList;
 
 	}
+
 	public List checkForDeviceLock(String requestId, String managementIp, String TestType) {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
@@ -8509,7 +8511,7 @@ public class RequestInfoDao {
 			if (TestType.equalsIgnoreCase("DeviceTest")) {
 				query = "Select * from DeviceLocked_ManagementIP where management_ip=?";
 				pst = connection.prepareStatement(query);
-				pst.setString(1,managementIp);
+				pst.setString(1, managementIp);
 				rs = pst.executeQuery();
 				while (rs.next()) {
 
@@ -8799,56 +8801,44 @@ public class RequestInfoDao {
 			networkIfObj.put("status", "Passed");
 			networkIfObj.put("outcome", "");
 			networkIfObj.put("notes", "N/A");
-		}
-		else
-		{
-			networkIfObj=null;
+		} else {
+			networkIfObj = null;
 		}
 		if (certificationTestPojo2.getShowInterfaceCmd().equalsIgnoreCase("1")) {
 			waninterface.put("testname", "Wan Interface");
 			waninterface.put("status", "Passed");
 			waninterface.put("outcome", "");
 			waninterface.put("notes", "N/A");
-		}
-		else
-		{
-			waninterface=null;
+		} else {
+			waninterface = null;
 		}
 		if (certificationTestPojo2.getShowVersionCmd().equalsIgnoreCase("1")) {
 			networkPlatformIOS.put("testname", "Network Platform IOS");
 			networkPlatformIOS.put("status", "Passed");
 			networkPlatformIOS.put("outcome", "");
 			networkPlatformIOS.put("notes", "N/A");
-		}
-		else
-		{
-			networkPlatformIOS=null;
+		} else {
+			networkPlatformIOS = null;
 		}
 		if (certificationTestPojo2.getShowIpBgpSummaryCmd().equalsIgnoreCase("1")) {
 			bgpneighbour.put("testname", "BGP Neighbour");
 			bgpneighbour.put("status", "Passed");
 			bgpneighbour.put("outcome", "");
 			bgpneighbour.put("notes", "N/A");
+		} else {
+			bgpneighbour = null;
 		}
-		else
-		{
-			bgpneighbour=null;
+		if (bgpneighbour != null) {
+			networkArray.add(bgpneighbour);
 		}
-		if(bgpneighbour!=null)
-		{
-		networkArray.add(bgpneighbour);
+		if (waninterface != null) {
+			networkArray.add(waninterface);
 		}
-		if(waninterface!=null)
-		{
-		networkArray.add(waninterface);
+		if (networkPlatformIOS != null) {
+			networkArray.add(networkPlatformIOS);
 		}
-		if(networkPlatformIOS!=null)
-		{
-		networkArray.add(networkPlatformIOS);
-		}
-		if(networkIfObj!=null)
-		{
-		networkArray.add(networkIfObj);
+		if (networkIfObj != null) {
+			networkArray.add(networkIfObj);
 		}
 		org.json.simple.JSONArray healthArray = new org.json.simple.JSONArray();
 
@@ -9145,7 +9135,7 @@ public class RequestInfoDao {
 		String Os = null, model = null, region = null, service = null, version = null, hostname = null,
 				alphaneumeric_req_id = null, customer = null, siteName = null, siteId = null, vendor = null,
 				deviceType = null, vpn = null;
-		String request_creator_name = null, batchId = null, requestStatus = null,certificationSelectionBit=null;
+		String request_creator_name = null, batchId = null, requestStatus = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
 		String zipcode = null, managed = null, downtimerequired = null, lastupgradedon = null, networktype = null;
 		double request_version = 0, request_parent_version = 0;
@@ -9161,19 +9151,14 @@ public class RequestInfoDao {
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGM-" + UUID.randomUUID().toString().toUpperCase();
 
-			}
-			else if(requestInfoSO.getRequestType().equalsIgnoreCase("Test")
-					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF"))
-			{
+			} else if (requestInfoSO.getRequestType().equalsIgnoreCase("Test")
+					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase();
+			} else if (requestInfoSO.getRequestType().equalsIgnoreCase("Audit")
+					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+				alphaneumeric_req_id = "SLGA-" + UUID.randomUUID().toString().toUpperCase();
+
 			}
-			 else if (requestInfoSO.getRequestType().equalsIgnoreCase("Audit")
-						&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
-					alphaneumeric_req_id = "SLGA-" + UUID.randomUUID().toString().toUpperCase();
-
-				}
-
-			
 
 			alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
 			hmap.put("requestID", alphaneumeric_req_id);
@@ -9184,7 +9169,7 @@ public class RequestInfoDao {
 			if (requestInfoSO.getModel() != null || requestInfoSO.getModel() != "") {
 				model = requestInfoSO.getModel();
 			}
-			
+
 			if (requestInfoSO.getCertificationSelectionBit() != null
 					|| requestInfoSO.getCertificationSelectionBit() != "") {
 				certificationSelectionBit = requestInfoSO.getCertificationSelectionBit();
@@ -9330,13 +9315,11 @@ public class RequestInfoDao {
 			} else {
 				requestEntity.setStartUp(false);
 			}
-			
+
 			if (requestInfoSO.getRequestType().equalsIgnoreCase("Config MACD")
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
-			requestEntity.setCertificationSelectionBit("1010111");
-			}
-			else
-			{
+				requestEntity.setCertificationSelectionBit("1010111");
+			} else {
 				requestEntity.setCertificationSelectionBit(certificationSelectionBit);
 			}
 
@@ -9394,50 +9377,51 @@ public class RequestInfoDao {
 		hmap.put("result", "false");
 		return hmap;
 	}
+
 	public final boolean updateBatchRequestStatus(String requestId) {
-        boolean result = false;
-        connection = ConnectionFactory.getConnection();
-        String sql = "update c3p_t_request_info set r_status= 'Failure' where r_alphanumeric_req_id=?";
-        try {
-               PreparedStatement ps = connection.prepareStatement(sql);
+		boolean result = false;
+		connection = ConnectionFactory.getConnection();
+		String sql = "update c3p_t_request_info set r_status= 'Failure' where r_alphanumeric_req_id=?";
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
 
-               ps.setString(1, requestId);
-               
-               int i = ps.executeUpdate();
-               if (i == 1) {
-                     result = true;
+			ps.setString(1, requestId);
 
-               } else {
-                     result = false;
-               }
-        } catch (SQLException e) {
+			int i = ps.executeUpdate();
+			if (i == 1) {
+				result = true;
 
-               result = false;
-        }
-        return result;
- }
-	
+			} else {
+				result = false;
+			}
+		} catch (SQLException e) {
+
+			result = false;
+		}
+		return result;
+	}
+
 	public final boolean updateRequestExecutionStatus(String requestId) {
-        boolean result = false;
-        connection = ConnectionFactory.getConnection();
-        String sql = "update c3p_t_request_info set r_execution_status= true where r_alphanumeric_req_id=?";
-        try {
-               PreparedStatement ps = connection.prepareStatement(sql);
+		boolean result = false;
+		connection = ConnectionFactory.getConnection();
+		String sql = "update c3p_t_request_info set r_execution_status= true where r_alphanumeric_req_id=?";
+		try {
+			PreparedStatement ps = connection.prepareStatement(sql);
 
-               ps.setString(1, requestId);
-               
-               int i = ps.executeUpdate();
-               if (i == 1) {
-                     result = true;
+			ps.setString(1, requestId);
 
-               } else {
-                     result = false;
-               }
-        } catch (SQLException e) {
+			int i = ps.executeUpdate();
+			if (i == 1) {
+				result = true;
 
-               result = false;
-        }
-        return result;
- }
+			} else {
+				result = false;
+			}
+		} catch (SQLException e) {
+
+			result = false;
+		}
+		return result;
+	}
 
 }

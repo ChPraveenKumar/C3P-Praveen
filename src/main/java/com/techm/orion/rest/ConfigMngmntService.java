@@ -1551,13 +1551,13 @@ public class ConfigMngmntService implements Observer {
 				configReqToSendToC3pCode.setStatus(json.get("status").toString());
 
 			}
-			if(!(requestType.equals("Config MACD")))
-			{
+			/*if(!(requestType.equals("Config MACD")))
+			{*/
 			if (json.containsKey("batchSize")) {
 				configReqToSendToC3pCode.setBatchSize(json.get("batchSize").toString());
 
 			}
-			}
+			//}
 
 			if (json.containsKey("batchId")&&(json.get("batchId")!=null)) {
 				configReqToSendToC3pCode.setBatchId(json.get("batchId").toString());

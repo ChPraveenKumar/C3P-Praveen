@@ -321,6 +321,7 @@ public class DeviceDiscoveryController implements Observer {
 		try {
 			List<DeviceDiscoveryEntity> getAllDevice = deviceInforepo.findAll();
 
+			
 			List<DiscoveryResultDeviceDetailsEntity> devices = discoveryResultDeviceDetailsRepo.findAll();
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {
@@ -395,9 +396,6 @@ public class DeviceDiscoveryController implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-			List<DiscoveryResultDeviceDetailsEntity> device = discoveryResultDeviceDetailsRepo
-					.findBydHostname(hostname);
-
 			List<DeviceDiscoveryEntity> inventoryList = deviceInforepo.findBydHostName(hostname);
 
 			List<DeviceDiscoveryInterfaceEntity> interfaceListInventory = deviceinterfaceRepo
@@ -439,6 +437,7 @@ public class DeviceDiscoveryController implements Observer {
 				detail.put("dContactOrganization", "TechMahindra");
 				detail.put("dContactEmail", inventoryList.get(j).getdContactEmail());
 				detail.put("dContactPhone", inventoryList.get(j).getdContactPhone());
+				inventoryList.get(j).setdDisResultid(null);
 
 				contactDetails.add(detail);
 

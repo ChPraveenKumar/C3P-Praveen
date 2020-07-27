@@ -180,6 +180,9 @@ public class DeviceDiscrepancyService {
 		if (device.getdUpsince() != null) {
 			entity.setdUpSince(device.getdUpsince());
 		}
+		if(device.getdStatus()!=null) {
+			entity.setdStatus(device.getdStatus());
+		}
 		entity.setdDisResultid(device);
 
 		entity.setdDeComm("0");
