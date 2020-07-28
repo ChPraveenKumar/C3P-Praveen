@@ -15,7 +15,7 @@ public class DiscrepancyMsgEntity {
 	@Id
 	private int id;
 
-	@Column(name = "discripancy_type", length = 15)
+	@Column(name = "discripancy_type", length = 25)
 	private String discripancyType;
 
 	@Column(name = "discripancy_msg")

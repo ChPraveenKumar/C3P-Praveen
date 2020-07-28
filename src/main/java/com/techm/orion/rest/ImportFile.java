@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.ws.rs.GET;
@@ -13,9 +14,12 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,13 +31,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.google.gson.Gson;
 import com.techm.orion.ValidatorConfigService.ExcelFileValidation;
+import com.techm.orion.entitybeans.CustomerStagingEntity;
+import com.techm.orion.entitybeans.ImportMasterStagingEntity;
 import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.DeviceInterfaceRepo;
+import com.techm.orion.repositories.DiscrepancyMsgRepository;
+import com.techm.orion.repositories.ImportMasterStagingRepo;
 import com.techm.orion.repositories.InternetInfoRepo;
 import com.techm.orion.repositories.RequestDetailsImportRepo;
 import com.techm.orion.repositories.RouterVfRepo;
 import com.techm.orion.repositories.WebServiceRepo;
+import com.techm.orion.service.CustomerStagingInteface;
 import com.techm.orion.service.ExcelReader;
 import com.techm.orion.service.StorageService;
 
@@ -67,6 +76,18 @@ public class ImportFile {
 
 	@Autowired
 	StorageService storageService;
+	
+	@Autowired
+	private ExcelFileValidation excelFileValidation;
+	
+	@Autowired
+	DiscrepancyMsgRepository msgRepo;
+	
+	@Autowired
+	CustomerStagingInteface customerStagingInteface;
+	
+	@Autowired
+	private ImportMasterStagingRepo importMasterStagingRepo;
 
 	/* Web service to get all request on Import Dash Board */
 
@@ -418,4 +439,272 @@ public class ImportFile {
 		return sb.toString().concat("-1");
 	}
 
+	/* Web service call to validate file against predefine set of rules for Customer OnBoarding process */
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/fileValidationCSVForCOB", method = RequestMethod.POST, produces = "application/json")
+	@ResponseBody
+	public ResponseEntity handleFileValidationForCOB(@RequestParam("file") MultipartFile file) {
+		
+		logger.info("\n" + "Inside fileValidationCSVForCOB Service");
+		JSONObject obj = new JSONObject();
+		Map<String, List> validateFileColumn =null;
+		Map<String, String> validateNoOfRequest =null;
+		boolean status= false;
+		try {
+			String FILE_NAME = file.getOriginalFilename();
+			/* Loading file path from properties file */
+			ImportFile.loadProperties();
+			String FILE_LOCAL_PATH = ImportFile.TSA_PROPERTIES.getProperty("importFilePath");
+			String fileNameAsImport = getAlphaNumericString(8);
+			/* Storing file on local system */
+			storageService.store(file, fileNameAsImport);
+			/* Updating file name with alphanumeric number */
+			String TOTAL_FILE_PATH = FILE_LOCAL_PATH.concat(fileNameAsImport.concat("_").concat(FILE_NAME));
+			files.add(file.getOriginalFilename());
+			boolean flagCSV = false;
+
+			//ExcelFileValidation fileValidation = new ExcelFileValidation();
+			String extension = FilenameUtils.getExtension(file.getOriginalFilename());
+			Resource filePath = storageService.loadFile(TOTAL_FILE_PATH);
+
+			if (extension.equals("csv")) {
+				flagCSV = true;
+			} else {
+				throw new IOException(msgRepo.findDiscrepancyMsg("csv format"));
+			}
+
+			if (flagCSV) {
+			    validateFileColumn = excelFileValidation.validateColumnCSVForCOB(filePath);
+				
+				if (validateFileColumn !=null && validateFileColumn.containsKey("Valid")) {
+					validateNoOfRequest= excelFileValidation.validateColumnValuesCSVForCOB(filePath);
+
+					if (validateNoOfRequest.containsKey("Valid Single Request")) {
+						status= true;
+						obj.put(new String("response"), status);
+						obj.put(new String("successMessage"), validateNoOfRequest.get("Valid Single Request"));
+						obj.put(new String("errorMessage"), "");	
+
+					} else if (validateNoOfRequest.containsKey("Invalid Single Request")) {
+						status= false;
+						obj.put(new String("response"), status);
+						obj.put(new String("errorMessage"), validateNoOfRequest.get("Invalid Single Request"));
+						obj.put(new String("successMessage"), "");
+
+					} else if (validateNoOfRequest.containsKey("Valid Multiple Request")) {
+						status= true;
+						obj.put(new String("response"), status);
+						obj.put(new String("successMessage"), validateNoOfRequest.get("Valid Multiple Request"));
+						obj.put(new String("errorMessage"), "");
+					} else if (validateNoOfRequest.containsKey("Fields are missing")) {
+						status = false;
+						obj.put(new String("response"), status);
+						obj.put(new String("errorMessage"), validateNoOfRequest.get("Fields are missing"));
+						obj.put(new String("successMessage"), "");
+					} else if (validateNoOfRequest.containsKey("No records found")) {
+						status = false;
+						obj.put(new String("response"), status);
+						obj.put(new String("errorMessage"), validateNoOfRequest.get("No records found"));
+						obj.put(new String("successMessage"), "");
+					}
+
+				} else if (validateFileColumn.containsKey("mandatory csv col")) {
+					status = false;
+					obj.put(new String("response"), status);
+					obj.put(new String("errorMessage"), validateFileColumn.get("mandatory csv col").get(0));
+					obj.put(new String("successMessage"), "");
+				} else {
+					status = false;
+					obj.put(new String("response"), status);
+					obj.put(new String("errorMessage"), validateFileColumn);
+					obj.put(new String("successMessage"), "");
+				}
+			}
+
+		} catch (Exception e) {
+			status = false;
+			obj.put(new String("response"), status);
+			obj.put(new String("errorMessage"), e.getMessage());
+			obj.put(new String("successMessage"), "");
+			logger.error("\n" + "exception in fileValidationCSVForCOB service" + e.getMessage());
+		}
+		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
+	}
+	
+	/*
+	 * Web service call to upload file on local storage and save in Database for
+	 * Customer OnBoarding process
+	 */
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/csvFileSaveInDB", method = RequestMethod.POST, produces = "application/json")
+	@ResponseBody
+	public ResponseEntity uploadCSVFile(@RequestParam("file") MultipartFile file, @RequestParam String userName) {
+
+		logger.info("\n" + "Inside csvFileSaveInDB Service");
+		JSONObject obj = new JSONObject();
+		boolean success = false;
+		try {
+			success = customerStagingInteface.saveDataFromUploadFile(file, userName);
+            if(success== true)
+            {
+            	obj.put("status", msgRepo.findDiscrepancyMsg("saved file"));
+            	obj.put("statusCode", success );
+            }
+            else
+            {
+            	obj.put("status", msgRepo.findDiscrepancyMsg("not saved"));
+            	obj.put("statusCode", success );
+            }
+		} catch (Exception e) {
+			obj.put(new String("status"), e.getMessage());
+			obj.put(new String("statusCode"), success);
+			logger.error("\n" + "exception in csvFileSaveInDB service" + e.getMessage());
+
+		}
+		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
+	}
+	
+	/*
+	 * Web service call to display Dashboard data on C3P inventory for
+	 * Customer OnBoarding process
+	 */
+	@SuppressWarnings("unchecked")
+	@GET
+	@RequestMapping(value = "/getDashboardData", method = RequestMethod.GET, produces = "application/json")
+	@ResponseBody
+	public ResponseEntity dashboardData(@RequestParam String user,
+			@RequestParam String requestType) {
+		logger.info("\n" + "Inside getDashboardData Service");
+		JSONObject obj = new JSONObject();
+		List<ImportMasterStagingEntity> importMasterData =null;
+		int myRequestCount, allRequestCount= 0;
+		JSONArray outputArray = new JSONArray();
+		JSONObject object = new JSONObject();
+		try {
+			importMasterData =importMasterStagingRepo.getMyImport(user);
+			myRequestCount = importMasterStagingRepo.myImportCountStatus(user);
+			allRequestCount = importMasterStagingRepo.allImportCountStatus();
+			for (ImportMasterStagingEntity entity : importMasterData) {
+				object = new JSONObject();
+				object.put("importId", entity.getImportId());
+				object.put("executionDate", entity.getExecutionDate().toString());
+				object.put("status", entity.getStatus());
+				object.put("totalDevices", entity.getTotalDevices());
+				object.put("successORexception", entity.getCountSuccess() + " / " + entity.getCountException());
+				object.put("newORexisting", entity.getCountNew() + " / " + entity.getCountExisting());
+				object.put("createdBy", entity.getCreatedBy());		
+				outputArray.add(object);
+			}
+            if(importMasterData !=null)
+            {	
+            	obj.put("myRequestCount", myRequestCount);
+            	obj.put("allRequestCount", allRequestCount);
+            	obj.put("dashBoardData", outputArray);
+            }
+            
+		} catch (Exception e) {
+			obj.put(new String("message"), e);
+			logger.error("\n" + "exception in getDashboardData service" + e.getMessage());
+
+		}
+		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
+	}
+	
+	/*
+	 * Web service call to get Mydashboard data for
+	 * Customer OnBoarding process
+	 */
+	@GET
+	@RequestMapping(value = "/getMyDashboardData", method = RequestMethod.GET, produces = "application/json")
+	@ResponseBody
+	public ResponseEntity discoverDashboard(@RequestParam String user,
+			@RequestParam String requestType) {
+
+		logger.info("\n" + "Inside getMyDashboardData Service");
+		JSONObject obj = new JSONObject();
+		List<ImportMasterStagingEntity> importMasterData =null;
+		JSONArray outputArray = new JSONArray();
+		JSONObject object = new JSONObject();
+		int myRequestCount, allRequestCount=0;
+		try {
+			importMasterData =importMasterStagingRepo.getMyImport(user);
+			myRequestCount = importMasterStagingRepo.myImportCountStatus(user);
+			allRequestCount = importMasterStagingRepo.allImportCountStatus();
+			for (ImportMasterStagingEntity entity : importMasterData) {
+				object = new JSONObject();
+				object.put("importId", entity.getImportId());
+				object.put("executionDate", entity.getExecutionDate().toString());
+				object.put("status", entity.getStatus());
+				object.put("totalDevices", entity.getTotalDevices());
+				object.put("successORexception", entity.getCountSuccess() + " / " + entity.getCountException());
+				object.put("newORexisting", entity.getCountNew() + " / " + entity.getCountExisting());
+				object.put("createdBy", entity.getCreatedBy());		
+				outputArray.add(object);
+			}
+            if(importMasterData !=null)
+            {
+            	obj.put("myRequestCount", myRequestCount);
+            	obj.put("allRequestCount", allRequestCount);
+            	obj.put("dashBoardData", outputArray);
+            }
+		} catch (Exception e) {
+			obj.put(new String("message"), e);
+			logger.error("\n" + "exception in getMyDashboardData service" + e.getMessage());
+		}
+		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
+
+	}
+	
+	
+	/*
+	 * Web service call to generate report based on import id for
+	 * Customer OnBoarding process
+	 */
+	@GET
+	@RequestMapping(value = "/generateReport", method = RequestMethod.GET, produces = "application/json")
+	@ResponseBody
+	public ResponseEntity generateReportCOB(@RequestParam String importId) {
+
+		logger.info("\n" + "Inside generateReport Service");
+		JSONObject obj = new JSONObject();
+		List<CustomerStagingEntity> listStaggingData, listStaggingStatus =null;
+		JSONArray staggingArrayData = new JSONArray();
+		JSONArray staggingArrayStatus = new JSONArray();
+		JSONObject object, status = null;
+		
+		try {
+			listStaggingData = customerStagingInteface.generateReport(importId);
+			for (CustomerStagingEntity entity : listStaggingData) {
+				object = new JSONObject();
+				object.put("hostname", entity.getHostname());
+				object.put("mgtmtIP", entity.getiPV4ManagementAddress());
+				object.put("result", entity.getResult());
+				object.put("status", entity.getOutcomeResult());
+				object.put("rootCause", entity.getRootCause());	
+				staggingArrayData.add(object);
+			}
+			listStaggingStatus = customerStagingInteface.generateReportStatus(importId);
+			for (CustomerStagingEntity entity : listStaggingStatus) {
+				status = new JSONObject();
+				status.put("executionDate", entity.getExecutionDate().toString());
+				status.put("totalDevices", entity.getTotalDevices());
+				status.put("createdBy", entity.getCreatedBy());	
+				status.put("exception", entity.getCount_exception());
+				status.put("success", entity.getCount_success());	
+				status.put("new", entity.getCount_new());
+				status.put("existing", entity.getCount_existing());
+				staggingArrayStatus.add(status);
+			}
+            if(listStaggingData !=null)
+            	obj.put("dashBoardData", staggingArrayData);
+            	obj.put("dashBoardStatus", staggingArrayStatus);
+		} catch (Exception e) {
+			obj.put(new String("message"), e);
+			logger.error("\n" + "exception in generateReport service" + e.getMessage());
+		}
+		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
+
+	}
 }

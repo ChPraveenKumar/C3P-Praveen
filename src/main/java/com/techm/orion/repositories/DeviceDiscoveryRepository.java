@@ -222,4 +222,16 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	int  getDeviceCount();
 	
 	/**/
+	
+	@Query("SELECT dMgmtIp FROM DeviceDiscoveryEntity where dMgmtIp=:dMgmtIp")
+	String findMgmtId(@Param("dMgmtIp") String dMgmtIp );	
+	
+	@Query("SELECT dHostName FROM DeviceDiscoveryEntity")
+	List<DeviceDiscoveryEntity> findHostName();
+	
+	@Query("SELECT distinct dSeries FROM DeviceDiscoveryEntity")
+	List<DeviceDiscoveryEntity> findFamily();
+	
+	@Query("SELECT data FROM DeviceDiscoveryEntity data where dMgmtIp=:dMgmtIp")
+	List<DeviceDiscoveryEntity> existingDeviceInfo(@Param("dMgmtIp") String dMgmtIp);
 }

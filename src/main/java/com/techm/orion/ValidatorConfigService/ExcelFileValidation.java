@@ -6,11 +6,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.validator.routines.InetAddressValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.poi.EncryptedDocumentException;
@@ -20,13 +24,21 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
 
+import com.google.common.net.InetAddresses;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
+import com.techm.orion.repositories.DiscrepancyMsgRepository;
 
 /*Class to validate file against predefine set of rules like file format, mandatory column name and position, mandatory values*/
+@Service
 public class ExcelFileValidation {
+	
+	@Autowired
+	DiscrepancyMsgRepository msgRepo;
 	private static final Logger logger = LogManager.getLogger(ExcelFileValidation.class);
 
 	/* Method call to validate column of xlsx file */
@@ -809,4 +821,459 @@ public class ExcelFileValidation {
 
 	}
 
+	/*
+	 * Method call to validate number of columns in customer onboarding csv file
+	 */
+	public Map<String, List> validateColumnCSVForCOB(Resource filePath) throws IOException {
+
+		logger.info("\n" + "Inside validateColumnCSVForCOB method");
+		ArrayList<String> list = new ArrayList<String>();
+		Map<String, List> response = new HashMap<String, List>();
+		boolean flag = false;
+		boolean flagError = false;
+		File SAMPLE_XLSX_FILE_PATH = filePath.getFile();
+
+		try {
+			InputStream inputStream = new FileInputStream(SAMPLE_XLSX_FILE_PATH);
+			Reader inputStreamReader = new InputStreamReader(inputStream);
+			CSVReader csvReader = new CSVReaderBuilder(inputStreamReader).build();
+			List<String[]> rows = csvReader.readAll();
+			List<String> header = null;
+			boolean isFlag = true;
+			String status = "";
+
+			int rowSize = rows.size();
+
+			if (rowSize == 2) {
+				for (int i = 0; i < (rows.size() - 1); i++) {
+					header = Arrays.asList(rows.get(i));
+				}
+			} else {
+				for (int i = (rows.size() - 1); i >= 0; i--) {
+					header = Arrays.asList(rows.get(i));
+				}
+			}
+			while (isFlag) {
+				String cell0 = header.get(0).toString();
+				if (cell0.equals("SR#")) {
+					flag = true;
+				} else {
+					list.add(cell0.toString());
+					flagError = true;
+				}
+
+				String cell1 = header.get(1).toString();
+				if (cell1.equals("IPV4 Management Address*")) {
+					flag = true;
+				} else {
+					list.add(cell1.toString());
+					flagError = true;
+				}
+
+				String cell2 = header.get(2).toString();
+				if (cell2.equals("IPV6 Management Address*")) {
+					flag = true;
+				} else {
+					list.add(cell2);
+					flagError = true;
+				}
+
+				String cell3 = header.get(3).toString();
+				if (cell3.equals("Hostname")) {
+					flag = true;
+				} else {
+					list.add(cell3);
+					flagError = true;
+				}
+
+				String cell4 = header.get(4).toString();
+				if (cell4.equals("Device Vendor")) {
+					flag = true;
+				} else {
+					list.add(cell4);
+					flagError = true;
+				}
+
+				String cell5 = header.get(5).toString();
+				if (cell5.equals("Device Family")) {
+					flag = true;
+				} else {
+					list.add(cell5);
+					flagError = true;
+				}
+
+				String cell6 = header.get(6).toString();
+				if (cell6.equals("Device Model")) {
+					flag = true;
+				} else {
+					list.add(cell6);
+					flagError = true;
+				}
+
+				String cell7 = header.get(7).toString();
+				if (cell7.equals("OS")) {
+					flag = true;
+				} else {
+					list.add(cell7);
+					flagError = true;
+				}
+
+				String cell8 = header.get(8).toString();
+				if (cell8.equals("OS Ver")) {
+					flag = true;
+				} else {
+					list.add(cell8);
+					flagError = true;
+				}
+
+				String cell9 = header.get(9).toString();
+				if (cell9.equals("CPU")) {
+					flag = true;
+				} else {
+					list.add(cell9);
+					flagError = true;
+				}
+
+				String cell10 = header.get(10).toString();
+				if (cell10.equals("CPU Version")) {
+					flag = true;
+				} else {
+					list.add(cell10);
+					flagError = true;
+				}
+
+				String cell11 = header.get(11).toString();
+				if (cell11.equals("DRAM Size(Mb)")) {
+					flag = true;
+				} else {
+					list.add(cell11);
+					flagError = true;
+				}
+
+				String cell12 = header.get(12).toString();
+				if (cell12.equals("Flash Size(Mb)")) {
+					flag = true;
+				} else {
+					list.add(cell12);
+					flagError = true;
+				}
+
+				String cell13 = header.get(13).toString();
+				if (cell13.equals("image filename")) {
+					flag = true;
+				} else {
+					list.add(cell13);
+					flagError = true;
+				}
+
+				String cell14 = header.get(14).toString();
+				if (cell14.equals("MAC Address")) {
+					flag = true;
+				} else {
+					list.add(cell14);
+					flagError = true;
+				}
+
+				String cell15 = header.get(15).toString();
+				if (cell15.equals("Serial Number")) {
+					flag = true;
+				} else {
+					list.add(cell15);
+					flagError = true;
+				}
+
+				String cell16 = header.get(16).toString();
+				if (cell16.equals("Customer Name")) {
+					flag = true;
+				} else {
+					list.add(cell16);
+					flag = false;
+				}
+
+				String cell17 = header.get(17).toString();
+				if (cell17.equals("Customer ID*")) {
+					flag = true;
+				} else {
+					list.add(cell17);
+					flagError = true;
+				}
+
+				String cell18 = header.get(18).toString();
+				if (cell18.equals("Site Name*")) {
+					flag = true;
+				} else {
+					list.add(cell18);
+					flagError = true;
+				}
+
+				String cell19 = header.get(19).toString();
+				if (cell19.equals("Site ID*")) {
+					flag = true;
+				} else {
+					list.add(cell19);
+					flagError = true;
+				}
+
+				String cell20 = header.get(20).toString();
+				if (cell20.equals("Site Address")) {
+					flag = true;
+				} else {
+					list.add(cell20);
+					flagError = true;
+				}
+
+				String cell21 = header.get(21).toString();
+				if (cell21.equals("Site Address1")) {
+					flag = true;
+				} else {
+					list.add(cell21);
+					flagError = true;
+				}
+
+				String cell22 = header.get(22).toString();
+				if (cell22.equals("City")) {
+					flag = true;
+				} else {
+					list.add(cell22);
+					flagError = true;
+				}
+
+				String cell23 = header.get(23).toString();
+				if (cell23.equals("Site Contact")) {
+					flag = true;
+				} else {
+					list.add(cell23);
+					flagError = true;
+				}
+
+				String cell24 = header.get(24).toString();
+				if (cell24.equals("Contact Email ID")) {
+					flag = true;
+				} else {
+					list.add(cell24);
+					flagError = true;
+				}
+
+				String cell25 = header.get(25).toString();
+				if (cell25.equals("Contact number")) {
+					flag = true;
+				} else {
+					list.add(cell25);
+					flagError = true;
+				}
+
+				String cell26 = header.get(26).toString();
+				if (cell26.equals("Country")) {
+					flag = true;
+				} else {
+					list.add(cell26);
+					flagError = true;
+				}
+
+				String cell27 = header.get(27).toString();
+				if (cell27.equals("Market")) {
+					flag = true;
+				} else {
+					list.add(cell27);
+					flagError = true;
+				}
+
+				String cell28 = header.get(28).toString();
+				if (cell28.equals("Site Region")) {
+					flag = true;
+				} else {
+					list.add(cell28);
+					flagError = true;
+				}
+
+				String cell29 = header.get(29).toString();
+				if (cell29.equals("Site State")) {
+					flag = true;
+				} else {
+					list.add(cell29);
+					flagError = true;
+				}
+
+				String cell30 = header.get(30).toString();
+				if (cell30.equals("Site Status")) {
+					flag = true;
+				} else {
+					list.add(cell30);
+					flagError = true;
+				}
+
+				String cell31 = header.get(31).toString();
+				if (cell31.equals("Site Subregion")) {
+					flag = true;
+				} else {
+					list.add(cell31);
+					flagError = true;
+					break;
+				}
+				isFlag = false;
+			}
+			if (flag && !flagError) {
+				status = msgRepo.findDiscrepancyMsg("csv format");
+				list.add(status);
+				response.put("Valid", list);
+			} else if(flagError ==true && list.get(0) !=null && list.contains("")) {
+				status = msgRepo.findDiscrepancyMsg("mandatory csv col");
+				List<String> l = new ArrayList<String>();
+				l.add(status);
+				response.put("mandatory csv col",l);
+			}else {
+				status = msgRepo.findDiscrepancyMsg("bad column");
+				response.put(status, list);
+			}
+		} catch (Exception e) {
+			logger.error("\n" + "exception in validateColumnCSVForCOB method" + e.getMessage());
+		}
+		return response;
+	}
+
+	/*
+	 * Method call to validate number of request of CustomerOnBoarding in csv
+	 * file
+	 */
+	public Map<String, String> validateColumnValuesCSVForCOB(Resource filePath) throws IOException {
+
+		logger.info("\n" + "Inside validateColumnValuesCSVForCOB method");
+		Map<String, String> response = new HashMap<String, String>();
+		StringBuilder strBbuilder = new StringBuilder();
+		boolean isFlag = false;
+		boolean isFlagError = false;
+		File SAMPLE_XLSX_FILE_PATH = filePath.getFile();
+		try {
+			InputStream inputStream = new FileInputStream(SAMPLE_XLSX_FILE_PATH);
+			Reader inputStreamReader = new InputStreamReader(inputStream);
+
+			// Get an InetAddressValidator
+			InetAddressValidator validator = InetAddressValidator.getInstance();
+			CSVReader csvReader = new CSVReaderBuilder(inputStreamReader).build();
+			List<String[]> rows = csvReader.readAll();
+			List<String> rowValue = null;
+			String status = "";
+
+			for (int i = 1; i < (rows.size()); i++) {
+				rowValue = Arrays.asList(rows.get(i));
+
+				String cell0 = rowValue.get(0).toString();
+				if ((!cell0.equals("")))
+					isFlag = true;
+				else
+					isFlagError = true;
+
+				String cell1 = rowValue.get(1).toString();
+				if ((!cell1.equals("") && validator.isValidInet4Address(cell1))) 
+					isFlag = true;
+				else 
+					isFlagError = true;
+
+				String cell2 = rowValue.get(2).toString();
+				if ((!cell2.equals("") && InetAddresses.isInetAddress(cell2))) 
+					isFlag = true;
+				else 
+					isFlagError = true;
+
+				String cell3 = rowValue.get(3).toString();
+				if (!(cell3.equals(""))) 
+					isFlag = true;
+			    else 
+					isFlagError = true;
+				
+				String cell4 = rowValue.get(4).toString();
+				if (!(cell4.equals(""))) 
+					isFlag = true;
+				else 
+					isFlagError = true;
+				
+				String cell5 = rowValue.get(5).toString();
+				if (!(cell5.equals(""))) 
+					isFlag = true;
+			    else 
+					isFlagError = true;
+				 	
+				String cell6 = rowValue.get(6).toString();
+				if (!(cell6.equals(""))) 
+					isFlag = true;
+			    else 
+					isFlagError = true;
+				
+				String cell7 = rowValue.get(7).toString();
+				if (!(cell7.equals(""))) 
+					isFlag = true;
+				else 
+					isFlagError = true;
+
+				String cell8 = rowValue.get(8).toString();
+				if (!(cell8.equals(""))) 
+					isFlag = true;
+				else 
+					isFlagError = true;
+
+				String cell16 = rowValue.get(16).toString();
+				if (!(cell16.equals(""))) 
+					isFlag = true;
+			    else 
+					isFlagError = true;
+					
+				String cell17 = rowValue.get(17).toString();
+				if (!(cell17.equals(""))) 
+					isFlag = true;
+				else 
+					isFlagError = true;
+				
+				String cell18 = rowValue.get(18).toString();
+				if (!(cell18.equals(""))) 
+					isFlag = true;
+
+				else 
+					isFlagError = true;
+				
+				String cell19 = rowValue.get(19).toString();
+				if (!(cell19.equals(""))) 
+					isFlag = true;
+				else 
+					isFlagError = true;
+				
+				if (isFlagError) {
+					strBbuilder.append(i).append(",").toString();
+					isFlagError = false;
+				}
+			}
+
+			if (strBbuilder.length() > 0){
+				strBbuilder.deleteCharAt(strBbuilder.length() -1);
+				isFlagError = true;
+			}
+
+			if (isFlag == true && rows.size() == 2 && isFlagError == false) {
+				status = msgRepo.findDiscrepancyMsg("valid single req");
+				response.put("Valid Single Request", status);
+			} else if (isFlagError == true && rows.size() == 2)
+			{
+				String msg = msgRepo.findDiscrepancyMsg("Mandatory Col");
+				strBbuilder.insert(0, msg);
+				response.put("Fields are missing", strBbuilder.toString());
+			}
+			else if (isFlag == true && rows.size() > 2 && isFlagError == false) {
+				status = msgRepo.findDiscrepancyMsg("valid multiple req");
+				response.put("Valid Multiple Request", status);
+			} else if (isFlagError == true && rows.size() > 2)
+			{
+				String msg = msgRepo.findDiscrepancyMsg("Mandatory Col");
+				strBbuilder.insert(0, msg);
+				response.put("Fields are missing", strBbuilder.toString());
+			}
+			else if (rows.size() ==1)
+			{
+				status = msgRepo.findDiscrepancyMsg("no records");
+				response.put("No records found", status);
+			}
+
+		} catch (Exception e) {
+			logger.error("\n" + "exception in validateColumnValuesCSVForCOB method" + e.getMessage());
+		}
+		return response;
+	}
 }
