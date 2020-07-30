@@ -241,6 +241,7 @@ public class RequestCreatorController {
 	@RequestMapping(value = "/verifyConfiguration", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public JSONObject generateCreateRequestDetails(@RequestBody String configRequest) {
+		logger.info("generateCreateRequestDetails - configRequest-  "+configRequest);
 		JSONObject obj = new JSONObject();
 		String data = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
@@ -372,7 +373,7 @@ public class RequestCreatorController {
 				} else {
 					cammandsBySeriesId = dao.getCammandsBySeriesId(seriesId, createConfigRequest.getTemplateID());
 				}
-
+				logger.info("generateCreateRequestDetails - cammandsBySeriesId-  "+cammandsBySeriesId);
 				List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
 				List<CommandPojo> cammandByTemplate = new ArrayList<>();
 				for (String feature : featureList) {
@@ -843,7 +844,7 @@ public class RequestCreatorController {
 					templateName = templateName + "_V1.0";
 					createConfigRequest.setTemplateID(templateName);
 				}
-
+				logger.info("generateCreateRequestDetails - getTemplateID-  "+createConfigRequest.getTemplateID());
 				// Create new Template
 				invokeFtl.createFinalTemplate(cammandsBySeriesId, cammandByTemplate, masterAttribute, templateAttribute,
 						createConfigRequest.getTemplateID());
@@ -852,8 +853,9 @@ public class RequestCreatorController {
 				obj.put(new String("output"), new String(data));
 			}
 
-		} catch (Exception e) {
-			logger.error(e);
+		} catch (Exception exe) {
+			logger.error("Exception occurred in generateCreateRequestDetails method - "+exe.getMessage());
+			exe.printStackTrace();
 		}
 		return obj;
 

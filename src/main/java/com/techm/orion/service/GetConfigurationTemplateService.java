@@ -13,6 +13,7 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.TSALabels;
 
 public class GetConfigurationTemplateService {
 
@@ -39,11 +40,8 @@ public class GetConfigurationTemplateService {
 				configRequest.setTemplateID(templateID);
 				// String responseHeader= invokeFtl.generateheader(configRequest);
 
-				// open folder for template and read all available templatenames
-				GetConfigurationTemplateService.loadProperties();
-				String templateFolderPath = GetConfigurationTemplateService.TSA_PROPERTIES
-						.getProperty("newtemplateCreationPath");
-				final File folder = new File(templateFolderPath);
+				// open folder for template and read all available templatenames				
+				final File folder = new File(getTemplateCreationPathForFolder());
 				listOfTemplatesAvailable = dcmConfigService.listFilesForFolder(folder);
 				if (listOfTemplatesAvailable.size() > 0) {
 					String tempString = null;
@@ -160,19 +158,6 @@ public class GetConfigurationTemplateService {
 
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
 	/* Dhanshri Mane */
 	// method overloading ,logic same added for UIRevamp
 	public String generateTemplate(RequestInfoPojo configRequest) {
@@ -193,12 +178,7 @@ public class GetConfigurationTemplateService {
 						configRequest.getOsVersion());
 				configRequest.setTemplateID(templateID);
 				// String responseHeader= invokeFtl.generateheader(configRequest);
-
-				// open folder for template and read all available templatenames
-				GetConfigurationTemplateService.loadProperties();
-				String templateFolderPath = GetConfigurationTemplateService.TSA_PROPERTIES
-						.getProperty("newtemplateCreationPath");
-				final File folder = new File(templateFolderPath);
+				final File folder = new File(getTemplateCreationPathForFolder());
 				listOfTemplatesAvailable = dcmConfigService.listFilesForFolder(folder);
 				if (listOfTemplatesAvailable.size() > 0) {
 					String tempString = null;
@@ -255,5 +235,13 @@ public class GetConfigurationTemplateService {
 		}
 		return response;
 
+	}
+	
+	private String getTemplateCreationPathForFolder() {
+		String path = TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(); 
+		if (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/'){
+			path = path.substring(0, path.length()-1);
+	    }
+		 return path;
 	}
 }

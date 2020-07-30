@@ -85,7 +85,7 @@ public class DynamicDeviceTestController implements Observer {
 		//String siteId= json.get("siteId").toString();
 		//String region=json.get("region").toString();
 		
-		String[] cmd = {"python", TSALabels.PYTHON_SCRIPT_PATH.getValue()+"\\nativeTraceroute.py",mgmtIp};
+		String[] cmd = {"python", TSALabels.PYTHON_SCRIPT_PATH.getValue()+"nativeTraceroute.py",mgmtIp};
 		Process p;
 		try {
 			sb=new 
@@ -96,22 +96,17 @@ public class DynamicDeviceTestController implements Observer {
 
 			BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			String line;
+			logger.info("bre.readLine() - " + bre.readLine());
 			if (bre.readLine() == null) {
 
 				while ((line = in.readLine()) != null) {
 					sb.append(line+"\n");
 		        }
 				
-			} else {
-				logger.info("" + bre.readLine());
+			} else {			
 	            sb.append("Error");
-				if (bre.readLine().contains("File exists") || bre.readLine().contains("File exist")) {
-					//result = true;
-					
-				} else {
-					//result = false;
-				}
 			}
+			logger.info("traceroute sb - " + sb);
 			bre.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

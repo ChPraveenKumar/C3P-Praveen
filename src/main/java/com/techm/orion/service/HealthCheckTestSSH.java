@@ -194,7 +194,7 @@ public class HealthCheckTestSSH {
 		String responseDownloadPath = TelnetCommunicationSSH.TSA_PROPERTIES.getProperty("responseDownloadPath");
 
 		BufferedReader br = new BufferedReader(
-				new FileReader(responseDownloadPath + "//" + "HealthcheckTestCommand.txt"));
+				new FileReader(responseDownloadPath + "HealthcheckTestCommand.txt"));
 
 		// BufferedReader br = new BufferedReader(new FileReader("D:/C3P/New
 		// folder/HealthcheckTestCommand.txt"));
@@ -240,7 +240,7 @@ public class HealthCheckTestSSH {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				logger.info(s);
-				String filepath = NetworkTestSSH.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//" + requestID
+				String filepath = NetworkTestSSH.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestID
 						+ "V" + version + "_HealthCheck.txt";
 				File file = new File(filepath);
 

@@ -1,9 +1,5 @@
 package com.techm.orion.springboot;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -29,9 +25,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class WebApplication extends SpringBootServletInitializer implements CommandLineRunner {
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-
 	@Override
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 		return application.sources(WebApplication.class);
@@ -54,33 +47,6 @@ public class WebApplication extends SpringBootServletInitializer implements Comm
 	public void run(String... arg0) throws Exception {
 		// TODO Auto-generated method stub
 
-	}
-
-	/*
-	 * @Resource StorageService storageService;
-	 * 
-	 * @Override public void run(String... args) throws Exception {
-	 * 
-	 * //storageService.deleteAll();
-	 * 
-	 * // storageService.init();
-	 * 
-	 * 
-	 * 
-	 * }
-	 */
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 
 }

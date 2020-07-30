@@ -58,7 +58,7 @@ public class PingTest {
 		byte[] tmp = new byte[SIZE];
 		boolean flag = true;
 		PingTest.loadProperties();
-		String filepath = PingTest.PROPERTIES.getProperty("responseDownloadPath") + "//" + routername + "_" + region
+		String filepath = PingTest.PROPERTIES.getProperty("responseDownloadPath") + routername + "_" + region
 				+ "_Reachability.txt";
 		File file = new File(filepath);
 
@@ -116,7 +116,7 @@ public class PingTest {
 		try {
 			PingTest.loadProperties();
 
-			String filepath = PingTest.PROPERTIES.getProperty("responseDownloadPath") + "//" + routername + "_" + region
+			String filepath = PingTest.PROPERTIES.getProperty("responseDownloadPath") + routername + "_" + region
 					+ "_Reachability.txt";
 			result = new String(Files.readAllBytes(Paths.get(filepath)));
 		} catch (IOException e) {

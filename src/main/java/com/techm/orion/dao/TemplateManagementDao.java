@@ -2905,11 +2905,11 @@ public class TemplateManagementDao {
 			 * If Template id is null get all commmands Related series into
 			 * c3p_template_master_command_list table
 			 */
-			if (templateId == null) {
+			/*if (templateId == null) {
 				query1 = "select  distinct(c3p_template_master_command_list.command_value),c3p_template_master_command_list.command_id,c3p_template_transaction_command_list.command_position  from c3p_template_master_command_list ,c3p_template_transaction_command_list where  command_type=? and c3p_template_master_command_list.command_id =c3p_template_transaction_command_list.command_id and c3p_template_master_command_list.command_sequence_id =c3p_template_transaction_command_list.command_sequence_id order by c3p_template_transaction_command_list.command_position asc;";
 				pst = connection.prepareStatement(query1);
 				pst.setString(1, "Generic_" + seriesId);
-			} else {
+			} else {*/
 				/*
 				 * If Template id is not null get all commmands Related series into
 				 * c3p_template_master_command_list,c3p_template_transaction_command_list table
@@ -2919,11 +2919,11 @@ public class TemplateManagementDao {
 				pst.setString(1, "Generic_" + seriesId);
 				pst.setString(2, templateId);
 
-			}
+//			}
 
 			res = pst.executeQuery();
 			CommandPojo cammand = null;
-			if (res.wasNull() == true || !res.isBeforeFirst()) {
+/*			if (res.wasNull() == true || !res.isBeforeFirst()) {
 				PreparedStatement pst1 = null;
 				ResultSet res1 = null;
 				try {
@@ -2955,8 +2955,14 @@ public class TemplateManagementDao {
 					cammand.setPosition(res.getInt("c3p_template_transaction_command_list.command_position"));
 					cammandPojo.add(cammand);
 				}
+			}*/
+			while (res.next()) {
+				cammand = new CommandPojo();
+				cammand.setId(res.getString("c3p_template_master_command_list.command_id"));
+				cammand.setCommandValue(res.getString("c3p_template_master_command_list.command_value"));
+				cammand.setPosition(res.getInt("c3p_template_transaction_command_list.command_position"));
+				cammandPojo.add(cammand);
 			}
-
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -2988,7 +2994,7 @@ public class TemplateManagementDao {
 				pst.setString(2, templateId);
 				res = pst.executeQuery();
 				CommandPojo cammand = null;
-				if (res.wasNull() == true || !res.isBeforeFirst()) {
+				/*if (res.wasNull() == true || !res.isBeforeFirst()) {
 					PreparedStatement pst1 = null;
 					ResultSet res1 = null;
 					try {
@@ -3020,6 +3026,15 @@ public class TemplateManagementDao {
 						cammand.setPosition(res.getInt("c3p_template_transaction_command_list.command_position"));
 						cammandPojo.add(cammand);
 					}
+				}*/
+				
+				while (res.next()) {
+					cammand = new CommandPojo();
+					cammand.setId(res.getString("c3p_template_master_command_list.command_id"));
+					cammand.setCommandValue(res.getString("c3p_template_master_command_list.command_value"));
+					cammand.setNo_command_value(res.getString("c3p_template_master_command_list.no_form_command"));
+					cammand.setPosition(res.getInt("c3p_template_transaction_command_list.command_position"));
+					cammandPojo.add(cammand);
 				}
 			}
 

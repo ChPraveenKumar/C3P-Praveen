@@ -97,7 +97,7 @@ public class RegexTestHealthCheck {
 		String responseDownloadPath = RegexTestHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath");
 
 		BufferedReader br = new BufferedReader(
-				new FileReader(responseDownloadPath + "//" + requestIdForConfig + "V" + version + "_HealthCheck.txt"));
+				new FileReader(responseDownloadPath + requestIdForConfig + "V" + version + "_HealthCheck.txt"));
 		try {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();

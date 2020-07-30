@@ -59,6 +59,8 @@ public class ConfigurationManagement {
 	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public JSONObject createConfigurationDcm(@RequestBody String configRequest) {
+		logger.info("createConfigurationDcm - configRequest - "+configRequest);
+		long startTime = System.currentTimeMillis();
 		// DcmConfigService dcmConfigService=new DcmConfigService();
 		JSONObject obj = new JSONObject();
 		String requestType = null;
@@ -243,7 +245,7 @@ public class ConfigurationManagement {
 			 * configReqToSendToC3pCode.setLastUpgradedOn(json.get("lastUpgradedOn").
 			 * toString()); }
 			 */
-
+			logger.info("createConfigurationDcm - configReqToSendToC3pCode -NetworkType- "+configReqToSendToC3pCode.getNetworkType());
 			Map<String, String> result = null;
 			if (configReqToSendToC3pCode.getRequestType().contains("Config")
 					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("PNF")) {
@@ -748,6 +750,7 @@ public class ConfigurationManagement {
 						}
 					}
 				}
+				logger.info("createConfigurationDcm - before calling updateAlldetails - "+createConfigList);
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList);
@@ -1267,10 +1270,10 @@ public class ConfigurationManagement {
 			obj.put(new String("requestId"), new String(requestIdForConfig));
 			obj.put(new String("version"), configReqToSendToC3pCode.getRequestVersion());
 
-		} catch (Exception e) {
-			logger.error(e);
+		} catch (Exception exe) {
+			logger.error("Exception occrued in createConfigurationDcm" + exe.getMessage());
 		}
-
+		logger.info("Total time to execute the createConfigurationDcm method is mill secs - "+(System.currentTimeMillis() - startTime));
 		return obj;
 
 	}

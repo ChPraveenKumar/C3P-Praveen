@@ -190,7 +190,7 @@ public class NetworkTestSSH {
 			if (!(s.equals(""))) {
 				logger.info(s);
 
-				String filepath = NetworkTestSSH.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//" + requestID
+				String filepath = NetworkTestSSH.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestID
 						+ "V" + version + "_networkTest.txt";
 				File file = new File(filepath);
 
@@ -226,7 +226,7 @@ public class NetworkTestSSH {
 	public String validateNetworkTest(CreateConfigRequestDCM configRequest) throws Exception {
 
 		String content = "";
-		String path = NetworkTestSSH.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//"
+		String path = NetworkTestSSH.TSA_PROPERTIES.getProperty("responseDownloadPath")
 				+ configRequest.getRequestId() + "V" + configRequest.getRequest_version() + "_networkTest.txt";
 
 		File file = new File(path);

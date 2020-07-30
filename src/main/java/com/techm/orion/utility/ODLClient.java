@@ -238,10 +238,10 @@ public class ODLClient {
 
 			String filepath = null;
 			if (step.equalsIgnoreCase("previous")) {
-				filepath = ODLClient.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//" + requestID + "V"
+				filepath = ODLClient.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestID + "V"
 						+ version + "_PreviousConfig.txt";
 			} else {
-				filepath = ODLClient.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//" + requestID + "V"
+				filepath = ODLClient.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestID + "V"
 						+ version + "_CurrentVersionConfig.txt";
 			}
 

@@ -3,8 +3,6 @@ package com.techm.orion.service;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,32 +17,25 @@ import com.techm.orion.pojo.PreValidateTest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.CertificationTestResultRepository;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
 @Controller
 public class PrevalidationTestServiceImpl {
-	private static final Logger logger = LogManager.getLogger(PrevalidationTestServiceImpl.class);
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-	/* public static void main(String[] args) throws Exception */
+	private static final Logger logger = LogManager.getLogger(PrevalidationTestServiceImpl.class);	
 
 	@Autowired
 	public CertificationTestResultRepository certificationRepo;
 
-	@SuppressWarnings("null")
 	public boolean PreValidation(CreateConfigRequest configRequest, String version, String mountStatus)
 			throws Exception {
-		// TODO Auto-generated method stub
-
-		InvokeFtl invokeFtl = new InvokeFtl();
-		PrevalidationTestServiceImpl.loadProperties();
+				InvokeFtl invokeFtl = new InvokeFtl();
 		String[] ar = null;
 		String[] data = null;
 		String[] data1 = null;
 		String[] comp = new String[10];
 		String str1 = "";
-		String exp = PrevalidationTestServiceImpl.TSA_PROPERTIES.getProperty("RegexFilterForPreValidation");
+		String exp = TSALabels.REGEX_FILTER_PRE_VALIDATION.getValue();
 		String store = "";
 		boolean value = false;
 		PreValidateTest preValidateTest = new PreValidateTest();
@@ -73,7 +64,6 @@ public class PrevalidationTestServiceImpl {
 		int vendorflag = 2;
 		int versionflag = 2;
 		int modelflag = 2;
-		int mountFlag = 2;
 		/*
 		 * for(int j=0;j<data1.length;j++) {
 		 */
@@ -120,7 +110,6 @@ public class PrevalidationTestServiceImpl {
 		if (mountStatus != null) {
 			if (mountStatus.equalsIgnoreCase("Pass")) {
 				preValidateTest.setDeviceMountingStatus("Pass");
-				mountFlag = 1;
 			}
 		}
 		if (mountStatus != null) {
@@ -130,43 +119,27 @@ public class PrevalidationTestServiceImpl {
 					&& preValidateTest.getVendorTestStatus().equalsIgnoreCase("Pass")
 					&& mountStatus.equalsIgnoreCase("Pass")) {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, mountStatus);
-				try {
-					String responseDownloadPath = PrevalidationTestServiceImpl.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
-					TextReport.writeFile(responseDownloadPath, configRequest.getRequestId() + "V"
-							+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
-					value = true;
-					// db call for success prevalidation
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), "Application_test", "1",
-							"In Progress");
-					requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
-
-				} catch (IOException exe) {
-
-				}
-
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+						+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
+				value = true;
+				// db call for success prevalidation
+				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
+						Double.toString(configRequest.getRequest_version()), "Application_test", "1",
+						"In Progress");
+				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 
 			else {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, mountStatus);
-				try {
-					String responseDownloadPath = PrevalidationTestServiceImpl.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
-					TextReport.writeFile(responseDownloadPath, configRequest.getRequestId() + "V"
-							+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
-					// db call for failue
-					value = false;
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), "Application_test", "2", "Failure");
-					requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
-
-				} catch (IOException exe) {
-
-				}
-
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+						+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
+				// db call for failue
+				value = false;
+				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
+						Double.toString(configRequest.getRequest_version()), "Application_test", "2", "Failure");
+				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 
 		} else {
@@ -174,54 +147,37 @@ public class PrevalidationTestServiceImpl {
 					&& preValidateTest.getOsVersionTestStatus().equalsIgnoreCase("Pass")
 					&& preValidateTest.getVendorTestStatus().equalsIgnoreCase("Pass")) {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, null);
-				try {
-					String responseDownloadPath = PrevalidationTestServiceImpl.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
-					TextReport.writeFile(responseDownloadPath, configRequest.getRequestId() + "V"
-							+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
-					value = true;
-					// db call for success prevalidation
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), "Application_test", "1",
-							"In Progress");
-					requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
-
-				} catch (IOException exe) {
-
-				}
-
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+						+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
+				value = true;
+				// db call for success prevalidation
+				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
+						Double.toString(configRequest.getRequest_version()), "Application_test", "1",
+						"In Progress");
+				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 
 			else {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, null);
-				try {
-					String responseDownloadPath = PrevalidationTestServiceImpl.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
-					TextReport.writeFile(responseDownloadPath, configRequest.getRequestId() + "V"
-							+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
-					// db call for failue
-					value = false;
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), "Application_test", "2", "Failure");
-					requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
-
-				} catch (IOException exe) {
-
-				}
-
+			
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+						+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
+				// db call for failue
+				value = false;
+				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
+						Double.toString(configRequest.getRequest_version()), "Application_test", "2", "Failure");
+				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 		}
 		return value;
 	}
 
-	private static String readFile(String requestIdForConfig, String version) throws IOException {
-
-		String responseDownloadPath = PrevalidationTestServiceImpl.TSA_PROPERTIES.getProperty("responseDownloadPath");
+	private static String readFile(String requestIdForConfig, String version) throws IOException {		
 
 		BufferedReader br = new BufferedReader(
-				new FileReader(responseDownloadPath + "//" + requestIdForConfig + "V" + version + "_VersionInfo.txt"));
+				new FileReader(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_VersionInfo.txt"));
 		try {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();
@@ -237,32 +193,15 @@ public class PrevalidationTestServiceImpl {
 		}
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
 	/* method overloading for UIRevamp */
-	@SuppressWarnings("null")
 	public boolean PreValidation(RequestInfoPojo configRequest, String version, String mountStatus) throws Exception {
-		// TODO Auto-generated method stub
-
 		InvokeFtl invokeFtl = new InvokeFtl();
-		PrevalidationTestServiceImpl.loadProperties();
 		String[] ar = null;
 		String[] data = null;
 		String[] data1 = null;
 		String[] comp = new String[10];
 		String str1 = "";
-		String exp = PrevalidationTestServiceImpl.TSA_PROPERTIES.getProperty("RegexFilterForPreValidation");
+		String exp = TSALabels.REGEX_FILTER_PRE_VALIDATION.getValue();
 		String store = "";
 		boolean value = false;
 		PreValidateTest preValidateTest = new PreValidateTest();
@@ -291,7 +230,6 @@ public class PrevalidationTestServiceImpl {
 		int vendorflag = 2;
 		int versionflag = 2;
 		int modelflag = 2;
-		int mountFlag = 2;
 		/*
 		 * for(int j=0;j<data1.length;j++) {
 		 */
@@ -341,7 +279,6 @@ public class PrevalidationTestServiceImpl {
 		if (mountStatus != null) {
 			if (mountStatus.equalsIgnoreCase("Pass")) {
 				preValidateTest.setDeviceMountingStatus("Pass");
-				mountFlag = 1;
 			}
 		}
 		if (mountStatus != null) {
@@ -351,42 +288,26 @@ public class PrevalidationTestServiceImpl {
 					&& preValidateTest.getVendorTestStatus().equalsIgnoreCase("Pass")
 					&& mountStatus.equalsIgnoreCase("Pass")) {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, mountStatus);
-				try {
-					String responseDownloadPath = PrevalidationTestServiceImpl.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
-					TextReport.writeFile(responseDownloadPath, configRequest.getAlphanumericReqId() + "V"
-							+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
-					value = true;
-					// db call for success prevalidation
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
-							Double.toString(configRequest.getRequestVersion()), "Application_test", "1", "In Progress");
-					requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
-							Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
-
-				} catch (IOException exe) {
-
-				}
-
+				
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
+						+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
+				value = true;
+				// db call for success prevalidation
+				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
+						Double.toString(configRequest.getRequestVersion()), "Application_test", "1", "In Progress");
+				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 			}
-
 			else {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, mountStatus);
-				try {
-					String responseDownloadPath = PrevalidationTestServiceImpl.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
-					TextReport.writeFile(responseDownloadPath, configRequest.getAlphanumericReqId() + "V"
-							+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
-					// db call for failue
-					value = false;
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
-							Double.toString(configRequest.getRequestVersion()), "Application_test", "2", "Failure");
-					requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
-							Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
-
-				} catch (IOException exe) {
-
-				}
-
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
+						+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
+				// db call for failue
+				value = false;
+				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
+						Double.toString(configRequest.getRequestVersion()), "Application_test", "2", "Failure");
+				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 			}
 
 		} else {
@@ -394,41 +315,27 @@ public class PrevalidationTestServiceImpl {
 					&& preValidateTest.getOsVersionTestStatus().equalsIgnoreCase("Pass")
 					&& preValidateTest.getVendorTestStatus().equalsIgnoreCase("Pass")) {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, null);
-				try {
-					String responseDownloadPath = PrevalidationTestServiceImpl.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
-					TextReport.writeFile(responseDownloadPath, configRequest.getAlphanumericReqId() + "V"
-							+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
-					value = true;
-					// db call for success prevalidation
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
-							Double.toString(configRequest.getRequestVersion()), "Application_test", "1", "In Progress");
-					requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
-							Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
-
-				} catch (IOException exe) {
-
-				}
-
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
+						+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
+				value = true;
+				// db call for success prevalidation
+				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
+						Double.toString(configRequest.getRequestVersion()), "Application_test", "1", "In Progress");
+				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 			}
 
 			else {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, null);
-				try {
-					String responseDownloadPath = PrevalidationTestServiceImpl.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
-					TextReport.writeFile(responseDownloadPath, configRequest.getAlphanumericReqId() + "V"
-							+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
-					// db call for failue
-					value = false;
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
-							Double.toString(configRequest.getRequestVersion()), "Application_test", "2", "Failure");
-					requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
-							Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
-
-				} catch (IOException exe) {
-
-				}
+				
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
+						+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
+				// db call for failue
+				value = false;
+				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
+						Double.toString(configRequest.getRequestVersion()), "Application_test", "2", "Failure");
+				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 
 			}
 		}

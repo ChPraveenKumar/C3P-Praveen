@@ -1077,7 +1077,7 @@ public class VnfConfigService implements Observer {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				String filepath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//" + requestID
+				String filepath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestID
 						+ "V" + version + "_VersionInfo.txt";
 				File file = new File(filepath);
 

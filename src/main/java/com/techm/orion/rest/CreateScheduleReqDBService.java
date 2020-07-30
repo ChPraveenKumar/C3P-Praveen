@@ -114,19 +114,18 @@ public class CreateScheduleReqDBService {
 			PreparedStatement preparedStmt = null;
 
 			try {
-				String query1 = "select count(history_processId) count from camundaHistory where history_versionId = '"
+				String query1 = "select count(history_processId) count from camundahistory where history_versionId = '"
 						+ version + "' and history_requestId like '" + businessKey + "'";
 
 				CreateScheduleReqPojo scheduleReqObj = null;
 				String dbProcessID = null;
 
 				try {
-
+					scheduleReqObj = new CreateScheduleReqPojo();
 					statement = connection.createStatement();
 					rs = statement.executeQuery(query1);
 
-					while (rs.next()) {
-						scheduleReqObj = new CreateScheduleReqPojo();
+					while (rs.next()) {					
 						scheduleReqObj.setHistory_processId(rs.getString("count"));
 					}
 
@@ -134,9 +133,9 @@ public class CreateScheduleReqDBService {
 				} catch (SQLException e) {
 					logger.error(e);
 				}
-
-				if (dbProcessID.equalsIgnoreCase("0")) {
-					query = "INSERT INTO camundaHistory(history_processId,history_requestId,history_versionId,history_user) VALUES(?,?,?,?)";
+				logger.info("dbProcessID - "+dbProcessID);
+				if ("0".equals(dbProcessID)) {
+					query = "INSERT INTO camundahistory(history_processId,history_requestId,history_versionId,history_user) VALUES(?,?,?,?)";
 
 					preparedStmt = connection.prepareStatement(query);
 					preparedStmt.setString(1, processId);
@@ -146,7 +145,7 @@ public class CreateScheduleReqDBService {
 					preparedStmt.executeUpdate();
 
 				} else {
-					query = "update camundaHistory set history_processId = ?,history_user = ? where history_requestId = ? and history_versionId= ?";
+					query = "update camundahistory set history_processId = ?,history_user = ? where history_requestId = ? and history_versionId= ?";
 
 					preparedStmt = connection.prepareStatement(query);
 					preparedStmt.setString(1, processId);
@@ -156,7 +155,7 @@ public class CreateScheduleReqDBService {
 					preparedStmt.executeUpdate();
 
 					/*
-					 * query = "delete from camundaHistory where history_processId = ?";
+					 * query = "delete from camundahistory where history_processId = ?";
 					 * preparedStmt = connection.prepareStatement(query); preparedStmt.setString(1,
 					 * processId); preparedStmt.execute("SET FOREIGN_KEY_CHECKS=0");
 					 * preparedStmt.executeUpdate();
@@ -171,6 +170,7 @@ public class CreateScheduleReqDBService {
 			}
 		} catch (Exception ex) {
 			logger.error(ex);
+			ex.printStackTrace();
 		}
 
 	}
@@ -197,7 +197,7 @@ public class CreateScheduleReqDBService {
 
 				statement = connection.createStatement();
 
-				query = "update camundaHistory set history_userTaskId = ? where history_processId = ?";
+				query = "update camundahistory set history_userTaskId = ? where history_processId = ?";
 
 				preparedStmt = connection.prepareStatement(query);
 				preparedStmt.setString(1, taskId);

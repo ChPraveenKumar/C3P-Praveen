@@ -192,7 +192,7 @@ public class VNFHelper {
 
 			}
 			VNFHelper.loadProperties();
-			String filepath = VNFHelper.PROPERTIES.getProperty("responseDownloadPath") + "//" + routername + "_"
+			String filepath = VNFHelper.PROPERTIES.getProperty("responseDownloadPath") + routername + "_"
 					+ region + "_Reachability.txt";
 			File file = new File(filepath);
 

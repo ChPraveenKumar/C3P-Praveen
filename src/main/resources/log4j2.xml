@@ -12,8 +12,8 @@
 		</Console>
 		<!-- Rolling File Appender -->
 		<RollingFile name="FileAppender"
-			fileName="logs/c3p.log"
-			filePattern="logs/c3p-%d{yyyy-MM-dd}-%i.log">
+			fileName="/opt/C3PConfig/C3PLogs/c3p.log"
+			filePattern="/opt/C3PConfig/C3PLogs/c3p-%d{yyyy-MM-dd}-%i.log">
 			<PatternLayout>
 				<Pattern>${LOG_PATTERN}</Pattern>
 			</PatternLayout>

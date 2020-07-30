@@ -16,38 +16,27 @@ import org.glassfish.jersey.client.ClientConfig;
 import org.json.JSONObject;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techm.orion.utility.TSALabels;
 
-public class GetAllResponse {
-	// private static final String webServiceURI = "http://localhost:8080";
+public class GetAllResponse {	
 	private static final Logger logger = LogManager.getLogger(GetAllResponse.class);
 
-	public static void main(String[] args) throws IOException {
-		// GetAllResponse gar =new GetAllResponse();
-		// gar.jsonResponseString("bdfa962c-cc43-11e6-9162-1866da14b61f");
-	}
-
-	public JSONObject jsonResponseString(String requestId) throws IOException {
-		GetAllDetailsService.loadProperties();
-		String webServiceURI = GetAllDetailsService.TSA_PROPERTIES.getProperty("webServiceURI");
-		String getResponsesPath = GetAllDetailsService.TSA_PROPERTIES.getProperty("getResponsesPath");
-		String responseDownloadPath = GetAllDetailsService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filename = "Response_" + requestId;
-
+	public JSONObject jsonResponseString(String requestId) throws IOException {		
 		// WebService Code
 		ClientConfig clientConfig = new ClientConfig();
 		Client client = ClientBuilder.newClient(clientConfig);
-		URI serviceURI = UriBuilder.fromUri(webServiceURI).build();
+		URI serviceURI = UriBuilder.fromUri(TSALabels.WEB_SERVICE_URI.getValue()).build();
 		WebTarget webTarget = client.target(serviceURI);
-		JSONObject jsonObject = new JSONObject(webTarget.path(getResponsesPath + requestId).request()
+		JSONObject jsonObject = new JSONObject(webTarget.path(TSALabels.GET_RESPONSES_PATH.getValue() + requestId).request()
 				.accept(MediaType.APPLICATION_JSON).get(String.class));
 
 		// WebService Code
 
 		// Format Service Response
 		ObjectMapper mapper = new ObjectMapper();
-		Object json = mapper.readValue(webTarget.path(getResponsesPath + requestId).request()
+		Object json = mapper.readValue(webTarget.path(TSALabels.GET_RESPONSES_PATH.getValue() + requestId).request()
 				.accept(MediaType.APPLICATION_JSON).get(String.class), Object.class);
-		String indented = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+		mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
 		// Format Service Response
 
 		// TextReport.writeFile(responseDownloadPath,filename,indented);

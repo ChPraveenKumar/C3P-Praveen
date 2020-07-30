@@ -1,28 +1,27 @@
 package com.techm.orion.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.ReoprtFlags;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
 public class FinalReportTestSSH {
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
+	private static final Logger logger = LogManager.getLogger(FinalReportTestSSH.class);
 
 	@SuppressWarnings("unused")
 	public void FlagCheckTest(CreateConfigRequestDCM configRequest) throws IOException {
 		try {
-
 			RequestInfoDao requestInfoDao = new RequestInfoDao();
 			Map<String, String> hmapResult = new HashMap<String, String>();
 			CreateConfigRequest createConfigRequest = new CreateConfigRequest();
@@ -62,18 +61,11 @@ public class FinalReportTestSSH {
 						Double.toString(configRequest.getRequest_version()), "customer_report", "1", "Success");
 				// customer report for success
 				String response = invokeFtl.generateCustomerReportSuccess(createConfigRequest);
-				try {
-					String responseDownloadPath = TelnetCommunicationSSH.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
-					TextReport.writeFile(
-							responseDownloadPath, configRequest.getRequestId() + "V"
-									+ Double.toString(configRequest.getRequest_version()) + "_customerReport.txt",
-							response);
-
-				} catch (IOException exe) {
-					exe.printStackTrace();
-
-				}
+				
+				TextReport.writeFile(
+						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+								+ Double.toString(configRequest.getRequest_version()) + "_customerReport.txt",
+						response);
 			}
 
 			else {
@@ -99,37 +91,17 @@ public class FinalReportTestSSH {
 				}
 				createConfigRequest.setNetworkStatusValue(configRequest.getNetworkStatusValue());
 				createConfigRequest.setNetworkProtocolValue(configRequest.getNetworkProtocolValue());
-				String response = invokeFtl.generateCustomerReportFailure(createConfigRequest);
-				try {
-					String responseDownloadPath = TelnetCommunicationSSH.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
-					TextReport.writeFile(
-							responseDownloadPath, configRequest.getRequestId() + "V"
-									+ Double.toString(configRequest.getRequest_version()) + "_customerReport.txt",
-							response);
-
-				} catch (IOException exe) {
-					exe.printStackTrace();
-
-				}
+				String response = invokeFtl.generateCustomerReportFailure(createConfigRequest);		
+				
+				TextReport.writeFile(
+						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+								+ Double.toString(configRequest.getRequest_version()) + "_customerReport.txt",
+						response);
 			}
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception exe) {
+			logger.error("Exception - FlagCheckTest- "+exe);
 		}
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 
 }
