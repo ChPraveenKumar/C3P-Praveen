@@ -85,7 +85,8 @@ public class RequestInfoScheduler {
 				});
 				if(exec_status.contains(false))
 				{
-				
+				logger.info(tempBatchId+" : Batch started at "+ System.currentTimeMillis() );
+
 				for (int j = 0; j < detailsList.size(); j++) {
 					/*if (detailsList.get(j).getStatus().equals("In Progress")
 							|| detailsList.get(j).getStatus().equals("Awaiting"))*/
@@ -223,6 +224,46 @@ public class RequestInfoScheduler {
 							}
 
 						}
+						else if (detailsList.get(j).getRequestType().equals("IOSUPGRADE")) {
+
+							if ((detailsList.get(j).getExecutionStatus() == false)) {
+
+								try {
+
+									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+											configRequest);
+									telnetCommunicationSSH.setDaemon(true);
+									telnetCommunicationSSH.start();
+								} catch (Exception e) {
+
+									logger.error(e);
+								}
+								obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
+								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
+								/*try {
+
+									Thread.sleep(80000);
+								} catch (Exception e) {
+									logger.error(e);
+								}*/
+								/*obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
+
+								int applicationTest = obj.getApplication_test();
+
+								if (applicationTest == 2) {
+									dao.updateBatchRequestStatus(detailsList.get(j).getAlphanumericReqId());
+								}
+
+								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
+								try {
+
+									Thread.sleep(100000);
+								} catch (Exception e) {
+									logger.error(e);
+								}*/
+							}
+
+						}
 
 					//}
 				}
@@ -245,6 +286,8 @@ public class RequestInfoScheduler {
 					{
 						//set batch status Completed
 						dao.updateBatchStatus(tempBatchId);
+						logger.info(tempBatchId+" : Batch ended at : "+ System.currentTimeMillis());
+
 					}
 					
 				}

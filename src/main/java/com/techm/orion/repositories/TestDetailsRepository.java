@@ -83,7 +83,8 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 	List<TestDetail> findBySelectionWithoutModel(String region, String vendor,
 			String networkType);
 
-	
+	List<TestDetail> findByRegionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndNetworkTypeAndTestNameIgnoreCaseContainingAndVersion(
+			String region, String vendor, String networkType, String testName, String version);
 	
 	
 
