@@ -83,7 +83,7 @@ public class GetReportData implements Observer {
 			createConfigRequestDCM.setRequestId(json.get("requestID").toString());
 			createConfigRequestDCM.setTestType(json.get("testType").toString());
 			createConfigRequestDCM.setVersion_report(json.get("version").toString());
-			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(json.get("requestID").toString(), "1.0");
+			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(json.get("requestID").toString(),json.get("version").toString());
 
 			if (createConfigRequestDCM.getTestType().equalsIgnoreCase("deliverConfig")) {
 

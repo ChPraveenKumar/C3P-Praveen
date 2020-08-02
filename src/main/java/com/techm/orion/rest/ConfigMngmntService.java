@@ -2207,7 +2207,7 @@ public class ConfigMngmntService implements Observer {
 						.generateTemplate(configReqToSendToC3pCode);
 
 				result = dcmConfigService.updateBatchConfig(
-						configReqToSendToC3pCode, createConfigList);
+						configReqToSendToC3pCode, createConfigList,featureList);
 
 			} else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("NETCONF")
 					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")
@@ -2564,11 +2564,11 @@ public class ConfigMngmntService implements Observer {
 					}
 				}
 
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList,featureList);
 				logger.info("log");
 
 			} else {
-				result = dcmConfigService.updateBatchConfig(configReqToSendToC3pCode, null);
+				result = dcmConfigService.updateBatchConfig(configReqToSendToC3pCode, null,null);
 			}
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {

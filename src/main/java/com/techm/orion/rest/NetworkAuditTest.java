@@ -151,7 +151,7 @@ public class NetworkAuditTest extends Thread {
 									configRequest.getDeviceType(), configRequest.getOs(), configRequest.getOsVersion(),
 									configRequest.getVendor(), configRequest.getRegion(), "Network Audit");
 							List<TestDetail> selectedTests = dao.findSelectedTests(configRequest.getRequestId(),
-									"Network Audit");
+									"Network Audit",version);
 							List<Boolean> results = null;
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {
@@ -332,7 +332,7 @@ public class NetworkAuditTest extends Thread {
 									requestinfo.getDeviceType(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Network Audit");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
-									"Network Audit");
+									"Network Audit",version);
 							List<Boolean> results = null;
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {

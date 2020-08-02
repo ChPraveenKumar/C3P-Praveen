@@ -175,7 +175,7 @@ public class OthersCheckTestValidation extends Thread {
 									configRequest.getDeviceType(), configRequest.getOs(), configRequest.getOsVersion(),
 									configRequest.getVendor(), configRequest.getRegion(), "Others");
 							List<TestDetail> selectedTests = dao.findSelectedTests(configRequest.getRequestId(),
-									"Others");
+									"Others",version);
 							List<Boolean> results = null;
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {
@@ -381,7 +381,7 @@ public class OthersCheckTestValidation extends Thread {
 									requestinfo.getDeviceType(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Others");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
-									"Others");
+									"Others",version);
 							List<Boolean> results = null;
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {

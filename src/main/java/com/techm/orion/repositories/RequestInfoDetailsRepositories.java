@@ -151,7 +151,7 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	int  getSiteCount(@Param("creatorName") String creatorName, @Param("customer") String customer,
 			@Param("region") String region, @Param("site") String site, @Param("vendor") String vendor);
 	
-	@Query(value = "select count(distinct(r_alphanumeric_req_id)) from c3p_t_request_info where r_request_creator_name like :creatorName"
+	@Query(value = "select count(distinct(r_info_id)) from c3p_t_request_info where r_request_creator_name like :creatorName"
 			+ " and r_customer like :customer and r_region like :region and r_siten_ame like :site and r_vendor like :vendor", nativeQuery = true)
 	int  getRequestCount(@Param("creatorName") String creatorName, @Param("customer") String customer,
 			@Param("region") String region, @Param("site") String site, @Param("vendor") String vendor);	
@@ -176,7 +176,7 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	int  getSiteCountwithBatch(@Param("creatorName") String creatorName, @Param("customer") String customer,
 			@Param("region") String region, @Param("site") String site, @Param("vendor") String vendor);
 
-	@Query(value = "select count(distinct(r_alphanumeric_req_id)) from c3p_t_request_info where r_request_creator_name like :creatorName"
+	@Query(value = "select count(distinct(r_info_id)) from c3p_t_request_info where r_request_creator_name like :creatorName"
 			+ " and r_customer like :customer and r_region like :region and r_siten_ame like :site and r_vendor like :vendor and r_batch_id IS NOT NULL", nativeQuery = true)
 	int  getRequestCountwithBatch(@Param("creatorName") String creatorName, @Param("customer") String customer,
 			@Param("region") String region, @Param("site") String site, @Param("vendor") String vendor);
@@ -203,7 +203,7 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 			@Param("region") String region, @Param("site") String site, @Param("vendor") String vendor);
 	
 
-	@Query(value = "select count(distinct(r_alphanumeric_req_id)) from c3p_t_request_info where r_request_creator_name like :creatorName"
+	@Query(value = "select count(distinct(r_info_id)) from c3p_t_request_info where r_request_creator_name like :creatorName"
 			+ " and r_customer like :customer and r_region like :region and r_siten_ame like :site and r_vendor like :vendor and r_batch_id IS NULL", nativeQuery = true)
 	int  getRequestCountIndividual(@Param("creatorName") String creatorName, @Param("customer") String customer,
 			@Param("region") String region, @Param("site") String site, @Param("vendor") String vendor);

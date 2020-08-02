@@ -878,17 +878,18 @@ public class RequestInfoDao {
 		return hmap;
 	}
 
-	public int insertTestRecordInDB(String requestID, String testsSelected, String requestType) {
+	public int insertTestRecordInDB(String requestID, String testsSelected, String requestType,double requestVersion) {
 		int res = 0;
 		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO t_tststrategy_m_config_transaction(RequestId,TestsSelected,RequestType)"
-				+ "VALUES(?,?,?)";
+		String sql = "INSERT INTO t_tststrategy_m_config_transaction(RequestId,TestsSelected,RequestType,request_version)"
+				+ "VALUES(?,?,?,?)";
 		try {
 			PreparedStatement ps = connection.prepareStatement(sql);
 
 			ps.setString(1, requestID);
 			ps.setString(2, testsSelected);
 			ps.setString(3, requestType);
+			ps.setDouble(4, requestVersion);
 			res = ps.executeUpdate();
 
 		} catch (SQLException e) {
@@ -1380,6 +1381,7 @@ public class RequestInfoDao {
 					flags.setPre_health_checkup(rs.getInt("pre_health_checkup"));
 					flags.setOthers_test(rs.getInt("others_test"));
 					flags.setNetwork_audit(rs.getInt("network_audit"));
+					flags.setRequestVersion(rs.getDouble("version"));
 					InfoList1.add(flags);
 				}
 			}
@@ -7088,10 +7090,10 @@ public class RequestInfoDao {
 	 */
 	public boolean updateTestStrategeyConfigResultsTable(String requestID, String testName, String testCategory,
 			String testResult, String testText, String collectedValue, String evaluationCriteria, String notes,
-			String data_type) {
+			String data_type,double requestVersion) {
 		boolean res = false;
 		connection = ConnectionFactory.getConnection();
-		String query = "insert into t_tststrategy_m_config_results (TestResult,ResultText,RequestId,TestCategory,testName,CollectedValue,EvaluationCriteria,notes,data_type) values (?,?,?,?,?,?,?,?,?)";
+		String query = "insert into t_tststrategy_m_config_results (TestResult,ResultText,RequestId,TestCategory,testName,CollectedValue,EvaluationCriteria,notes,data_type,request_version) values (?,?,?,?,?,?,?,?,?,?)";
 
 		try {
 			PreparedStatement ps = connection.prepareStatement(query);
@@ -7104,6 +7106,7 @@ public class RequestInfoDao {
 			ps.setString(7, evaluationCriteria);
 			ps.setString(8, notes);
 			ps.setString(9, data_type);
+			ps.setDouble(10, requestVersion);
 			int i = ps.executeUpdate();
 			if (i == 1) {
 
@@ -7217,11 +7220,12 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		PreparedStatement preparedStmt;
 
-		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
+		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ? and request_version =?";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testtype);
+			preparedStmt.setString(3, version);
 			rs = preparedStmt.executeQuery();
 			if (rs != null) {
 				while (rs.next()) {
@@ -7477,7 +7481,7 @@ public class RequestInfoDao {
 	/*
 	 * Owner: Ruchita Salvi Module: Test Strategey
 	 */
-	public List<TestDetail> findSelectedTests(String requestID, String testCategory) {
+	public List<TestDetail> findSelectedTests(String requestID, String testCategory,String version) {
 		List<TestDetail> resultList = new ArrayList<TestDetail>();
 		connection = ConnectionFactory.getConnection();
 		String query = "";
@@ -7486,10 +7490,11 @@ public class RequestInfoDao {
 		String res = null;
 		Map<String, String> hmap = new HashMap<String, String>();
 
-		query = "select TestsSelected from  t_tststrategy_m_config_transaction where RequestId = ?";
+		query = "select TestsSelected from  t_tststrategy_m_config_transaction where RequestId = ? and request_version =?";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestID);
+			preparedStmt.setString(2, version);
 			rs = preparedStmt.executeQuery();
 			if (rs != null) {
 				while (rs.next()) {
@@ -8094,7 +8099,12 @@ public class RequestInfoDao {
 		/* TimeZ Column added for Time Zone task */
 
 		try {
-
+			if(requestInfoSO.getAlphanumericReqId()!=null && !requestInfoSO.getAlphanumericReqId().equals("")) {
+				alphaneumeric_req_id = requestInfoSO.getAlphanumericReqId();
+				if(alphaneumeric_req_id.contains("SLGM")) {
+					requestInfoSO.setRequestType("Config MACD");
+				}
+			}else {
 			if (requestInfoSO.getRequestType().equalsIgnoreCase("IOSUPGRADE")
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGF-" + UUID.randomUUID().toString().toUpperCase();
@@ -8107,8 +8117,7 @@ public class RequestInfoDao {
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGA-" + UUID.randomUUID().toString().toUpperCase();
 
-			}
-			else if (requestInfoSO.getRequestType().equalsIgnoreCase("RESTCONF")
+			} else if (requestInfoSO.getRequestType().equalsIgnoreCase("RESTCONF")
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {
 				alphaneumeric_req_id = "SNRC-" + UUID.randomUUID().toString().toUpperCase();
 
@@ -8132,6 +8141,7 @@ public class RequestInfoDao {
 
 			} else {
 				alphaneumeric_req_id = "SLGC-" + UUID.randomUUID().toString().toUpperCase();
+			}
 			}
 			// alphaneumeric_req_id = request.getProcessID();
 			alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
@@ -9017,17 +9027,18 @@ public class RequestInfoDao {
 	}
 
 	/* Dhanshri Mane */
-	public int getTestDetails(String requestId, String testName) {
+	public int getTestDetails(String requestId, String testName,double requsetVersion) {
 		connection = ConnectionFactory.getConnection();
 		String query = "";
 		ResultSet rs = null;
 		PreparedStatement preparedStmt;
 		int status = 0;
-		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and testName= ?";
+		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and testName= ? and request_version=?";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testName);
+			preparedStmt.setDouble(3, requsetVersion);
 			rs = preparedStmt.executeQuery();
 
 			int successCount = 0;
@@ -9424,4 +9435,28 @@ public class RequestInfoDao {
 		return result;
 	}
 
+	public String getTestList(String requestID) {
+		List<String> resultList = new ArrayList<String>();
+		connection = ConnectionFactory.getConnection();
+		String query = "";
+		ResultSet rs = null;
+		PreparedStatement preparedStmt;
+		String res = null;
+
+		query = "select TestsSelected from  t_tststrategy_m_config_transaction where RequestId = ?";
+		try {
+			preparedStmt = connection.prepareStatement(query);
+			preparedStmt.setString(1, requestID);
+			rs = preparedStmt.executeQuery();
+			if (rs != null) {
+				while (rs.next()) {
+					res = rs.getString("TestsSelected");			
+						}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
 }

@@ -267,7 +267,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									createConfigRequest.getOsVersion(), createConfigRequest.getVendor(),
 									createConfigRequest.getRegion(), "Device Prevalidation");
 							List<TestDetail> selectedTests = dao.findSelectedTests(createConfigRequest.getRequestId(),
-									"Device Prevalidation");
+									"Device Prevalidation",version);
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {
 									for (int j = 0; j < selectedTests.size(); j++) {
@@ -381,7 +381,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									createConfigRequest.getOsVersion(), createConfigRequest.getVendor(),
 									createConfigRequest.getRegion(), "Device Prevalidation");
 							List<TestDetail> selectedTests = dao.findSelectedTests(createConfigRequest.getRequestId(),
-									"Device Prevalidation");
+									"Device Prevalidation",version);
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {
 									for (int j = 0; j < selectedTests.size(); j++) {
@@ -606,7 +606,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									requestinfo.getDeviceType(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Device Prevalidation");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
-									"Device Prevalidation");
+									"Device Prevalidation",version);
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {
 									for (int j = 0; j < selectedTests.size(); j++) {
@@ -718,7 +718,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									requestinfo.getDeviceType(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Device Prevalidation");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
-									"Device Prevalidation");
+									"Device Prevalidation",version);
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {
 									for (int j = 0; j < selectedTests.size(); j++) {

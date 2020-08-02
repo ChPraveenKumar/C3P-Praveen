@@ -24,6 +24,7 @@ public class ServiceRequestPojo {
 	private String executionMode;
 	private String lastExecution;
 	private String nextExecution;
+	private String templateId;
 
 	public String getCustomer() {
 		return customer;
@@ -167,6 +168,14 @@ public class ServiceRequestPojo {
 
 	public void setInfoId(int infoId) {
 		this.infoId = infoId;
+	}
+
+	public String getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(String templateId) {
+		this.templateId = templateId;
 	}
 
 }

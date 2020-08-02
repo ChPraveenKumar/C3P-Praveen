@@ -42,6 +42,7 @@ public class RequestDetailsResponseMapper {
 			req.setStatus(request.getStatus());
 			req.setModel(request.getModel());
 			req.setRequestVersion(request.getRequestVersion());
+			req.setTemplateId(request.getTemplateUsed());
 			if(request.getBatchId()!=null) {
 				req.setBatchId(request.getBatchId());
 			}

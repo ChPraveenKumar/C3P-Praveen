@@ -16,6 +16,7 @@ public class ReoprtFlags {
 	int pre_health_checkup;
 	int others_test;
 	int network_audit;
+	double requestVersion;
 	
 	public int getNetwork_audit() {
 		return network_audit;
@@ -100,6 +101,12 @@ public class ReoprtFlags {
 	}
 	public void setLatencyResultRes(int latencyResultRes) {
 		this.latencyResultRes = latencyResultRes;
+	}
+	public double getRequestVersion() {
+		return requestVersion;
+	}
+	public void setRequestVersion(double requestVersion) {
+		this.requestVersion = requestVersion;
 	}
 
 }

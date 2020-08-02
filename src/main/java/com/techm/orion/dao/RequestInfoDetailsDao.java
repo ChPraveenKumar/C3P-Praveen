@@ -400,9 +400,9 @@ public class RequestInfoDetailsDao {
 		return pojoList;
 	}
 
-	public List<RequestInfoCreateConfig> getCertificationtestvalidation(String value) {
+	public List<RequestInfoCreateConfig> getCertificationtestvalidation(String value,Double version) {
 		List<RequestInfoCreateConfig> requestInfoList = new ArrayList<>();
-		List<RequestInfoEntity> requestEntity = reository.findAllByAlphanumericReqId(value);
+		List<RequestInfoEntity> requestEntity = reository.findAllByAlphanumericReqIdAndRequestVersion(value,version);
 		requestEntity.forEach(entity -> {
 			RequestInfoCreateConfig pojo = new RequestInfoCreateConfig();
 			pojo.setAlphanumericReqId(entity.getAlphanumericReqId());

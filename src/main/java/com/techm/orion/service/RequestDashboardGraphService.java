@@ -122,41 +122,41 @@ public class RequestDashboardGraphService {
 		switch (dashboardType) {
 		case "individual":
 			legacyconfigurationReq = repo.getCountOfRequestTypewithIndividual(loggedUser, customer, region, site,
-					vendor, "SLGC-%")
-					+ repo.getCountOfRequestTypewithIndividual(loggedUser, customer, region, site, vendor, "SLGM%");
+					vendor, "%C-%")
+					+ repo.getCountOfRequestTypewithIndividual(loggedUser, customer, region, site, vendor, "%M-%");
 			legacyfirmwareReq = repo.getCountOfRequestTypewithIndividual(loggedUser, customer, region, site, vendor,
-					"SLGF-%");
+					"%F-%");
 			legacytestOnly = repo.getCountOfRequestTypewithIndividual(loggedUser, customer, region, site, vendor,
-					"SLGT-%");
+					"%T-%");
 			legacynetworkAudit = repo.getCountOfRequestTypewithIndividual(loggedUser, customer, region, site, vendor,
-					"SLGA-%");
-			backup = repo.getCountOfRequestTypewithIndividual(loggedUser, customer, region, site, vendor, "SLGB-%");
+					"%A-%");
+			backup = repo.getCountOfRequestTypewithIndividual(loggedUser, customer, region, site, vendor, "%B-%");
 			break;
 		case "batch":
 			legacyconfigurationReq = repo.getCountOfRequestTypewithBatchId(loggedUser, customer, region, site, vendor,
-					"SLGC-%")
-					+ repo.getCountOfRequestTypewithBatchId(loggedUser, customer, region, site, vendor, "SLGM-%");
+					"%C-%")
+					+ repo.getCountOfRequestTypewithBatchId(loggedUser, customer, region, site, vendor, "%M-%");
 			legacyfirmwareReq = repo.getCountOfRequestTypewithBatchId(loggedUser, customer, region, site, vendor,
-					"SLGF-%");
+					"%F-%");
 			legacytestOnly = repo.getCountOfRequestTypewithBatchId(loggedUser, customer, region, site, vendor,
-					"SLGT-%");
+					"%T-%");
 			legacynetworkAudit = repo.getCountOfRequestTypewithBatchId(loggedUser, customer, region, site, vendor,
-					"SLGA-%");
-			backup = repo.getCountOfRequestTypewithBatchId(loggedUser, customer, region, site, vendor, "SLGB-%");
+					"%A-%");
+			backup = repo.getCountOfRequestTypewithBatchId(loggedUser, customer, region, site, vendor, "%B-%");
 			break;
 		default:
 			legacyconfigurationReq = repo.getCountOfRequestTypewithIndividualAndBatchId(loggedUser, customer, region,
-					site, vendor, "SLGC-%")
+					site, vendor, "%C-%")
 					+ repo.getCountOfRequestTypewithIndividualAndBatchId(loggedUser, customer, region, site, vendor,
-							"SLGM-%");
+							"%M-%");
 			legacyfirmwareReq = repo.getCountOfRequestTypewithIndividualAndBatchId(loggedUser, customer, region, site,
-					vendor, "SLGF-%");
+					vendor, "%F-%");
 			legacytestOnly = repo.getCountOfRequestTypewithIndividualAndBatchId(loggedUser, customer, region, site,
-					vendor, "SLGT-%");
+					vendor, "%T-%");
 			legacynetworkAudit = repo.getCountOfRequestTypewithIndividualAndBatchId(loggedUser, customer, region, site,
-					vendor, "SLGA-%");
+					vendor, "%A-%");
 			backup = repo.getCountOfRequestTypewithIndividualAndBatchId(loggedUser, customer, region, site, vendor,
-					"SLGB-%");
+					"%B-%");
 			break;
 		}
 		typesOfServices.put("configuration", legacyconfigurationReq);
@@ -361,8 +361,8 @@ public class RequestDashboardGraphService {
 
 	private JSONObject getStatusCount(String loggedUser) {
 		JSONObject requestStatusCount = new JSONObject();
-		requestStatusCount.put("success", repo.getRequestStatusCount("Success", loggedUser));
-		requestStatusCount.put("in Progress", repo.getRequestStatusCount("In Progress", loggedUser));
+		requestStatusCount.put("success", repo.getRequestStatusCount("Success", loggedUser)+repo.getRequestStatusCount("Partial Success", loggedUser));
+		requestStatusCount.put("in Progress", repo.getRequestStatusCount("In Progress", loggedUser)+repo.getRequestStatusCount("Awaiting", loggedUser));
 		requestStatusCount.put("scheduled", repo.getRequestStatusCount("Scheduled", loggedUser));
 		requestStatusCount.put("hold", repo.getRequestStatusCount("Hold", loggedUser));
 		requestStatusCount.put("fail", repo.getRequestStatusCount("Failure", loggedUser));

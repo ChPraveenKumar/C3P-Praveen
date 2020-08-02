@@ -27,6 +27,9 @@ public class CreateConfigEntity {
 
 	@Column(name = "template_id  ")
 	private String templateId;
+	
+	@Column(name = "request_version",length=5)
+	private Double requestVersion=1.0;
 
 	public int getId() {
 		return id;
@@ -66,6 +69,14 @@ public class CreateConfigEntity {
 
 	public void setMasterLabelValue(String masterLabelValue) {
 		this.masterLabelValue = masterLabelValue;
+	}
+
+	public Double getRequestVersion() {
+		return requestVersion;
+	}
+
+	public void setRequestVersion(Double requestVersion) {
+		this.requestVersion = requestVersion;
 	}
 
 }
