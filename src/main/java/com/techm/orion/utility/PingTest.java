@@ -1,10 +1,12 @@
 package com.techm.orion.utility;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,6 +14,7 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 
 public class PingTest {
 	private static final Logger logger = LogManager.getLogger(PingTest.class);
@@ -125,6 +128,36 @@ public class PingTest {
 		}
 		return result;
 	}
+	
+	public String getPingResults(Process process) {
+		logger.info("Start getPingResults - "+process);
+		long startTime = System.currentTimeMillis();
+		StringBuilder resultBuilder = new StringBuilder();
+		String responce = null;
+		try(
+				BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
+				BufferedReader errorStream = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+			){
+			if(errorStream.readLine() != null) {
+				resultBuilder.append("Error");
+				resultBuilder.append("\n");
+				while ((responce = errorStream.readLine()) != null) {
+					resultBuilder.append(responce);
+					resultBuilder.append("\n");
+		        }
+			}else {
+				while ((responce = inputStream.readLine()) != null) {
+					resultBuilder.append(responce);
+					resultBuilder.append("\n");
+		        }
+			}
+			logger.info("getPingResults - "+resultBuilder);
+		}catch(IOException exe) {
+			logger.error("getPingResults Error - "+exe.getMessage());
+		}
+		logger.info("Total time taken to getPingResults in millsecs- "+ (System.currentTimeMillis()-startTime));
+		return resultBuilder.toString();
+	}
 
 	public static boolean loadProperties() throws IOException {
 		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
@@ -137,5 +170,4 @@ public class PingTest {
 		}
 		return false;
 	}
-
 }
