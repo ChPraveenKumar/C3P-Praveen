@@ -35,31 +35,11 @@ public class DynamicDeviceTestController implements Observer {
 	public Response ping(@RequestBody String request) {
 		JSONObject obj = new JSONObject();
 		JSONParser parser = new JSONParser();
-		StringBuilder commadBuilder = new StringBuilder();
 		JSONObject json;
 		try {
 			json = (JSONObject) parser.parse(request);
-			String mgmtIp = json.get("managementIp") !=null ? json.get("managementIp").toString() : "";
-			commadBuilder.append("ping ");
-			commadBuilder.append(mgmtIp);
-			//Pings timeout
-			if("Linux".equals(TSALabels.APP_OS.getValue())) {
-				commadBuilder.append(" -c ");
-			}else {
-				commadBuilder.append(" -n ");
-			}
-			//Number of pings
-			commadBuilder.append("20");
-			//String commandToPing = "ping " + mgmtIp + " -n 20";
-			logger.info("commandToPing -"+commadBuilder);
-			//String siteId= json.get("siteId").toString();
-			//String region=json.get("region").toString();
-			Process process = Runtime.getRuntime().exec(commadBuilder.toString());
-			//process.
-		
-		//boolean result=pingHelper.cmdPingCall(mgmtIp, siteId, region);
-		//String response = pingHelper.readResult(mgmtIp, siteId, region);
-			obj.put("data", pingHelper.getPingResults(process));
+			String mgmtIp = json.get("managementIp") !=null ? json.get("managementIp").toString() : "";			
+			obj.put("data", pingHelper.pingResults(mgmtIp));
 		} catch (ParseException e) {
 			e.printStackTrace();
 		} catch (Exception e) {

@@ -129,6 +129,32 @@ public class PingTest {
 		return result;
 	}
 	
+	public String pingResults(String managementIp) {
+		logger.info("Start getPingResults - managementIp- "+managementIp);
+		long startTime = System.currentTimeMillis();
+		StringBuilder commadBuilder = new StringBuilder();
+		String responce = null;
+		try {
+			commadBuilder.append("ping ");
+			commadBuilder.append(managementIp);
+			//Pings timeout
+			if("Linux".equals(TSALabels.APP_OS.getValue())) {
+				commadBuilder.append(" -c ");
+			}else {
+				commadBuilder.append(" -n ");
+			}
+			//Number of pings
+			commadBuilder.append("5");
+			logger.info("commandToPing -"+commadBuilder);		
+			Process process = Runtime.getRuntime().exec(commadBuilder.toString());
+			responce = getPingResults(process);
+		}catch(IOException exe) {
+			logger.error("Exception in pingResults - "+exe.getMessage());
+		}
+		logger.info("Total time taken to getPingResults in millsecs- "+ (System.currentTimeMillis()-startTime));
+		return responce;
+	}
+	
 	public String getPingResults(Process process) {
 		logger.info("Start getPingResults - "+process);
 		long startTime = System.currentTimeMillis();

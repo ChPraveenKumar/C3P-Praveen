@@ -6,7 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +40,7 @@ import com.techm.orion.repositories.RequestDetailsImportRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.service.PrevalidationTestServiceImpl;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.PingTest;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
 
@@ -68,6 +68,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
+	PingTest pingHelper=new PingTest();
 
 	@POST
 	@RequestMapping(value = "/performPrevalidateTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -952,9 +953,19 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						Double.toString(createConfigRequest.getRequest_version()), "In Progress");
 
 				// ping to check the reachability
-				Boolean reachabilityTest = cmdPingCall(createConfigRequest.getManagementIp(),
-						createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()));
-
+				//Boolean reachabilityTest = cmdPingCall(createConfigRequest.getManagementIp(),
+				//		createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()));
+				boolean reachabilityTest = false;
+				String pingResults = pingHelper.pingResults(createConfigRequest.getManagementIp());
+				if (pingResults != null) {
+					if (pingResults.contains("Error") || pingResults.contains("Destination host unreachable")
+							|| pingResults.contains("Request timed out.")) {
+						logger.info("pingResults - " + pingResults);
+					} else {
+						reachabilityTest = true;
+					}
+				}
+				logger.info("reachabilityTest - " + reachabilityTest);
 				// Lock the device for the particular request
 				if (reachabilityTest) {
 
@@ -1143,8 +1154,19 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						Double.toString(requestinfo.getRequestVersion()), "In Progress");
 
 				// ping to check the reachability
-				Boolean reachabilityTest = cmdPingCall(requestinfo.getManagementIp(),
-						requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()));
+				//Boolean reachabilityTest = cmdPingCall(requestinfo.getManagementIp(),
+				//		requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()));
+				boolean reachabilityTest = false;
+				String pingResults = pingHelper.pingResults(createConfigRequest.getManagementIp());
+				if (pingResults != null) {
+					if (pingResults.contains("Error") || pingResults.contains("Destination host unreachable")
+							|| pingResults.contains("Request timed out.")) {
+						logger.info("pingResults - " + pingResults);
+					} else {
+						reachabilityTest = true;
+					}
+				}
+				logger.info("reachabilityTest - " + reachabilityTest);
 
 				// Lock the device for the particular request
 				if (reachabilityTest) {
@@ -1419,7 +1441,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 	}
 
-	public boolean cmdPingCall(String managementIp, String requestId, String version) throws Exception {
+	/*public boolean cmdPingCall(String managementIp, String requestId, String version) throws Exception {
 		ProcessBuilder builder = new ProcessBuilder("cmd.exe");
 		Process p = null;
 		boolean flag = true;
@@ -1463,7 +1485,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			int i = input.read(tmp, 0, SIZE);
 			if (i < 0)
 				break;
-			/* logger.info(new String(tmp, 0, i)); */
+			 logger.info(new String(tmp, 0, i)); 
 			String s = new String(tmp, 0, i);
 			if (!(s.equals("")) && s.contains("Destination host unreachable")) {
 
@@ -1496,6 +1518,6 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 		}
 
 		return flag;
-	}
+	}*/
 
 }
