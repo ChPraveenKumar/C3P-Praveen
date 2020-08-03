@@ -12,6 +12,8 @@ public class CreateConfigPojo {
 
 	private String templateId;
 
+	private double requestVersion;
+
 	public int getId() {
 		return id;
 	}
@@ -52,11 +54,12 @@ public class CreateConfigPojo {
 		this.masterLabelValue = masterLabelValue;
 	}
 
-	@Override
-	public String toString() {
-		return "CreateConfigPojo [id=" + id + ", masterLabelId=" + masterLabelId + ", masterLabelValue="
-				+ masterLabelValue + ", requestId=" + requestId + ", templateId=" + templateId + "]";
+	public double getRequestVersion() {
+		return requestVersion;
 	}
-	
-	
+
+	public void setRequestVersion(double requestVersion) {
+		this.requestVersion = requestVersion;
+	}
+
 }

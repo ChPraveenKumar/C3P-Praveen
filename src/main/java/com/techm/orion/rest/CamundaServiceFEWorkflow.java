@@ -15,24 +15,27 @@ import org.json.JSONException;
 import org.json.simple.JSONObject;
 
 public class CamundaServiceFEWorkflow {
-	private static final Logger logger = LogManager.getLogger(CamundaServiceFEWorkflow.class);
-	
+	private static final Logger logger = LogManager
+			.getLogger(CamundaServiceFEWorkflow.class);
+
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
-	
-	@SuppressWarnings("unchecked")
-	public void initiateFEWorkflow(String templateId, String version) throws IOException, JSONException {
 
+	@SuppressWarnings("unchecked")
+	public void initiateFEWorkflow(String templateId, String version)
+			throws IOException, JSONException {
+
+		CamundaServiceFEWorkflow.loadProperties();
 		String serverPath = CamundaServiceFEWorkflow.TSA_PROPERTIES
 				.getProperty("serverPath");
-		String query = serverPath +"/engine-rest/process-definition/key/C3P_Template_Approval_Workflow/start ";
+		String query = serverPath
+				+ "/engine-rest/process-definition/key/C3P_Template_Approval_Workflow/start ";
 
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
 
 		JSONObject variableObj = new JSONObject();
 
-		
 		obj.put(new String("value"), version);
 
 		variableObj.put(new String("version"), obj);
@@ -62,67 +65,76 @@ public class CamundaServiceFEWorkflow {
 		conn.disconnect();
 
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	public void completeFEDeviceReachabilityFlow(String userTaskId, boolean status) {
-		String serverPath = CamundaServiceFEWorkflow.TSA_PROPERTIES
-				.getProperty("serverPath");
-		String query = serverPath +"/engine-rest/task/"
-				+ userTaskId + "/complete";
-		JSONObject statusObj = new JSONObject();
-		JSONObject obj2 = new JSONObject();
-
-		JSONObject variableObj = new JSONObject();
-
-		String stat=null;
-		
-		if(status==true)
-		{
-			stat="true";
-		}
-		else
-		{
-			stat="false";
-		}
-		
-		statusObj.put(new String("value"), stat);
-
-		variableObj.put(new String("status"), statusObj);
-
-		obj2.put(new String("variables"), variableObj);
-
-		URL url;
+	public void completeFEDeviceReachabilityFlow(String userTaskId,
+			boolean status) {
 		try {
-			url = new URL(query);
+			
+			CamundaServiceFEWorkflow.loadProperties();
 
-			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-			conn.setConnectTimeout(5000);
-			conn.setRequestProperty("Content-Type",
-					"application/json; charset=UTF-8");
-			conn.setDoOutput(true);
-			conn.setDoInput(true);
-			conn.setRequestMethod("POST");
+			String serverPath = CamundaServiceFEWorkflow.TSA_PROPERTIES
+					.getProperty("serverPath");
+			String query = serverPath + "/engine-rest/task/" + userTaskId
+					+ "/complete";
+			JSONObject statusObj = new JSONObject();
+			JSONObject obj2 = new JSONObject();
 
-			OutputStream os = conn.getOutputStream();
-			os.write(obj2.toString().getBytes("UTF-8"));
-			os.close();
+			JSONObject variableObj = new JSONObject();
 
-			// read the response
-			InputStream in = new BufferedInputStream(conn.getInputStream());
-			String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-			JSONObject jsonObject = new JSONObject();
+			String stat = null;
 
-			in.close();
-			conn.disconnect();
-		} catch (MalformedURLException e) {
-			logger.error(e);
-		} catch (IOException e) {
-			logger.error(e);
+			if (status == true) {
+				stat = "true";
+			} else {
+				stat = "false";
+			}
+
+			statusObj.put(new String("value"), stat);
+
+			variableObj.put(new String("status"), statusObj);
+
+			obj2.put(new String("variables"), variableObj);
+
+			URL url;
+			try {
+				url = new URL(query);
+
+				HttpURLConnection conn = (HttpURLConnection) url
+						.openConnection();
+				conn.setConnectTimeout(5000);
+				conn.setRequestProperty("Content-Type",
+						"application/json; charset=UTF-8");
+				conn.setDoOutput(true);
+				conn.setDoInput(true);
+				conn.setRequestMethod("POST");
+
+				OutputStream os = conn.getOutputStream();
+				os.write(obj2.toString().getBytes("UTF-8"));
+				os.close();
+
+				// read the response
+				InputStream in = new BufferedInputStream(conn.getInputStream());
+				String result = org.apache.commons.io.IOUtils.toString(in,
+						"UTF-8");
+				JSONObject jsonObject = new JSONObject();
+
+				in.close();
+				conn.disconnect();
+			} catch (MalformedURLException e) {
+				logger.error(e);
+			} catch (IOException e) {
+				logger.error(e);
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 	}
 
 	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
+		InputStream tsaPropFile = Thread.currentThread()
+				.getContextClassLoader()
 				.getResourceAsStream(TSA_PROPERTIES_FILE);
 
 		try {

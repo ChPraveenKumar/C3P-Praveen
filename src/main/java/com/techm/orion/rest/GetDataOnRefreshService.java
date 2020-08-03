@@ -45,7 +45,7 @@ public class GetDataOnRefreshService {
 		List<TemplateBasicConfigurationPojo> templateNames = new ArrayList<TemplateBasicConfigurationPojo>();
 		List<RequestInfoCreateConfig> requestList = new ArrayList<RequestInfoCreateConfig>();
 
-		String user = "seuser";
+		String user = "feuser";
 		String jsonFeRequestList = "";
 		switch (user) {
 		case "feuser":

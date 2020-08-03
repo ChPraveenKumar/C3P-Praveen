@@ -1,6 +1,7 @@
 package com.techm.orion.rest;
 
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +55,9 @@ public class ConfigurationManagement {
 
 	@Autowired
 	DeviceDiscoveryRepository deviceRepo;
-	
+
+	private static DecimalFormat df2 = new DecimalFormat("#.##");
+
 	@POST
 	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -83,31 +86,29 @@ public class ConfigurationManagement {
 				requestType = json.get("requestType").toString();
 			} else {
 				configReqToSendToC3pCode.setRequestType("SLGC");
-
 			}
 			
 			if (!json.get("networkType").toString().equals("")&& json.get("networkType") != null) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
-				
-					if(!requestType.equalsIgnoreCase("Test"))
-					{
-					DeviceDiscoveryEntity device = deviceRepo
+
+					if (!requestType.equalsIgnoreCase("Test")) {
+						DeviceDiscoveryEntity device = deviceRepo
 								.findByDHostName(json.get("hostname").toString().toUpperCase());
-					requestType = device.getdConnect();
-					configReqToSendToC3pCode.setRequestType(requestType);
+						requestType = device.getdConnect();
+						configReqToSendToC3pCode.setRequestType(requestType);
 					}
-					
+
 				} else {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
 			} else {
-				DeviceDiscoveryEntity networkfunctio = deviceRepo.findDVNFSupportByDHostName(configReqToSendToC3pCode.getHostname());
+				DeviceDiscoveryEntity networkfunctio = deviceRepo
+						.findDVNFSupportByDHostName(configReqToSendToC3pCode.getHostname());
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
-					if(!requestType.equalsIgnoreCase("Test"))
-					{
-					DeviceDiscoveryEntity device = deviceRepo
+					if (!requestType.equalsIgnoreCase("Test")) {
+						DeviceDiscoveryEntity device = deviceRepo
 								.findByDHostName(json.get("hostname").toString().toUpperCase());
 					requestType = device.getdConnect();
 					configReqToSendToC3pCode.setRequestType(requestType);
@@ -144,9 +145,17 @@ public class ConfigurationManagement {
 			configReqToSendToC3pCode.setFamily(json.get("model").toString());
 			configReqToSendToC3pCode.setVnfConfig(json.get("vnfConfig").toString());
 
-			// This version is 1 is this will be freshly created request every time so
-			// version will be 1.
-			configReqToSendToC3pCode.setRequestVersion(1.0);
+			if (!json.containsKey("requestVersion")) {
+				configReqToSendToC3pCode.setRequestVersion(1.0);
+			} else {
+				Double version=Double.parseDouble(json.get("requestVersion").toString()) + 0.1;
+				String requestVersion = df2.format(version);
+				configReqToSendToC3pCode
+						.setRequestVersion(Double.parseDouble(requestVersion));
+			}
+			if (json.containsKey("requestId")) {
+				configReqToSendToC3pCode.setAlphanumericReqId(json.get("requestId").toString());
+			}
 			// This version is 1 is this will be freshly created request every time so
 			// parent will be 1.
 			configReqToSendToC3pCode.setRequestParentVersion(1.0);
@@ -753,7 +762,7 @@ public class ConfigurationManagement {
 				logger.info("createConfigurationDcm - before calling updateAlldetails - "+createConfigList);
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList, featureList);
 
 			} else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("NETCONF")
 					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")
@@ -1246,10 +1255,10 @@ public class ConfigurationManagement {
 				}
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList, featureList);
 
 			} else {
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null, null);
 			}
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {

@@ -10,10 +10,11 @@ public class CreateConfigRequestMapper {
 
 	public CreateConfigEntity setRequestMapper(CreateConfigPojo pojo) {
 		CreateConfigEntity entity = new CreateConfigEntity();
-entity.setMasterLabelValue(pojo.getMasterLabelValue());
+		entity.setMasterLabelValue(pojo.getMasterLabelValue());
 		entity.setMasterLabelId(pojo.getMasterLabelId());
 		entity.setRequestId(pojo.getRequestId());
 		entity.setTemplateId(pojo.getTemplateId());
+		entity.setRequestVersion(pojo.getRequestVersion());
 		return entity;
 
 	}

@@ -523,7 +523,7 @@ public class VNFHelper {
 								test.getTestCategory(),
 
 								"Passed", resultText, formattedOp, "Text starts with: " + value1, "N/A",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					} else {
 						// fail the test
 						
@@ -532,7 +532,7 @@ public class VNFHelper {
 								test.getTestCategory(),
 
 								"Failed", resultText, formattedOp, "Text starts with: " + value1,
-								"Failed to match", rules.get(i).getDataType());
+								"Failed to match", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("=")) {
 					String value1 = rules.get(i).getValue1();
@@ -544,7 +544,7 @@ public class VNFHelper {
 								test.getTestCategory(),
 
 								"Passed", resultText, formattedOp, "Is equal to (=): " + value1, "N/A",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					} else {
 						// fail the test
 						
@@ -553,7 +553,7 @@ public class VNFHelper {
 								test.getTestCategory(),
 
 								"Failed", resultText, formattedOp, "Is equal to (=): " + value1,
-								"Failed to match", rules.get(i).getDataType());
+								"Failed to match", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("Between")) {
 					String value1 = rules.get(i).getValue1();
@@ -571,7 +571,7 @@ public class VNFHelper {
 									test.getTestName(), test.getTestCategory(),
 
 									"Passed", resultText, formattedOp, "Between: " + value1 + " & " + value2,
-									"N/A", rules.get(i).getDataType());
+									"N/A", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						} else {
 							// fail the test
 						
@@ -581,7 +581,7 @@ public class VNFHelper {
 									test.getTestName(), test.getTestCategory(),
 
 									"Failed", resultText,formattedOp, "Between: " + value1 + " & " + value2,
-									"Failed to match", rules.get(i).getDataType());
+									"Failed to match", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						}
 					} catch (Exception e) {
 						// fail the test
@@ -592,7 +592,7 @@ public class VNFHelper {
 
 								"Failed", resultText, "Unable to process the rule",
 								"Between: " + value1 + " & " + value2, "Error in rule processing",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 
 				} else if (evaluationOperator.equalsIgnoreCase(">")) {
@@ -611,7 +611,7 @@ public class VNFHelper {
 									test.getTestName(), test.getTestCategory(),
 
 									"Passed", resultText, formattedOp, "Greater than (>): " + value1, "N/A",
-									rules.get(i).getDataType());
+									rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						} else {
 							// fail the test
 							
@@ -620,7 +620,7 @@ public class VNFHelper {
 									test.getTestName(), test.getTestCategory(),
 
 									"Failed", resultText,formattedOp, "Greater than (>): " + value1,
-									"Failed to match", rules.get(i).getDataType());
+									"Failed to match", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						}
 					} catch (Exception e) {
 						// fail the test
@@ -631,7 +631,7 @@ public class VNFHelper {
 
 								"Failed", resultText, "Unable to process the rule",
 								"Greater than (>): " + value1, "Error in rule processing",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("<")) {
 					String value1 = rules.get(i).getValue1();
@@ -649,7 +649,7 @@ public class VNFHelper {
 									test.getTestName(), test.getTestCategory(),
 
 									"Passed", resultText, formattedOp, "Less than (<): " + value1, "N/A",
-									rules.get(i).getDataType());
+									rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						} else {
 							// fail the test
 							
@@ -659,7 +659,7 @@ public class VNFHelper {
 									test.getTestName(), test.getTestCategory(),
 
 									"Failed", resultText, formattedOp, "Less than (<): " + value1,
-									"Failed to match", rules.get(i).getDataType());
+									"Failed to match", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						}
 					} catch (Exception e) {
 						// fail the test
@@ -670,7 +670,7 @@ public class VNFHelper {
 
 								"Failed", resultText, "Unable to process the rule",
 								"Less than (<): " + value1, "Error in rule processing",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase(">=")) {
 					String value1 = rules.get(i).getValue1();
@@ -689,7 +689,7 @@ public class VNFHelper {
 
 									"Passed", resultText, formattedOp,
 									"Greater than or equals to (>=): " + value1, "N/A",
-									rules.get(i).getDataType());
+									rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						} else {
 							// fail the test
 							
@@ -699,7 +699,7 @@ public class VNFHelper {
 
 									"Failed", resultText, formattedOp,
 									"Greater than or equals to (>=): " + value1, "Failed to match",
-									rules.get(i).getDataType());
+									rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						}
 					} catch (Exception e) {
 						// fail the test
@@ -710,7 +710,7 @@ public class VNFHelper {
 
 								"Failed", resultText, "Unable to process the rule",
 								"Greater than or equals to (>=): " + value1, "Error in rule processing",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("<=")) {
 					String value1 = rules.get(i).getValue1();
@@ -729,7 +729,7 @@ public class VNFHelper {
 
 									"Passed", resultText, formattedOp,
 									"Less than or equals to (<=): " + value1, "N/A",
-									rules.get(i).getDataType());
+									rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						} else {
 							// fail the test
 						
@@ -739,7 +739,7 @@ public class VNFHelper {
 
 									"Failed", resultText, formattedOp,
 									"Less than or equals to (<=): " + value1, "Failed to match",
-									rules.get(i).getDataType());
+									rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						}
 					} catch (Exception e) {
 						// fail the test
@@ -750,7 +750,7 @@ public class VNFHelper {
 
 								"Failed", resultText, "Unable to process the rule",
 								"Less than or equals to (<=): " + value1, "Error in rule processing",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("<>")) {
 					String value1 = rules.get(i).getValue1();
@@ -768,7 +768,7 @@ public class VNFHelper {
 									test.getTestName(), test.getTestCategory(),
 
 									"Passed", resultText, formattedOp, "Is not equal to  (<>): " + value1,
-									"N/A", rules.get(i).getDataType());
+									"N/A", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						} else {
 							// fail the test
 							
@@ -778,7 +778,7 @@ public class VNFHelper {
 									test.getTestName(), test.getTestCategory(),
 
 									"Failed", resultText,formattedOp, "Is not equal to  (<>): " + value1,
-									"Failed to match", rules.get(i).getDataType());
+									"Failed to match", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 						}
 					} catch (Exception e) {
 						// fail the test
@@ -790,7 +790,7 @@ public class VNFHelper {
 
 								"Failed", resultText, "Unable to process the rule",
 								"Is not equal to  (<>): " + value1, "Error in rule processing",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("Text matches excatly")) {
 					String value1 = rules.get(i).getValue1();
@@ -802,7 +802,7 @@ public class VNFHelper {
 								test.getTestCategory(),
 
 								"Passed", resultText, formattedOp, "Text matches excatly: " + value1, "N/A",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					} else {
 						// fail the test
 						
@@ -811,7 +811,7 @@ public class VNFHelper {
 								test.getTestCategory(),
 
 								"Failed", resultText, formattedOp, "Text matches excatly: " + value1,
-								"Failed to match", rules.get(i).getDataType());
+								"Failed to match", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("Text ends with")) {
 					String value1 = rules.get(i).getValue1();
@@ -823,7 +823,7 @@ public class VNFHelper {
 								test.getTestCategory(),
 
 								"Passed", resultText, formattedOp, "Text ends with: " + value1, "N/A",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					} else {
 						// fail the test
 						
@@ -833,7 +833,7 @@ public class VNFHelper {
 								test.getTestCategory(),
 
 								"Failed", resultText, formattedOp, "Text ends with: " + value1,
-								"Failed to match", rules.get(i).getDataType());
+								"Failed to match", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 				} else if (evaluationOperator.equalsIgnoreCase("Text contains")) {
 					String value1 = rules.get(i).getValue1();
@@ -845,7 +845,7 @@ public class VNFHelper {
 								test.getTestCategory(),
 
 								"Passed", resultText, formattedOp, "Text contains: " + value1, "N/A",
-								rules.get(i).getDataType());
+								rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					} else {
 						// fail the test
 					
@@ -854,7 +854,7 @@ public class VNFHelper {
 								test.getTestCategory(),
 
 								"Failed", resultText, formattedOp, "Text contains: " + value1,
-								"Failed to match", rules.get(i).getDataType());
+								"Failed to match", rules.get(i).getDataType(),requestinfo.getRequestVersion());
 					}
 				} else {
 					// Incorrect operator message fail the test
@@ -864,7 +864,7 @@ public class VNFHelper {
 							test.getTestCategory(),
 
 							"Failed", resultText, formattedOp, "Invalid operator", "Failed",
-							rules.get(i).getDataType());
+							rules.get(i).getDataType(),requestinfo.getRequestVersion());
 				}
 			
 				
@@ -874,7 +874,7 @@ public class VNFHelper {
 				String resultText = rules.get(i).getReportedLabel();
 				result = dao.updateTestStrategeyConfigResultsTable(requestinfo.getAlphanumericReqId(), test.getTestName(),
 						test.getTestCategory(), "Passed", resultText, String.join(",", output), "N/A", "",
-						rules.get(i).getDataType());
+						rules.get(i).getDataType(),requestinfo.getRequestVersion());
 			}
 		}
 		

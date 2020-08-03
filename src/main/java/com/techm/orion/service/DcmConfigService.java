@@ -29,7 +29,9 @@ import com.techm.orion.dao.RequestSchedulerDao;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.entitybeans.CreateConfigEntity;
+import com.techm.orion.entitybeans.RequestFeatureTransactionEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
+import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.mapper.CreateConfigRequestMapper;
 import com.techm.orion.mapper.CreateConfigResponceMapper;
 import com.techm.orion.pojo.AlertInformationPojo;
@@ -43,7 +45,10 @@ import com.techm.orion.pojo.MisArPeSO;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.repositories.CreateConfigRepo;
+import com.techm.orion.repositories.RequestFeatureTransactionRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.TemplateFeatureRepo;
+import com.techm.orion.rest.CamundaServiceCreateReq;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
@@ -61,6 +66,12 @@ public class DcmConfigService {
 
 	@Autowired
 	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+
+	@Autowired
+	TemplateFeatureRepo featureRepo;
+
+	@Autowired
+	RequestFeatureTransactionRepository requestFeatureRepo;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -254,7 +265,7 @@ public class DcmConfigService {
 
 					}
 					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(configRequest.getRequestId(),
-							configRequest.getTestsSelected(), requestType);
+							configRequest.getTestsSelected(), requestType,configRequest.getRequest_version());
 
 					JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
 					if (array.length() != 0) {
@@ -277,6 +288,7 @@ public class DcmConfigService {
 						else {
 							for (CreateConfigPojo pojo : pojoList) {
 								pojo.setRequestId(configRequest.getRequestId());
+								pojo.setRequestVersion(configRequest.getRequest_version());
 								saveDynamicAttribValue(pojo);
 							}
 						}
@@ -378,7 +390,7 @@ public class DcmConfigService {
 					}
 
 					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(configRequest.getRequestId(),
-							configRequest.getTestsSelected(), requestType);
+							configRequest.getTestsSelected(), requestType,configRequest.getRequest_version());
 
 					JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
 					if (array.length() != 0) {
@@ -402,6 +414,7 @@ public class DcmConfigService {
 						else {
 							for (CreateConfigPojo pojo : pojoList) {
 								pojo.setRequestId(configRequest.getRequestId());
+								pojo.setRequestVersion(configRequest.getRequest_version());
 								saveDynamicAttribValue(pojo);
 							}
 						}
@@ -1278,7 +1291,8 @@ public class DcmConfigService {
 	}
 
 	/* method overloadig for UIRevamp */
-	public Map<String, String> updateAlldetails(RequestInfoPojo requestInfoSO, List<CreateConfigPojo> pojoList) {
+	public Map<String, String> updateAlldetails(RequestInfoPojo requestInfoSO, List<CreateConfigPojo> pojoList,
+			List<String> featureList) {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		// RequestInfoDao requestInfoDao = new RequestInfoDao();
 
@@ -1329,7 +1343,7 @@ public class DcmConfigService {
 
 				}
 				int testStrategyDBUpdate = dao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
-						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType());
+						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType(),requestInfoSO.getRequestVersion());
 				// int testStrategyResultsDB=requestInfoDao.
 				JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
 				for (int i = 0; i < array.length(); i++) {
@@ -1351,9 +1365,24 @@ public class DcmConfigService {
 					else {
 						for (CreateConfigPojo pojo : pojoList) {
 							pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
+							pojo.setRequestVersion(requestInfoSO.getRequestVersion());
 							saveDynamicAttribValue(pojo);
 						}
 					}
+				}
+				if (featureList != null && !featureList.isEmpty()) {
+					featureList.forEach(feature -> {
+						RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+						TemplateFeatureEntity featureId = featureRepo
+								.findByCommandAndComandDisplayFeature(requestInfoSO.getTemplateID(), feature);
+						if (featureId != null) {
+							requestFeatureEntity.settFeatureId(featureId);
+							requestFeatureEntity.settRequestId(requestInfoSO.getAlphanumericReqId());
+							requestFeatureEntity.settHostName(requestInfoSO.getHostname());
+							requestFeatureEntity.settRequestVersion(requestInfoSO.getRequestVersion());
+							requestFeatureRepo.save(requestFeatureEntity);
+						}
+					});
 				}
 				if (output.equalsIgnoreCase("true")) {
 					validateMessage = "Success";
@@ -1427,9 +1456,24 @@ public class DcmConfigService {
 						else {
 							for (CreateConfigPojo pojo : pojoList) {
 								pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
+								pojo.setRequestVersion(requestInfoSO.getRequestVersion());
 								saveDynamicAttribValue(pojo);
 							}
 						}
+					}
+					if (featureList != null && !featureList.isEmpty()) {
+						featureList.forEach(feature -> {
+							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+							TemplateFeatureEntity featureId = featureRepo
+									.findByCommandAndComandDisplayFeature(requestInfoSO.getTemplateID(), feature);
+							if (featureId != null) {
+								requestFeatureEntity.settFeatureId(featureId);
+								requestFeatureEntity.settRequestId(requestInfoSO.getAlphanumericReqId());
+								requestFeatureEntity.settHostName(requestInfoSO.getHostname());
+								requestFeatureEntity.settRequestVersion(requestInfoSO.getRequestVersion());
+								requestFeatureRepo.save(requestFeatureEntity);
+							}
+						});
 					}
 					createTemplate(requestInfoSO);
 					// update the scheduler history
@@ -1479,7 +1523,7 @@ public class DcmConfigService {
 
 				}
 				int testStrategyDBUpdate = dao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
-						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType());
+						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType(),requestInfoSO.getRequestVersion());
 
 				if (testStrategyDBUpdate > 0) {
 					output = "true";
@@ -1493,9 +1537,24 @@ public class DcmConfigService {
 					else {
 						for (CreateConfigPojo pojo : pojoList) {
 							pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
+							pojo.setRequestVersion(requestInfoSO.getRequestVersion());
 							saveDynamicAttribValue(pojo);
 						}
 					}
+				}
+				if (featureList != null && !featureList.isEmpty()) {
+					featureList.forEach(feature -> {
+						RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+						TemplateFeatureEntity featureId = featureRepo
+								.findByCommandAndComandDisplayFeature(requestInfoSO.getTemplateID(), feature);
+						if (featureId != null) {
+							requestFeatureEntity.settFeatureId(featureId);
+							requestFeatureEntity.settRequestId(requestInfoSO.getAlphanumericReqId());
+							requestFeatureEntity.settHostName(requestInfoSO.getHostname());
+							requestFeatureEntity.settRequestVersion(requestInfoSO.getRequestVersion());
+							requestFeatureRepo.save(requestFeatureEntity);
+						}
+					});
 				}
 				createTemplate(requestInfoSO);
 				// update the scheduler history
@@ -1636,7 +1695,7 @@ public class DcmConfigService {
 		}
 	}
 
-	public Map<String, String> updateBatchConfig(RequestInfoPojo requestInfoSO, List<CreateConfigPojo> pojoList) {
+	public Map<String, String> updateBatchConfig(RequestInfoPojo requestInfoSO, List<CreateConfigPojo> pojoList, List<String> featureList) {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 
 		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
@@ -1700,7 +1759,7 @@ public class DcmConfigService {
 
 					if (requestType.equals("Test") || requestType.equals("Audit")) {
 						int testStrategyDBUpdate = dao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
-								requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType());
+								requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType(),requestInfoSO.getRequestVersion());
 						// int testStrategyResultsDB=requestInfoDao.
 						JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
 						for (int i = 0; i < array.length(); i++) {
@@ -1722,10 +1781,26 @@ public class DcmConfigService {
 						else {
 							for (CreateConfigPojo pojo : pojoList) {
 								pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
+								pojo.setRequestVersion(requestInfoSO.getRequestVersion());
 								saveDynamicAttribValue(pojo);
 							}
 						}
 					}
+					if (featureList != null && !featureList.isEmpty()) {
+						featureList.forEach(feature -> {
+							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+							TemplateFeatureEntity featureId = featureRepo
+									.findByCommandAndComandDisplayFeature(requestInfoSO.getTemplateID(), feature);
+							if (featureId != null) {
+								requestFeatureEntity.settFeatureId(featureId);
+								requestFeatureEntity.settRequestId(requestInfoSO.getAlphanumericReqId());
+								requestFeatureEntity.settHostName(requestInfoSO.getHostname());
+								requestFeatureEntity.settRequestVersion(requestInfoSO.getRequestVersion());
+								requestFeatureRepo.save(requestFeatureEntity);
+							}
+						});
+					}
+			
 					if (!(requestType.equals("Test"))) {
 						createTemplate(requestInfoSO);
 					}
@@ -1755,7 +1830,7 @@ public class DcmConfigService {
 
 					if (requestType.equals("Test") || requestType.equals("Audit")) {
 						int testStrategyDBUpdate = dao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
-								requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType());
+								requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType(),requestInfoSO.getRequestVersion());
 						// int testStrategyResultsDB=requestInfoDao.
 						JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
 						for (int i = 0; i < array.length(); i++) {
@@ -1778,9 +1853,24 @@ public class DcmConfigService {
 						else {
 							for (CreateConfigPojo pojo : pojoList) {
 								pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
+								pojo.setRequestVersion(requestInfoSO.getRequestVersion());
 								saveDynamicAttribValue(pojo);
 							}
 						}
+					}
+					if (featureList != null && !featureList.isEmpty()) {
+						featureList.forEach(feature -> {
+							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+							TemplateFeatureEntity featureId = featureRepo
+									.findByCommandAndComandDisplayFeature(requestInfoSO.getTemplateID(), feature);
+							if (featureId != null) {
+								requestFeatureEntity.settFeatureId(featureId);
+								requestFeatureEntity.settRequestId(requestInfoSO.getAlphanumericReqId());
+								requestFeatureEntity.settHostName(requestInfoSO.getHostname());
+								requestFeatureEntity.settRequestVersion(requestInfoSO.getRequestVersion());
+								requestFeatureRepo.save(requestFeatureEntity);
+							}
+						});
 					}
 					if (!(requestType.equals("Test"))) {
 						createTemplate(requestInfoSO);

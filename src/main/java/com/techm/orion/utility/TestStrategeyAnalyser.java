@@ -55,7 +55,7 @@ public class TestStrategeyAnalyser {
 	public boolean printAndAnalyse(InputStream input, Channel channel, String requestID, String version,
 			TestDetail test, String testIdentifier) throws Exception {
 		TestStrategeyAnalyser.loadProperties();
-
+Double requestVersion =Double.valueOf(version);
 		RequestInfoDao dao = new RequestInfoDao();
 		boolean res = false;
 		BufferedWriter bw1 = null;
@@ -162,7 +162,7 @@ public class TestStrategeyAnalyser {
 					}
 					res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 							test.getTestCategory(), result, resultText, collectedValue, "N/A", collectedValue,
-							rules.get(i).getDataType());
+							rules.get(i).getDataType(),requestVersion);
 				}
 				// RequestInfoDao requestInfoDao = new RequestInfoDao();
 				// Update main request status to failure
@@ -190,7 +190,7 @@ public class TestStrategeyAnalyser {
 					}
 					res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 							test.getTestCategory(), result, resultText, collectedValue, "N/A", collectedValue,
-							rules.get(i).getDataType());
+							rules.get(i).getDataType(),requestVersion);
 				}
 				// RequestInfoDao requestInfoDao = new RequestInfoDao();
 				// Update main request status to failure
@@ -270,7 +270,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -281,7 +281,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("=")) {
 									String value1 = rules.get(i).getValue1();
@@ -294,7 +294,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -305,7 +305,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Between")) {
 									String value1 = rules.get(i).getValue1();
@@ -324,7 +324,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + " & " + value2,
-													"N/A", rules.get(i).getDataType());
+													"N/A", rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -335,7 +335,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + " & " + value2,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -348,7 +348,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Between: " + value1 + " & " + value2, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 
 								} else if (evaluationOperator.equalsIgnoreCase(">")) {
@@ -368,7 +368,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -379,7 +379,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -392,7 +392,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than (>): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<")) {
 									String value1 = rules.get(i).getValue1();
@@ -411,7 +411,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -422,7 +422,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -435,7 +435,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than (<): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase(">=")) {
 									String value1 = rules.get(i).getValue1();
@@ -455,7 +455,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -467,7 +467,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "Failed to match",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -480,7 +480,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than or equals to (>=): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<=")) {
 									String value1 = rules.get(i).getValue1();
@@ -500,7 +500,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -512,7 +512,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "Failed to match",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -525,7 +525,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than or equals to (<=): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<>")) {
 									String value1 = rules.get(i).getValue1();
@@ -544,7 +544,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"N/A", rules.get(i).getDataType());
+													"N/A", rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -555,7 +555,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -568,7 +568,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Is not equal to  (<>): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text matches excatly")) {
 									String value1 = rules.get(i).getValue1();
@@ -581,7 +581,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -592,7 +592,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text ends with")) {
 									String value1 = rules.get(i).getValue1();
@@ -605,7 +605,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -616,7 +616,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text contains")) {
 									String value1 = rules.get(i).getValue1();
@@ -629,7 +629,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -640,7 +640,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else {
 									// Incorrect operator message fail the test
@@ -652,7 +652,7 @@ public class TestStrategeyAnalyser {
 											test.getTestCategory(),
 
 											result, resultText, output, "Invalid operator", "Failed",
-											rules.get(i).getDataType());
+											rules.get(i).getDataType(),requestVersion);
 								}
 							} else {
 								result = "Passed";
@@ -660,7 +660,7 @@ public class TestStrategeyAnalyser {
 								resultText = rules.get(i).getReportedLabel();
 								res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 										test.getTestCategory(), result, resultText, output, "N/A", "",
-										rules.get(i).getDataType());
+										rules.get(i).getDataType(),requestVersion);
 							}
 						} else {
 							result = "Failed";
@@ -669,7 +669,7 @@ public class TestStrategeyAnalyser {
 							resultText = rules.get(i).getReportedLabel();
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
-									"Invalid rule please contact admisitrator", rules.get(i).getDataType());
+									"Invalid rule please contact admisitrator", rules.get(i).getDataType(),requestVersion);
 							// Update main request status to partial success
 						}
 
@@ -732,7 +732,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -743,7 +743,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("=")) {
 									String value1 = rules.get(i).getValue1();
@@ -756,7 +756,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -767,7 +767,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Between")) {
 									String value1 = rules.get(i).getValue1();
@@ -786,7 +786,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
-													"N/A", rules.get(i).getDataType());
+													"N/A", rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -797,7 +797,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -810,7 +810,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Between: " + value1 + " & " + value2, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 
 								} else if (evaluationOperator.equalsIgnoreCase(">")) {
@@ -830,7 +830,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -841,7 +841,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -854,7 +854,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than (>): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<")) {
 									String value1 = rules.get(i).getValue1();
@@ -873,7 +873,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -884,7 +884,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -897,7 +897,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than (<): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase(">=")) {
 									String value1 = rules.get(i).getValue1();
@@ -917,7 +917,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -929,7 +929,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "Failed to match",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -942,7 +942,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than or equals to (>=): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<=")) {
 									String value1 = rules.get(i).getValue1();
@@ -962,7 +962,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -974,7 +974,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "Failed to match",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -987,7 +987,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than or equals to (<=): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<>")) {
 									String value1 = rules.get(i).getValue1();
@@ -1006,7 +1006,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"N/A", rules.get(i).getDataType());
+													"N/A", rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -1017,7 +1017,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -1030,7 +1030,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Is not equal to  (<>): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text matches excatly")) {
 									String value1 = rules.get(i).getValue1();
@@ -1043,7 +1043,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -1054,7 +1054,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text ends with")) {
 									String value1 = rules.get(i).getValue1();
@@ -1067,7 +1067,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -1078,7 +1078,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text contains")) {
 									String value1 = rules.get(i).getValue1();
@@ -1091,7 +1091,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -1102,7 +1102,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else {
 									// Incorrect operator message fail the test
@@ -1114,7 +1114,7 @@ public class TestStrategeyAnalyser {
 											test.getTestCategory(),
 
 											result, resultText, output, "Invalid operator", "Failed",
-											rules.get(i).getDataType());
+											rules.get(i).getDataType(),requestVersion);
 								}
 							} else {
 								result = "Passed";
@@ -1122,7 +1122,7 @@ public class TestStrategeyAnalyser {
 								resultText = rules.get(i).getReportedLabel();
 								res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 										test.getTestCategory(), result, resultText, output, "N/A", "",
-										rules.get(i).getDataType());
+										rules.get(i).getDataType(),requestVersion);
 							}
 						} else {
 							result = "Failed";
@@ -1131,7 +1131,7 @@ public class TestStrategeyAnalyser {
 							resultText = rules.get(i).getReportedLabel();
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
-									"Invalid rule please contact administrator", rules.get(i).getDataType());
+									"Invalid rule please contact administrator", rules.get(i).getDataType(),requestVersion);
 							// Update main request status to partial success
 						}
 
@@ -1208,7 +1208,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -1219,7 +1219,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("=")) {
 									String value1 = rules.get(i).getValue1();
@@ -1232,7 +1232,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -1243,7 +1243,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Between")) {
 									String value1 = rules.get(i).getValue1();
@@ -1262,7 +1262,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
-													"N/A", rules.get(i).getDataType());
+													"N/A", rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -1273,7 +1273,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -1286,7 +1286,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Between: " + value1 + " & " + value2, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 
 								} else if (evaluationOperator.equalsIgnoreCase(">")) {
@@ -1306,7 +1306,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -1317,7 +1317,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -1330,7 +1330,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than (>): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<")) {
 									String value1 = rules.get(i).getValue1();
@@ -1349,7 +1349,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -1360,7 +1360,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -1373,7 +1373,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than (<): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase(">=")) {
 									String value1 = rules.get(i).getValue1();
@@ -1393,7 +1393,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -1405,7 +1405,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "Failed to match",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -1418,7 +1418,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than or equals to (>=): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<=")) {
 									String value1 = rules.get(i).getValue1();
@@ -1438,7 +1438,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "N/A",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -1450,7 +1450,7 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "Failed to match",
-													rules.get(i).getDataType());
+													rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -1463,7 +1463,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than or equals to (<=): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<>")) {
 									String value1 = rules.get(i).getValue1();
@@ -1482,7 +1482,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"N/A", rules.get(i).getDataType());
+													"N/A", rules.get(i).getDataType(),requestVersion);
 										} else {
 											// fail the test
 											result = "Failed";
@@ -1493,7 +1493,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"Failed to match", rules.get(i).getDataType());
+													"Failed to match", rules.get(i).getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test
@@ -1506,7 +1506,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Is not equal to  (<>): " + value1, "Error in rule processing",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text matches excatly")) {
 									String value1 = rules.get(i).getValue1();
@@ -1519,7 +1519,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -1530,7 +1530,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text ends with")) {
 									String value1 = rules.get(i).getValue1();
@@ -1543,7 +1543,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -1554,7 +1554,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text contains")) {
 									String value1 = rules.get(i).getValue1();
@@ -1567,7 +1567,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1, "N/A",
-												rules.get(i).getDataType());
+												rules.get(i).getDataType(),requestVersion);
 									} else {
 										// fail the test
 										result = "Failed";
@@ -1578,7 +1578,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1,
-												"Failed to match", rules.get(i).getDataType());
+												"Failed to match", rules.get(i).getDataType(),requestVersion);
 									}
 								} else {
 									// Incorrect operator message fail the test
@@ -1590,7 +1590,7 @@ public class TestStrategeyAnalyser {
 											test.getTestCategory(),
 
 											result, resultText, output, "Invalid operator", "Failed",
-											rules.get(i).getDataType());
+											rules.get(i).getDataType(),requestVersion);
 								}
 							} else {
 								result = "Passed";
@@ -1598,7 +1598,7 @@ public class TestStrategeyAnalyser {
 								resultText = rules.get(i).getReportedLabel();
 								res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 										test.getTestCategory(), result, resultText, output, "N/A", "",
-										rules.get(i).getDataType());
+										rules.get(i).getDataType(),requestVersion);
 							}
 						} else {
 							result = "Failed";
@@ -1607,7 +1607,7 @@ public class TestStrategeyAnalyser {
 							resultText = rules.get(i).getReportedLabel();
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
-									"Invalid rule please contact administrator", rules.get(i).getDataType());
+									"Invalid rule please contact administrator", rules.get(i).getDataType(),requestVersion);
 							// Update main request status to partial success
 						}
 						logger.info("Out");
@@ -1666,7 +1666,7 @@ public class TestStrategeyAnalyser {
 									test.getTestCategory(),
 
 									result, resultText, output, "Snippet starts with: " + evaluationOperator, "N/A",
-									rules.get(i).getDataType());
+									rules.get(i).getDataType(),requestVersion);
 						} else {
 							// fail the test
 							result = "Failed";
@@ -1679,7 +1679,7 @@ public class TestStrategeyAnalyser {
 
 									result, resultText, output, "Snnipet starts with: " + evaluationOperator,
 									"Invalid Snnipet configured, please contact administrator",
-									rules.get(i).getDataType());
+									rules.get(i).getDataType(),requestVersion);
 						}
 
 						logger.info("Out");
@@ -1716,7 +1716,7 @@ public class TestStrategeyAnalyser {
 									test.getTestCategory(),
 
 									result, resultText, evaluationOperator,
-									"Keyword starts with: " + evaluationOperator, "", rules.get(i).getDataType());
+									"Keyword starts with: " + evaluationOperator, "", rules.get(i).getDataType(),requestVersion);
 						} else {
 							result = "Failed";
 							String collectedValue = "Test failed";
@@ -1727,7 +1727,7 @@ public class TestStrategeyAnalyser {
 
 									result, resultText, collectedValue, "Keyword starts with: " + evaluationOperator,
 									"Invalid Keyword configured, please contact administrator",
-									rules.get(i).getDataType());
+									rules.get(i).getDataType(),requestVersion);
 						}
 
 						fileReader.close();

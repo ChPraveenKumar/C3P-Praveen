@@ -24,4 +24,6 @@ public interface FirmUpgradeSingleDeviceRepository extends JpaRepository<Firmwar
 	
 	@Query("SELECT max(displayName) FROM FirmwareUpgradeSingleDeviceEntity WHERE vendor=:vendor AND family=:family ") 
 	String checkHigherOsVersion(@Param("vendor") String vendor, @Param("family") String family) ;
+
+	List<FirmwareUpgradeSingleDeviceEntity> findByVendorAndFamily(String vendor, String deviceFamily);
 }

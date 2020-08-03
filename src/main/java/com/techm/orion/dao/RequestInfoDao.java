@@ -878,17 +878,18 @@ public class RequestInfoDao {
 		return hmap;
 	}
 
-	public int insertTestRecordInDB(String requestID, String testsSelected, String requestType) {
+	public int insertTestRecordInDB(String requestID, String testsSelected, String requestType,double requestVersion) {
 		int res = 0;
 		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO t_tststrategy_m_config_transaction(RequestId,TestsSelected,RequestType)"
-				+ "VALUES(?,?,?)";
+		String sql = "INSERT INTO t_tststrategy_m_config_transaction(RequestId,TestsSelected,RequestType,request_version)"
+				+ "VALUES(?,?,?,?)";
 		try {
 			PreparedStatement ps = connection.prepareStatement(sql);
 
 			ps.setString(1, requestID);
 			ps.setString(2, testsSelected);
 			ps.setString(3, requestType);
+			ps.setDouble(4, requestVersion);
 			res = ps.executeUpdate();
 
 		} catch (SQLException e) {
@@ -1380,6 +1381,7 @@ public class RequestInfoDao {
 					flags.setPre_health_checkup(rs.getInt("pre_health_checkup"));
 					flags.setOthers_test(rs.getInt("others_test"));
 					flags.setNetwork_audit(rs.getInt("network_audit"));
+					flags.setRequestVersion(rs.getDouble("version"));
 					InfoList1.add(flags);
 				}
 			}
@@ -5547,7 +5549,7 @@ public class RequestInfoDao {
 	public boolean changeRequestOwner(String requestid, String version, String owner) {
 		boolean result = false;
 		int res;
-		String query1 = "update requestinfoso set RequestOwner = ? , readFE=?, readSE=? where alphanumeric_req_id = ? and request_version= ?";
+		String query1 = "update c3p_t_request_info set r_request_owner = ? , r_read_fe=?, r_read_se=? where r_alphanumeric_req_id = ? and r_request_version= ?";
 		try {
 			PreparedStatement preparedStmt1, preparedStmt0;
 			ResultSet rs = null;
@@ -5563,6 +5565,10 @@ public class RequestInfoDao {
 			} else if (owner.equalsIgnoreCase("feuser")) {
 				preparedStmt0.setInt(2, 0);
 				preparedStmt0.setInt(3, 1);
+			}
+			else if (owner.equalsIgnoreCase("admin")) {
+				preparedStmt0.setInt(2, 1);
+				preparedStmt0.setInt(3, 0);
 			}
 			preparedStmt0.setString(4, requestid);
 			preparedStmt0.setString(5, version);
@@ -5606,7 +5612,7 @@ public class RequestInfoDao {
 
 		boolean result = false;
 		int res;
-		String query1 = "update requestinfoso set request_status = ?, end_date_of_processing= now() where alphanumeric_req_id = ? and request_version= ?";
+		String query1 = "update c3p_t_request_info set r_status = ?, r_end_date_of_processing= now() where r_alphanumeric_req_id = ? and r_request_version= ?";
 		try {
 			PreparedStatement preparedStmt1, preparedStmt0;
 			ResultSet rs = null;
@@ -6148,9 +6154,9 @@ public class RequestInfoDao {
 		String query = null;
 
 		if (key.equalsIgnoreCase("FE")) {
-			query = "update requestinfoso set readFE = ? where alphanumeric_req_id = ? and request_version = ? ";
+			query = "update c3p_t_request_info set r_read_fe = ? where r_alphanumeric_req_id = ? and r_request_version = ? ";
 		} else if (key.equalsIgnoreCase("SE")) {
-			query = "update requestinfoso set readSE = ? where alphanumeric_req_id = ? and request_version = ? ";
+			query = "update c3p_t_request_info set r_read_se = ? where r_alphanumeric_req_id = ? and r_request_version = ? ";
 		}
 
 		PreparedStatement preparedStmt;
@@ -7088,11 +7094,10 @@ public class RequestInfoDao {
 	 */
 	public boolean updateTestStrategeyConfigResultsTable(String requestID, String testName, String testCategory,
 			String testResult, String testText, String collectedValue, String evaluationCriteria, String notes,
-			String data_type) {
+			String data_type,double requestVersion) {
 		boolean res = false;
 		connection = ConnectionFactory.getConnection();
-		String query = "insert into t_tststrategy_m_config_results (TestResult,ResultText,RequestId,TestCategory,testName,CollectedValue,EvaluationCriteria,notes,data_type) values (?,?,?,?,?,?,?,?,?)";
-
+		String query = "insert into t_tststrategy_m_config_results (TestResult,ResultText,RequestId,TestCategory,testName,CollectedValue,EvaluationCriteria,notes,data_type,request_version) values (?,?,?,?,?,?,?,?,?,?)";
 		try {
 			PreparedStatement ps = connection.prepareStatement(query);
 			ps.setString(1, testResult);
@@ -7104,6 +7109,7 @@ public class RequestInfoDao {
 			ps.setString(7, evaluationCriteria);
 			ps.setString(8, notes);
 			ps.setString(9, data_type);
+			ps.setDouble(10, requestVersion);
 			int i = ps.executeUpdate();
 			if (i == 1) {
 
@@ -7217,11 +7223,12 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		PreparedStatement preparedStmt;
 
-		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
+		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ? and request_version =?";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testtype);
+			preparedStmt.setString(3, version);
 			rs = preparedStmt.executeQuery();
 			if (rs != null) {
 				while (rs.next()) {
@@ -7477,7 +7484,7 @@ public class RequestInfoDao {
 	/*
 	 * Owner: Ruchita Salvi Module: Test Strategey
 	 */
-	public List<TestDetail> findSelectedTests(String requestID, String testCategory) {
+	public List<TestDetail> findSelectedTests(String requestID, String testCategory,String version) {
 		List<TestDetail> resultList = new ArrayList<TestDetail>();
 		connection = ConnectionFactory.getConnection();
 		String query = "";
@@ -7490,6 +7497,7 @@ public class RequestInfoDao {
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestID);
+			preparedStmt.setString(2, version);
 			rs = preparedStmt.executeQuery();
 			if (rs != null) {
 				while (rs.next()) {
@@ -8094,7 +8102,12 @@ public class RequestInfoDao {
 		/* TimeZ Column added for Time Zone task */
 
 		try {
-
+			if(requestInfoSO.getAlphanumericReqId()!=null && !requestInfoSO.getAlphanumericReqId().equals("")) {
+				alphaneumeric_req_id = requestInfoSO.getAlphanumericReqId();
+				if(alphaneumeric_req_id.contains("SLGM")) {
+					requestInfoSO.setRequestType("Config MACD");
+				}
+			}else {
 			if (requestInfoSO.getRequestType().equalsIgnoreCase("IOSUPGRADE")
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGF-" + UUID.randomUUID().toString().toUpperCase();
@@ -8132,6 +8145,7 @@ public class RequestInfoDao {
 
 			} else {
 				alphaneumeric_req_id = "SLGC-" + UUID.randomUUID().toString().toUpperCase();
+			}
 			}
 			// alphaneumeric_req_id = request.getProcessID();
 			alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
@@ -8634,6 +8648,12 @@ public class RequestInfoDao {
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 		}
+		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("0")) {
+			reachabilityObj.put("testname", "Device Reachability test");
+			reachabilityObj.put("status", "Not Conducted");
+			reachabilityObj.put("outcome", "N/A");
+			reachabilityObj.put("notes", "N/A");
+		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
 			iosVersion.put("testname", "OS");
 			iosVersion.put("status", "Failed");
@@ -8649,6 +8669,14 @@ public class RequestInfoDao {
 			iosVersion.put("notes", "N/A");
 			iosVersion.put("CollectedValue", resultEnt.getGuiOsVersion());
 			iosVersion.put("EvaluationCriteria", resultEnt.getActualOsVersion());
+		}
+		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("0")) {
+			iosVersion.put("testname", "OS");
+			iosVersion.put("status", "Not Conducted");
+			iosVersion.put("outcome", "");
+			iosVersion.put("notes", "N/A");
+			iosVersion.put("CollectedValue", "N/A");
+			iosVersion.put("EvaluationCriteria", "N/A");
 		}
 		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("2")) {
 			deviceModel.put("testname", "Device Model");
@@ -8666,6 +8694,14 @@ public class RequestInfoDao {
 			deviceModel.put("CollectedValue", resultEnt.getGuiModel());
 			deviceModel.put("EvaluationCriteria", resultEnt.getActualModel());
 		}
+		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("0")) {
+			deviceModel.put("testname", "Device Model");
+			deviceModel.put("status", "Not Conducted");
+			deviceModel.put("outcome", "");
+			deviceModel.put("notes", "N/A");
+			deviceModel.put("CollectedValue", "N/A");
+			deviceModel.put("EvaluationCriteria","N/A");
+		}
 		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("2")) {
 			vendorTest.put("testname", "Vendor Test");
 			vendorTest.put("status", "Failed");
@@ -8682,7 +8718,14 @@ public class RequestInfoDao {
 			vendorTest.put("CollectedValue", resultEnt.getGuiVendor());
 			vendorTest.put("EvaluationCriteria", resultEnt.getGuiVendor());
 		}
-
+		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("0")) {
+			vendorTest.put("testname", "Vendor Test");
+			vendorTest.put("status", "Not Conducted");
+			vendorTest.put("outcome", "");
+			vendorTest.put("notes", "N/A");
+			vendorTest.put("CollectedValue", "N/A");
+			vendorTest.put("EvaluationCriteria", "N/A");
+		}
 		if (deliveryStatus.equals("1")) {
 			backUpStatus.put("backupstatus", "Success");
 		} else {
@@ -8734,6 +8777,12 @@ public class RequestInfoDao {
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 		}
+		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("0")) {
+			reachabilityObj.put("testname", "Device Reachability test");
+			reachabilityObj.put("status", "Not Conducted");
+			reachabilityObj.put("outcome", "N/A");
+			reachabilityObj.put("notes", "N/A");
+		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
 			iosVersion.put("testname", "OS");
 			iosVersion.put("status", "Failed");
@@ -8749,6 +8798,14 @@ public class RequestInfoDao {
 			iosVersion.put("notes", "N/A");
 			iosVersion.put("CollectedValue", resultEnt.getGuiOsVersion());
 			iosVersion.put("EvaluationCriteria", resultEnt.getActualOsVersion());
+		}
+		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("0")) {
+			iosVersion.put("testname", "OS");
+			iosVersion.put("status", "Not Conducted");
+			iosVersion.put("outcome", "N/A");
+			iosVersion.put("notes", "N/A");
+			iosVersion.put("CollectedValue", "N/A");
+			iosVersion.put("EvaluationCriteria", "N/A");
 		}
 		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("2")) {
 			deviceModel.put("testname", "Device Model");
@@ -8766,6 +8823,14 @@ public class RequestInfoDao {
 			deviceModel.put("CollectedValue", resultEnt.getGuiModel());
 			deviceModel.put("EvaluationCriteria", resultEnt.getActualModel());
 		}
+		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("0")) {
+			deviceModel.put("testname", "Device Model");
+			deviceModel.put("status", "Not Conducted");
+			deviceModel.put("outcome", "N/A");
+			deviceModel.put("notes", "N/A");
+			deviceModel.put("CollectedValue", "N/A");
+			deviceModel.put("EvaluationCriteria", "N/A");
+		}
 		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("2")) {
 			vendorTest.put("testname", "Vendor Test");
 			vendorTest.put("status", "Failed");
@@ -8781,6 +8846,14 @@ public class RequestInfoDao {
 			vendorTest.put("notes", "N/A");
 			vendorTest.put("CollectedValue", resultEnt.getGuiVendor());
 			vendorTest.put("EvaluationCriteria", resultEnt.getGuiVendor());
+		}
+		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("0")) {
+			vendorTest.put("testname", "Vendor Test");
+			vendorTest.put("status", "Not Conducted");
+			vendorTest.put("outcome", "N/A");
+			vendorTest.put("notes", "N/A");
+			vendorTest.put("CollectedValue", "N/A");
+			vendorTest.put("EvaluationCriteria", "N/A");
 		}
 		prevalidationArray.add(vendorTest);
 		prevalidationArray.add(deviceModel);
@@ -9017,17 +9090,18 @@ public class RequestInfoDao {
 	}
 
 	/* Dhanshri Mane */
-	public int getTestDetails(String requestId, String testName) {
+	public int getTestDetails(String requestId, String testName,double requsetVersion) {
 		connection = ConnectionFactory.getConnection();
 		String query = "";
 		ResultSet rs = null;
 		PreparedStatement preparedStmt;
 		int status = 0;
-		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and testName= ?";
+		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and testName= ? and request_version=?";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testName);
+			preparedStmt.setDouble(3, requsetVersion);
 			rs = preparedStmt.executeQuery();
 
 			int successCount = 0;
@@ -9424,4 +9498,28 @@ public class RequestInfoDao {
 		return result;
 	}
 
+	public String getTestList(String requestID) {
+		List<String> resultList = new ArrayList<String>();
+		connection = ConnectionFactory.getConnection();
+		String query = "";
+		ResultSet rs = null;
+		PreparedStatement preparedStmt;
+		String res = null;
+
+		query = "select testsselected from  t_tststrategy_m_config_transaction where RequestId = ?";
+		try {
+			preparedStmt = connection.prepareStatement(query);
+			preparedStmt.setString(1, requestID);
+			rs = preparedStmt.executeQuery();
+			if (rs != null) {
+				while (rs.next()) {
+					res = rs.getString("TestsSelected");			
+						}
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
 }

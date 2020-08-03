@@ -708,6 +708,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 		JSONParser parser = new JSONParser();
 		JSONObject json;
 		String requestId = null;
+		Double requestVersion = 0.0;
 		JSONArray array = new JSONArray();
 		Map<String, Object> result = new HashMap<String, Object>();
 
@@ -715,7 +716,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 			// parse testDeatils and get request Id
 			json = (JSONObject) parser.parse(testDetails);
 			requestId = (String) json.get("requestId");
-
+			requestVersion = Double.valueOf(requestVersion);
 			JSONObject resultObject = new JSONObject();
 			JSONObject object = new JSONObject();
 			JSONObject obj = new JSONObject();
@@ -728,7 +729,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 			StringBuilder builderVersion = new StringBuilder();
 			StringBuilder builder = new StringBuilder();
 			String testAndDiagnosis = null;
-			testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId);
+			testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId,requestVersion);
 
 			// Split test details with comma separator
 			String splitTestAndDiagnosis[] = testAndDiagnosis.toString().split(",");

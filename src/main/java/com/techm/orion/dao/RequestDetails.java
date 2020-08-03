@@ -34,15 +34,16 @@ public class RequestDetails {
 	 * Owner: Rahul Tiwari Module: TestAndDiagnosis Logic: Get test name and version
 	 * based on request id custom tests
 	 */
-	public String getTestAndDiagnosisDetails(String requestId) throws SQLException {
+	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
 		connection = ConnectionFactory.getConnection();
 
 		try {
-			String query = "SELECT RequestId,TestsSelected FROM c3pdbschema.t_tststrategy_m_config_transaction where RequestId= ?";
+			String query = "SELECT RequestId,TestsSelected FROM c3pdbschema.t_tststrategy_m_config_transaction where RequestId= ? and request_version =?";
 
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestId);
+			preparedStmt.setDouble(2, requestVersion);
 			resultSet = preparedStmt.executeQuery();
 			while (resultSet.next()) {
 				builder.append(resultSet.getString("TestsSelected"));
@@ -160,51 +161,4 @@ public class RequestDetails {
 		return map;
 	}
 
-	/* Dhanshri Mane get Configuration details and attribute value */
-	public JSONArray getFeatureDetails(String requestId) throws SQLException {
-
-		connection = ConnectionFactory.getConnection();
-		JSONArray finalObject = new JSONArray();
-		try {
-			String query = "SELECT feature.comand_display_feature as feature,attrib.label as name,master_label_value as value FROM t_create_config_m_attrib_info as info ,t_attrib_m_attribute as attrib ,c3p_template_master_feature_list as feature where request_id=? And info.master_label_id=attrib.id And feature.id=attrib.feature_id;";
-
-			preparedStmt = connection.prepareStatement(query);
-			preparedStmt.setString(1, requestId);
-
-			resultSet = preparedStmt.executeQuery();
-			Set<String> featureName = new HashSet<String>();
-			while (resultSet.next()) {
-				featureName.add(resultSet.getString("feature"));
-			}
-			ResultSet resultSet1 = null;
-			for (String feature : featureName) {
-				resultSet1 = preparedStmt.executeQuery();
-				try {
-					JSONObject featureObject = new JSONObject();
-					featureObject.put("featureName", feature);
-					JSONArray finalFeatureObject = new JSONArray();
-					while (resultSet1.next()) {
-						String name = resultSet1.getString("feature");
-						if (name.equals(feature)) {
-							JSONObject attributeValue = new JSONObject();
-							attributeValue.put("name", resultSet1.getString("name"));
-							attributeValue.put("value", resultSet1.getString("value"));
-							finalFeatureObject.add(attributeValue);
-						}
-					}
-					featureObject.put("featureValue", finalFeatureObject);
-					finalObject.add(featureObject);
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-			preparedStmt.close();
-		} finally {
-			DBUtil.close(resultSet);
-			DBUtil.close(preparedStmt);
-			DBUtil.close(connection);
-		}
-		return finalObject;
-	}
 }

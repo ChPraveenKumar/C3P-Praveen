@@ -29,10 +29,15 @@ import com.techm.orion.dao.RequestDetails;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.entitybeans.MasterAttributes;
+import com.techm.orion.entitybeans.RequestFeatureTransactionEntity;
 import com.techm.orion.pojo.ReoprtFlags;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.SearchParamPojo;
+import com.techm.orion.repositories.AttribCreateConfigRepo;
+import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.RequestFeatureTransactionRepository;
 
 @RestController
 @RequestMapping("/requestDetails")
@@ -43,6 +48,15 @@ public class RequestDetailsServiceWithVersion {
 
 	@Autowired
 	DeviceDiscoveryRepository deviceInforepo;
+
+	@Autowired
+	CreateConfigRepo configRepo;
+
+	@Autowired
+	AttribCreateConfigRepo attribConfigRepo;
+
+	@Autowired
+	RequestFeatureTransactionRepository requestFeatureRepo;
 
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -155,7 +169,7 @@ public class RequestDetailsServiceWithVersion {
 
 					detailsList = requestRedao.getRequestWithVersion(key, value, version);
 					reoportflagllist = requestValue.getReportsInfoForAllRequestsDB();
-					certificationBit = requestRedao.getCertificationtestvalidation(value);
+					certificationBit = requestRedao.getCertificationtestvalidation(value,Double.valueOf(version));
 					String type = value.substring(0, Math.min(value.length(), 4));
 					if (type.equalsIgnoreCase("SLGF")) {
 						Float v = Float.parseFloat(version);
@@ -169,7 +183,7 @@ public class RequestDetailsServiceWithVersion {
 					if (detailsList.size() > 0) {
 						for (int i = 0; i < reoportflagllist.size(); i++) {
 							if (reoportflagllist.get(i).getAlphanumeric_req_id()
-									.equalsIgnoreCase(detailsList.get(0).getAlphanumericReqId())) {
+									.equalsIgnoreCase(detailsList.get(0).getAlphanumericReqId()) && reoportflagllist.get(i).getRequestVersion()==detailsList.get(0).getRequestVersion()) {
 								selected = new ReoprtFlags();
 								selected = reoportflagllist.get(i);
 								reoportflagllistforselectedRecord.add(selected);
@@ -334,15 +348,36 @@ public class RequestDetailsServiceWithVersion {
 		JSONArray featureDetails = null;
 		try {
 			JSONObject json = (JSONObject) parser.parse(requestDetails);
+			Double version = Double.valueOf(json.get("version").toString());
 			String requestId = (String) json.get("requestId");
-			RequestDetails dao = new RequestDetails();
-			featureDetails = dao.getFeatureDetails(requestId);
+			List<RequestFeatureTransactionEntity> featureList = requestFeatureRepo
+					.findByTRequestIdAndTRequestVersion(requestId, version);
+			JSONArray featureAndAttrib = new JSONArray();
+			featureList.forEach(feature -> {
+				JSONObject attribJson = new JSONObject();
+				List<MasterAttributes> masterAttribute = attribConfigRepo
+						.findBytemplateFeatureId(feature.gettFeatureId().getId());
+				attribJson.put("featureName", feature.gettFeatureId().getComandDisplayFeature());
+				JSONArray masterAttrib = new JSONArray();
+				if (masterAttribute != null) {
+					masterAttribute.forEach(attrib -> {
+						JSONObject masterAttribObject = new JSONObject();
+						masterAttribObject.put("name", attrib.getLabel());
+						masterAttribObject.put("value",configRepo.findAttribValuByRequestId(attrib.getId(),requestId,version));
+						masterAttrib.add(masterAttribObject);
+					});
 
+				}
+				attribJson.put("featureValue", masterAttrib);
+				featureAndAttrib.add(attribJson);
+			});
+
+			return Response.status(200).entity(featureAndAttrib).build();
 		} catch (Exception e) {
 			logger.error(e);
 		}
-		return Response.status(200).entity(featureDetails).build();
 
+		return null;
 	}
 
 	@POST
@@ -359,8 +394,9 @@ public class RequestDetailsServiceWithVersion {
 			// parse testDeatils and get request Id
 			json = (JSONObject) parser.parse(testDetails);
 			String requestId = (String) json.get("requestId");
+			Double requestVersion = Double.valueOf(json.get("version").toString());
 			RequestDetails dao = new RequestDetails();
-			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId);
+			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId,requestVersion);
 			// Split test details with comma separator
 			String splitTestAndDiagnosis[] = testAndDiagnosis.toString().split(",");
 			RequestInfoDao requestinfoDao = new RequestInfoDao();
@@ -379,7 +415,7 @@ public class RequestDetailsServiceWithVersion {
 					tests.put("combination", combination);
 					tests.put("testName", name);
 					tests.put("version", version);
-					int status = requestinfoDao.getTestDetails(requestId, testName);
+					int status = requestinfoDao.getTestDetails(requestId,testName,requestVersion);
 					tests.put("status", status);
 					selectedTest.add(tests);
 				}

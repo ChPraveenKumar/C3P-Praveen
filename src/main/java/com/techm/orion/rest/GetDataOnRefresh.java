@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,8 +20,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.pojo.Global;
+import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 
@@ -31,6 +34,9 @@ public class GetDataOnRefresh implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetDataOnRefresh.class);
 	TemplateManagementDao templateManagementDao = new TemplateManagementDao();
 
+	@Autowired
+	RequestInfoDetailsDao requestInfoDao;
+	
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/get", method = RequestMethod.GET, produces = "application/json")
@@ -42,15 +48,106 @@ public class GetDataOnRefresh implements Observer {
 		List<TemplateBasicConfigurationPojo> list = null;
 		String jsonList, templateNameList;
 		int totalCount = 0;
+		List<RequestInfoCreateConfig> requestList = new ArrayList<RequestInfoCreateConfig>();
+		String jsonFeRequestList = "";
 
 		List<TemplateBasicConfigurationPojo> templateNames = new ArrayList<TemplateBasicConfigurationPojo>();
-		try {
+		String user=Global.loggedInUser;
+		//String user="feuser";
+		switch (user) {
+		case "feuser":
+			requestList = requestInfoDao.getOwnerAssignedRequestList("feuser");
+			int numberOfNotificationsForFE = 0;
+			List<RequestInfoCreateConfig> feRequestListNum = new ArrayList<RequestInfoCreateConfig>();
+			requestList.forEach(request -> {
+				if (request.getReadFE() == true) {
+					feRequestListNum.add(request);
+				}
+			});
 
-		} catch (Exception e) {
-			logger.error(e);
+			numberOfNotificationsForFE = feRequestListNum.size();
+			totalCount = notificationCount + numberOfNotificationsForFE;
+			jsonList = new Gson().toJson(list);
+			jsonFeRequestList = new Gson().toJson(requestList);
+			templateNameList = new Gson().toJson(templateNames);
+			obj.put(new String("TemplateList"), templateNameList);
+			obj.put(new String("NotificationCount"), totalCount);
+
+			obj.put(new String("SENotificationCount"), 0);
+			obj.put(new String("SERequestDetailedList"), "");
+
+			obj.put(new String("TemplateNotificationCount"), 0);
+			obj.put(new String("TemplateDetailedList"), "");
+
+			obj.put(new String("TemplateNotificationCount"), 0);
+			obj.put(new String("FENotificationCount"), numberOfNotificationsForFE);
+			obj.put(new String("FERequestDetailedList"), jsonFeRequestList);
+			break;
+			
+		case "seuser":
+			requestList = requestInfoDao.getOwnerAssignedRequestList("seuser");
+			int numberOfNotificationsForSE = 0;
+			List<RequestInfoCreateConfig> seRequestListNum = new ArrayList<RequestInfoCreateConfig>();
+			for (int i = 0; i < requestList.size(); i++) {
+				if (requestList.get(i).getReadSE() == false) {
+					seRequestListNum.add(requestList.get(i));
+				}
+			}
+			numberOfNotificationsForSE = seRequestListNum.size();
+			totalCount = notificationCount + numberOfNotificationsForSE;
+			jsonList = new Gson().toJson(list);
+			jsonFeRequestList = new Gson().toJson(requestList);
+
+			templateNameList = new Gson().toJson(templateNames);
+			obj.put(new String("TemplateList"), templateNameList);
+			obj.put(new String("TemplateNotificationCount"), notificationCount);
+			obj.put(new String("SENotificationCount"), numberOfNotificationsForSE);
+			obj.put(new String("NotificationCount"), totalCount);
+
+			obj.put(new String("FENotificationCount"), 0);
+			obj.put(new String("FERequestDetailedList"), "");
+
+			obj.put(new String("TemplateNotificationCount"), 0);
+			obj.put(new String("TemplateDetailedList"), "");
+
+			obj.put(new String("SERequestDetailedList"), jsonFeRequestList);
+
+			break;
+
+		default:
+			notificationCount = templateManagementDao.getNumberOfTemplatesForApprovalForLoggedInUser(user);
+			list = new ArrayList<TemplateBasicConfigurationPojo>();
+			list = templateManagementDao.getTemplatesForApprovalForLoggedInUser(user);
+			for (int i = 0; i < list.size(); i++) {
+				TemplateBasicConfigurationPojo temp = new TemplateBasicConfigurationPojo();
+				temp.setTemplateId(list.get(i).getTemplateId());
+				temp.setVersion(list.get(i).getVersion());
+				temp.setStatus(list.get(i).getStatus());
+				temp.setRead(list.get(i).getRead());
+				temp.setEditable(list.get(i).isEditable());
+				templateNames.add(temp);
+			}
+
+			jsonList = new Gson().toJson(list);
+			jsonFeRequestList = "undefined";
+			totalCount = notificationCount;
+
+			templateNameList = new Gson().toJson(templateNames);
+			obj.put(new String("TemplateDetailedList"), jsonList);
+			obj.put(new String("TemplateList"), templateNameList);
+
+			obj.put(new String("TemplateNotificationCount"), notificationCount);
+			obj.put(new String("NotificationCount"), totalCount);
+
+			obj.put(new String("FENotificationCount"), 0);
+			obj.put(new String("FERequestDetailedList"), "");
+
+			obj.put(new String("SENotificationCount"), 0);
+			obj.put(new String("SERequestDetailedList"), "");
+
+			break;
 		}
-
-		if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
+		/*if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
 			// To get notifications assigned to FE for FE login;
 			RequestInfoDao requestInfoDao = new RequestInfoDao();
 			List<RequestInfoSO> feRequestList = new ArrayList<RequestInfoSO>();
@@ -145,7 +242,7 @@ public class GetDataOnRefresh implements Observer {
 
 			obj.put(new String("SENotificationCount"), 0);
 			obj.put(new String("SERequestDetailedList"), "");
-		}
+		}*/
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")

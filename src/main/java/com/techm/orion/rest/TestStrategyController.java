@@ -2093,8 +2093,8 @@ public class TestStrategyController {
 			}
 
 			testDetailsListLatestVersion = testDetailsRepository
-					.findByRegionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndNetworkTypeAndTestNameIgnoreCaseContaining(
-							region, vendor, networkType, testName);
+					.findByRegionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndNetworkTypeAndTestNameIgnoreCaseContainingAndVersion(
+							region, vendor, networkType, testName,version);
 
 			if (null != testDetailsListLatestVersion
 					|| !testDetailsListLatestVersion.isEmpty()) {

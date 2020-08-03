@@ -57,6 +57,15 @@ import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.VendorDetailsRepository;
 import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.DcmConfigService;
+import java.util.Set;
+import java.util.HashSet;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.json.simple.JSONArray;
+import org.springframework.http.ResponseEntity;
+import com.techm.orion.entitybeans.FirmwareUpgradeSingleDeviceEntity;
+import com.techm.orion.pojo.FirmwareUpgradeDetail;
+import com.techm.orion.repositories.FirmUpgradeSingleDeviceRepository;
 
 @Controller
 @RequestMapping("/BackUpConfigurationAndTest")
@@ -110,6 +119,12 @@ public class BackUpAndRestoreController {
 
 	@Autowired
 	public SiteInfoRepository siteInfoRepository;
+	
+	@Autowired
+	FirmUpgradeSingleDeviceRepository firmUpgradeSingleDeviceRepository;
+	
+	@Autowired
+	DeviceDiscoveryRepository deviceInforepo;
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -875,11 +890,14 @@ public class BackUpAndRestoreController {
 						RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
 
 						requestInfoEntity.setRequestType(requestType);
+						
+						alphaneumeric_req_id = "SLGC-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+						requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
 						if (j == 0) {
 							requestInfoEntity.setStatus("In Progress");
 						} else {
 
-							requestInfoEntity.setStatus("Awaiting");
+							requestInfoEntity.setStatus("In Progress");
 						}
 						LocalDateTime nowDate = LocalDateTime.now();
 						timestamp = Timestamp.valueOf(nowDate);
@@ -1114,6 +1132,463 @@ public class BackUpAndRestoreController {
 		}
 		return obj;
 
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@POST
+	@RequestMapping(value = "/batchOsUpgrade", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject batchOsUpgradeRequest(@RequestBody String configRequest) throws ParseException {
+
+		JSONObject obj = new JSONObject();
+
+		JsonArray attribJson = null;
+		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
+				templateId = null, requestType = null;
+
+		HashMap<String, String> map = new HashMap<String, String>();
+
+		ArrayList<String> tempRequest1 = new ArrayList<String>();
+		int j = 0;
+		BatchIdEntity batchIdEntity = new BatchIdEntity();
+
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(configRequest);
+
+		JsonObject jsonObject = new JsonParser().parse(configRequest).getAsJsonObject();
+
+		attribJson = jsonObject.getAsJsonArray("requests");
+
+		for (int n = 0; n < attribJson.size(); n++) {
+			tempHostName = attribJson.get(n).getAsJsonObject().get("hostname").getAsString();
+			tempManagementIp = attribJson.get(n).getAsJsonObject().get("managementIp").getAsString();
+			requestType = attribJson.get(n).getAsJsonObject().get("requestType").getAsString();
+			map.put(tempHostName, tempManagementIp);
+
+		}
+
+		List<DeviceDiscoveryEntity> requestDetail = null;
+		ObjectMapper mapper = new ObjectMapper();
+
+		Double request_version = 1.0;
+
+		Timestamp timestamp = null;
+		String temp = null;
+
+		final String batchId = "BI-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+
+		try {
+
+			for (Map.Entry m : map.entrySet()) {
+
+				tempHostName = (String) m.getKey();
+				tempManagementIp = (String) m.getValue();
+
+				temp = tempHostName;
+
+				if (tempRequest1.contains(temp)) {
+
+					continue;
+				}
+
+				tempRequest1.add(tempHostName);
+
+				requestDetail = deviceDiscoveryRepository.findByDHostNameAndDMgmtIp(tempHostName, tempManagementIp);
+
+				for (int i = 0; i < requestDetail.size(); i++) {
+					RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
+
+					if (map.size() > 1) {
+
+						requestInfoEntity.setBatchId(batchId);
+
+					}
+
+					if (j == 0) {
+
+						requestInfoEntity.setStatus("In Progress");
+					} else {
+
+						requestInfoEntity.setStatus("In Progress");
+
+					}
+
+					LocalDateTime nowDate = LocalDateTime.now();
+					timestamp = Timestamp.valueOf(nowDate);
+					requestInfoEntity.setDateofProcessing(timestamp);
+					requestInfoEntity.setTemplateUsed(templateId);
+					requestInfoEntity.setCertificationTests(json.get("certificationTests"));
+
+					requestInfoEntity.setBatchSize(map.size());
+
+					requestInfoEntity.setRequestType(requestType);
+					alphaneumeric_req_id = "SLGF-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+					requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
+
+					requestInfoEntity.setCustomer(requestDetail.get(i).getCustSiteId().getcCustName());
+
+					requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
+
+					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+
+					requestInfoEntity.setModel(requestDetail.get(i).getdModel());
+
+					requestInfoEntity.setOs(requestDetail.get(i).getdOs());
+
+					requestInfoEntity.setOsVersion(requestDetail.get(i).getdOsVersion());
+
+					requestInfoEntity.setManagmentIP(requestDetail.get(i).getdMgmtIp());
+
+					requestInfoEntity.setRegion(requestDetail.get(i).getCustSiteId().getcSiteRegion());
+
+					requestInfoEntity.setService(requestDetail.get(i).getdVNFSupport());
+
+					requestInfoEntity.setHostName(requestDetail.get(i).getdHostName());
+
+					requestInfoEntity.setVendor(requestDetail.get(i).getdVendor());
+
+					requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
+
+					requestInfoEntity.setRequestVersion(request_version);
+					requestInfoEntity.setFamily(requestDetail.get(i).getdSeries());
+					requestInfoEntity.setStartUp(false);
+
+					requestInfoEntity.setSiteName(requestDetail.get(i).getCustSiteId().getcSiteName());
+					requestInfoEntity.setCertificationSelectionBit("1010011");
+					requestInfoEntity.setRequestParentVersion(1.0);
+					requestInfoEntity.setRequestTypeFlag("M");
+
+					requestInfoEntity.setRequestCreatorName("admin");
+
+					if (!(scheduledTime.isEmpty())) {
+
+						timestamp = Timestamp.valueOf(scheduledTime);
+						requestInfoEntity.setSceheduledTime(timestamp);
+					}
+
+					batchIdEntity.setBatchStatus("In Progress");
+
+					batchIdEntity.setBatchId(batchId);
+
+					batchIdEntity.setRequestInfoEntity(requestInfoEntity);
+
+					requestInfoDetailsRepositories.save(requestInfoEntity);
+
+					dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
+					dao.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
+					dao.addRequestID_to_Os_Upgrade_dilevary_flags(alphaneumeric_req_id, Double.toString(request_version));
+					batchInfoRepo.save(batchIdEntity);
+
+					j++;
+				}
+
+			}
+			if (j == 1) {
+
+				obj.put("output", "Request created successfully");
+				obj.put(new String("requestId"), new String(alphaneumeric_req_id));
+				obj.put(new String("version"), "1.0");
+			} else {
+				obj.put("batchId", batchId);
+				obj.put("output", "Batch Request created successfully");
+			}
+		}
+
+		catch (Exception e) {
+			logger.error(e);
+		}
+		return obj;
+
+	}
+	@POST
+	@RequestMapping(value = "/getAllDeviceFamily", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity getAllFamily(@RequestBody String request) {
+		Set<String> model = new HashSet<>();
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(request);
+			String vendor = json.get("vendor").toString();
+			List<FirmwareUpgradeDetail> mainList = new ArrayList<FirmwareUpgradeDetail>();
+			mainList = dao.findByVendorName(vendor);
+
+			mainList.forEach(site -> {
+				model.add(site.getFamily());
+			});
+		} catch (Exception e) {
+			logger.error(e);
+		}
+		return new ResponseEntity(model, HttpStatus.OK);
+	}
+
+	@POST
+	@RequestMapping(value = "/getAllOs", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity getAllOsToUpdate(@RequestBody String request) {
+		Set<String> model = new HashSet<>();
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(request);
+			String vendor = json.get("vendor").toString();
+			String deviceFamily = json.get("deviceFamily").toString();
+			List<FirmwareUpgradeSingleDeviceEntity> mainList = new ArrayList<FirmwareUpgradeSingleDeviceEntity>();
+			mainList = firmUpgradeSingleDeviceRepository.findByVendorAndFamily(vendor, deviceFamily);
+
+			mainList.forEach(site -> {
+				model.add(site.getDisplayName());
+			});
+		} catch (Exception e) {
+			logger.error(e);
+		}
+		return new ResponseEntity(model, HttpStatus.OK);
+	}
+
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/searchOsUpgradeDashboard", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity searchOsUpgrade(@RequestBody String searchParameters) {
+
+		JSONObject obj = new JSONObject();
+		String name=null;
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(searchParameters);
+			JSONObject object = new JSONObject();
+
+			String vendor = null, deviceFamily = null, osVersion = null;
+			List<DeviceDiscoveryEntity> getAllDevice = new ArrayList<DeviceDiscoveryEntity>();
+
+			if (json.containsKey("vendor")) {
+				vendor = json.get("vendor").toString();
+			}
+			if (json.containsKey("deviceFamily")) {
+				deviceFamily = json.get("deviceFamily").toString();
+			}
+			if (json.containsKey("osVersion")) {
+				osVersion = json.get("osVersion").toString();
+			}
+
+			getAllDevice = deviceInforepo.findAllDevices(vendor, deviceFamily, osVersion);
+		
+			JSONArray outputArray = new JSONArray();
+			for (int i = 0; i < getAllDevice.size(); i++) {
+				name=getAllDevice.get(i).getdHostName();
+				System.out.println();
+				object = new JSONObject();
+				object.put("hostName", getAllDevice.get(i).getdHostName());
+				if(getAllDevice.get(i).getdMgmtIp()!=null)
+				{
+				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
+				}
+				else
+				{
+					object.put("managementIp", "");
+
+				}
+				object.put("type", "Router");
+				if( getAllDevice.get(i).getdSeries()!=null)
+				{
+				object.put("series", getAllDevice.get(i).getdSeries());
+				}
+				else
+				{
+					object.put("series", "");
+
+				}
+				if(getAllDevice.get(i).getdModel()!=null)
+				{
+				object.put("model", getAllDevice.get(i).getdModel());
+				}
+				else
+				{
+					object.put("model", "");
+	
+				}
+				if(getAllDevice.get(i).getdOs()!=null)
+				{
+				object.put("os", getAllDevice.get(i).getdOs());
+				}
+				else
+				{
+					object.put("os","");
+	
+				}
+				if(getAllDevice.get(i).getdOsVersion()!=null)
+				{
+				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
+				}
+				else
+				{
+					object.put("osVersion", "");
+
+				}
+				if( getAllDevice.get(i).getdVendor()!=null)
+				{
+				object.put("vendor", getAllDevice.get(i).getdVendor());
+				}
+				else
+				{
+					object.put("vendor", "");
+
+				}
+				
+				object.put("status", "Available");
+				if( getAllDevice.get(i).getCustSiteId()!=null)
+				{
+				object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
+				}
+				else
+				{
+					object.put("customer", "");
+
+				}
+				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
+				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
+				if(getAllDevice.get(i).getCustSiteId()!=null)
+				{
+				SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
+				object.put("site", site.getcSiteName());
+				object.put("region", site.getcSiteRegion());
+				}
+				else
+				{
+					object.put("site", "");
+					object.put("region", "");	
+				}
+
+				outputArray.add(object);
+			}
+			obj.put("data", outputArray);
+
+		} catch (Exception e) {
+			logger.error(e);
+			obj.put("data", "Bad Request");
+		}
+		return new ResponseEntity(obj, HttpStatus.OK);
+	}
+	
+	@POST
+	@RequestMapping(value = "/filterOsUpgradeDashboard", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity filterOsUpgradeDashboard(@RequestBody String searchParameters) {
+
+		JSONObject obj = new JSONObject();
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(searchParameters);
+			JSONObject object = new JSONObject();
+
+			String customer = null, region = null, vendor = null, osVersion = null, site = null, deviceFamily = null, modeltosearch = null;
+			List<DeviceDiscoveryEntity> getAllDevice = new ArrayList<DeviceDiscoveryEntity>();
+
+			if (json.containsKey("customer")) {
+				customer = json.get("customer").toString();
+			}
+			if (json.containsKey("region")) {
+				region = json.get("region").toString();
+			}
+			if (json.containsKey("vendor")) {
+				vendor = json.get("vendor").toString();
+			}
+			if (json.containsKey("osVersion")) {
+				osVersion = json.get("osVersion").toString();
+			}
+			if (json.containsKey("site")) {
+				site = json.get("site").toString();
+			}
+			if (json.containsKey("deviceFamily")) {
+				deviceFamily = json.get("deviceFamily").toString();
+			}
+			
+
+			// Implementation of search logic based on fields received from UI
+			String nonMandatoryfiltersbits = "000";
+
+			if (vendor != null) {
+				nonMandatoryfiltersbits = "100";
+			}
+			if (deviceFamily != null) {
+				nonMandatoryfiltersbits = "110";
+			}
+			if (osVersion != null) {
+				nonMandatoryfiltersbits = "111";
+			}
+		
+			if (!(customer.equals(""))) {
+				nonMandatoryfiltersbits = "211";
+			}
+			if (!(region.equals(""))) {
+				nonMandatoryfiltersbits = "221";
+			}
+			if (!(site.equals(""))) {
+				nonMandatoryfiltersbits = "222";
+			}
+		
+		
+		
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("111")) {
+			getAllDevice = deviceInforepo.findAllDevices(vendor, deviceFamily, osVersion);
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("211")) {
+				// find with vendor and deviceFamily and osVersion and Customer
+				getAllDevice = deviceInforepo
+						.findByVendorFamilyVersionCustomer(
+								vendor, deviceFamily, osVersion,
+								customer);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("221")) {
+				// find with vendor and deviceFamily and osVersion and Customer and Region
+				getAllDevice = deviceInforepo
+						.findByVendorFamilyVersionCustomerRegion(
+								vendor, deviceFamily, osVersion,
+								customer,region);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("222")) {
+				// find with vendor and deviceFamily and osVersion and Customer and Region and Site
+				getAllDevice = deviceInforepo
+						.findByVendorFamilyVersionCustomerRegionSite(
+								vendor, deviceFamily, osVersion,
+								customer,region,site);
+
+			}
+		
+
+			JSONArray outputArray = new JSONArray();
+			for (int i = 0; i < getAllDevice.size(); i++) {
+			
+				object = new JSONObject();
+				object.put("hostName", getAllDevice.get(i).getdHostName());
+				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
+				object.put("type", "Router");
+				object.put("series", getAllDevice.get(i).getdSeries());
+				object.put("model", getAllDevice.get(i).getdModel());
+				object.put("os", getAllDevice.get(i).getdOs());
+				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
+				object.put("vendor", getAllDevice.get(i).getdVendor());
+				object.put("status", "Available");
+				object.put("customer", getAllDevice.get(i).getCustSiteId()
+						.getcCustName());
+				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
+				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
+				SiteInfoEntity site1 = getAllDevice.get(i).getCustSiteId();
+				object.put("site", site1.getcSiteName());
+				object.put("region", site1.getcSiteRegion());
+
+			
+
+				outputArray.add(object);
+			}
+			obj.put("data", outputArray);
+
+		} catch (Exception e) {
+			logger.error(e);
+			obj.put("data", "Bad Request");
+		}
+
+		return new ResponseEntity(obj, HttpStatus.OK);
 	}
 
 }

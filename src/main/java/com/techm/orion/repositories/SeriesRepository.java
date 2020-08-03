@@ -12,6 +12,7 @@ public interface SeriesRepository extends JpaRepository<Series, Integer> {
 	Set<Series> findBySeries(String series);
 
 	long countBySeriesContains(String series);
+	
 	// @RestResource(rel = "searchattribute", path = "searchattribute")
 	// List<OS> findByDevicetypeAndVendor(@Param("model") String model,
 	// @Param("devicetype") String devicetype,

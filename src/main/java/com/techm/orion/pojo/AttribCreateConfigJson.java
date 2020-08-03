@@ -16,7 +16,7 @@ public class AttribCreateConfigJson {
 	private String[] validations;
 
 	private String type;
-	
+
 	@JsonInclude(Include.NON_NULL)
 	private String templateId;
 
@@ -24,12 +24,14 @@ public class AttribCreateConfigJson {
 	private String seriesId;
 
 	private String label;
-	
-	
+
 	private String categotyLabel;
-	
+
 	@JsonInclude(Include.NON_EMPTY)
 	private List<CategoryDropDownPojo> category;
+
+	@JsonInclude(Include.NON_NULL)
+	private String attribValue;
 
 	public int getId() {
 		return id;
@@ -111,5 +113,12 @@ public class AttribCreateConfigJson {
 		this.category = category;
 	}
 
-	
+	public String getAttribValue() {
+		return attribValue;
+	}
+
+	public void setAttribValue(String attribValue) {
+		this.attribValue = attribValue;
+	}
+
 }
