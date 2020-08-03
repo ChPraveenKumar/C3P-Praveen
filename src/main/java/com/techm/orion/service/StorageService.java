@@ -13,13 +13,15 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.techm.orion.utility.TSALabels;
+
 /*Class to store uploaded file on local drive/system*/
 @Service
 public class StorageService {
 
 	Logger log = LoggerFactory.getLogger(this.getClass().getName());
-	/* Root location to store file on system */
-	private final Path rootLocation = Paths.get("D:/configuration_files/ImportedFiles/");
+	/* Root location to store file on system */	
+	private final Path rootLocation = Paths.get(TSALabels.IMPORT_FILEPATH.getValue());
 
 	/* Method call to store file */
 	public void store(MultipartFile file, String fileNameAsImport) {

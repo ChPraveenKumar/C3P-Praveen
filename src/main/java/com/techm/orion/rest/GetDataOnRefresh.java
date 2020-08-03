@@ -19,16 +19,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
-import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 
-//@Controller
-//@RequestMapping("/GetNotifications")
+@Controller
+@RequestMapping("/GetNotifications")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class GetDataOnRefresh implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetDataOnRefresh.class);
