@@ -2071,7 +2071,7 @@ public class FinalReportForTTUTest extends Thread {
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
 		String responseDownloadPath = FinalReportForTTUTest.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
+		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
 
 		br = new BufferedReader(new FileReader(filePath));
 		File f = new File(filePath);
@@ -2190,7 +2190,7 @@ public class FinalReportForTTUTest extends Thread {
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
 		String responseDownloadPath = FinalReportForTTUTest.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig + "V" + version + "_Configuration";
+		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_Configuration";
 
 		br = new BufferedReader(new FileReader(filePath));
 		try {
@@ -2255,7 +2255,7 @@ public class FinalReportForTTUTest extends Thread {
 	public String validateNetworkTest(CreateConfigRequest configRequest) throws Exception {
 
 		String content = "";
-		String path = FinalReportForTTUTest.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//"
+		String path = FinalReportForTTUTest.TSA_PROPERTIES.getProperty("responseDownloadPath")
 				+ configRequest.getRequestId() + "V" + configRequest.getRequest_version() + "_networkTest.txt";
 
 		File file = new File(path);

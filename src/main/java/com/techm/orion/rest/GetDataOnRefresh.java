@@ -27,8 +27,8 @@ import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 
-@Controller
-@RequestMapping("/GetNotifications")
+//@Controller
+//@RequestMapping("/GetNotifications")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class GetDataOnRefresh implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetDataOnRefresh.class);

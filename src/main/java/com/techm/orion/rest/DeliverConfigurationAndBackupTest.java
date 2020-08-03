@@ -532,19 +532,14 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								value = true;
 
 								String response = invokeFtl.generateDileveryConfigFile(createConfigRequest);
-								try {
-									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
-									TextReport.writeFile(responseDownloadPath,
-											createConfigRequest.getRequestId() + "V"
-													+ Double.toString(createConfigRequest.getRequest_version())
-													+ "_deliveredConfig.txt",
-											response);
-
-								} catch (IOException exe) {
-									exe.printStackTrace();
-
-								}
+								
+								String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath,
+										createConfigRequest.getRequestId() + "V"
+												+ Double.toString(createConfigRequest.getRequest_version())
+												+ "_deliveredConfig.txt",
+										response);								
 
 								bckupConfigService.getRouterConfig(createConfigRequest, "current");
 								// db call for success deliver config
@@ -560,19 +555,14 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 								// errorCodeValidationDeliveryTest.pushPreviousVersionConfiguration(createConfigRequest);
 								String response = invokeFtl.generateDileveryConfigFile(createConfigRequest);
-								try {
-									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
-									TextReport.writeFile(responseDownloadPath,
-											createConfigRequest.getRequestId() + "V"
-													+ Double.toString(createConfigRequest.getRequest_version())
-													+ "_deliveredConfig.txt",
-											response);
-
-								} catch (IOException exe) {
-									exe.printStackTrace();
-
-								}
+								
+								String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath,
+										createConfigRequest.getRequestId() + "V"
+												+ Double.toString(createConfigRequest.getRequest_version())
+												+ "_deliveredConfig.txt",
+										response);							
 
 								bckupConfigService.getRouterConfig(createConfigRequest, "current");
 
@@ -590,19 +580,14 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							value = true;
 
 							String response = invokeFtl.generateDileveryConfigFile(createConfigRequest);
-							try {
-								String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath,
-										createConfigRequest.getRequestId() + "V"
-												+ Double.toString(createConfigRequest.getRequest_version())
-												+ "_deliveredConfig.txt",
-										response);
-
-							} catch (IOException exe) {
-								exe.printStackTrace();
-
-							}
+							
+							String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+									.getProperty("responseDownloadPath");
+							TextReport.writeFile(responseDownloadPath,
+									createConfigRequest.getRequestId() + "V"
+											+ Double.toString(createConfigRequest.getRequest_version())
+											+ "_deliveredConfig.txt",
+									response);
 
 							bckupConfigService.getRouterConfig(createConfigRequest, "current");
 							// db call for success deliver config
@@ -623,18 +608,14 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2",
 								"Failure");
 						String response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
-						try {
-							String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath,
-									createConfigRequest.getRequestId() + "V"
-											+ Double.toString(createConfigRequest.getRequest_version())
-											+ "_deliveredConfig.txt",
-									response);
-
-						} catch (IOException exe) {
-
-						}
+					
+						String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+								.getProperty("responseDownloadPath");
+						TextReport.writeFile(responseDownloadPath,
+								createConfigRequest.getRequestId() + "V"
+										+ Double.toString(createConfigRequest.getRequest_version())
+										+ "_deliveredConfig.txt",
+								response);						
 					}
 					session.disconnect();
 
@@ -722,19 +703,15 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								obj.put(new String("output"), jsonArray);
 
 								String response = invokeFtl.generateDileveryConfigFile(createConfigRequest);
-								try {
-									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
-									TextReport.writeFile(responseDownloadPath,
-											createConfigRequest.getRequestId() + "V"
-													+ Double.toString(createConfigRequest.getRequest_version())
-													+ "_deliveredConfig.txt",
-											response);
+								
+								String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath,
+										createConfigRequest.getRequestId() + "V"
+												+ Double.toString(createConfigRequest.getRequest_version())
+												+ "_deliveredConfig.txt",
+										response);
 
-								} catch (IOException exe) {
-									exe.printStackTrace();
-
-								}
 							} else {
 								value = false;
 								requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
@@ -744,34 +721,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								obj.put(new String("output"), jsonArray);
 								String response = "";
 								String responseDownloadPath = "";
-								try {
-									requestInfoDao.editRequestforReportWebserviceInfo(
-											createConfigRequest.getRequestId(),
-											Double.toString(createConfigRequest.getRequest_version()),
-											"deliever_config", "2", "Failure");
-									response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
-									responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
-									TextReport.writeFile(responseDownloadPath,
-											createConfigRequest.getRequestId() + "V"
-													+ Double.toString(createConfigRequest.getRequest_version())
-													+ "_deliveredConfig.txt",
-											response);
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
-							}
-						} else {
-							value = false;
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-							String response = "";
-							String responseDownloadPath = "";
-							try {
-								requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
-										Double.toString(createConfigRequest.getRequest_version()), "deliever_config",
-										"2", "Failure");
+								
+								requestInfoDao.editRequestforReportWebserviceInfo(
+										createConfigRequest.getRequestId(),
+										Double.toString(createConfigRequest.getRequest_version()),
+										"deliever_config", "2", "Failure");
 								response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
 								responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
 										.getProperty("responseDownloadPath");
@@ -779,32 +733,43 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										createConfigRequest.getRequestId() + "V"
 												+ Double.toString(createConfigRequest.getRequest_version())
 												+ "_deliveredConfig.txt",
-										response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
+										response);								
 							}
-						}
-					} else {
-						value = false;
-						String response = "";
-						String responseDownloadPath = "";
-						try {
+						} else {
+							value = false;
+							jsonArray = new Gson().toJson(value);
+							obj.put(new String("output"), jsonArray);
+							String response = "";
+							String responseDownloadPath = "";
+							
 							requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
-									Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2",
-									"Failure");
+									Double.toString(createConfigRequest.getRequest_version()), "deliever_config",
+									"2", "Failure");
 							response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
-							responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+							responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
 									.getProperty("responseDownloadPath");
 							TextReport.writeFile(responseDownloadPath,
 									createConfigRequest.getRequestId() + "V"
 											+ Double.toString(createConfigRequest.getRequest_version())
 											+ "_deliveredConfig.txt",
-									response);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+									response);							
 						}
+					} else {
+						value = false;
+						String response = "";
+						String responseDownloadPath = "";
+						
+						requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
+								Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2",
+								"Failure");
+						response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
+						responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+								.getProperty("responseDownloadPath");
+						TextReport.writeFile(responseDownloadPath,
+								createConfigRequest.getRequestId() + "V"
+										+ Double.toString(createConfigRequest.getRequest_version())
+										+ "_deliveredConfig.txt",
+								response);						
 					}
 					// call method for back up from vnf utils for current configuration
 
@@ -825,19 +790,15 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						value = true;
 
 						String response = invokeFtl.generateDileveryConfigFile(createConfigRequest);
-						try {
-							String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath,
-									createConfigRequest.getRequestId() + "V"
-											+ Double.toString(createConfigRequest.getRequest_version())
-											+ "_deliveredConfig.txt",
-									response);
-
-						} catch (IOException exe) {
-							exe.printStackTrace();
-
-						}
+						
+						String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+								.getProperty("responseDownloadPath");
+						TextReport.writeFile(responseDownloadPath,
+								createConfigRequest.getRequestId() + "V"
+										+ Double.toString(createConfigRequest.getRequest_version())
+										+ "_deliveredConfig.txt",
+								response);
+						
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 					} else {
@@ -846,22 +807,18 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						obj.put(new String("output"), jsonArray);
 						String response = "";
 						String responseDownloadPath = "";
-						try {
-							requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
-									Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2",
-									"Failure");
-							response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
-							responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath,
-									createConfigRequest.getRequestId() + "V"
-											+ Double.toString(createConfigRequest.getRequest_version())
-											+ "_deliveredConfig.txt",
-									response);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							// e.printStackTrace();
-						}
+					
+						requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
+								Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2",
+								"Failure");
+						response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
+						responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+								.getProperty("responseDownloadPath");
+						TextReport.writeFile(responseDownloadPath,
+								createConfigRequest.getRequestId() + "V"
+										+ Double.toString(createConfigRequest.getRequest_version())
+										+ "_deliveredConfig.txt",
+								response);						
 					}
 				}
 
@@ -1293,17 +1250,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								value = true;
 
 								String response = invokeFtl.generateDileveryConfigFile(requestinfo);
-								try {
-									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
-									TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
-											response);
-
-								} catch (IOException exe) {
-									exe.printStackTrace();
-
-								}
+								
+								String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+										response);
 
 								requestDao.getRouterConfig(requestinfo, "current");
 								// db call for success deliver config
@@ -1319,17 +1271,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								// .pushNoCommandConfiguration(createConfigRequest);
 
 								String response = invokeFtl.generateDileveryConfigFile(requestinfo);
-								try {
-									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
-									TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
-											response);
-
-								} catch (IOException exe) {
-									exe.printStackTrace();
-
-								}
+							
+								String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+										response);
 
 								requestDao.getRouterConfig(requestinfo, "current");
 
@@ -1347,17 +1294,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							value = true;
 
 							String response = invokeFtl.generateDileveryConfigFile(requestinfo);
-							try {
-								String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
-										response);
-
-							} catch (IOException exe) {
-								exe.printStackTrace();
-
-							}
+							
+							String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+									.getProperty("responseDownloadPath");
+							TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+									+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+									response);
 
 							requestDao.getRouterConfig(requestinfo, "current");
 							// db call for success deliver config
@@ -1377,17 +1319,14 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 						String response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
-						try {
-							String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath,
-									requestinfo.getAlphanumericReqId() + "V"
-											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
-									response);
+						
+						String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+								.getProperty("responseDownloadPath");
+						TextReport.writeFile(responseDownloadPath,
+								requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+								response);
 
-						} catch (IOException exe) {
-
-						}
 					}
 					session.disconnect();
 
@@ -1474,17 +1413,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								obj.put(new String("output"), jsonArray);
 
 								String response = invokeFtl.generateDileveryConfigFile(requestinfo);
-								try {
-									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
-									TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
-											response);
+								
+								String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+										response);
 
-								} catch (IOException exe) {
-									exe.printStackTrace();
-
-								}
 							} else {
 								value = false;
 								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -1494,20 +1429,16 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								obj.put(new String("output"), jsonArray);
 								String response = "";
 								String responseDownloadPath = "";
-								try {
-									requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-											Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
-											"Failure");
-									response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
-									responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
-									TextReport.writeFile(responseDownloadPath, createConfigRequest.getRequestId() + "V"
-											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
-											response);
-								} catch (Exception e) {
-									// TODO Auto-generated catch block
-									e.printStackTrace();
-								}
+								
+								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
+										"Failure");
+								response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
+								responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath, createConfigRequest.getRequestId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+										response);								
 							}
 						} else {
 							value = false;
@@ -1515,40 +1446,32 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							obj.put(new String("output"), jsonArray);
 							String response = "";
 							String responseDownloadPath = "";
-							try {
-								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
-										"Failure");
-								response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
-								responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
-										response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
+							
+							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
+									"Failure");
+							response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
+							responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
+									.getProperty("responseDownloadPath");
+							TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+									+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+									response);							
 						}
 					} else {
 						value = false;
 						String response = "";
 						String responseDownloadPath = "";
-						try {
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
-									"Failure");
-							response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
-							responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath,
-									requestinfo.getAlphanumericReqId() + "V"
-											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
-									response);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
+						
+						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
+								"Failure");
+						response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
+						responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+								.getProperty("responseDownloadPath");
+						TextReport.writeFile(responseDownloadPath,
+								requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+								response);						
 					}
 					// call method for back up from vnf utils for current configuration
 
@@ -1571,18 +1494,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						value = true;
 
 						String response = invokeFtl.generateDileveryConfigFile(requestinfo);
-						try {
-							String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath,
-									requestinfo.getAlphanumericReqId() + "V"
-											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
-									response);
+						String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+								.getProperty("responseDownloadPath");
+						TextReport.writeFile(responseDownloadPath,
+								requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+								response);
 
-						} catch (IOException exe) {
-							exe.printStackTrace();
-
-						}
 						requestDao.getRouterConfig(requestinfo, "current");
 
 						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -1596,21 +1514,17 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						obj.put(new String("output"), jsonArray);
 						String response = "";
 						String responseDownloadPath = "";
-						try {
-							requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
-									"Failure");
-							response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
-							responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath,
-									requestinfo.getAlphanumericReqId() + "V"
-											+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
-									response);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							// e.printStackTrace();
-						}
+						
+						requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
+								"Failure");
+						response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
+						responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+								.getProperty("responseDownloadPath");
+						TextReport.writeFile(responseDownloadPath,
+								requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
+								response);						
 					}
 				}
 

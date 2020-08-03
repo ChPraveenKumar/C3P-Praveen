@@ -427,7 +427,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 		ErrorCodeValidationDeliveryTest.loadProperties();
 		String responseDownloadPath = ErrorCodeValidationDeliveryTest.TSA_PROPERTIES
 				.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig + "V" + version + "_PreviousConfig.txt";
+		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_PreviousConfig.txt";
 
 		br = new BufferedReader(new FileReader(filePath));
 		try {
@@ -500,7 +500,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 		ErrorCodeValidationDeliveryTest.loadProperties();
 		String responseDownloadPath = ErrorCodeValidationDeliveryTest.TSA_PROPERTIES
 				.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig + "V" + version
+		String filePath = responseDownloadPath + requestIdForConfig + "V" + version
 				+ "_ConfigurationNoCmdForError";
 
 		br = new BufferedReader(new FileReader(filePath));

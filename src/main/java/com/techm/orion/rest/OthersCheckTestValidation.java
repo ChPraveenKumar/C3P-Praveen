@@ -644,7 +644,7 @@ public class OthersCheckTestValidation extends Thread {
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
 		String responseDownloadPath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
+		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
 
 		br = new BufferedReader(new FileReader(filePath));
 		File f = new File(filePath);
@@ -764,7 +764,7 @@ public class OthersCheckTestValidation extends Thread {
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
 		String responseDownloadPath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig + "V" + version + "_Configuration";
+		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_Configuration";
 
 		br = new BufferedReader(new FileReader(filePath));
 		try {
@@ -913,7 +913,7 @@ public class OthersCheckTestValidation extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				logger.info(s);
-				String filepath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//"
+				String filepath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath")
 						+ requestID + "V" + version + "_CustomTests.txt";
 				File file = new File(filepath);
 
@@ -946,7 +946,7 @@ public class OthersCheckTestValidation extends Thread {
 	private static String readFile() throws IOException {
 		String responseDownloadPath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath");
 
-		BufferedReader br = new BufferedReader(new FileReader(responseDownloadPath + "//" + "CustomTests.txt"));
+		BufferedReader br = new BufferedReader(new FileReader(responseDownloadPath + "CustomTests.txt"));
 
 		// BufferedReader br = new BufferedReader(new
 		// FileReader("D:/C3P/New folder/HealthcheckTestCommand.txt"));

@@ -530,7 +530,7 @@ public class PostUpgradeHealthCheck extends Thread {
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
 		String responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
+		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
 
 		br = new BufferedReader(new FileReader(filePath));
 		File f = new File(filePath);
@@ -649,7 +649,7 @@ public class PostUpgradeHealthCheck extends Thread {
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
 		String responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig + "V" + version + "_Configuration";
+		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_Configuration";
 
 		br = new BufferedReader(new FileReader(filePath));
 		try {
@@ -794,7 +794,7 @@ public class PostUpgradeHealthCheck extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				logger.info(s);
-				String filepath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//"
+				String filepath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath")
 						+ requestID + "V" + version + "_HealthCheck.txt";
 				File file = new File(filepath);
 
@@ -828,7 +828,7 @@ public class PostUpgradeHealthCheck extends Thread {
 		String responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath");
 
 		BufferedReader br = new BufferedReader(
-				new FileReader(responseDownloadPath + "//" + "HealthcheckTestCommand.txt"));
+				new FileReader(responseDownloadPath + "HealthcheckTestCommand.txt"));
 
 		// BufferedReader br = new BufferedReader(new FileReader("D:/C3P/New
 		// folder/HealthcheckTestCommand.txt"));

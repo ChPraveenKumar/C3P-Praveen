@@ -1,10 +1,5 @@
 package com.techm.orion.rest;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -40,18 +35,31 @@ public class DynamicDeviceTestController implements Observer {
 	public Response ping(@RequestBody String request) {
 		JSONObject obj = new JSONObject();
 		JSONParser parser = new JSONParser();
-
+		StringBuilder commadBuilder = new StringBuilder();
 		JSONObject json;
 		try {
 			json = (JSONObject) parser.parse(request);
+			String mgmtIp = json.get("managementIp") !=null ? json.get("managementIp").toString() : "";
+			commadBuilder.append("ping ");
+			commadBuilder.append(mgmtIp);
+			//Pings timeout
+			if("Linux".equals(TSALabels.APP_OS.getValue())) {
+				commadBuilder.append(" -c ");
+			}else {
+				commadBuilder.append(" -n ");
+			}
+			//Number of pings
+			commadBuilder.append("20");
+			//String commandToPing = "ping " + mgmtIp + " -n 20";
+			logger.info("commandToPing -"+commadBuilder);
+			//String siteId= json.get("siteId").toString();
+			//String region=json.get("region").toString();
+			Process process = Runtime.getRuntime().exec(commadBuilder.toString());
+			//process.
 		
-		String mgmtIp = json.get("managementIp").toString();
-		String siteId= json.get("siteId").toString();
-		String region=json.get("region").toString();
-		
-		boolean result=pingHelper.cmdPingCall(mgmtIp, siteId, region);
-		String response = pingHelper.readResult(mgmtIp, siteId, region);
-		obj.put("data", response);
+		//boolean result=pingHelper.cmdPingCall(mgmtIp, siteId, region);
+		//String response = pingHelper.readResult(mgmtIp, siteId, region);
+			obj.put("data", pingHelper.getPingResults(process));
 		} catch (ParseException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
@@ -76,53 +84,19 @@ public class DynamicDeviceTestController implements Observer {
 	public Response traceroute(@RequestBody String request) {
 		JSONObject obj = new JSONObject();
 		JSONParser parser = new JSONParser();
-		StringBuilder sb =null; 
+		//StringBuilder sb =null; 
 		JSONObject json;
 		try {
 			json = (JSONObject) parser.parse(request);
 		
-		String mgmtIp = json.get("managementIp").toString();
-		//String siteId= json.get("siteId").toString();
-		//String region=json.get("region").toString();
-		
-		String[] cmd = {"python", TSALabels.PYTHON_SCRIPT_PATH.getValue()+"\\nativeTraceroute.py",mgmtIp};
-		Process p;
-		try {
-			sb=new 
-                    StringBuilder(); 
-			p = Runtime.getRuntime().exec(cmd);
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-
-			BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			String line;
-			if (bre.readLine() == null) {
-
-				while ((line = in.readLine()) != null) {
-					sb.append(line+"\n");
-		        }
-				
-			} else {
-				logger.info("" + bre.readLine());
-	            sb.append("Error");
-				if (bre.readLine().contains("File exists") || bre.readLine().contains("File exist")) {
-					//result = true;
-					
-				} else {
-					//result = false;
-				}
-			}
-			bre.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		//boolean result=pingHelper.cmdPingCall(mgmtIp, siteId, region);
-		//String response = pingHelper.readResult(mgmtIp, siteId, region);
-		obj.put("data", sb);
-		} catch (ParseException e) {
-			e.printStackTrace();
+			String mgmtIp = json.get("managementIp").toString();
+			//String siteId= json.get("siteId").toString();
+			//String region=json.get("region").toString();
+			
+			String[] cmd = {"python", TSALabels.PYTHON_SCRIPT_PATH.getValue()+"nativeTraceroute.py",mgmtIp};
+			logger.info("traceroute - commandToPing -"+cmd.toString());
+			Process process = Runtime.getRuntime().exec(cmd);
+			obj.put("data", pingHelper.getPingResults(process));		
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -144,4 +118,5 @@ public class DynamicDeviceTestController implements Observer {
 	public void update(Observable o, Object arg) {
 		// TODO Auto-generated method stub
 		
-	}}
+	}	
+}

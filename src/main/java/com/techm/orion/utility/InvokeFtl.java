@@ -61,14 +61,14 @@ public class InvokeFtl {
 			String responseDownloadPath = null;
 			if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 				responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("VnfConfigCreationPath");
-				filePath = responseDownloadPath + "//" + requestID + "_Configuration.xml";
+				filePath = responseDownloadPath + requestID + "_Configuration.xml";
 			} else {
 				responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-				filePath = responseDownloadPath + "//" + requestID + "V" + version + "_Configuration";
+				filePath = responseDownloadPath + requestID + "V" + version + "_Configuration";
 			}
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			if (!version.equalsIgnoreCase("1.0")) {
-				filePath = responseDownloadPath + "//" + requestID + "V" + version + "_ConfigurationNoCmd";
+				filePath = responseDownloadPath + requestID + "V" + version + "_ConfigurationNoCmd";
 				File file = new File(filePath);
 				if (file.exists()) {
 					try {
@@ -82,7 +82,7 @@ public class InvokeFtl {
 				content1 = new String(Files.readAllBytes(Paths.get(filePath)));
 				withHeader = content1;
 			} else {
-				filePath = responseDownloadPath + "//" + requestID + "V" + version + "_Header";
+				filePath = responseDownloadPath + requestID + "V" + version + "_Header";
 				content1 = new String(Files.readAllBytes(Paths.get(filePath)));
 				withHeader = content1 + "\r\n" + "<font color=\"red\">" + contentNoCmd + "</font>" + "\r\n" + content;
 				withHeader = withHeader.replace("config t", "");
@@ -106,7 +106,7 @@ public class InvokeFtl {
 
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + "//" + requestID + "V" + version + "_basicConfiguration.txt";
+			filePath = responseDownloadPath + requestID + "V" + version + "_basicConfiguration.txt";
 			lines = Files.readAllLines(Paths.get(filePath));
 
 			// withHeader=content1+"\r\n"+"<font color=\"red\">"+"</font>"+"\r\n"+content;
@@ -123,7 +123,7 @@ public class InvokeFtl {
 		String filePath = "";
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + "//" + requestID + "V" + version + "_prevalidationTest.txt";
+			filePath = responseDownloadPath + requestID + "V" + version + "_prevalidationTest.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -616,18 +616,18 @@ public class InvokeFtl {
 		Map<String, String> dataList = new HashMap<String, String>();
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + "//" + requestId + "V" + version + "_deliveredConfig.txt";
+			filePath = responseDownloadPath + requestId + "V" + version + "_deliveredConfig.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			dataList.put("content", content);
 
-			File file = new File(responseDownloadPath + "//" + requestId + "V" + version + "_PreviousConfig.txt");
+			File file = new File(responseDownloadPath + requestId + "V" + version + "_PreviousConfig.txt");
 
 			if (file.exists()) {
 				contentPreviousVersion = "Completed";
 				dataList.put("contentPreviousVersion", contentPreviousVersion);
 			}
 
-			file = new File(responseDownloadPath + "//" + requestId + "V" + version + "_CurrentVersionConfig.txt");
+			file = new File(responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt");
 			if (file.exists()) {
 				contentCurrentVersion = "Completed";
 				dataList.put("contentCurrentVersion", contentCurrentVersion);
@@ -661,7 +661,7 @@ public class InvokeFtl {
 
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + "//" + requestId + "V" + version + "_HealthCheck.txt";
+			filePath = responseDownloadPath + requestId + "V" + version + "_HealthCheck.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 
 		} catch (IOException e) {
@@ -677,7 +677,7 @@ public class InvokeFtl {
 
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder");
-			filePath = responseDownloadPath + "//" + step + "_" + requestId + "_" + region + "_HealthCheckReport.html";
+			filePath = responseDownloadPath + step + "_" + requestId + "_" + region + "_HealthCheckReport.html";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 
 		} catch (IOException e) {
@@ -693,7 +693,7 @@ public class InvokeFtl {
 
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + "//" + requestId + "V" + version + "_CustomTests.txt";
+			filePath = responseDownloadPath + requestId + "V" + version + "_CustomTests.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 
 		} catch (IOException e) {
@@ -708,7 +708,7 @@ public class InvokeFtl {
 		String filePath = "";
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + "//" + requestId + "V" + version + "_customerReport.txt";
+			filePath = responseDownloadPath + requestId + "V" + version + "_customerReport.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -722,7 +722,7 @@ public class InvokeFtl {
 		String filePath = "";
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + "//" + requestId + "V" + version + "_networkTest.txt";
+			filePath = responseDownloadPath + requestId + "V" + version + "_networkTest.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			content = content.replace("terminal length 0", "");
 		} catch (IOException e) {
@@ -737,7 +737,7 @@ public class InvokeFtl {
 		String filePath = "";
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + "//" + requestId + "V" + version + "_CurrentVersionConfig.txt";
+			filePath = responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			content = content.replace("terminal length 0", "");
 		} catch (IOException e) {
@@ -753,9 +753,9 @@ public class InvokeFtl {
 		String newStr = "";
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			File file = new File(responseDownloadPath + "//" + requestId + "V" + version + "_PreviousConfig.txt");
+			File file = new File(responseDownloadPath + requestId + "V" + version + "_PreviousConfig.txt");
 			if (file.exists()) {
-				filePath = responseDownloadPath + "//" + requestId + "V" + version + "_PreviousConfig.txt";
+				filePath = responseDownloadPath + requestId + "V" + version + "_PreviousConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				content = content.substring(content.indexOf("run\r\n") + 5);
 				newStr = content.substring(0, content.lastIndexOf("end") + 3);
@@ -773,9 +773,9 @@ public class InvokeFtl {
 		String newStr = "";
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			File file = new File(responseDownloadPath + "//" + requestId + "V" + version + "_CurrentVersionConfig.txt");
+			File file = new File(responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt");
 			if (file.exists()) {
-				filePath = responseDownloadPath + "//" + requestId + "V" + version + "_CurrentVersionConfig.txt";
+				filePath = responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt";
 
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				/*
@@ -804,7 +804,7 @@ public class InvokeFtl {
 			tree.put("latestVersion", latestVersion);
 			tree.put("compareVersion", compareVersion);
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			String filepath = responseDownloadPath + "/noconfig.txt";
+			String filepath = responseDownloadPath + "noconfig.txt";
 			File file = new File(filepath);
 			if (file.exists()) {
 				res = freemarkerDoModify(tree, "noconfig.txt");
@@ -831,7 +831,7 @@ public class InvokeFtl {
 			tree.put("latestVersion", latestVersion);
 			tree.put("compareVersion", compareVersion);
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			String filepath = responseDownloadPath + "/createconfig.txt";
+			String filepath = responseDownloadPath + "createconfig.txt";
 			File file = new File(filepath);
 			if (file.exists()) {
 				res = freemarkerDoModify(tree, "createconfig.txt");
@@ -931,6 +931,7 @@ public class InvokeFtl {
 	public void createFinalTemplate(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate,
 			List<AttribCreateConfigPojo> masterAttribute, List<AttribCreateConfigPojo> templateAttribute,
 			String templateId) {
+		logger.info("createFinalTemplate -templateId - "+templateId);
 		String s = ")!" + '"' + '"' + "}";
 		if (masterAttribute != null) {
 			if (cammandsBySeriesId != null) {
@@ -999,19 +1000,8 @@ public class InvokeFtl {
 			finalCammands = finalCammands + cammands.getCommandValue();
 		}
 
-		logger.info(finalCammands);
-		try {
-			// new Template is Save in NewTemplate Folder
-			TemplateManagementDetailsService.loadProperties();
-			String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
-					.getProperty("newtemplateCreationPath");
-
-			TextReport.writeFile(responseDownloadPath, templateId, finalCammands);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		logger.info("finalCammands - "+ finalCammands);
+		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);		
 
 	}
 
@@ -1262,9 +1252,9 @@ public class InvokeFtl {
 		String newStr = "";
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			File file = new File(responseDownloadPath + "//" + requestId + "V" + version + "_StartupConfig.txt");
+			File file = new File(responseDownloadPath + requestId + "V" + version + "_StartupConfig.txt");
 			if (file.exists()) {
-				filePath = responseDownloadPath + "//" + requestId + "V" + version + "_StartupConfig.txt";
+				filePath = responseDownloadPath + requestId + "V" + version + "_StartupConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				content = content.substring(content.indexOf("run\r\n") + 5);
 				newStr = content.substring(0, content.lastIndexOf("end") + 3);
@@ -1345,14 +1335,15 @@ public class InvokeFtl {
 			finalCammands = finalCammands + cammands.getCommandValue();
 		}
 
-		logger.info(finalCammands);
+		logger.info("finalCammands - "+finalCammands);
+		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);
 		try {
 			// new Template is Save in NewTemplate Folder
 			TemplateManagementDetailsService.loadProperties();
 			String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
 					.getProperty("newtemplateCreationPath");
-
-			TextReport.writeFile(responseDownloadPath, templateId, finalCammands);
+			logger.info("responseDownloadPath - "+responseDownloadPath);
+			//TextReport.writeFile(responseDownloadPath, templateId, finalCammands);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

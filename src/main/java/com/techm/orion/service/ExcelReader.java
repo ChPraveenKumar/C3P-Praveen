@@ -1400,7 +1400,7 @@ public class ExcelReader {
 
 		if (isNullOrEmpty(Template_id)) {
 			RequestDetailsExport.loadProperties();
-			String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("templateCreationPath") + "/" + Template_id;
+			String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("templateCreationPath") + Template_id;
 			File file = new File(path);
 			String template = null;
 			DcmConfigService dcmConfigService = new DcmConfigService();
@@ -1616,7 +1616,7 @@ public class ExcelReader {
 					logger.info("Matched Template Found for Selected features");
 					if (TemplateList != null) {
 						RequestDetailsExport.loadProperties();
-						String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("templateCreationPath") + "/"
+						String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("templateCreationPath")
 								+ TemplateList;
 						File file = new File(path);
 						String template = null;

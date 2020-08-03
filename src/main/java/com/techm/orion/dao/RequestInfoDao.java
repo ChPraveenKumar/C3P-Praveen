@@ -4248,7 +4248,7 @@ public class RequestInfoDao {
 	public boolean addCertificationTestForRequest(String alphanumeric_req_id, String request_version,
 			String Device_Reachability_Test) {
 		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO CertificationTestValidation(Device_Reachability_Test,Vendor_Test,Device_Model_Test,IOSVersion_Test,PreValidation_Test,ShowIpIntBrief_Cmd,ShowInterface_Cmd,ShowVersion_Cmd,Network_Test,showIpBgpSummary_Cmd,Throughput_Test,FrameLoss_Test,Latency_Test,HealthCheck_Test,alphanumeric_req_id,version,suggestionForFailure)"
+		String sql = "INSERT INTO certificationtestvalidation(Device_Reachability_Test,Vendor_Test,Device_Model_Test,IOSVersion_Test,PreValidation_Test,ShowIpIntBrief_Cmd,ShowInterface_Cmd,ShowVersion_Cmd,Network_Test,showIpBgpSummary_Cmd,Throughput_Test,FrameLoss_Test,Latency_Test,HealthCheck_Test,alphanumeric_req_id,version,suggestionForFailure)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		String suggestion = "NA";
 		if (Device_Reachability_Test.equalsIgnoreCase("2")) {
@@ -4296,7 +4296,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String suggestion = "NA";
-		query = "update CertificationTestValidation set Vendor_Test = ?,IOSVersion_Test = ?,Device_Model_Test  = ?,suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set Vendor_Test = ?,IOSVersion_Test = ?,Device_Model_Test  = ?,suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
 		if (vendorflag == 2) {
 			suggestion = "Please select the correct Vendor from C3P GUI";
 		}
@@ -4328,7 +4328,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String suggestion = "NA";
-		query = "update CertificationTestValidation set actual_vendor = ?,gui_vendor = ?,actual_os_version  = ?,gui_os_version =?,actual_model=?,gui_model=? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set actual_vendor = ?,gui_vendor = ?,actual_os_version  = ?,gui_os_version =?,actual_model=?,gui_model=? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -4359,7 +4359,7 @@ public class RequestInfoDao {
 		String flagFordelieverConfig = "";
 		Map<String, String> hmap = new HashMap<String, String>();
 
-		query = "select * from  CertificationTestValidation where alphanumeric_req_id = ? and version = ? ";
+		query = "select * from  certificationtestvalidation where alphanumeric_req_id = ? and version = ? ";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestId);
@@ -4417,7 +4417,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 
-		query = "update CertificationTestValidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -4439,7 +4439,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 
-		query = "update CertificationTestValidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -4461,11 +4461,11 @@ public class RequestInfoDao {
 		String query = null;
 
 		if (type.equalsIgnoreCase("frameloss")) {
-			query = "update CertificationTestValidation set frameloss = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set frameloss = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (type.equalsIgnoreCase("latency")) {
-			query = "update CertificationTestValidation set latency = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set latency = ? where alphanumeric_req_id = ? and version = ? ";
 		} else {
-			query = "update CertificationTestValidation set throughput = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set throughput = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 		PreparedStatement preparedStmt;
 		try {
@@ -4485,7 +4485,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 
-		query = "update CertificationTestValidation set ShowIpIntBrief_Cmd = ?,ShowInterface_Cmd = ?,ShowVersion_Cmd  = ?,showIpBgpSummary_Cmd=? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set ShowIpIntBrief_Cmd = ?,ShowInterface_Cmd = ?,ShowVersion_Cmd  = ?,showIpBgpSummary_Cmd=? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {
@@ -6318,7 +6318,7 @@ public class RequestInfoDao {
 
 			rs = preparedStmt.executeUpdate();
 
-			query = "update CertificationTestValidation set Device_Reachability_Test = ? where alphanumeric_req_id = ? and version = ? ";
+			query = "update certificationtestvalidation set Device_Reachability_Test = ? where alphanumeric_req_id = ? and version = ? ";
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, "0");
 			preparedStmt.setString(2, requestId);
@@ -6338,7 +6338,7 @@ public class RequestInfoDao {
 		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String suggestion = "Please check the connectivity.Issue while performing Health check test";
-		query = "update CertificationTestValidation set suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
+		query = "update certificationtestvalidation set suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
 
 		PreparedStatement preparedStmt;
 		try {

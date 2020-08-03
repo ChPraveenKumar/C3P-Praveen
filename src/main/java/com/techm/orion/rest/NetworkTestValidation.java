@@ -726,7 +726,7 @@ public class NetworkTestValidation extends Thread {
 			if (!(s.equals(""))) {
 				logger.info(s);
 
-				String filepath = NetworkTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//"
+				String filepath = NetworkTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath")
 						+ requestID + "V" + version + "_networkTest.txt";
 				File file = new File(filepath);
 
@@ -763,7 +763,7 @@ public class NetworkTestValidation extends Thread {
 		NetworkTestValidation.loadProperties();
 		logger.info("In side validate network test line no 356");
 		String content = "";
-		String path = NetworkTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//"
+		String path = NetworkTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath")
 				+ configRequest.getRequestId() + "V" + configRequest.getRequest_version() + "_networkTest.txt";
 
 		File file = new File(path);
@@ -819,7 +819,7 @@ public class NetworkTestValidation extends Thread {
 		NetworkTestValidation.loadProperties();
 		logger.info("In side validate network test line no 356");
 		String content = "";
-		String path = NetworkTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath") + "//"
+		String path = NetworkTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath")
 				+ requestinfo.getAlphanumericReqId() + "V" + requestinfo.getRequestVersion() + "_networkTest.txt";
 
 		File file = new File(path);

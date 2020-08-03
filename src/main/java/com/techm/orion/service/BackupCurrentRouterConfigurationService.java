@@ -235,7 +235,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			if (!(s.equals(""))) {
 				// logger.info(str);
 				String filepath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-						.getProperty("responseDownloadPath") + "//" + requestID + "V" + version + "_PreviousConfig.txt";
+						.getProperty("responseDownloadPath") + requestID + "V" + version + "_PreviousConfig.txt";
 				File file = new File(filepath);
 
 				// if file doesnt exists, then create it
@@ -282,7 +282,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			if (!(s.equals(""))) {
 				// logger.info(str);
 				String filepath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-						.getProperty("responseDownloadPath") + "//" + requestID + "V" + version + "_StartupConfig.txt";
+						.getProperty("responseDownloadPath") + requestID + "V" + version + "_StartupConfig.txt";
 				File file = new File(filepath);
 
 				// if file doesnt exists, then create it
@@ -329,7 +329,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			if (!(s.equals(""))) {
 				// logger.info(str);
 				String filepath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty(
-						"responseDownloadPath") + "//" + requestID + "V" + version + "_CurrentVersionConfig.txt";
+						"responseDownloadPath") + requestID + "V" + version + "_CurrentVersionConfig.txt";
 				System.out.println("File path for current "+filepath);
 				File file = new File(filepath);
 

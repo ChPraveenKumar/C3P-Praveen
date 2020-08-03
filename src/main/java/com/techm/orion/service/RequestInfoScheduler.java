@@ -6,15 +6,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.GET;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.BatchIdEntity;
@@ -54,7 +50,7 @@ public class RequestInfoScheduler {
 	 * produces = "application/json")
 	 */
 	
-	@Scheduled(cron = "0/5 * * * * *")	
+	@Scheduled(cron = "0 0/5 * * * *")	
 	public void fetchDBJob() {
 		CreateConfigRequestDCM configRequest = new CreateConfigRequestDCM();
 		String tempBatchId = null, tempId = null;

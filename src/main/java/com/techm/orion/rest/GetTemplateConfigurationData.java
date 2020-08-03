@@ -874,7 +874,6 @@ String comment="";
 
 			List<String> lines = Files.readAllLines(Paths
 					.get(responseDownloadPath
-							+ "/"
 							+ json.get("templateid").toString()
 									.replace("-", "_")));
 			List<CommandPojo> listShow = new ArrayList<CommandPojo>();

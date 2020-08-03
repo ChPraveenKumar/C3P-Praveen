@@ -1,9 +1,7 @@
 package com.techm.orion.webService;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.util.Properties;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -23,29 +21,23 @@ import com.techm.orion.pojo.Interface;
 import com.techm.orion.pojo.InternetLCVRFType;
 import com.techm.orion.pojo.MISARPEType;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
 public class GetAllDetailsService {
-	private static final Logger logger = LogManager.getLogger(GetAllDetailsService.class);
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
+	private static final Logger logger = LogManager.getLogger(GetAllDetailsService.class);	
 
 	public String jsonResponseString() throws IOException {
-		GetAllDetailsService.loadProperties();
-		String webServiceURI = GetAllDetailsService.TSA_PROPERTIES.getProperty("webServiceURI");
-		String allRequestDetailsPath = GetAllDetailsService.TSA_PROPERTIES.getProperty("allRequestDetailsPath");
-
 		ClientConfig clientConfig = new ClientConfig();
 		Client client = ClientBuilder.newClient(clientConfig);
-		URI serviceURI = UriBuilder.fromUri(webServiceURI).build();
+		URI serviceURI = UriBuilder.fromUri(TSALabels.WEB_SERVICE_URI.getValue()).build();
 		WebTarget webTarget = client.target(serviceURI);
 
 		/*
 		 * String response1= webTarget.path(saveRequestDetailsPath).request()
 		 * .accept(MediaType.APPLICATION_JSON).post
 		 */
-		String response = webTarget.path(allRequestDetailsPath).request().accept(MediaType.APPLICATION_JSON)
+		String response = webTarget.path(TSALabels.ALL_REQUEST_DETAILS_PATH.getValue()).request().accept(MediaType.APPLICATION_JSON)
 				.get(String.class);
 
 		return response;
@@ -107,13 +99,9 @@ public class GetAllDetailsService {
 			misarpeType.setFastEthernetIp(configRequest.getFastEthernetIp());
 			createConfigRequest.setMisArPe(misarpeType);
 
-			GetAllDetailsService.loadProperties();
-			String webServiceURI = GetAllDetailsService.TSA_PROPERTIES.getProperty("webServiceURI");
-			String saveRequestDetailsPath = GetAllDetailsService.TSA_PROPERTIES.getProperty("saveRequestDetailsPath");
-
 			ClientConfig clientConfig = new ClientConfig();
 			Client client = ClientBuilder.newClient(clientConfig);
-			URI serviceURI = UriBuilder.fromUri(webServiceURI).build();
+			URI serviceURI = UriBuilder.fromUri(TSALabels.WEB_SERVICE_URI.getValue()).build();
 			javax.ws.rs.client.WebTarget webTarget = client
 					.target("http://localhost:8080/POC1/rest/CreateConfigurationService/createConfiguration");
 			/*
@@ -145,34 +133,16 @@ public class GetAllDetailsService {
 			/*
 			 * pushCommand = invokeFtl .generatePushCommandFile(createConfigRequest);
 			 */
-			try {
-				String responseDownloadPath = GetAllDetailsService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-				TextReport.writeFile(responseDownloadPath, requestId + "_Configuration", configuration);
-				TextReport.writeFile(responseDownloadPath, requestId + "_PushCommand", pushCommand);
-			} catch (IOException exe) {
-
-			}
-
-			logger.info(requestId);
-			logger.info(configuration);
+			TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestId + "_Configuration", configuration);
+			TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestId + "_PushCommand", pushCommand);
+			
+			logger.info("requestId - " +requestId);
+			logger.info("configuration - " +configuration);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return requestId;
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 
 }

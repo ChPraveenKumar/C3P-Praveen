@@ -50,10 +50,9 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.rest.CamundaServiceCreateReq;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.VNFHelper;
-//import com.techm.orion.utility.VNFHelper;
-import com.techm.orion.webService.GetAllDetailsService;
 
 @Component
 public class DcmConfigService {
@@ -82,7 +81,7 @@ public class DcmConfigService {
 
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		CamundaServiceCreateReq camundaServiceCreateReq = new CamundaServiceCreateReq();
+		//CamundaServiceCreateReq camundaServiceCreateReq = new CamundaServiceCreateReq();
 		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
 		String validateMessage = "", requestType = "";
 		// TelnetCommunicationSSH telnetCommunicationSSH=new
@@ -90,7 +89,7 @@ public class DcmConfigService {
 		String requestIdForConfig = "", alphaneumeric_req_id;
 		String res = "", output = "";
 		Map<String, String> result = new HashMap<String, String>();
-		RequestInfoEntity entity = new RequestInfoEntity();
+		//RequestInfoEntity entity = new RequestInfoEntity();
 		String hostName = "", managementIp = "";
 		int testStrategyDBUpdate = 0;
 
@@ -628,12 +627,9 @@ public class DcmConfigService {
 					if (flagForPrevalidation.equalsIgnoreCase("1") && flagFordelieverConfig.equalsIgnoreCase("1")) {
 						// compare the last two version to create file(no
 						// cmds+new cmds)
-						createAndCompareModifyVersion.CompareModifyVersion(requestIdForConfig, "templatecreate");
-						GetAllDetailsService.loadProperties();
-						String responseDownloadPath = GetAllDetailsService.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
+						createAndCompareModifyVersion.CompareModifyVersion(requestIdForConfig, "templatecreate");						
 						String responseHeader = invokeFtl.generateheader(configRequest);
-						TextReport.writeFile(responseDownloadPath,
+						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestIdForConfig + "V" + configRequest.getRequest_version() + "_Header",
 								responseHeader);
 
@@ -693,11 +689,9 @@ public class DcmConfigService {
 					if (flagForPrevalidation.equalsIgnoreCase("1") && flagFordelieverConfig.equalsIgnoreCase("1")) {
 						// compare the last two version to create file(no
 						// cmds+new cmds)
-						createAndCompareModifyVersion.CompareModifyVersion(requestIdForConfig, "templatecreate");
-						String responseDownloadPath = GetAllDetailsService.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
+						createAndCompareModifyVersion.CompareModifyVersion(requestIdForConfig, "templatecreate");					
 						String responseHeader = invokeFtl.generateheader(configRequest);
-						TextReport.writeFile(responseDownloadPath,
+						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestIdForConfig + "V" + configRequest.getRequest_version() + "_Header",
 								responseHeader);
 						requestSchedulerDao.updateScheduledRequest(configRequest);
@@ -1044,7 +1038,6 @@ public class DcmConfigService {
 
 	public List<String> getConfigurationFeature(String region, String vendor, String model, String os, String osVersion)
 			throws IOException {
-		GetAllDetailsService.loadProperties();
 		String templateid = null;
 		String templateToUse = null;
 
@@ -1057,8 +1050,7 @@ public class DcmConfigService {
 			templateid = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase()
 					+ model.toUpperCase() + os.substring(0, 2).toUpperCase() + osVersion;
 			TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-			String templateFolderPath = GetAllDetailsService.TSA_PROPERTIES.getProperty("templateCreationPath");
-			final File folder = new File(templateFolderPath);
+			final File folder = new File(getTemplateCreationPathForFolder());
 			listOfTemplatesAvailable = listFilesForFolder(folder);
 			if (listOfTemplatesAvailable.size() > 0) {
 				String tempString = null;
@@ -1138,16 +1130,14 @@ public class DcmConfigService {
 		TemplateManagementDao templateDao = new TemplateManagementDao();
 		// create the file to push
 		try {
-			GetAllDetailsService.loadProperties();
-
+			
 			if (null == configRequest.getTemplateID() || configRequest.getTemplateID().isEmpty()) {
 				String templateID = getTemplateName(configRequest.getRegion(), configRequest.getVendor(),
 						configRequest.getModel(), configRequest.getOs(), configRequest.getOsVersion());
 				configRequest.setTemplateID(templateID);
 
 				// open folder for template and read all available templatenames
-				String templateFolderPath = GetAllDetailsService.TSA_PROPERTIES.getProperty("templateCreationPath");
-				final File folder = new File(templateFolderPath);
+				final File folder = new File(getTemplateCreationPathForFolder());
 				listOfTemplatesAvailable = listFilesForFolder(folder);
 				String tempString = null;
 				if (listOfTemplatesAvailable.size() > 0) {
@@ -1203,11 +1193,10 @@ public class DcmConfigService {
 			try {
 				responseHeader = invokeFtl.generateheader(configRequest);
 				response = invokeFtl.generateConfigurationToPush(configRequest, fileToUse);
-				String responseDownloadPath = GetAllDetailsService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-				TextReport.writeFile(responseDownloadPath,
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						configRequest.getRequestId() + "V" + configRequest.getRequest_version() + "_Configuration",
 						response);
-				TextReport.writeFile(responseDownloadPath,
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						configRequest.getRequestId() + "V" + configRequest.getRequest_version() + "_Header",
 						responseHeader);
 			} catch (Exception e) {
@@ -1613,16 +1602,14 @@ public class DcmConfigService {
 		TemplateManagementDao templateDao = new TemplateManagementDao();
 		// create the file to push
 		try {
-			GetAllDetailsService.loadProperties();
-
+			
 			if (null == configRequest.getTemplateID() || configRequest.getTemplateID().isEmpty()) {
 				String templateID = getTemplateName(configRequest.getRegion(), configRequest.getVendor(),
 						configRequest.getModel(), configRequest.getOs(), configRequest.getOsVersion());
 				configRequest.setTemplateID(templateID);
 
 				// open folder for template and read all available templatenames
-				String templateFolderPath = GetAllDetailsService.TSA_PROPERTIES.getProperty("templateCreationPath");
-				final File folder = new File(templateFolderPath);
+				final File folder = new File(getTemplateCreationPathForFolder());
 				listOfTemplatesAvailable = listFilesForFolder(folder);
 				String tempString = null;
 				if (listOfTemplatesAvailable.size() > 0) {
@@ -1678,10 +1665,9 @@ public class DcmConfigService {
 			try {
 				responseHeader = invokeFtl.generateheader(configRequest);
 				response = invokeFtl.generateConfigurationToPush(configRequest, fileToUse);
-				String responseDownloadPath = GetAllDetailsService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-				TextReport.writeFile(responseDownloadPath, configRequest.getAlphanumericReqId() + "V"
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
 						+ configRequest.getRequestVersion() + "_Configuration", response);
-				TextReport.writeFile(responseDownloadPath,
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						configRequest.getAlphanumericReqId() + "V" + configRequest.getRequestVersion() + "_Header",
 						responseHeader);
 			} catch (Exception e) {
@@ -1896,6 +1882,14 @@ public class DcmConfigService {
 			logger.error(e);
 		}
 		return result;
+	}
+	
+	private String getTemplateCreationPathForFolder() {
+		String path = TSALabels.TEMPLATE_CREATION_PATH.getValue(); 
+		if (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/'){
+			path = path.substring(0, path.length()-1);
+	    }
+		 return path;
 	}
 
 }
