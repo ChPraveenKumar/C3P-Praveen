@@ -349,10 +349,12 @@ public class RequestInfoDetailsDao {
 			for (RequestInfoEntity entity : requestByOwner) {
 				RequestInfoCreateConfig setEntityToPojo = mapper.setEntityToPojo(entity);
 				if (setEntityToPojo != null) {
-					list.add(request);
-					return list;
+					list.add(setEntityToPojo);
+					
 				}
+				
 			}
+			
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -362,6 +364,8 @@ public class RequestInfoDetailsDao {
 		return list;
 	}
 
+
+	
 	@Transactional
 	public void setReadFlagFESE(String requestId, String version, boolean status, String key) {
 		Double finalVersion = Double.valueOf(version);

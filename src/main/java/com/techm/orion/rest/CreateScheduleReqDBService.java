@@ -136,7 +136,7 @@ public class CreateScheduleReqDBService {
 				}
 
 				if (dbProcessID.equalsIgnoreCase("0")) {
-					query = "INSERT INTO camundaHistory(history_processId,history_requestId,history_versionId,history_user) VALUES(?,?,?,?)";
+					query = "INSERT INTO camundahistory(history_processId,history_requestId,history_versionId,history_user) VALUES(?,?,?,?)";
 
 					preparedStmt = connection.prepareStatement(query);
 					preparedStmt.setString(1, processId);
@@ -146,7 +146,7 @@ public class CreateScheduleReqDBService {
 					preparedStmt.executeUpdate();
 
 				} else {
-					query = "update camundaHistory set history_processId = ?,history_user = ? where history_requestId = ? and history_versionId= ?";
+					query = "update camundahistory set history_processId = ?,history_user = ? where history_requestId = ? and history_versionId= ?";
 
 					preparedStmt = connection.prepareStatement(query);
 					preparedStmt.setString(1, processId);

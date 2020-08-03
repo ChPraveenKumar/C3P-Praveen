@@ -5549,7 +5549,7 @@ public class RequestInfoDao {
 	public boolean changeRequestOwner(String requestid, String version, String owner) {
 		boolean result = false;
 		int res;
-		String query1 = "update requestinfoso set RequestOwner = ? , readFE=?, readSE=? where alphanumeric_req_id = ? and request_version= ?";
+		String query1 = "update c3p_t_request_info set r_request_owner = ? , r_read_fe=?, r_read_se=? where r_alphanumeric_req_id = ? and r_request_version= ?";
 		try {
 			PreparedStatement preparedStmt1, preparedStmt0;
 			ResultSet rs = null;
@@ -5565,6 +5565,10 @@ public class RequestInfoDao {
 			} else if (owner.equalsIgnoreCase("feuser")) {
 				preparedStmt0.setInt(2, 0);
 				preparedStmt0.setInt(3, 1);
+			}
+			else if (owner.equalsIgnoreCase("admin")) {
+				preparedStmt0.setInt(2, 1);
+				preparedStmt0.setInt(3, 0);
 			}
 			preparedStmt0.setString(4, requestid);
 			preparedStmt0.setString(5, version);
@@ -5587,7 +5591,7 @@ public class RequestInfoDao {
 	public String getUserTaskIdForRequest(String requestId, String version) {
 		String usertaskid = null;
 		connection = ConnectionFactory.getConnection();
-		String query2 = "select * from  camundaHistory where history_requestId=? and history_versionId=?";
+		String query2 = "select * from  camundahistory where history_requestId=? and history_versionId=?";
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
 			pst.setString(1, requestId);
@@ -5608,7 +5612,7 @@ public class RequestInfoDao {
 
 		boolean result = false;
 		int res;
-		String query1 = "update requestinfoso set request_status = ?, end_date_of_processing= now() where alphanumeric_req_id = ? and request_version= ?";
+		String query1 = "update c3p_t_request_info set r_status = ?, r_end_date_of_processing= now() where r_alphanumeric_req_id = ? and r_request_version= ?";
 		try {
 			PreparedStatement preparedStmt1, preparedStmt0;
 			ResultSet rs = null;
@@ -6150,9 +6154,9 @@ public class RequestInfoDao {
 		String query = null;
 
 		if (key.equalsIgnoreCase("FE")) {
-			query = "update requestinfoso set readFE = ? where alphanumeric_req_id = ? and request_version = ? ";
+			query = "update c3p_t_request_info set r_read_fe = ? where r_alphanumeric_req_id = ? and r_request_version = ? ";
 		} else if (key.equalsIgnoreCase("SE")) {
-			query = "update requestinfoso set readSE = ? where alphanumeric_req_id = ? and request_version = ? ";
+			query = "update c3p_t_request_info set r_read_se = ? where r_alphanumeric_req_id = ? and r_request_version = ? ";
 		}
 
 		PreparedStatement preparedStmt;
@@ -7094,7 +7098,6 @@ public class RequestInfoDao {
 		boolean res = false;
 		connection = ConnectionFactory.getConnection();
 		String query = "insert into t_tststrategy_m_config_results (TestResult,ResultText,RequestId,TestCategory,testName,CollectedValue,EvaluationCriteria,notes,data_type,request_version) values (?,?,?,?,?,?,?,?,?,?)";
-
 		try {
 			PreparedStatement ps = connection.prepareStatement(query);
 			ps.setString(1, testResult);
@@ -7490,7 +7493,7 @@ public class RequestInfoDao {
 		String res = null;
 		Map<String, String> hmap = new HashMap<String, String>();
 
-		query = "select TestsSelected from  t_tststrategy_m_config_transaction where RequestId = ? and request_version =?";
+		query = "select TestsSelected from  t_tststrategy_m_config_transaction where RequestId = ?";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestID);
@@ -8117,7 +8120,8 @@ public class RequestInfoDao {
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGA-" + UUID.randomUUID().toString().toUpperCase();
 
-			} else if (requestInfoSO.getRequestType().equalsIgnoreCase("RESTCONF")
+			}
+			else if (requestInfoSO.getRequestType().equalsIgnoreCase("RESTCONF")
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {
 				alphaneumeric_req_id = "SNRC-" + UUID.randomUUID().toString().toUpperCase();
 
@@ -8644,6 +8648,12 @@ public class RequestInfoDao {
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 		}
+		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("0")) {
+			reachabilityObj.put("testname", "Device Reachability test");
+			reachabilityObj.put("status", "Not Conducted");
+			reachabilityObj.put("outcome", "N/A");
+			reachabilityObj.put("notes", "N/A");
+		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
 			iosVersion.put("testname", "OS");
 			iosVersion.put("status", "Failed");
@@ -8659,6 +8669,14 @@ public class RequestInfoDao {
 			iosVersion.put("notes", "N/A");
 			iosVersion.put("CollectedValue", resultEnt.getGuiOsVersion());
 			iosVersion.put("EvaluationCriteria", resultEnt.getActualOsVersion());
+		}
+		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("0")) {
+			iosVersion.put("testname", "OS");
+			iosVersion.put("status", "Not Conducted");
+			iosVersion.put("outcome", "");
+			iosVersion.put("notes", "N/A");
+			iosVersion.put("CollectedValue", "N/A");
+			iosVersion.put("EvaluationCriteria", "N/A");
 		}
 		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("2")) {
 			deviceModel.put("testname", "Device Model");
@@ -8676,6 +8694,14 @@ public class RequestInfoDao {
 			deviceModel.put("CollectedValue", resultEnt.getGuiModel());
 			deviceModel.put("EvaluationCriteria", resultEnt.getActualModel());
 		}
+		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("0")) {
+			deviceModel.put("testname", "Device Model");
+			deviceModel.put("status", "Not Conducted");
+			deviceModel.put("outcome", "");
+			deviceModel.put("notes", "N/A");
+			deviceModel.put("CollectedValue", "N/A");
+			deviceModel.put("EvaluationCriteria","N/A");
+		}
 		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("2")) {
 			vendorTest.put("testname", "Vendor Test");
 			vendorTest.put("status", "Failed");
@@ -8692,7 +8718,14 @@ public class RequestInfoDao {
 			vendorTest.put("CollectedValue", resultEnt.getGuiVendor());
 			vendorTest.put("EvaluationCriteria", resultEnt.getGuiVendor());
 		}
-
+		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("0")) {
+			vendorTest.put("testname", "Vendor Test");
+			vendorTest.put("status", "Not Conducted");
+			vendorTest.put("outcome", "");
+			vendorTest.put("notes", "N/A");
+			vendorTest.put("CollectedValue", "N/A");
+			vendorTest.put("EvaluationCriteria", "N/A");
+		}
 		if (deliveryStatus.equals("1")) {
 			backUpStatus.put("backupstatus", "Success");
 		} else {
@@ -8744,6 +8777,12 @@ public class RequestInfoDao {
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 		}
+		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("0")) {
+			reachabilityObj.put("testname", "Device Reachability test");
+			reachabilityObj.put("status", "Not Conducted");
+			reachabilityObj.put("outcome", "N/A");
+			reachabilityObj.put("notes", "N/A");
+		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
 			iosVersion.put("testname", "OS");
 			iosVersion.put("status", "Failed");
@@ -8759,6 +8798,14 @@ public class RequestInfoDao {
 			iosVersion.put("notes", "N/A");
 			iosVersion.put("CollectedValue", resultEnt.getGuiOsVersion());
 			iosVersion.put("EvaluationCriteria", resultEnt.getActualOsVersion());
+		}
+		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("0")) {
+			iosVersion.put("testname", "OS");
+			iosVersion.put("status", "Not Conducted");
+			iosVersion.put("outcome", "N/A");
+			iosVersion.put("notes", "N/A");
+			iosVersion.put("CollectedValue", "N/A");
+			iosVersion.put("EvaluationCriteria", "N/A");
 		}
 		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("2")) {
 			deviceModel.put("testname", "Device Model");
@@ -8776,6 +8823,14 @@ public class RequestInfoDao {
 			deviceModel.put("CollectedValue", resultEnt.getGuiModel());
 			deviceModel.put("EvaluationCriteria", resultEnt.getActualModel());
 		}
+		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("0")) {
+			deviceModel.put("testname", "Device Model");
+			deviceModel.put("status", "Not Conducted");
+			deviceModel.put("outcome", "N/A");
+			deviceModel.put("notes", "N/A");
+			deviceModel.put("CollectedValue", "N/A");
+			deviceModel.put("EvaluationCriteria", "N/A");
+		}
 		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("2")) {
 			vendorTest.put("testname", "Vendor Test");
 			vendorTest.put("status", "Failed");
@@ -8791,6 +8846,14 @@ public class RequestInfoDao {
 			vendorTest.put("notes", "N/A");
 			vendorTest.put("CollectedValue", resultEnt.getGuiVendor());
 			vendorTest.put("EvaluationCriteria", resultEnt.getGuiVendor());
+		}
+		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("0")) {
+			vendorTest.put("testname", "Vendor Test");
+			vendorTest.put("status", "Not Conducted");
+			vendorTest.put("outcome", "N/A");
+			vendorTest.put("notes", "N/A");
+			vendorTest.put("CollectedValue", "N/A");
+			vendorTest.put("EvaluationCriteria", "N/A");
 		}
 		prevalidationArray.add(vendorTest);
 		prevalidationArray.add(deviceModel);
@@ -9443,7 +9506,7 @@ public class RequestInfoDao {
 		PreparedStatement preparedStmt;
 		String res = null;
 
-		query = "select TestsSelected from  t_tststrategy_m_config_transaction where RequestId = ?";
+		query = "select testsselected from  t_tststrategy_m_config_transaction where RequestId = ?";
 		try {
 			preparedStmt = connection.prepareStatement(query);
 			preparedStmt.setString(1, requestID);

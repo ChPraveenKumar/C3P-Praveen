@@ -139,7 +139,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC")
 							|| type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SLGM")
-							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
+							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM") || type.equalsIgnoreCase("SLGA")) {
 						value = false;
 						String response = invokeFtl.generateDevicelockedFile(createConfigRequest);
 
@@ -200,7 +200,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							createConfigRequest.getRequestId());
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC")
 							|| type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SLGM")
-							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
+							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM") || type.equalsIgnoreCase("SLGA")) {
 
 						String host = createConfigRequest.getManagementIp();
 						UserPojo userPojo = new UserPojo();
@@ -1018,6 +1018,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									Double.toString(createConfigRequest.getRequest_version()), "feuser");
 							requestInfoDao.changeRequestStatus(createConfigRequest.getRequestId(),
 									Double.toString(createConfigRequest.getRequest_version()), "In Progress");
+							CamundaServiceFEWorkflow feworkflow=new CamundaServiceFEWorkflow();
+							feworkflow.initiateFEWorkflow(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()));
 							value = false;
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
@@ -1085,6 +1087,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									Double.toString(createConfigRequest.getRequest_version()), "feuser");
 							requestInfoDao.changeRequestStatus(createConfigRequest.getRequestId(),
 									Double.toString(createConfigRequest.getRequest_version()), "In Progress");
+							CamundaServiceFEWorkflow feworkflow=new CamundaServiceFEWorkflow();
+							feworkflow.initiateFEWorkflow(createConfigRequest.getRequestId(), Double.toString(createConfigRequest.getRequest_version()));
 							value = false;
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
@@ -1198,6 +1202,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "feuser");
 							requestDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "In Progress");
+							//Code to initiate FE Workflow
+							CamundaServiceFEWorkflow feworkflow=new CamundaServiceFEWorkflow();
+							feworkflow.initiateFEWorkflow(requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()));
 							value = false;
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
