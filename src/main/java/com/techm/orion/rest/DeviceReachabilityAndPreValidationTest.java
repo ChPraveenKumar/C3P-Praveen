@@ -1157,7 +1157,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				//Boolean reachabilityTest = cmdPingCall(requestinfo.getManagementIp(),
 				//		requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()));
 				boolean reachabilityTest = false;
-				String pingResults = pingHelper.pingResults(createConfigRequest.getManagementIp());
+				String pingResults = pingHelper.pingResults(requestinfo.getManagementIp());
 				if (pingResults != null) {
 					if (pingResults.contains("Error") || pingResults.contains("Destination host unreachable")
 							|| pingResults.contains("Request timed out.")) {
