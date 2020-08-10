@@ -93,40 +93,127 @@ public class DeviceDiscrepancyService {
 	private boolean checkDescripancy(DiscoveryResultDeviceDetailsEntity device, DeviceDiscoveryEntity inventoryDevice,
 			String status) {
 		boolean flag = false;
-		int value = inventoryDevice.getdDisResultid().getId();
-		if (status.equals("new")) {
-			if (device.getCustomer() == null && device.getSite() == null) {
-				discoveryResultFlagRepo.updateCustomerAndSiteDiscrepancy("1", "1", device.getId());
-				flag = true;
-			}
-		} else {
-			if (inventoryDevice.getdDisResultid().getId() != 0
-					&& inventoryDevice.getdDisResultid().getId() < device.getId()) {
-				int id = discoveryRepo.updateDescripancyId(device.getId(), inventoryDevice.getdId());
-				if (id > 0) {
-					value = device.getId();
-				}
-			}
-			if (value == device.getId()) {
+		int value = 0;
+		if (inventoryDevice.getdDisResultid() != null) {
+			value = inventoryDevice.getdDisResultid().getId();
+		}
+		if (value != 0 && inventoryDevice.getdDisResultid() != null) {
+			if (status.equals("new")) {
 				if (device.getCustomer() == null && device.getSite() == null) {
-					discoveryResultFlagRepo.updateCustomerAndSiteDiscrepancy("1", "1", device.getId());
-					flag = true;
+//					discoveryResultFlagRepo.updateCustomerAndSiteDiscrepancy("1", "1", device.getId());
+//					flag = true;
 				}
-				if (device.getCustomer() != null && device.getSite() != null) {
-					if (!device.getCustomer().equals(inventoryDevice.getCustSiteId().getcCustName())
-							&& !device.getSite().equals(inventoryDevice.getCustSiteId().getcSiteName())) {
-						discoveryResultFlagRepo.updateCustomerAndSiteDiscrepancy("1", "1", device.getId());
+			} else {
+				if (inventoryDevice.getdDisResultid().getId() != 0
+						&& inventoryDevice.getdDisResultid().getId() < device.getId()) {
+					int id = discoveryRepo.updateDescripancyId(device.getId(), inventoryDevice.getdId());
+					if (id > 0) {
+						value = device.getId();
+					}
+				}
+				if (value == device.getId()) {
+					if (device.getCustomer() == null && device.getSite() == null) {
+//						discoveryResultFlagRepo.updateCustomerAndSiteDiscrepancy("1", "1", device.getId());
+//						flag = true;
+					}
+					if (device.getCustomer() != null && device.getSite() != null) {
+						if (!device.getCustomer().equals(inventoryDevice.getCustSiteId().getcCustName())
+								&& !device.getSite().equals(inventoryDevice.getCustSiteId().getcSiteName())) {
+//							discoveryResultFlagRepo.updateCustomerAndSiteDiscrepancy("1", "1", device.getId());
+//							flag = true;
+						}
+					}
+					if (!device.getdVendor().equals(inventoryDevice.getdVendor())) {
+						discoveryResultFlagRepo.updateVendorDiscrepancy("1", device.getId());
 						flag = true;
 					}
 				}
-				if (!device.getdVendor().equals(inventoryDevice.getdVendor())) {
-					discoveryResultFlagRepo.updateVendorDiscrepancy("1", device.getId());
-					flag = true;
-				}
 			}
+		} else {
+			updateInvetoryTable(device);
 		}
 		return flag;
 
+	}
+/*Update Device in inventory Table*/
+	private void updateInvetoryTable(DiscoveryResultDeviceDetailsEntity device) {
+		List<DeviceDiscoveryEntity> inventoryDeviceList = discoveryRepo
+				.findByDHostNameAndDMgmtIp(device.getdHostname(), device.getdMgmtip());
+		inventoryDeviceList.forEach(entity->{
+			if (device.getdVendor() != null) {
+				entity.setdVendor(device.getdVendor());
+			}
+			if (device.getdOs() != null) {
+				entity.setdOs(device.getdOs());
+			}
+			if (device.getdHostname() != null) {
+				entity.setdHostName(device.getdHostname());
+			}
+			if (device.getdMgmtip() != null) {
+				entity.setdMgmtIp(device.getdMgmtip());
+			}
+			if (device.getdIpAddrsSix() != null) {
+				entity.setdIPAddrSix(device.getdIpAddrsSix());
+			}
+			if (device.getdSries() != null) {
+				entity.setdSeries(device.getdSries());
+			}
+			if (device.getdModel() != null) {
+				entity.setdModel(device.getdModel());
+			}
+			if (device.getdOsVersion() != null) {
+				entity.setdOsVersion(device.getdOsVersion());
+			}
+			if (device.getdReleasever() != null) {
+				entity.setdReleaseVer(device.getdReleasever());
+			}
+			if (device.getdMacaddress() != null) {
+				entity.setdMACAddress(device.getdMacaddress());
+			}
+			if (device.getdCpu() != null) {
+				entity.setdCPU(device.getdCpu());
+			}
+			if (device.getdFlashSize() != null) {
+				entity.setdFlashSize(device.getdFlashSize());
+			}
+			if (device.getdCpuRevision() != null) {
+				entity.setdCPURevision(device.getdCpuRevision());
+			}
+			if (device.getdNvramSize() != null) {
+				entity.setdNVRAMSize(device.getdNvramSize());
+			}
+			if (device.getdUpsince() != null) {
+				entity.setdUpSince(device.getdUpsince());
+			}
+			if (device.getdStatus() != null) {
+				entity.setdStatus(device.getdStatus());
+			}
+			entity.setdDisResultid(device);
+			entity.setdDeComm("0");
+			if (device.getInterfaces() != null && !device.getInterfaces().isEmpty()) {
+				List<DeviceDiscoveryInterfaceEntity> interfaces = new ArrayList<>();
+				device.getInterfaces().forEach(deviceInterface -> {
+					DeviceDiscoveryInterfaceEntity intefaceEntity = new DeviceDiscoveryInterfaceEntity();
+					intefaceEntity.setiIntAdminStat(deviceInterface.getiIntAdminStat());
+					intefaceEntity.setiIntDescription(deviceInterface.getiIntDescription());
+					intefaceEntity.setiIntIpaddr(deviceInterface.getiIntIpaddr());
+					intefaceEntity.setiIntIpv6addr(deviceInterface.getiIntIpv6addr());
+					intefaceEntity.setiIntName(deviceInterface.getiIntName());
+					intefaceEntity.setiIntOperStat(deviceInterface.getiIntOperStat());
+					intefaceEntity.setiIntPhyAddr(deviceInterface.getiIntPhyAddr());
+					intefaceEntity.setiIntPrefix(deviceInterface.getiIntPrefix());
+					intefaceEntity.setiIntSubnet(deviceInterface.getiIntSubnet());
+					intefaceEntity.setDevice(entity);
+					interfaces.add(intefaceEntity);
+				});
+				entity.setInterfaces(interfaces);
+			}
+			try {
+				 discoveryRepo.save(entity);				
+			} catch (Exception e) {
+			}
+		});
+						
 	}
 
 	/*
@@ -180,7 +267,7 @@ public class DeviceDiscrepancyService {
 		if (device.getdUpsince() != null) {
 			entity.setdUpSince(device.getdUpsince());
 		}
-		if(device.getdStatus()!=null) {
+		if (device.getdStatus() != null) {
 			entity.setdStatus(device.getdStatus());
 		}
 		entity.setdDisResultid(device);

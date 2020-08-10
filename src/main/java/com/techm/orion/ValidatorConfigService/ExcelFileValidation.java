@@ -1157,21 +1157,22 @@ public class ExcelFileValidation {
 			for (int i = 1; i < (rows.size()); i++) {
 				rowValue = Arrays.asList(rows.get(i));
 
-				String cell0 = rowValue.get(0).toString();
-				if ((!cell0.equals("")))
-					isFlag = true;
-				else
-					isFlagError = true;
-
 				String cell1 = rowValue.get(1).toString();
-				if ((!cell1.equals("") && validator.isValidInet4Address(cell1))) 
-					isFlag = true;
+				String cell2 = rowValue.get(2).toString();
+				
+				if (!cell1.equals("") || !cell2.equals("")) 
+				{
+					if(validator.isValidInet4Address(cell1))
+						isFlag = true;
+				}
 				else 
 					isFlagError = true;
 
-				String cell2 = rowValue.get(2).toString();
-				if ((!cell2.equals("") && InetAddresses.isInetAddress(cell2))) 
-					isFlag = true;
+				if (!cell1.equals("") || !cell2.equals("")) 
+				{
+					if(InetAddresses.isInetAddress(cell2))
+						isFlag = true;
+				}
 				else 
 					isFlagError = true;
 

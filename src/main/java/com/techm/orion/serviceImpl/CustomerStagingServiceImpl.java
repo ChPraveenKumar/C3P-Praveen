@@ -272,6 +272,8 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 		
 		logger.info("\n" + "Inside checkMgmtIp method");
 		String isMgmtIpExist = null;
+		String isIpV6Exist =null;
+		boolean isIpV4ExistOrIpV6 =false;
 		List<String> rootCause = new ArrayList<String>();
 		List<CustomerStagingEntity> getStaggingData = customerStagingImportRepo.findStaggingData(importId);
 		boolean isFlag = false;
@@ -279,7 +281,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 		boolean isChecked =false;
 		List<DeviceDiscoveryEntity> supportedHostName = new ArrayList<DeviceDiscoveryEntity>();
 		List<String> supportedVendor = customerStagingImportRepo.findSupportedVendor();
-		List<DeviceDiscoveryEntity> supportedFamily = deviceDiscoveryRepository.findFamily();
+		List<String> supportedFamily = customerStagingImportRepo.findFamily();
 		List<String> supportedModel = customerStagingImportRepo.findModel();
 		List<String> supportedOS = customerStagingImportRepo.findOS();
 		List<String> supportedOSVersion = customerStagingImportRepo.findOSVersion();
@@ -288,9 +290,18 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 
 			for (CustomerStagingEntity data : getStaggingData) {
 				String ip = data.getiPV4ManagementAddress();
-				isMgmtIpExist = deviceDiscoveryRepository.findMgmtId(ip.toString());
-
-				if (isMgmtIpExist == null) {
+				String ipv6 = data.getiPV6ManagementAddress();
+				if(null != ip)
+					isMgmtIpExist = deviceDiscoveryRepository.findMgmtId(ip);
+				if(null != ipv6)
+					isIpV6Exist = deviceDiscoveryRepository.findIpV6(ipv6);
+				
+				if(null != isMgmtIpExist )
+					isIpV4ExistOrIpV6 = true;
+				else if (null != isIpV6Exist)
+					isIpV4ExistOrIpV6 = true;
+				
+				if ((isMgmtIpExist == null || isIpV6Exist ==null) && isIpV4ExistOrIpV6 ==false) {
 					// Check Device Model is supporting or not
 					vendor = data.getDeviceVendor();
 					if (!supportedVendor.isEmpty() && vendor != null
@@ -304,7 +315,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 					// Check Device Family is supporting or not
 					family = data.getDeviceFamily();
 					if (!supportedFamily.isEmpty() && family != null
-							&& supportedFamily.contains(family.toUpperCase())) {
+							&& supportedFamily.stream().anyMatch(family::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
 						isFlagError = true;
@@ -381,7 +392,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 					// Check Device Family is supporting or not
 					family = data.getDeviceFamily();
 					if (!supportedFamily.isEmpty() && family != null
-							&& supportedFamily.contains(family.toUpperCase())) {
+							&& supportedFamily.stream().anyMatch(family::equalsIgnoreCase)){
 						isFlag = true;
 					} else {
 						isFlagError = true;
@@ -460,9 +471,19 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			for (Object deviceData : deviceInfo) {
 				object = new JSONObject();
 				Object[] col = (Object[]) deviceData;
-				if (col[15].toString().equalsIgnoreCase("existing")) {
+				if (col[15].toString().equalsIgnoreCase("existing")  && null !=col[0]) {
 					List<DeviceDiscoveryEntity> existIp = deviceDiscoveryRepository
-							.existingDeviceInfo(col[0].toString());
+							.existingDeviceInfoIpV4(col[0].toString());
+					if(existIp.isEmpty())
+					{
+						existIp = deviceDiscoveryRepository
+								.existingDeviceInfoIpV6(col[1].toString());	
+					}
+					deviceEntity = existIp.get(0);
+					siteEntity = existIp.get(0).getCustSiteId();
+				} else if (col[15].toString().equalsIgnoreCase("existing") && null !=col[1]) {
+					List<DeviceDiscoveryEntity> existIp = deviceDiscoveryRepository
+							.existingDeviceInfoIpV6(col[1].toString());
 					deviceEntity = existIp.get(0);
 					siteEntity = existIp.get(0).getCustSiteId();
 				} else{

@@ -172,11 +172,11 @@ public class DeviceDiscoveryController implements Observer {
 					if (deviceinfo.get("Error") != null || deviceinfo.isEmpty()) {
 						countForNonInventoriedDevices++;
 						deviceinfo.put("managementip", ip);
-						saveInDumpTables(deviceinfo, null, result);
+						saveInDumpTables(deviceinfo, null, result, ip);
 					} else {
 						// get interface details for same device
 						interfaceinfo = runDeviceInterfaceInventory(pythonScriptFolder, snmpDump, discoveryName, ip);
-						String savedRecordMgmtIp = saveInDumpTables(deviceinfo, interfaceinfo, result);
+						String savedRecordMgmtIp = saveInDumpTables(deviceinfo, interfaceinfo, result, ip);
 					}
 					logger.info("DeviceInfo " + deviceinfo);
 				}
@@ -216,7 +216,7 @@ public class DeviceDiscoveryController implements Observer {
 					interfaceinfo = runDeviceInterfaceInventory(pythonScriptFolder, snmpDump, discoveryName, ipAddress);
 					// Save data in Dump tables
 
-					String savedRecordMgmtIp = saveInDumpTables(deviceinfo, interfaceinfo, result);
+					String savedRecordMgmtIp = saveInDumpTables(deviceinfo, interfaceinfo, result, ipAddress);
 					DeviceDiscoveryDashboardEntity ent = deviceDiscoveryDashboardRepo.findById(result.getId());
 
 					List<DiscoveryResultDeviceDetailsEntity> nonIventoriedDevices = discoveryResultDeviceDetailsRepo
@@ -618,11 +618,12 @@ public class DeviceDiscoveryController implements Observer {
 	}
 
 	private String saveInDumpTables(JSONObject deviceinfo, JSONObject interfaceinfo,
-			DeviceDiscoveryDashboardEntity discovery) {
+			DeviceDiscoveryDashboardEntity discovery, String ipAddress) {
 		String managementIp = null;
-
+		String hostname =null;
+		
 		if (deviceinfo.get("Error") != null) {
-			boolean isFoundinInventory = checkInventory(managementIp);
+			boolean isFoundinInventory = checkInventory(ipAddress);
 
 			managementIp = deviceinfo.get("managementip").toString();
 			DiscoveryResultDeviceDetailsEntity dumpDeviceDetails = new DiscoveryResultDeviceDetailsEntity();
@@ -631,19 +632,23 @@ public class DeviceDiscoveryController implements Observer {
 			dumpDeviceDetails.setdCpu("");
 			dumpDeviceDetails.setdOsVersion("");
 			dumpDeviceDetails.setdReleasever("");
-			dumpDeviceDetails.setdMgmtip(managementIp);
+			dumpDeviceDetails.setdMgmtip(ipAddress);
 			dumpDeviceDetails.setdVendor("");
 			dumpDeviceDetails.setdModel("");
 			dumpDeviceDetails.setdSries("");
 			dumpDeviceDetails.setdStatus("Unavailable");
 			dumpDeviceDetails.setDeviceDiscoveryDashboardEntity(discovery);
 			if (isFoundinInventory)
+			{
 				dumpDeviceDetails.setdInventoried("0");
+				hostname = deviceDiscoveryRepo.findBydMgmtIp(ipAddress).get(0).getdHostName();
+			}
 			else
+			{
 				dumpDeviceDetails.setdInventoried("1");
-
-			String hostname = "USTXCECI7200NY" + UUID.randomUUID().toString().toUpperCase();
-			hostname = hostname.substring(0, 15) + "-2";
+				hostname = "USTXCECI7200NY" + UUID.randomUUID().toString().toUpperCase();
+				hostname = hostname.substring(0, 15) + "-2";
+			}
 			dumpDeviceDetails.setdHostname(hostname);
 			DiscoveryResultDeviceDetailsFlagsEntity flagsEntity = new DiscoveryResultDeviceDetailsFlagsEntity();
 
@@ -659,8 +664,8 @@ public class DeviceDiscoveryController implements Observer {
 		} else {
 			JSONObject deviceinfoData = (JSONObject) deviceinfo.get("data");
 
-			managementIp = deviceinfoData.get("managementip").toString();
-			boolean isFoundinInventory = checkInventory(managementIp);
+			managementIp = ipAddress;
+			boolean isFoundinInventory = checkInventory(ipAddress);
 
 			DiscoveryResultDeviceDetailsEntity dumpDeviceDetails = new DiscoveryResultDeviceDetailsEntity();
 			// JSONObject deviceinfoData=(JSONObject) deviceinfo.get("data");
@@ -669,19 +674,23 @@ public class DeviceDiscoveryController implements Observer {
 			dumpDeviceDetails.setdCpu(deviceinfoData.get("cpu").toString());
 			dumpDeviceDetails.setdOsVersion(deviceinfoData.get("nodeVersion").toString());
 			dumpDeviceDetails.setdReleasever(deviceinfoData.get("releasever").toString());
-			dumpDeviceDetails.setdMgmtip(deviceinfoData.get("managementip").toString());
+			dumpDeviceDetails.setdMgmtip(managementIp);
 			dumpDeviceDetails.setdVendor(deviceinfoData.get("vendor").toString());
 			dumpDeviceDetails.setdModel(deviceinfoData.get("model").toString());
 			dumpDeviceDetails.setdSries(deviceinfoData.get("family").toString());
 			dumpDeviceDetails.setdStatus("Available");
 			dumpDeviceDetails.setDeviceDiscoveryDashboardEntity(discovery);
 			if (isFoundinInventory)
+			{
 				dumpDeviceDetails.setdInventoried("0");
+				hostname = deviceDiscoveryRepo.findBydMgmtIp(ipAddress).get(0).getdHostName();
+			}
 			else
+			{
 				dumpDeviceDetails.setdInventoried("1");
-
-			String hostname = "USTXCECI7200NY" + UUID.randomUUID().toString().toUpperCase();
-			hostname = hostname.substring(0, 15) + "-2";
+				hostname = "USTXCECI7200NY" + UUID.randomUUID().toString().toUpperCase();
+				hostname = hostname.substring(0, 15) + "-2";
+			}
 			dumpDeviceDetails.setdHostname(hostname);
 
 			List<DiscoveryResultDeviceInterfaceEntity> interfacesList = new ArrayList<DiscoveryResultDeviceInterfaceEntity>();
