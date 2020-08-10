@@ -273,7 +273,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 		logger.info("\n" + "Inside checkMgmtIp method");
 		String isMgmtIpExist = null;
 		String isIpV6Exist =null;
-		boolean isIpV4ExistOrIpV6 =false;
 		List<String> rootCause = new ArrayList<String>();
 		List<CustomerStagingEntity> getStaggingData = customerStagingImportRepo.findStaggingData(importId);
 		boolean isFlag = false;
@@ -287,21 +286,92 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 		List<String> supportedOSVersion = customerStagingImportRepo.findOSVersion();
 		String hostName, vendor, family, model, os, osVersion = null;
 		try {
-
 			for (CustomerStagingEntity data : getStaggingData) {
-				String ip = data.getiPV4ManagementAddress();
-				String ipv6 = data.getiPV6ManagementAddress();
-				if(null != ip)
-					isMgmtIpExist = deviceDiscoveryRepository.findMgmtId(ip);
-				if(null != ipv6)
-					isIpV6Exist = deviceDiscoveryRepository.findIpV6(ipv6);
-				
-				if(null != isMgmtIpExist )
-					isIpV4ExistOrIpV6 = true;
-				else if (null != isIpV6Exist)
-					isIpV4ExistOrIpV6 = true;
-				
-				if ((isMgmtIpExist == null || isIpV6Exist ==null) && isIpV4ExistOrIpV6 ==false) {
+				if(data.getiPV4ManagementAddress() != null)
+					isMgmtIpExist = deviceDiscoveryRepository.findMgmtId(data.getiPV4ManagementAddress());
+				if (data.getiPV6ManagementAddress() != null && data.getiPV4ManagementAddress() == null)
+					isIpV6Exist = deviceDiscoveryRepository.findIpV6(data.getiPV6ManagementAddress());
+
+				// Existing Case.. Both isMgmtIpExist & isIpV6Exist are having
+				// data or at least one has data will fall under existing case.
+				if (isMgmtIpExist != null || isIpV6Exist != null) {
+					supportedHostName = deviceDiscoveryRepository.findHostName();
+
+					// Check Hostname is supporting or not
+					hostName = data.getHostname();
+					if (!supportedHostName.isEmpty() && hostName != null
+							&& supportedHostName.contains(hostName.toUpperCase())) {
+						isFlag = true;
+
+					} else {
+						isFlagError = true;
+						rootCause.add("Mismatch found in Hostname");
+					}
+
+					// Check Device Model is supporting or not
+					vendor = data.getDeviceVendor();
+					if (!supportedVendor.isEmpty() && vendor != null
+							&& supportedVendor.stream().anyMatch(vendor::equalsIgnoreCase)) {
+						isFlag = true;
+
+					} else {
+						isFlagError = true;
+						rootCause.add("Mismatch found in vendor");
+					}
+					// Check Device Family is supporting or not
+					family = data.getDeviceFamily();
+					if (!supportedFamily.isEmpty() && family != null
+							&& supportedFamily.stream().anyMatch(family::equalsIgnoreCase)) {
+						isFlag = true;
+					} else {
+						isFlagError = true;
+						rootCause.add("Mismatch found in family");
+					}
+					// Check Device model is supporting or not
+					model = data.getDeviceModel();
+					if (!supportedModel.isEmpty() && model != null
+							&& supportedModel.stream().anyMatch(model::equalsIgnoreCase)) {
+						isFlag = true;
+					} else {
+						isFlagError = true;
+						rootCause.add("Mismatch found in model");
+					}
+					// Check OS is supporting or not
+					os = data.getOs();
+					if (!supportedOS.isEmpty() && os != null && supportedOS.stream().anyMatch(os::equalsIgnoreCase)) {
+						isFlag = true;
+
+					} else {
+						isFlagError = true;
+						rootCause.add("Mismatch found in os");
+					}
+					// Check OSVersion is supporting or not
+					osVersion = data.getOsVersion();
+					if (!supportedOSVersion.isEmpty() && osVersion != null
+							&& supportedOSVersion.stream().anyMatch(osVersion::equalsIgnoreCase)) {
+						isFlag = true;
+					} else {
+						isFlagError = true;
+						rootCause.add("Mismatch found in osVersion");
+					}
+
+					if (isFlag == true && isFlagError == false) {
+						data.setResult("Existing");
+						data.setOutcomeResult("Success");
+						data.setRootCause("");
+						customerStagingImportRepo.saveAndFlush(data);
+						isFlag = false;
+						isFlagError = false;
+					} else {
+						data.setResult("Existing");
+						data.setOutcomeResult("Exception");
+						data.setRootCause(rootCause.toString().replace("[", " ").replace("]", " "));
+						customerStagingImportRepo.saveAndFlush(data);
+						isFlag = false;
+						isFlagError = false;
+						rootCause.clear();
+					}
+				} else {
 					// Check Device Model is supporting or not
 					vendor = data.getDeviceVendor();
 					if (!supportedVendor.isEmpty() && vendor != null
@@ -359,91 +429,15 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 					} else {
 						data.setResult("New");
 						data.setOutcomeResult("Exception");
-						data.setRootCause(rootCause.toString().concat("," + "please contact admin").replace("[", " ").replace("]", " "));
-						customerStagingImportRepo.saveAndFlush(data);
-						isFlag = false;
-						isFlagError = false;
-						rootCause.clear();
-					}
-				} else {
-					supportedHostName = deviceDiscoveryRepository.findHostName();
-
-					// Check Hostname is supporting or not
-					hostName = data.getHostname();
-					if (!supportedHostName.isEmpty() && hostName != null
-							&& supportedHostName.contains(hostName.toUpperCase())) {
-						isFlag = true;
-
-					} else {
-						isFlagError = true;
-						rootCause.add("Mismatch found in Hostname");
-					}
-
-					// Check Device Model is supporting or not
-					vendor = data.getDeviceVendor();
-					if (!supportedVendor.isEmpty() && vendor != null
-							&& supportedVendor.stream().anyMatch(vendor::equalsIgnoreCase)) {
-						isFlag = true;
-
-					} else {
-						isFlagError = true;
-						rootCause.add("Mismatch found in vendor");
-					}
-					// Check Device Family is supporting or not
-					family = data.getDeviceFamily();
-					if (!supportedFamily.isEmpty() && family != null
-							&& supportedFamily.stream().anyMatch(family::equalsIgnoreCase)){
-						isFlag = true;
-					} else {
-						isFlagError = true;
-						rootCause.add("Mismatch found in family");
-					}
-					// Check Device model is supporting or not
-					model = data.getDeviceModel();
-					if (!supportedModel.isEmpty() && model != null
-							&& supportedModel.stream().anyMatch(model::equalsIgnoreCase)) {
-						isFlag = true;
-					} else {
-						isFlagError = true;
-						rootCause.add("Mismatch found in model");
-					}
-					// Check OS is supporting or not
-					os = data.getOs();
-					if (!supportedOS.isEmpty() && os != null && supportedOS.stream().anyMatch(os::equalsIgnoreCase)) {
-						isFlag = true;
-
-					} else {
-						isFlagError = true;
-						rootCause.add("Mismatch found in os");
-					}
-					// Check OSVersion is supporting or not
-					osVersion = data.getOsVersion();
-					if (!supportedOSVersion.isEmpty() && osVersion != null
-							&& supportedOSVersion.stream().anyMatch(osVersion::equalsIgnoreCase)) {
-						isFlag = true;
-					} else {
-						isFlagError = true;
-						rootCause.add("Mismatch found in osVersion");
-					}
-
-					if (isFlag == true && isFlagError == false) {
-						data.setResult("Existing");
-						data.setOutcomeResult("Success");
-						data.setRootCause("");
-						customerStagingImportRepo.saveAndFlush(data);
-						isFlag = false;
-						isFlagError = false;
-					} else {
-						data.setResult("Existing");
-						data.setOutcomeResult("Exception");
-						data.setRootCause(rootCause.toString().replace("[", " ").replace("]", " "));
+						data.setRootCause(rootCause.toString().concat("," + "please contact admin").replace("[", " ")
+								.replace("]", " "));
 						customerStagingImportRepo.saveAndFlush(data);
 						isFlag = false;
 						isFlagError = false;
 						rootCause.clear();
 					}
 				}
-				isChecked =true;
+				isChecked = true;
 			}
 		} catch (Exception e) {
 			logger.error("\n" + "exception in checkMgmtIp method" + e.getMessage());

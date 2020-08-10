@@ -208,10 +208,7 @@ public class DeviceDiscrepancyService {
 				});
 				entity.setInterfaces(interfaces);
 			}
-			try {
-				 discoveryRepo.save(entity);				
-			} catch (Exception e) {
-			}
+			discoveryRepo.save(entity);				
 		});
 						
 	}
