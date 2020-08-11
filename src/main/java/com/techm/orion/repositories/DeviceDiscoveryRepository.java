@@ -252,16 +252,18 @@ public interface DeviceDiscoveryRepository extends
 
 	@Query("SELECT dMgmtIp FROM DeviceDiscoveryEntity where dMgmtIp=:dMgmtIp")
 	String findMgmtId(@Param("dMgmtIp") String dMgmtIp);
+	
+	@Query("SELECT dIPAddrSix FROM DeviceDiscoveryEntity where dIPAddrSix=:dIPAddrSix")
+	String findIpV6(@Param("dIPAddrSix") String dIPAddrSix );	
 
 	@Query("SELECT dHostName FROM DeviceDiscoveryEntity")
 	List<DeviceDiscoveryEntity> findHostName();
 
-	@Query("SELECT distinct dSeries FROM DeviceDiscoveryEntity")
-	List<DeviceDiscoveryEntity> findFamily();
-
 	@Query("SELECT data FROM DeviceDiscoveryEntity data where dMgmtIp=:dMgmtIp")
-	List<DeviceDiscoveryEntity> existingDeviceInfo(
-			@Param("dMgmtIp") String dMgmtIp);
+	List<DeviceDiscoveryEntity> existingDeviceInfoIpV4(@Param("dMgmtIp") String dMgmtIp);
+	
+	@Query("SELECT data FROM DeviceDiscoveryEntity data where dIPAddrSix=:dIPAddrSix")
+	List<DeviceDiscoveryEntity> existingDeviceInfoIpV6(@Param("dIPAddrSix") String dIPAddrSix);
 
 	String findDevices = "SELECT * FROM c3p_deviceinfo u where u.d_vendor = ?1 and u.d_sries = ?2 and u.d_os_version < ?3";
 

@@ -1157,118 +1157,50 @@ public class ExcelFileValidation {
 			for (int i = 1; i < (rows.size()); i++) {
 				rowValue = Arrays.asList(rows.get(i));
 
-				String cell0 = rowValue.get(0).toString();
-				if ((!cell0.equals("")))
-					isFlag = true;
-				else
-					isFlagError = true;
+				if (((rowValue.get(1) != null && !rowValue.get(1).isEmpty())
+						|| (rowValue.get(2) != null && !rowValue.get(2).isEmpty())) && rowValue.get(3) != null
+						&& !rowValue.get(3).isEmpty() && rowValue.get(4) != null && !rowValue.get(4).isEmpty()
+						&& rowValue.get(5) != null && !rowValue.get(5).isEmpty() && rowValue.get(6) != null
+						&& !rowValue.get(6).isEmpty() && rowValue.get(7) != null && !rowValue.get(7).isEmpty()
+						&& rowValue.get(8) != null && !rowValue.get(8).isEmpty() && rowValue.get(16) != null
+						&& !rowValue.get(16).isEmpty() && rowValue.get(17) != null && !rowValue.get(17).isEmpty()
+						&& rowValue.get(18) != null && !rowValue.get(18).isEmpty() && rowValue.get(19) != null
+						&& !rowValue.get(19).isEmpty()) {
+					isFlagError = false;
+					if (rowValue.get(1) != null && !rowValue.get(1).isEmpty()
+							&& !validator.isValidInet4Address(rowValue.get(1))) {
+						isFlagError = true;
+					} else if (rowValue.get(2) != null && !rowValue.get(2).isEmpty()
+							&& !InetAddresses.isInetAddress(rowValue.get(2))) {
+						isFlagError = true;
+					}
+				}
 
-				String cell1 = rowValue.get(1).toString();
-				if ((!cell1.equals("") && validator.isValidInet4Address(cell1))) 
-					isFlag = true;
-				else 
-					isFlagError = true;
-
-				String cell2 = rowValue.get(2).toString();
-				if ((!cell2.equals("") && InetAddresses.isInetAddress(cell2))) 
-					isFlag = true;
-				else 
-					isFlagError = true;
-
-				String cell3 = rowValue.get(3).toString();
-				if (!(cell3.equals(""))) 
-					isFlag = true;
-			    else 
-					isFlagError = true;
-				
-				String cell4 = rowValue.get(4).toString();
-				if (!(cell4.equals(""))) 
-					isFlag = true;
-				else 
-					isFlagError = true;
-				
-				String cell5 = rowValue.get(5).toString();
-				if (!(cell5.equals(""))) 
-					isFlag = true;
-			    else 
-					isFlagError = true;
-				 	
-				String cell6 = rowValue.get(6).toString();
-				if (!(cell6.equals(""))) 
-					isFlag = true;
-			    else 
-					isFlagError = true;
-				
-				String cell7 = rowValue.get(7).toString();
-				if (!(cell7.equals(""))) 
-					isFlag = true;
-				else 
-					isFlagError = true;
-
-				String cell8 = rowValue.get(8).toString();
-				if (!(cell8.equals(""))) 
-					isFlag = true;
-				else 
-					isFlagError = true;
-
-				String cell16 = rowValue.get(16).toString();
-				if (!(cell16.equals(""))) 
-					isFlag = true;
-			    else 
-					isFlagError = true;
-					
-				String cell17 = rowValue.get(17).toString();
-				if (!(cell17.equals(""))) 
-					isFlag = true;
-				else 
-					isFlagError = true;
-				
-				String cell18 = rowValue.get(18).toString();
-				if (!(cell18.equals(""))) 
-					isFlag = true;
-
-				else 
-					isFlagError = true;
-				
-				String cell19 = rowValue.get(19).toString();
-				if (!(cell19.equals(""))) 
-					isFlag = true;
-				else 
-					isFlagError = true;
-				
 				if (isFlagError) {
 					strBbuilder.append(i).append(",").toString();
 					isFlagError = false;
 				}
 			}
 
-			if (strBbuilder.length() > 0){
-				strBbuilder.deleteCharAt(strBbuilder.length() -1);
+			if (strBbuilder.length() > 0) {
+				strBbuilder.deleteCharAt(strBbuilder.length() - 1);
 				isFlagError = true;
 			}
-
-			if (isFlag == true && rows.size() == 2 && isFlagError == false) {
-				status = msgRepo.findDiscrepancyMsg("valid single req");
-				response.put("Valid Single Request", status);
-			} else if (isFlagError == true && rows.size() == 2)
-			{
-				String msg = msgRepo.findDiscrepancyMsg("Mandatory Col");
-				strBbuilder.insert(0, msg);
-				response.put("Fields are missing", strBbuilder.toString());
-			}
-			else if (isFlag == true && rows.size() > 2 && isFlagError == false) {
-				status = msgRepo.findDiscrepancyMsg("valid multiple req");
-				response.put("Valid Multiple Request", status);
-			} else if (isFlagError == true && rows.size() > 2)
-			{
-				String msg = msgRepo.findDiscrepancyMsg("Mandatory Col");
-				strBbuilder.insert(0, msg);
-				response.put("Fields are missing", strBbuilder.toString());
-			}
-			else if (rows.size() ==1)
-			{
+			if (rows.size() < 2) {
 				status = msgRepo.findDiscrepancyMsg("no records");
 				response.put("No records found", status);
+			} else if (isFlagError && rows.size() >= 2) {
+				String msg = msgRepo.findDiscrepancyMsg("Mandatory Col");
+				strBbuilder.insert(0, msg);
+				response.put("Fields are missing", strBbuilder.toString());
+			} else if (!isFlagError) {
+				if (rows.size() == 2) {
+					status = msgRepo.findDiscrepancyMsg("valid single req");
+					response.put("Valid Single Request", status);
+				} else {
+					status = msgRepo.findDiscrepancyMsg("valid multiple req");
+					response.put("Valid Multiple Request", status);
+				}
 			}
 
 		} catch (Exception e) {
