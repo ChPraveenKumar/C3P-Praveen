@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "T_TSTSTRATEGY_M_TSTDETAILS")
+@Table(name = "t_tststrategy_m_tstdetails")
 public class TestStrategeBasicConfigurationEntity {
 
 	@GeneratedValue(strategy = GenerationType.AUTO)

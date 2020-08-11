@@ -4,13 +4,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
@@ -20,53 +22,42 @@ import com.techm.orion.pojo.SchedulerListPojo;
 
 public class RequestSchedulerDao {
 
-	private Connection connection;
-	Statement statement;
+	private static final Logger logger = LogManager.getLogger(RequestSchedulerDao.class);
 
 	public String updateScheduledRequest(CreateConfigRequestDCM configRequest) throws SQLException {
 		String result = "";
-		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
-		PreparedStatement preparedStmt = null;
-		String query = null;
-		try {
-			query = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
-					+ "VALUES(?,?,?,?,?)";
-
-			preparedStmt = connection.prepareStatement(query);
+		String query = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
+				+ "VALUES(?,?,?,?,?)";
+		try(Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
+			
 			preparedStmt.setString(1, configRequest.getRequestId());
 			preparedStmt.setString(2, Double.toString(configRequest.getRequest_version()));
 			preparedStmt.setString(3, "Scheduled");
 
-			if (configRequest.getScheduledTime() != null && configRequest.getScheduledTime() != "") {
-
+			if (configRequest.getScheduledTime() != null && !configRequest.getScheduledTime().isEmpty()) {
 				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-
 				try {
-					java.util.Date parsedDate = sdf.parse(configRequest.getScheduledTime());
-
-					java.sql.Timestamp timestampTimeForScheduled = new java.sql.Timestamp(parsedDate.getTime());
+					Date parsedDate = sdf.parse(configRequest.getScheduledTime());
+					Timestamp timestampTimeForScheduled = new Timestamp(parsedDate.getTime());
 					preparedStmt.setTimestamp(4, timestampTimeForScheduled);
 
-					java.sql.Timestamp timestampTimeForAction = new java.sql.Timestamp(new Date().getTime());
+					Timestamp timestampTimeForAction = new Timestamp(new Date().getTime());
 					preparedStmt.setTimestamp(5, timestampTimeForAction);
 
 				} catch (ParseException e) {
-					// TODO Auto-generated catch block
 					result = "Failure";
 					e.printStackTrace();
 				}
 			}
 			preparedStmt.executeUpdate();
 			result = "Success";
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+		} catch (SQLException exe) {
 			result = "Failure";
-			e.printStackTrace();
+			logger.error("SQL Exception in updateScheduledRequest method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(preparedStmt);
-			DBUtil.close(connection);
 		}
 
 		return result;
@@ -75,22 +66,15 @@ public class RequestSchedulerDao {
 	public List<SchedulerListPojo> getScheduledHistoryForRequest(String requestId, String version) {
 		List<SchedulerListPojo> schedulerListPojolist = new ArrayList<SchedulerListPojo>();
 		SchedulerListPojo schedulerListPojo = null;
-
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-
 		if (!version.contains(".")) {
 			version = version + ".0";
 		}
-		query = "Select * from scheduledrequesthistory  where RequestID = ?  ORDER BY id DESC";
+		String query = "Select * from scheduledrequesthistory  where RequestID = ?  ORDER BY id DESC";
 		ResultSet rs = null;
-		PreparedStatement pst = null;
+		try(Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 
-		try {
-
-			pst = connection.prepareStatement(query);
 			pst.setString(1, requestId);
-			// pst.setString(2, version);
 
 			rs = pst.executeQuery();
 			while (rs.next()) {
@@ -109,268 +93,201 @@ public class RequestSchedulerDao {
 				schedulerListPojolist.add(schedulerListPojo);
 			}
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getScheduledHistoryForRequest method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return schedulerListPojolist;
 	}
 
 	public String updateRescheduledRequest(String requestId, String version, String scheduledTime)
 			throws ParseException {
-		java.sql.Timestamp timestampTimeForScheduled = null;
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-		ResultSet rs = null;
-		String queryInsert = null;
+		Timestamp timestampTimeForScheduled = null;
+		String query = "update requestinfoso set ScheduledTime = ?,request_status = ? where alphanumeric_req_id = ? and request_version = ? ";
+		String queryInsert = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
+				+ "VALUES(?,?,?,?,?)";
+
 		String result = "";
-		try {
+		try(Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);
+				PreparedStatement pst1 = connection.prepareStatement(queryInsert);) {
 
-			if (scheduledTime != null && scheduledTime != "") {
-
+			if (scheduledTime != null && !scheduledTime.isEmpty()) {
 				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-
-				java.util.Date parsedDate = sdf.parse(scheduledTime);
-
-				timestampTimeForScheduled = new java.sql.Timestamp(parsedDate.getTime());
+				Date parsedDate = sdf.parse(scheduledTime);
+				timestampTimeForScheduled = new Timestamp(parsedDate.getTime());
 			}
-			query = "update requestinfoso set ScheduledTime = ?,request_status = ? where alphanumeric_req_id = ? and request_version = ? ";
 
-			PreparedStatement pst = null;
-			pst = connection.prepareStatement(query);
 			pst.setTimestamp(1, timestampTimeForScheduled);
 			pst.setString(2, "Scheduled");
 			pst.setString(3, requestId);
 			pst.setString(4, version);
 			pst.executeUpdate();
 
-			queryInsert = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
-					+ "VALUES(?,?,?,?,?)";
+			pst1.setString(1, requestId);
+			pst1.setString(2, version);
+			pst1.setString(3, "Re-Scheduled");
+			pst1.setTimestamp(4, timestampTimeForScheduled);
+			Timestamp timestampTimeForAction = new Timestamp(new Date().getTime());
+			pst1.setTimestamp(5, timestampTimeForAction);
 
-			pst = connection.prepareStatement(queryInsert);
-			pst.setString(1, requestId);
-			pst.setString(2, version);
-			pst.setString(3, "Re-Scheduled");
-			pst.setTimestamp(4, timestampTimeForScheduled);
-			java.sql.Timestamp timestampTimeForAction = new java.sql.Timestamp(new Date().getTime());
-			pst.setTimestamp(5, timestampTimeForAction);
-
-			pst.executeUpdate();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			result = "Failed";
-			e.printStackTrace();
-		} finally {
-			result = "Success";
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
+			pst1.executeUpdate();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateRescheduledRequest method "+exe.getMessage());
 		}
 		return result;
 	}
 
 	public String cancelScheduledRequest(String requestId, String version) throws ParseException {
-		java.sql.Timestamp timestampTimeForScheduled = null;
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-		ResultSet rs = null;
-		String queryInsert = null;
+		String query = "update requestinfoso set request_status = ? where alphanumeric_req_id = ? and request_version = ? ";
+		String queryInsert = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Last_Execution_Time)"
+				+ "VALUES(?,?,?,?)";
 		String result = "";
-		try {
+		try(Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);
+				PreparedStatement pst1 = connection.prepareStatement(queryInsert);) {
 
-			timestampTimeForScheduled = new java.sql.Timestamp(new Date().getTime());
-
-			query = "update requestinfoso set request_status = ? where alphanumeric_req_id = ? and request_version = ? ";
-
-			PreparedStatement pst = null;
-			pst = connection.prepareStatement(query);
 			pst.setString(1, "Cancelled");
 			pst.setString(2, requestId);
 			pst.setString(3, version);
 			pst.executeUpdate();
 
-			queryInsert = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Last_Execution_Time)"
-					+ "VALUES(?,?,?,?)";
+			pst1.setString(1, requestId);
+			pst1.setString(2, version);
+			pst1.setString(3, "Cancelled");
+			Timestamp timestampTimeForAction = new Timestamp(new Date().getTime());
+			pst1.setTimestamp(4, timestampTimeForAction);
 
-			pst = connection.prepareStatement(queryInsert);
-			pst.setString(1, requestId);
-			pst.setString(2, version);
-			pst.setString(3, "Cancelled");
-			// pst.setTimestamp(4, timestampTimeForScheduled);
-			java.sql.Timestamp timestampTimeForAction = new java.sql.Timestamp(new Date().getTime());
-			pst.setTimestamp(4, timestampTimeForAction);
-
-			pst.executeUpdate();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			result = "Failed";
-			e.printStackTrace();
-		} finally {
-			result = "Success";
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
+			pst1.executeUpdate();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in cancelScheduledRequest method "+exe.getMessage());
 		}
 		return result;
 	}
 
-	public String RunScheduledRequestUpdate(String requestId, String version) throws ParseException {
-
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-		ResultSet rs = null;
+	public String runScheduledRequestUpdate(String requestId, String version) throws ParseException {
+		String query = "update requestinfoso set request_status = ? where alphanumeric_req_id = ? and request_version = ? ";
 		String result = "";
-		try {
-			query = "update requestinfoso set request_status = ? where alphanumeric_req_id = ? and request_version = ? ";
-
-			PreparedStatement pst = null;
-			pst = connection.prepareStatement(query);
+		try(Connection	connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {			
 			pst.setString(1, "In Progress");
 			pst.setString(2, requestId);
 			pst.setString(3, version);
 			pst.executeUpdate();
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			result = "Failed";
-			e.printStackTrace();
-		} finally {
 			result = "Success";
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
+		} catch (SQLException exe) {
+			result = "Failed";
+			logger.error("SQL Exception in runScheduledRequestUpdate method "+exe.getMessage());
 		}
 		return result;
 	}
 
 	/* to get the data for request that are not in the UI */
 	public CreateConfigRequestDCM getDataFromRequestInfo(String requestId, String version) {
-
 		CreateConfigRequestDCM createConfigRequest = null;
-
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-
+		String query = "Select * from requestinfoso  where alphanumeric_req_id = ? and request_version = ?";
 		ResultSet rs = null;
-		PreparedStatement pst = null;
 
-		try {
-			query = "Select * from requestinfoso  where alphanumeric_req_id = ? and request_version = ?";
-			pst = connection.prepareStatement(query);
+		try(Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 			pst.setString(2, version);
-
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				createConfigRequest = new CreateConfigRequestDCM();
 				createConfigRequest.setRequest_parent_version(rs.getDouble("request_parent_version"));
-
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getDataFromRequestInfo method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return createConfigRequest;
 	}
 
-	public String abortScheduledRequest(String requestId, String version) throws ParseException {
-		java.sql.Timestamp timestampTimeForScheduled = null;
-		connection = ConnectionFactory.getConnection();
-		String query = null;
+	public String abortScheduledRequest(String requestId, String version) {
+		String query = "Select request_info_id from requestinfoso  where alphanumeric_req_id = ? and request_version = ?";
+		String delWebSerQuery = "delete from webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+		String delIntlcvrSoQuery = "delete from internetlcvrfso where request_info_id = ? ";
+		String delMisarpsoQuery = "delete from misarpeso where request_info_id = ? ";
+		String delDevIntSoQuery = "delete from deviceinterfaceso where request_info_id = ? ";
+		String delBanDTQuery = "delete from bannerdatatable where request_info_id = ? ";
+		String delReqInfoQuery = "delete from requestinfoso where alphanumeric_req_id = ? and request_version = ? ";
 		ResultSet rs = null;
-		String queryInsert = null;
 		String result = "";
 		String rowId = "";
-		try {
+		try(Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 
-			query = "Select request_info_id from requestinfoso  where alphanumeric_req_id = ? and request_version = ?";
-			PreparedStatement pst = null;
-			pst = connection.prepareStatement(query);
 			pst.setString(1, requestId);
 			pst.setString(2, version);
 
 			rs = pst.executeQuery();
 			while (rs.next()) {
-
 				rowId = rs.getString("request_info_id");
-
 			}
-			query = "delete from webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+			/* Delete webserviceinfo */
+			try(PreparedStatement delWebPs = connection.prepareStatement(delWebSerQuery);) {
+				delWebPs.setString(1, requestId);
+				delWebPs.setString(2, version);
+				delWebPs.execute("SET FOREIGN_KEY_CHECKS=0");
+				delWebPs.executeUpdate();
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in abortScheduledRequest delete webserviceinfo method "+exe.getMessage());
+			}
 
-			pst = connection.prepareStatement(query);
-			pst.setString(1, requestId);
-			pst.setString(2, version);
-			pst.execute("SET FOREIGN_KEY_CHECKS=0");
-			// pst.execute("SET SQL_SAFE_UPDATES = 0");
-
-			pst.executeUpdate();
-
-			query = "delete from internetlcvrfso where request_info_id = ? ";
-
-			pst = connection.prepareStatement(query);
-			pst.setString(1, rowId);
-
-			pst.execute("SET FOREIGN_KEY_CHECKS=0");
-			// pst.execute("SET SQL_SAFE_UPDATES = 0");
-
-			pst.executeUpdate();
-
-			query = "delete from misarpeso where request_info_id = ? ";
-
-			pst = connection.prepareStatement(query);
-			pst.setString(1, rowId);
-
-			pst.execute("SET FOREIGN_KEY_CHECKS=0");
-			// pst.execute("SET SQL_SAFE_UPDATES = 0");
-
-			pst.executeUpdate();
-
-			query = "delete from deviceinterfaceso where request_info_id = ? ";
-
-			pst = connection.prepareStatement(query);
-			pst.setString(1, rowId);
-
-			pst.execute("SET FOREIGN_KEY_CHECKS=0");
-			// pst.execute("SET SQL_SAFE_UPDATES = 0");
-
-			pst.executeUpdate();
-
-			query = "delete from bannerdatatable where request_info_id = ? ";
-
-			pst = connection.prepareStatement(query);
-			pst.setString(1, rowId);
-
-			pst.execute("SET FOREIGN_KEY_CHECKS=0");
-			// pst.execute("SET SQL_SAFE_UPDATES = 0");
-
-			pst.executeUpdate();
-			query = "delete from requestinfoso where alphanumeric_req_id = ? and request_version = ? ";
-
-			pst = connection.prepareStatement(query);
-			pst.setString(1, requestId);
-			pst.setString(2, version);
-			pst.execute("SET FOREIGN_KEY_CHECKS=0");
-			// pst.execute("SET SQL_SAFE_UPDATES = 0");
-
-			pst.executeUpdate();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			result = "Failed";
-			e.printStackTrace();
-		} finally {
+			/* Delete internetlcvrfso */
+			try(PreparedStatement delIntPs = connection.prepareStatement(delIntlcvrSoQuery);) {
+				delIntPs.setString(1, rowId);
+				delIntPs.execute("SET FOREIGN_KEY_CHECKS=0");
+				delIntPs.executeUpdate();
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in abortScheduledRequest delete internetlcvrfso method "+exe.getMessage());
+			}
+			
+			/* Delete misarpeso */
+			try(PreparedStatement delMisPs = connection.prepareStatement(delMisarpsoQuery);) {
+				delMisPs.setString(1, rowId);
+				delMisPs.execute("SET FOREIGN_KEY_CHECKS=0");
+				delMisPs.executeUpdate();
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in abortScheduledRequest delete misarpeso method "+exe.getMessage());
+			}
+			
+			/* Delete deviceinterfaceso */
+			try(PreparedStatement delDevPs = connection.prepareStatement(delDevIntSoQuery);) {
+				delDevPs.setString(1, rowId);
+				delDevPs.execute("SET FOREIGN_KEY_CHECKS=0");
+				delDevPs.executeUpdate();
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in abortScheduledRequest delete deviceinterfaceso method "+exe.getMessage());
+			}
+			
+			/* Delete bannerdatatable */
+			try(PreparedStatement delBanPs = connection.prepareStatement(delBanDTQuery);) {
+				delBanPs.setString(1, rowId);
+				delBanPs.execute("SET FOREIGN_KEY_CHECKS=0");
+				delBanPs.executeUpdate();
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in abortScheduledRequest delete bannerdatatable method "+exe.getMessage());
+			}
+			
+			/* Delete requestinfoso */
+			try(PreparedStatement delReqPs = connection.prepareStatement(delReqInfoQuery);) {
+				delReqPs.setString(1, requestId);
+				delReqPs.setString(2, version);
+				delReqPs.execute("SET FOREIGN_KEY_CHECKS=0");
+				delReqPs.executeUpdate();
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in abortScheduledRequest delete requestinfoso method "+exe.getMessage());
+			}
 			result = "Success";
+		} catch (SQLException exe) {
+			result = "Failed";
+			logger.error("SQL Exception in abortScheduledRequest method "+exe.getMessage());
+		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return result;
 	}
@@ -385,103 +302,67 @@ public class RequestSchedulerDao {
 
 	public String getProcessIdFromCamundaHistory(String requestId, String version) {
 		String processId = null;
-		connection = ConnectionFactory.getConnection();
 		String query = "Select history_processId from camundahistory where history_requestId=? and history_versionId=?";
 		ResultSet rs = null;
-		PreparedStatement pst = null;
-
-		try {
-			pst = connection.prepareStatement(query);
+		
+		try(Connection	connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 			pst.setString(2, version);
 			rs = pst.executeQuery();
 			while (rs.next()) {
-
 				processId = rs.getString("history_processId");
-
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getProcessIdFromCamundaHistory method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 
 		return processId;
 	}
 
 	public void deleteProcessIdFromCamundaHistory(String processId) {
-		connection = ConnectionFactory.getConnection();
 		String query = "delete from camundahistory where history_processId = ?";
-		ResultSet rs = null;
-		PreparedStatement pst = null;
-
-		try {
-			pst = connection.prepareStatement(query);
+		try(Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, processId);
 			pst.execute("SET FOREIGN_KEY_CHECKS=0");
 			pst.executeUpdate();
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in deleteProcessIdFromCamundaHistory method "+exe.getMessage());
 		}
 	}
 
 	/* method overloading for UIRevamp */
-
 	public String updateScheduledRequest(RequestInfoPojo configRequest) throws SQLException {
 		String result = "";
-		connection = ConnectionFactory.getConnection();
-		ResultSet rs = null;
-		PreparedStatement preparedStmt = null;
-		String query = null;
-		try {
-			query = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
-					+ "VALUES(?,?,?,?,?)";
-
-			preparedStmt = connection.prepareStatement(query);
+		String query = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
+				+ "VALUES(?,?,?,?,?)";
+		try(Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, configRequest.getAlphanumericReqId());
 			preparedStmt.setString(2, Double.toString(configRequest.getRequestVersion()));
 			preparedStmt.setString(3, "Scheduled");
 
-			if (configRequest.getSceheduledTime() != null && configRequest.getSceheduledTime() != "") {
-
+			if (configRequest.getSceheduledTime() != null && !configRequest.getSceheduledTime().isEmpty()) {
 				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-
 				try {
-					java.util.Date parsedDate = sdf.parse(configRequest.getSceheduledTime());
-
-					java.sql.Timestamp timestampTimeForScheduled = new java.sql.Timestamp(parsedDate.getTime());
+					Date parsedDate = sdf.parse(configRequest.getSceheduledTime());
+					Timestamp timestampTimeForScheduled = new Timestamp(parsedDate.getTime());
 					preparedStmt.setTimestamp(4, timestampTimeForScheduled);
 
-					java.sql.Timestamp timestampTimeForAction = new java.sql.Timestamp(new Date().getTime());
+					Timestamp timestampTimeForAction = new Timestamp(new Date().getTime());
 					preparedStmt.setTimestamp(5, timestampTimeForAction);
-
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
+				} catch (ParseException exe) {
 					result = "Failure";
-					e.printStackTrace();
+					exe.printStackTrace();
 				}
 			}
 			preparedStmt.executeUpdate();
 			result = "Success";
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			result = "Failure";
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(preparedStmt);
-			DBUtil.close(connection);
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateScheduledRequest method "+exe.getMessage());
 		}
 
 		return result;

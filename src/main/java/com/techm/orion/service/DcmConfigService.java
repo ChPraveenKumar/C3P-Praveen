@@ -723,53 +723,27 @@ public class DcmConfigService {
 	public List<RequestInfoSO> getAllDetails() {
 		List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		try {
-			detailsList = requestInfoDao.getAllResquestsFromDB();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		detailsList = requestInfoDao.getAllResquestsFromDB();
 		return detailsList;
 	}
 
 	public List<EIPAMPojo> getAllIPAMData() {
-		List<EIPAMPojo> detailsList = new ArrayList<EIPAMPojo>();
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		try {
-			detailsList = requestInfoDao.getALLIPAMDatafromDB();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return detailsList;
+		return requestInfoDao.getALLIPAMDatafromDB();
 	}
 
 	public List<EIPAMPojo> searchAllIPAMData(String site, String customer, String service, String ip)
 			throws SQLException {
-		List<EIPAMPojo> detailsList = new ArrayList<EIPAMPojo>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		try {
-			detailsList = requestInfoDao.getSearchedRecordsFromDB(site, customer, service, ip);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return detailsList;
+		RequestInfoDao requestInfoDao = new RequestInfoDao();		
+		return requestInfoDao.getSearchedRecordsFromDB(site, customer, service, ip);
 	}
 
 	/*
 	 * Code changes for JDBC to JPA migration --- Alert Page(To display All alerts)
 	 */
 	public List<AlertInformationPojo> getAllAlertData() {
-		List<AlertInformationPojo> detailsList = new ArrayList<AlertInformationPojo>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		try {
-			detailsList = requestInfoDao.getALLAlertDataFromDB();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return detailsList;
+		RequestInfoDao requestInfoDao = new RequestInfoDao();		
+		return requestInfoDao.getALLAlertDataFromDB();
 	}
 
 	public List<RequestInfoSO> getDatasForRequest(String requestid) {
@@ -780,15 +754,8 @@ public class DcmConfigService {
 	}
 
 	public String getLogedInUserName() {
-		String name = null;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		try {
-			name = requestInfoDao.getLogedInUserDetail();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return name;
+		RequestInfoDao requestInfoDao = new RequestInfoDao();		
+		return requestInfoDao.getLogedInUserDetail();
 	}
 
 	public int getTotalRequests() {
@@ -923,27 +890,13 @@ public class DcmConfigService {
 	}
 
 	public List<ConfigurationDataValuePojo> getVendorData() {
-		List<ConfigurationDataValuePojo> list = new ArrayList<ConfigurationDataValuePojo>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		try {
-			list = requestInfoDao.getALLVendorData();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return list;
+		RequestInfoDao requestInfoDao = new RequestInfoDao();		
+		return requestInfoDao.getALLVendorData();
 	}
 
 	public List<ConfigurationDataValuePojo> getDeviceTypeData() {
-		List<ConfigurationDataValuePojo> list = new ArrayList<ConfigurationDataValuePojo>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		try {
-			list = requestInfoDao.getALLDeviceTypeData();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return list;
+		RequestInfoDao requestInfoDao = new RequestInfoDao();		
+		return requestInfoDao.getALLDeviceTypeData();
 	}
 
 	public List<String> getModelData(String vendor, String deviceType) {

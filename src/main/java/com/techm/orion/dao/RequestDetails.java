@@ -4,16 +4,13 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
@@ -24,36 +21,27 @@ import com.techm.orion.connection.DBUtil;
  * custom tests
  */
 public class RequestDetails {
-
-	ResultSet resultSet = null;
-	PreparedStatement preparedStmt = null;
-	private Connection connection;
-	Statement statement;
-
+	private static final Logger logger = LogManager.getLogger(RequestDetails.class);
 	/*
 	 * Owner: Rahul Tiwari Module: TestAndDiagnosis Logic: Get test name and version
 	 * based on request id custom tests
 	 */
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
-		connection = ConnectionFactory.getConnection();
-
-		try {
-			String query = "SELECT RequestId,TestsSelected FROM c3pdbschema.t_tststrategy_m_config_transaction where RequestId= ? and request_version =?";
-
-			preparedStmt = connection.prepareStatement(query);
+		ResultSet resultSet = null;
+		String query = "SELECT RequestId,TestsSelected FROM c3pdbschema.t_tststrategy_m_config_transaction where RequestId= ? and request_version =?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setDouble(2, requestVersion);
 			resultSet = preparedStmt.executeQuery();
 			while (resultSet.next()) {
 				builder.append(resultSet.getString("TestsSelected"));
-
 			}
-			preparedStmt.close();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getTestAndDiagnosisDetails method "+exe.getMessage());
 		} finally {
 			DBUtil.close(resultSet);
-			DBUtil.close(preparedStmt);
-			DBUtil.close(connection);
 		}
 		return builder.toString();
 	}
@@ -64,29 +52,26 @@ public class RequestDetails {
 	 */
 	public Map<String, String> getConfigurationFeatureList(String requestId, String templateId) throws SQLException {
 		Map<String, String> map = new TreeMap<String, String>();
-		connection = ConnectionFactory.getConnection();
+		ResultSet resultSet = null;
+		String query = "SELECT flist.command_parent_feature, info.master_label_value as value, attr.label as name "
+				+ "FROM c3pdbschema.t_create_config_m_attrib_info info "
+				+ "left join c3pdbschema.t_attrib_m_attribute attr on info.master_label_id=attr.id "
+				+ "left join c3pdbschema.c3p_template_master_feature_list flist on attr.feature_id= flist.id "
+				+ "where info.request_id= ? and info.template_id= ?";
 
-		try {
-			String query = "SELECT flist.command_parent_feature, info.master_label_value as value, attr.label as name "
-					+ "FROM c3pdbschema.t_create_config_m_attrib_info info "
-					+ "left join c3pdbschema.t_attrib_m_attribute attr on info.master_label_id=attr.id "
-					+ "left join c3pdbschema.c3p_template_master_feature_list flist on attr.feature_id= flist.id "
-					+ "where info.request_id= ? and info.template_id= ?";
-
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, templateId);
 
 			resultSet = preparedStmt.executeQuery();
 			while (resultSet.next()) {
 				map.put(resultSet.getString("name"), resultSet.getString("value"));
-
 			}
-			preparedStmt.close();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getConfigurationFeatureList method "+exe.getMessage());
 		} finally {
 			DBUtil.close(resultSet);
-			DBUtil.close(preparedStmt);
-			DBUtil.close(connection);
 		}
 		return map;
 	}
@@ -97,17 +82,14 @@ public class RequestDetails {
 	 */
 	public List<String> getConfigurationFeature(String requestId, String templateId) throws SQLException {
 		List<String> list = new ArrayList<String>();
-
-		connection = ConnectionFactory.getConnection();
-
-		try {
-			String query = "SELECT distinct flist.command_parent_feature as feature "
-					+ "FROM c3pdbschema.t_create_config_m_attrib_info info "
-					+ "left join c3pdbschema.t_attrib_m_attribute attr on info.master_label_id=attr.id "
-					+ "left join c3pdbschema.c3p_template_master_feature_list flist on attr.feature_id= flist.id "
-					+ "where info.request_id= ? and info.template_id= ?";
-
-			preparedStmt = connection.prepareStatement(query);
+		ResultSet resultSet = null;
+		String query = "SELECT distinct flist.command_parent_feature as feature "
+				+ "FROM c3pdbschema.t_create_config_m_attrib_info info "
+				+ "left join c3pdbschema.t_attrib_m_attribute attr on info.master_label_id=attr.id "
+				+ "left join c3pdbschema.c3p_template_master_feature_list flist on attr.feature_id= flist.id "
+				+ "where info.request_id= ? and info.template_id= ?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, templateId);
 
@@ -115,11 +97,10 @@ public class RequestDetails {
 			while (resultSet.next()) {
 				list.add('"' + resultSet.getString("feature").toString() + '"');
 			}
-			preparedStmt.close();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getConfigurationFeature method "+exe.getMessage());
 		} finally {
 			DBUtil.close(resultSet);
-			DBUtil.close(preparedStmt);
-			DBUtil.close(connection);
 		}
 		return list;
 	}
@@ -131,18 +112,15 @@ public class RequestDetails {
 	public Map<String, String> getConfigurationFeatureDetails(String requestId, String templateId, String feature)
 			throws SQLException {
 		Map<String, String> map = new TreeMap<String, String>();
-		List<String> list = new ArrayList<String>();
-
-		connection = ConnectionFactory.getConnection();
-
-		try {
-			String query = "SELECT flist.command_parent_feature as feature, info.master_label_value as value, attr.label as name "
-					+ "FROM c3pdbschema.t_create_config_m_attrib_info info "
-					+ "left join c3pdbschema.t_attrib_m_attribute attr on info.master_label_id=attr.id "
-					+ "left join c3pdbschema.c3p_template_master_feature_list flist on attr.feature_id= flist.id "
-					+ "where info.request_id= ? and info.template_id= ? and flist.command_parent_feature = ? ";
-
-			preparedStmt = connection.prepareStatement(query);
+		ResultSet resultSet = null;
+		String query = "SELECT flist.command_parent_feature as feature, info.master_label_value as value, attr.label as name "
+				+ "FROM c3pdbschema.t_create_config_m_attrib_info info "
+				+ "left join c3pdbschema.t_attrib_m_attribute attr on info.master_label_id=attr.id "
+				+ "left join c3pdbschema.c3p_template_master_feature_list flist on attr.feature_id= flist.id "
+				+ "where info.request_id= ? and info.template_id= ? and flist.command_parent_feature = ? ";
+		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, templateId);
 			preparedStmt.setString(3, feature);
@@ -152,11 +130,10 @@ public class RequestDetails {
 				map.put(resultSet.getString("name"), resultSet.getString("value"));
 
 			}
-			preparedStmt.close();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getConfigurationFeatureDetails method "+exe.getMessage());
 		} finally {
 			DBUtil.close(resultSet);
-			DBUtil.close(preparedStmt);
-			DBUtil.close(connection);
 		}
 		return map;
 	}

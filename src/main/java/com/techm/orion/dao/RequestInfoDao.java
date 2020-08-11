@@ -1,15 +1,14 @@
 package com.techm.orion.dao;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -51,13 +49,11 @@ import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestRules;
 import com.techm.orion.pojo.AlertInformationPojo;
 import com.techm.orion.pojo.CertificationTestPojo;
-import com.techm.orion.pojo.ColumnChartPojo;
 import com.techm.orion.pojo.ConfigurationDataValuePojo;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.DeviceInterfaceSO;
 import com.techm.orion.pojo.EIPAMPojo;
-import com.techm.orion.pojo.ElapsedTimeFormatPojo;
 import com.techm.orion.pojo.ErrorValidationPojo;
 import com.techm.orion.pojo.FirmwareUpgradeDetail;
 import com.techm.orion.pojo.Global;
@@ -72,43 +68,45 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.pojo.UserValidationResultDetailPojo;
-import com.techm.orion.repositories.AlertInformationRepository;
 import com.techm.orion.repositories.BatchInfoRepo;
-import com.techm.orion.repositories.CreateConfigRepo;
-import com.techm.orion.repositories.RequestDetailsBackUpAndRestoreRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ServiceOrderRepo;
-import com.techm.orion.rest.NetworkTestValidation;
 import com.techm.orion.service.CertificationTestResultService;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.webService.GetAllDetailsService;
 
 @Controller
 public class RequestInfoDao {
 	private static final Logger logger = LogManager.getLogger(RequestInfoDao.class);
-	private Connection connection;
-	Statement statement;
-	List<ElapsedTimeFormatPojo> elapsedtimings;
-
 	@Autowired
-	public AlertInformationRepository alertInformationRepository;
-
+	private RequestInfoDetailsRepositories reository;
 	@Autowired
-	CreateConfigRepo createConfigRepo;
-
-	@Autowired
-	RequestInfoDetailsRepositories reository;
-
-	@Autowired
-	public BatchInfoRepo batchInfoRepo;
-
+	private BatchInfoRepo batchInfoRepo;
 	@Inject
-	CertificationTestResultService certificationTestService;
-
+	private CertificationTestResultService certificationTestService;
 	@Autowired
-	ServiceOrderRepo serviceOrderRepo;
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
+	private ServiceOrderRepo serviceOrderRepo;
+	/* SQL information */
+	private static final String INSERT_REQUEST_INFOSO = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
+			+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	private static final String INSERT_INTERNET_LCVRF_SO = "INSERT INTO internetlcvrfso(networkIp,asNumber,neighbor1,neighbor2,neighbor1_remoteAS,neighbor2_remoteAS,networkIp_subnetMask,routingProtocol) "
+			+ "VALUES (?,?,?,?,?,?,?,?)";
+	private static final String INSERT_MIS_AR_PE_SO = "INSERT INTO misarpeso(routerVrfVpnDIp, routerVrfVpnDGateway, fastEthernetIp) "
+			+ "VALUES(?, ?, ?)";
+	private static final String INSERT_DEVICE_INTERFACE_SO = "INSERT INTO deviceinterfaceso(name,description,ip,mask,speed,encapsulation,Bandwidth)"
+			+ "VALUES(?, ?, ?, ?, ?, ?, ?)";
+	private static final String INSERT_BANNER_DATA_TABLE = "INSERT INTO bannerdatatable(bannerdata) VALUES(?)";
+	private static final String INSERT_T_TSTSTRATEGY_M_CONFIG_TRANSACTION = "INSERT INTO t_tststrategy_m_config_transaction(RequestId,TestsSelected,RequestType,request_version)"
+			+ "VALUES(?,?,?,?)";
+	private static final String INSERT_OS_UPGRADE_DELIVERY_FLAGS = "INSERT INTO os_upgrade_dilevary_flags(request_id,request_version,login_flag,flash_size_flag,back_up_flag,os_download_flag,boot_system_flash_flag,reload_flag,post_login_flag)"
+			+ "VALUES(?,?,?,?,?,?,?,?,?)";
+	private static final String INSERT_WEB_SERVICE_INFO = "INSERT INTO webserviceinfo(start_test,generate_config,deliever_config,health_checkup,network_test,application_test,customer_report,filename,latencyResultRes,alphanumeric_req_id,version,pre_health_checkup,others_test)"
+			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	private static final String GET_MIS_AR_PE_SO = "select * from misarpeso where request_info_id= ?";
+	private static final String GET_INTERNET_LCVRF_SO = "select * from internetlcvrfso where request_info_id= ?";
+	private static final String GET_DEVICE_INTERFACE_SO = "select * from deviceinterfaceso where request_info_id= ?";
+	private static final String GET_REQUEST_INFO_SO_BY_ALPREQID_VERSION = "select * from requestinfoso where alphanumeric_req_id = ? and request_version= ?";
+	private static final String UPDATE_REQUEST_INFO_SO_BY_ALPREQID_VERSION = "update requestinfoso set request_status = ?, end_date_of_processing = ?, request_elapsed_time=? where alphanumeric_req_id = ? and request_version= ?";
 
 	public Map<String, String> insertRequestInDB(RequestInfoSO request) {
 		Map<String, String> hmap = new HashMap<String, String>();
@@ -123,24 +121,15 @@ public class RequestInfoDao {
 		double request_version = 0, request_parent_version = 0;
 		boolean isAutoProgress;
 
-		/* TimeZ Column added for Time Zone task */
-
-		String sql = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
-				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-
-		connection = ConnectionFactory.getConnection();
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
+		try (Connection connection = ConnectionFactory.getConnection();
+			PreparedStatement prepStmt = connection.prepareStatement(INSERT_REQUEST_INFOSO);) {
 			if (request.getRequest_type().equalsIgnoreCase("IOSUPGRADE")
 					&& request.getNetworkType().equalsIgnoreCase("Legacy")) {
 				alphaneumeric_req_id = "SLGF-" + UUID.randomUUID().toString().toUpperCase();
-
 			} else if (request.getRequest_type().equalsIgnoreCase("TS")
 					&& request.getNetworkType().equalsIgnoreCase("Legacy")) {
 				alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase();
-
 			}
-
 			else if (request.getRequest_type().equalsIgnoreCase("RESTCONF")
 					&& request.getNetworkType().equalsIgnoreCase("VNF")) {
 				alphaneumeric_req_id = "SNRC-" + UUID.randomUUID().toString().toUpperCase();
@@ -285,590 +274,271 @@ public class RequestInfoDao {
 			} else {
 				networktype = "Legacy";
 			}
-			if (request.getInternetLcVrf() != null) {
-				String networkIp = null, AS = null, neighbor1 = null, neighbor2 = null, neighbor1_remoteAS = null,
-						neighbor2_remoteAS = null, networkIp_subnetMask = null, routingProtocol = null;
-				if (request.getInternetLcVrf().getNetworkIp() != null
-						|| request.getInternetLcVrf().getNetworkIp() != "") {
-					networkIp = request.getInternetLcVrf().getNetworkIp();
-				}
-
-				if (request.getInternetLcVrf().getBgpASNumber() != null
-						|| request.getInternetLcVrf().getBgpASNumber() != "") {
-					AS = request.getInternetLcVrf().getBgpASNumber();
-				}
-
-				if (request.getInternetLcVrf().getNeighbor1() != null
-						|| request.getInternetLcVrf().getNeighbor1() != "") {
-					neighbor1 = request.getInternetLcVrf().getNeighbor1();
-				}
-
-				if (request.getInternetLcVrf().getNeighbor2() != null
-						|| request.getInternetLcVrf().getNeighbor2() != "") {
-					neighbor2 = request.getInternetLcVrf().getNeighbor2();
-				} else {
-					neighbor2 = null;
-				}
-				if (request.getInternetLcVrf().getNeighbor1_remoteAS() != null
-						|| request.getInternetLcVrf().getNeighbor1_remoteAS() != "") {
-					neighbor1_remoteAS = request.getInternetLcVrf().getNeighbor1_remoteAS();
-				}
-
-				if (request.getInternetLcVrf().getNeighbor2_remoteAS() != null
-						|| request.getInternetLcVrf().getNeighbor2_remoteAS() != "") {
-					neighbor2_remoteAS = request.getInternetLcVrf().getNeighbor2_remoteAS();
-				} else {
-					neighbor2_remoteAS = null;
-				}
-
-				if (request.getInternetLcVrf().getNetworkIp_subnetMask() != null
-						|| request.getInternetLcVrf().getNetworkIp_subnetMask() != "") {
-					networkIp_subnetMask = request.getInternetLcVrf().getNetworkIp_subnetMask();
-				}
-
-				if (request.getInternetLcVrf().getRoutingProtocol() != null
-						|| request.getInternetLcVrf().getRoutingProtocol() != "") {
-					routingProtocol = request.getInternetLcVrf().getRoutingProtocol();
-				}
-
-				/* Code chanfe for Time Zone */
-
-				/*
-				 * if (request.getTimeZ()!= null || request.getTimeZ()!= "") {
-				 * 
-				 * ZonedDateTime now = ZonedDateTime.now();
-				 * 
-				 * DateTimeFormatter formatter = DateTimeFormatter.ofPattern("z");
-				 * 
-				 * TimeZ = now.format(formatter);
-				 * 
-				 * }
-				 */
-
-				String sql1 = "INSERT INTO internetlcvrfso(networkIp,asNumber,neighbor1,neighbor2,neighbor1_remoteAS,neighbor2_remoteAS,networkIp_subnetMask,routingProtocol) VALUES"
-						+ "(?,?,?,?,?,?,?,?)";
-
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				if (networkIp == "") {
-					ps1.setString(1, networkIp);
-				} else {
-					ps1.setNull(1, java.sql.Types.VARCHAR);
-				}
-				if (AS != "") {
-					ps1.setString(2, AS);
-				} else {
-					ps1.setNull(2, java.sql.Types.VARCHAR);
-				}
-				if (neighbor1 == "") {
-					ps1.setString(3, neighbor1);
-				} else {
-					ps1.setNull(3, java.sql.Types.VARCHAR);
-				}
-				if (neighbor2 != "") {
-					ps1.setString(4, neighbor2);
-				} else {
-					ps1.setNull(4, java.sql.Types.VARCHAR);
-				}
-				if (neighbor1_remoteAS != "") {
-					ps1.setString(5, neighbor1_remoteAS);
-				} else {
-					ps1.setNull(5, java.sql.Types.VARCHAR);
-				}
-
-				if (neighbor2_remoteAS != "") {
-					ps1.setString(6, neighbor2_remoteAS);
-				} else {
-					ps1.setNull(6, java.sql.Types.VARCHAR);
-				}
-				if (networkIp_subnetMask != "") {
-					ps1.setString(7, networkIp_subnetMask);
-				} else {
-					ps1.setNull(7, java.sql.Types.VARCHAR);
-				}
-				if (routingProtocol != "") {
-					ps1.setString(8, routingProtocol);
-				} else {
-					ps1.setNull(8, java.sql.Types.VARCHAR);
-				}
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-			} else {
-				// String networkIp = null, remotePort = null, neighbor1 = null,
-				// neighbor2 =null, neighbor3 =null, neighbor4 = null, neighbor5
-				// = null, neighbor6 = null, routerBgp65k = null;
-
-				String sql1 = "INSERT INTO internetlcvrfso(networkIp,asNumber,neighbor1,neighbor2,neighbor1_remoteAS,neighbor2_remoteAS,networkIp_subnetMask,routingProtocol) VALUES"
-						+ "(?,?,?,?,?,?,?,?)";
-
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				ps1.setNull(1, java.sql.Types.VARCHAR);
-				ps1.setNull(2, java.sql.Types.VARCHAR);
-				ps1.setNull(3, java.sql.Types.VARCHAR);
-				ps1.setNull(4, java.sql.Types.VARCHAR);
-				ps1.setNull(5, java.sql.Types.VARCHAR);
-				ps1.setNull(6, java.sql.Types.VARCHAR);
-				ps1.setNull(7, java.sql.Types.VARCHAR);
-				ps1.setNull(8, java.sql.Types.VARCHAR);
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-			}
-
-			if (request.getMisArPeSO() != null) {
-
-				String routerVrfVpnDIp = null, routerVrfVpnDGateway = null, fastEthernetIp = null;
-				if (request.getMisArPeSO().getRouterVrfVpnDIp() != null
-						|| request.getMisArPeSO().getRouterVrfVpnDIp() != "") {
-					routerVrfVpnDIp = request.getMisArPeSO().getRouterVrfVpnDIp();
-				}
-
-				if (request.getMisArPeSO().getRouterVrfVpnDGateway() != null
-						|| request.getMisArPeSO().getRouterVrfVpnDGateway() != "") {
-					routerVrfVpnDGateway = request.getMisArPeSO().getRouterVrfVpnDGateway();
-				}
-
-				if (request.getMisArPeSO().getRouterVrfVpnDGateway() != null
-						|| request.getMisArPeSO().getFastEthernetIp() != "") {
-					fastEthernetIp = request.getMisArPeSO().getFastEthernetIp();
-				}
-
-				String sql1 = "INSERT INTO misarpeso(routerVrfVpnDIp, routerVrfVpnDGateway, fastEthernetIp) "
-						+ "VALUES(?, ?, ?)";
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				if (routerVrfVpnDIp != "") {
-					ps1.setString(1, routerVrfVpnDIp);
-				} else {
-					ps1.setNull(1, java.sql.Types.VARCHAR);
-
-				}
-				if (routerVrfVpnDGateway != "") {
-					ps1.setString(2, routerVrfVpnDGateway);
-				} else {
-					ps1.setNull(2, java.sql.Types.VARCHAR);
-
-				}
-				if (fastEthernetIp != "") {
-					ps1.setString(3, fastEthernetIp);
-				} else {
-					ps.setNull(3, java.sql.Types.VARCHAR);
-
-				}
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-
-			} else {
-				String routerVrfVpnDIp = "", routerVrfVpnDGateway = "", fastEthernetIp = "";
-				String sql1 = "INSERT INTO misarpeso(routerVrfVpnDIp, routerVrfVpnDGateway, fastEthernetIp) "
-						+ "VALUES(?, ?, ?)";
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				if (routerVrfVpnDIp != "") {
-					ps1.setString(1, routerVrfVpnDIp);
-				} else {
-					ps1.setNull(1, java.sql.Types.VARCHAR);
-
-				}
-				if (routerVrfVpnDGateway != "") {
-					ps1.setString(2, routerVrfVpnDGateway);
-				} else {
-					ps1.setNull(2, java.sql.Types.VARCHAR);
-
-				}
-				if (fastEthernetIp != "") {
-					ps1.setString(3, fastEthernetIp);
-				} else {
-					ps.setNull(3, java.sql.Types.VARCHAR);
-
-				}
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-			}
-
-			if (request.getDeviceInterfaceSO() != null) {
-				String name = null, description = null, ip = null, mask = null, speed = null, encapsulation = null,
-						bandwidth = null;
-				if (request.getDeviceInterfaceSO().getName() != null
-						|| request.getDeviceInterfaceSO().getName() != "") {
-					name = request.getDeviceInterfaceSO().getName();
-				}
-
-				if (request.getDeviceInterfaceSO().getDescription() != null
-						|| request.getDeviceInterfaceSO().getDescription() != "") {
-					description = request.getDeviceInterfaceSO().getDescription();
-				}
-
-				if (request.getDeviceInterfaceSO().getIp() != null || request.getDeviceInterfaceSO().getIp() != "") {
-					ip = request.getDeviceInterfaceSO().getIp();
-				}
-
-				if (request.getDeviceInterfaceSO().getMask() != null
-						|| request.getDeviceInterfaceSO().getMask() != "") {
-					mask = request.getDeviceInterfaceSO().getMask();
-				}
-
-				if (request.getDeviceInterfaceSO().getSpeed() != null
-						|| request.getDeviceInterfaceSO().getSpeed() != "") {
-					speed = request.getDeviceInterfaceSO().getSpeed();
-				}
-				if (request.getDeviceInterfaceSO().getBandwidth() != null
-						|| request.getDeviceInterfaceSO().getBandwidth() != "") {
-					bandwidth = request.getDeviceInterfaceSO().getBandwidth();
-
-				}
-
-				if (request.getDeviceInterfaceSO().getEncapsulation() != null
-						|| request.getDeviceInterfaceSO().getEncapsulation() != "") {
-					encapsulation = request.getDeviceInterfaceSO().getEncapsulation();
-				}
-
-				String sql1 = "INSERT INTO deviceinterfaceso(name,description,ip,mask,speed,encapsulation,Bandwidth)"
-						+ "VALUES(?, ?, ?, ?, ?, ?, ?)";
-
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				if (name != "") {
-					ps1.setString(1, name);
-				} else {
-					ps1.setNull(1, java.sql.Types.VARCHAR);
-				}
-				if (description != "") {
-					ps1.setString(2, description);
-				} else {
-					ps1.setNull(2, java.sql.Types.VARCHAR);
-				}
-				if (ip != "") {
-					ps1.setString(3, ip);
-				} else {
-					ps1.setNull(3, java.sql.Types.VARCHAR);
-				}
-				if (mask != "") {
-					ps1.setString(4, mask);
-				} else {
-					ps1.setNull(4, java.sql.Types.VARCHAR);
-				}
-				if (speed == "") {
-					ps1.setString(5, speed);
-				} else {
-					ps1.setNull(5, java.sql.Types.VARCHAR);
-				}
-				if (encapsulation != "") {
-					ps1.setString(6, encapsulation);
-				} else {
-					ps1.setNull(6, java.sql.Types.VARCHAR);
-				}
-				if (bandwidth != "") {
-					ps1.setString(7, bandwidth);
-				} else {
-					ps1.setNull(7, java.sql.Types.VARCHAR);
-				}
-
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-			} else {
-				// String networkIp = null, remotePort = null, neighbor1 = null,
-				// neighbor2 =null, neighbor3 =null, neighbor4 = null, neighbor5
-				// = null, neighbor6 = null, routerBgp65k = null;
-
-				String sql1 = "INSERT INTO deviceinterfaceso(name,description,ip,mask,speed,encapsulation)"
-						+ "VALUES(?, ?, ?, ?, ?, ?)";
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				ps1.setNull(1, java.sql.Types.VARCHAR);
-				ps1.setNull(2, java.sql.Types.VARCHAR);
-				ps1.setNull(3, java.sql.Types.VARCHAR);
-				ps1.setNull(4, java.sql.Types.VARCHAR);
-				ps1.setNull(5, java.sql.Types.VARCHAR);
-				ps1.setNull(6, java.sql.Types.VARCHAR);
-				ps1.setNull(7, java.sql.Types.VARCHAR);
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-			}
-
-			if (Os != "") {
-				ps.setString(1, Os);
-			} else {
-				ps.setNull(1, java.sql.Types.VARCHAR);
-
-			}
-
+			//Call insertInternetCvrfso method to insert the data in internetlcvrfso table
+			insertInternetCvrfso(request);
+			//Call insertMisArPeSO method to insert the data in misarpeso table
+			insertMisArPeSo(request);
+			//Call insertMisArPeSO method to insert the data in deviceinterfaceso table
+			insertDeviceInterfaceSo(request);
 			// Logic to add banner text in new
 			// table-----------------------------------------------------------------------------------------------------
-
-			String sql1 = "INSERT INTO bannerdatatable(bannerdata)" + "VALUES(?)";
-
-			PreparedStatement ps3 = connection.prepareStatement(sql1);
-			if (banner != "") {
-				ps3.setString(1, banner);
-			} else {
-				ps3.setNull(1, java.sql.Types.VARCHAR);
-			}
-
-			ps3.execute("SET FOREIGN_KEY_CHECKS=0");
-			ps3.executeUpdate();
+			insertBannerDataTable(banner);		
 			// End of banner
 			// logic------------------------------------------------------------------------------------------------------------------------
+			
 
+			if (Os != "") {
+				prepStmt.setString(1, Os);
+			} else {
+				prepStmt.setNull(1, Types.VARCHAR);
+			}
+			
 			if (banner != "") {
-				ps.setString(2, banner);
+				prepStmt.setString(2, banner);
 			} else {
-				ps.setNull(2, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(2, Types.VARCHAR);
 			}
-
+			
 			if (device_name != "") {
-				ps.setString(3, device_name);
+				prepStmt.setString(3, device_name);
 			} else {
-				ps.setNull(3, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(3, Types.VARCHAR);
 			}
+			
 			if (model != "") {
-				ps.setString(4, model);
+				prepStmt.setString(4, model);
 			} else {
-				ps.setNull(4, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(4, Types.VARCHAR);
 			}
+			
 			if (region != "") {
-				ps.setString(5, region);
+				prepStmt.setString(5, region);
 			} else {
-				ps.setNull(5, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(5, Types.VARCHAR);
 			}
+			
 			if (service != "") {
-				ps.setString(6, service);
+				prepStmt.setString(6, service);
 			} else {
-				ps.setNull(6, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(6, Types.VARCHAR);
 			}
+			
 			if (version != "") {
-				ps.setString(7, version);
+				prepStmt.setString(7, version);
 			} else {
-				ps.setNull(7, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(7, Types.VARCHAR);
 			}
+			
 			if (hostname != "") {
-				ps.setString(8, hostname);
+				prepStmt.setString(8, hostname);
 			} else {
-				ps.setNull(8, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(8, Types.VARCHAR);
 			}
+			
 			if (enablePassword != "") {
-				ps.setString(9, enablePassword);
+				prepStmt.setString(9, enablePassword);
 			} else {
-				ps.setNull(9, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(9, Types.VARCHAR);
 			}
+			
 			if (vrfName != "") {
-				ps.setString(10, vrfName);
+				prepStmt.setString(10, vrfName);
 			} else {
-				ps.setNull(10, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(10, Types.VARCHAR);
 			}
 
-			ps.setBoolean(11, isAutoProgress);
+			prepStmt.setBoolean(11, isAutoProgress);
 
 			if (vendor != "") {
-				ps.setString(12, vendor);
+				prepStmt.setString(12, vendor);
 			} else {
-				ps.setNull(12, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(12, Types.VARCHAR);
 			}
+			
 			if (customer != "") {
-				ps.setString(13, customer);
+				prepStmt.setString(13, customer);
 			} else {
-				ps.setNull(13, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(13, Types.VARCHAR);
 			}
 
 			if (siteId != "") {
-				ps.setString(14, siteId);
+				prepStmt.setString(14, siteId);
 			} else {
-				ps.setNull(14, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(14, Types.VARCHAR);
 			}
 
 			if (managementIP != "") {
-				ps.setString(15, managementIP);
+				prepStmt.setString(15, managementIP);
 			} else {
-				ps.setNull(15, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(15, Types.VARCHAR);
 			}
+			
 			if (deviceType != "") {
-				ps.setString(16, deviceType);
+				prepStmt.setString(16, deviceType);
 			} else {
-				ps.setNull(16, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(16, Types.VARCHAR);
 			}
+			
 			if (vpn != "") {
-				ps.setString(17, vpn);
+				prepStmt.setString(17, vpn);
 			} else {
-				ps.setNull(17, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(17, Types.VARCHAR);
 			}
+			
 			if (alphaneumeric_req_id != "") {
-				ps.setString(18, alphaneumeric_req_id);
+				prepStmt.setString(18, alphaneumeric_req_id);
 			} else {
-				ps.setNull(18, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(18, Types.VARCHAR);
 			}
 
-			ps.setString(19, request.getStatus());
+			prepStmt.setString(19, request.getStatus());
 			if (request_version != 0) {
-				ps.setDouble(20, request_version);
+				prepStmt.setDouble(20, request_version);
 			} else {
-				ps.setDouble(20, 0);
-
+				prepStmt.setDouble(20, 0);
 			}
+			
 			if (request_parent_version != 0) {
-				ps.setDouble(21, request_parent_version);
+				prepStmt.setDouble(21, request_parent_version);
 			} else {
-				ps.setDouble(21, 0);
-
+				prepStmt.setDouble(21, 0);
 			}
+			
 			if (request_creator_name != null) {
-				ps.setString(22, request_creator_name);
+				prepStmt.setString(22, request_creator_name);
 			} else {
-				ps.setNull(22, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(22, Types.VARCHAR);
 			}
 
 			if (snmpHostAddress != null) {
-				ps.setString(23, snmpHostAddress);
+				prepStmt.setString(23, snmpHostAddress);
 			} else {
-				ps.setNull(23, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(23, Types.VARCHAR);
 			}
+			
 			if (snmpString != null) {
-				ps.setString(24, snmpString);
+				prepStmt.setString(24, snmpString);
 			} else {
-				ps.setNull(24, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(24, Types.VARCHAR);
 			}
+			
 			if (loopBackType != null) {
-				ps.setString(25, loopBackType);
+				prepStmt.setString(25, loopBackType);
 			} else {
-				ps.setNull(25, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(25, Types.VARCHAR);
 			}
+			
 			if (loopbackIPaddress != null) {
-				ps.setString(26, loopbackIPaddress);
+				prepStmt.setString(26, loopbackIPaddress);
 			} else {
-				ps.setNull(26, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(26, Types.VARCHAR);
 			}
+			
 			if (loopbackSubnetMask != null) {
-				ps.setString(27, loopbackSubnetMask);
+				prepStmt.setString(27, loopbackSubnetMask);
 			} else {
-				ps.setNull(27, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(27, Types.VARCHAR);
 			}
+			
 			if (lanInterface != null) {
-				ps.setString(28, lanInterface);
+				prepStmt.setString(28, lanInterface);
 			} else {
-				ps.setNull(28, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(28, Types.VARCHAR);
 			}
+			
 			if (lanIp != null) {
-				ps.setString(29, lanIp);
+				prepStmt.setString(29, lanIp);
 			} else {
-				ps.setNull(29, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(29, Types.VARCHAR);
 			}
+			
 			if (lanMaskAddress != null) {
-				ps.setString(30, lanMaskAddress);
+				prepStmt.setString(30, lanMaskAddress);
 			} else {
-				ps.setNull(30, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(30, Types.VARCHAR);
 			}
+			
 			if (lanDescription != null) {
-				ps.setString(31, lanDescription);
+				prepStmt.setString(31, lanDescription);
 			} else {
-				ps.setNull(31, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(31, Types.VARCHAR);
 			}
 			if (certificationSelectionBit != null) {
-				ps.setString(32, certificationSelectionBit);
+				prepStmt.setString(32, certificationSelectionBit);
 			} else {
-				ps.setNull(32, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(32, Types.VARCHAR);
 			}
+			
 			if (scheduledTime != null && scheduledTime != "") {
-
 				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-
 				try {
-					java.util.Date parsedDate = sdf.parse(scheduledTime);
+					Date parsedDate = sdf.parse(scheduledTime);
+					Timestamp timestampTimeForScheduled = new Timestamp(parsedDate.getTime());
 
-					java.sql.Timestamp timestampTimeForScheduled = new java.sql.Timestamp(parsedDate.getTime());
+					prepStmt.setTimestamp(33, timestampTimeForScheduled);
+					prepStmt.setString(34, "S");
 
-					ps.setTimestamp(33, timestampTimeForScheduled);
-					ps.setString(34, "S");
-					/* ps.setString(37,TimeZ); *//* Added for TimeZ */
-
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				} catch (ParseException exe) {
+					exe.printStackTrace();
 				}
-
 			} else {
-				ps.setNull(33, java.sql.Types.TIMESTAMP);
-				ps.setString(34, "M");
+				prepStmt.setNull(33, java.sql.Types.TIMESTAMP);
+				prepStmt.setString(34, "M");
 			}
 
 			if (templateId != null) {
-				ps.setString(35, templateId);
+				prepStmt.setString(35, templateId);
 			} else {
-				ps.setNull(35, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(35, Types.VARCHAR);
 			}
+			
 			if (request_creator_name != null) {
-				ps.setString(36, request_creator_name);
+				prepStmt.setString(36, request_creator_name);
 			} else {
-				ps.setNull(36, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(36, Types.VARCHAR);
 			}
+			
 			if (zipcode != null) {
-				ps.setString(37, zipcode);
-
+				prepStmt.setString(37, zipcode);
 			} else {
-				ps.setNull(37, java.sql.Types.VARCHAR);
+				prepStmt.setNull(37, Types.VARCHAR);
 			}
+			
 			if (managed != null) {
-				ps.setString(38, managed);
-
+				prepStmt.setString(38, managed);
 			} else {
-				ps.setNull(38, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(38, Types.VARCHAR);
 			}
+			
 			if (downtimerequired != null) {
-				ps.setString(39, downtimerequired);
-
+				prepStmt.setString(39, downtimerequired);
 			} else {
-				ps.setNull(39, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(39, Types.VARCHAR);
 			}
+			
 			if (lastupgradedon != null) {
-				ps.setString(40, lastupgradedon);
-
+				prepStmt.setString(40, lastupgradedon);
 			} else {
-				ps.setNull(40, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(40, Types.VARCHAR);
 			}
+			
 			if (networktype != null) {
-				ps.setString(41, networktype);
-
+				prepStmt.setString(41, networktype);
 			} else {
-				ps.setNull(41, java.sql.Types.VARCHAR);
-
+				prepStmt.setNull(41, Types.VARCHAR);
 			}
-			int i = ps.executeUpdate();
-			if (i == 1) {
-
+			
+			int result = prepStmt.executeUpdate();
+			if (result == 1) {
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
 				addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
-				// add to OS_updgrade dilevary flag details table
+				// add to OS_updgrade delivery flag details table
 				if (request.getRequest_type().equalsIgnoreCase("IOSUPGRADE")) {
 					addRequestID_to_Os_Upgrade_dilevary_flags(alphaneumeric_req_id, Double.toString(request_version));
 				}
 				updateEIPAMTable(request.getDeviceInterfaceSO().getIp());
 				hmap.put("result", "true");
 				return hmap;
-
 			}
 		} catch (SQLException ex) {
 			ex.printStackTrace();
@@ -879,53 +549,40 @@ public class RequestInfoDao {
 	}
 
 	public int insertTestRecordInDB(String requestID, String testsSelected, String requestType,double requestVersion) {
-		int res = 0;
-		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO t_tststrategy_m_config_transaction(RequestId,TestsSelected,RequestType,request_version)"
-				+ "VALUES(?,?,?,?)";
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
-
-			ps.setString(1, requestID);
-			ps.setString(2, testsSelected);
-			ps.setString(3, requestType);
-			ps.setDouble(4, requestVersion);
-			res = ps.executeUpdate();
-
-		} catch (SQLException e) {
-
+		int result = 0;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(INSERT_T_TSTSTRATEGY_M_CONFIG_TRANSACTION);){
+			prepStmt.setString(1, requestID);
+			prepStmt.setString(2, testsSelected);
+			prepStmt.setString(3, requestType);
+			prepStmt.setDouble(4, requestVersion);
+			result = prepStmt.executeUpdate();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in insertTestRecordInDB method "+exe.getMessage());
 		}
-		return res;
+		return result;
 	}
 
-	public final void addRequestID_to_Os_Upgrade_dilevary_flags(String requestId, String version) {
-		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO os_upgrade_dilevary_flags(request_id,request_version,login_flag,flash_size_flag,back_up_flag,os_download_flag,boot_system_flash_flag,reload_flag,post_login_flag)"
-				+ "VALUES(?,?,?,?,?,?,?,?,?)";
-
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
-
-			ps.setString(1, requestId);
-			ps.setString(2, version);
-			ps.setInt(3, 0);
-			ps.setInt(4, 0);
-			ps.setInt(5, 0);
-			ps.setInt(6, 0);
-			ps.setInt(7, 0);
-			ps.setInt(8, 0);
-			ps.setInt(9, 0);
-			int i = ps.executeUpdate();
-
-		} catch (SQLException e) {
-
+	public void addRequestID_to_Os_Upgrade_dilevary_flags(String requestId, String version) {
+		try (Connection connection = ConnectionFactory.getConnection(); 
+				PreparedStatement prepStmt = connection.prepareStatement(INSERT_OS_UPGRADE_DELIVERY_FLAGS);){
+			prepStmt.setString(1, requestId);
+			prepStmt.setString(2, version);
+			prepStmt.setInt(3, 0);
+			prepStmt.setInt(4, 0);
+			prepStmt.setInt(5, 0);
+			prepStmt.setInt(6, 0);
+			prepStmt.setInt(7, 0);
+			prepStmt.setInt(8, 0);
+			prepStmt.setInt(9, 0);
+			prepStmt.executeUpdate();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in addRequestID_to_Os_Upgrade_dilevary_flags method "+exe.getMessage());
 		}
 	}
 
-	public final List<RequestInfoSO> searchRequestsFromDB(String key, String value) throws IOException, ParseException {
-		connection = ConnectionFactory.getConnection();
+	public final List<RequestInfoSO> searchRequestsFromDB(String key, String value) throws ParseException {
 		String query = null;
-
 		if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 			if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
 				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE concat(alphanumeric_req_id,concat('-v',request_version)) LIKE ? AND RequestOwner=?";
@@ -961,19 +618,17 @@ public class RequestInfoDao {
 		}
 		ResultSet rs = null;
 		RequestInfoSO request = null;
-		List<RequestInfoSO> requestInfoList1 = null;
-		PreparedStatement pst = null;
-		try {
-
-			pst = connection.prepareStatement(query);
+		List<RequestInfoSO> requestInfoList = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(query);) {
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
-				pst.setString(1, value + "%");
-				pst.setString(2, Global.loggedInUser);
+				prepStmt.setString(1, value + "%");
+				prepStmt.setString(2, Global.loggedInUser);
 			} else {
-				pst.setString(1, value + "%");
+				prepStmt.setString(1, value + "%");
 			}
-			rs = pst.executeQuery();
-			requestInfoList1 = new ArrayList<RequestInfoSO>();
+			rs = prepStmt.executeQuery();
+			requestInfoList = new ArrayList<RequestInfoSO>();
 
 			int id;
 			while (rs.next()) {
@@ -991,9 +646,9 @@ public class RequestInfoDao {
 				request.setVrfName(rs.getString("vrf_name"));
 				request.setIsAutoProgress(rs.getBoolean("isAutoProgress"));
 
-				Timestamp d = rs.getTimestamp("date_of_processing");
+				Timestamp date = rs.getTimestamp("date_of_processing");
 
-				request.setDateOfProcessing((covnertTStoString(d)));
+				request.setDateOfProcessing((covnertTStoString(date)));
 				request.setVendor(rs.getString("vendor"));
 				request.setCustomer(rs.getString("customer"));
 				request.setSiteid(rs.getString("siteid"));
@@ -1032,613 +687,338 @@ public class RequestInfoDao {
 						|| request.getStatus().equalsIgnoreCase("success")) {
 					request.setElapsed_time(rs.getString("request_elapsed_time"));
 				} else if (request.getStatus().equalsIgnoreCase("Scheduled")) {
-					SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 					Timestamp scheduledTime = rs.getTimestamp("ScheduledTime");
-
-					/*
-					 * Date d1_d = null; Date d2_d = null;
-					 * 
-					 * //d1_d = format.parse((covnertTStoString(d)));
-					 * 
-					 * d2_d = format.parse((covnertTStoString(d1)));
-					 * 
-					 * String scheduledTime = null; // in milliseconds //long diff = d2_d.getTime()
-					 * - d1_d.getTime();
-					 * 
-					 * long diffSeconds = diff / 1000 % 60; long diffMinutes = diff / (60 * 1000) %
-					 * 60; long diffHours = diff / (60 * 60 * 1000) % 24; long diffDays = diff / (24
-					 * * 60 * 60 * 1000);
-					 * 
-					 * long dayTohours = diffDays * 24;
-					 * 
-					 * DecimalFormat formatter = new DecimalFormat("00"); String sec =
-					 * formatter.format(diffSeconds); String min = formatter.format(diffMinutes);
-					 * String hrs = formatter.format(diffHours + dayTohours);
-					 * 
-					 * scheduledTime = hrs + ":" + min + ":" + sec;
-					 */
 					if (scheduledTime != null) {
 						request.setScheduledTime(covnertTStoString(scheduledTime));
 					}
 
 				} else {
 					request.setElapsed_time(rs.getString("request_elapsed_time"));
+				}
+				if (rs.getString("RequestOwner") != null) {
+					request.setRequest_assigned_to(rs.getString("RequestOwner"));
 
+				} else {
+					request.setRequest_assigned_to("");
 				}
 
-				String subQueryOne = "select*from misarpeso where request_info_id=" + id;
-				Statement smt = connection.createStatement();
-				ResultSet rsnew = smt.executeQuery(subQueryOne);
-
-				if (rsnew != null) {
-					MisArPeSO mis = new MisArPeSO();
-					while (rsnew.next()) {
-						mis.setFastEthernetIp(rsnew.getString("fastEthernetIp"));
-						mis.setRouterVrfVpnDGateway(rsnew.getString("routerVrfVpnDGateway"));
-						mis.setRouterVrfVpnDIp(rsnew.getString("routerVrfVpnDIp"));
-					}
-					request.setMisArPeSO(mis);
-				}
-
-				String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
-				Statement smt1 = connection.createStatement();
-				ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
-
-				if (rsnew1 != null) {
-					InternetLcVrfSO iis = new InternetLcVrfSO();
-					while (rsnew1.next()) {
-						iis.setNetworkIp(rsnew1.getString("networkIp"));
-						iis.setBgpASNumber(rsnew1.getString("asNumber"));
-						iis.setNeighbor1(rsnew1.getString("neighbor1"));
-						iis.setNeighbor2(rsnew1.getString("neighbor2"));
-						iis.setNeighbor1_remoteAS(rsnew1.getString("neighbor1_remoteAS"));
-						iis.setNeighbor2_remoteAS(rsnew1.getString("neighbor2_remoteAS"));
-						iis.setRoutingProtocol(rsnew1.getString("routingProtocol"));
-						iis.setNetworkIp_subnetMask(rsnew1.getString("networkIp_subnetMask"));
-
-					}
-					request.setInternetLcVrf(iis);
-				}
-
-				String subQueryThree = "select*from deviceinterfaceso where request_info_id=" + id;
-				Statement smt3 = connection.createStatement();
-				ResultSet rsnew3 = smt3.executeQuery(subQueryThree);
-
-				if (rsnew3 != null) {
-					DeviceInterfaceSO iisd = new DeviceInterfaceSO();
-					while (rsnew3.next()) {
-						iisd.setDescription(rsnew3.getString("description"));
-						iisd.setIp(rsnew3.getString("ip"));
-						iisd.setEncapsulation(rsnew3.getString("encapsulation"));
-						iisd.setMask(rsnew3.getString("mask"));
-						iisd.setName(rsnew3.getString("name"));
-						iisd.setSpeed(rsnew3.getString("speed"));
-						iisd.setBandwidth(rsnew3.getString("Bandwidth"));
-					}
-					request.setDeviceInterfaceSO(iisd);
-
-					if (rs.getString("RequestOwner") != null) {
-						request.setRequest_assigned_to(rs.getString("RequestOwner"));
-
-					} else {
-						request.setRequest_assigned_to("");
-
-					}
-
-					requestInfoList1.add(request);
-				}
-
+				request.setMisArPeSO(getMisArPeSO(id));
+				request.setInternetLcVrf(getInternetLcVrf(id));
+				request.setDeviceInterfaceSO(getDeviceInterfaceSO(id));
+				requestInfoList.add(request);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in method searchRequestsFromDB "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-		/*
-		 * for (int i = 0; i < requestInfoList1.size(); i++) { //
-		 * logger.info(""+requestInfoList1.get(i).getRequestId()); logger.info("" +
-		 * requestInfoList1.get(i).getDeviceName()); logger.info("" +
-		 * requestInfoList1.get(i).getMisArPeSO() .getFastEthernetIp()); System.out
-		 * .println("" + requestInfoList1.get(i).getInternetLcVrf() .getNetworkIp()); }
-		 */
-		return requestInfoList1;
+		
+		return requestInfoList;
 
 	}
-
-	public final List<RequestInfo> getAllRequestInfoData() throws IOException {
-		connection = ConnectionFactory.getConnection();
+	/** TO-DO Redundant code*/
+	public final List<RequestInfo> getAllRequestInfoData() {
 		String query = "SELECT * FROM requestinfoso";
-		ResultSet rs = null;
+		ResultSet resultSet = null;
 		RequestInfoSO requestInfoObj = null;
 		List<RequestInfoSO> requestInfoList1 = null;
-		try {
-
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(query);){
+			resultSet = prepStmt.executeQuery();
 			requestInfoList1 = new ArrayList<RequestInfoSO>();
-
-			int id;
-			while (rs.next()) {
+			while (resultSet.next()) {
 				requestInfoObj = new RequestInfoSO();
-				id = (rs.getInt("request_info_id"));
-				requestInfoObj.setOs(rs.getString("Os"));
-				requestInfoObj.setBanner(rs.getString("banner"));
-				requestInfoObj.setDeviceName(rs.getString("device_name"));
-				requestInfoObj.setModel(rs.getString("model"));
-				requestInfoObj.setRegion(rs.getString("region"));
-				requestInfoObj.setService(rs.getString("service"));
-				requestInfoObj.setHostname(rs.getString("hostname"));
-				requestInfoObj.setOsVersion(rs.getString("os_version"));
-				requestInfoObj.setEnablePassword(rs.getString("enable_password"));
-				requestInfoObj.setVrfName(rs.getString("vrf_name"));
-				requestInfoObj.setIsAutoProgress(rs.getBoolean("isAutoProgress"));
-				Timestamp d = rs.getTimestamp("date_of_processing");
-				requestInfoObj.setDateOfProcessing((covnertTStoString(d)));
-				requestInfoObj.setVendor(rs.getString("vendor"));
-				requestInfoObj.setCustomer(rs.getString("customer"));
-				requestInfoObj.setSiteid(rs.getString("siteid"));
-				requestInfoObj.setStatus(rs.getString("request_status"));
-				requestInfoObj.setManagementIp(rs.getString("ManagementIP"));
-				requestInfoObj.setDisplay_request_id(rs.getString("alphanumeric_req_id"));
+				requestInfoObj.setOs(resultSet.getString("Os"));
+				requestInfoObj.setBanner(resultSet.getString("banner"));
+				requestInfoObj.setDeviceName(resultSet.getString("device_name"));
+				requestInfoObj.setModel(resultSet.getString("model"));
+				requestInfoObj.setRegion(resultSet.getString("region"));
+				requestInfoObj.setService(resultSet.getString("service"));
+				requestInfoObj.setHostname(resultSet.getString("hostname"));
+				requestInfoObj.setOsVersion(resultSet.getString("os_version"));
+				requestInfoObj.setEnablePassword(resultSet.getString("enable_password"));
+				requestInfoObj.setVrfName(resultSet.getString("vrf_name"));
+				requestInfoObj.setIsAutoProgress(resultSet.getBoolean("isAutoProgress"));
+				Timestamp date = resultSet.getTimestamp("date_of_processing");
+				requestInfoObj.setDateOfProcessing((covnertTStoString(date)));
+				requestInfoObj.setVendor(resultSet.getString("vendor"));
+				requestInfoObj.setCustomer(resultSet.getString("customer"));
+				requestInfoObj.setSiteid(resultSet.getString("siteid"));
+				requestInfoObj.setStatus(resultSet.getString("request_status"));
+				requestInfoObj.setManagementIp(resultSet.getString("ManagementIP"));
+				requestInfoObj.setDisplay_request_id(resultSet.getString("alphanumeric_req_id"));
 
-				requestInfoObj.setRequest_id(rs.getInt("request_info_id"));
-
-				String subQueryOne = "select*from misarpeso where request_info_id=" + id;
-				Statement smt = connection.createStatement();
-				ResultSet rsnew = smt.executeQuery(subQueryOne);
-
-				if (rsnew != null) {
-					MisArPeSO mis = new MisArPeSO();
-					while (rsnew.next()) {
-						mis.setFastEthernetIp(rsnew.getString("fastEthernetIp"));
-						mis.setRouterVrfVpnDGateway(rsnew.getString("routerVrfVpnDGateway"));
-						mis.setRouterVrfVpnDIp(rsnew.getString("routerVrfVpnDIp"));
-					}
-					requestInfoObj.setMisArPeSO(mis);
-				}
-
-				String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
-				Statement smt1 = connection.createStatement();
-				ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
-
-				if (rsnew1 != null) {
-					InternetLcVrfSO iis = new InternetLcVrfSO();
-					while (rsnew1.next()) {
-						iis.setNetworkIp(rsnew1.getString("networkIp"));
-						iis.setBgpASNumber(rsnew1.getString("asNumber"));
-						iis.setNeighbor1(rsnew1.getString("neighbor1"));
-						iis.setNeighbor2(rsnew1.getString("neighbor2"));
-						iis.setNeighbor1_remoteAS(rsnew1.getString("neighbor1_remoteAS"));
-						iis.setNeighbor2_remoteAS(rsnew1.getString("neighbor2_remoteAS"));
-						iis.setRoutingProtocol(rsnew1.getString("routingProtocol"));
-
-					}
-					requestInfoObj.setInternetLcVrf(iis);
-				}
-
+				requestInfoObj.setRequest_id(resultSet.getInt("request_info_id"));
+				requestInfoObj.setMisArPeSO(getMisArPeSO(requestInfoObj.getRequest_id()));
+				requestInfoObj.setInternetLcVrf(getInternetLcVrf(requestInfoObj.getRequest_id()));
 				requestInfoList1.add(requestInfoObj);
 			}
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getAllRequestInfoData method "+exe.getMessage());
 		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
+			DBUtil.close(resultSet);
 		}
-		/*
-		 * for (int i = 0; i < requestInfoList1.size(); i++) { //
-		 * logger.info(""+requestInfoList1.get(i).getRequestId()); logger.info("" +
-		 * requestInfoList1.get(i).getDateOfProcessing()); logger.info("" +
-		 * requestInfoList1.get(i).getRequest_id());
-		 * 
-		 * }
-		 */
 
 		List<RequestInfo> requestInfoList = new ArrayList<RequestInfo>();
 		GetAllDetailsService gads = new GetAllDetailsService();
-		String response = gads.jsonResponseString();
+		String response;
+		try {
+			response = gads.jsonResponseString();
+			JSONObject jsonObject = new JSONObject(response);
+			JSONArray tsmresponse = (JSONArray) jsonObject.get("requestsDetail");
 
-		JSONObject jsonObject = new JSONObject(response);
-		JSONArray tsmresponse = (JSONArray) jsonObject.get("requestsDetail");
-
-		for (int i = 0; i < tsmresponse.length(); i++) {
-			RequestInfo requestInfo = new RequestInfo();
-			requestInfo.setRequestId(tsmresponse.getJSONObject(i).getString("requestId"));
-			requestInfo.setCustomerName(tsmresponse.getJSONObject(i).getString("customer"));
-			requestInfo.setDeviceName(tsmresponse.getJSONObject(i).getString("deviceName"));
-			requestInfo.setModel(tsmresponse.getJSONObject(i).getString("model"));
-			requestInfo.setConfig_req_status(tsmresponse.getJSONObject(i).getString("status"));
-			requestInfo.setDateProcessedString(tsmresponse.getJSONObject(i).getString("date"));
-			requestInfoList.add(requestInfo);
-		}
+			for (int i = 0; i < tsmresponse.length(); i++) {
+				RequestInfo requestInfo = new RequestInfo();
+				requestInfo.setRequestId(tsmresponse.getJSONObject(i).getString("requestId"));
+				requestInfo.setCustomerName(tsmresponse.getJSONObject(i).getString("customer"));
+				requestInfo.setDeviceName(tsmresponse.getJSONObject(i).getString("deviceName"));
+				requestInfo.setModel(tsmresponse.getJSONObject(i).getString("model"));
+				requestInfo.setConfig_req_status(tsmresponse.getJSONObject(i).getString("status"));
+				requestInfo.setDateProcessedString(tsmresponse.getJSONObject(i).getString("date"));
+				requestInfoList.add(requestInfo);
+			}
+		} catch (IOException exe) {
+			logger.error("IO Exception in getAllRequestInfoData method "+exe.getMessage());
+		}		
 		logger.info("request>>>>>>>>>>>" + requestInfoList);
 		return requestInfoList;
 	}
 
 	public boolean addRequestIDtoWebserviceInfo(String alphanumeric_req_id, String request_version) {
-		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO webserviceinfo(start_test,generate_config,deliever_config,health_checkup,network_test,application_test,customer_report,filename,latencyResultRes,alphanumeric_req_id,version,pre_health_checkup,others_test)"
-				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
-
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
-
-			ps.setInt(1, 1);
-			ps.setInt(2, 1);
-			ps.setInt(3, 0);
-			ps.setInt(4, 0);
-			ps.setInt(5, 0);
-			ps.setInt(6, 0);
-			ps.setInt(7, 0);
-			ps.setInt(8, 0);
-			ps.setInt(9, 0);
-			ps.setString(10, alphanumeric_req_id);
-			ps.setString(11, request_version);
-			ps.setInt(12, 0);
-			ps.setInt(13, 0);
-			int i = ps.executeUpdate();
-			if (i == 1) {
-
-				return true;
-
+		boolean queryStatus = false;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(INSERT_WEB_SERVICE_INFO);){
+			prepStmt.setInt(1, 1);
+			prepStmt.setInt(2, 1);
+			prepStmt.setInt(3, 0);
+			prepStmt.setInt(4, 0);
+			prepStmt.setInt(5, 0);
+			prepStmt.setInt(6, 0);
+			prepStmt.setInt(7, 0);
+			prepStmt.setInt(8, 0);
+			prepStmt.setInt(9, 0);
+			prepStmt.setString(10, alphanumeric_req_id);
+			prepStmt.setString(11, request_version);
+			prepStmt.setInt(12, 0);
+			prepStmt.setInt(13, 0);
+			int result = prepStmt.executeUpdate();
+			if (result > 0) {
+				queryStatus = true;
 			}
-		} catch (SQLException e) {
-
+		} catch (SQLException exe) {
+			logger.error("Exception in addRequestIDtoWebserviceInfo - "+exe.getMessage());
 		}
-
-		return false;
+		return queryStatus;
 	}
 
 	public boolean checkDB(String requestId) {
-		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM webserviceinfo";
-		// String query =
-		// "INSERT INTO request_detail(request_id, request_date,
-		// request_status,request_model,request_device_name,request_source) VALUES(2,
-		// 00/00/0000,'Success','8888','CISCO','SOAP')";
-
-		ResultSet rs = null;
-		ReoprtFlags flags = null;
-		List<ReoprtFlags> InfoList1 = null;
-
-		try {
-
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
-			InfoList1 = new ArrayList<ReoprtFlags>();
-			logger.info("" + rs.getFetchSize());
-
-			if (rs != null) {
-				while (rs.next()) {
-					flags = new ReoprtFlags();
-					flags.setRequestId(rs.getString("request_id"));
-					flags.setStart_test(rs.getInt("start_test"));
-					flags.setNetwork_test(rs.getInt("network_test"));
-					flags.setHealth_checkup(rs.getInt("health_checkup"));
-					flags.setGenerate_config(rs.getInt("generate_config"));
-					flags.setDeliever_config(rs.getInt("deliever_config"));
-					flags.setCustomer_report(rs.getInt("customer_report"));
-					flags.setApplication_test(rs.getInt("application_test"));
-					flags.setLatencyResultRes(rs.getInt("latencyResultRes"));
-					flags.setFilename(rs.getInt("filename"));
-
-					InfoList1.add(flags);
-				}
-
-				if (InfoList1.size() == 0) {
-					return false;
-				} else {
-					for (int i = 0; i < InfoList1.size(); i++) {
-						if (InfoList1.get(i).getRequestId().equalsIgnoreCase(requestId)) {
-							return true;
-						}
-					}
+		String query = "SELECT * FROM webserviceinfo where request_id = ?";
+		ResultSet resultSet = null;		
+		boolean checkReportFlags = false;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(query);){
+			prepStmt.setInt(1, Integer.parseInt(requestId));
+			resultSet = prepStmt.executeQuery();
+			if (resultSet != null) {
+				while (resultSet.next()) {
+					checkReportFlags = true;
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in checkDB method "+exe.getMessage());
 		} finally {
-
+			DBUtil.close(resultSet);
 		}
-		return false;
+		return checkReportFlags;
 	}
 
 	public List<ReoprtFlags> getReportsInfoForAllRequestsDB() {
-		connection = ConnectionFactory.getConnection();
 		String query = "SELECT * FROM webserviceinfo";
-
-		ResultSet rs = null;
+		ResultSet resultSet = null;
 		ReoprtFlags flags = null;
-		List<ReoprtFlags> InfoList1 = null;
+		List<ReoprtFlags> reportFlags = null;
 
-		try {
-
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
-			InfoList1 = new ArrayList<ReoprtFlags>();
-
-			if (rs != null) {
-				while (rs.next()) {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(query);){
+			resultSet = prepStmt.executeQuery();
+			reportFlags = new ArrayList<ReoprtFlags>();
+			if (resultSet != null) {
+				while (resultSet.next()) {
 					flags = new ReoprtFlags();
-
-					flags.setRequestId(rs.getString("request_id"));
-					flags.setStart_test(rs.getInt("start_test"));
-					flags.setNetwork_test(rs.getInt("network_test"));
-					flags.setHealth_checkup(rs.getInt("health_checkup"));
-					flags.setGenerate_config(rs.getInt("generate_config"));
-					flags.setDeliever_config(rs.getInt("deliever_config"));
-					flags.setCustomer_report(rs.getInt("customer_report"));
-					flags.setApplication_test(rs.getInt("application_test"));
-					flags.setLatencyResultRes(rs.getInt("latencyResultRes"));
-					flags.setAlphanumeric_req_id(rs.getString("alphanumeric_req_id"));
-					flags.setFilename(rs.getInt("filename"));
-					flags.setPre_health_checkup(rs.getInt("pre_health_checkup"));
-					flags.setOthers_test(rs.getInt("others_test"));
-					flags.setNetwork_audit(rs.getInt("network_audit"));
-					flags.setRequestVersion(rs.getDouble("version"));
-					InfoList1.add(flags);
+					flags.setRequestId(resultSet.getString("request_id"));
+					flags.setStart_test(resultSet.getInt("start_test"));
+					flags.setNetwork_test(resultSet.getInt("network_test"));
+					flags.setHealth_checkup(resultSet.getInt("health_checkup"));
+					flags.setGenerate_config(resultSet.getInt("generate_config"));
+					flags.setDeliever_config(resultSet.getInt("deliever_config"));
+					flags.setCustomer_report(resultSet.getInt("customer_report"));
+					flags.setApplication_test(resultSet.getInt("application_test"));
+					flags.setLatencyResultRes(resultSet.getInt("latencyResultRes"));
+					flags.setAlphanumeric_req_id(resultSet.getString("alphanumeric_req_id"));
+					flags.setFilename(resultSet.getInt("filename"));
+					flags.setPre_health_checkup(resultSet.getInt("pre_health_checkup"));
+					flags.setOthers_test(resultSet.getInt("others_test"));
+					flags.setNetwork_audit(resultSet.getInt("network_audit"));
+					flags.setRequestVersion(resultSet.getDouble("version"));
+					reportFlags.add(flags);
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getReportsInfoForAllRequestsDB method "+exe.getMessage());
 		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
+			DBUtil.close(resultSet);			
 		}
-		return InfoList1;
+		return reportFlags;
 	}
 
 	public List<RequestInfoSO> getCertificationtestvalidation(String value) {
-		connection = ConnectionFactory.getConnection();
-		String query = "SELECT * FROM requestinfoso where alphanumeric_req_id =?";
-
-		ResultSet rs = null;
-
+		String query = "SELECT * FROM requestinfoso where alphanumeric_req_id = ?";
+		ResultSet resultSet = null;
 		RequestInfoSO request = null;
-		PreparedStatement pst = null;
 		List<RequestInfoSO> requestInfoList = null;
-		try {
-			pst = connection.prepareStatement(query);
-			pst.setString(1, value);
-
-			rs = pst.executeQuery();
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(query);){
+			prepStmt.setString(1, value);
+			resultSet = prepStmt.executeQuery();
 			requestInfoList = new ArrayList<RequestInfoSO>();
-
-			if (rs != null) {
-				while (rs.next()) {
+			if (resultSet != null) {
+				while (resultSet.next()) {
 					request = new RequestInfoSO();
-					request.setRequest_id(rs.getInt("request_info_id"));
-					// request.set(rs.getString("alphanumeric_req_id"));
-					request.setCertificationSelectionBit(rs.getString("certificationSelectionBit"));
-
-					request.setRequest_version(rs.getDouble("request_version"));
-
+					request.setRequest_id(resultSet.getInt("request_info_id"));
+					request.setCertificationSelectionBit(resultSet.getString("certificationSelectionBit"));
+					request.setRequest_version(resultSet.getDouble("request_version"));
 					requestInfoList.add(request);
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getCertificationtestvalidation method "+exe.getMessage());
 		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
+			DBUtil.close(resultSet);
 		}
 		return requestInfoList;
 	}
 
 	public void editRequestForReportIOSWebserviceInfo(String requestId, String version, String textFound_dileverytest,
 			String errorStatus_dilevarytest, String errorDescription_dilevarytest) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-		String query1 = null;
-		query = "update webserviceinfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ? ";
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		String query = "update webserviceinfo set TextFound_DeliveryTest = ?, ErrorStatus_DeliveryTest=?, ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ? ";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(query);){
+			prepStmt.setString(1, textFound_dileverytest);
+			prepStmt.setString(2, errorStatus_dilevarytest);
+			prepStmt.setString(3, errorDescription_dilevarytest);
+			prepStmt.setString(4, requestId);
+			prepStmt.setString(5, version);
 
-			preparedStmt.setString(1, textFound_dileverytest);
-			preparedStmt.setString(2, errorStatus_dilevarytest);
-			preparedStmt.setString(3, errorDescription_dilevarytest);
-			preparedStmt.setString(4, requestId);
-			preparedStmt.setString(5, version);
-
-			preparedStmt.executeUpdate();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			prepStmt.executeUpdate();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in editRequestForReportIOSWebserviceInfo method "+exe.getMessage());
 		}
 	}
 
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
-		connection = ConnectionFactory.getConnection();
 		String query = null;
-		String query1 = null;
-		String query2 = null;
 
 		if (field.equalsIgnoreCase("health_check")) {
 			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliver_configuration")) {
 			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
-
 		} else if (field.equalsIgnoreCase("network_test")) {
 			query = "update webserviceinfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliever_config")) {
 			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
-		}
-
-		else if (field.equalsIgnoreCase("Application_test")) {
+		}else if (field.equalsIgnoreCase("Application_test")) {
 			query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
-
 		} else if (field.equalsIgnoreCase("customer_report")) {
 			query = "update webserviceinfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
-
 		} else if (field.equalsIgnoreCase("generate_configuration")) {
 			query = "update webserviceinfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("pre_health_checkup")) {
 			query = "update webserviceinfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
-
 		} else if (field.equalsIgnoreCase("others_test")) {
 			query = "update webserviceinfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
-
 		} else if (field.equalsIgnoreCase("network_audit")) {
 			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
-
 		}
-
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
-
+		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);){
 			preparedStmt.setString(1, flag);
 			preparedStmt.setString(2, requestId);
 			preparedStmt.setString(3, version);
 			preparedStmt.executeUpdate();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in editRequestforReportWebserviceInfo method "+exe.getMessage());
 		}
-		// query1 =
-		// "update requestinfoso set request_status = ? where alphanumeric_req_id = ?";
+		Date date = new Date();
+		Timestamp timestamp = new Timestamp(date.getTime());
+		Timestamp d = null;
 		if (field.equalsIgnoreCase("customer_report") && status.contains("Success")) {
-			String query0 = "select * from requestinfoso where alphanumeric_req_id = ? and request_version= ?";
-			query1 = "update requestinfoso set request_status = ?,end_date_of_processing = ?,request_elapsed_time=? where alphanumeric_req_id = ? and request_version= ?";
-			try {
-				PreparedStatement preparedStmt1, preparedStmt0;
-				ResultSet rs = null;
-				java.util.Date date = new java.util.Date();
-				java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
-				Timestamp d = null;
-				preparedStmt0 = connection.prepareStatement(query0);
-				preparedStmt0.setString(1, requestId);
-				preparedStmt0.setString(2, version);
-				rs = preparedStmt0.executeQuery();
+			ResultSet rs = null;
+			try (Connection connection = ConnectionFactory.getConnection();
+					PreparedStatement preparedStmt = connection.prepareStatement(GET_REQUEST_INFO_SO_BY_ALPREQID_VERSION);){
+				preparedStmt.setString(1, requestId);
+				preparedStmt.setString(2, version);
+				rs = preparedStmt.executeQuery();
 
 				while (rs.next()) {
 					if (rs.getString("temp_elapsed_time") == null) {
 						if (rs.getString("RequestType_Flag").equalsIgnoreCase("M")) {
 							d = rs.getTimestamp("date_of_processing");
-
 						} else {
 							d = rs.getTimestamp("ScheduledTime");
 						}
-
 						String diff = calcTimeDiffInMins(timestamp, d);
-
-						preparedStmt1 = connection.prepareStatement(query1);
-						preparedStmt1.setString(1, status);
-						// preparedStmt1.setTimestamp(2, date);
-						preparedStmt1.setTimestamp(2, timestamp);
-						preparedStmt1.setString(3, diff);
-						preparedStmt1.setString(4, requestId);
-						preparedStmt1.setString(5, version);
-						preparedStmt1.executeUpdate();
+						updateRequestInfoSoByAlpReqVersion(requestId, version, status, timestamp, diff);
+						
 					} else {
-						Timestamp d1 = null;
-						date = new java.util.Date();
-						timestamp = new java.sql.Timestamp(date.getTime());
-						d1 = rs.getTimestamp("temp_processing_time");
-						String diff1 = calcTimeDiffInMins(timestamp, d1);
-
+						d = rs.getTimestamp("temp_processing_time");
+						String diff1 = calcTimeDiffInMins(timestamp, d);
 						String diff2 = String.format("%.2f", Float.toString(
 								(Float.parseFloat(diff1) + Float.parseFloat(rs.getString("temp_elapsed_time")))));
-						// String query1 =
-						// "update requestinfoso set temp_elapsed_time = ? where alphanumeric_req_id = ?
-						// and request_version= ?";
-
-						preparedStmt1 = connection.prepareStatement(query1);
-						preparedStmt1.setString(1, status);
-						preparedStmt1.setTimestamp(2, timestamp);
-						preparedStmt1.setString(3, diff2);
-						preparedStmt1.setString(4, requestId);
-						preparedStmt1.setString(5, version);
-						preparedStmt1.executeUpdate();
+						updateRequestInfoSoByAlpReqVersion(requestId, version, status, timestamp, diff2);
 					}
 				}
-
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in editRequestforReportWebserviceInfo method "+exe.getMessage());
+			}finally {
+				DBUtil.close(rs);
 			}
 			ServiceOrderEntity ent = serviceOrderRepo.findByRequestId(requestId);
 			if (ent != null) {
 				serviceOrderRepo.updateStatusAndRequestId(requestId, "Success", ent.getServiceOrder());
 			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
-			String query0 = "select * from requestinfoso where alphanumeric_req_id = ? and request_version= ?";
-			query1 = "update requestinfoso set request_status = ?,end_date_of_processing = ?,request_elapsed_time=? where alphanumeric_req_id = ? and request_version= ?";
-			try {
-				PreparedStatement preparedStmt1, preparedStmt0;
-				ResultSet rs = null;
-				java.util.Date date = new java.util.Date();
-				java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
-				Timestamp d = null;
-				preparedStmt0 = connection.prepareStatement(query0);
-				preparedStmt0.setString(1, requestId);
-				preparedStmt0.setString(2, version);
-				rs = preparedStmt0.executeQuery();
+			ResultSet rs = null;
+			try (Connection connection = ConnectionFactory.getConnection();
+					PreparedStatement preparedStmt = connection.prepareStatement(GET_REQUEST_INFO_SO_BY_ALPREQID_VERSION);){
+				
+				preparedStmt.setString(1, requestId);
+				preparedStmt.setString(2, version);
+				rs = preparedStmt.executeQuery();
 				if (rs != null) {
 					while (rs.next()) {
 						d = rs.getTimestamp("temp_processing_time");
 					}
 				}
-
-				preparedStmt1 = connection.prepareStatement(query1);
-				preparedStmt1.setString(1, status);
-				// preparedStmt1.setTimestamp(2, date);
-				preparedStmt1.setTimestamp(2, timestamp);
-				preparedStmt1.setString(3, "0");
-				preparedStmt1.setString(4, requestId);
-				preparedStmt1.setString(5, version);
-				preparedStmt1.executeUpdate();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-
+				updateRequestInfoSoByAlpReqVersion(requestId, version, status, timestamp, "0");
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in editRequestforReportWebserviceInfo method "+exe.getMessage());
+			}finally {
+				DBUtil.close(rs);
 			}
 			ServiceOrderEntity ent = serviceOrderRepo.findByRequestId(requestId);
 			if (ent != null) {
 				serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder());
 			}
 		} else {
-
-			query1 = "update requestinfoso set request_status = ?,end_date_of_processing = ?,request_elapsed_time=? where alphanumeric_req_id = ? and request_version= ?";
-			try {
-				java.util.Date date = new java.util.Date();
-				java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
-				Timestamp d = null;
-				ResultSet rs = null;
-				PreparedStatement preparedStmt1, preparedStmt0;
-
-				preparedStmt1 = connection.prepareStatement(query1);
-				preparedStmt1.setString(1, status);
-				// preparedStmt1.setTimestamp(2, date);
-				preparedStmt1.setTimestamp(2, timestamp);
-				preparedStmt1.setString(3, "0");
-				preparedStmt1.setString(4, requestId);
-				preparedStmt1.setString(5, version);
-				preparedStmt1.executeUpdate();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-
-			}
+			updateRequestInfoSoByAlpReqVersion(requestId, version, status, timestamp, "0");			
 		}
 
 	}
 
-	public final List<RequestInfoSO> getAllResquestsFromDB() throws IOException {
-		connection = ConnectionFactory.getConnection();
+	public List<RequestInfoSO> getAllResquestsFromDB() {
 		String query = null;
 		if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
 			query = "SELECT * FROM requestinfoso WHERE request_status NOT IN('Cancelled') and RequestOwner=? and alphanumeric_req_id rlike'SLGC|SLGF|SLGT|SNRC|SNNC|SNNA|SLGB'";
@@ -1651,30 +1031,16 @@ public class RequestInfoDao {
 			// alphanumeric_req_id rlike'SR|OS'";
 			query = "SELECT * FROM requestinfoso WHERE (request_status NOT IN('Cancelled') AND import_status IS NULL) OR import_status IN('Success')";
 		}
-		// String query =
-		// "INSERT INTO request_detail(request_id, request_date,
-		// request_status,request_model,request_device_name,request_source) VALUES(2,
-		// 00/00/0000,'Success','8888','CISCO','SOAP')";
 
 		ResultSet rs = null;
 		RequestInfoSO request = null;
-		List<RequestInfoSO> requestInfoList1 = null;
-		PreparedStatement statement = null;
-		try {
-			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
-				statement = connection.prepareStatement(query);
-
-				statement.setString(1, Global.loggedInUser);
-				rs = statement.executeQuery();
-			} else {
-				Statement smt = connection.createStatement();
-				rs = smt.executeQuery(query);
-			}
-
-			requestInfoList1 = new ArrayList<RequestInfoSO>();
+		List<RequestInfoSO> requestInfoList = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);){
+			rs = preparedStmt.executeQuery();
+			requestInfoList = new ArrayList<RequestInfoSO>();
 			int id;
 			while (rs.next()) {
-
 				request = new RequestInfoSO();
 				id = (rs.getInt("request_info_id"));
 
@@ -1682,7 +1048,6 @@ public class RequestInfoDao {
 						Math.min(rs.getString("alphanumeric_req_id").length(), 4));
 
 				if (!(type.equals("SLGB"))) {
-
 					request.setOs(rs.getString("Os"));
 					request.setBanner(rs.getString("banner"));
 					request.setDeviceName(rs.getString("device_name"));
@@ -1702,9 +1067,7 @@ public class RequestInfoDao {
 					request.setStatus(rs.getString("request_status"));
 					request.setManagementIp(rs.getString("managementIp"));
 					request.setDisplay_request_id(rs.getString("alphanumeric_req_id"));
-
 					request.setImportsource(rs.getString("importsource"));
-
 					request.setDeviceType(rs.getString("device_type"));
 					request.setVpn(rs.getString("vpn"));
 					request.setRequest_id(rs.getInt("request_info_id"));
@@ -1717,88 +1080,31 @@ public class RequestInfoDao {
 					if (d1 != null) {
 						request.setEndDateofProcessing(covnertTStoString(d1));
 					}
-
-					String subQueryOne = "select*from misarpeso where request_info_id=" + id;
-					Statement smt = connection.createStatement();
-					ResultSet rsnew = smt.executeQuery(subQueryOne);
-
-					if (rsnew != null) {
-						MisArPeSO mis = new MisArPeSO();
-						while (rsnew.next()) {
-							mis.setFastEthernetIp(rsnew.getString("fastEthernetIp"));
-							mis.setRouterVrfVpnDGateway(rsnew.getString("routerVrfVpnDGateway"));
-							mis.setRouterVrfVpnDIp(rsnew.getString("routerVrfVpnDIp"));
-						}
-						request.setMisArPeSO(mis);
-					}
-
-					String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
-					Statement smt1 = connection.createStatement();
-					ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
-
-					if (rsnew1 != null) {
-						InternetLcVrfSO iis = new InternetLcVrfSO();
-						while (rsnew1.next()) {
-							iis.setNetworkIp(rsnew1.getString("networkIp"));
-							iis.setBgpASNumber(rsnew1.getString("asNumber"));
-							iis.setNeighbor1(rsnew1.getString("neighbor1"));
-							iis.setNeighbor2(rsnew1.getString("neighbor2"));
-							iis.setNeighbor1_remoteAS(rsnew1.getString("neighbor1_remoteAS"));
-							iis.setNeighbor2_remoteAS(rsnew1.getString("neighbor2_remoteAS"));
-							iis.setRoutingProtocol(rsnew1.getString("routingProtocol"));
-
-						}
-						request.setInternetLcVrf(iis);
-					}
-
-					String subQueryThree = "select*from deviceinterfaceso where request_info_id=" + id;
-					Statement smt3 = connection.createStatement();
-					ResultSet rsnew3 = smt3.executeQuery(subQueryThree);
-
-					if (rsnew3 != null) {
-						DeviceInterfaceSO iisd = new DeviceInterfaceSO();
-						while (rsnew3.next()) {
-							iisd.setDescription(rsnew3.getString("description"));
-							iisd.setIp(rsnew3.getString("ip"));
-							iisd.setEncapsulation(rsnew3.getString("encapsulation"));
-							iisd.setMask(rsnew3.getString("mask"));
-							iisd.setName(rsnew3.getString("name"));
-							iisd.setSpeed(rsnew3.getString("speed"));
-							iisd.setBandwidth(rsnew3.getString("Bandwidth"));
-						}
-						request.setDeviceInterfaceSO(iisd);
-						request.setRequest_assigned_to(rs.getString("RequestOwner"));
-					}
-					requestInfoList1.add(request);
-
+					request.setRequest_assigned_to(rs.getString("RequestOwner"));
+					
+					request.setMisArPeSO(getMisArPeSO(id));
+					request.setInternetLcVrf(getInternetLcVrf(id));
+					request.setDeviceInterfaceSO(getDeviceInterfaceSO(id));
+					
+					requestInfoList.add(request);
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getAllResquestsFromDB method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 
-		return requestInfoList1;
+		return requestInfoList;
 
 	}
 
-	public final EIPAMPojo getIPAMIPfromDB(String site, String customer, String service, String region)
-			throws IOException {
-		connection = ConnectionFactory.getConnection();
-		String ip = null;
+	public EIPAMPojo getIPAMIPfromDB(String site, String customer, String service, String region) {
 		String query = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_site_id = ? AND eipam_customer_name=? AND eipam_service=? AND eipam_region=?";
-
 		ResultSet rs = null;
 		EIPAMPojo eipamobj = null;
-
-		PreparedStatement pst = null;
-		try {
-
-			pst = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, site);
 			pst.setString(2, customer);
 			pst.setString(3, service);
@@ -1813,34 +1119,24 @@ public class RequestInfoDao {
 				eipamobj.setIp(rs.getString("eipam_ip"));
 				eipamobj.setMask(rs.getString("eipam_subnet_mask"));
 				eipamobj.setStatus(rs.getInt("eipam_ip_status"));
-				ip = rs.getString("eipam_ip");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getIPAMIPfromDB method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return eipamobj;
-
 	}
 
-	public final List<EIPAMPojo> getALLIPAMDatafromDB() throws IOException {
-		connection = ConnectionFactory.getConnection();
-
+	public List<EIPAMPojo> getALLIPAMDatafromDB() {
 		String query = "SELECT * FROM c3pdbschema.eipamdbtable";
-
 		EIPAMPojo pojo;
 		ResultSet rs = null;
-		List<EIPAMPojo> requestInfoList1 = null;
-		try {
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
-			requestInfoList1 = new ArrayList<EIPAMPojo>();
-
+		List<EIPAMPojo> requestInfoList = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			rs = pst.executeQuery();
+			requestInfoList = new ArrayList<EIPAMPojo>();
 			while (rs.next()) {
 				pojo = new EIPAMPojo();
 				pojo.setCustomer(rs.getString("eipam_customer_name"));
@@ -1855,36 +1151,27 @@ public class RequestInfoDao {
 				} else {
 					pojo.setIpUsed(false);
 				}
-				requestInfoList1.add(pojo);
+				requestInfoList.add(pojo);
 			}
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getALLIPAMDatafromDB method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
-		return requestInfoList1;
-
+		return requestInfoList;
 	}
 
-	public final UserValidationResultDetailPojo checkUsersDB(String username, String password) throws IOException {
-		connection = ConnectionFactory.getConnection();
+	public UserValidationResultDetailPojo checkUsersDB(String username, String password) {
 		String query = "SELECT * FROM users";
 		ResultSet rs = null;
 		UserPojo flags = null;
-		List<UserPojo> InfoList1 = null;
+		List<UserPojo> userList = null;
 		UserValidationResultDetailPojo resultSet = new UserValidationResultDetailPojo();
-		try {
-
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
-			InfoList1 = new ArrayList<UserPojo>();
-			logger.info("" + rs.getFetchSize());
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			rs = pst.executeQuery();
+			userList = new ArrayList<UserPojo>();
 			boolean flag = false;
 			if (rs != null) {
 				while (rs.next()) {
@@ -1892,22 +1179,21 @@ public class RequestInfoDao {
 					flags.setUsername(rs.getString("user_name"));
 					flags.setPassword(rs.getString("user_password"));
 					flags.setPrivilegeLevel(rs.getInt("privilegeLevel"));
-
-					InfoList1.add(flags);
+					userList.add(flags);
 				}
 
-				if (InfoList1.size() == 0) {
+				if (userList.size() == 0) {
 					resultSet.setMessage("No data found");
 					resultSet.setResult(false);
 					resultSet.setPrivilegeLevel(0);
 					return resultSet;
 				} else {
-					for (int i = 0; i < InfoList1.size(); i++) {
-						if (InfoList1.get(i).getUsername().equals(username)
-								&& InfoList1.get(i).getPassword().equals(password)) {
+					for (int i = 0; i < userList.size(); i++) {
+						if (userList.get(i).getUsername().equals(username)
+								&& userList.get(i).getPassword().equals(password)) {
 							boolean didLogin = setUserLoginFlag(username, password);
 							if (didLogin) {
-								resultSet.setPrivilegeLevel(InfoList1.get(i).getPrivilegeLevel());
+								resultSet.setPrivilegeLevel(userList.get(i).getPrivilegeLevel());
 								resultSet.setMessage("Success");
 								resultSet.setResult(true);
 								flag = true;
@@ -1925,207 +1211,140 @@ public class RequestInfoDao {
 						resultSet.setMessage("Either Username or Password incorrect");
 						resultSet.setResult(false);
 						resultSet.setPrivilegeLevel(0);
-
 					}
-
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in checkUsersDB method "+exe.getMessage());
 		} finally {
-
+			DBUtil.close(rs);			
 		}
 		return resultSet;
 
 	}
 
-	private final boolean setUserLoginFlag(String username, String password) {
+	private boolean setUserLoginFlag(String username, String password) {
 		boolean result = false;
-		connection = ConnectionFactory.getConnection();
-		String sql = "update users set user_status=1 where user_name=? AND user_password=?";
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
+		String query = "update users set user_status=1 where user_name=? AND user_password=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			pst.setString(1, username);
+			pst.setString(2, password);
 
-			ps.setString(1, username);
-			ps.setString(2, password);
-
-			int i = ps.executeUpdate();
-			if (i == 1) {
+			int i = pst.executeUpdate();
+			if (i > 0) {
 				result = true;
-
-			} else {
-				result = false;
-			}
-		} catch (SQLException e) {
-
-			result = false;
+			} 
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in checkUsersDB method "+exe.getMessage());
 		}
 		return result;
 	}
 
-	public final UserPojo getRouterCredentials() throws IOException {
-
-		connection = ConnectionFactory.getConnection();
+	public UserPojo getRouterCredentials() {
+		String query = "SELECT * FROM routeruserdevicemanagementtable";
 		ResultSet rs = null;
-
 		UserPojo userList = new UserPojo();
-		try {
-			String query = "SELECT * FROM routeruserdevicemanagementtable";
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			rs = pst.executeQuery();
 			if (rs.next()) {
-
 				userList.setUsername(rs.getString("router_username"));
 				userList.setPassword(rs.getString("router_password"));
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getRouterCredentials method "+exe.getMessage());
 		}
-
 		return userList;
-
 	}
 
-	public final UserPojo getRouterCredentials(String mgmtip) throws IOException {
-
-		connection = ConnectionFactory.getConnection();
+	public UserPojo getRouterCredentials(String mgmtip) {
+		String query = "SELECT * FROM routeruserdevicemanagementtable where mgmtip=?";
 		ResultSet rs = null;
-
 		UserPojo userList = new UserPojo();
-		try {
-			String query = "SELECT * FROM routeruserdevicemanagementtable where mgmtip=?";
-			// statement = connection.createStatement();
-			// rs = statement.executeQuery(query);
-
-			PreparedStatement pst = null;
-
-			pst = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, mgmtip);
 
 			rs = pst.executeQuery();
 			if (rs.next()) {
-
 				userList.setUsername(rs.getString("router_username"));
 				userList.setPassword(rs.getString("router_password"));
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getRouterCredentials with mgmtip method "+exe.getMessage());
 		}
-
 		return userList;
-
 	}
 
 	public boolean addNewUserToDB(String username, String pass) {
-		connection = ConnectionFactory.getConnection();
+		String query = "INSERT INTO users(user_name,user_password,user_status)" + "VALUES(?,?,?)";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			pst.setString(1, username);
+			pst.setString(2, pass);
+			pst.setInt(3, 0);
 
-		String sql = "INSERT INTO users(user_name,user_password,user_status)" + "VALUES(?,?,?)";
-
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
-
-			ps.setString(1, username);
-
-			ps.setString(2, pass);
-
-			ps.setInt(3, 0);
-
-			int i = ps.executeUpdate();
-			if (i == 1) {
-
+			int i = pst.executeUpdate();
+			if (i > 0) {
 				return true;
 			}
-		} catch (SQLException e) {
-
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in addNewUserToDB method "+exe.getMessage());
 		}
-
 		return false;
 	}
 
-	@SuppressWarnings("null")
 	public UserPojo updateRouterDeviceManagementDetails(String username, String password) {
-		connection = ConnectionFactory.getConnection();
+		String query = "SELECT * FROM routeruserdevicemanagementtable";
+		String updateQuery = "update routeruserdevicemanagementtable set router_username = ?,router_password=? where id = ?";
+		String insertQuery = "INSERT INTO routeruserdevicemanagementtable(router_username,router_password) VALUES(?,?)";
 		ResultSet rs = null;
-
+		ResultSet getRs = null;
 		UserPojo userList = new UserPojo();
-		try {
-			String query = "SELECT * FROM routeruserdevicemanagementtable";
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
-
-			boolean flag = false;
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			rs = pst.executeQuery();
 			if (rs.next()) {
-				String query1 = null;
-				query1 = "update routeruserdevicemanagementtable set router_username = ?,router_password=? where id = ?";
-				PreparedStatement preparedStmt;
-
-				preparedStmt = connection.prepareStatement(query1);
-
-				preparedStmt.setString(1, username);
-				preparedStmt.setString(2, password);
-				preparedStmt.setInt(3, 1);
-
-				preparedStmt.executeUpdate();
-
+				try (PreparedStatement uptPst = connection.prepareStatement(updateQuery);) {
+					uptPst.setString(1, username);
+					uptPst.setString(2, password);
+					uptPst.setInt(3, 1);
+					uptPst.executeUpdate();
+				} catch (SQLException exe) {
+					logger.error("SQL Exception in updateRouterDeviceManagementDetails update method "+exe.getMessage());
+				}
+			} else {
+				try (PreparedStatement instPst = connection.prepareStatement(insertQuery);) {
+					instPst.setString(1, username);
+					instPst.setString(2, password);
+					instPst.executeUpdate();
+				} catch (SQLException exe) {
+					logger.error("SQL Exception in updateRouterDeviceManagementDetails insert method "+exe.getMessage());
+				}
 			}
-
-			else {
-				String sql = "INSERT INTO routeruserdevicemanagementtable(router_username,router_password)"
-						+ "VALUES(?,?)";
-
-				PreparedStatement ps = connection.prepareStatement(sql);
-
-				ps.setString(1, username);
-
-				ps.setString(2, password);
-
-				ps.executeUpdate();
+			
+			try (PreparedStatement getPst = connection.prepareStatement(query);) {
+				getRs = getPst.executeQuery();
+				while (getRs.next()) {
+					userList.setUsername(getRs.getString("router_username"));
+					userList.setPassword(getRs.getString("router_password"));
+				}
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in updateRouterDeviceManagementDetails get method "+exe.getMessage());
 			}
-			query = "SELECT * FROM routeruserdevicemanagementtable";
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
-			while (rs.next()) {
-
-				userList.setUsername(rs.getString("router_username"));
-				userList.setPassword(rs.getString("router_password"));
-			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateRouterDeviceManagementDetails method "+exe.getMessage());
 		} finally {
-
+			DBUtil.close(rs);
+			DBUtil.close(getRs);
 		}
-
 		return userList;
-	}
+	}	
 
-	public String covnertTStoString(Timestamp indate) {
-		String dateString = null;
-		Date date = new Date();
-		date.setTime(indate.getTime());
-		dateString = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(date);
-		;
-		return dateString;
-	}
-
-	public final List<EIPAMPojo> getSearchedRecordsFromDB(String site, String customer, String service, String ip)
-			throws IOException, SQLException {
-
-		connection = ConnectionFactory.getConnection();
-		// String query =
-		// "SELECT * FROM requestinfo.eipamdbtable WHERE eipam_site_id LIKE '%"+site+"%'
-		// OR eipam_service LIKE '%"+service+"%' OR eipam_ip LIKE '%"+ip+"%' OR
-		// eipam_customer_name LIKE '%"+customer+"%'";
+	public List<EIPAMPojo> getSearchedRecordsFromDB(String site, String customer, String service, String ip)
+			throws SQLException {
+		Connection connection = ConnectionFactory.getConnection();
 		String query1;
 		PreparedStatement ps = null;
 		int parameters_to_search = 0;
@@ -2267,10 +1486,6 @@ public class RequestInfoDao {
 			ps.setString(4, ip + "%");
 		}
 
-		// query1 =
-		// "SELECT * FROM requestinfo.eipamdbtable WHERE eipam_site_id = ? OR
-		// eipam_customer_name=? OR eipam_service=? OR eipam_ip=?";
-
 		ResultSet rs = null;
 		EIPAMPojo eipamobj = null;
 		List<EIPAMPojo> requestInfoList1 = null;
@@ -2298,11 +1513,10 @@ public class RequestInfoDao {
 			}
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
+			DBUtil.close(ps);
 			DBUtil.close(connection);
 		}
 
@@ -2313,50 +1527,37 @@ public class RequestInfoDao {
 	 * Code changes for JDBC to JPA migration --- Alert Page(To display All alerts)
 	 */
 
-	public final List<AlertInformationPojo> getALLAlertDataFromDB() throws IOException {
-
-		connection = ConnectionFactory.getConnection();
+	public List<AlertInformationPojo> getALLAlertDataFromDB() {
 		String query = "SELECT * FROM c3pdbschema.alertinformationtable";
-
 		AlertInformationPojo pojo;
 		ResultSet rs = null;
-		List<AlertInformationPojo> requestInfoList1 = null;
-		try {
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
-
-			requestInfoList1 = new ArrayList<AlertInformationPojo>();
+		List<AlertInformationPojo> requestInfoList = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			rs = pst.executeQuery();
+			requestInfoList = new ArrayList<AlertInformationPojo>();
 			while (rs.next()) {
 				pojo = new AlertInformationPojo();
 				pojo.setAlert_code(rs.getString("alert_code"));
 				pojo.setAlert_category(rs.getString("alert_category"));
 				pojo.setAlert_description(rs.getString("alert_description"));
-				requestInfoList1.add(pojo);
+				requestInfoList.add(pojo);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getALLAlertDataFromDB method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
-		return requestInfoList1;
-
+		return requestInfoList;
 	}
 
-	public final UserValidationResultDetailPojo updateEIPAMDB(EIPAMPojo pojo) {
-		connection = ConnectionFactory.getConnection();
+	public UserValidationResultDetailPojo updateEIPAMDB(EIPAMPojo pojo) {
 		UserValidationResultDetailPojo validatedResult = new UserValidationResultDetailPojo();
-
-		String sql = "INSERT INTO eipamdbtable(eipam_site_id,eipam_region,eipam_ip,eipam_subnet_mask,eipam_service,eipam_customer_name,eipam_ip_status)"
+		String query = "INSERT INTO eipamdbtable(eipam_site_id,eipam_region,eipam_ip,eipam_subnet_mask,eipam_service,eipam_customer_name,eipam_ip_status)"
 				+ "VALUES(?,?,?,?,?,?,?)";
 
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, pojo.getSite());
 			ps.setString(2, pojo.getRegion());
 			ps.setString(3, pojo.getIp());
@@ -2367,7 +1568,6 @@ public class RequestInfoDao {
 
 			int i = ps.executeUpdate();
 			if (i == 1) {
-
 				validatedResult.setMessage("Success");
 				validatedResult.setResult(true);
 				return validatedResult;
@@ -2376,34 +1576,23 @@ public class RequestInfoDao {
 				validatedResult.setResult(true);
 				return validatedResult;
 			}
-		} catch (SQLException e) {
-
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateEIPAMDB method "+exe.getMessage());
 		}
 		return validatedResult;
 	}
 
-	public final List<AlertInformationPojo> getSearchedRecordsFromAlertsDB(String code, String description)
-			throws IOException {
-
-		connection = ConnectionFactory.getConnection();
-		// String query =
-		// "SELECT * FROM requestinfo.eipamdbtable WHERE eipam_site_id LIKE '%"+site+"%'
-		// OR eipam_service LIKE '%"+service+"%' OR eipam_ip LIKE '%"+ip+"%' OR
-		// eipam_customer_name LIKE '%"+customer+"%'";
-		String query1 = "SELECT * FROM c3pdbschema.alertinformationtable WHERE alert_code LIKE ? OR alert_description LIKE ?";
+	public final List<AlertInformationPojo> getSearchedRecordsFromAlertsDB(String code, String description) {
+		String query = "SELECT * FROM c3pdbschema.alertinformationtable WHERE alert_code LIKE ? OR alert_description LIKE ?";
 		ResultSet rs = null;
 		AlertInformationPojo eipamobj = null;
 		List<AlertInformationPojo> requestInfoList1 = null;
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			requestInfoList1 = new ArrayList<AlertInformationPojo>();
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
 			ps.setString(1, code + "%");
 			ps.setString(2, description + "%");
-
 			rs = ps.executeQuery();
-
 			while (rs.next()) {
 				eipamobj = new AlertInformationPojo();
 				eipamobj.setAlert_code(rs.getString("alert_code"));
@@ -2412,29 +1601,23 @@ public class RequestInfoDao {
 				requestInfoList1.add(eipamobj);
 			}
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getSearchedRecordsFromAlertsDB method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return requestInfoList1;
 	}
 
-	public final List<AlertInformationPojo> getLastAlertId() throws IOException {
-		connection = ConnectionFactory.getConnection();
+	public final List<AlertInformationPojo> getLastAlertId() {
 		String query = "SELECT * FROM c3pdbschema.alertinformationtable";
-
 		AlertInformationPojo pojo;
 		ResultSet rs = null;
 		List<AlertInformationPojo> resultobj = new ArrayList<AlertInformationPojo>();
 		List<AlertInformationPojo> requestInfoList1 = null;
-		try {
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			rs = ps.executeQuery();
 			requestInfoList1 = new ArrayList<AlertInformationPojo>();
 			while (rs.next()) {
 				pojo = new AlertInformationPojo();
@@ -2444,37 +1627,6 @@ public class RequestInfoDao {
 				pojo.setAlert_type(rs.getString("alert_type"));
 				requestInfoList1.add(pojo);
 			}
-
-			/*
-			 * List<AlertInformationPojo> notificationTypeList = new
-			 * ArrayList<AlertInformationPojo>(); List<AlertInformationPojo> AlertTypeList =
-			 * new ArrayList<AlertInformationPojo>();
-			 * 
-			 * for (int i = 0; i < requestInfoList1.size(); i++) { if
-			 * (requestInfoList1.get(i).getAlert_type() .equalsIgnoreCase("Notification")) {
-			 * notificationTypeList.add(requestInfoList1.get(i)); } } for (int i = 0; i <
-			 * requestInfoList1.size(); i++) { if (requestInfoList1.get(i).getAlert_type()
-			 * .equalsIgnoreCase("Alert")) { AlertTypeList.add(requestInfoList1.get(i)); } }
-			 * 
-			 * if (notificationTypeList.size() > 0) { AlertInformationPojo notificationObj =
-			 * new AlertInformationPojo(); notificationObj.setAlert_type("Notification");
-			 * notificationObj.setAlert_code(separate(AlertTypeList.get(
-			 * notificationTypeList.size() - 1).getAlert_code()));
-			 * 
-			 * resultobj.add(notificationObj); } else { AlertInformationPojo notifObj = new
-			 * AlertInformationPojo(); notifObj.setAlert_type("Notification");
-			 * notifObj.setAlert_code("99"); resultobj.add(notifObj); } if
-			 * (AlertTypeList.size() > 0) { AlertInformationPojo alertObj = new
-			 * AlertInformationPojo(); alertObj.setAlert_type("Alert");
-			 * alertObj.setAlert_code(separate(AlertTypeList.get( AlertTypeList.size() -
-			 * 1).getAlert_code())); resultobj.add(alertObj); } else { AlertInformationPojo
-			 * alertObj = new AlertInformationPojo(); alertObj.setAlert_type("Alert");
-			 * alertObj.setAlert_code("99"); resultobj.add(alertObj); }
-			 */
-			/*
-			 * alert_id = requestInfoList1.get(requestInfoList1.size() - 1)
-			 * .getAlert_code(); alert_id = separate(alert_id);
-			 */
 			AlertInformationPojo tempObj = new AlertInformationPojo();
 			if (requestInfoList1.size() > 0) {
 				tempObj = new AlertInformationPojo();
@@ -2485,46 +1637,20 @@ public class RequestInfoDao {
 			}
 
 			resultobj.add(tempObj);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getLastAlertId method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return resultobj;
-
 	}
 
-	public static String separate(String string) {
-		StringBuilder alphabetsBuilder = new StringBuilder();
-		StringBuilder numbersBuilder = new StringBuilder();
-		StringBuilder symbolsBuilder = new StringBuilder();
-		for (int i = 0; i < string.length(); i++) {
-			char ch = string.charAt(i);
-			if (Character.isAlphabetic(ch)) {
-				alphabetsBuilder.append(ch);
-			} else if (Character.isDigit(ch)) {
-				numbersBuilder.append(ch);
-			} else {
-				symbolsBuilder.append(ch);
-			}
-		}
-		return numbersBuilder.toString();
-	}
-
-	public final UserValidationResultDetailPojo addNewAlertNotification(AlertInformationPojo pojo) {
-		connection = ConnectionFactory.getConnection();
+	public UserValidationResultDetailPojo addNewAlertNotification(AlertInformationPojo pojo) {	
 		UserValidationResultDetailPojo validatedResult = new UserValidationResultDetailPojo();
-
-		String sql = "INSERT INTO alertinformationtable(alert_code,alert_category,alert_description,alert_type)"
+		String query = "INSERT INTO alertinformationtable(alert_code,alert_category,alert_description,alert_type)"
 				+ "VALUES(?,?,?,?)";
-
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, pojo.getAlert_code());
 			ps.setString(2, pojo.getAlert_category());
 			ps.setString(3, pojo.getAlert_description());
@@ -2532,7 +1658,6 @@ public class RequestInfoDao {
 
 			int i = ps.executeUpdate();
 			if (i == 1) {
-
 				validatedResult.setMessage("Record added successfully.");
 				validatedResult.setResult(true);
 				return validatedResult;
@@ -2543,74 +1668,38 @@ public class RequestInfoDao {
 				return validatedResult;
 			}
 		} catch (SQLException e) {
-			logger.info("Error:> " + e.getMessage());
+			logger.error("Error:> " + e.getMessage());
 		}
 		return validatedResult;
 	}
 
-	/*
-	 * private String getElapsedTime(Date d1, Date d2) { String elapsedtime = null;
-	 * // in milliseconds long diff = d2.getTime() - d1.getTime();
-	 * 
-	 * long diffSeconds = diff / 1000 % 60; long diffMinutes = diff / (60 * 1000) %
-	 * 60; long diffHours = diff / (60 * 60 * 1000) % 24; long diffDays = diff / (24
-	 * * 60 * 60 * 1000);
-	 * 
-	 * long daymin = diffDays * 1440; long hourmin = diffHours * 60; long secmin =
-	 * (long) (diffSeconds * 0.016); long totalMins = daymin + hourmin + diffMinutes
-	 * + secmin;
-	 * 
-	 * long dayTohours = diffDays * 24;
-	 * 
-	 * DecimalFormat formatter = new DecimalFormat("00"); String sec =
-	 * formatter.format(diffSeconds); String min = formatter.format(diffMinutes);
-	 * String hrs = formatter.format(diffHours + dayTohours);
-	 * 
-	 * elapsedtime = hrs + ":" + min + ":" + sec;
-	 * 
-	 * ElapsedTimeFormatPojo time = new ElapsedTimeFormatPojo();
-	 * time.setDisplayTime(elapsedtime); time.setElapsedTimeinMinutes((int)
-	 * totalMins); elapsedtimings.add(time); return elapsedtime; }
-	 */
-
 	private boolean updateEIPAMTable(String ip) {
 		boolean result = false;
-		connection = ConnectionFactory.getConnection();
-		String sql = "update eipamdbtable set eipam_ip_status=1 where eipam_ip=?";
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
-
+		String query = "update eipamdbtable set eipam_ip_status=1 where eipam_ip=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, ip);
-
 			int i = ps.executeUpdate();
-			if (i == 1) {
+			if (i > 0) {
 				result = true;
-
-			} else {
-				result = false;
 			}
 		} catch (SQLException e) {
-			logger.info("Error:> " + e.getMessage());
-			result = false;
+			logger.error("Error:> " + e.getMessage());
 		}
 		return result;
 	}
 
 	public List<RequestInfoSO> getDatasForRequestfromDB(String id) {
 		List<RequestInfoSO> list = null;
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ?";
+		String query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ?";
 		RequestInfoSO request;
 		ResultSet rs = null;
 		int id1;
 
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			list = new ArrayList<RequestInfoSO>();
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
 			ps.setString(1, id);
-
 			rs = ps.executeQuery();
 
 			while (rs.next()) {
@@ -2677,79 +1766,17 @@ public class RequestInfoDao {
 					request.setElapsedTime("00:00:00");
 
 				}
-
-				String subQueryOne = "select*from misarpeso where request_info_id = ?";
-
-				ResultSet rsnew = null;
-				PreparedStatement ps1 = connection.prepareStatement(subQueryOne);
-
-				ps1.setString(1, Integer.toString(id1));
-				rsnew = ps1.executeQuery();
-				if (rsnew != null) {
-					MisArPeSO mis = new MisArPeSO();
-					while (rsnew.next()) {
-						mis.setFastEthernetIp(rsnew.getString("fastEthernetIp"));
-						mis.setRouterVrfVpnDGateway(rsnew.getString("routerVrfVpnDGateway"));
-						mis.setRouterVrfVpnDIp(rsnew.getString("routerVrfVpnDIp"));
-					}
-					request.setMisArPeSO(mis);
-				}
-
-				String subQueryTwo = "select*from internetlcvrfso where request_info_id= ?";
-				ResultSet rsnew1 = null;
-				PreparedStatement ps2 = connection.prepareStatement(subQueryTwo);
-
-				ps2.setString(1, Integer.toString(id1));
-				rsnew1 = ps2.executeQuery();
-				if (rsnew1 != null) {
-					InternetLcVrfSO iis = new InternetLcVrfSO();
-					while (rsnew1.next()) {
-						iis.setNetworkIp(rsnew1.getString("networkIp"));
-						iis.setBgpASNumber(rsnew1.getString("asNumber"));
-						iis.setNeighbor1(rsnew1.getString("neighbor1"));
-						iis.setNeighbor2(rsnew1.getString("neighbor2"));
-						iis.setNeighbor1_remoteAS(rsnew1.getString("neighbor1_remoteAS"));
-						iis.setNeighbor2_remoteAS(rsnew1.getString("neighbor2_remoteAS"));
-						iis.setRoutingProtocol(rsnew1.getString("routingProtocol"));
-						iis.setNetworkIp_subnetMask(rsnew1.getString("networkIp_subnetMask"));
-
-					}
-					request.setInternetLcVrf(iis);
-				}
-
-				String subQueryThree = "select*from deviceinterfaceso where request_info_id= ?";
-				ResultSet rsnew3 = null;
-				PreparedStatement ps3 = connection.prepareStatement(subQueryThree);
-
-				ps3.setString(1, Integer.toString(id1));
-				rsnew3 = ps3.executeQuery();
-
-				if (rsnew3 != null) {
-					DeviceInterfaceSO iisd = new DeviceInterfaceSO();
-					while (rsnew3.next()) {
-						iisd.setDescription(rsnew3.getString("description"));
-						iisd.setIp(rsnew3.getString("ip"));
-						iisd.setEncapsulation(rsnew3.getString("encapsulation"));
-						iisd.setMask(rsnew3.getString("mask"));
-						iisd.setName(rsnew3.getString("name"));
-						iisd.setSpeed(rsnew3.getString("speed"));
-						iisd.setBandwidth(rsnew3.getString("Bandwidth"));
-					}
-					request.setDeviceInterfaceSO(iisd);
-
-					list.add(request);
-				}
+				request.setMisArPeSO(getMisArPeSO(id1));
+				request.setInternetLcVrf(getInternetLcVrf(id1));
+				request.setDeviceInterfaceSO(getDeviceInterfaceSO(id1));
+				list.add(request);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getDatasForRequestfromDB method "+exe.getMessage());
+		} catch (ParseException exe) {
+			logger.error("ParseException in getDatasForRequestfromDB method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return list;
 	}
@@ -2767,15 +1794,12 @@ public class RequestInfoDao {
 
 		double request_version = 0, request_parent_version = 0;
 		boolean isAutoProgress;
-		String sql = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner)"
+		String query = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-		connection = ConnectionFactory.getConnection();
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
-			// alphaneumeric_req_id =
-			// UUID.randomUUID().toString().toUpperCase();
-			// alphaneumeric_req_id = request.getProcessID();
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+
 			alphaneumeric_req_id = request.getDisplay_request_id();
 			hmap.put("requestID", alphaneumeric_req_id);
 			if (request.getOs() != null || request.getOs() != "") {
@@ -2892,361 +1916,70 @@ public class RequestInfoDao {
 			if (request.getTemplateId() != null || request.getTemplateId() != "") {
 				templateId = request.getTemplateId();
 			}
-			if (request.getInternetLcVrf() != null) {
-				String networkIp = null, AS = null, neighbor1 = null, neighbor2 = null, neighbor1_remoteAS = null,
-						neighbor2_remoteAS = null, networkIp_subnetMask = null, routingProtocol = null;
-				if (request.getInternetLcVrf().getNetworkIp() != null
-						|| request.getInternetLcVrf().getNetworkIp() != "") {
-					networkIp = request.getInternetLcVrf().getNetworkIp();
-				}
-
-				if (request.getInternetLcVrf().getBgpASNumber() != null
-						|| request.getInternetLcVrf().getBgpASNumber() != "") {
-					AS = request.getInternetLcVrf().getBgpASNumber();
-				}
-
-				if (request.getInternetLcVrf().getNeighbor1() != null
-						|| request.getInternetLcVrf().getNeighbor1() != "") {
-					neighbor1 = request.getInternetLcVrf().getNeighbor1();
-				}
-
-				if (request.getInternetLcVrf().getNeighbor2() != null
-						|| request.getInternetLcVrf().getNeighbor2() != "") {
-					neighbor2 = request.getInternetLcVrf().getNeighbor2();
-				} else {
-					neighbor2 = null;
-				}
-				if (request.getInternetLcVrf().getNeighbor1_remoteAS() != null
-						|| request.getInternetLcVrf().getNeighbor1_remoteAS() != "") {
-					neighbor1_remoteAS = request.getInternetLcVrf().getNeighbor1_remoteAS();
-				}
-
-				if (request.getInternetLcVrf().getNeighbor2_remoteAS() != null
-						|| request.getInternetLcVrf().getNeighbor2_remoteAS() != "") {
-					neighbor2_remoteAS = request.getInternetLcVrf().getNeighbor2_remoteAS();
-				} else {
-					neighbor2_remoteAS = null;
-				}
-
-				if (request.getInternetLcVrf().getNetworkIp_subnetMask() != null
-						|| request.getInternetLcVrf().getNetworkIp_subnetMask() != "") {
-					networkIp_subnetMask = request.getInternetLcVrf().getNetworkIp_subnetMask();
-				}
-
-				if (request.getInternetLcVrf().getRoutingProtocol() != null
-						|| request.getInternetLcVrf().getRoutingProtocol() != "") {
-					routingProtocol = request.getInternetLcVrf().getRoutingProtocol();
-				}
-
-				String sql1 = "INSERT INTO internetlcvrfso(networkIp,asNumber,neighbor1,neighbor2,neighbor1_remoteAS,neighbor2_remoteAS,networkIp_subnetMask,routingProtocol) VALUES"
-						+ "(?,?,?,?,?,?,?,?)";
-
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				if (networkIp != "") {
-					ps1.setString(1, networkIp);
-				} else {
-					ps1.setNull(1, java.sql.Types.VARCHAR);
-				}
-				if (AS != "") {
-					ps1.setString(2, AS);
-				} else {
-					ps1.setNull(2, java.sql.Types.VARCHAR);
-				}
-				if (neighbor1 != "") {
-					ps1.setString(3, neighbor1);
-				} else {
-					ps1.setNull(3, java.sql.Types.VARCHAR);
-				}
-				if (neighbor2 != "") {
-					ps1.setString(4, neighbor2);
-				} else {
-					ps1.setNull(4, java.sql.Types.VARCHAR);
-				}
-				if (neighbor1_remoteAS != "") {
-					ps1.setString(5, neighbor1_remoteAS);
-				} else {
-					ps1.setNull(5, java.sql.Types.VARCHAR);
-				}
-
-				if (neighbor2_remoteAS != "") {
-					ps1.setString(6, neighbor2_remoteAS);
-				} else {
-					ps1.setNull(6, java.sql.Types.VARCHAR);
-				}
-				if (networkIp_subnetMask != "") {
-					ps1.setString(7, networkIp_subnetMask);
-				} else {
-					ps1.setNull(7, java.sql.Types.VARCHAR);
-				}
-				if (routingProtocol != "") {
-					ps1.setString(8, routingProtocol);
-				} else {
-					ps1.setNull(8, java.sql.Types.VARCHAR);
-				}
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-			} else {
-				// String networkIp = null, remotePort = null, neighbor1 = null,
-				// neighbor2 =null, neighbor3 =null, neighbor4 = null, neighbor5
-				// = null, neighbor6 = null, routerBgp65k = null;
-
-				String sql1 = "INSERT INTO internetlcvrfso(networkIp,asNumber,neighbor1,neighbor2,neighbor1_remoteAS,neighbor2_remoteAS,networkIp_subnetMask,routingProtocol) VALUES"
-						+ "(?,?,?,?,?,?,?,?)";
-
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				ps1.setNull(1, java.sql.Types.VARCHAR);
-				ps1.setNull(2, java.sql.Types.VARCHAR);
-				ps1.setNull(3, java.sql.Types.VARCHAR);
-				ps1.setNull(4, java.sql.Types.VARCHAR);
-				ps1.setNull(5, java.sql.Types.VARCHAR);
-				ps1.setNull(6, java.sql.Types.VARCHAR);
-				ps1.setNull(7, java.sql.Types.VARCHAR);
-				ps1.setNull(8, java.sql.Types.VARCHAR);
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-			}
-
-			if (request.getMisArPeSO() != null) {
-
-				String routerVrfVpnDIp = null, routerVrfVpnDGateway = null, fastEthernetIp = null;
-				if (request.getMisArPeSO().getRouterVrfVpnDIp() != null
-						|| request.getMisArPeSO().getRouterVrfVpnDIp() != "") {
-					routerVrfVpnDIp = request.getMisArPeSO().getRouterVrfVpnDIp();
-				}
-
-				if (request.getMisArPeSO().getRouterVrfVpnDGateway() != null
-						|| request.getMisArPeSO().getRouterVrfVpnDGateway() != "") {
-					routerVrfVpnDGateway = request.getMisArPeSO().getRouterVrfVpnDGateway();
-				}
-
-				if (request.getMisArPeSO().getRouterVrfVpnDGateway() != null
-						|| request.getMisArPeSO().getFastEthernetIp() != "") {
-					fastEthernetIp = request.getMisArPeSO().getFastEthernetIp();
-				}
-
-				String sql1 = "INSERT INTO misarpeso(routerVrfVpnDIp, routerVrfVpnDGateway, fastEthernetIp) "
-						+ "VALUES(?, ?, ?)";
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				if (routerVrfVpnDIp != "") {
-					ps1.setString(1, routerVrfVpnDIp);
-				} else {
-					ps1.setNull(1, java.sql.Types.VARCHAR);
-
-				}
-				if (routerVrfVpnDGateway != "") {
-					ps1.setString(2, routerVrfVpnDGateway);
-				} else {
-					ps1.setNull(2, java.sql.Types.VARCHAR);
-
-				}
-				if (fastEthernetIp != "") {
-					ps1.setString(3, fastEthernetIp);
-				} else {
-					ps.setNull(3, java.sql.Types.VARCHAR);
-
-				}
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-
-			} else {
-				String routerVrfVpnDIp = "", routerVrfVpnDGateway = "", fastEthernetIp = "";
-				String sql1 = "INSERT INTO misarpeso(routerVrfVpnDIp, routerVrfVpnDGateway, fastEthernetIp) "
-						+ "VALUES(?, ?, ?)";
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				if (routerVrfVpnDIp != "") {
-					ps1.setString(1, routerVrfVpnDIp);
-				} else {
-					ps1.setNull(1, java.sql.Types.VARCHAR);
-
-				}
-				if (routerVrfVpnDGateway != "") {
-					ps1.setString(2, routerVrfVpnDGateway);
-				} else {
-					ps1.setNull(2, java.sql.Types.VARCHAR);
-
-				}
-				if (fastEthernetIp != "") {
-					ps1.setString(3, fastEthernetIp);
-				} else {
-					ps.setNull(3, java.sql.Types.VARCHAR);
-
-				}
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-			}
-
-			if (request.getDeviceInterfaceSO() != null) {
-				String name = null, description = null, ip = null, mask = null, speed = null, encapsulation = null,
-						bandwidth = null;
-				if (request.getDeviceInterfaceSO().getName() != null
-						|| request.getDeviceInterfaceSO().getName() != "") {
-					name = request.getDeviceInterfaceSO().getName();
-				}
-
-				if (request.getDeviceInterfaceSO().getDescription() != null
-						|| request.getDeviceInterfaceSO().getDescription() != "") {
-					description = request.getDeviceInterfaceSO().getDescription();
-				}
-
-				if (request.getDeviceInterfaceSO().getIp() != null || request.getDeviceInterfaceSO().getIp() != "") {
-					ip = request.getDeviceInterfaceSO().getIp();
-				}
-
-				if (request.getDeviceInterfaceSO().getMask() != null
-						|| request.getDeviceInterfaceSO().getMask() != "") {
-					mask = request.getDeviceInterfaceSO().getMask();
-				}
-
-				if (request.getDeviceInterfaceSO().getSpeed() != null
-						&& !request.getDeviceInterfaceSO().getSpeed().isEmpty()) {
-					speed = request.getDeviceInterfaceSO().getSpeed();
-				} else {
-					bandwidth = request.getDeviceInterfaceSO().getBandwidth();
-				}
-
-				if (request.getDeviceInterfaceSO().getEncapsulation() != null
-						|| request.getDeviceInterfaceSO().getEncapsulation() != "") {
-					encapsulation = request.getDeviceInterfaceSO().getEncapsulation();
-				}
-
-				String sql1 = "INSERT INTO deviceinterfaceso(name,description,ip,mask,speed,encapsulation,Bandwidth)"
-						+ "VALUES(?, ?, ?, ?, ?, ?, ?)";
-
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				if (name != "") {
-					ps1.setString(1, name);
-				} else {
-					ps1.setNull(1, java.sql.Types.VARCHAR);
-				}
-				if (description != "") {
-					ps1.setString(2, description);
-				} else {
-					ps1.setNull(2, java.sql.Types.VARCHAR);
-				}
-				if (ip != "") {
-					ps1.setString(3, ip);
-				} else {
-					ps1.setNull(3, java.sql.Types.VARCHAR);
-				}
-				if (mask != "") {
-					ps1.setString(4, mask);
-				} else {
-					ps1.setNull(4, java.sql.Types.VARCHAR);
-				}
-				if (speed != "") {
-					ps1.setString(5, speed);
-				} else {
-					ps1.setNull(5, java.sql.Types.VARCHAR);
-				}
-				if (encapsulation != "") {
-					ps1.setString(6, encapsulation);
-				} else {
-					ps1.setNull(6, java.sql.Types.VARCHAR);
-				}
-				if (bandwidth != "") {
-					ps1.setString(7, bandwidth);
-				} else {
-					ps1.setNull(7, java.sql.Types.VARCHAR);
-				}
-
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-			} else {
-				// String networkIp = null, remotePort = null, neighbor1 = null,
-				// neighbor2 =null, neighbor3 =null, neighbor4 = null, neighbor5
-				// = null, neighbor6 = null, routerBgp65k = null;
-
-				String sql1 = "INSERT INTO deviceinterfaceso(name,description,ip,mask,speed,encapsulation)"
-						+ "VALUES(?, ?, ?, ?, ?, ?)";
-				PreparedStatement ps1 = connection.prepareStatement(sql1);
-				ps1.setNull(1, java.sql.Types.VARCHAR);
-				ps1.setNull(2, java.sql.Types.VARCHAR);
-				ps1.setNull(3, java.sql.Types.VARCHAR);
-				ps1.setNull(4, java.sql.Types.VARCHAR);
-				ps1.setNull(5, java.sql.Types.VARCHAR);
-				ps1.setNull(6, java.sql.Types.VARCHAR);
-				ps1.setNull(7, java.sql.Types.VARCHAR);
-				ps1.execute("SET FOREIGN_KEY_CHECKS=0");
-				ps1.executeUpdate();
-			}
+			insertInternetCvrfso(request);
+			insertMisArPeSo(request);
+			insertDeviceInterfaceSo(request);
+			insertBannerDataTable(banner);
 
 			if (Os != "") {
 				ps.setString(1, Os);
 			} else {
-				ps.setNull(1, java.sql.Types.VARCHAR);
+				ps.setNull(1, Types.VARCHAR);
 
 			}
-
-			// Logic to add banner text in new
-			// table-----------------------------------------------------------------------------------------------------
-
-			String sql1 = "INSERT INTO bannerdatatable(bannerdata)" + "VALUES(?)";
-
-			PreparedStatement ps3 = connection.prepareStatement(sql1);
-			if (banner != "") {
-				ps3.setString(1, banner);
-			} else {
-				ps3.setNull(1, java.sql.Types.VARCHAR);
-			}
-
-			ps3.execute("SET FOREIGN_KEY_CHECKS=0");
-			ps3.executeUpdate();
-			// End of banner
-			// logic------------------------------------------------------------------------------------------------------------------------
-
 			if (banner != "") {
 				ps.setString(2, banner);
 			} else {
-				ps.setNull(2, java.sql.Types.VARCHAR);
+				ps.setNull(2, Types.VARCHAR);
 
 			}
 
 			if (device_name != "") {
 				ps.setString(3, device_name);
 			} else {
-				ps.setNull(3, java.sql.Types.VARCHAR);
+				ps.setNull(3, Types.VARCHAR);
 
 			}
 			if (model != "") {
 				ps.setString(4, model);
 			} else {
-				ps.setNull(4, java.sql.Types.VARCHAR);
+				ps.setNull(4, Types.VARCHAR);
 
 			}
 			if (region != "") {
 				ps.setString(5, region);
 			} else {
-				ps.setNull(5, java.sql.Types.VARCHAR);
+				ps.setNull(5, Types.VARCHAR);
 
 			}
 			if (service != "") {
 				ps.setString(6, service);
 			} else {
-				ps.setNull(6, java.sql.Types.VARCHAR);
+				ps.setNull(6, Types.VARCHAR);
 
 			}
 			if (version != "") {
 				ps.setString(7, version);
 			} else {
-				ps.setNull(7, java.sql.Types.VARCHAR);
+				ps.setNull(7, Types.VARCHAR);
 
 			}
 			if (hostname != "") {
 				ps.setString(8, hostname);
 			} else {
-				ps.setNull(8, java.sql.Types.VARCHAR);
+				ps.setNull(8, Types.VARCHAR);
 
 			}
 			if (enablePassword != "") {
 				ps.setString(9, enablePassword);
 			} else {
-				ps.setNull(9, java.sql.Types.VARCHAR);
+				ps.setNull(9, Types.VARCHAR);
 
 			}
 			if (vrfName != "") {
 				ps.setString(10, vrfName);
 			} else {
-				ps.setNull(10, java.sql.Types.VARCHAR);
+				ps.setNull(10, Types.VARCHAR);
 
 			}
 
@@ -3255,45 +1988,45 @@ public class RequestInfoDao {
 			if (vendor != "") {
 				ps.setString(12, vendor);
 			} else {
-				ps.setNull(12, java.sql.Types.VARCHAR);
+				ps.setNull(12, Types.VARCHAR);
 
 			}
 			if (customer != "") {
 				ps.setString(13, customer);
 			} else {
-				ps.setNull(13, java.sql.Types.VARCHAR);
+				ps.setNull(13, Types.VARCHAR);
 
 			}
 
 			if (siteId != "") {
 				ps.setString(14, siteId);
 			} else {
-				ps.setNull(14, java.sql.Types.VARCHAR);
+				ps.setNull(14, Types.VARCHAR);
 
 			}
 
 			if (managementIP != "") {
 				ps.setString(15, managementIP);
 			} else {
-				ps.setNull(15, java.sql.Types.VARCHAR);
+				ps.setNull(15, Types.VARCHAR);
 
 			}
 			if (deviceType != "") {
 				ps.setString(16, deviceType);
 			} else {
-				ps.setNull(16, java.sql.Types.VARCHAR);
+				ps.setNull(16, Types.VARCHAR);
 
 			}
 			if (vpn != "") {
 				ps.setString(17, vpn);
 			} else {
-				ps.setNull(17, java.sql.Types.VARCHAR);
+				ps.setNull(17, Types.VARCHAR);
 
 			}
 			if (alphaneumeric_req_id != "") {
 				ps.setString(18, alphaneumeric_req_id);
 			} else {
-				ps.setNull(18, java.sql.Types.VARCHAR);
+				ps.setNull(18, Types.VARCHAR);
 
 			}
 
@@ -3304,85 +2037,80 @@ public class RequestInfoDao {
 			if (request_creator_name != null) {
 				ps.setString(22, request_creator_name);
 			} else {
-				ps.setNull(22, java.sql.Types.VARCHAR);
+				ps.setNull(22, Types.VARCHAR);
 
 			}
 
 			if (snmpHostAddress != null) {
 				ps.setString(23, snmpHostAddress);
 			} else {
-				ps.setNull(23, java.sql.Types.VARCHAR);
+				ps.setNull(23, Types.VARCHAR);
 
 			}
 			if (snmpString != null) {
 				ps.setString(24, snmpString);
 			} else {
-				ps.setNull(24, java.sql.Types.VARCHAR);
+				ps.setNull(24, Types.VARCHAR);
 
 			}
 			if (loopBackType != null) {
 				ps.setString(25, loopBackType);
 			} else {
-				ps.setNull(25, java.sql.Types.VARCHAR);
+				ps.setNull(25, Types.VARCHAR);
 
 			}
 			if (loopbackIPaddress != null) {
 				ps.setString(26, loopbackIPaddress);
 			} else {
-				ps.setNull(26, java.sql.Types.VARCHAR);
+				ps.setNull(26, Types.VARCHAR);
 
 			}
 			if (loopbackSubnetMask != null) {
 				ps.setString(27, loopbackSubnetMask);
 			} else {
-				ps.setNull(27, java.sql.Types.VARCHAR);
+				ps.setNull(27, Types.VARCHAR);
 
 			}
 			if (lanInterface != null) {
 				ps.setString(28, lanInterface);
 			} else {
-				ps.setNull(28, java.sql.Types.VARCHAR);
+				ps.setNull(28, Types.VARCHAR);
 
 			}
 			if (lanIp != null) {
 				ps.setString(29, lanIp);
 			} else {
-				ps.setNull(29, java.sql.Types.VARCHAR);
+				ps.setNull(29, Types.VARCHAR);
 
 			}
 			if (lanMaskAddress != null) {
 				ps.setString(30, lanMaskAddress);
 			} else {
-				ps.setNull(30, java.sql.Types.VARCHAR);
+				ps.setNull(30, Types.VARCHAR);
 
 			}
 			if (lanDescription != null) {
 				ps.setString(31, lanDescription);
 			} else {
-				ps.setNull(31, java.sql.Types.VARCHAR);
+				ps.setNull(31, Types.VARCHAR);
 
 			}
 			if (certificationSelectionBit != null) {
 				ps.setString(32, certificationSelectionBit);
 			} else {
-				ps.setNull(32, java.sql.Types.VARCHAR);
+				ps.setNull(32, Types.VARCHAR);
 
 			}
 			if (scheduledTime != null && scheduledTime != "") {
-
 				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-
 				try {
-					java.util.Date parsedDate = sdf.parse(scheduledTime);
-
-					java.sql.Timestamp timestampTimeForScheduled = new java.sql.Timestamp(parsedDate.getTime());
+					Date parsedDate = sdf.parse(scheduledTime);
+					Timestamp timestampTimeForScheduled = new Timestamp(parsedDate.getTime());
 					ps.setTimestamp(33, timestampTimeForScheduled);
 					ps.setString(34, "S");
 				} catch (ParseException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-
 			} else {
 				ps.setNull(33, java.sql.Types.TIMESTAMP);
 				ps.setString(34, "M");
@@ -3391,7 +2119,7 @@ public class RequestInfoDao {
 			if (templateId != null) {
 				ps.setString(35, templateId);
 			} else {
-				ps.setNull(35, java.sql.Types.VARCHAR);
+				ps.setNull(35, Types.VARCHAR);
 
 			}
 			if (Global.loggedInUser != null || !Global.loggedInUser.isEmpty()) {
@@ -3402,27 +2130,22 @@ public class RequestInfoDao {
 			}
 			int i = ps.executeUpdate();
 			if (i == 1) {
-
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
 				updateEIPAMTable(request.getDeviceInterfaceSO().getIp());
 				hmap.put("result", "true");
 				return hmap;
 
 			}
-		} catch (SQLException ex) {
-			ex.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in insertRequestInDBForNewVersion method "+exe.getMessage());
 		}
 
 		hmap.put("result", "false");
 		return hmap;
 	}
 
-	public final List<RequestInfoSO> searchRequestsFromDBWithVersion(String key, String value, String version)
-			throws IOException, ParseException {
-		connection = ConnectionFactory.getConnection();
+	public List<RequestInfoSO> searchRequestsFromDBWithVersion(String key, String value, String version) {
 		String query = null;
-		// Global.loggedInUser="admin";
-
 		if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 
 			if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
@@ -3494,10 +2217,8 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		RequestInfoSO request = null;
 		List<RequestInfoSO> requestInfoList1 = null;
-		PreparedStatement pst = null;
-		try {
-
-			pst = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				pst.setString(1, value);
@@ -3526,16 +2247,7 @@ public class RequestInfoDao {
 				String importSource = rs.getString("importsource");
 				if (importSource.equalsIgnoreCase("Manual")) {
 					id = (rs.getInt("request_info_id"));
-				}
-
-				/*
-				 * else if(importStatus ==null) //if(importStatus.equals("Not")) {
-				 * 
-				 * logger.info("Not taken");
-				 * 
-				 * }
-				 */
-				else if (importStatus.equals("Success")) {
+				}else if (importStatus.equals("Success")) {
 					id = (rs.getInt("request_info_id"));
 				}
 
@@ -3609,9 +2321,6 @@ public class RequestInfoDao {
 				}
 				if (request.getStatus().equalsIgnoreCase("Success")
 						|| request.getStatus().equalsIgnoreCase("success")) {
-					SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-					Timestamp d1 = rs.getTimestamp("end_date_of_processing");
-
 					if (rs.getString("RequestType_Flag").equalsIgnoreCase("M")) {
 						d = rs.getTimestamp("date_of_processing");
 					} else {
@@ -3634,118 +2343,38 @@ public class RequestInfoDao {
 						Integer hrs = mins / 60;
 						Integer minsConvert = mins % 60;
 						elapsedtime = hrs.toString() + ":" + minsConvert.toString() + ":" + sec;
-
 					}
-
 					request.setElapsedTime(elapsedtime);
 				} else if (request.getStatus().equalsIgnoreCase("Scheduled")) {
-					SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 					Timestamp scheduledTime = rs.getTimestamp("ScheduledTime");
-
-					/*
-					 * Date d1_d = null; Date d2_d = null;
-					 * 
-					 * //d1_d = format.parse((covnertTStoString(d)));
-					 * 
-					 * d2_d = format.parse((covnertTStoString(d1)));
-					 * 
-					 * String scheduledTime = null; // in milliseconds //long diff = d2_d.getTime()
-					 * - d1_d.getTime();
-					 * 
-					 * long diffSeconds = diff / 1000 % 60; long diffMinutes = diff / (60 * 1000) %
-					 * 60; long diffHours = diff / (60 * 60 * 1000) % 24; long diffDays = diff / (24
-					 * * 60 * 60 * 1000);
-					 * 
-					 * long dayTohours = diffDays * 24;
-					 * 
-					 * DecimalFormat formatter = new DecimalFormat("00"); String sec =
-					 * formatter.format(diffSeconds); String min = formatter.format(diffMinutes);
-					 * String hrs = formatter.format(diffHours + dayTohours);
-					 * 
-					 * scheduledTime = hrs + ":" + min + ":" + sec;
-					 */
 					if (scheduledTime != null) {
 						request.setScheduledTime(covnertTStoString(scheduledTime));
 					}
-
 				} else {
 					request.setElapsedTime("00:00:00");
-
 				}
 
-				String subQueryOne = "select*from misarpeso where request_info_id=" + id;
-				Statement smt = connection.createStatement();
-				ResultSet rsnew = smt.executeQuery(subQueryOne);
-
-				if (rsnew != null) {
-					MisArPeSO mis = new MisArPeSO();
-					while (rsnew.next()) {
-						mis.setFastEthernetIp(rsnew.getString("fastEthernetIp"));
-						mis.setRouterVrfVpnDGateway(rsnew.getString("routerVrfVpnDGateway"));
-						mis.setRouterVrfVpnDIp(rsnew.getString("routerVrfVpnDIp"));
-					}
-					request.setMisArPeSO(mis);
+				if (rs.getString("RequestOwner") != null) {
+					request.setRequest_assigned_to(rs.getString("RequestOwner"));
+				} else {
+					request.setRequest_assigned_to("seuser");
 				}
+				
+				request.setMisArPeSO(getMisArPeSO(id));
+				request.setInternetLcVrf(getInternetLcVrf(id));
+				request.setDeviceInterfaceSO(getDeviceInterfaceSO(id));				
 
-				String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
-				Statement smt1 = connection.createStatement();
-				ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
+				request.setZipcode(rs.getString("zipcode"));
+				request.setManaged(rs.getString("managed"));
+				request.setDownTimeRequired(rs.getString("downtimeRequired"));
+				request.setLastUpgradedOn(rs.getString("lastUpgradedOn"));
 
-				if (rsnew1 != null) {
-					InternetLcVrfSO iis = new InternetLcVrfSO();
-					while (rsnew1.next()) {
-						iis.setNetworkIp(rsnew1.getString("networkIp"));
-						iis.setBgpASNumber(rsnew1.getString("asNumber"));
-						iis.setNeighbor1(rsnew1.getString("neighbor1"));
-						iis.setNeighbor2(rsnew1.getString("neighbor2"));
-						iis.setNeighbor1_remoteAS(rsnew1.getString("neighbor1_remoteAS"));
-						iis.setNeighbor2_remoteAS(rsnew1.getString("neighbor2_remoteAS"));
-						iis.setRoutingProtocol(rsnew1.getString("routingProtocol"));
-						iis.setNetworkIp_subnetMask(rsnew1.getString("networkIp_subnetMask"));
-
-					}
-					request.setInternetLcVrf(iis);
-				}
-
-				String subQueryThree = "select*from deviceinterfaceso where request_info_id=" + id;
-				Statement smt3 = connection.createStatement();
-				ResultSet rsnew3 = smt3.executeQuery(subQueryThree);
-
-				if (rsnew3 != null) {
-					DeviceInterfaceSO iisd = new DeviceInterfaceSO();
-					while (rsnew3.next()) {
-						iisd.setDescription(rsnew3.getString("description"));
-						iisd.setIp(rsnew3.getString("ip"));
-						iisd.setEncapsulation(rsnew3.getString("encapsulation"));
-						iisd.setMask(rsnew3.getString("mask"));
-						iisd.setName(rsnew3.getString("name"));
-						iisd.setSpeed(rsnew3.getString("speed"));
-						iisd.setBandwidth(rsnew3.getString("Bandwidth"));
-					}
-					request.setDeviceInterfaceSO(iisd);
-					if (rs.getString("RequestOwner") != null) {
-						request.setRequest_assigned_to(rs.getString("RequestOwner"));
-					} else {
-						request.setRequest_assigned_to("seuser");
-
-					}
-
-					request.setZipcode(rs.getString("zipcode"));
-					request.setManaged(rs.getString("managed"));
-					request.setDownTimeRequired(rs.getString("downtimeRequired"));
-					request.setLastUpgradedOn(rs.getString("lastUpgradedOn"));
-
-					requestInfoList1.add(request);
-				}
-
+				requestInfoList1.add(request);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in searchRequestsFromDBWithVersion method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 
 		return requestInfoList1;
@@ -3754,19 +2383,14 @@ public class RequestInfoDao {
 
 	public List<RequestInfoSO> getDatasToCompareForRequestfromDB(String id) {
 		List<RequestInfoSO> list = null;
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ? ORDER BY date_of_processing DESC LIMIT 0,2";
-
+		String query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ? ORDER BY date_of_processing DESC LIMIT 0,2";
 		RequestInfoSO request;
 		ResultSet rs = null;
 		int id1;
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			list = new ArrayList<RequestInfoSO>();
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
 			ps.setString(1, id);
-
 			rs = ps.executeQuery();
 			while (rs.next()) {
 				request = new RequestInfoSO();
@@ -3824,11 +2448,6 @@ public class RequestInfoDao {
 					long diffHours = diff / (60 * 60 * 1000) % 24;
 					long diffDays = diff / (24 * 60 * 60 * 1000);
 
-					/*
-					 * long daymin = diffDays * 1440; long hourmin = diffHours * 60; long secmin =
-					 * (long) (diffSeconds * 0.016); long totalMins = daymin + hourmin + diffMinutes
-					 * + secmin;
-					 */
 
 					long dayTohours = diffDays * 24;
 
@@ -3842,96 +2461,31 @@ public class RequestInfoDao {
 					request.setElapsedTime(elapsedtime);
 				} else {
 					request.setElapsedTime("00:00:00");
-
 				}
 
-				String subQueryOne = "select*from misarpeso where request_info_id = ?";
-				ResultSet rsnew = null;
-				PreparedStatement ps1 = connection.prepareStatement(subQueryOne);
-
-				ps1.setString(1, Integer.toString(id1));
-				rsnew = ps1.executeQuery();
-				if (rsnew != null) {
-					MisArPeSO mis = new MisArPeSO();
-					while (rsnew.next()) {
-						mis.setFastEthernetIp(rsnew.getString("fastEthernetIp"));
-						mis.setRouterVrfVpnDGateway(rsnew.getString("routerVrfVpnDGateway"));
-						mis.setRouterVrfVpnDIp(rsnew.getString("routerVrfVpnDIp"));
-					}
-					request.setMisArPeSO(mis);
-				}
-
-				String subQueryTwo = "select*from internetlcvrfso where request_info_id= ?";
-				ResultSet rsnew1 = null;
-				PreparedStatement ps2 = connection.prepareStatement(subQueryTwo);
-
-				ps2.setString(1, Integer.toString(id1));
-				rsnew1 = ps2.executeQuery();
-				if (rsnew1 != null) {
-					InternetLcVrfSO iis = new InternetLcVrfSO();
-					while (rsnew1.next()) {
-						iis.setNetworkIp(rsnew1.getString("networkIp"));
-						iis.setBgpASNumber(rsnew1.getString("asNumber"));
-						iis.setNeighbor1(rsnew1.getString("neighbor1"));
-						iis.setNeighbor2(rsnew1.getString("neighbor2"));
-						iis.setNeighbor1_remoteAS(rsnew1.getString("neighbor1_remoteAS"));
-						iis.setNeighbor2_remoteAS(rsnew1.getString("neighbor2_remoteAS"));
-						iis.setRoutingProtocol(rsnew1.getString("routingProtocol"));
-						iis.setNetworkIp_subnetMask(rsnew1.getString("networkIp_subnetMask"));
-
-					}
-					request.setInternetLcVrf(iis);
-				}
-
-				String subQueryThree = "select*from deviceinterfaceso where request_info_id= ?";
-				ResultSet rsnew3 = null;
-				PreparedStatement ps3 = connection.prepareStatement(subQueryThree);
-
-				ps3.setString(1, Integer.toString(id1));
-				rsnew3 = ps3.executeQuery();
-
-				if (rsnew3 != null) {
-					DeviceInterfaceSO iisd = new DeviceInterfaceSO();
-					while (rsnew3.next()) {
-						iisd.setDescription(rsnew3.getString("description"));
-						iisd.setIp(rsnew3.getString("ip"));
-						iisd.setEncapsulation(rsnew3.getString("encapsulation"));
-						iisd.setMask(rsnew3.getString("mask"));
-						iisd.setName(rsnew3.getString("name"));
-						iisd.setSpeed(rsnew3.getString("speed"));
-						iisd.setBandwidth(rsnew3.getString("Bandwidth"));
-					}
-					request.setDeviceInterfaceSO(iisd);
-
-					list.add(request);
-				}
+				request.setMisArPeSO(getMisArPeSO(id1));
+				request.setInternetLcVrf(getInternetLcVrf(id1));
+				request.setDeviceInterfaceSO(getDeviceInterfaceSO(id1));
+				list.add(request);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getDatasToCompareForRequestfromDB method "+exe.getMessage());
+		} catch (ParseException exe) {
+			logger.error("ParseException in getDatasToCompareForRequestfromDB method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return list;
 	}
 
-	public final List<ModifyConfigResultPojo> getConfigCmdRecordFordata(RequestInfoSO requestInfoSO, String key)
-			throws IOException {
-
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM c3pdbschema.createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
+	public List<ModifyConfigResultPojo> getConfigCmdRecordFordata(RequestInfoSO requestInfoSO, String key){
+		String query = "SELECT * FROM c3pdbschema.createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			configCmdList = new ArrayList<ModifyConfigResultPojo>();
-
-			PreparedStatement ps = connection.prepareStatement(query1);
 
 			ps.setString(1, requestInfoSO.getVendor());
 			ps.setString(2, requestInfoSO.getDeviceType());
@@ -3941,34 +2495,26 @@ public class RequestInfoDao {
 			ps.setString(6, key);
 
 			rs = ps.executeQuery();
-
 			while (rs.next()) {
 				configCmdPojo = new ModifyConfigResultPojo();
 				configCmdPojo.setNo_SSH_Command(rs.getString("No_SSH_Command"));
 				configCmdPojo.setCreate_SSH_Command(rs.getString("Create_SSH_Command"));
 				configCmdList.add(configCmdPojo);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getConfigCmdRecordFordata method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return configCmdList;
 	}
 
-	public final String getLogedInUserDetail() throws IOException {
-
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM c3pdbschema.users WHERE user_status=?";
+	public String getLogedInUserDetail() {
+		String query = "SELECT * FROM c3pdbschema.users WHERE user_status=?";
 		ResultSet rs = null;
 		UserPojo user = null;
-		try {
-			PreparedStatement ps = connection.prepareStatement(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setInt(1, 1);
 			rs = ps.executeQuery();
 			user = new UserPojo();
@@ -3976,170 +2522,146 @@ public class RequestInfoDao {
 				user.setUsername(rs.getString("user_name"));
 				user.setPassword(rs.getString("user_password"));
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getLogedInUserDetail method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 
 		return user.getUsername();
 	}
 
-	public final boolean resetUsersDB(String username) {
-		connection = ConnectionFactory.getConnection();
+	public boolean resetUsersDB(String username) {
 		boolean result = false;
-		String query1 = "update c3pdbschema.users set user_status=0 WHERE user_name=?";
-		try {
-			PreparedStatement ps = connection.prepareStatement(query1);
-
+		String query = "update c3pdbschema.users set user_status=0 WHERE user_name=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, username);
-
 			int i = ps.executeUpdate();
-			if (i == 1) {
+			if (i >0) {
 				result = true;
-
-			} else {
-				result = false;
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in resetUsersDB method "+exe.getMessage());
 		}
 		return result;
 	}
 
 	public int getTotalRequestsFromDB() {
 		int num = 0;
-		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
-		String query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso";
-		try {
-			Statement ps = connection.createStatement();
-
-			rs = ps.executeQuery(query1);
+		String query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			rs = ps.executeQuery();
 			while (rs.next()) {
 				num = rs.getInt("total");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getTotalRequestsFromDB method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return num;
 	}
 
 	public int getSuccessRequestsFromDB() {
 		int num = 0;
-		connection = ConnectionFactory.getConnection();
-		String query1 = null;
+		String query = null;
 		ResultSet rs = null;
 		if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'success' and request_creator_name=? and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'success' and request_creator_name=? and alphanumeric_req_id rlike'SR|OS'";
 		} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'success' and RequestOwner=? and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'success' and RequestOwner=? and alphanumeric_req_id rlike'SR|OS'";
 
 		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'success' and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'success' and alphanumeric_req_id rlike'SR|OS'";
 
 		}
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
-				PreparedStatement ps = connection.prepareStatement(query1);
 				ps.setString(1, Global.loggedInUser);
-				rs = ps.executeQuery();
-			} else {
-				Statement smt = connection.createStatement();
-				rs = smt.executeQuery(query1);
 			}
-
+			rs = ps.executeQuery();
 			while (rs.next()) {
 				num = rs.getInt("total");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getSuccessRequestsFromDB method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return num;
 	}
 
 	public int getFailureRequestsFromDB() {
 		int num = 0;
-		connection = ConnectionFactory.getConnection();
-		String query1 = null;
+		String query = null;
 		ResultSet rs = null;
 		if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'failure' and request_creator_name=? and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'failure' and request_creator_name=? and alphanumeric_req_id rlike'SR|OS'";
 
 		} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'failure' and RequestOwner=? and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'failure' and RequestOwner=? and alphanumeric_req_id rlike'SR|OS'";
 
 		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'failure' and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'failure' and alphanumeric_req_id rlike'SR|OS'";
 
 		}
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
-				PreparedStatement ps = connection.prepareStatement(query1);
 				ps.setString(1, Global.loggedInUser);
-				rs = ps.executeQuery();
-			} else {
-				Statement smt = connection.createStatement();
-				rs = smt.executeQuery(query1);
 			}
+			rs = ps.executeQuery();
 			while (rs.next()) {
 				num = rs.getInt("total");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getFailureRequestsFromDB method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return num;
 	}
 
 	public int getInProgressRequestsFromDB() {
 		int num = 0;
-		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
-		String query1 = null;
+		String query = null;
 		if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'In Progress' and request_creator_name=? and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'In Progress' and request_creator_name=? and alphanumeric_req_id rlike'SR|OS'";
 		} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'In Progress' and RequestOwner=? and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'In Progress' and RequestOwner=? and alphanumeric_req_id rlike'SR|OS'";
 
 		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'In Progress' and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'In Progress' and alphanumeric_req_id rlike'SR|OS'";
 
 		}
 
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
-				PreparedStatement ps = connection.prepareStatement(query1);
 				ps.setString(1, Global.loggedInUser);
-				rs = ps.executeQuery();
-			} else {
-				Statement smt = connection.createStatement();
-				rs = smt.executeQuery(query1);
 			}
+			rs = ps.executeQuery();
 			while (rs.next()) {
 				num = rs.getInt("total");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getInProgressRequestsFromDB method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return num;
 	}
 
 	public final boolean updateEIPAMRecord(String customer, String site, String ip, String mask) {
-		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "update c3pdbschema.eipamdbtable set eipam_ip=?,eipam_subnet_mask=?,eipam_ip_status=? WHERE eipam_customer_name=? AND eipam_site_id=?";
-		try {
-			PreparedStatement ps = connection.prepareStatement(query1);
-
+		String query = "update c3pdbschema.eipamdbtable set eipam_ip=?,eipam_subnet_mask=?,eipam_ip_status=? WHERE eipam_customer_name=? AND eipam_site_id=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, ip);
 			ps.setString(2, mask);
 			ps.setInt(3, 0);
@@ -4154,22 +2676,19 @@ public class RequestInfoDao {
 			} else {
 				result = false;
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateEIPAMRecord method "+exe.getMessage());
 		}
 		return result;
 	}
 
 	public final boolean addEIPAMRecord(String customer, String site, String ip, String mask, String service,
 			String region) {
-		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-
-		String query1 = "INSERT INTO eipamdbtable(eipam_ip,eipam_subnet_mask,eipam_ip_status,eipam_customer_name,eipam_site_id,eipam_region,eipam_service)"
+		String query = "INSERT INTO eipamdbtable(eipam_ip,eipam_subnet_mask,eipam_ip_status,eipam_customer_name,eipam_site_id,eipam_region,eipam_service)"
 				+ "VALUES(?,?,?,?,?,?,?)";
-		try {
-			PreparedStatement ps = connection.prepareStatement(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, ip);
 			ps.setString(2, mask);
@@ -4186,28 +2705,22 @@ public class RequestInfoDao {
 			} else {
 				result = false;
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in addEIPAMRecord method "+exe.getMessage());
 		}
 		return result;
 	}
 
 	public String calcTimeDiffInMins(Timestamp t1, Timestamp t2) {
-
 		// create a calendar and assign it the same time
 		Calendar cal = Calendar.getInstance();
 		cal.setTimeInMillis(t1.getTime());
-
 		// add a bunch of seconds to the calendar
 		cal.add(Calendar.SECOND, 98765);
 
 		// get time difference in seconds
 		long milliseconds = t1.getTime() - t2.getTime();
-		/*
-		 * int seconds = (int) milliseconds / 1000; int minutes = (seconds % 3600) / 60;
-		 * String str = minutes + "." + seconds;
-		 */
+	
 		logger.info("we are here" + milliseconds);
 		return String.format("%02d.%02d", TimeUnit.MILLISECONDS.toMinutes(milliseconds),
 				TimeUnit.MILLISECONDS.toSeconds(milliseconds)
@@ -4215,18 +2728,15 @@ public class RequestInfoDao {
 	}
 
 	public Map<String, String> getRequestFlag(String requestId, double version) {
-		connection = ConnectionFactory.getConnection();
-		String query = "";
+		String query = "select application_test,deliever_config from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
 		String flagForPrevalidation = "";
 		String flagFordelieverConfig = "";
 		Map<String, String> hmap = new HashMap<String, String>();
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String parentVersion = numberFormat.format(version - 0.1);
-		query = "select application_test,deliever_config from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, parentVersion);
 			rs = preparedStmt.executeQuery();
@@ -4238,17 +2748,17 @@ public class RequestInfoDao {
 			}
 			hmap.put("flagForPrevalidation", flagForPrevalidation);
 			hmap.put("flagFordelieverConfig", flagFordelieverConfig);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in addEIPAMRecord method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return hmap;
 	}
 
 	public boolean addCertificationTestForRequest(String alphanumeric_req_id, String request_version,
 			String Device_Reachability_Test) {
-		connection = ConnectionFactory.getConnection();
-		String sql = "INSERT INTO certificationtestvalidation(Device_Reachability_Test,Vendor_Test,Device_Model_Test,IOSVersion_Test,PreValidation_Test,ShowIpIntBrief_Cmd,ShowInterface_Cmd,ShowVersion_Cmd,Network_Test,showIpBgpSummary_Cmd,Throughput_Test,FrameLoss_Test,Latency_Test,HealthCheck_Test,alphanumeric_req_id,version,suggestionForFailure)"
+		String query = "INSERT INTO certificationtestvalidation(Device_Reachability_Test,Vendor_Test,Device_Model_Test,IOSVersion_Test,PreValidation_Test,ShowIpIntBrief_Cmd,ShowInterface_Cmd,ShowVersion_Cmd,Network_Test,showIpBgpSummary_Cmd,Throughput_Test,FrameLoss_Test,Latency_Test,HealthCheck_Test,alphanumeric_req_id,version,suggestionForFailure)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		String suggestion = "NA";
 		if (Device_Reachability_Test.equalsIgnoreCase("2")) {
@@ -4259,9 +2769,8 @@ public class RequestInfoDao {
 			suggestion = "Please check the router credentials";
 		}
 
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setInt(1, Integer.parseInt(Device_Reachability_Test));
 			ps.setInt(2, 0);
 			ps.setInt(3, 0);
@@ -4279,11 +2788,9 @@ public class RequestInfoDao {
 			ps.setString(15, alphanumeric_req_id);
 			ps.setString(16, request_version);
 			ps.setString(17, suggestion);
-
 			int i = ps.executeUpdate();
 			if (i == 1) {
 				return true;
-
 			}
 		} catch (SQLException e) {
 			logger.info("Error:> " + e.getMessage());
@@ -4293,7 +2800,6 @@ public class RequestInfoDao {
 
 	public void updatePrevalidationStatus(String requestId, String version, int vendorflag, int versionflag,
 			int modelflag) {
-		connection = ConnectionFactory.getConnection();
 		String query = null;
 		String suggestion = "NA";
 		query = "update certificationtestvalidation set Vendor_Test = ?,IOSVersion_Test = ?,Device_Model_Test  = ?,suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
@@ -4306,9 +2812,8 @@ public class RequestInfoDao {
 		if (modelflag == 2) {
 			suggestion = "Please select the correct router model from C3P GUI";
 		}
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setInt(1, vendorflag);
 			preparedStmt.setInt(2, versionflag);
 			preparedStmt.setInt(3, modelflag);
@@ -4318,21 +2823,16 @@ public class RequestInfoDao {
 
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
-
 			logger.error(e.getMessage());
 		}
 	}
 
 	public void updatePrevalidationValues(String requestId, String version, String vendorActual, String vendorGui,
 			String osActual, String osGui, String modelActual, String modelGui) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-		String suggestion = "NA";
-		query = "update certificationtestvalidation set actual_vendor = ?,gui_vendor = ?,actual_os_version  = ?,gui_os_version =?,actual_model=?,gui_model=? where alphanumeric_req_id = ? and version = ? ";
+		String query = "update certificationtestvalidation set actual_vendor = ?,gui_vendor = ?,actual_os_version  = ?,gui_os_version =?,actual_model=?,gui_model=? where alphanumeric_req_id = ? and version = ? ";
 
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, vendorActual);
 			preparedStmt.setString(2, vendorGui);
 			preparedStmt.setString(3, osActual);
@@ -4344,24 +2844,16 @@ public class RequestInfoDao {
 			preparedStmt.setString(8, version);
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
-
 			logger.error(e.getMessage());
 		}
 	}
 
 	public CertificationTestPojo getCertificationTestFlagData(String requestId, String version, String TestType) {
-		connection = ConnectionFactory.getConnection();
 		CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
-		String query = "";
+		String query = "select * from  certificationtestvalidation where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
-		String flagForPrevalidation = "";
-		String flagFordelieverConfig = "";
-		Map<String, String> hmap = new HashMap<String, String>();
-
-		query = "select * from  certificationtestvalidation where alphanumeric_req_id = ? and version = ? ";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, version);
 			rs = preparedStmt.executeQuery();
@@ -4390,38 +2882,27 @@ public class RequestInfoDao {
 					certificationTestPojo.setThroughput(rs.getString("throughput"));
 					certificationTestPojo.setFrameLoss(rs.getString("frameLoss"));
 					certificationTestPojo.setLatency(rs.getString("latency"));
-
 				}
-
 			}
 			if (TestType.equalsIgnoreCase("FinalReport") && rs != null) {
 				while (rs.next()) {
-
 					certificationTestPojo.setSuggestion(rs.getString("suggestionForFailure"));
-
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getCertificationTestFlagData method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			// DBUtil.close(connection);
 		}
 		return certificationTestPojo;
 	}
 
 	public void updateHealthCheckTestStatus(String requestId, String version, int throughputflag, int framelossflag,
 			int latencyflag) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
+		String query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
 
-		query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
-
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setInt(1, throughputflag);
 			preparedStmt.setInt(2, framelossflag);
 			preparedStmt.setInt(3, latencyflag);
@@ -4429,21 +2910,15 @@ public class RequestInfoDao {
 			preparedStmt.setString(5, version);
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
-
 			logger.error(e.getMessage());
 		}
 	}
 
 	public void updateNetworkAuditTestStatus(String requestId, String version, int throughputflag, int framelossflag,
 			int latencyflag) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-
-		query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
-
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		String query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setInt(1, throughputflag);
 			preparedStmt.setInt(2, framelossflag);
 			preparedStmt.setInt(3, latencyflag);
@@ -4451,15 +2926,12 @@ public class RequestInfoDao {
 			preparedStmt.setString(5, version);
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
-
 			logger.error(e.getMessage());
 		}
 	}
 
 	public void updateHealthCheckTestParameter(String requestId, String version, String value, String type) {
-		connection = ConnectionFactory.getConnection();
 		String query = null;
-
 		if (type.equalsIgnoreCase("frameloss")) {
 			query = "update certificationtestvalidation set frameloss = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (type.equalsIgnoreCase("latency")) {
@@ -4467,29 +2939,23 @@ public class RequestInfoDao {
 		} else {
 			query = "update certificationtestvalidation set throughput = ? where alphanumeric_req_id = ? and version = ? ";
 		}
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, value);
 			preparedStmt.setString(2, requestId);
 			preparedStmt.setString(3, version);
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
-
 			logger.error(e.getMessage());
 		}
 	}
 
 	public void updateNetworkTestStatus(String requestId, String version, int ipInterfaceBriefflag,
 			int interfacedetailflag, int versionDetailflag, int showIpBgpSummaryflag) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
+		String query = "update certificationtestvalidation set ShowIpIntBrief_Cmd = ?,ShowInterface_Cmd = ?,ShowVersion_Cmd  = ?,showIpBgpSummary_Cmd=? where alphanumeric_req_id = ? and version = ? ";
 
-		query = "update certificationtestvalidation set ShowIpIntBrief_Cmd = ?,ShowInterface_Cmd = ?,ShowVersion_Cmd  = ?,showIpBgpSummary_Cmd=? where alphanumeric_req_id = ? and version = ? ";
-
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setInt(1, ipInterfaceBriefflag);
 			preparedStmt.setInt(2, interfacedetailflag);
 			preparedStmt.setInt(3, versionDetailflag);
@@ -4498,16 +2964,13 @@ public class RequestInfoDao {
 			preparedStmt.setString(6, version);
 			preparedStmt.executeUpdate();
 		} catch (SQLException e) {
-
 			logger.error(e.getMessage());
 		}
 	}
 
 	public JSONArray getColumnChartData() {
-		ArrayList<ColumnChartPojo> list = new ArrayList<ColumnChartPojo>();
-		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
-		String query = "";
+		String query = "select request_status,date_of_processing,request_creator_name,WEEKDAY(date_of_processing) AS DAYS from requestinfoso join (select alphanumeric_req_id, max(date_of_processing) as max_dt,WEEKDAY(date_of_processing) AS DAYS from requestinfoso WHERE YEARWEEK(date_of_processing)=YEARWEEK(NOW()) group by alphanumeric_req_id)t on requestinfoso.alphanumeric_req_id= t.alphanumeric_req_id and requestinfoso.date_of_processing = t.max_dt";
 		JSONArray resultJSONArray = null;
 		int[] successData = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 		int[] failureData = new int[] { 0, 0, 0, 0, 0, 0, 0 };
@@ -4520,27 +2983,13 @@ public class RequestInfoDao {
 		Calendar now = Calendar.getInstance();
 		SimpleDateFormat format = new SimpleDateFormat("MM/dd");
 		String[] days = new String[7];
-		int delta = -now.get(GregorianCalendar.DAY_OF_WEEK) + 2; // add 2 if
-																	// your week
-																	// start on
-																	// monday
+		int delta = -now.get(GregorianCalendar.DAY_OF_WEEK) + 2; // add 2 if your week start on monday
 		List<String> daysArray = new ArrayList<String>();
-		query = "select request_status,date_of_processing,request_creator_name,WEEKDAY(date_of_processing) AS DAYS from requestinfoso join (select alphanumeric_req_id, max(date_of_processing) as max_dt,WEEKDAY(date_of_processing) AS DAYS from requestinfoso WHERE YEARWEEK(date_of_processing)=YEARWEEK(NOW()) group by alphanumeric_req_id)t on requestinfoso.alphanumeric_req_id= t.alphanumeric_req_id and requestinfoso.date_of_processing = t.max_dt";
-		// query="SELECT request_status,alphanumeric_req_id,WEEKDAY(date_of_processing)
-		// AS DAYS FROM requestinfoso WHERE YEARWEEK(date_of_processing)=YEARWEEK(NOW())
-		// GROUP BY alphanumeric_req_id ORDER BY date_of_processing DESC";
-		// query =
-		// "SELECT request_status,date_of_processing,WEEKDAY(date_of_processing) AS DAYS
-		// FROM requestinfoso WHERE YEARWEEK(date_of_processing)=YEARWEEK(NOW())";
-		// query =
-		// "SELECT request_status,date_of_processing,WEEKDAY(date_of_processing) AS DAYS
-		// FROM requestinfoso WHERE date_of_processing between date_sub(now(),INTERVAL 1
-		// WEEK) and NOW()";
-
-		try {
-			Statement ps = connection.createStatement();
-			int DayNumber, count = 0;
-			rs = ps.executeQuery(query);
+		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			int count = 0;
+			rs = ps.executeQuery();
 			while (rs.next()) {
 				if (rs.getString("request_creator_name").equalsIgnoreCase(Global.loggedInUser)) {
 					if (rs.getString("request_status").equalsIgnoreCase("success")) {
@@ -4716,25 +3165,22 @@ public class RequestInfoDao {
 			countobj.put("totalCount", count);
 			resultJSONArray.put(countobj);
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getColumnChartData method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return resultJSONArray;
 	}
 
-	public final List<ConfigurationDataValuePojo> getALLVendorData() throws IOException {
-		connection = ConnectionFactory.getConnection();
-
+	public List<ConfigurationDataValuePojo> getALLVendorData() {
 		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_vendor'";
-
-		EIPAMPojo pojo;
+		ConfigurationDataValuePojo object = null;
 		ResultSet rs = null;
 		List<ConfigurationDataValuePojo> list = null;
-		try {
-			ConfigurationDataValuePojo object;
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			rs = ps.executeQuery();
 			list = new ArrayList<ConfigurationDataValuePojo>();
 			while (rs.next()) {
 				object = new ConfigurationDataValuePojo();
@@ -4742,32 +3188,22 @@ public class RequestInfoDao {
 				object.setComponent_make(rs.getString("component_make"));
 				list.add(object);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
+		}catch (SQLException exe) {
+			logger.error("SQL Exception in getALLVendorData method "+exe.getMessage());
+		}finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return list;
-
 	}
 
-	public final List<ConfigurationDataValuePojo> getALLDeviceTypeData() throws IOException {
-		connection = ConnectionFactory.getConnection();
-
+	public List<ConfigurationDataValuePojo> getALLDeviceTypeData() {
 		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_device_type'";
-
-		EIPAMPojo pojo;
 		ResultSet rs = null;
 		List<ConfigurationDataValuePojo> list = null;
 		ConfigurationDataValuePojo object;
-		try {
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			rs = ps.executeQuery();
 			list = new ArrayList<ConfigurationDataValuePojo>();
 			while (rs.next()) {
 				object = new ConfigurationDataValuePojo();
@@ -4775,29 +3211,20 @@ public class RequestInfoDao {
 				object.setComponent_value(rs.getString("component_value"));
 				list.add(object);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
+		}catch (SQLException exe) {
+			logger.error("SQL Exception in getALLDeviceTypeData method "+exe.getMessage());
+		}finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return list;
-
 	}
 
-	public final List<String> getALLModelData(String vendor, String deviceType) throws IOException {
-		connection = ConnectionFactory.getConnection();
-		boolean result = false;
-		String query1 = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name=? AND component_make=?";
+	public List<String> getALLModelData(String vendor, String deviceType) throws IOException {
+		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name=? AND component_make=?";
 		List<String> list = new ArrayList<String>();
 		ResultSet rs = null;
-		try {
-			PreparedStatement ps = connection.prepareStatement(query1);
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, "c3p_" + deviceType.toLowerCase() + "_model");
 			ps.setString(2, vendor);
 
@@ -4805,60 +3232,44 @@ public class RequestInfoDao {
 			while (rs.next()) {
 				list.add(rs.getString("component_value"));
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
+		}catch (SQLException exe) {
+			logger.error("SQL Exception in getALLModelData method "+exe.getMessage());
+		}finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return list;
-
 	}
 
-	public final List<String> getALLOSData(String make, String deviceType) throws IOException {
-		connection = ConnectionFactory.getConnection();
-		boolean result = false;
-		String query1 = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_os_type'";
+	public List<String> getALLOSData(String make, String deviceType) throws IOException {
+		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_os_type'";
 		List<String> list = new ArrayList<String>();
 		ResultSet rs = null;
-		try {
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			rs = ps.executeQuery();
 			list = new ArrayList<String>();
 			while (rs.next()) {
 				if (rs.getString("component_make").equalsIgnoreCase(make)) {
 					list.add(rs.getString("component_value"));
 				}
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
+		}catch (SQLException exe) {
+			logger.error("SQL Exception in getALLOSData method "+exe.getMessage());
+		}finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return list;
 
 	}
 
 	public final List<String> getALLOSVersionData(String os, String model) throws IOException {
-		connection = ConnectionFactory.getConnection();
-		boolean result = false;
-		String query1 = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_os_version'";
+		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_os_version'";
 		List<String> list = new ArrayList<String>();
 		List<String> listtoSend = new ArrayList<String>();
-
 		ResultSet rs = null;
-		try {
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			rs = ps.executeQuery();
 			list = new ArrayList<String>();
 			while (rs.next()) {
 				if (rs.getString("component_make").equalsIgnoreCase(os)) {
@@ -4872,28 +3283,20 @@ public class RequestInfoDao {
 					}
 				} else {
 					listtoSend.add(list.get(i));
-
 				}
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
+		}catch (SQLException exe) {
+			logger.error("SQL Exception in getALLOSVersionData method "+exe.getMessage());
+		}finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return listtoSend;
 
 	}
 
 	public JSONArray getColumnChartDataMonthly() {
-		ArrayList<ColumnChartPojo> list = new ArrayList<ColumnChartPojo>();
-		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
-		String query = "";
+		String query = "select request_status,date_of_processing,dayofmonth(date_of_processing) AS DAYS from requestinfoso where month(date_of_processing) = 12";
 		JSONArray resultJSONArray = null;
 		int[] successData = new int[] { 0, 0, 0, 0, 0, 0, 0 };
 		int[] failureData = new int[] { 0, 0, 0, 0, 0, 0, 0 };
@@ -4901,27 +3304,13 @@ public class RequestInfoDao {
 		Calendar now = Calendar.getInstance();
 		SimpleDateFormat format = new SimpleDateFormat("MM/dd");
 		String[] days = new String[7];
-		int delta = -now.get(GregorianCalendar.DAY_OF_WEEK) + 2; // add 2 if
-																	// your week
-																	// start on
-																	// monday
+		int delta = -now.get(GregorianCalendar.DAY_OF_WEEK) + 2; // add 2 if your week start on monday
 		List<String> daysArray = new ArrayList<String>();
-		query = "select request_status,date_of_processing,dayofmonth(date_of_processing) AS DAYS from requestinfoso where month(date_of_processing) = 12";
-		// query="SELECT request_status,alphanumeric_req_id,WEEKDAY(date_of_processing)
-		// AS DAYS FROM requestinfoso WHERE YEARWEEK(date_of_processing)=YEARWEEK(NOW())
-		// GROUP BY alphanumeric_req_id ORDER BY date_of_processing DESC";
-		// query =
-		// "SELECT request_status,date_of_processing,WEEKDAY(date_of_processing) AS DAYS
-		// FROM requestinfoso WHERE YEARWEEK(date_of_processing)=YEARWEEK(NOW())";
-		// query =
-		// "SELECT request_status,date_of_processing,WEEKDAY(date_of_processing) AS DAYS
-		// FROM requestinfoso WHERE date_of_processing between date_sub(now(),INTERVAL 1
-		// WEEK) and NOW()";
 
-		try {
-			Statement ps = connection.createStatement();
-			int DayNumber, count = 0;
-			rs = ps.executeQuery(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			int count = 0;
+			rs = ps.executeQuery();
 			while (rs.next()) {
 				if (rs.getString("request_status").equalsIgnoreCase("success")) {
 					if (rs.getInt("DAYS") == 0) {
@@ -5047,25 +3436,22 @@ public class RequestInfoDao {
 			countobj.put("totalCount", count);
 			resultJSONArray.put(countobj);
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		}catch (SQLException exe) {
+			logger.error("SQL Exception in getColumnChartDataMonthly method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return resultJSONArray;
 	}
 
 	public final List<ConfigurationDataValuePojo> getALLRegionData() throws IOException {
-		connection = ConnectionFactory.getConnection();
-
 		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_region'";
-
-		EIPAMPojo pojo;
 		ResultSet rs = null;
 		List<ConfigurationDataValuePojo> list = null;
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ConfigurationDataValuePojo object;
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+			rs = ps.executeQuery();
 			list = new ArrayList<ConfigurationDataValuePojo>();
 			while (rs.next()) {
 				object = new ConfigurationDataValuePojo();
@@ -5073,30 +3459,23 @@ public class RequestInfoDao {
 				object.setComponent_make(rs.getString("component_make"));
 				list.add(object);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
+		}catch (SQLException exe) {
+			logger.error("SQL Exception in getALLRegionData method "+exe.getMessage());
+		}finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return list;
 
 	}
 
-	public final List<ErrorValidationPojo> getAllErrorCodeFromRouter() throws IOException {
-		connection = ConnectionFactory.getConnection();
-
+	public final List<ErrorValidationPojo> getAllErrorCodeFromRouter() {
 		String query = "select * from c3pdbschema.errorcodedata where router_error_message is not null";
 		ResultSet rs = null;
 		List<ErrorValidationPojo> list = null;
-		try {
-			ErrorValidationPojo object;
-			statement = connection.createStatement();
-			rs = statement.executeQuery(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			ErrorValidationPojo object;			
+			rs = ps.executeQuery();
 			list = new ArrayList<ErrorValidationPojo>();
 			while (rs.next()) {
 				object = new ErrorValidationPojo();
@@ -5105,111 +3484,83 @@ public class RequestInfoDao {
 				object.setRouter_error_message(rs.getString("router_error_message"));
 				list.add(object);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
+		}catch (SQLException exe) {
+			logger.error("SQL Exception in getAllErrorCodeFromRouter method "+exe.getMessage());
+		}finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return list;
-
 	}
 
 	public void updateErrorDetailsDeliveryTestForRequestId(String RequestId, String version, String textFound,
 			String errorType, String errorDescription) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-		PreparedStatement preparedStmt;
+		String query = "update webserviceinfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ?";
+		String errorQuery = "select suggestion from errorcodedata where ErrorDescription = ?";
+		String updateQuery = "update certificationtestvalidation set suggestionForFailure = ? where alphanumeric_req_id = ? and version = ?";
 		ResultSet rs = null;
 		String suggestionForErrorDesc = "";
-		try {
-			query = "update webserviceinfo set TextFound_DeliveryTest = ?,ErrorStatus_DeliveryTest=?,ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ?";
-
-			preparedStmt = connection.prepareStatement(query);
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, textFound);
 			preparedStmt.setString(2, errorType);
 			preparedStmt.setString(3, errorDescription);
 			preparedStmt.setString(4, RequestId);
 			preparedStmt.setString(5, version);
 			preparedStmt.executeUpdate();
-			String query1 = "select suggestion from errorcodedata where ErrorDescription = ?";
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
-			ps.setString(1, errorDescription);
-
-			rs = ps.executeQuery();
-
-			while (rs.next()) {
-
-				suggestionForErrorDesc = (rs.getString("suggestion"));
-
+			try (PreparedStatement errorPs = connection.prepareStatement(errorQuery);) {
+				errorPs.setString(1, errorDescription);	
+				rs = errorPs.executeQuery();	
+				while (rs.next()) {	
+					suggestionForErrorDesc = (rs.getString("suggestion"));
+				}
+			} catch (SQLException e) {
+				logger.error(e.getMessage());
 			}
-
-			query = "update certificationtestvalidation set suggestionForFailure = ? where alphanumeric_req_id = ? and version = ?";
-
-			preparedStmt = connection.prepareStatement(query);
-
-			preparedStmt.setString(1, suggestionForErrorDesc);
-			preparedStmt.setString(2, RequestId);
-			preparedStmt.setString(3, version);
-			preparedStmt.executeUpdate();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logger.error(e.getMessage());
+			
+			try (PreparedStatement updatePs = connection.prepareStatement(updateQuery);) {
+				updatePs.setString(1, suggestionForErrorDesc);
+				updatePs.setString(2, RequestId);
+				updatePs.setString(3, version);
+				updatePs.executeUpdate();
+			} catch (SQLException e) {
+				logger.error(e.getMessage());
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateErrorDetailsDeliveryTestForRequestId method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 	}
 
-	public final List<ModifyConfigResultPojo> getNoConfigCmdForPreviousConfig() throws IOException {
-
-		connection = ConnectionFactory.getConnection();
-		String query1 = "select No_SSH_Command from createsshconfig";
+	public final List<ModifyConfigResultPojo> getNoConfigCmdForPreviousConfig() {
+		String query = "select No_SSH_Command from createsshconfig";
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			configCmdList = new ArrayList<ModifyConfigResultPojo>();
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
 			rs = ps.executeQuery();
-
 			while (rs.next()) {
 				configCmdPojo = new ModifyConfigResultPojo();
 				configCmdPojo.setNo_SSH_Command(rs.getString("No_SSH_Command"));
 				configCmdList.add(configCmdPojo);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateErrorDetailsDeliveryTestForRequestId method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 
 		return configCmdList;
 	}
 
 	public ErrorValidationPojo getErrordetailsForRequestId(String requestId, String version) {
-		List<String> list = new ArrayList<String>();
 		ErrorValidationPojo errorValidationPojo = new ErrorValidationPojo();
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-		query = "Select * from webserviceinfo  where alphanumeric_req_id = ? and version = ?";
+		String query = "Select * from webserviceinfo  where alphanumeric_req_id = ? and version = ?";
 		ResultSet rs = null;
-		PreparedStatement pst = null;
-
-		try {
-
-			pst = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 			pst.setString(2, version);
 
@@ -5220,38 +3571,27 @@ public class RequestInfoDao {
 				errorValidationPojo.setError_description(rs.getString("ErrorDescription_DeliveryTest"));
 				errorValidationPojo.setDelivery_status(rs.getString("deliever_config"));
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateErrorDetailsDeliveryTestForRequestId method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return errorValidationPojo;
 	}
 
-	public final CreateConfigRequest getRequestDetailFromDBForVersion(String value, String version)
-			throws IOException, ParseException {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-
-		query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ?";
+	public CreateConfigRequest getRequestDetailFromDBForVersion(String value, String version) {
+		String query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ?";
 
 		ResultSet rs = null;
 		CreateConfigRequest request = new CreateConfigRequest();
-
-		PreparedStatement pst = null;
-		try {
-
-			pst = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, value);
 			pst.setString(2, version);
 			rs = pst.executeQuery();
 
 			int id;
 			while (rs.next()) {
-
 				id = (rs.getInt("request_info_id"));
 				request.setOs(rs.getString("Os"));
 				request.setBanner(rs.getString("banner"));
@@ -5267,7 +3607,6 @@ public class RequestInfoDao {
 
 				if (rs.getTimestamp("end_date_of_processing") != null) {
 					Timestamp d = rs.getTimestamp("end_date_of_processing");
-
 					request.setEnd_date((covnertTStoString(d)));
 				}
 
@@ -5281,12 +3620,8 @@ public class RequestInfoDao {
 				request.setDate_of_processing(rs.getString("date_of_processing"));
 				request.setRequest_elapsed_time(rs.getString("request_elapsed_time"));
 				request.setVpn(rs.getString("vpn"));
-				// request.setRequest_id(rs.getInt("request_info_id"))
 				request.setRequest_version(rs.getInt("request_version"));
 				request.setRequest_parent_version(rs.getInt("request_parent_version"));
-				/*
-				 * request.setRequest_creator_name(rs .getString("request_creator_name"));
-				 */
 				request.setSnmpHostAddress(rs.getString("snmpHostAddress"));
 				if (rs.getString("snmpHostAddress") == null) {
 					request.setSnmpHostAddress("");
@@ -5348,186 +3683,121 @@ public class RequestInfoDao {
 				} else {
 					request.setLastUpgradedOn("N\\A");
 				}
-				String subQueryOne = "select*from misarpeso where request_info_id=" + id;
-				Statement smt = connection.createStatement();
-				ResultSet rsnew = smt.executeQuery(subQueryOne);
-
-				if (rsnew != null) {
-					MISARPEType mis = new MISARPEType();
-					while (rsnew.next()) {
-						mis.setFastEthernetIp(rsnew.getString("fastEthernetIp"));
-						mis.setRouterVrfVpnDGateway(rsnew.getString("routerVrfVpnDGateway"));
-						mis.setRouterVrfVpnDIp(rsnew.getString("routerVrfVpnDIp"));
-					}
-					request.setMisArPe(mis);
-				}
-
-				String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
-				Statement smt1 = connection.createStatement();
-				ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
-
-				if (rsnew1 != null) {
-					InternetLCVRFType iis = new InternetLCVRFType();
-					while (rsnew1.next()) {
-						iis.setNetworkIp(rsnew1.getString("networkIp"));
-
-						iis.setAS(rsnew1.getString("asNumber"));
-						iis.setNeighbor1(rsnew1.getString("neighbor1"));
-						iis.setNeighbor2(rsnew1.getString("neighbor2"));
-						iis.setneighbor1_remoteAS(rsnew1.getString("neighbor1_remoteAS"));
-						iis.setneighbor2_remoteAS(rsnew1.getString("neighbor2_remoteAS"));
-						iis.setroutingProtocol(rsnew1.getString("routingProtocol"));
-						iis.setnetworkIp_subnetMask(rsnew1.getString("networkIp_subnetMask"));
-
-					}
-					request.setInternetLcVrf(iis);
-				}
-
-				String subQueryThree = "select*from deviceinterfaceso where request_info_id=" + id;
-				Statement smt3 = connection.createStatement();
-				ResultSet rsnew3 = smt3.executeQuery(subQueryThree);
-
-				if (rsnew3 != null) {
-					Interface iisd = new Interface();
-					while (rsnew3.next()) {
-						iisd.setDescription(rsnew3.getString("description"));
-						iisd.setIp(rsnew3.getString("ip"));
-						iisd.setEncapsulation(rsnew3.getString("encapsulation"));
-						iisd.setMask(rsnew3.getString("mask"));
-						iisd.setName(rsnew3.getString("name"));
-						iisd.setSpeed(rsnew3.getString("speed"));
-						iisd.setBandwidth(rsnew3.getString("Bandwidth"));
-					}
-					request.setC3p_interface(iisd);
-					request.setRequest_assigned_to(rs.getString("RequestOwner"));
-
-				}
+				MisArPeSO misArPeSo = getMisArPeSO(id);
+				InternetLcVrfSO internetLcVrfSO = getInternetLcVrf(id);
+				DeviceInterfaceSO deviceInterfaceSO = getDeviceInterfaceSO(id);
+				MISARPEType misaRPEType = new MISARPEType();
+				misaRPEType.setFastEthernetIp(misArPeSo.getFastEthernetIp());
+				misaRPEType.setRouterVrfVpnDGateway(misArPeSo.getRouterVrfVpnDGateway());
+				misaRPEType.setRouterVrfVpnDIp(misArPeSo.getRouterVrfVpnDIp());
+				request.setMisArPe(misaRPEType);
+				
+				InternetLCVRFType iis = new InternetLCVRFType();
+				iis.setNetworkIp(internetLcVrfSO.getNetworkIp());
+				iis.setAS(internetLcVrfSO.getBgpASNumber());
+				iis.setNeighbor1(internetLcVrfSO.getNeighbor1());
+				iis.setNeighbor2(internetLcVrfSO.getNeighbor2());
+				iis.setneighbor1_remoteAS(internetLcVrfSO.getNeighbor1_remoteAS());
+				iis.setneighbor2_remoteAS(internetLcVrfSO.getNeighbor2_remoteAS());
+				iis.setroutingProtocol(internetLcVrfSO.getRoutingProtocol());
+				iis.setnetworkIp_subnetMask(internetLcVrfSO.getNetworkIp_subnetMask());
+				request.setInternetLcVrf(iis);
+				
+				Interface iisd = new Interface();				
+				iisd.setDescription(deviceInterfaceSO.getDescription());
+				iisd.setIp(deviceInterfaceSO.getIp());
+				iisd.setEncapsulation(deviceInterfaceSO.getEncapsulation());
+				iisd.setMask(deviceInterfaceSO.getMask());
+				iisd.setName(deviceInterfaceSO.getName());
+				iisd.setSpeed(deviceInterfaceSO.getSpeed());
+				iisd.setBandwidth(deviceInterfaceSO.getBandwidth());				
+				request.setC3p_interface(iisd);
+				request.setRequest_assigned_to(rs.getString("RequestOwner"));
 
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getRequestDetailFromDBForVersion method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return request;
-
 	}
 
 	public boolean checkForDeviceLockWithManagementIp(String requestId, String managementIp, String TestType) {
-		connection = ConnectionFactory.getConnection();
 		String query = null;
-
+		if (TestType.equalsIgnoreCase("DeviceTest")) {
+			query = "Select * from devicelocked_managementip  where management_ip = ?";
+		}else {
+			query = "Select * from devicelocked_managementip  where management_ip = ? and locked_by = ?";
+		}
 		ResultSet rs = null;
-		PreparedStatement pst = null;
 		boolean devicelocked = false;
-
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			if (TestType.equalsIgnoreCase("DeviceTest")) {
-				query = "Select * from DeviceLocked_ManagementIP  where management_ip = ?";
-				pst = connection.prepareStatement(query);
-				// pst.setString(1, requestId);
 				pst.setString(1, managementIp);
-
-				rs = pst.executeQuery();
-				while (rs.next()) {
-					devicelocked = true;
-				}
-			} else {
-				query = "Select * from DeviceLocked_ManagementIP  where management_ip = ? and locked_by = ?";
-				pst = connection.prepareStatement(query);
+			} else {			
 				pst.setString(1, managementIp);
 				pst.setString(2, requestId);
-
-				rs = pst.executeQuery();
-				while (rs.next()) {
-					devicelocked = true;
-				}
+			}			
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				devicelocked = true;
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getRequestDetailFromDBForVersion method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return devicelocked;
 	}
 
-	public String lockDeviceForRequest(String managementIp, String RequestId) throws SQLException {
+	public String lockDeviceForRequest(String managementIp, String RequestId) {
 		String result = "";
-		connection = ConnectionFactory.getConnection();
-		ResultSet rs = null;
-		PreparedStatement preparedStmt = null;
-		String query = null;
-		try {
-			query = "INSERT INTO DeviceLocked_ManagementIP(management_ip,locked_by,flag)" + "VALUES(?,?,?)";
-
-			preparedStmt = connection.prepareStatement(query);
+		String query = "INSERT INTO devicelocked_managementip(management_ip,locked_by,flag)" + "VALUES(?,?,?)";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, managementIp);
 			preparedStmt.setString(2, RequestId);
 			preparedStmt.setString(3, "Y");
 
 			preparedStmt.executeUpdate();
 			result = "Success";
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			result = "Failure";
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(preparedStmt);
-			DBUtil.close(connection);
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in lockDeviceForRequest method "+exe.getMessage());
+			result = "Failure";		
 		}
-
 		return result;
 	}
 
-	public String releaselockDeviceForRequest(String managementIp, String RequestId) throws SQLException {
+	public String releaselockDeviceForRequest(String managementIp, String RequestId) {
 		String result = "";
-		connection = ConnectionFactory.getConnection();
-		ResultSet rs = null;
-		PreparedStatement preparedStmt = null;
-		String query = null;
-		try {
-			query = "delete from DeviceLocked_ManagementIP where management_ip = ? and locked_by = ? ";
-
-			preparedStmt = connection.prepareStatement(query);
+		String query = "delete from devicelocked_managementip where management_ip = ? and locked_by = ? ";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, managementIp);
 			preparedStmt.setString(2, RequestId);
 
 			preparedStmt.executeUpdate();
 			result = "Success";
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			result = "Failure";
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(preparedStmt);
-			DBUtil.close(connection);
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in lockDeviceForRequest method "+exe.getMessage());
+			result = "Failure";			
 		}
-
 		return result;
 	}
 
 	public Map<String, String> getRequestFlagForReport(String requestId, double versionId) {
-		connection = ConnectionFactory.getConnection();
-		String query = "";
+		String query = "select application_test,deliever_config from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
 		String flagForPrevalidation = "";
 		String flagFordelieverConfig = "";
 		Map<String, String> hmap = new HashMap<String, String>();
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String version = numberFormat.format(versionId);
-		query = "select application_test,deliever_config from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, version);
 			rs = preparedStmt.executeQuery();
@@ -5539,116 +3809,93 @@ public class RequestInfoDao {
 			}
 			hmap.put("flagForPrevalidation", flagForPrevalidation);
 			hmap.put("flagFordelieverConfig", flagFordelieverConfig);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in lockDeviceForRequest method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return hmap;
 	}
 
 	public boolean changeRequestOwner(String requestid, String version, String owner) {
 		boolean result = false;
-		int res;
-		String query1 = "update c3p_t_request_info set r_request_owner = ? , r_read_fe=?, r_read_se=? where r_alphanumeric_req_id = ? and r_request_version= ?";
-		try {
-			PreparedStatement preparedStmt1, preparedStmt0;
-			ResultSet rs = null;
-			java.util.Date date = new java.util.Date();
-			java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
-			Timestamp d = null;
-			preparedStmt0 = connection.prepareStatement(query1);
-			preparedStmt0.setString(1, owner);
-
+		String query = "update c3p_t_request_info set r_request_owner = ? , r_read_fe=?, r_read_se=? where r_alphanumeric_req_id = ? and r_request_version= ?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
+			preparedStmt.setString(1, owner);
 			if (owner.equalsIgnoreCase("seuser")) {
-				preparedStmt0.setInt(2, 1);
-				preparedStmt0.setInt(3, 0);
+				preparedStmt.setInt(2, 1);
+				preparedStmt.setInt(3, 0);
 			} else if (owner.equalsIgnoreCase("feuser")) {
-				preparedStmt0.setInt(2, 0);
-				preparedStmt0.setInt(3, 1);
+				preparedStmt.setInt(2, 0);
+				preparedStmt.setInt(3, 1);
+			} else if (owner.equalsIgnoreCase("admin")) {
+				preparedStmt.setInt(2, 1);
+				preparedStmt.setInt(3, 0);
 			}
-			else if (owner.equalsIgnoreCase("admin")) {
-				preparedStmt0.setInt(2, 1);
-				preparedStmt0.setInt(3, 0);
-			}
-			preparedStmt0.setString(4, requestid);
-			preparedStmt0.setString(5, version);
+			preparedStmt.setString(4, requestid);
+			preparedStmt.setString(5, version);
 
-			res = preparedStmt0.executeUpdate();
-
+			int res = preparedStmt.executeUpdate();
+			
 			if (res != 0) {
 				result = true;
 			} else {
 				result = false;
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in changeRequestOwner method "+exe.getMessage());
 		}
 		return result;
 	}
 
 	public String getUserTaskIdForRequest(String requestId, String version) {
 		String usertaskid = null;
-		connection = ConnectionFactory.getConnection();
-		String query2 = "select * from  camundahistory where history_requestId=? and history_versionId=?";
-		try {
-			PreparedStatement pst = connection.prepareStatement(query2);
+		String query = "select * from  camundahistory where history_requestId=? and history_versionId=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 			pst.setString(2, version);
 			ResultSet res = pst.executeQuery();
 			while (res.next()) {
 				usertaskid = res.getString("history_userTaskId");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in changeRequestOwner method "+exe.getMessage());
 		}
 		return usertaskid;
 	}
 
 	public boolean changeRequestStatus(String requestid, String version, String status) {
-		connection = ConnectionFactory.getConnection();
-
 		boolean result = false;
-		int res;
-		String query1 = "update c3p_t_request_info set r_status = ?, r_end_date_of_processing= now() where r_alphanumeric_req_id = ? and r_request_version= ?";
-		try {
-			PreparedStatement preparedStmt1, preparedStmt0;
-			ResultSet rs = null;
-			PreparedStatement pst = connection.prepareStatement(query1);
-
-			preparedStmt1 = connection.prepareStatement(query1);
-			preparedStmt1.setString(1, status);
-			preparedStmt1.setString(2, requestid);
-			preparedStmt1.setString(3, version);
-			int val = preparedStmt1.executeUpdate();
-			if (val < 0) {
+		String query = "update c3p_t_request_info set r_status = ?, r_end_date_of_processing= now() where r_alphanumeric_req_id = ? and r_request_version= ?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			pst.setString(1, status);
+			pst.setString(2, requestid);
+			pst.setString(3, version);
+			int val = pst.executeUpdate();
+			if (val > 0) {
 				result = true;
 			} else {
 				result = false;
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in changeRequestStatus method "+exe.getMessage());
 		}
 		return result;
 	}
 
 	public List<RequestInfoSO> getFEAssignedRequestList() {
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
-		connection = ConnectionFactory.getConnection();
-		String query2 = "select * from  requestinfoso where RequestOwner=?";
-		try {
+		String query = "select * from  requestinfoso where RequestOwner=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			RequestInfoSO request = null;
-			PreparedStatement pst = connection.prepareStatement(query2);
 			pst.setString(1, "feuser");
 			ResultSet rs = pst.executeQuery();
 			int id;
 			while (rs.next()) {
-				request = new RequestInfoSO();
-
 				request = new RequestInfoSO();
 				id = (rs.getInt("request_info_id"));
 				request.setRead(rs.getInt("readFE"));
@@ -5729,98 +3976,39 @@ public class RequestInfoDao {
 					String hrs = formatter.format(diffHours + dayTohours);
 
 					elapsedtime = hrs + ":" + min + ":" + sec;
-
 					request.setElapsedTime(elapsedtime);
-				}
-
-				else {
+				} else {
 					request.setElapsedTime("00:00:00");
-
 				}
 
 				Timestamp d1 = rs.getTimestamp("end_date_of_processing");
 				request.setEndDateofProcessing((covnertTStoString(d1)));
 
-				String subQueryOne = "select*from misarpeso where request_info_id=" + id;
-				Statement smt = connection.createStatement();
-				ResultSet rsnew = smt.executeQuery(subQueryOne);
-
-				if (rsnew != null) {
-					MisArPeSO mis = new MisArPeSO();
-					while (rsnew.next()) {
-						mis.setFastEthernetIp(rsnew.getString("fastEthernetIp"));
-						mis.setRouterVrfVpnDGateway(rsnew.getString("routerVrfVpnDGateway"));
-						mis.setRouterVrfVpnDIp(rsnew.getString("routerVrfVpnDIp"));
-					}
-					request.setMisArPeSO(mis);
-				}
-
-				String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
-				Statement smt1 = connection.createStatement();
-				ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
-
-				if (rsnew1 != null) {
-					InternetLcVrfSO iis = new InternetLcVrfSO();
-					while (rsnew1.next()) {
-						iis.setNetworkIp(rsnew1.getString("networkIp"));
-						iis.setBgpASNumber(rsnew1.getString("asNumber"));
-						iis.setNeighbor1(rsnew1.getString("neighbor1"));
-						iis.setNeighbor2(rsnew1.getString("neighbor2"));
-						iis.setNeighbor1_remoteAS(rsnew1.getString("neighbor1_remoteAS"));
-						iis.setNeighbor2_remoteAS(rsnew1.getString("neighbor2_remoteAS"));
-						iis.setRoutingProtocol(rsnew1.getString("routingProtocol"));
-						iis.setNetworkIp_subnetMask(rsnew1.getString("networkIp_subnetMask"));
-
-					}
-					request.setInternetLcVrf(iis);
-				}
-
-				String subQueryThree = "select*from deviceinterfaceso where request_info_id=" + id;
-				Statement smt3 = connection.createStatement();
-				ResultSet rsnew3 = smt3.executeQuery(subQueryThree);
-
-				if (rsnew3 != null) {
-					DeviceInterfaceSO iisd = new DeviceInterfaceSO();
-					while (rsnew3.next()) {
-						iisd.setDescription(rsnew3.getString("description"));
-						iisd.setIp(rsnew3.getString("ip"));
-						iisd.setEncapsulation(rsnew3.getString("encapsulation"));
-						iisd.setMask(rsnew3.getString("mask"));
-						iisd.setName(rsnew3.getString("name"));
-						iisd.setSpeed(rsnew3.getString("speed"));
-						iisd.setBandwidth(rsnew3.getString("Bandwidth"));
-					}
-					request.setDeviceInterfaceSO(iisd);
-
-					list.add(request);
-				}
-
+				request.setMisArPeSO(getMisArPeSO(id));
+				request.setInternetLcVrf(getInternetLcVrf(id));
+				request.setDeviceInterfaceSO(getDeviceInterfaceSO(id));
+				list.add(request);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in changeRequestStatus method "+exe.getMessage());
+		} catch (ParseException exe) {
+			logger.error("Parse Exception in changeRequestStatus method "+exe.getMessage());
 		}
-
 		return list;
 	}
 
 	public List<RequestInfoSO> getSEAssignedRequestList() {
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
-		connection = ConnectionFactory.getConnection();
-		// String query2 =
-		// "select * from requestinfoso where RequestOwner=? and request_status=?";
-		String query2 = "select * from  requestinfoso where RequestOwner=? and request_status  IN (?,?)";
-		try {
+		ResultSet rs = null;
+		String query = "select * from  requestinfoso where RequestOwner=? and request_status  IN (?,?)";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			RequestInfoSO request = null;
-			PreparedStatement pst = connection.prepareStatement(query2);
 			pst.setString(1, "seuser");
 			pst.setString(2, "Hold");
 			pst.setString(3, "In Progress");
 
-			ResultSet rs = pst.executeQuery();
+			rs = pst.executeQuery();
 			int id;
 			while (rs.next()) {
 				request = new RequestInfoSO();
@@ -5912,90 +4100,33 @@ public class RequestInfoDao {
 
 				}
 
-				String subQueryOne = "select*from misarpeso where request_info_id=" + id;
-				Statement smt = connection.createStatement();
-				ResultSet rsnew = smt.executeQuery(subQueryOne);
-
-				if (rsnew != null) {
-					MisArPeSO mis = new MisArPeSO();
-					while (rsnew.next()) {
-						mis.setFastEthernetIp(rsnew.getString("fastEthernetIp"));
-						mis.setRouterVrfVpnDGateway(rsnew.getString("routerVrfVpnDGateway"));
-						mis.setRouterVrfVpnDIp(rsnew.getString("routerVrfVpnDIp"));
-					}
-					request.setMisArPeSO(mis);
-				}
-
-				String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
-				Statement smt1 = connection.createStatement();
-				ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
-
-				if (rsnew1 != null) {
-					InternetLcVrfSO iis = new InternetLcVrfSO();
-					while (rsnew1.next()) {
-						iis.setNetworkIp(rsnew1.getString("networkIp"));
-						iis.setBgpASNumber(rsnew1.getString("asNumber"));
-						iis.setNeighbor1(rsnew1.getString("neighbor1"));
-						iis.setNeighbor2(rsnew1.getString("neighbor2"));
-						iis.setNeighbor1_remoteAS(rsnew1.getString("neighbor1_remoteAS"));
-						iis.setNeighbor2_remoteAS(rsnew1.getString("neighbor2_remoteAS"));
-						iis.setRoutingProtocol(rsnew1.getString("routingProtocol"));
-						iis.setNetworkIp_subnetMask(rsnew1.getString("networkIp_subnetMask"));
-
-					}
-					request.setInternetLcVrf(iis);
-				}
-
-				String subQueryThree = "select*from deviceinterfaceso where request_info_id=" + id;
-				Statement smt3 = connection.createStatement();
-				ResultSet rsnew3 = smt3.executeQuery(subQueryThree);
-
-				if (rsnew3 != null) {
-					DeviceInterfaceSO iisd = new DeviceInterfaceSO();
-					while (rsnew3.next()) {
-						iisd.setDescription(rsnew3.getString("description"));
-						iisd.setIp(rsnew3.getString("ip"));
-						iisd.setEncapsulation(rsnew3.getString("encapsulation"));
-						iisd.setMask(rsnew3.getString("mask"));
-						iisd.setName(rsnew3.getString("name"));
-						iisd.setSpeed(rsnew3.getString("speed"));
-						iisd.setBandwidth(rsnew3.getString("Bandwidth"));
-					}
-					request.setDeviceInterfaceSO(iisd);
-
-					list.add(request);
-				}
-
+				request.setMisArPeSO(getMisArPeSO(id));
+				request.setInternetLcVrf(getInternetLcVrf(id));
+				request.setDeviceInterfaceSO(getDeviceInterfaceSO(id));
+				list.add(request);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in changeRequestStatus method "+exe.getMessage());
+		} catch (ParseException exe) {
+			logger.error("Parse Exception in changeRequestStatus method "+exe.getMessage());
 		}
-
 		return list;
 	}
 
 	public List<RequestInfoSO> getAdminAssignedRequestList() {
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
-		connection = ConnectionFactory.getConnection();
-		// String query2 =
-		// "select * from requestinfoso where RequestOwner=? and request_status=?";
-		String query2 = "select * from  requestinfoso where RequestOwner=? and request_status  IN (?,?)";
-		try {
-			RequestInfoSO request = null;
-			PreparedStatement pst = connection.prepareStatement(query2);
+		String query = "select * from  requestinfoso where RequestOwner=? and request_status  IN (?,?)";
+		ResultSet rs = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			RequestInfoSO request = null;			
 			pst.setString(1, "admin");
 			pst.setString(2, "Hold");
 			pst.setString(3, "In Progress");
 
-			ResultSet rs = pst.executeQuery();
+			rs = pst.executeQuery();
 			int id;
 			while (rs.next()) {
-				request = new RequestInfoSO();
-
 				request = new RequestInfoSO();
 				id = (rs.getInt("request_info_id"));
 				request.setRead(rs.getInt("readSE"));
@@ -6083,74 +4214,21 @@ public class RequestInfoDao {
 
 				}
 
-				String subQueryOne = "select*from misarpeso where request_info_id=" + id;
-				Statement smt = connection.createStatement();
-				ResultSet rsnew = smt.executeQuery(subQueryOne);
-
-				if (rsnew != null) {
-					MisArPeSO mis = new MisArPeSO();
-					while (rsnew.next()) {
-						mis.setFastEthernetIp(rsnew.getString("fastEthernetIp"));
-						mis.setRouterVrfVpnDGateway(rsnew.getString("routerVrfVpnDGateway"));
-						mis.setRouterVrfVpnDIp(rsnew.getString("routerVrfVpnDIp"));
-					}
-					request.setMisArPeSO(mis);
-				}
-
-				String subQueryTwo = "select*from internetlcvrfso where request_info_id=" + id;
-				Statement smt1 = connection.createStatement();
-				ResultSet rsnew1 = smt1.executeQuery(subQueryTwo);
-
-				if (rsnew1 != null) {
-					InternetLcVrfSO iis = new InternetLcVrfSO();
-					while (rsnew1.next()) {
-						iis.setNetworkIp(rsnew1.getString("networkIp"));
-						iis.setBgpASNumber(rsnew1.getString("asNumber"));
-						iis.setNeighbor1(rsnew1.getString("neighbor1"));
-						iis.setNeighbor2(rsnew1.getString("neighbor2"));
-						iis.setNeighbor1_remoteAS(rsnew1.getString("neighbor1_remoteAS"));
-						iis.setNeighbor2_remoteAS(rsnew1.getString("neighbor2_remoteAS"));
-						iis.setRoutingProtocol(rsnew1.getString("routingProtocol"));
-						iis.setNetworkIp_subnetMask(rsnew1.getString("networkIp_subnetMask"));
-
-					}
-					request.setInternetLcVrf(iis);
-				}
-
-				String subQueryThree = "select*from deviceinterfaceso where request_info_id=" + id;
-				Statement smt3 = connection.createStatement();
-				ResultSet rsnew3 = smt3.executeQuery(subQueryThree);
-
-				if (rsnew3 != null) {
-					DeviceInterfaceSO iisd = new DeviceInterfaceSO();
-					while (rsnew3.next()) {
-						iisd.setDescription(rsnew3.getString("description"));
-						iisd.setIp(rsnew3.getString("ip"));
-						iisd.setEncapsulation(rsnew3.getString("encapsulation"));
-						iisd.setMask(rsnew3.getString("mask"));
-						iisd.setName(rsnew3.getString("name"));
-						iisd.setSpeed(rsnew3.getString("speed"));
-						iisd.setBandwidth(rsnew3.getString("Bandwidth"));
-					}
-					request.setDeviceInterfaceSO(iisd);
-
-					list.add(request);
-				}
-
+				request.setMisArPeSO(getMisArPeSO(id));
+				request.setInternetLcVrf(getInternetLcVrf(id));
+				request.setDeviceInterfaceSO(getDeviceInterfaceSO(id));
+				list.add(request);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getAdminAssignedRequestList method "+exe.getMessage());
+		} catch (ParseException exe) {
+			logger.error("Parse Exception in getAdminAssignedRequestList method "+exe.getMessage());
 		}
 
 		return list;
 	}
 
 	public void setReadFlagFESE(String requestId, String version, int status, String key) {
-		connection = ConnectionFactory.getConnection();
 		String query = null;
 
 		if (key.equalsIgnoreCase("FE")) {
@@ -6159,122 +4237,105 @@ public class RequestInfoDao {
 			query = "update c3p_t_request_info set r_read_se = ? where r_alphanumeric_req_id = ? and r_request_version = ? ";
 		}
 
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setInt(1, status);
 			preparedStmt.setString(2, requestId);
 			preparedStmt.setString(3, version);
 			preparedStmt.executeUpdate();
-		} catch (SQLException e) {
-
-			logger.error(e.getMessage());
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in setReadFlagFESE method "+exe.getMessage());
 		}
 	}
 
 	public int getScheduledRequestsFromDB() {
 		int num = 0;
-		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
-		String query1 = null;
+		String query = null;
 		if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Scheduled' and request_creator_name=? and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Scheduled' and request_creator_name=? and alphanumeric_req_id rlike'SR|OS'";
 		} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Scheduled' and RequestOwner=? and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Scheduled' and RequestOwner=? and alphanumeric_req_id rlike'SR|OS'";
 
 		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Scheduled' and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Scheduled' and alphanumeric_req_id rlike'SR|OS'";
 
 		}
-		try {
-			if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-				Statement ps = connection.createStatement();
-
-				rs = ps.executeQuery(query1);
-			} else {
-				PreparedStatement ps = connection.prepareStatement(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				ps.setString(1, Global.loggedInUser);
-				rs = ps.executeQuery();
 			}
+			rs = ps.executeQuery();
 			while (rs.next()) {
 				num = rs.getInt("total");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in setReadFlagFESE method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return num;
 	}
 
 	public int getHoldRequestsFromDB() {
 		int num = 0;
-		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
-		String query1 = null;
+		String query = null;
 		if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Hold' and request_creator_name=? and alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Hold' and request_creator_name=? and alphanumeric_req_id rlike'SR|OS'";
 		} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Hold' and RequestOwner=? and alphanumeric_req_id rlike'SR|OS'";
-
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Hold' and RequestOwner=? and alphanumeric_req_id rlike'SR|OS'";
 		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Hold' and alphanumeric_req_id rlike'SR|OS'";
-
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Hold' and alphanumeric_req_id rlike'SR|OS'";
 		}
-		try {
-			if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-				Statement ps = connection.createStatement();
-
-				rs = ps.executeQuery(query1);
-			} else {
-				PreparedStatement ps = connection.prepareStatement(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				ps.setString(1, Global.loggedInUser);
-				rs = ps.executeQuery();
 			}
+			rs = ps.executeQuery();
 			while (rs.next()) {
 				num = rs.getInt("total");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in setReadFlagFESE method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return num;
 	}
 
 	public String getRequestOwner(String reqId, String version) {
 		String owner = null;
-		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
-		String query1 = "SELECT request_creator_name FROM requestinfoso where alphanumeric_req_id = ? and request_version = ?";
-		try {
-			preparedStmt = connection.prepareStatement(query1);
+		String query = "SELECT request_creator_name FROM requestinfoso where alphanumeric_req_id = ? and request_version = ?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, reqId);
 			preparedStmt.setString(2, version);
 			rs = preparedStmt.executeQuery();
 			while (rs.next()) {
 				owner = rs.getString("request_creator_name");
 			}
-		} catch (SQLException e) {
-
-			logger.error(e.getMessage());
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getRequestOwner method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 
 		return owner;
 	}
 
 	public final List<ModifyConfigResultPojo> getConfigCmdRecordFordataForDelivery(CreateConfigRequest configRequest,
-			String key) throws IOException {
-
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM c3pdbschema.createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
+			String key) {
+		String query = "SELECT * FROM c3pdbschema.createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			configCmdList = new ArrayList<ModifyConfigResultPojo>();
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
 			ps.setString(1, configRequest.getVendor());
 			ps.setString(2, configRequest.getDeviceType());
 			ps.setString(3, configRequest.getModel());
@@ -6287,125 +4348,98 @@ public class RequestInfoDao {
 			while (rs.next()) {
 				configCmdPojo = new ModifyConfigResultPojo();
 				configCmdPojo.setNo_SSH_Command(rs.getString("No_SSH_Command"));
-				/*
-				 * configCmdPojo.setCreate_SSH_Command(rs .getString("Create_SSH_Command"));
-				 */
 				configCmdList.add(configCmdPojo);
 			}
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getConfigCmdRecordFordataForDelivery method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
-
 		return configCmdList;
 	}
 
 	public void resetErrorStateOfRechabilityTest(String requestId, String version) {
-		connection = ConnectionFactory.getConnection();
-		PreparedStatement preparedStmt;
-		int rs = 0;
 		String query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		String updatedQuery = "update certificationtestvalidation set Device_Reachability_Test = ? where alphanumeric_req_id = ? and version = ? ";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, "0");
 			preparedStmt.setString(2, requestId);
 			preparedStmt.setString(3, version);
+			preparedStmt.executeUpdate();
 
-			rs = preparedStmt.executeUpdate();
+			try (PreparedStatement updatedStmt = connection.prepareStatement(updatedQuery);) {
+				updatedStmt.setString(1, "0");
+				updatedStmt.setString(2, requestId);
+				updatedStmt.setString(3, version);	
+				preparedStmt.executeUpdate();
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in getConfigCmdRecordFordataForDelivery update certificationtestvalidation method "+exe.getMessage());
+			}
 
-			query = "update certificationtestvalidation set Device_Reachability_Test = ? where alphanumeric_req_id = ? and version = ? ";
-			preparedStmt = connection.prepareStatement(query);
-			preparedStmt.setString(1, "0");
-			preparedStmt.setString(2, requestId);
-			preparedStmt.setString(3, version);
-
-			rs = preparedStmt.executeUpdate();
-
-		} catch (SQLException e) {
-
-			logger.error(e.getMessage());
-		} finally {
-
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getConfigCmdRecordFordataForDelivery update webserviceinfo method "+exe.getMessage());
 		}
 	}
 
 	public void updateRouterFailureHealthCheck(String requestId, String version) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
+		String query =  "update certificationtestvalidation set suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
 		String suggestion = "Please check the connectivity.Issue while performing Health check test";
-		query = "update certificationtestvalidation set suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
-
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, suggestion);
 			preparedStmt.setString(2, requestId);
 			preparedStmt.setString(3, version);
 
 			preparedStmt.executeUpdate();
-		} catch (SQLException e) {
-
-			logger.error(e.getMessage());
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateRouterFailureHealthCheck method "+exe.getMessage());
 		}
 	}
 
 	public String updateTimeForScheduledRequest(String requestId, String version) throws SQLException {
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id=? AND request_version=?";
+		String query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id=? AND request_version=?";
+		String updateQuery = "update requestinfoso set date_of_processing = ? where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
 		String result = "false";
-
-		try {
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestId);
 			ps.setString(2, version);
 
 			rs = ps.executeQuery();
 
 			while (rs.next()) {
-
 				if (rs.getString("RequestType_Flag").equalsIgnoreCase("S")) {
-					query1 = "update requestinfoso set date_of_processing = ? where alphanumeric_req_id = ? and version = ? ";
-					ps = connection.prepareStatement(query1);
-					ps.setTimestamp(1, rs.getTimestamp("ScheduledTime"));
-					ps.setString(2, requestId);
-					ps.setString(3, version);
-
-					ps.executeUpdate();
+					try (PreparedStatement updatePs = connection.prepareStatement(updateQuery);) {
+						updatePs.setTimestamp(1, rs.getTimestamp("ScheduledTime"));
+						updatePs.setString(2, requestId);
+						updatePs.setString(3, version);
+	
+						updatePs.executeUpdate();
+					} catch (SQLException exe) {
+						logger.error("SQL Exception in updateTimeForScheduledRequest update method "+exe.getMessage());
+					}
 				}
-
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateTimeForScheduledRequest method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-
-			DBUtil.close(connection);
 		}
 
 		return result;
 	}
 
 	public String updateTimeIntervalElapsedTime(String requestId, String version) throws SQLException {
-		Connection connection;
 		RequestInfoDao requestinfoDao = new RequestInfoDao();
-		connection = ConnectionFactory.getConnection();
-		String query0 = "select * from requestinfoso where alphanumeric_req_id = ? and request_version= ?";
+		String query = "select * from requestinfoso where alphanumeric_req_id = ? and request_version= ?";
 		ResultSet rs = null;
-		String result = "false";
-		try {
-
-			PreparedStatement ps = connection.prepareStatement(query0);
+		String updateQuery = null;
+		String diff = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, requestId);
 			ps.setString(2, version);
@@ -6423,146 +4457,97 @@ public class RequestInfoDao {
 				}
 
 				if (rs.getString("temp_elapsed_time") == null) {
-					String diff = requestinfoDao.calcTimeDiffInMins(timestamp, d);
-					String query1 = "update requestinfoso set temp_elapsed_time = ?, temp_processing_time= now() where alphanumeric_req_id = ? and request_version= ?";
-
-					PreparedStatement preparedStmt1;
-					preparedStmt1 = connection.prepareStatement(query1);
-					preparedStmt1.setString(1, diff);
-					preparedStmt1.setString(2, requestId);
-					preparedStmt1.setString(3, version);
-					preparedStmt1.executeUpdate();
+					diff = requestinfoDao.calcTimeDiffInMins(timestamp, d);
+					updateQuery = "update requestinfoso set temp_elapsed_time = ?, temp_processing_time= now() where alphanumeric_req_id = ? and request_version= ?";
 				} else {
 					Timestamp d1 = null;
 					date = new java.util.Date();
 					timestamp = new java.sql.Timestamp(date.getTime());
 					d1 = rs.getTimestamp("temp_processing_time");
 					String diff1 = requestinfoDao.calcTimeDiffInMins(timestamp, d1);
-
-					String diff2 = String.format("%.2f", Float
+					diff = String.format("%.2f", Float
 							.toString((Float.parseFloat(diff1) + Float.parseFloat(rs.getString("temp_elapsed_time")))));
-					String query1 = "update requestinfoso set temp_elapsed_time = ? where alphanumeric_req_id = ? and request_version= ?";
-
-					PreparedStatement preparedStmt1;
-					preparedStmt1 = connection.prepareStatement(query1);
-					preparedStmt1.setString(1, diff2);
-					preparedStmt1.setString(2, requestId);
-					preparedStmt1.setString(3, version);
-					preparedStmt1.executeUpdate();
+					updateQuery = "update requestinfoso set temp_elapsed_time = ? where alphanumeric_req_id = ? and request_version= ?";
+				}
+				try (PreparedStatement updatePs = connection.prepareStatement(updateQuery);) {
+					updatePs.setString(1, diff);
+					updatePs.setString(2, requestId);
+					updatePs.setString(3, version);
+					updatePs.executeUpdate();
+				} catch (SQLException exe) {
+					logger.error("SQL Exception in updateTimeIntervalElapsedTime update method "+exe.getMessage());
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateTimeIntervalElapsedTime method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-
-			DBUtil.close(connection);
 		}
 		return "ok";
 	}
 
 	public String updateTempProcessingTime(String requestId, String version) throws SQLException {
-		Connection connection;
-		connection = ConnectionFactory.getConnection();
-
-		try {
-
-			String query1 = "update requestinfoso set temp_processing_time= now() where alphanumeric_req_id = ? and request_version= ?";
-
-			PreparedStatement preparedStmt1;
-			preparedStmt1 = connection.prepareStatement(query1);
-			preparedStmt1.setString(1, requestId);
-			preparedStmt1.setString(2, version);
-			preparedStmt1.executeUpdate();
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
-		} finally {
-
-			DBUtil.close(connection);
+		String query = "update requestinfoso set temp_processing_time= now() where alphanumeric_req_id = ? and request_version= ?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			ps.setString(1, requestId);
+			ps.setString(2, version);
+			ps.executeUpdate();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateTempProcessingTime method "+exe.getMessage());
 		}
 		return "ok";
 	}
 
 	public boolean updateEditedAlertData(String alertCode, String description) {
-		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String query1 = "update c3pdbschema.alertinformationtable set alert_description = ? WHERE alert_code=?";
-		try {
-			PreparedStatement ps = connection.prepareStatement(query1);
+		String query = "update c3pdbschema.alertinformationtable set alert_description = ? WHERE alert_code=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, description);
 			ps.setString(2, alertCode);
 			int i = ps.executeUpdate();
 			if (i == 1) {
-
 				result = true;
-
 			} else {
 				result = false;
 			}
-		}
-
-		catch (SQLException e) {
-
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateEditedAlertData method "+exe.getMessage());
 		}
 		return result;
 	}
 
-	public String getFAQforPage(String page) throws IOException {
+	public String getFAQforPage(String page) {
 		String content = null;
-		connection = ConnectionFactory.getConnection();
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
 		String path = null;
-		RequestInfoDao.loadProperties();
-		String query1 = "SELECT data_path FROM t_faq_data where page = ?";
+		String query = "SELECT data_path FROM t_faq_data where page = ?";
 		String filePath = "";
-		try {
-			preparedStmt = connection.prepareStatement(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, page);
 
 			rs = preparedStmt.executeQuery();
 			while (rs.next()) {
 				path = rs.getString("data_path");
 			}
-
 			if (path != null) {
-				String downloadPath = RequestInfoDao.TSA_PROPERTIES.getProperty("faqDocPath");
-				filePath = downloadPath + path + "/" + page + ".txt";
+				filePath = TSALabels.FAQ_DOC_PATH.getValue() + path + "/" + page + ".txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
-				return content;
-			} else {
-				return content;
 			}
 		} catch (SQLException e) {
-
 			logger.error(e.getMessage());
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return content;
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
 	public JSONArray getStatusReportData(String startDate, String endDate) {
-		connection = ConnectionFactory.getConnection();
 		JSONArray array = new JSONArray();
-
 		DateTimeFormatter df = DateTimeFormatter.ofPattern("MM/dd/yyyy");
 
 		LocalDate sdate = LocalDate.parse(startDate, df);
@@ -6572,7 +4557,6 @@ public class RequestInfoDao {
 		String eFdate = DateTimeFormatter.ofPattern("yyyy-MM-dd", Locale.ENGLISH).format(edate);
 
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
 		String query = null;
 		if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
 			query = "select request_status, count(*) as number from requestinfoso where DATE(date_of_processing) between ? and ? and request_creator_name=? and alphanumeric_req_id rlike'SR|OS' Group by request_status";
@@ -6583,8 +4567,8 @@ public class RequestInfoDao {
 			query = "select request_status, count(*) as number from requestinfoso where DATE(date_of_processing) between ? and ?  and alphanumeric_req_id rlike'SR|OS' Group by request_status";
 
 		}
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				preparedStmt.setString(1, sFdate);
@@ -6609,18 +4593,16 @@ public class RequestInfoDao {
 
 				internalObj.put("name", status);
 				internalObj.put("data", rs.getInt("number"));
-
 				count = count + rs.getInt("number");
-
 				obj.put(status, internalObj);
-
 			}
 
 			obj.put("TotalRequests", count);
 			array.put(obj);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getStatusReportData method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 
 		return array;
@@ -6628,16 +4610,13 @@ public class RequestInfoDao {
 
 	public boolean isHealthCheckSuccesfulForOSUpgrade(String requestID, double version) {
 		boolean result = false;
-		connection = ConnectionFactory.getConnection();
-		String query = null;
+		String query = "select health_checkup from  webserviceinfo where alphanumeric_req_id = ? and version = ?";
 		ResultSet rs = null;
 		int flag = 0;
-		PreparedStatement preparedStmt;
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String parentVersion = numberFormat.format(version);
-		query = "select health_checkup from  webserviceinfo where alphanumeric_req_id = ? and version = ?";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
 			preparedStmt.setString(2, parentVersion);
 			rs = preparedStmt.executeQuery();
@@ -6652,25 +4631,23 @@ public class RequestInfoDao {
 			} else {
 				result = true;
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in isHealthCheckSuccesfulForOSUpgrade method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return result;
 	}
 
 	public boolean isDilevarySuccessforOSUpgrade(String requestID, double version) {
 		boolean result = false;
-		connection = ConnectionFactory.getConnection();
-		String query = null;
+		String query = "select deliever_config from webserviceinfo where alphanumeric_req_id = ? and version = ?";
 		ResultSet rs = null;
 		int flag = 0;
-		PreparedStatement preparedStmt;
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String parentVersion = numberFormat.format(version);
-		query = "select deliever_config from webserviceinfo where alphanumeric_req_id = ? and version = ?";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
 			preparedStmt.setString(2, parentVersion);
 			rs = preparedStmt.executeQuery();
@@ -6685,25 +4662,24 @@ public class RequestInfoDao {
 			} else {
 				result = true;
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in isDilevarySuccessforOSUpgrade method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return result;
 	}
 
 	public boolean isPreHealthCheckSuccesfulForOSUpgrade(String requestID, double version) {
 		boolean result = false;
-		connection = ConnectionFactory.getConnection();
 		String query = null;
 		ResultSet rs = null;
 		int flag = 0;
-		PreparedStatement preparedStmt;
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String parentVersion = numberFormat.format(version);
 		query = "select pre_health_checkup from  webserviceinfo where alphanumeric_req_id = ? and version = ?";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
 			preparedStmt.setString(2, parentVersion);
 			rs = preparedStmt.executeQuery();
@@ -6718,49 +4694,34 @@ public class RequestInfoDao {
 			} else {
 				result = true;
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in isPreHealthCheckSuccesfulForOSUpgrade method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return result;
 	}
 
-	public final void update_dilevary_step_flag_in_db(String key, int value, String requestId, String version) {
-		connection = ConnectionFactory.getConnection();
-		boolean result = false;
-		String query1 = "update os_upgrade_dilevary_flags set " + key + "= ? WHERE request_id=? and request_version=?";
-		try {
-			PreparedStatement ps = connection.prepareStatement(query1);
+	public void update_dilevary_step_flag_in_db(String key, int value, String requestId, String version) {
+		String query = "update os_upgrade_dilevary_flags set " + key + "= ? WHERE request_id=? and request_version=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setInt(1, value);
 			ps.setString(2, requestId);
 			ps.setString(3, version);
-
-			int i = ps.executeUpdate();
-			if (i == 1) {
-
-				result = true;
-
-			} else {
-				result = false;
-			}
-		}
-
-		catch (SQLException e) {
-
-			e.printStackTrace();
+			ps.executeUpdate();			
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in update_dilevary_step_flag_in_db method "+exe.getMessage());
 		}
 	}
 
-	public final CreateConfigRequest getOSDilevarySteps(String requestId, String version) {
+	public CreateConfigRequest getOSDilevarySteps(String requestId, String version) {
 		CreateConfigRequest req = new CreateConfigRequest();
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM os_upgrade_dilevary_flags WHERE request_id=? AND request_version=?";
+		String query = "SELECT * FROM os_upgrade_dilevary_flags WHERE request_id=? AND request_version=?";
 		ResultSet rs = null;
-		String result = "false";
-
-		try {
-
-			PreparedStatement ps = connection.prepareStatement(query1);
+		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, requestId);
 			ps.setString(2, version);
@@ -6834,28 +4795,21 @@ public class RequestInfoDao {
 
 			}
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getOSDilevarySteps method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-
-			DBUtil.close(connection);
 		}
 		return req;
 	}
 
-	public final org.json.simple.JSONObject get_dilevary_steps_status(String requestId, String version) {
+	@SuppressWarnings("unchecked")
+	public org.json.simple.JSONObject get_dilevary_steps_status(String requestId, String version) {
 		org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM os_upgrade_dilevary_flags WHERE request_id=? AND request_version=?";
+		String query = "SELECT * FROM os_upgrade_dilevary_flags WHERE request_id=? AND request_version=?";
 		ResultSet rs = null;
-		String result = "false";
-
-		try {
-
-			PreparedStatement ps = connection.prepareStatement(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, requestId);
 			ps.setString(2, version);
@@ -6905,36 +4859,27 @@ public class RequestInfoDao {
 					obj.put("post_login", rs.getInt("post_login_flag"));
 
 				}
-
 			}
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in get_dilevary_steps_status method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-
-			DBUtil.close(connection);
 		}
 
 		return obj;
 	}
 
 	public String getRequestFlagForReportPreHealthCheck(String requestId, String versionId) {
-		connection = ConnectionFactory.getConnection();
-		String query = "";
+		String query = "select pre_health_checkup from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
 		String flagForPrevalidation = "";
 		String flagFordelieverConfig = "";
 		String res = null;
 		Map<String, String> hmap = new HashMap<String, String>();
 		logger.info("Version received" + versionId);
-
-		query = "select pre_health_checkup from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, versionId);
 			rs = preparedStmt.executeQuery();
@@ -6945,32 +4890,30 @@ public class RequestInfoDao {
 			}
 			hmap.put("flagForPrevalidation", flagForPrevalidation);
 			hmap.put("flagFordelieverConfig", flagFordelieverConfig);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getRequestFlagForReportPreHealthCheck method "+exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
 		}
 		return res;
 	}
 
 	/*
-	 * Owner: Ruchita Salvi Module: Test Strategey
+	 * Owner: Ruchita Salvi Module: Test Strategy
 	 */
 	public List<TestDetail> findTestFromTestStrategyDB(String devicemodel, String devicetype, String os,
 			String osversion, String vendor, String region, String testCategory) {
 		List<TestDetail> list = new ArrayList<TestDetail>();
+		String queryTstDetails = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_type = ? and os=? and os_version=? and vendor=? and region=? and test_category=?";
+		String queryTstRules = "select * from t_tststrategy_m_tstrules where test_name=?";
+		String queryTstDetailsTestName = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_type = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=?";
+		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_type = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=? and version=?";
 
-		connection = ConnectionFactory.getConnection();
-		String query = "", query1 = "", query2 = "", query3 = "";
 		ResultSet rs = null, rs1 = null, rs2 = null, rs3 = null;
 		String maxVersion = null;
-
-		Set setOfTest = new HashSet();
-
-		PreparedStatement preparedStmt, preparedSmt1, preparedSmt3;
-		query = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_type = ? and os=? and os_version=? and vendor=? and region=? and test_category=?";
-		query1 = "select * from t_tststrategy_m_tstrules where test_name=?";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		Set<String> setOfTest = new HashSet<>();
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(queryTstDetails);) {
 			preparedStmt.setString(1, devicemodel);
 			preparedStmt.setString(2, devicetype);
 			preparedStmt.setString(3, os);
@@ -6983,123 +4926,114 @@ public class RequestInfoDao {
 			if (rs != null) {
 				while (rs.next()) {
 
-					PreparedStatement preparedStmt2;
 					String testName = rs.getString("test_name");
-
 					if (!(setOfTest.contains(testName))) {
-
-						query2 = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_type = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=?";
-
-						preparedStmt2 = connection.prepareStatement(query2);
-						preparedStmt2.setString(1, devicemodel);
-						preparedStmt2.setString(2, devicetype);
-						preparedStmt2.setString(3, os);
-						preparedStmt2.setString(4, osversion);
-						preparedStmt2.setString(5, vendor);
-						preparedStmt2.setString(6, region);
-						preparedStmt2.setString(7, testCategory);
-						preparedStmt2.setString(8, testName);
-
-						rs2 = preparedStmt2.executeQuery();
-
-						if (rs2 != null) {
-							while (rs2.next()) {
-
-								maxVersion = rs2.getString("version");
-							}
-
-							PreparedStatement preparedStmt3;
-							query3 = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_type = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=? and version=?";
-
-							preparedStmt3 = connection.prepareStatement(query3);
-							preparedStmt3.setString(1, devicemodel);
-							preparedStmt3.setString(2, devicetype);
-							preparedStmt3.setString(3, os);
-							preparedStmt3.setString(4, osversion);
-							preparedStmt3.setString(5, vendor);
-							preparedStmt3.setString(6, region);
-							preparedStmt3.setString(7, testCategory);
-							preparedStmt3.setString(8, testName);
-							preparedStmt3.setString(9, maxVersion);
-
-							rs3 = preparedStmt3.executeQuery();
-							if (rs3 != null) {
-								while (rs3.next()) {
-
-									TestDetail test = new TestDetail();
-									test.setId(rs3.getInt("id"));
-									test.setTestCommand(rs3.getString("test_command"));
-									test.setTestConnectionProtocol(rs.getString("test_connection_protocol"));
-									test.setTestName(rs3.getString("test_name").concat("_" + rs3.getString("version")));
-									test.setTestCategory(rs3.getString("test_category"));
-									test.setVersion(rs3.getString("version"));
-									List<TestRules> rulelist = new ArrayList<TestRules>();
-									preparedSmt1 = connection.prepareStatement(query1);
-									preparedSmt1.setInt(1, test.getId());
-									rs1 = preparedSmt1.executeQuery();
-
-									while (rs1.next()) {
-										TestRules rule = new TestRules();
-										rule.setDataType(rs1.getString("data_type"));
-										rule.setAfterText(rs1.getString("after_text"));
-										rule.setBeforeText(rs1.getString("before_text"));
-										rule.setFromColumn(rs1.getString("from_column"));
-										rule.setNumberOfChars(rs1.getString("number_of_chars"));
-										rule.setReferenceColumn(rs1.getString("reference_column"));
-										rule.setReportedLabel(rs1.getString("reported_label"));
-										rule.setSectionName(rs1.getString("section_name"));
-										rule.setWhereKeyword(rs1.getString("where_keyword"));
-										rule.setEvaluation(rs1.getString("evaluation"));
-										rule.setOperator(rs1.getString("operator"));
-										rule.setValue1(rs1.getString("value1"));
-										rule.setValue2(rs1.getString("value2"));
-										rule.setSnippet(rs1.getString("snippet"));
-										rule.setKeyword(rs1.getString("keyword"));
-										rulelist.add(rule);
-									}
-
-									test.setListRules(rulelist);
-
-									list.add(test);
-
+						
+						try (PreparedStatement tstDetailsTestNamePs = connection.prepareStatement(queryTstDetailsTestName);) {
+							tstDetailsTestNamePs.setString(1, devicemodel);
+							tstDetailsTestNamePs.setString(2, devicetype);
+							tstDetailsTestNamePs.setString(3, os);
+							tstDetailsTestNamePs.setString(4, osversion);
+							tstDetailsTestNamePs.setString(5, vendor);
+							tstDetailsTestNamePs.setString(6, region);
+							tstDetailsTestNamePs.setString(7, testCategory);
+							tstDetailsTestNamePs.setString(8, testName);
+	
+							rs2 = tstDetailsTestNamePs.executeQuery();
+	
+							if (rs2 != null) {
+								while (rs2.next()) {	
+									maxVersion = rs2.getString("version");
 								}
-
+								
+								try (PreparedStatement tstDetailsTestNameVPs = connection.prepareStatement(queryTstDetailsTestNameV);) {						
+							
+									tstDetailsTestNameVPs.setString(1, devicemodel);
+									tstDetailsTestNameVPs.setString(2, devicetype);
+									tstDetailsTestNameVPs.setString(3, os);
+									tstDetailsTestNameVPs.setString(4, osversion);
+									tstDetailsTestNameVPs.setString(5, vendor);
+									tstDetailsTestNameVPs.setString(6, region);
+									tstDetailsTestNameVPs.setString(7, testCategory);
+									tstDetailsTestNameVPs.setString(8, testName);
+									tstDetailsTestNameVPs.setString(9, maxVersion);
+		
+									rs3 = tstDetailsTestNameVPs.executeQuery();
+									if (rs3 != null) {
+										while (rs3.next()) {
+		
+											TestDetail test = new TestDetail();
+											test.setId(rs3.getInt("id"));
+											test.setTestCommand(rs3.getString("test_command"));
+											test.setTestConnectionProtocol(rs.getString("test_connection_protocol"));
+											test.setTestName(rs3.getString("test_name").concat("_" + rs3.getString("version")));
+											test.setTestCategory(rs3.getString("test_category"));
+											test.setVersion(rs3.getString("version"));
+											List<TestRules> rulelist = new ArrayList<TestRules>();
+											
+											try (PreparedStatement tstRulesPs = connection.prepareStatement(queryTstRules);) {
+												tstRulesPs.setInt(1, test.getId());
+												rs1 = tstRulesPs.executeQuery();
+												while (rs1.next()) {
+													TestRules rule = new TestRules();
+													rule.setDataType(rs1.getString("data_type"));
+													rule.setAfterText(rs1.getString("after_text"));
+													rule.setBeforeText(rs1.getString("before_text"));
+													rule.setFromColumn(rs1.getString("from_column"));
+													rule.setNumberOfChars(rs1.getString("number_of_chars"));
+													rule.setReferenceColumn(rs1.getString("reference_column"));
+													rule.setReportedLabel(rs1.getString("reported_label"));
+													rule.setSectionName(rs1.getString("section_name"));
+													rule.setWhereKeyword(rs1.getString("where_keyword"));
+													rule.setEvaluation(rs1.getString("evaluation"));
+													rule.setOperator(rs1.getString("operator"));
+													rule.setValue1(rs1.getString("value1"));
+													rule.setValue2(rs1.getString("value2"));
+													rule.setSnippet(rs1.getString("snippet"));
+													rule.setKeyword(rs1.getString("keyword"));
+													rulelist.add(rule);
+												}
+											} catch (SQLException exe) {
+												logger.error("SQL Exception in findTestFromTestStrategyDB 2 method "+exe.getMessage());
+											}									
+		
+											test.setListRules(rulelist);
+											list.add(test);
+										}	
+									}
+								} catch (SQLException exe) {
+									logger.error("SQL Exception in findTestFromTestStrategyDB 3 method "+exe.getMessage());
+								}
+	
 							}
-
+						} catch (SQLException exe) {
+							logger.error("SQL Exception in findTestFromTestStrategyDB method "+exe.getMessage());
 						}
-
 						setOfTest.add(testName);
-
 					}
-
 				}
-
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findTestFromTestStrategyDB main method "+exe.getMessage());
 		} finally {
-			DBUtil.close(connection);
+			DBUtil.close(rs);
 			DBUtil.close(rs1);
-			DBUtil.close(rs1);
-
+			DBUtil.close(rs2);
+			DBUtil.close(rs3);
 		}
 		return list;
-
 	}
 
 	/*
-	 * Owner: Ruchita Salvi Module: Test Strategey
+	 * Owner: Ruchita Salvi Module: Test Strategy
 	 */
 	public boolean updateTestStrategeyConfigResultsTable(String requestID, String testName, String testCategory,
 			String testResult, String testText, String collectedValue, String evaluationCriteria, String notes,
 			String data_type,double requestVersion) {
 		boolean res = false;
-		connection = ConnectionFactory.getConnection();
 		String query = "insert into t_tststrategy_m_config_results (TestResult,ResultText,RequestId,TestCategory,testName,CollectedValue,EvaluationCriteria,notes,data_type,request_version) values (?,?,?,?,?,?,?,?,?,?)";
-		try {
-			PreparedStatement ps = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, testResult);
 			ps.setString(2, testText);
 			ps.setString(3, requestID);
@@ -7112,52 +5046,18 @@ public class RequestInfoDao {
 			ps.setDouble(10, requestVersion);
 			int i = ps.executeUpdate();
 			if (i == 1) {
-
 				res = true;
-
 			} else {
 				res = false;
 			}
-		}
-
-		catch (SQLException e) {
-
-			e.printStackTrace();
+		} catch (SQLException exe) {
+		logger.error("SQL Exception in findTestFromTestStrategyDB method "+exe.getMessage());
 		}
 		return res;
 	}
 
 	/*
-	 * Owner: Ruchita Salvi Module: Test Strategey
-	 */
-	/*
-	 * public boolean insertIntoTestStrategeyConfigResultsTable(String requestId,
-	 * String testCategory, String testResult, String testText, String testName) {
-	 * boolean res = false; connection = ConnectionFactory.getConnection(); String
-	 * query = "";
-	 * 
-	 * query =
-	 * "INSERT INTO t_tststrategy_m_config_results(RequestId,TestCategory,TestResult,ResultText,testName) VALUES"
-	 * + "(?,?,?,?,?)";
-	 * 
-	 * PreparedStatement preparedStmt = null; try { preparedStmt =
-	 * connection.prepareStatement(query);
-	 * 
-	 * preparedStmt.setString(1, requestId); preparedStmt.setString(2,
-	 * testCategory); preparedStmt.setString(3, testResult);
-	 * preparedStmt.setString(4, testText); preparedStmt.setString(5, testName);
-	 * 
-	 * int i=preparedStmt.executeUpdate(); if(i>0) { res=true; }
-	 * 
-	 * } catch (SQLException e) { // TODO Auto-generated catch block
-	 * e.printStackTrace(); } finally { DBUtil.close(connection);
-	 * DBUtil.close(preparedStmt);
-	 * 
-	 * } return res; }
-	 */
-
-	/*
-	 * Owner: Ruchita Salvi Module: Test Strategey
+	 * Owner: Ruchita Salvi Module: Test Strategy
 	 */
 	@SuppressWarnings("unchecked")
 	public org.json.simple.JSONArray getDynamicTestResult(String requestId, String version, String testtype) {
@@ -7167,14 +5067,11 @@ public class RequestInfoDao {
 		if (!version.contains(".")) {
 			version = version + ".0";
 		}
-		connection = ConnectionFactory.getConnection();
-		String query = "";
+		String query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
-
-		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testtype);
 			rs = preparedStmt.executeQuery();
@@ -7198,9 +5095,10 @@ public class RequestInfoDao {
 				}
 			}
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getDynamicTestResult method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		res.put("custom", array);
 		return array;
@@ -7218,14 +5116,10 @@ public class RequestInfoDao {
 		if (!version.contains(".")) {
 			version = version + ".0";
 		}
-		connection = ConnectionFactory.getConnection();
-		String query = "";
+		String query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ? and request_version =?";
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
-
-		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ? and request_version =?";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testtype);
 			preparedStmt.setString(3, version);
@@ -7235,11 +5129,8 @@ public class RequestInfoDao {
 					org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
 
 					obj.put("status", rs.getString("TestResult"));
-					obj.put("CollectedValue", rs.getString("CollectedValue").replace(",", "$"));
-					// obj.put("CollectedValue", rs.getString("CollectedValue"));
-
+					obj.put("CollectedValue", rs.getString("CollectedValue").replace(",", "$"));					
 					obj.put("EvaluationCriteria", rs.getString("EvaluationCriteria"));
-
 					obj.put("testname", rs.getString("testName").substring(15).concat("_")
 							.concat(rs.getString("data_type")).concat("_").concat(rs.getString("ResultText")));
 					obj.put("notes", rs.getString("notes"));
@@ -7251,9 +5142,10 @@ public class RequestInfoDao {
 				}
 			}
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getDynamicTestResultCustomerReport method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		res.put("custom", array);
 		return array;
@@ -7270,20 +5162,17 @@ public class RequestInfoDao {
 
 		CertificationTestPojo certificationTestPojo3 = new CertificationTestPojo();
 
-		CertificationTestResultEntity resultEnt = new CertificationTestResultEntity();
 		org.json.simple.JSONArray prevalidationArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONObject reachabilityObj = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject iosVersion = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject deviceModel = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
-		NetworkTestValidation networkTestValidation = new NetworkTestValidation();
 		org.json.simple.JSONArray othersArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray networkAuditArray = new org.json.simple.JSONArray();
 		certificationTestPojo1 = getCertificationTestFlagData(request.getRequestId(), request.getVersion_report(),
 				"preValidate");
-		certificationTestService = new CertificationTestResultService();
-
-		resultEnt = certificationTestService.getRecordByRequestId(request.getRequestId(), request.getVersion_report());
+		//certificationTestService = new CertificationTestResultService();
+		//resultEnt = certificationTestService.getRecordByRequestId(request.getRequestId(), request.getVersion_report());
 
 		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
 			reachabilityObj.put("testname", "Device Reachability test");
@@ -7482,22 +5371,17 @@ public class RequestInfoDao {
 	}
 
 	/*
-	 * Owner: Ruchita Salvi Module: Test Strategey
+	 * Owner: Ruchita Salvi Module: Test Strategy
 	 */
 	public List<TestDetail> findSelectedTests(String requestID, String testCategory,String version) {
 		List<TestDetail> resultList = new ArrayList<TestDetail>();
-		connection = ConnectionFactory.getConnection();
-		String query = "";
+		String query = "select TestsSelected from  t_tststrategy_m_config_transaction where RequestId = ?";
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
 		String res = null;
-		Map<String, String> hmap = new HashMap<String, String>();
-
-		query = "select TestsSelected from  t_tststrategy_m_config_transaction where RequestId = ?";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
-			preparedStmt.setString(2, version);
 			rs = preparedStmt.executeQuery();
 			if (rs != null) {
 				while (rs.next()) {
@@ -7515,60 +5399,32 @@ public class RequestInfoDao {
 					}
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findSelectedTests method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return resultList;
-	}
-
-	/* Commeting out session management code */
-
-	/*
-	 * public int checkedUserStatus(String username, String password) throws
-	 * SQLException {
-	 * 
-	 * connection = ConnectionFactory.getConnection(); // String query = //
-	 * "SELECT user_status FROM users where user_name LIKE ? AND user_password LIKE ?"
-	 * ; ResultSet rs = null;
-	 * 
-	 * int userStatus = 0;
-	 * 
-	 * try { PreparedStatement pst = null;
-	 * 
-	 * pst = connection .prepareStatement(
-	 * "SELECT user_status FROM users where user_name=? AND user_password=?");
-	 * pst.setString(1, username); pst.setString(2, password); rs =
-	 * pst.executeQuery(); while (rs.next()) { userStatus =
-	 * rs.getInt("user_status"); } } catch (SQLException e) {
-	 * 
-	 * e.printStackTrace(); } finally { rs.close(); } return userStatus;
-	 * 
-	 * }
-	 */
+	}	
 
 	public String getPreviousMileStoneStatus(String requestID, String version) {
 		String status = null;
 		// logic to get previous status from reqestinfoso
-		String query2 = "select request_status from requestinfoso where alphanumeric_req_id = ? and request_version = ?";
+		String query = "select request_status from requestinfoso where alphanumeric_req_id = ? and request_version = ?";
+		ResultSet rs = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
+			preparedStmt.setString(1, requestID);
 
-		try {
-			PreparedStatement preparedStmt2;
-			ResultSet rs2 = null;
-
-			preparedStmt2 = connection.prepareStatement(query2);
-			preparedStmt2.setString(1, requestID);
-
-			preparedStmt2.setString(2, version);
-			rs2 = preparedStmt2.executeQuery();
-			while (rs2.next()) {
-
-				status = rs2.getString("request_status");
+			preparedStmt.setString(2, version);
+			rs = preparedStmt.executeQuery();
+			while (rs.next()) {
+				status = rs.getString("request_status");
 			}
-
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getPreviousMileStoneStatus method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 
 		return status;
@@ -7582,15 +5438,10 @@ public class RequestInfoDao {
 		if (!version.contains(".")) {
 			version = version + ".0";
 		}
-		connection = ConnectionFactory.getConnection();
-		String query = "", query1 = "";
-		ResultSet rs = null, rs1 = null;
-		PreparedStatement preparedStmt, preparedStmt1;
-
-		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
-		query1 = "select * from  t_tststrategy_m_tstrules where RequestId = ? and TestCategory= ?";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		String query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
+		ResultSet rs = null;		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testtype);
 			rs = preparedStmt.executeQuery();
@@ -7608,28 +5459,16 @@ public class RequestInfoDao {
 						obj.put("status", "0");
 
 					}
-
-					preparedStmt1 = connection.prepareStatement(query1);
-					preparedStmt1.setString(1, requestId);
-					preparedStmt1.setString(2, testtype);
-					rs1 = preparedStmt1.executeQuery();
-					if (rs1 != null) {
-						while (rs1.next()) {
-
-							String data = rs1.getString("data_type");
-						}
-					}
-
 					obj.put("Execution Status", rs.getString("ResultText"));
 					obj.put("TestName", rs.getString("testName"));
 					array.add(obj);
-
 				}
 			}
 
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getNetworkAuditReport main method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		res.put("custom", array);
 		return array;
@@ -7640,38 +5479,33 @@ public class RequestInfoDao {
 	public String getSnippet(String data_type, String label, String test_name) {
 		int id = 0;
 		String snippet = null;
-		String query1 = "select id from t_tststrategy_m_tstdetails where test_name = ?";
-		String query2 = "select snippet from t_tststrategy_m_tstrules where reported_label = ? and test_name=?";
-		connection = ConnectionFactory.getConnection();
+		String query = "select id from t_tststrategy_m_tstdetails where test_name = ?";
+		String queryTstRules = "select snippet from t_tststrategy_m_tstrules where reported_label = ? and test_name=?";
+		ResultSet rs = null;
+		ResultSet rs1 = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
+			preparedStmt.setString(1, test_name);
 
-		try {
-			PreparedStatement preparedStmt2;
-			ResultSet rs2 = null;
-
-			preparedStmt2 = connection.prepareStatement(query1);
-			preparedStmt2.setString(1, test_name);
-
-			rs2 = preparedStmt2.executeQuery();
-			while (rs2.next()) {
-
-				id = rs2.getInt("id");
+			rs = preparedStmt.executeQuery();
+			while (rs.next()) {
+				id = rs.getInt("id");
 			}
-
-			preparedStmt2.close();
-			rs2.close();
-			preparedStmt2 = connection.prepareStatement(query2);
-			preparedStmt2.setString(1, label);
-			preparedStmt2.setInt(2, id);
-
-			rs2 = preparedStmt2.executeQuery();
-			while (rs2.next()) {
-
-				snippet = rs2.getString("snippet");
+			try (PreparedStatement tstRulesPs = connection.prepareStatement(queryTstRules);) {		
+				tstRulesPs.setString(1, label);
+				tstRulesPs.setInt(2, id);
+				rs1 = tstRulesPs.executeQuery();
+				while (rs1.next()) {
+					snippet = rs1.getString("snippet");
+				}
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in getSnippet method "+exe.getMessage());
 			}
-
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getSnippet main method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
+			DBUtil.close(rs1);
 		}
 
 		return snippet;
@@ -7681,16 +5515,11 @@ public class RequestInfoDao {
 		List<TestDetail> list = new ArrayList<TestDetail>();
 		String query = "select * from t_tststrategy_m_tstdetails";
 		ResultSet rs = null;
-		PreparedStatement pst = null;
-		connection = ConnectionFactory.getConnection();
-
-		try {
-
-			pst = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			rs = pst.executeQuery();
 			TestDetail request;
-			int id;
 			while (rs.next()) {
 				request = new TestDetail();
 				request.setTestName(rs.getString("test_name"));
@@ -7709,57 +5538,39 @@ public class RequestInfoDao {
 
 				list.add(request);
 			}
-		} catch (Exception e) {
-
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getAllTests method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return list;
 	}
 
 	public void updateVersion(String testName, boolean is_enabled) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-		String query1 = null;
-		query = "update t_tststrategy_m_tstdetails set is_enabled=? where test_name = ? ";
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		String query = "update t_tststrategy_m_tstdetails set is_enabled=? where test_name = ? ";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 
 			preparedStmt.setBoolean(1, is_enabled);
 			preparedStmt.setString(2, testName);
 
 			preparedStmt.executeUpdate();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateVersion method "+exe.getMessage());
 		}
 	}
 
 	public void updateRequestforReportWebserviceInfo(String requestId) {
-
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-
-		query = "Update webserviceinfo Set health_checkup='0', network_test='0',network_audit='0' where alphanumeric_req_id = ?";
-
-		PreparedStatement preparedStmt = null;
-		try {
-
-			preparedStmt = connection.prepareStatement(query);
+		String query = "Update webserviceinfo Set health_checkup='0', network_test='0',network_audit='0' where alphanumeric_req_id = ?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.execute("SET FOREIGN_KEY_CHECKS=0");
 			preparedStmt.executeUpdate();
-
-			logger.info("I am here");
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateRequestforReportWebserviceInfo method "+exe.getMessage());
 		}
-
 	}
-
-	@Autowired
-	public RequestDetailsBackUpAndRestoreRepo requestDetailsBackUpAndRestoreRepo;
 
 	@SuppressWarnings("unchecked")
 	public org.json.simple.JSONObject getStatusForBackUpRequestCustomerReport(CreateConfigRequestDCM request) {
@@ -7768,7 +5579,6 @@ public class RequestInfoDao {
 
 		org.json.simple.JSONArray prevalidationArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONObject reachabilityObj = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject iosVersion = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject deviceModel = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject backUpStatus = new org.json.simple.JSONObject();
@@ -7779,53 +5589,40 @@ public class RequestInfoDao {
 
 		requestId = request.getRequestId();
 
-		connection = ConnectionFactory.getConnection();
 		String query = "SELECT * FROM requestinfoso where alphanumeric_req_id =?";
 		String query1 = "SELECT * FROM webserviceinfo where alphanumeric_req_id =?";
 
 		ResultSet rs = null, rs1 = null;
-
-		PreparedStatement pst = null, pst1 = null;
-
-		try {
-			pst = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 
 			rs = pst.executeQuery();
-
 			if (rs != null) {
 				while (rs.next()) {
-
 					model = rs.getString("model");
 					vendor = rs.getString("vendor");
-
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getStatusForBackUpRequestCustomerReport method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 
-		try {
-			pst1 = connection.prepareStatement(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst1 = connection.prepareStatement(query1);) {
 			pst1.setString(1, requestId);
-
 			rs1 = pst1.executeQuery();
-
 			if (rs1 != null) {
 				while (rs1.next()) {
-
 					deliveryStatus = rs1.getString("deliever_config");
-
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getStatusForBackUpRequestCustomerReport method "+exe.getMessage());
 		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
+			DBUtil.close(rs1);
 		}
 
 		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
@@ -7883,96 +5680,75 @@ public class RequestInfoDao {
 	}
 
 	public List<RequestInfoSO> getCertificationtestvalidationProcedure(String value) {
-		connection = ConnectionFactory.getConnection();
 		String query = "{ CALL `c3pdbschema`.`GetAllRequest`() }";
-
 		ResultSet rs = null;
-
 		RequestInfoSO request = null;
-		PreparedStatement pst = null;
 		List<RequestInfoSO> requestInfoList = null;
-		try {
-			pst = connection.prepareStatement(query);
-			// pst.setString(1, value);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			rs = pst.executeQuery();
 			requestInfoList = new ArrayList<RequestInfoSO>();
-
 			if (rs != null) {
 				while (rs.next()) {
 					request = new RequestInfoSO();
 					request.setRequest_id(rs.getInt("request_info_id"));
-					// request.set(rs.getString("alphanumeric_req_id"));
 					request.setCertificationSelectionBit(rs.getString("certificationSelectionBit"));
-
 					request.setRequest_version(rs.getDouble("request_version"));
-
 					requestInfoList.add(request);
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getCertificationtestvalidationProcedure method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return requestInfoList;
 	}
 
 	public boolean get_dilevary_status(String string) {
-
-		connection = ConnectionFactory.getConnection();
 		String query = "SELECT * FROM webserviceinfo where alphanumeric_req_id =?";
 		ResultSet rs = null;
 		boolean deliver_status = false;
-
-		PreparedStatement pst = null;
-
-		try {
-			pst = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, string);
 
 			rs = pst.executeQuery();
-
 			if (rs != null) {
 				while (rs.next()) {
-
 					int deleveryConfig = rs.getInt("deliever_config");
 					if (deleveryConfig == 1) {
 						deliver_status = true;
 					} else if (deleveryConfig == 2) {
 						deliver_status = false;
 					}
-
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in get_dilevary_status method "+exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
 		}
-
 		return deliver_status;
 	}
 
 	/* Dhanshri Mane 6/2/2020 for getAll request for Request Type */
 	public int getRequestTpyeData(String requestType) {
 		int num = 0;
-		connection = ConnectionFactory.getConnection();
-		String query1 = null;
+		String query = null;
 		ResultSet rs = null;
 		if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ? and request_creator_name=?;";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ? and request_creator_name=?;";
 		} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ? and RequestOwner=?;";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ? and RequestOwner=?;";
 
 		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ?;";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ?;";
 
 		}
-		try {
-			PreparedStatement ps = connection.prepareStatement(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestType);
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				ps.setString(2, Global.loggedInUser);
@@ -7981,13 +5757,10 @@ public class RequestInfoDao {
 			while (rs.next()) {
 				num = rs.getInt("total");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getRequestTpyeData method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return num;
 	}
@@ -7995,32 +5768,31 @@ public class RequestInfoDao {
 	/* Dhanshri Mane 6/2/2020 for getAll request for Request Type */
 	public int getStatusForSpecificRequestType(String requestType, String requestStatus) {
 		int num = 0;
-		connection = ConnectionFactory.getConnection();
-		String query1 = null;
+		String query = null;
 		ResultSet rs = null;
 		if (requestType != null) {
 			if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
-				query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where alphanumeric_req_id like ? and request_status =? and request_creator_name=?;";
+				query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where alphanumeric_req_id like ? and request_status =? and request_creator_name=?;";
 			} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
-				query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where alphanumeric_req_id like ? and request_status =? RequestOwner=?;";
+				query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where alphanumeric_req_id like ? and request_status =? RequestOwner=?;";
 
 			} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-				query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where alphanumeric_req_id like ? and request_status =?;";
+				query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where alphanumeric_req_id like ? and request_status =?;";
 
 			}
 		} else {
 			if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
-				query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where alphanumeric_req_id like ? and request_creator_name=?;";
+				query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where alphanumeric_req_id like ? and request_creator_name=?;";
 			} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
-				query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where alphanumeric_req_id like ? RequestOwner=?;";
+				query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where alphanumeric_req_id like ? RequestOwner=?;";
 
 			} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-				query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where  request_status =?;";
+				query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso where  request_status =?;";
 
 			}
 		}
-		try {
-			PreparedStatement ps = connection.prepareStatement(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			if (requestType != null) {
 				ps.setString(1, requestType);
 				ps.setString(2, requestStatus);
@@ -8037,13 +5809,10 @@ public class RequestInfoDao {
 			while (rs.next()) {
 				num = rs.getInt("total");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getStatusForSpecificRequestType method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return num;
 	}
@@ -8051,20 +5820,19 @@ public class RequestInfoDao {
 	/* Dhanshri Mane 6/2/2020 for getAll request for specific network type */
 	public int getNetworkTypeRequest(String networkType, String requestType) {
 		int num = 0;
-		connection = ConnectionFactory.getConnection();
-		String query1 = null;
+		String query = null;
 		ResultSet rs = null;
 		if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where networktype = ? and alphanumeric_req_id like ? and request_creator_name=?;";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where networktype = ? and alphanumeric_req_id like ? and request_creator_name=?;";
 		} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where networktype = ? and alphanumeric_req_id like ? and RequestOwner=?;";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where networktype = ? and alphanumeric_req_id like ? and RequestOwner=?;";
 
 		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
-			query1 = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where networktype = ? and alphanumeric_req_id like ? ;";
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where networktype = ? and alphanumeric_req_id like ? ;";
 
 		}
-		try {
-			PreparedStatement ps = connection.prepareStatement(query1);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, networkType);
 			ps.setString(2, requestType);
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
@@ -8074,13 +5842,10 @@ public class RequestInfoDao {
 			while (rs.next()) {
 				num = rs.getInt("total");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getNetworkTypeRequest method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return num;
 	}
@@ -8088,14 +5853,13 @@ public class RequestInfoDao {
 	/* Method Overloading for UIRevamp */
 	public Map<String, String> insertRequestInDB(RequestInfoPojo requestInfoSO) {
 		Map<String, String> hmap = new HashMap<String, String>();
-		String Os = null, model = null, region = null, service = null, version = null, hostname = null,
-				alphaneumeric_req_id, customer = null, siteName = null, siteId = null, vendor = null, deviceType = null,
-				vpn = null;
+		String Os = null, model = null, region = null, version = null, hostname = null,
+				alphaneumeric_req_id, customer = null, siteName = null, siteId = null, vendor = null, deviceType = null;
 		String request_creator_name = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
-		String zipcode = null, managed = null, downtimerequired = null, lastupgradedon = null, networktype = null;
+		String  networktype = null;
 		double request_version = 0, request_parent_version = 0;
-		boolean isAutoProgress, startup = false;
+		boolean startup = false;
 
 		RequestInfoEntity requestEntity = new RequestInfoEntity();
 
@@ -8147,7 +5911,6 @@ public class RequestInfoDao {
 				alphaneumeric_req_id = "SLGC-" + UUID.randomUUID().toString().toUpperCase();
 			}
 			}
-			// alphaneumeric_req_id = request.getProcessID();
 			alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
 			hmap.put("requestID", alphaneumeric_req_id);
 			if (requestInfoSO.getOs() != null || requestInfoSO.getOs() != "") {
@@ -8161,10 +5924,7 @@ public class RequestInfoDao {
 			if (requestInfoSO.getRegion() != null || requestInfoSO.getRegion() != "") {
 				region = requestInfoSO.getRegion();
 			}
-
-			if (requestInfoSO.getService() != null || requestInfoSO.getService() != "") {
-				service = requestInfoSO.getService();
-			}
+			
 
 			if (requestInfoSO.getOsVersion() != null || requestInfoSO.getOsVersion() != "") {
 				version = requestInfoSO.getOsVersion();
@@ -8172,11 +5932,7 @@ public class RequestInfoDao {
 			if (requestInfoSO.getHostname() != null || requestInfoSO.getHostname() != "") {
 				hostname = requestInfoSO.getHostname();
 			}
-
-			/*
-			 * if (requestInfoSO.getIsAutoProgress() != null) { isAutoProgress =
-			 * requestInfoSO.getIsAutoProgress(); } else { isAutoProgress = false; }
-			 */
+			
 			if (requestInfoSO.getCustomer() != null || requestInfoSO.getCustomer() != "") {
 				customer = requestInfoSO.getCustomer();
 			}
@@ -8334,29 +6090,7 @@ public class RequestInfoDao {
 			requestEntity.setNetworkType(networktype);
 			if (templateId != null) {
 				requestEntity.setTemplateUsed(templateId);
-			} /*
-				 * if (zipcode != null) { ps.setString(37, zipcode);
-				 * 
-				 * } else { ps.setNull(37, java.sql.Types.VARCHAR); } if (managed != null) {
-				 * ps.setString(38, managed);
-				 * 
-				 * } else { ps.setNull(38, java.sql.Types.VARCHAR);
-				 * 
-				 * } if (downtimerequired != null) { ps.setString(39, downtimerequired);
-				 * 
-				 * } else { ps.setNull(39, java.sql.Types.VARCHAR);
-				 * 
-				 * } if (lastupgradedon != null) { ps.setString(40, lastupgradedon);
-				 * 
-				 * } else { ps.setNull(40, java.sql.Types.VARCHAR);
-				 * 
-				 * } if (networktype != null) { ps.setString(41, networktype);
-				 * 
-				 * } else { ps.setNull(41, java.sql.Types.VARCHAR);
-				 * 
-				 * } int i = ps.executeUpdate();
-				 *
-				 */
+			}
 			RequestInfoEntity save = reository.save(requestEntity);
 			if (save.getInfoId() > 0) {
 
@@ -8380,62 +6114,42 @@ public class RequestInfoDao {
 	}
 
 	public List<TestDetail> findByTestName(String testNameUsed) {
-		connection = ConnectionFactory.getConnection();
-		String query = null, testName = null, version = null;
-
+		String query = "SELECT test_name,version FROM c3pdbschema.t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
 		List<TestDetail> requestInfoList = null;
 		TestDetail request = null;
 		ResultSet rs = null;
-		PreparedStatement pst = null;
-		boolean devicelocked = false;
-
-		try {
+		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			requestInfoList = new ArrayList<TestDetail>();
-			query = "SELECT test_name,version FROM c3pdbschema.t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
-			pst = connection.prepareStatement(query);
 
-			// pst.setString(1, requestId);
 			pst.setString(1, testNameUsed + "%");
 
 			rs = pst.executeQuery();
 			while (rs.next()) {
-
 				request = new TestDetail();
 				request.setTestName(rs.getString("test_name"));
 				request.setVersion(rs.getString("version"));
 				requestInfoList.add(request);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			logger.error(e);
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findByTestName method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return requestInfoList;
 
 	}
 
 	public List<TestDetail> findByTestNameForSearch(String testNameUsed) {
-
-		connection = ConnectionFactory.getConnection();
-		String query = null, testName = null, version = null;
-
+		String query = "SELECT test_name,version,comment,device_type,vendor,device_model,os,created_on,created_by,is_enabled FROM c3pdbschema.t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
 		List<TestDetail> requestInfoList = null;
 		TestDetail request = null;
 		ResultSet rs = null;
-		PreparedStatement pst = null;
-		boolean devicelocked = false;
-
-		try {
-			requestInfoList = new ArrayList<TestDetail>();
-			query = "SELECT test_name,version,comment,device_type,vendor,device_model,os,created_on,created_by,is_enabled FROM c3pdbschema.t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
-			pst = connection.prepareStatement(query);
-
-			// pst.setString(1, requestId);
+		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			requestInfoList = new ArrayList<TestDetail>();		
 			pst.setString(1, testNameUsed + "%");
 
 			rs = pst.executeQuery();
@@ -8455,41 +6169,29 @@ public class RequestInfoDao {
 				request.setEnabled(rs.getBoolean("is_enabled"));
 				requestInfoList.add(request);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			logger.error(e);
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findByTestNameForSearch method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return requestInfoList;
 
 	}
 
 	public List<FirmwareUpgradeDetail> findByVendorName(String vendor) {
-
-		connection = ConnectionFactory.getConnection();
-		String query = null, version = null;
-
+		String query = "SELECT * FROM c3pdbschema.firmware_upgrade_single_device where vendor LIKE ?";
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
-		PreparedStatement pst = null;
 
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			requestInfoList = new ArrayList<FirmwareUpgradeDetail>();
-			query = "SELECT * FROM c3pdbschema.firmware_upgrade_single_device where vendor LIKE ?";
-			pst = connection.prepareStatement(query);
-
-			// pst.setString(1, requestId);
+			
 			pst.setString(1, vendor + "%");
 
 			rs = pst.executeQuery();
 			while (rs.next()) {
-
 				request = new FirmwareUpgradeDetail();
 				request.setFamily(rs.getString("family"));
 				request.setOs_version(rs.getString("os_version"));
@@ -8499,84 +6201,60 @@ public class RequestInfoDao {
 
 				requestInfoList.add(request);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			logger.error(e);
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findByVendorName method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return requestInfoList;
 
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public List checkForDeviceLock(String requestId, String managementIp, String TestType) {
-		connection = ConnectionFactory.getConnection();
-		String query = null;
-
+		String query = "Select * from devicelocked_managementip where management_ip=?";
 		ResultSet rs = null;
-		PreparedStatement pst = null;
 		List deviceLockList = new ArrayList<>();
-
-		try {
-			if (TestType.equalsIgnoreCase("DeviceTest")) {
-				query = "Select * from DeviceLocked_ManagementIP where management_ip=?";
-				pst = connection.prepareStatement(query);
+		if (TestType.equalsIgnoreCase("DeviceTest")) {
+			try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+				
 				pst.setString(1, managementIp);
 				rs = pst.executeQuery();
 				while (rs.next()) {
-
 					requestId = rs.getString("locked_by");
 					deviceLockList.add(requestId);
-
 				}
+				
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in checkForDeviceLock method "+exe.getMessage());	
+			} finally {
+				DBUtil.close(rs);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return deviceLockList;
 	}
 
 	public String deleteForDeviceLock(String locked_by) {
-
-		connection = ConnectionFactory.getConnection();
-		String query = null, result = null;
-
-		ResultSet rs = null;
-		PreparedStatement pst = null;
-		boolean devicelocked = false;
-
-		try {
-
-			query = "delete from DeviceLocked_ManagementIP where locked_by = ?";
-			pst = connection.prepareStatement(query);
-
-			// pst.setString(1, requestId);
+		String query ="delete from devicelocked_managementip where locked_by = ?";
+		String result = null;
+		ResultSet rs = null;		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, locked_by);
 
 			pst.executeUpdate();
 			result = "Success";
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in deleteForDeviceLock method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return result;
 
 	}
 
+	@SuppressWarnings("unchecked")
 	public org.json.simple.JSONObject getStatusForBackUpRequestCustomerReport(RequestInfoPojo request) {
 
 		org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
@@ -8588,7 +6266,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject deviceModel = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject backUpStatus = new org.json.simple.JSONObject();
-		String model = null, vendor = null, requestId = null, deliveryStatus = null;
+		String requestId = null, deliveryStatus = null;
 		certificationTestService = new CertificationTestResultService();
 		resultEnt = certificationTestService.getRecordByRequestId(request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()));
@@ -8597,43 +6275,23 @@ public class RequestInfoDao {
 				Double.toString(request.getRequestVersion()), "preValidate");
 
 		requestId = request.getAlphanumericReqId();
+		String query = "SELECT * FROM webserviceinfo where alphanumeric_req_id =?";
 
-		connection = ConnectionFactory.getConnection();
-		// String query = "SELECT * FROM requestinfoso where alphanumeric_req_id =?";
-		String query1 = "SELECT * FROM webserviceinfo where alphanumeric_req_id =?";
+		ResultSet rs = null;
 
-		ResultSet rs1 = null;
-
-		PreparedStatement pst1 = null;
-
-		try {
-			RequestInfoEntity findAllByAlphanumericReqId = reository.findByAlphanumericReqId(requestId);
-			if (findAllByAlphanumericReqId != null) {
-				model = findAllByAlphanumericReqId.getModel();
-				vendor = findAllByAlphanumericReqId.getVendor();
-			}
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		try {
-			pst1 = connection.prepareStatement(query1);
-			pst1.setString(1, requestId);
-
-			rs1 = pst1.executeQuery();
-
-			if (rs1 != null) {
-				while (rs1.next()) {
-					deliveryStatus = rs1.getString("deliever_config");
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			pst.setString(1, requestId);
+			rs = pst.executeQuery();
+			if (rs != null) {
+				while (rs.next()) {
+					deliveryStatus = rs.getString("deliever_config");
 				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in deleteForDeviceLock method "+exe.getMessage());
 		} finally {
-			DBUtil.close(statement);
-			DBUtil.close(connection);
+			DBUtil.close(rs);
 		}
 		if (certificationTestPojo1.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
 			reachabilityObj.put("testname", "Device Reachability test");
@@ -8742,6 +6400,7 @@ public class RequestInfoDao {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	public org.json.simple.JSONObject getStatusForCustomerReport(RequestInfoPojo request) {
 
 		org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
@@ -8754,7 +6413,6 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject iosVersion = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject deviceModel = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
-		NetworkTestValidation networkTestValidation = new NetworkTestValidation();
 		org.json.simple.JSONArray othersArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray networkAuditArray = new org.json.simple.JSONArray();
 		certificationTestPojo1 = getCertificationTestFlagData(request.getAlphanumericReqId(),
@@ -9020,97 +6678,66 @@ public class RequestInfoDao {
 
 	public CertificationTestResultEntity findCertificationTestResultEntityByRequestID(String requestID,
 			String version) {
-
 		CertificationTestResultEntity ent = new CertificationTestResultEntity();
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM certificationtestvalidation WHERE alphanumeric_req_id=? AND version=?";
-		ResultSet rs = null;
-		String result = "false";
-
-		try {
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
+		String query = "SELECT * FROM certificationtestvalidation WHERE alphanumeric_req_id=? AND version=?";
+		ResultSet rs = null;		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestID);
 			ps.setString(2, version);
-
 			rs = ps.executeQuery();
-
 			while (rs.next()) {
-
 				ent.setActualModel(rs.getString("actual_model"));
 				ent.setActualOsVersion(rs.getString("actual_os_version"));
 				ent.setActualVendor(rs.getString("actual_vendor"));
 				ent.setGuiModel(rs.getString("gui_model"));
 				ent.setGuiOsVersion(rs.getString("gui_os_version"));
 				ent.setGuiVendor(rs.getString("gui_vendor"));
-
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findCertificationTestResultEntityByRequestID method "+exe.getMessage());	
 		} finally {
 			DBUtil.close(rs);
-
-			DBUtil.close(connection);
 		}
 		return ent;
 	}
 
 	public String findByRequestId(String requestId) {
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM t_tststrategy_m_config_results WHERE RequestId=?";
+		String query = "SELECT * FROM t_tststrategy_m_config_results WHERE RequestId=?";
 		ResultSet rs = null;
 		String result = null;
-
-		try {
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestId);
-
 			rs = ps.executeQuery();
-
 			while (rs.next()) {
-
 				result = rs.getString("testName");
-
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findByRequestId method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-
-			DBUtil.close(connection);
 		}
 		return result;
 	}
 
 	/* Dhanshri Mane */
 	public int getTestDetails(String requestId, String testName,double requsetVersion) {
-		connection = ConnectionFactory.getConnection();
-		String query = "";
+		String query = "select * from  t_tststrategy_m_config_results where RequestId = ? and testName= ? and request_version=?";
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
 		int status = 0;
-		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and testName= ? and request_version=?";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testName);
 			preparedStmt.setDouble(3, requsetVersion);
 			rs = preparedStmt.executeQuery();
 
-			int successCount = 0;
 			int failuarCount = 0;
 			if (rs != null) {
 				while (rs.next()) {
 					if (rs.getString("TestResult").equalsIgnoreCase("Passed")) {
 						status = 1;
-						successCount++;
 					} else if (rs.getString("TestResult").equalsIgnoreCase("Failed")) {
 						status = 2;
 						failuarCount++;
@@ -9122,42 +6749,27 @@ public class RequestInfoDao {
 			if (failuarCount > 0) {
 				return 2;
 			}
-
-			/* Check for partial success. */
-			/*
-			 * if ( successCount != 0 && failuarCount !=0 ) { if (successCount !=
-			 * failuarCount) { status = 3; } }
-			 */
-
-		} catch (SQLException e) {
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getTestDetails method "+exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
 		}
-
 		return status;
 	}
 
 	public List<FirmwareUpgradeDetail> findByFamily(String isFamily, String isVendor) {
-
-		connection = ConnectionFactory.getConnection();
-		String query = null, version = null;
-
+		String query = "SELECT * FROM c3pdbschema.firmware_upgrade_single_device where family LIKE ? AND vendor LIKE ?";
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
-		PreparedStatement pst = null;
-
-		try {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
 			requestInfoList = new ArrayList<FirmwareUpgradeDetail>();
-			query = "SELECT * FROM c3pdbschema.firmware_upgrade_single_device where family LIKE ? AND vendor LIKE ?";
-			pst = connection.prepareStatement(query);
-
-			// pst.setString(1, requestId);
 			pst.setString(1, isFamily + "%");
 			pst.setString(2, isVendor + "%");
 
 			rs = pst.executeQuery();
 			while (rs.next()) {
-
 				request = new FirmwareUpgradeDetail();
 				request.setFamily(rs.getString("family"));
 				request.setOs_version(rs.getString("os_version"));
@@ -9167,15 +6779,10 @@ public class RequestInfoDao {
 
 				requestInfoList.add(request);
 			}
-
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			logger.error(e);
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findByFamily method "+exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
-			DBUtil.close(statement);
-			DBUtil.close(connection);
 		}
 		return requestInfoList;
 
@@ -9183,42 +6790,37 @@ public class RequestInfoDao {
 
 	public final boolean updateBatchStatus(String batchId) {
 		boolean result = false;
-		connection = ConnectionFactory.getConnection();
-		String sql = "update c3p_t_request_batch_info set r_batch_status='Completed' where r_batch_id=?";
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
+		String query = "update c3p_t_request_batch_info set r_batch_status='Completed' where r_batch_id=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, batchId);
 
 			int i = ps.executeUpdate();
 			if (i == 1) {
 				result = true;
-
 			} else {
 				result = false;
 			}
-		} catch (SQLException e) {
-
-			result = false;
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateBatchStatus method "+exe.getMessage());
 		}
 		return result;
 	}
 
 	public Map<String, String> insertBatchConfigRequestInDB(RequestInfoPojo requestInfoSO) {
 		Map<String, String> hmap = new HashMap<String, String>();
-		String Os = null, model = null, region = null, service = null, version = null, hostname = null,
+		String Os = null, model = null, region = null, version = null, hostname = null,
 				alphaneumeric_req_id = null, customer = null, siteName = null, siteId = null, vendor = null,
-				deviceType = null, vpn = null;
+				deviceType = null;
 		String request_creator_name = null, batchId = null, requestStatus = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
-		String zipcode = null, managed = null, downtimerequired = null, lastupgradedon = null, networktype = null;
+		String networktype = null;
 		double request_version = 0, request_parent_version = 0;
-		boolean isAutoProgress, startup = false;
+		boolean startup = false;
 
 		RequestInfoEntity requestEntity = new RequestInfoEntity();
-
 		BatchIdEntity batchIdEntity = new BatchIdEntity();
-
 		try {
 
 			if (requestInfoSO.getRequestType().equalsIgnoreCase("Config MACD")
@@ -9257,10 +6859,6 @@ public class RequestInfoDao {
 			}
 			if (requestInfoSO.getBatchId() != null || requestInfoSO.getBatchId() != "") {
 				batchId = requestInfoSO.getBatchId();
-			}
-
-			if (requestInfoSO.getService() != null || requestInfoSO.getService() != "") {
-				service = requestInfoSO.getService();
 			}
 
 			if (requestInfoSO.getOsVersion() != null || requestInfoSO.getOsVersion() != "") {
@@ -9404,15 +7002,14 @@ public class RequestInfoDao {
 				SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
 				try {
-					java.util.Date parsedDate = sdf.parse(scheduledTime);
+					Date parsedDate = sdf.parse(scheduledTime);
 
-					java.sql.Timestamp timestampTimeForScheduled = new java.sql.Timestamp(parsedDate.getTime());
+					Timestamp timestampTimeForScheduled = new Timestamp(parsedDate.getTime());
 
 					requestEntity.setSceheduledTime(timestampTimeForScheduled);
 					requestEntity.setRequestTypeFlag("S");
 
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
@@ -9452,74 +7049,443 @@ public class RequestInfoDao {
 		return hmap;
 	}
 
-	public final boolean updateBatchRequestStatus(String requestId) {
+	public boolean updateBatchRequestStatus(String requestId) {
 		boolean result = false;
-		connection = ConnectionFactory.getConnection();
-		String sql = "update c3p_t_request_info set r_status= 'Failure' where r_alphanumeric_req_id=?";
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
-
+		String query = "update c3p_t_request_info set r_status= 'Failure' where r_alphanumeric_req_id=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestId);
-
 			int i = ps.executeUpdate();
 			if (i == 1) {
 				result = true;
-
 			} else {
 				result = false;
 			}
-		} catch (SQLException e) {
-
-			result = false;
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateBatchRequestStatus method "+exe.getMessage());
 		}
 		return result;
 	}
 
 	public final boolean updateRequestExecutionStatus(String requestId) {
 		boolean result = false;
-		connection = ConnectionFactory.getConnection();
-		String sql = "update c3p_t_request_info set r_execution_status= true where r_alphanumeric_req_id=?";
-		try {
-			PreparedStatement ps = connection.prepareStatement(sql);
+		String query = "update c3p_t_request_info set r_execution_status= true where r_alphanumeric_req_id=?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, requestId);
-
 			int i = ps.executeUpdate();
 			if (i == 1) {
 				result = true;
-
 			} else {
 				result = false;
 			}
-		} catch (SQLException e) {
-
-			result = false;
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in updateRequestExecutionStatus method "+exe.getMessage());
 		}
 		return result;
 	}
 
 	public String getTestList(String requestID) {
-		List<String> resultList = new ArrayList<String>();
-		connection = ConnectionFactory.getConnection();
-		String query = "";
+		String query = "select testsselected from  t_tststrategy_m_config_transaction where RequestId = ?";
 		ResultSet rs = null;
-		PreparedStatement preparedStmt;
 		String res = null;
-
-		query = "select testsselected from  t_tststrategy_m_config_transaction where RequestId = ?";
-		try {
-			preparedStmt = connection.prepareStatement(query);
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
 			rs = preparedStmt.executeQuery();
 			if (rs != null) {
 				while (rs.next()) {
-					res = rs.getString("TestsSelected");			
-						}
+					res = rs.getString("TestsSelected");
+				}
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getTestList method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return res;
+	}
+	
+	private String covnertTStoString(Timestamp indate) {
+		String dateString = null;
+		Date date = new Date();
+		date.setTime(indate.getTime());
+		dateString = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(date);
+		return dateString;
+	}
+	
+	private String separate(String string) {
+		StringBuilder alphabetsBuilder = new StringBuilder();
+		StringBuilder numbersBuilder = new StringBuilder();
+		StringBuilder symbolsBuilder = new StringBuilder();
+		for (int i = 0; i < string.length(); i++) {
+			char ch = string.charAt(i);
+			if (Character.isAlphabetic(ch)) {
+				alphabetsBuilder.append(ch);
+			} else if (Character.isDigit(ch)) {
+				numbersBuilder.append(ch);
+			} else {
+				symbolsBuilder.append(ch);
+			}
+		}
+		return numbersBuilder.toString();
+	}
+	
+	private void insertInternetCvrfso(RequestInfoSO request) {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(INSERT_INTERNET_LCVRF_SO);) {
+			if (request.getInternetLcVrf() != null) {
+				String networkIp = null, AS = null, neighbor1 = null, neighbor2 = null, neighbor1_remoteAS = null,
+						neighbor2_remoteAS = null, networkIp_subnetMask = null, routingProtocol = null;
+				if (request.getInternetLcVrf().getNetworkIp() != null
+						|| request.getInternetLcVrf().getNetworkIp() != "") {
+					networkIp = request.getInternetLcVrf().getNetworkIp();
+				}
+
+				if (request.getInternetLcVrf().getBgpASNumber() != null
+						|| request.getInternetLcVrf().getBgpASNumber() != "") {
+					AS = request.getInternetLcVrf().getBgpASNumber();
+				}
+
+				if (request.getInternetLcVrf().getNeighbor1() != null
+						|| request.getInternetLcVrf().getNeighbor1() != "") {
+					neighbor1 = request.getInternetLcVrf().getNeighbor1();
+				}
+
+				if (request.getInternetLcVrf().getNeighbor2() != null
+						|| request.getInternetLcVrf().getNeighbor2() != "") {
+					neighbor2 = request.getInternetLcVrf().getNeighbor2();
+				} else {
+					neighbor2 = null;
+				}
+				if (request.getInternetLcVrf().getNeighbor1_remoteAS() != null
+						|| request.getInternetLcVrf().getNeighbor1_remoteAS() != "") {
+					neighbor1_remoteAS = request.getInternetLcVrf().getNeighbor1_remoteAS();
+				}
+
+				if (request.getInternetLcVrf().getNeighbor2_remoteAS() != null
+						|| request.getInternetLcVrf().getNeighbor2_remoteAS() != "") {
+					neighbor2_remoteAS = request.getInternetLcVrf().getNeighbor2_remoteAS();
+				} else {
+					neighbor2_remoteAS = null;
+				}
+
+				if (request.getInternetLcVrf().getNetworkIp_subnetMask() != null
+						|| request.getInternetLcVrf().getNetworkIp_subnetMask() != "") {
+					networkIp_subnetMask = request.getInternetLcVrf().getNetworkIp_subnetMask();
+				}
+
+				if (request.getInternetLcVrf().getRoutingProtocol() != null
+						|| request.getInternetLcVrf().getRoutingProtocol() != "") {
+					routingProtocol = request.getInternetLcVrf().getRoutingProtocol();
+				}
+				
+				if (networkIp == "") {
+					prepStmt.setString(1, networkIp);
+				} else {
+					prepStmt.setNull(1, Types.VARCHAR);
+				}
+				if (AS != "") {
+					prepStmt.setString(2, AS);
+				} else {
+					prepStmt.setNull(2, Types.VARCHAR);
+				}
+				if (neighbor1 == "") {
+					prepStmt.setString(3, neighbor1);
+				} else {
+					prepStmt.setNull(3, Types.VARCHAR);
+				}
+				if (neighbor2 != "") {
+					prepStmt.setString(4, neighbor2);
+				} else {
+					prepStmt.setNull(4, Types.VARCHAR);
+				}
+				if (neighbor1_remoteAS != "") {
+					prepStmt.setString(5, neighbor1_remoteAS);
+				} else {
+					prepStmt.setNull(5, Types.VARCHAR);
+				}
+
+				if (neighbor2_remoteAS != "") {
+					prepStmt.setString(6, neighbor2_remoteAS);
+				} else {
+					prepStmt.setNull(6, Types.VARCHAR);
+				}
+				if (networkIp_subnetMask != "") {
+					prepStmt.setString(7, networkIp_subnetMask);
+				} else {
+					prepStmt.setNull(7, Types.VARCHAR);
+				}
+				if (routingProtocol != "") {
+					prepStmt.setString(8, routingProtocol);
+				} else {
+					prepStmt.setNull(8, Types.VARCHAR);
+				}
+				prepStmt.execute("SET FOREIGN_KEY_CHECKS=0");
+				prepStmt.executeUpdate();
+			} else {				
+				prepStmt.setNull(1, Types.VARCHAR);
+				prepStmt.setNull(2, Types.VARCHAR);
+				prepStmt.setNull(3, Types.VARCHAR);
+				prepStmt.setNull(4, Types.VARCHAR);
+				prepStmt.setNull(5, Types.VARCHAR);
+				prepStmt.setNull(6, Types.VARCHAR);
+				prepStmt.setNull(7, Types.VARCHAR);
+				prepStmt.setNull(8, Types.VARCHAR);
+				prepStmt.execute("SET FOREIGN_KEY_CHECKS=0");
+				prepStmt.executeUpdate();
+			}
+		}catch(SQLException exe) {
+			logger.error("SQL Exception in insertInternetCvrfso method "+exe.getMessage());
+		}
+	}
+	
+	private void insertMisArPeSo(RequestInfoSO request) {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(INSERT_MIS_AR_PE_SO);) {
+			if (request.getMisArPeSO() != null) {
+				String routerVrfVpnDIp = null, routerVrfVpnDGateway = null, fastEthernetIp = null;
+				if (request.getMisArPeSO().getRouterVrfVpnDIp() != null
+						|| request.getMisArPeSO().getRouterVrfVpnDIp() != "") {
+					routerVrfVpnDIp = request.getMisArPeSO().getRouterVrfVpnDIp();
+				}
+
+				if (request.getMisArPeSO().getRouterVrfVpnDGateway() != null
+						|| request.getMisArPeSO().getRouterVrfVpnDGateway() != "") {
+					routerVrfVpnDGateway = request.getMisArPeSO().getRouterVrfVpnDGateway();
+				}
+
+				if (request.getMisArPeSO().getRouterVrfVpnDGateway() != null
+						|| request.getMisArPeSO().getFastEthernetIp() != "") {
+					fastEthernetIp = request.getMisArPeSO().getFastEthernetIp();
+				}
+				if (routerVrfVpnDIp != "") {
+					prepStmt.setString(1, routerVrfVpnDIp);
+				} else {
+					prepStmt.setNull(1, Types.VARCHAR);
+				}
+				if (routerVrfVpnDGateway != "") {
+					prepStmt.setString(2, routerVrfVpnDGateway);
+				} else {
+					prepStmt.setNull(2, Types.VARCHAR);
+				}
+				if (fastEthernetIp != "") {
+					prepStmt.setString(3, fastEthernetIp);
+				} else {
+					prepStmt.setNull(3, Types.VARCHAR);
+				}
+				prepStmt.execute("SET FOREIGN_KEY_CHECKS=0");
+				prepStmt.executeUpdate();
+
+			} else {
+				prepStmt.setNull(1, Types.VARCHAR);
+				prepStmt.setNull(2, Types.VARCHAR);
+				prepStmt.setNull(3, Types.VARCHAR);
+				prepStmt.execute("SET FOREIGN_KEY_CHECKS=0");
+				prepStmt.executeUpdate();
+			}
+		}catch(SQLException exe) {
+			logger.error("SQL Exception in insertMisArPeSO method "+exe.getMessage());
+		}		
+	}
+	
+	private void insertDeviceInterfaceSo(RequestInfoSO request) {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(INSERT_DEVICE_INTERFACE_SO);) {
+			if (request.getDeviceInterfaceSO() != null) {
+				String name = null, description = null, ip = null, mask = null, speed = null, encapsulation = null,
+						bandwidth = null;
+				if (request.getDeviceInterfaceSO().getName() != null
+						|| request.getDeviceInterfaceSO().getName() != "") {
+					name = request.getDeviceInterfaceSO().getName();
+				}
+
+				if (request.getDeviceInterfaceSO().getDescription() != null
+						|| request.getDeviceInterfaceSO().getDescription() != "") {
+					description = request.getDeviceInterfaceSO().getDescription();
+				}
+
+				if (request.getDeviceInterfaceSO().getIp() != null || request.getDeviceInterfaceSO().getIp() != "") {
+					ip = request.getDeviceInterfaceSO().getIp();
+				}
+
+				if (request.getDeviceInterfaceSO().getMask() != null
+						|| request.getDeviceInterfaceSO().getMask() != "") {
+					mask = request.getDeviceInterfaceSO().getMask();
+				}
+
+				if (request.getDeviceInterfaceSO().getSpeed() != null
+						|| request.getDeviceInterfaceSO().getSpeed() != "") {
+					speed = request.getDeviceInterfaceSO().getSpeed();
+				}
+				if (request.getDeviceInterfaceSO().getBandwidth() != null
+						|| request.getDeviceInterfaceSO().getBandwidth() != "") {
+					bandwidth = request.getDeviceInterfaceSO().getBandwidth();
+				}
+
+				if (request.getDeviceInterfaceSO().getEncapsulation() != null
+						|| request.getDeviceInterfaceSO().getEncapsulation() != "") {
+					encapsulation = request.getDeviceInterfaceSO().getEncapsulation();
+				}
+
+				if (name != "") {
+					prepStmt.setString(1, name);
+				} else {
+					prepStmt.setNull(1, Types.VARCHAR);
+				}
+				if (description != "") {
+					prepStmt.setString(2, description);
+				} else {
+					prepStmt.setNull(2, Types.VARCHAR);
+				}
+				if (ip != "") {
+					prepStmt.setString(3, ip);
+				} else {
+					prepStmt.setNull(3, Types.VARCHAR);
+				}
+				if (mask != "") {
+					prepStmt.setString(4, mask);
+				} else {
+					prepStmt.setNull(4, Types.VARCHAR);
+				}
+				if (speed == "") {
+					prepStmt.setString(5, speed);
+				} else {
+					prepStmt.setNull(5, Types.VARCHAR);
+				}
+				if (encapsulation != "") {
+					prepStmt.setString(6, encapsulation);
+				} else {
+					prepStmt.setNull(6, Types.VARCHAR);
+				}
+				if (bandwidth != "") {
+					prepStmt.setString(7, bandwidth);
+				} else {
+					prepStmt.setNull(7, Types.VARCHAR);
+				}
+
+				prepStmt.execute("SET FOREIGN_KEY_CHECKS=0");
+				prepStmt.executeUpdate();
+			} else {				
+				prepStmt.setNull(1, Types.VARCHAR);
+				prepStmt.setNull(2, Types.VARCHAR);
+				prepStmt.setNull(3, Types.VARCHAR);
+				prepStmt.setNull(4, Types.VARCHAR);
+				prepStmt.setNull(5, Types.VARCHAR);
+				prepStmt.setNull(6, Types.VARCHAR);
+				prepStmt.setNull(7, Types.VARCHAR);
+				prepStmt.execute("SET FOREIGN_KEY_CHECKS=0");
+				prepStmt.executeUpdate();
+			}
+
+		}catch(SQLException exe) {
+			logger.error("SQL Exception in insertMisArPeSO method "+exe.getMessage());
+		}
+	}
+	
+	private void insertBannerDataTable(String banner) {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(INSERT_BANNER_DATA_TABLE);) {			
+			if (banner != "") {
+				prepStmt.setString(1, banner);
+			} else {
+				prepStmt.setNull(1, Types.VARCHAR);
+			}
+
+			prepStmt.execute("SET FOREIGN_KEY_CHECKS=0");
+			prepStmt.executeUpdate();
+		}catch(SQLException exe) {
+			logger.error("SQL Exception in insertBannerDataTable method "+exe.getMessage());
+		}		
+	}
+	
+	private MisArPeSO getMisArPeSO(int requestInfoId) {
+		MisArPeSO misArPeSo = new MisArPeSO();
+		ResultSet resultSet = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(GET_MIS_AR_PE_SO);) {
+			prepStmt.setInt(1, requestInfoId);
+			resultSet = prepStmt.executeQuery();			
+			if (resultSet != null) {			
+				while (resultSet.next()) {
+					misArPeSo.setFastEthernetIp(resultSet.getString("fastEthernetIp"));
+					misArPeSo.setRouterVrfVpnDGateway(resultSet.getString("routerVrfVpnDGateway"));
+					misArPeSo.setRouterVrfVpnDIp(resultSet.getString("routerVrfVpnDIp"));
+				}			
+			}
+		}catch(SQLException exe) {
+			logger.error("SQL Exception in getMisArPeSO method "+exe.getMessage());
+		}finally {
+			DBUtil.close(resultSet);
+		}
+		return misArPeSo;		
+	}
+	
+	private InternetLcVrfSO getInternetLcVrf(int requestInfoId) {
+		InternetLcVrfSO internetLcVrfSO = new InternetLcVrfSO();
+		ResultSet resultSet = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(GET_INTERNET_LCVRF_SO);) {
+			prepStmt.setInt(1, requestInfoId);
+			resultSet = prepStmt.executeQuery();			
+			if (resultSet != null) {			
+				while (resultSet.next()) {
+					internetLcVrfSO.setNetworkIp(resultSet.getString("networkIp"));
+					internetLcVrfSO.setBgpASNumber(resultSet.getString("asNumber"));
+					internetLcVrfSO.setNeighbor1(resultSet.getString("neighbor1"));
+					internetLcVrfSO.setNeighbor2(resultSet.getString("neighbor2"));
+					internetLcVrfSO.setNeighbor1_remoteAS(resultSet.getString("neighbor1_remoteAS"));
+					internetLcVrfSO.setNeighbor2_remoteAS(resultSet.getString("neighbor2_remoteAS"));
+					internetLcVrfSO.setRoutingProtocol(resultSet.getString("routingProtocol"));
+					internetLcVrfSO.setNetworkIp_subnetMask(resultSet.getString("networkIp_subnetMask"));
+				}			
+			}
+		}catch(SQLException exe) {
+			logger.error("SQL Exception in getInternetLcVrf method "+exe.getMessage());
+		}finally {
+			DBUtil.close(resultSet);
+		}
+		return internetLcVrfSO;		
+	}
+	
+	private DeviceInterfaceSO getDeviceInterfaceSO(int requestInfoId) {
+		DeviceInterfaceSO deviceInterfaceSO = new DeviceInterfaceSO();
+		ResultSet resultSet = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(GET_DEVICE_INTERFACE_SO);) {
+			prepStmt.setInt(1, requestInfoId);
+			resultSet = prepStmt.executeQuery();			
+			if (resultSet != null) {			
+				while (resultSet.next()) {
+					deviceInterfaceSO.setDescription(resultSet.getString("description"));
+					deviceInterfaceSO.setIp(resultSet.getString("ip"));
+					deviceInterfaceSO.setEncapsulation(resultSet.getString("encapsulation"));
+					deviceInterfaceSO.setMask(resultSet.getString("mask"));
+					deviceInterfaceSO.setName(resultSet.getString("name"));
+					deviceInterfaceSO.setSpeed(resultSet.getString("speed"));
+					deviceInterfaceSO.setBandwidth(resultSet.getString("Bandwidth"));
+				}			
+			}
+		}catch(SQLException exe) {
+			logger.error("SQL Exception in getDeviceInterfaceSO method "+exe.getMessage());
+		}finally {
+			DBUtil.close(resultSet);
+		}
+		return deviceInterfaceSO;		
+	}
+	
+	private void updateRequestInfoSoByAlpReqVersion(String alpReqId, String version, String status, Timestamp endDate, String elapsedTime) {
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement prepStmt = connection.prepareStatement(UPDATE_REQUEST_INFO_SO_BY_ALPREQID_VERSION);) {
+			prepStmt.setString(1, status);
+			prepStmt.setTimestamp(2, endDate);
+			prepStmt.setString(3, elapsedTime);
+			prepStmt.setString(4, alpReqId);
+			prepStmt.setString(5, version);
+			prepStmt.executeUpdate();			
+		}catch(SQLException exe) {
+			logger.error("SQL Exception in updateRequestInfoSoByAlpReqVersion method "+exe.getMessage());
+		}
 	}
 }
