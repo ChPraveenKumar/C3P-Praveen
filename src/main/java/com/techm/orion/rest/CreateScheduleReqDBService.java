@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import javax.ws.rs.POST;
 
@@ -30,16 +29,13 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 public class CreateScheduleReqDBService {
 	private static final Logger logger = LogManager.getLogger(CreateScheduleReqDBService.class);
 
-	private Connection connection;
-	Statement statement;
-
 	@Autowired
 	RequestInfoDetailsRepositories requestnfoDao;
 
 	@POST
 	@RequestMapping(value = "/selectRequestInDB", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public String selectRequestInDB(@RequestBody String request) throws Exception {
+	public String selectRequestInDB(@RequestBody String request) {
 		String scheduleDateTime = null;
 
 		try {
@@ -50,18 +46,15 @@ public class CreateScheduleReqDBService {
 			String businessKey = json.get("requestId").toString();
 			String version = json.get("version").toString();
 
-			connection = ConnectionFactory.getConnection();
 			String query = "select ScheduledTime from requestinfoso where RequestType_Flag = 'S' and request_version = '"
 					+ version + "' and alphanumeric_req_id like '" + businessKey + "'";
 
 			ResultSet rs = null;
-
 			CreateScheduleReqPojo scheduleReqObj = null;
 
-			try {
-
-				statement = connection.createStatement();
-				rs = statement.executeQuery(query);
+			try(Connection connection = ConnectionFactory.getConnection();
+					PreparedStatement statement = connection.prepareStatement(query) ) {
+				rs = statement.executeQuery();
 
 				while (rs.next()) {
 					scheduleReqObj = new CreateScheduleReqPojo();
@@ -77,13 +70,10 @@ public class CreateScheduleReqDBService {
 				}
 
 				scheduleDateTime = scheduleReqObj.getScheduledTime();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in selectRequestInDB method "+exe.getMessage());
 			} finally {
 				DBUtil.close(rs);
-				DBUtil.close(statement);
-				DBUtil.close(connection);
 			}
 		} catch (Exception ex) {
 			logger.error(ex);
@@ -96,7 +86,7 @@ public class CreateScheduleReqDBService {
 	@POST
 	@RequestMapping(value = "/insertRequestInDB", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public void insertRequestInDB(@RequestBody String request) throws Exception {
+	public void insertRequestInDB(@RequestBody String request) {
 
 		try {
 			JSONParser parser = new JSONParser();
@@ -108,65 +98,47 @@ public class CreateScheduleReqDBService {
 			String processId = json.get("processId").toString();
 			String user = json.get("user").toString();
 
-			connection = ConnectionFactory.getConnection();
-			String query = null;
 			ResultSet rs = null;
-			PreparedStatement preparedStmt = null;
+			String insertQuery = "INSERT INTO camundahistory(history_processId,history_requestId,history_versionId,history_user) VALUES(?,?,?,?)";
+			String updateQuery = "update camundahistory set history_processId = ?,history_user = ? where history_requestId = ? and history_versionId= ?";
+			String countQuery = "select count(history_processId) count from camundahistory where history_versionId = '"
+					+ version + "' and history_requestId like '" + businessKey + "'";
 
-			try {
-				String query1 = "select count(history_processId) count from camundahistory where history_versionId = '"
-						+ version + "' and history_requestId like '" + businessKey + "'";
-
+			try(Connection connection = ConnectionFactory.getConnection();
+					PreparedStatement preparedStmt1 = connection.prepareStatement(insertQuery);
+					PreparedStatement preparedStmt2 = connection.prepareStatement(updateQuery);) {
 				CreateScheduleReqPojo scheduleReqObj = null;
 				String dbProcessID = null;
 
-				try {
+				try(PreparedStatement countPs = connection.prepareStatement(countQuery)) {
 					scheduleReqObj = new CreateScheduleReqPojo();
-					statement = connection.createStatement();
-					rs = statement.executeQuery(query1);
-
+					rs = countPs.executeQuery();
 					while (rs.next()) {					
 						scheduleReqObj.setHistory_processId(rs.getString("count"));
 					}
 
 					dbProcessID = scheduleReqObj.getHistory_processId();
-				} catch (SQLException e) {
-					logger.error(e);
+				} catch (SQLException exe) {
+					logger.error("SQL Exception in insertRequestInDB count method "+exe.getMessage());
+				} finally {
+					DBUtil.close(rs);
 				}
 				logger.info("dbProcessID - "+dbProcessID);
 				if ("0".equals(dbProcessID)) {
-					query = "INSERT INTO camundahistory(history_processId,history_requestId,history_versionId,history_user) VALUES(?,?,?,?)";
-
-					preparedStmt = connection.prepareStatement(query);
-					preparedStmt.setString(1, processId);
-					preparedStmt.setString(2, businessKey);
-					preparedStmt.setString(3, version);
-					preparedStmt.setString(4, user);
-					preparedStmt.executeUpdate();
-
+					preparedStmt1.setString(1, processId);
+					preparedStmt1.setString(2, businessKey);
+					preparedStmt1.setString(3, version);
+					preparedStmt1.setString(4, user);
+					preparedStmt1.executeUpdate();
 				} else {
-					query = "update camundahistory set history_processId = ?,history_user = ? where history_requestId = ? and history_versionId= ?";
-
-					preparedStmt = connection.prepareStatement(query);
-					preparedStmt.setString(1, processId);
-					preparedStmt.setString(2, user);
-					preparedStmt.setString(3, businessKey);
-					preparedStmt.setString(4, version);
-					preparedStmt.executeUpdate();
-
-					/*
-					 * query = "delete from camundahistory where history_processId = ?";
-					 * preparedStmt = connection.prepareStatement(query); preparedStmt.setString(1,
-					 * processId); preparedStmt.execute("SET FOREIGN_KEY_CHECKS=0");
-					 * preparedStmt.executeUpdate();
-					 */
+					preparedStmt2.setString(1, processId);
+					preparedStmt2.setString(2, user);
+					preparedStmt2.setString(3, businessKey);
+					preparedStmt2.setString(4, version);
+					preparedStmt2.executeUpdate();
 				}
-			} catch (SQLException e) {
-				logger.error(e);
-			} finally {
-				DBUtil.close(rs);
-				DBUtil.close(statement);
-				DBUtil.close(connection);
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in insertRequestInDB method "+exe.getMessage());
 			}
 		} catch (Exception ex) {
 			logger.error(ex);
@@ -188,28 +160,16 @@ public class CreateScheduleReqDBService {
 			String taskId = json.get("taskId").toString();
 			String processId = json.get("processId").toString();
 
-			connection = ConnectionFactory.getConnection();
-			String query = null;
-			ResultSet rs = null;
-			PreparedStatement preparedStmt = null;
-
-			try {
-
-				statement = connection.createStatement();
-
-				query = "update camundahistory set history_userTaskId = ? where history_processId = ?";
-
-				preparedStmt = connection.prepareStatement(query);
+			String query = "update camundahistory set history_userTaskId = ? where history_processId = ?";
+			
+			try(Connection connection = ConnectionFactory.getConnection();
+					PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 				preparedStmt.setString(1, taskId);
 				preparedStmt.setString(2, processId);
 				preparedStmt.executeUpdate();
 
-			} catch (SQLException e) {
-				logger.error(e);
-			} finally {
-				DBUtil.close(rs);
-				DBUtil.close(statement);
-				DBUtil.close(connection);
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in updateTaskIDInDB method "+exe.getMessage());
 			}
 
 		} catch (Exception ex) {

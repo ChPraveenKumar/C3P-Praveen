@@ -787,10 +787,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			}
 		} catch (Exception e1) {
 			if (createConfigRequest.getManagementIp() != null && !createConfigRequest.getManagementIp().equals("")) {
-				logger.error(e1.getMessage());
+				logger.error("e1.getMessage() - " + e1.getMessage());
 
-				if (e1.getMessage().contains("invalid server's version string")
-						|| e1.getMessage().contains("Auth fail")) {
+				if (e1.getMessage() !=null && (e1.getMessage().contains("invalid server's version string")
+						|| e1.getMessage().contains("Auth fail"))) {
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 					requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
@@ -840,10 +840,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
-				logger.info(e1.getMessage());
+				logger.error("e1.getMessage() - " + e1.getMessage());
 
-				if (e1.getMessage().contains("invalid server's version string")
-						|| e1.getMessage().contains("Auth fail")) {
+				if (e1.getMessage() !=null && (e1.getMessage().contains("invalid server's version string")
+						|| e1.getMessage().contains("Auth fail"))) {
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -906,7 +906,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					
 				}
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error(e);
 				}
 				channel.disconnect();
 				session.disconnect();

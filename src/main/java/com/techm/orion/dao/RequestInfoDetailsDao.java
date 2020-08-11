@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -28,6 +27,7 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.connection.ConnectionFactory;
+import com.techm.orion.connection.DBUtil;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.mapper.RequestInfoMappper;
@@ -35,86 +35,64 @@ import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
-import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
 @Component
 public class RequestInfoDetailsDao {
 	private static final Logger logger = LogManager.getLogger(RequestInfoDetailsDao.class);
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-
 	@Autowired
-	CreateConfigRepo createConfigRepo;
-
+	private RequestInfoDetailsRepositories reository;
 	@Autowired
-	RequestInfoDetailsRepositories reository;
-
-	private Connection connection;
-	Statement statement;
-
-	@Autowired
-	ServiceOrderRepo serviceOrderRepo;
+	private ServiceOrderRepo serviceOrderRepo;
 
 	@Transactional
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
-		connection = ConnectionFactory.getConnection();
 		String query = null;
 		
 		if (field.equalsIgnoreCase("health_check")) {
 			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliver_configuration")) {
 			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
-
 		} else if (field.equalsIgnoreCase("network_test")) {
 			query = "update webserviceinfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("deliever_config")) {
 			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
-		}
-
-		else if (field.equalsIgnoreCase("Application_test")) {
+		} else if (field.equalsIgnoreCase("Application_test")) {
 			query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
-
 		} else if (field.equalsIgnoreCase("customer_report")) {
 			query = "update webserviceinfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
-
 		} else if (field.equalsIgnoreCase("generate_configuration")) {
 			query = "update webserviceinfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("pre_health_checkup")) {
 			query = "update webserviceinfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
-
 		} else if (field.equalsIgnoreCase("others_test")) {
 			query = "update webserviceinfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
-
 		} else if (field.equalsIgnoreCase("network_audit")) {
 			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
-
 		}
 
-		PreparedStatement preparedStmt;
-		try {
-			preparedStmt = connection.prepareStatement(query);
-
+		try(Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {			
 			preparedStmt.setString(1, flag);
 			preparedStmt.setString(2, requestId);
 			preparedStmt.setString(3, version);
 			preparedStmt.executeUpdate();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in editRequestforReportWebserviceInfo update webserviceinfo method "+exe.getMessage());
 		}
 		if (field.equalsIgnoreCase("customer_report") && status.contains("Success")) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
 			try {
-				if (request.getAlphanumericReqId() != null && !request.getAlphanumericReqId().equals("")) {
-					java.util.Date date = new java.util.Date();
-					java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
+				if (request.getAlphanumericReqId() != null && !request.getAlphanumericReqId().isEmpty()) {
+					Date date = new Date();
+					Timestamp timestamp = new Timestamp(date.getTime());
 					Timestamp d = null;
 					if (request.getTempElapsedTime() == null) {
 						if (request.getRequestTypeFlag().equals("M")) {
@@ -145,7 +123,6 @@ public class RequestInfoDetailsDao {
 				}
 
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 
 			}
@@ -160,7 +137,7 @@ public class RequestInfoDetailsDao {
 				java.util.Date date = new java.util.Date();
 				java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
 				Timestamp d = null;
-				if (request.getAlphanumericReqId() != null && !request.getAlphanumericReqId().equals("")) {
+				if (request.getAlphanumericReqId() != null && !request.getAlphanumericReqId().isEmpty()) {
 					if (request.getRequestTypeFlag().equals("M")) {
 						Date dateofProcessing = request.getDateofProcessing();
 						d = new java.sql.Timestamp(dateofProcessing.getTime());
@@ -174,7 +151,6 @@ public class RequestInfoDetailsDao {
 					reository.updateElapsedTimeStatus(status, timestamp, diff, requestId, finalVersion);
 				}
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			ServiceOrderEntity ent = serviceOrderRepo.findByRequestId(requestId);
@@ -182,29 +158,13 @@ public class RequestInfoDetailsDao {
 				serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder());
 			}
 		} else {
-			Double finalVersion = Double.valueOf(version);
-			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
 			try {
-				java.util.Date date = new java.util.Date();
-				java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
-				Timestamp d = null;
-				/*
-				 * if (request.getAlphanumericReqId() != null &&
-				 * !request.getAlphanumericReqId().equals("")) { if
-				 * (request.getRequestTypeFlag().equals("M")) { Date dateofProcessing =
-				 * request.getDateofProcessing(); d = new
-				 * java.sql.Timestamp(dateofProcessing.getTime()); } else { Date
-				 * dateofProcessing = request.getSceheduledTime(); d =new
-				 * java.sql.Timestamp(dateofProcessing.getTime()); } String diff =
-				 * calcTimeDiffInMins(timestamp, d); diff = StringUtils.replace(diff, ".", ":");
-				 * diff = "00:" + diff;
-				 */
+				Double finalVersion = Double.valueOf(version);
+				Date date = new Date();
+				Timestamp timestamp = new Timestamp(date.getTime());				
 				reository.updateElapsedTimeStatus(status, timestamp, "00:00:00", requestId, finalVersion);
-				// }
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
-
 			}
 		}
 
@@ -296,9 +256,6 @@ public class RequestInfoDetailsDao {
 
 		try {
 			Double finalVersion = Double.valueOf(version);
-			java.util.Date date = new java.util.Date();
-			java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
-			Timestamp d = null;
 
 			if (owner.equalsIgnoreCase("seuser")) {
 				res = reository.updateRequestOwner(owner, false, true, requestid, finalVersion);
@@ -311,9 +268,7 @@ public class RequestInfoDetailsDao {
 				result = false;
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-
 		}
 		return result;
 	}
@@ -323,8 +278,8 @@ public class RequestInfoDetailsDao {
 		boolean result = false;
 		try {
 			Double finalVersion = Double.valueOf(version);
-			java.util.Date date = new java.util.Date();
-			java.sql.Timestamp timestamp = new java.sql.Timestamp(date.getTime());
+			Date date = new Date();
+			Timestamp timestamp = new Timestamp(date.getTime());
 			int val = reository.updateStatus(status, timestamp, requestid, finalVersion);
 			if (val < 0) {
 				result = true;
@@ -332,17 +287,13 @@ public class RequestInfoDetailsDao {
 				result = false;
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
-
 		}
 		return result;
 	}
 
 	public List<RequestInfoCreateConfig> getOwnerAssignedRequestList(String ownerName) {
 		List<RequestInfoCreateConfig> list = new ArrayList<RequestInfoCreateConfig>();
-
-		RequestInfoCreateConfig request = null;
 		try {
 			List<RequestInfoEntity> requestByOwner = reository.findByRequestOwnerName(ownerName);
 			RequestInfoMappper mapper = new RequestInfoMappper();
@@ -350,17 +301,11 @@ public class RequestInfoDetailsDao {
 				RequestInfoCreateConfig setEntityToPojo = mapper.setEntityToPojo(entity);
 				if (setEntityToPojo != null) {
 					list.add(setEntityToPojo);
-					
 				}
-				
 			}
-			
-
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 		return list;
 	}
 
@@ -387,12 +332,6 @@ public class RequestInfoDetailsDao {
 	private List<RequestInfoCreateConfig> setEntityDate(List<RequestInfoEntity> requestEntity) {
 		List<RequestInfoCreateConfig> pojoList = new ArrayList<>();
 		if (!requestEntity.isEmpty()) {
-			/*
-			 * String importStatus = requestEntity.getImportStatus(); String importSource =
-			 * requestEntity.getImportSource(); if (importSource.equalsIgnoreCase("Manual"))
-			 * { id = requestEntity.getInfoId(); }else if (importStatus.equals("Success")) {
-			 * id = requestEntity.getInfoId(); }
-			 */
 			requestEntity.forEach(entity -> {
 				RequestInfoCreateConfig pojo = new RequestInfoCreateConfig();
 				RequestInfoMappper mapper = new RequestInfoMappper();
@@ -493,19 +432,11 @@ public class RequestInfoDetailsDao {
 
 			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
-			String type = requestinfo.getAlphanumericReqId().substring(0,
-					Math.min(requestinfo.getAlphanumericReqId().length(), 4));
 			JSch jsch = new JSch();
 
 			user = userPojo.getUsername();
 			password = userPojo.getPassword();
-			/*if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
-				user = "c3pteam";
-				password = "csr1000v";
-			} else {
-				user = userPojo.getUsername();
-				password = userPojo.getPassword();
-			}*/
+			
 			Channel channel = null;
 			Session session = jsch.getSession(user, host, Integer.parseInt(port));
 			Properties config = new Properties();
@@ -543,27 +474,22 @@ public class RequestInfoDetailsDao {
 				}
 				channel.disconnect();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 
 		catch (Exception ex) {
 			String response = "";
-			String responseDownloadPath = "";
 			try {
 				BackupCurrentRouterConfigurationService.loadProperties();
 				editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
-				responseDownloadPath = RequestInfoDetailsDao.TSA_PROPERTIES.getProperty("responseDownloadPath");
-				TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 						+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt", response);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
 		}
 		return backupdone;
 
@@ -576,9 +502,8 @@ public class RequestInfoDetailsDao {
 	}
 
 	public int getStatusForMilestone(String alphanumericReqId, String version, String field) {
-		connection = ConnectionFactory.getConnection();
 		String query = null;
-		ResultSet rs1 = null;
+		ResultSet rs = null;
 		int status = 0;
 		if (field.equalsIgnoreCase("health_check")) {
 			query = "select health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
@@ -588,23 +513,21 @@ public class RequestInfoDetailsDao {
 			query = "select others_test as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("network_audit")) {
 			query = "select network_audit as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
-
 		}
 
-		PreparedStatement preparedStmt;
-		try {
-
-			preparedStmt = connection.prepareStatement(query);
+		try(Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, alphanumericReqId);
 			preparedStmt.setString(2, version);
-			rs1 = preparedStmt.executeQuery();
+			rs = preparedStmt.executeQuery();
 
-			while (rs1.next()) {
-				status = rs1.getInt("dataValue");
+			while (rs.next()) {
+				status = rs.getInt("dataValue");
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getStatusForMilestone method "+exe.getMessage());
+		}finally {
+			DBUtil.close(rs);
 		}
 		return status;
 	}
