@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -7171,6 +7172,8 @@ public class RequestInfoDao {
 		String query = "";
 		ResultSet rs = null;
 		PreparedStatement preparedStmt;
+		String testName = null;
+		String testVersion =null;
 
 		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
 		try {
@@ -7193,7 +7196,8 @@ public class RequestInfoDao {
 
 					}
 					obj.put("value", rs.getString("ResultText"));
-					obj.put("testName", rs.getString("testName"));
+					String testNameAndVersion = getTestNameAndVesrion(rs.getString("testName"));
+					obj.put("testName", testNameAndVersion);
 					array.add(obj);
 				}
 			}
@@ -7222,6 +7226,7 @@ public class RequestInfoDao {
 		String query = "";
 		ResultSet rs = null;
 		PreparedStatement preparedStmt;
+		String testName =null;
 
 		query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ? and request_version =?";
 		try {
@@ -7238,10 +7243,12 @@ public class RequestInfoDao {
 					obj.put("CollectedValue", rs.getString("CollectedValue").replace(",", "$"));
 					// obj.put("CollectedValue", rs.getString("CollectedValue"));
 
-					obj.put("EvaluationCriteria", rs.getString("EvaluationCriteria"));
-
-					obj.put("testname", rs.getString("testName").substring(15).concat("_")
-							.concat(rs.getString("data_type")).concat("_").concat(rs.getString("ResultText")));
+					obj.put("EvaluationCriteria", rs.getString("EvaluationCriteria"));	
+					testName= StringUtils.substringAfter(rs.getString("testName"), "_");
+					testName= StringUtils.substringAfter(testName, "_");
+					testName= StringUtils.substringBefore(testName, "_");
+					obj.put("testname", testName);
+					obj.put("reportLabel", rs.getString("ResultText"));
 					obj.put("notes", rs.getString("notes"));
 					obj.put("dataType", rs.getString("data_type"));
 					obj.put("keyword", rs.getString("CollectedValue"));
@@ -9521,5 +9528,22 @@ public class RequestInfoDao {
 			e.printStackTrace();
 		}
 		return res;
+	}
+	
+	/*
+	 *  Getting Test name with version
+	 */
+	private String getTestNameAndVesrion(String name){
+		String testNameAndVersion =null;
+		String testName =null;
+		String testVersion =null;
+		if(name !=null)
+		{
+			testVersion= name.substring(name.lastIndexOf("_") +1);
+			testName = name.substring(name.indexOf("_") +1);
+			testName = testName.substring(testName.indexOf("_") +1, testName.lastIndexOf("_"));
+			testNameAndVersion =testName.concat("-v"+testVersion);
+		}	
+		return testNameAndVersion;
 	}
 }
