@@ -31,6 +31,7 @@ import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.RequestFeatureTransactionEntity;
+import com.techm.orion.pojo.MileStones;
 import com.techm.orion.pojo.ReoprtFlags;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.SearchParamPojo;
@@ -38,6 +39,7 @@ import com.techm.orion.repositories.AttribCreateConfigRepo;
 import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestFeatureTransactionRepository;
+import com.techm.orion.utility.ReportMileStones;
 
 @RestController
 @RequestMapping("/requestDetails")
@@ -57,6 +59,9 @@ public class RequestDetailsServiceWithVersion {
 
 	@Autowired
 	RequestFeatureTransactionRepository requestFeatureRepo;
+	
+	@Autowired
+	ReportMileStones reportMileStones;
 
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -64,7 +69,7 @@ public class RequestDetailsServiceWithVersion {
 	public Response search(@RequestBody String searchParameters) {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
-		String key = null, value = null, version = null;
+		String key = null, value = null, version = null, requestType =null;
 		try {
 			Gson gson = new Gson();
 			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
@@ -75,6 +80,8 @@ public class RequestDetailsServiceWithVersion {
 
 			if (value != null && !value.isEmpty()) {
 				try {
+					requestType= value.substring(0, 4);
+					MileStones showMilestone = reportMileStones.getMileStones(requestType);
 					detailsList = requestRedao.getRequestWithVersion(key, value, version);
 					for (RequestInfoCreateConfig request : detailsList) {
 
@@ -95,6 +102,7 @@ public class RequestDetailsServiceWithVersion {
 					jsonArray = new Gson().toJson(detailsList);
 
 					obj.put(new String("output"), jsonArray);
+					obj.put(new String("milestone"), showMilestone);
 
 				} catch (Exception e) {
 					logger.error(e);
