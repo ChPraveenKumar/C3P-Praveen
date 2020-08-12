@@ -5124,7 +5124,6 @@ public class RequestInfoDao {
 
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
-
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testtype);
 			preparedStmt.setString(3, version);
@@ -5141,6 +5140,7 @@ public class RequestInfoDao {
 					testName= StringUtils.substringBefore(testName, "_");
 					obj.put("testname", testName);
 					obj.put("reportLabel", rs.getString("ResultText"));
+
 					obj.put("notes", rs.getString("notes"));
 					obj.put("dataType", rs.getString("data_type"));
 					obj.put("keyword", rs.getString("CollectedValue"));
@@ -7131,7 +7131,7 @@ public class RequestInfoDao {
 		}	
 		return testNameAndVersion;
 	}
-
+	
 	private String covnertTStoString(Timestamp indate) {
 		String dateString = null;
 		Date date = new Date();
