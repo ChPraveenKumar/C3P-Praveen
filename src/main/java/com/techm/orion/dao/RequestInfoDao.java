@@ -7196,9 +7196,8 @@ public class RequestInfoDao {
 
 					}
 					obj.put("value", rs.getString("ResultText"));
-					testVersion= rs.getString("testName").substring(rs.getString("testName").lastIndexOf("_") +1);
-					testName = rs.getString("testName").substring(rs.getString("testName").indexOf("_") +1);
-					obj.put("testName", testName.substring(testName.indexOf("_") +1, testName.lastIndexOf("_")).concat("-v"+testVersion));
+					String testNameAndVersion = getTestNameAndVesrion(rs.getString("testName"));
+					obj.put("testName", testNameAndVersion);
 					array.add(obj);
 				}
 			}
@@ -9529,5 +9528,22 @@ public class RequestInfoDao {
 			e.printStackTrace();
 		}
 		return res;
+	}
+	
+	/*
+	 *  Getting Test name with version
+	 */
+	private String getTestNameAndVesrion(String name){
+		String testNameAndVersion =null;
+		String testName =null;
+		String testVersion =null;
+		if(name !=null)
+		{
+			testVersion= name.substring(name.lastIndexOf("_") +1);
+			testName = name.substring(name.indexOf("_") +1);
+			testName = testName.substring(testName.indexOf("_") +1, testName.lastIndexOf("_"));
+			testNameAndVersion =testName.concat("-v"+testVersion);
+		}	
+		return testNameAndVersion;
 	}
 }
