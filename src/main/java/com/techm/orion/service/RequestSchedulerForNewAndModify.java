@@ -67,7 +67,7 @@ public class RequestSchedulerForNewAndModify {
 					Double.toString(configRequest.getRequest_version()));
 			configRequest.setRequest_parent_version(configRequestData.getRequest_parent_version());
 
-			requestSchedulerDao.RunScheduledRequestUpdate(configRequest.getRequestId(),
+			requestSchedulerDao.runScheduledRequestUpdate(configRequest.getRequestId(),
 					Double.toString(configRequest.getRequest_version()));
 			TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest);
 			telnetCommunicationSSH.setDaemon(true);

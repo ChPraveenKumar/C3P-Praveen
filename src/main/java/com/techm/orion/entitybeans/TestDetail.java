@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * This class will work as entity class
  */
 @Entity
-@Table(name = "T_TSTSTRATEGY_M_TSTDETAILS")
+@Table(name = "t_tststrategy_m_tstdetails")
 public class TestDetail implements Serializable
 
 {
