@@ -434,7 +434,7 @@ public class TemplateManagementDB {
 	public boolean checkTemplateVersionAlredyexist(String templateAndVersion) {
 		ResultSet rs1 = null;
 		boolean isAlredyPresent = false;
-		String query1 = "SELECT * FROM c3pdbschema.c3p_template_transaction_command_list where command_template_id = ?";
+		String query1 = "SELECT * FROM c3p_template_transaction_command_list where command_template_id = ?";
 		try(Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query1);){
 			preparedStmt.setString(1, templateAndVersion);

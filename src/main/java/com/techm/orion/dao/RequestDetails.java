@@ -29,7 +29,7 @@ public class RequestDetails {
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
 		ResultSet resultSet = null;
-		String query = "SELECT RequestId,TestsSelected FROM c3pdbschema.t_tststrategy_m_config_transaction where RequestId= ? and request_version =?";
+		String query = "SELECT RequestId,TestsSelected FROM t_tststrategy_m_config_transaction where RequestId= ? and request_version =?";
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
@@ -54,9 +54,9 @@ public class RequestDetails {
 		Map<String, String> map = new TreeMap<String, String>();
 		ResultSet resultSet = null;
 		String query = "SELECT flist.command_parent_feature, info.master_label_value as value, attr.label as name "
-				+ "FROM c3pdbschema.t_create_config_m_attrib_info info "
-				+ "left join c3pdbschema.t_attrib_m_attribute attr on info.master_label_id=attr.id "
-				+ "left join c3pdbschema.c3p_template_master_feature_list flist on attr.feature_id= flist.id "
+				+ "FROM t_create_config_m_attrib_info info "
+				+ "left join t_attrib_m_attribute attr on info.master_label_id=attr.id "
+				+ "left join c3p_template_master_feature_list flist on attr.feature_id= flist.id "
 				+ "where info.request_id= ? and info.template_id= ?";
 
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -84,9 +84,9 @@ public class RequestDetails {
 		List<String> list = new ArrayList<String>();
 		ResultSet resultSet = null;
 		String query = "SELECT distinct flist.command_parent_feature as feature "
-				+ "FROM c3pdbschema.t_create_config_m_attrib_info info "
-				+ "left join c3pdbschema.t_attrib_m_attribute attr on info.master_label_id=attr.id "
-				+ "left join c3pdbschema.c3p_template_master_feature_list flist on attr.feature_id= flist.id "
+				+ "FROM t_create_config_m_attrib_info info "
+				+ "left join t_attrib_m_attribute attr on info.master_label_id=attr.id "
+				+ "left join c3p_template_master_feature_list flist on attr.feature_id= flist.id "
 				+ "where info.request_id= ? and info.template_id= ?";
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
@@ -114,9 +114,9 @@ public class RequestDetails {
 		Map<String, String> map = new TreeMap<String, String>();
 		ResultSet resultSet = null;
 		String query = "SELECT flist.command_parent_feature as feature, info.master_label_value as value, attr.label as name "
-				+ "FROM c3pdbschema.t_create_config_m_attrib_info info "
-				+ "left join c3pdbschema.t_attrib_m_attribute attr on info.master_label_id=attr.id "
-				+ "left join c3pdbschema.c3p_template_master_feature_list flist on attr.feature_id= flist.id "
+				+ "FROM t_create_config_m_attrib_info info "
+				+ "left join t_attrib_m_attribute attr on info.master_label_id=attr.id "
+				+ "left join c3p_template_master_feature_list flist on attr.feature_id= flist.id "
 				+ "where info.request_id= ? and info.template_id= ? and flist.command_parent_feature = ? ";
 		
 		try (Connection connection = ConnectionFactory.getConnection();

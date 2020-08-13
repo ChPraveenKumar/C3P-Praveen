@@ -586,34 +586,34 @@ public class RequestInfoDao {
 		String query = null;
 		if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 			if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE concat(alphanumeric_req_id,concat('-v',request_version)) LIKE ? AND RequestOwner=?";
+				query = "SELECT * FROM requestinfoso WHERE concat(alphanumeric_req_id,concat('-v',request_version)) LIKE ? AND RequestOwner=?";
 			} else if (key.equalsIgnoreCase("Region")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE region LIKE ? AND RequestOwner=?";
+				query = "SELECT * FROM requestinfoso WHERE region LIKE ? AND RequestOwner=?";
 
 			} else if (key.equalsIgnoreCase("Vendor")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE vendor LIKE ? AND RequestOwner=?";
+				query = "SELECT * FROM requestinfoso WHERE vendor LIKE ? AND RequestOwner=?";
 
 			} else if (key.equalsIgnoreCase("Model")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE model LIKE ? AND RequestOwner=?";
+				query = "SELECT * FROM requestinfoso WHERE model LIKE ? AND RequestOwner=?";
 
 			} else if (key.equalsIgnoreCase("Status")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE request_status LIKE ? AND RequestOwner=?";
+				query = "SELECT * FROM requestinfoso WHERE request_status LIKE ? AND RequestOwner=?";
 
 			}
 		} else {
 			if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE concat(alphanumeric_req_id,concat('-v',request_version)) LIKE ?";
+				query = "SELECT * FROM requestinfoso WHERE concat(alphanumeric_req_id,concat('-v',request_version)) LIKE ?";
 			} else if (key.equalsIgnoreCase("Region")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE region LIKE ?";
+				query = "SELECT * FROM requestinfoso WHERE region LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Vendor")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE vendor LIKE ?";
+				query = "SELECT * FROM requestinfoso WHERE vendor LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Model")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE model LIKE ?";
+				query = "SELECT * FROM requestinfoso WHERE model LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Status")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE request_status LIKE ?";
+				query = "SELECT * FROM requestinfoso WHERE request_status LIKE ?";
 
 			}
 		}
@@ -1101,7 +1101,7 @@ public class RequestInfoDao {
 	}
 
 	public EIPAMPojo getIPAMIPfromDB(String site, String customer, String service, String region) {
-		String query = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_site_id = ? AND eipam_customer_name=? AND eipam_service=? AND eipam_region=?";
+		String query = "SELECT * FROM eipamdbtable WHERE eipam_site_id = ? AND eipam_customer_name=? AND eipam_service=? AND eipam_region=?";
 		ResultSet rs = null;
 		EIPAMPojo eipamobj = null;
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -1130,7 +1130,7 @@ public class RequestInfoDao {
 	}
 
 	public List<EIPAMPojo> getALLIPAMDatafromDB() {
-		String query = "SELECT * FROM c3pdbschema.eipamdbtable";
+		String query = "SELECT * FROM eipamdbtable";
 		EIPAMPojo pojo;
 		ResultSet rs = null;
 		List<EIPAMPojo> requestInfoList = null;
@@ -1365,24 +1365,24 @@ public class RequestInfoDao {
 		if (parameters_to_search == 1) {
 			if (!site.isEmpty()) {
 				// query for site and customer
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_site_id LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_site_id LIKE ?";
 				ps = connection.prepareStatement(query1);
 
 				ps.setString(1, site + "%");
 
 			} else if (!customer.isEmpty()) {
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_customer_name LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_customer_name LIKE ?";
 				ps = connection.prepareStatement(query1);
 
 				ps.setString(1, customer + "%");
 			} else if (!service.isEmpty()) {
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_service LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_service LIKE ?";
 
 				ps = connection.prepareStatement(query1);
 
 				ps.setString(1, service + "%");
 			} else if (!ip.isEmpty()) {
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_ip LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_ip LIKE ?";
 
 				ps = connection.prepareStatement(query1);
 
@@ -1391,7 +1391,7 @@ public class RequestInfoDao {
 		} else if (parameters_to_search == 2) {
 			if (!site.isEmpty() && !customer.isEmpty()) {
 				// query for site and customer
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_site_id LIKE ? AND eipam_customer_name LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_site_id LIKE ? AND eipam_customer_name LIKE ?";
 				ps = connection.prepareStatement(query1);
 
 				ps.setString(1, site + "%");
@@ -1399,7 +1399,7 @@ public class RequestInfoDao {
 
 			} else if (!site.isEmpty() && !service.isEmpty()) {
 				// site and service
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_site_id LIKE ?  AND eipam_service LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_site_id LIKE ?  AND eipam_service LIKE ?";
 
 				ps = connection.prepareStatement(query1);
 
@@ -1407,7 +1407,7 @@ public class RequestInfoDao {
 				ps.setString(2, service + "%");
 			} else if (!site.isEmpty() && !ip.isEmpty()) {
 				// site and ip
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_site_id LIKE ? AND eipam_ip LIKE?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_site_id LIKE ? AND eipam_ip LIKE?";
 
 				ps = connection.prepareStatement(query1);
 
@@ -1415,7 +1415,7 @@ public class RequestInfoDao {
 				ps.setString(2, ip + "%");
 			} else if (!customer.isEmpty() && !service.isEmpty()) {
 				// customer and service
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_customer_name LIKE ? AND eipam_service LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_customer_name LIKE ? AND eipam_service LIKE ?";
 
 				ps = connection.prepareStatement(query1);
 
@@ -1423,14 +1423,14 @@ public class RequestInfoDao {
 				ps.setString(2, service + "%");
 			} else if (!customer.isEmpty() && !ip.isEmpty()) {
 				// customer and ip
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_customer_name LIKE ? AND eipam_ip LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_customer_name LIKE ? AND eipam_ip LIKE ?";
 				ps = connection.prepareStatement(query1);
 
 				ps.setString(1, customer + "%");
 				ps.setString(2, ip + "%");
 			} else if (!service.isEmpty() && !ip.isEmpty()) {
 				// service and ip
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_service LIKE ? AND eipam_ip LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_service LIKE ? AND eipam_ip LIKE ?";
 
 				ps = connection.prepareStatement(query1);
 
@@ -1440,7 +1440,7 @@ public class RequestInfoDao {
 		} else if (parameters_to_search == 3) {
 			if (!site.isEmpty() && !customer.isEmpty() && !service.isEmpty()) {
 				// site customer service
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_site_id LIKE ? AND eipam_customer_name LIKE ? AND eipam_service LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_site_id LIKE ? AND eipam_customer_name LIKE ? AND eipam_service LIKE ?";
 
 				ps = connection.prepareStatement(query1);
 
@@ -1449,7 +1449,7 @@ public class RequestInfoDao {
 				ps.setString(3, service + "%");
 			} else if (!site.isEmpty() && !service.isEmpty() && !ip.isEmpty()) {
 				// site service ip
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_site_id LIKE ? AND eipam_service LIKE ? AND eipam_ip LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_site_id LIKE ? AND eipam_service LIKE ? AND eipam_ip LIKE ?";
 
 				ps = connection.prepareStatement(query1);
 
@@ -1458,7 +1458,7 @@ public class RequestInfoDao {
 				ps.setString(3, ip + "%");
 			} else if (!customer.isEmpty() && !service.isEmpty() && !ip.isEmpty()) {
 				// customer service ip
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_customer_name LIKE ? AND eipam_service LIKE ? AND eipam_ip LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_customer_name LIKE ? AND eipam_service LIKE ? AND eipam_ip LIKE ?";
 
 				ps = connection.prepareStatement(query1);
 
@@ -1467,7 +1467,7 @@ public class RequestInfoDao {
 				ps.setString(3, ip + "%");
 			} else if (!site.isEmpty() && !customer.isEmpty() && !ip.isEmpty()) {
 				// site customer ip
-				query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_site_id LIKE ? AND eipam_customer_name LIKE ? AND eipam_ip LIKE ?";
+				query1 = "SELECT * FROM eipamdbtable WHERE eipam_site_id LIKE ? AND eipam_customer_name LIKE ? AND eipam_ip LIKE ?";
 
 				ps = connection.prepareStatement(query1);
 
@@ -1477,7 +1477,7 @@ public class RequestInfoDao {
 			}
 		} else {
 			// all four paramerter serarch
-			query1 = "SELECT * FROM c3pdbschema.eipamdbtable WHERE eipam_site_id = ? AND eipam_customer_name=? AND eipam_service=? AND eipam_ip=?";
+			query1 = "SELECT * FROM eipamdbtable WHERE eipam_site_id = ? AND eipam_customer_name=? AND eipam_service=? AND eipam_ip=?";
 
 			ps = connection.prepareStatement(query1);
 
@@ -1529,7 +1529,7 @@ public class RequestInfoDao {
 	 */
 
 	public List<AlertInformationPojo> getALLAlertDataFromDB() {
-		String query = "SELECT * FROM c3pdbschema.alertinformationtable";
+		String query = "SELECT * FROM alertinformationtable";
 		AlertInformationPojo pojo;
 		ResultSet rs = null;
 		List<AlertInformationPojo> requestInfoList = null;
@@ -1584,7 +1584,7 @@ public class RequestInfoDao {
 	}
 
 	public final List<AlertInformationPojo> getSearchedRecordsFromAlertsDB(String code, String description) {
-		String query = "SELECT * FROM c3pdbschema.alertinformationtable WHERE alert_code LIKE ? OR alert_description LIKE ?";
+		String query = "SELECT * FROM alertinformationtable WHERE alert_code LIKE ? OR alert_description LIKE ?";
 		ResultSet rs = null;
 		AlertInformationPojo eipamobj = null;
 		List<AlertInformationPojo> requestInfoList1 = null;
@@ -1611,7 +1611,7 @@ public class RequestInfoDao {
 	}
 
 	public final List<AlertInformationPojo> getLastAlertId() {
-		String query = "SELECT * FROM c3pdbschema.alertinformationtable";
+		String query = "SELECT * FROM alertinformationtable";
 		AlertInformationPojo pojo;
 		ResultSet rs = null;
 		List<AlertInformationPojo> resultobj = new ArrayList<AlertInformationPojo>();
@@ -1692,7 +1692,7 @@ public class RequestInfoDao {
 
 	public List<RequestInfoSO> getDatasForRequestfromDB(String id) {
 		List<RequestInfoSO> list = null;
-		String query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ?";
+		String query = "SELECT * FROM requestinfoso WHERE alphanumeric_req_id = ?";
 		RequestInfoSO request;
 		ResultSet rs = null;
 		int id1;
@@ -2151,67 +2151,67 @@ public class RequestInfoDao {
 
 			if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
 				if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ? and request_creator_name=?";
+					query = "SELECT * FROM requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ? and request_creator_name=?";
 				} else if (key.equalsIgnoreCase("Region")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE region LIKE ?  and request_creator_name=?";
+					query = "SELECT * FROM requestinfoso WHERE region LIKE ?  and request_creator_name=?";
 
 				} else if (key.equalsIgnoreCase("Vendor")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE vendor LIKE ?  and request_creator_name=?";
+					query = "SELECT * FROM requestinfoso WHERE vendor LIKE ?  and request_creator_name=?";
 
 				} else if (key.equalsIgnoreCase("Model")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE model LIKE ?  and request_creator_name=?";
+					query = "SELECT * FROM requestinfoso WHERE model LIKE ?  and request_creator_name=?";
 
 				} else if (key.equalsIgnoreCase("Status")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE request_status LIKE ?  and request_creator_name=?";
+					query = "SELECT * FROM requestinfoso WHERE request_status LIKE ?  and request_creator_name=?";
 
 				}
 			} else if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
 				if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ? and RequestOwner=?";
+					query = "SELECT * FROM requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ? and RequestOwner=?";
 				} else if (key.equalsIgnoreCase("Region")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE region LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfoso WHERE region LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Vendor")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE vendor LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfoso WHERE vendor LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Model")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE model LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfoso WHERE model LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Status")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE request_status LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfoso WHERE request_status LIKE ?  and RequestOwner=?";
 
 				}
 			} else {
 				if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ? and RequestOwner=?";
+					query = "SELECT * FROM requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ? and RequestOwner=?";
 				} else if (key.equalsIgnoreCase("Region")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE region LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfoso WHERE region LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Vendor")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE vendor LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfoso WHERE vendor LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Model")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE model LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfoso WHERE model LIKE ?  and RequestOwner=?";
 
 				} else if (key.equalsIgnoreCase("Status")) {
-					query = "SELECT * FROM c3pdbschema.requestinfoso WHERE request_status LIKE ?  and RequestOwner=?";
+					query = "SELECT * FROM requestinfoso WHERE request_status LIKE ?  and RequestOwner=?";
 
 				}
 			}
 		} else {
 			if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ?";
+				query = "SELECT * FROM requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ?";
 			} else if (key.equalsIgnoreCase("Region")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE region LIKE ?";
+				query = "SELECT * FROM requestinfoso WHERE region LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Vendor")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE vendor LIKE ?";
+				query = "SELECT * FROM requestinfoso WHERE vendor LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Model")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE model LIKE ?";
+				query = "SELECT * FROM requestinfoso WHERE model LIKE ?";
 
 			} else if (key.equalsIgnoreCase("Status")) {
-				query = "SELECT * FROM c3pdbschema.requestinfoso WHERE request_status LIKE ?";
+				query = "SELECT * FROM requestinfoso WHERE request_status LIKE ?";
 
 			}
 		}
@@ -2384,7 +2384,7 @@ public class RequestInfoDao {
 
 	public List<RequestInfoSO> getDatasToCompareForRequestfromDB(String id) {
 		List<RequestInfoSO> list = null;
-		String query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ? ORDER BY date_of_processing DESC LIMIT 0,2";
+		String query = "SELECT * FROM requestinfoso WHERE alphanumeric_req_id = ? ORDER BY date_of_processing DESC LIMIT 0,2";
 		RequestInfoSO request;
 		ResultSet rs = null;
 		int id1;
@@ -2480,7 +2480,7 @@ public class RequestInfoDao {
 	}
 
 	public List<ModifyConfigResultPojo> getConfigCmdRecordFordata(RequestInfoSO requestInfoSO, String key){
-		String query = "SELECT * FROM c3pdbschema.createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
+		String query = "SELECT * FROM createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
@@ -2511,7 +2511,7 @@ public class RequestInfoDao {
 	}
 
 	public String getLogedInUserDetail() {
-		String query = "SELECT * FROM c3pdbschema.users WHERE user_status=?";
+		String query = "SELECT * FROM users WHERE user_status=?";
 		ResultSet rs = null;
 		UserPojo user = null;
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -2534,7 +2534,7 @@ public class RequestInfoDao {
 
 	public boolean resetUsersDB(String username) {
 		boolean result = false;
-		String query = "update c3pdbschema.users set user_status=0 WHERE user_name=?";
+		String query = "update users set user_status=0 WHERE user_name=?";
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, username);
@@ -2660,7 +2660,7 @@ public class RequestInfoDao {
 
 	public final boolean updateEIPAMRecord(String customer, String site, String ip, String mask) {
 		boolean result = false;
-		String query = "update c3pdbschema.eipamdbtable set eipam_ip=?,eipam_subnet_mask=?,eipam_ip_status=? WHERE eipam_customer_name=? AND eipam_site_id=?";
+		String query = "update eipamdbtable set eipam_ip=?,eipam_subnet_mask=?,eipam_ip_status=? WHERE eipam_customer_name=? AND eipam_site_id=?";
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, ip);
@@ -3175,7 +3175,7 @@ public class RequestInfoDao {
 	}
 
 	public List<ConfigurationDataValuePojo> getALLVendorData() {
-		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_vendor'";
+		String query = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_vendor'";
 		ConfigurationDataValuePojo object = null;
 		ResultSet rs = null;
 		List<ConfigurationDataValuePojo> list = null;
@@ -3198,7 +3198,7 @@ public class RequestInfoDao {
 	}
 
 	public List<ConfigurationDataValuePojo> getALLDeviceTypeData() {
-		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_device_type'";
+		String query = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_device_type'";
 		ResultSet rs = null;
 		List<ConfigurationDataValuePojo> list = null;
 		ConfigurationDataValuePojo object;
@@ -3221,7 +3221,7 @@ public class RequestInfoDao {
 	}
 
 	public List<String> getALLModelData(String vendor, String deviceType) throws IOException {
-		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name=? AND component_make=?";
+		String query = "SELECT * FROM c3p_data_configuration_table where component_name=? AND component_make=?";
 		List<String> list = new ArrayList<String>();
 		ResultSet rs = null;
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -3242,7 +3242,7 @@ public class RequestInfoDao {
 	}
 
 	public List<String> getALLOSData(String make, String deviceType) throws IOException {
-		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_os_type'";
+		String query = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_os_type'";
 		List<String> list = new ArrayList<String>();
 		ResultSet rs = null;
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -3264,7 +3264,7 @@ public class RequestInfoDao {
 	}
 
 	public final List<String> getALLOSVersionData(String os, String model) throws IOException {
-		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_os_version'";
+		String query = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_os_version'";
 		List<String> list = new ArrayList<String>();
 		List<String> listtoSend = new ArrayList<String>();
 		ResultSet rs = null;
@@ -3446,7 +3446,7 @@ public class RequestInfoDao {
 	}
 
 	public final List<ConfigurationDataValuePojo> getALLRegionData() throws IOException {
-		String query = "SELECT * FROM c3pdbschema.c3p_data_configuration_table where component_name='c3p_region'";
+		String query = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_region'";
 		ResultSet rs = null;
 		List<ConfigurationDataValuePojo> list = null;
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -3470,7 +3470,7 @@ public class RequestInfoDao {
 	}
 
 	public final List<ErrorValidationPojo> getAllErrorCodeFromRouter() {
-		String query = "select * from c3pdbschema.errorcodedata where router_error_message is not null";
+		String query = "select * from errorcodedata where router_error_message is not null";
 		ResultSet rs = null;
 		List<ErrorValidationPojo> list = null;
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -3581,7 +3581,7 @@ public class RequestInfoDao {
 	}
 
 	public CreateConfigRequest getRequestDetailFromDBForVersion(String value, String version) {
-		String query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ?";
+		String query = "SELECT * FROM requestinfoso WHERE alphanumeric_req_id = ? AND request_version = ?";
 
 		ResultSet rs = null;
 		CreateConfigRequest request = new CreateConfigRequest();
@@ -4330,7 +4330,7 @@ public class RequestInfoDao {
 
 	public final List<ModifyConfigResultPojo> getConfigCmdRecordFordataForDelivery(CreateConfigRequest configRequest,
 			String key) {
-		String query = "SELECT * FROM c3pdbschema.createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
+		String query = "SELECT * FROM createsshconfig WHERE Vendor=? AND Device_Type=? AND Model=? AND OS=? AND OS_Version=? AND Assigned_Field_Name=?";
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
@@ -4400,7 +4400,7 @@ public class RequestInfoDao {
 	}
 
 	public String updateTimeForScheduledRequest(String requestId, String version) throws SQLException {
-		String query = "SELECT * FROM c3pdbschema.requestinfoso WHERE alphanumeric_req_id=? AND request_version=?";
+		String query = "SELECT * FROM requestinfoso WHERE alphanumeric_req_id=? AND request_version=?";
 		String updateQuery = "update requestinfoso set date_of_processing = ? where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
 		String result = "false";
@@ -4502,7 +4502,7 @@ public class RequestInfoDao {
 
 	public boolean updateEditedAlertData(String alertCode, String description) {
 		boolean result = false;
-		String query = "update c3pdbschema.alertinformationtable set alert_description = ? WHERE alert_code=?";
+		String query = "update alertinformationtable set alert_description = ? WHERE alert_code=?";
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, description);
@@ -6084,7 +6084,6 @@ public class RequestInfoDao {
 					/* ps.setString(37,TimeZ); *//* Added for TimeZ */
 
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 
@@ -6122,7 +6121,7 @@ public class RequestInfoDao {
 	}
 
 	public List<TestDetail> findByTestName(String testNameUsed) {
-		String query = "SELECT test_name,version FROM c3pdbschema.t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
+		String query = "SELECT test_name,version FROM t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
 		List<TestDetail> requestInfoList = null;
 		TestDetail request = null;
 		ResultSet rs = null;
@@ -6150,7 +6149,7 @@ public class RequestInfoDao {
 	}
 
 	public List<TestDetail> findByTestNameForSearch(String testNameUsed) {
-		String query = "SELECT test_name,version,comment,device_type,vendor,device_model,os,created_on,created_by,is_enabled FROM c3pdbschema.t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
+		String query = "SELECT test_name,version,comment,device_type,vendor,device_model,os,created_on,created_by,is_enabled FROM t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
 		List<TestDetail> requestInfoList = null;
 		TestDetail request = null;
 		ResultSet rs = null;
@@ -6187,7 +6186,7 @@ public class RequestInfoDao {
 	}
 
 	public List<FirmwareUpgradeDetail> findByVendorName(String vendor) {
-		String query = "SELECT * FROM c3pdbschema.firmware_upgrade_single_device where vendor LIKE ?";
+		String query = "SELECT * FROM firmware_upgrade_single_device where vendor LIKE ?";
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
@@ -6766,7 +6765,7 @@ public class RequestInfoDao {
 	}
 
 	public List<FirmwareUpgradeDetail> findByFamily(String isFamily, String isVendor) {
-		String query = "SELECT * FROM c3pdbschema.firmware_upgrade_single_device where family LIKE ? AND vendor LIKE ?";
+		String query = "SELECT * FROM firmware_upgrade_single_device where family LIKE ? AND vendor LIKE ?";
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
