@@ -841,7 +841,11 @@ public class ExcelFileValidation {
 			List<String> header = null;
 			boolean isFlag = true;
 			String status = "";
-
+			int countCSVColumns =Arrays.asList(rows.get(0)).size();
+			
+			if(countCSVColumns !=32)
+				throw new IOException(msgRepo.findDiscrepancyMsg("mandatory csv col"));
+			
 			int rowSize = rows.size();
 
 			if (rowSize == 2) {
@@ -1126,6 +1130,8 @@ public class ExcelFileValidation {
 				response.put(status, list);
 			}
 		} catch (Exception e) {
+			list.add(e.getMessage());
+			response.put("error", list);
 			logger.error("\n" + "exception in validateColumnCSVForCOB method" + e.getMessage());
 		}
 		return response;
@@ -1140,8 +1146,7 @@ public class ExcelFileValidation {
 		logger.info("\n" + "Inside validateColumnValuesCSVForCOB method");
 		Map<String, String> response = new HashMap<String, String>();
 		StringBuilder strBbuilder = new StringBuilder();
-		boolean isFlag = false;
-		boolean isFlagError = false;
+		boolean isFlagError = true;
 		File SAMPLE_XLSX_FILE_PATH = filePath.getFile();
 		try {
 			InputStream inputStream = new FileInputStream(SAMPLE_XLSX_FILE_PATH);

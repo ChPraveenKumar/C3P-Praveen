@@ -289,7 +289,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			for (CustomerStagingEntity data : getStaggingData) {
 				if(data.getiPV4ManagementAddress() != null)
 					isMgmtIpExist = deviceDiscoveryRepository.findMgmtId(data.getiPV4ManagementAddress());
-				if (data.getiPV6ManagementAddress() != null && data.getiPV4ManagementAddress() == null)
+				if (data.getiPV6ManagementAddress() != null && isMgmtIpExist == null)
 					isIpV6Exist = deviceDiscoveryRepository.findIpV6(data.getiPV6ManagementAddress());
 
 				// Existing Case.. Both isMgmtIpExist & isIpV6Exist are having
