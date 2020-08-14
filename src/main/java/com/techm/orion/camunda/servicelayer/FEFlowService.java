@@ -101,6 +101,7 @@ public class FEFlowService implements Observer {
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
 			final boolean status = (Boolean) json.get("status");
+			System.out.println("Status "+status);
 			Float v = Float.parseFloat(version);
 			DecimalFormat df = new DecimalFormat("0.0");
 			df.setMaximumFractionDigits(1);
@@ -115,7 +116,7 @@ public class FEFlowService implements Observer {
 				@Override
 				public void run() {
 					// TODO Auto-generated method stub
-					workflowService.completeFEDeviceReachabilityFlow(userTaskId, status);
+					workflowService.completeFEDeviceReachabilityFlow(userTaskId, (Boolean) json.get("status"));
 
 				}
 			});
@@ -164,7 +165,7 @@ public class FEFlowService implements Observer {
 			} else {
 				// change request status to hold
 				daoService.changeRequestStatus(RequestId, version, "Hold");
-				res = daoService.changeRequestOwner(RequestId, version, "feuser");
+				res = daoService.changeRequestOwner(RequestId, version, req.getRequestCreatorName());
 				daoService.resetErrorStateOfRechabilityTest(RequestId, version);
 
 			}
