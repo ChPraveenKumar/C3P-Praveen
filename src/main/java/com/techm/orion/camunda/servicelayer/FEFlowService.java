@@ -101,7 +101,6 @@ public class FEFlowService implements Observer {
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
 			final boolean status = (Boolean) json.get("status");
-			System.out.println("Status "+status);
 			Float v = Float.parseFloat(version);
 			DecimalFormat df = new DecimalFormat("0.0");
 			df.setMaximumFractionDigits(1);
