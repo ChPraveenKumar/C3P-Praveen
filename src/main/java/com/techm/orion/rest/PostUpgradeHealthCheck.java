@@ -154,7 +154,7 @@ public class PostUpgradeHealthCheck extends Thread {
 						memoryComp.setTestresult(memoryResult);
 
 						resultList.add(memoryComp);
-						resultList.add(memoryComp);
+						//resultList.add(memoryComp);
 
 						HealthCheckComponent powerComp = new HealthCheckComponent();
 						powerComp.setTestname("Power Check");
@@ -331,7 +331,7 @@ public class PostUpgradeHealthCheck extends Thread {
 						memoryComp.setTestresult(memoryResult);
 
 						resultList.add(memoryComp);
-						resultList.add(memoryComp);
+						//resultList.add(memoryComp);
 
 						HealthCheckComponent powerComp = new HealthCheckComponent();
 						powerComp.setTestname("Power Check");
