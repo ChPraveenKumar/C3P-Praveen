@@ -1,5 +1,7 @@
 package com.techm.orion.rest;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -55,11 +57,12 @@ public class ServiceOrderController {
 
 	}
 
+	
 	@POST
 	@RequestMapping(value = "/updateserviceorder", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response deviceDiscovery(@RequestBody String configRequest) {
-		String requestId = null, status = null, orderid = null;
+		String requestId = null, status = null, orderid = null, updatedBy = null;
 		JSONObject obj = new JSONObject();
 		try {
 			JSONParser parser = new JSONParser();
@@ -74,28 +77,27 @@ public class ServiceOrderController {
 				if (json.containsKey("soOrderId")) {
 					orderid = json.get("soOrderId").toString();
 				}
-				ServiceOrderEntity entity = new ServiceOrderEntity();
+
+				if (json.containsKey("user") && json.get("user") != null) {
+					updatedBy = json.get("user").toString();
+				}
+
 				if (status.equalsIgnoreCase("Submitted")) {
-					entity.setStatus("InProgress");
 					status = "InProgress";
-
-					int updateSoStatus = serviceOrderRepo.updateSoStatus("Executed", orderid);
+					serviceOrderRepo.updateSoStatus("Executed", orderid, updatedBy,
+							Timestamp.valueOf(LocalDateTime.now()));
 				}
-				entity.setRequestId(requestId);
-
-				int updatedRecord = serviceOrderRepo.updateStatusAndRequestId(requestId, status, orderid);
-				if (updatedRecord > 0) {
+				
+				int updatedRecord = serviceOrderRepo.updateStatusAndRequestId(requestId, status, orderid, updatedBy,
+						Timestamp.valueOf(LocalDateTime.now()));
+				if (updatedRecord > 0)
 					obj.put("Status", "Updated successfully");
-
-				}
-			} else {
+			} else
 				obj.put("Status", "Error updating the Service order");
-			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("\n" + "exception in updateserviceorder service" + e.getMessage());
 		}
-
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")

@@ -1,6 +1,7 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
+
 import java.sql.Timestamp;
 
 import javax.persistence.Column;
