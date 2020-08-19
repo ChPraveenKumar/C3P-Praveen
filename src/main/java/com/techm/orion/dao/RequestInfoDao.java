@@ -987,8 +987,9 @@ public class RequestInfoDao {
 				DBUtil.close(rs);
 			}
 			ServiceOrderEntity ent = serviceOrderRepo.findByRequestId(requestId);
+			
 			if (ent != null) {
-				serviceOrderRepo.updateStatusAndRequestId(requestId, "Success", ent.getServiceOrder());
+				serviceOrderRepo.updateStatusAndRequestId(requestId, "Success", ent.getServiceOrder(), "admin", Timestamp.valueOf(LocalDateTime.now()));
 			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
 			ResultSet rs = null;
@@ -1010,9 +1011,9 @@ public class RequestInfoDao {
 				DBUtil.close(rs);
 			}
 			ServiceOrderEntity ent = serviceOrderRepo.findByRequestId(requestId);
-			if (ent != null) {
-				serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder());
-			}
+			
+			if (ent != null)
+				serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder(), "admin", Timestamp.valueOf(LocalDateTime.now()));
 		} else {
 			updateRequestInfoSoByAlpReqVersion(requestId, version, status, timestamp, "0");			
 		}

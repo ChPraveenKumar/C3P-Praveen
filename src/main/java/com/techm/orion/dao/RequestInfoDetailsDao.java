@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -127,8 +128,9 @@ public class RequestInfoDetailsDao {
 
 			}
 			ServiceOrderEntity ent = serviceOrderRepo.findByRequestId(requestId);
+			
 			if (ent != null) {
-				serviceOrderRepo.updateStatusAndRequestId(requestId, "Success", ent.getServiceOrder());
+				serviceOrderRepo.updateStatusAndRequestId(requestId, "Success", ent.getServiceOrder(), "admin", Timestamp.valueOf(LocalDateTime.now()));
 			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
 			Double finalVersion = Double.valueOf(version);
@@ -154,9 +156,9 @@ public class RequestInfoDetailsDao {
 				e.printStackTrace();
 			}
 			ServiceOrderEntity ent = serviceOrderRepo.findByRequestId(requestId);
-			if (ent != null) {
-				serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder());
-			}
+		
+			if (ent != null) 
+				serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder(), "admin", Timestamp.valueOf(LocalDateTime.now()));
 		} else {
 			try {
 				Double finalVersion = Double.valueOf(version);

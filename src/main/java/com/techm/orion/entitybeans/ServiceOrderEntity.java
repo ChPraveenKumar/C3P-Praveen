@@ -1,6 +1,7 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -72,6 +73,20 @@ public class ServiceOrderEntity implements Serializable {
 	@Column(name = "so_date")
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date date;
+	
+	@Column(name = "so_created_by", length = 20)
+	private String createdBy;
+	
+	@Column(name = "so_created_date")
+	private Timestamp createdDate;
+	
+	@Column(name = "so_updated_by", length = 20)
+	private String updatedBy;
+	
+	
+	@Column(name = "so_updated_date")
+	private Timestamp updatedDate;
+	
 
 	public int getSo_id() {
 		return so_id;
@@ -200,5 +215,39 @@ public class ServiceOrderEntity implements Serializable {
 	public void setDate(Date date) {
 		this.date = date;
 	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public Timestamp getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Timestamp createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	public Timestamp getUpdatedDate() {
+		return updatedDate;
+	}
+
+	public void setUpdatedDate(Timestamp updatedDate) {
+		this.updatedDate = updatedDate;
+	}
+	
+	
 
 }
