@@ -30,23 +30,8 @@ public interface CustomerStagingImportRepo extends JpaRepository<CustomerStaging
 	int updateResultExisting(@Param("iPV4ManagementAddress") String iPV4ManagementAddress,
 			@Param("importId") String importId);
 
-	@Query("SELECT new com.techm.orion.entitybeans.CustomerStagingEntity (count(distinct importId) AS countStatus, userName, count(importId) AS totalDevices,"
-			+ "count(case when result='New' then 1 end) as count_new,"
-			+ "count( case when result='Existing' then 1 end) as count_existing ,count( case when outcome_result='Success' then 1 end) as count_success ,"
-			+ "count( case when outcome_result='Exception' then 1 end) as count_exception,"
-			+ "importId, executionDate, status," + "createdBy)  FROM CustomerStagingEntity group by importId")
-	List<CustomerStagingEntity> findAllStaggingData();
-
-	@Query("SELECT new com.techm.orion.entitybeans.CustomerStagingEntity ( count(distinct importId) AS countStatus, userName, count(importId) AS totalDevices,"
-			+ "count(case when result='New' then 1 end) as count_new,"
-			+ "count( case when result='Existing' then 1 end) as count_existing ,count( case when outcome_result='Success' then 1 end) as count_success ,"
-			+ "count( case when outcome_result='Exception' then 1 end) as count_exception,"
-			+ "importId, executionDate, status,"
-			+ "createdBy)  FROM CustomerStagingEntity where userName=:userName  group by importId")
-	List<CustomerStagingEntity> findMyStaggingData(@Param("userName") String userName);
-
 	@Query("SELECT new com.techm.orion.entitybeans.CustomerStagingEntity (hostname,iPV4ManagementAddress, result, outcomeResult,"
-			+ "rootCause)  FROM CustomerStagingEntity where importId=:importId")
+			+ "rootCause, iPV6ManagementAddress)  FROM CustomerStagingEntity where importId=:importId")
 	List<CustomerStagingEntity> generateReport(@Param("importId") String importId);
 
 	@Query("SELECT new com.techm.orion.entitybeans.CustomerStagingEntity (executionDate, count(importId) AS totalDevices,createdBy, "
