@@ -10,7 +10,7 @@ public class TemplateVersioningJSONModel {
 
 	List<TemplateBasicConfigurationPojo>childList=new ArrayList<TemplateBasicConfigurationPojo>();
 	private String vendor=null;
-	private String deviceType=null;
+	private String deviceFamily=null;
 	private String model=null;
 	private String deviceOs=null;
 	private String deviceOsVersion=null;
@@ -91,11 +91,11 @@ public class TemplateVersioningJSONModel {
 	public void setVendor(String vendor) {
 		this.vendor = vendor;
 	}
-	public String getDeviceType() {
-		return deviceType;
+	public String getDeviceFamily() {
+		return deviceFamily;
 	}
-	public void setDeviceType(String deviceType) {
-		this.deviceType = deviceType;
+	public void setDeviceFamily(String deviceFamily) {
+		this.deviceFamily = deviceFamily;
 	}
 	public String getModel() {
 		return model;

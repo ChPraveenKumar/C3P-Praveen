@@ -1,14 +1,12 @@
 package com.techm.orion.entitybeans;
 
-import java.util.List;
-
 public class GlobalLstInterfaceRqst {
 
 	private String model;
 
-	private String devicetype;
+	private String devicefamily;
 
-	private List<Interfaces> interfaces;
+	//private List<Interfaces> interfaces;
 
 	public String getModel() {
 		return model;
@@ -18,20 +16,20 @@ public class GlobalLstInterfaceRqst {
 		this.model = model;
 	}
 
-	public String getDevicetype() {
-		return devicetype;
+	public String getDeviceFamily() {
+		return devicefamily;
 	}
 
-	public void setDevicetype(String devicetype) {
-		this.devicetype = devicetype;
+	public void setDeviceFamily(String devicefamily) {
+		this.devicefamily = devicefamily;
 	}
 
-	public List<Interfaces> getInterfaces() {
+	/*public List<Interfaces> getInterfaces() {
 		return interfaces;
 	}
 
 	public void setInterfaces(List<Interfaces> interfaces) {
 		this.interfaces = interfaces;
-	}
+	}*/
 
 }

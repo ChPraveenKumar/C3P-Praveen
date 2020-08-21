@@ -61,9 +61,7 @@ import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.service.AttribCreateConfigService;
-import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.PrevalidationTestServiceImpl;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
@@ -91,13 +89,12 @@ public class VnfConfigService implements Observer {
 	@Autowired
 	TestStrategeyAnalyser analyser;
 
-	@SuppressWarnings({ "unchecked", "null" })
+	@SuppressWarnings({ "unchecked" })
 	@POST
 	@RequestMapping(value = "/generateConfiguration", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response generateConfiguration(@RequestBody String params) {
 
-		CreateConfigRequestDCM configReqToSendToC3pCode = new CreateConfigRequestDCM();
 		JSONObject obj = new JSONObject();
 
 		/*
@@ -160,8 +157,8 @@ public class VnfConfigService implements Observer {
 
 				// once we have list of features that we need to configure we
 				// must go ahead and put the values in hard coded xml.
-				String fileName = "combinedFeatures.xml";
-				ClassLoader classLoader = new VnfConfigService().getClass().getClassLoader();
+				//String fileName = "combinedFeatures.xml";
+				//ClassLoader classLoader = new VnfConfigService().getClass().getClassLoader();
 
 				File file = new File(xmlFileDownloadPath);
 				String contents = new String(Files.readAllBytes(file.toPath()));
@@ -328,7 +325,7 @@ public class VnfConfigService implements Observer {
 				}
 				String renderedTemplate = jinjava.render(contents, context);
 
-				String new_xml_data = XML.toString(xmlobj);
+				//String new_xml_data = XML.toString(xmlobj);
 				String formattedXML = prettyPrintXml(renderedTemplate);
 				obj.put("data", formattedXML);
 
@@ -401,8 +398,6 @@ public class VnfConfigService implements Observer {
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
 
 		JSONObject obj = new JSONObject();
-		DcmConfigService dcmConfigService = new DcmConfigService();
-		String requestIdForConfig = "";
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		PrevalidationTestServiceImpl prevalidationTestServiceImpl = new PrevalidationTestServiceImpl();
@@ -445,11 +440,11 @@ public class VnfConfigService implements Observer {
 						mountStatus = "Pass";
 						// Check for Vendor, Device model, os, os version
 						String host = createConfigRequest.getManagementIp();
-						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials();
+						//UserPojo userPojo = new UserPojo();
+						//userPojo = requestInfoDao.getRouterCredentials();
 
-						String user = userPojo.getUsername();
-						String password = userPojo.getPassword();
+						//String user = userPojo.getUsername();
+						//String password = userPojo.getPassword();
 						String port = VnfConfigService.TSA_PROPERTIES.getProperty("portSSH");
 
 						logger.info("port " + port + "host " + host);
@@ -492,7 +487,6 @@ public class VnfConfigService implements Observer {
 							RequestInfoDao dao = new RequestInfoDao();
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							TestDetail test = new TestDetail();
 							listOfTests = dao.findTestFromTestStrategyDB(createConfigRequest.getModel(),
 									createConfigRequest.getDeviceType(), createConfigRequest.getOs(),
 									createConfigRequest.getOsVersion(), createConfigRequest.getVendor(),
@@ -595,11 +589,11 @@ public class VnfConfigService implements Observer {
 						mountStatus = "Pass";
 						// Check for Vendor, Device model, os, os version
 						String host = requestinfo.getManagementIp();
-						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials();
+						//UserPojo userPojo = new UserPojo();
+						//userPojo = requestInfoDao.getRouterCredentials();
 
-						String user = userPojo.getUsername();
-						String password = userPojo.getPassword();
+						//String user = userPojo.getUsername();
+						//String password = userPojo.getPassword();
 						String port = VnfConfigService.TSA_PROPERTIES.getProperty("portSSH");
 
 						logger.info("port " + port + "host " + host);
@@ -642,9 +636,8 @@ public class VnfConfigService implements Observer {
 							RequestInfoDao dao = new RequestInfoDao();
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							TestDetail test = new TestDetail();
 							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getModel(),
-									requestinfo.getDeviceType(), requestinfo.getOs(), requestinfo.getOsVersion(),
+									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Device Prevalidation");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Device Prevalidation",version);
@@ -855,17 +848,14 @@ public class VnfConfigService implements Observer {
 		return obj;
 	}
 
-	@SuppressWarnings({ "unchecked", "null" })
+	@SuppressWarnings({ "unchecked" })
 	@POST
 	@RequestMapping(value = "/pushConfiguration", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response pushConfiguration(@RequestBody String params) {
 
 		JSONObject obj = new JSONObject();
-		DcmConfigService dcmConfigService = new DcmConfigService();
 		String requestIdForConfig = "";
-		String res = "false";
-		String data = "Failure";
 		try {
 			VnfConfigService.loadProperties();
 			JSONParser parser = new JSONParser();

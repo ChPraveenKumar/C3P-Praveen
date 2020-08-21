@@ -14,11 +14,10 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.UniqueConstraint;
 
 @Entity
 
-@Table(name = "T_TPMGMT_GLBLIST_M_OSversion", uniqueConstraints = { @UniqueConstraint(columnNames = { "osversion" }) })
+@Table(name = "c3p_t_glblist_m_osversion")
 public class OSversion implements Serializable{
 	/**
 	 * 

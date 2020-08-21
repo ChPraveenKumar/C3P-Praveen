@@ -47,7 +47,6 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
 import com.techm.orion.repositories.TestRulesRepository;
-import com.techm.orion.repositories.TestStrategeBasicConfigurationRepository;
 
 /*
  * Owner: Vivek Vidhate Module: Test Strategey Logic: To
@@ -57,35 +56,29 @@ import com.techm.orion.repositories.TestStrategeBasicConfigurationRepository;
 public class TestStrategyController {
 	private static final Logger logger = LogManager.getLogger(TestStrategyController.class);
 	@Autowired
-	public TestDetailsRepository testDetailsRepository;
+	private TestDetailsRepository testDetailsRepository;
 
 	@Autowired
-	public TestFeatureListRepository testFeatureListRepository;
+	private TestFeatureListRepository testFeatureListRepository;
 
 	@Autowired
-	public TestRulesRepository testRulesRepository;
+	private TestRulesRepository testRulesRepository;
 
 	@Autowired
-	public PredefineTestDetailsRepository predefineTestDetailsRepository;
+	private PredefineTestDetailsRepository predefineTestDetailsRepository;
 
 	@Autowired
-	public TestStrategeBasicConfigurationRepository testStrategeBasicConfigurationRepository;
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
 	@Autowired
-	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
-
-	@Autowired
-	public DeviceDiscoveryRepository deviceDiscoveryRepository;
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 
 	@GET
 	@RequestMapping(value = "/testfeatureList", method = RequestMethod.GET, produces = "application/json")
 	public Response getOsversions() {
-
 		return Response.status(200).entity(testFeatureListRepository.findAll()).build();
-
 	}
 
-	@SuppressWarnings({ "null", "unchecked" })
 	@POST
 	@RequestMapping(value = "/certificationtestsfordevice", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response getTestsForDevice(@RequestBody String request) {
@@ -96,7 +89,7 @@ public class TestStrategyController {
 		List<TestDetail> testDetailsFinal = new ArrayList<TestDetail>();
 		List<TestDetail> testDetailsListAllVersion = new ArrayList<TestDetail>();
 
-		HashSet testNameList = new HashSet();
+		HashSet<String> testNameList = new HashSet<>();
 		String response = null;
 
 		String deviceType = null, deviceModel = null, vendor = null, os = null, osVersion = null, region = null,
@@ -141,7 +134,7 @@ public class TestStrategyController {
 			String version = null;
 			String testName = null;
 			testDetailsList = testDetailsRepository
-					.findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(
+					.findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(
 							deviceType, deviceModel, os, osVersion, vendor, region, networkType);
 
 			for (int i = 0; i < testDetailsList.size(); i++) {
@@ -154,7 +147,7 @@ public class TestStrategyController {
 			while (itrator.hasNext()) {
 				testName = itrator.next();
 				testDetailsListAllVersion = testDetailsRepository
-						.findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(
+						.findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(
 								deviceType, deviceModel, os, osVersion, vendor, region, testName);
 
 				for (int i = 0; i < testDetailsListAllVersion.size(); i++) {
@@ -165,10 +158,10 @@ public class TestStrategyController {
 				}
 
 				testDetailsListLatestVersion = testDetailsRepository
-						.findByDeviceTypeAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
+						.findByDeviceFamilyAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
 								deviceType, deviceModel, os, osVersion, vendor, region, version, testName);
 
-				if (null != testDetailsListLatestVersion || !testDetailsListLatestVersion.isEmpty()) {
+				if (null != testDetailsListLatestVersion && testDetailsListLatestVersion.size() >0) {
 
 					int n = testDetailsListLatestVersion.size();
 
@@ -326,13 +319,7 @@ public class TestStrategyController {
 	@GET
 	@RequestMapping(value = "/getalltests", method = RequestMethod.GET, produces = "application/json")
 	public Response getOs() {
-		TestDetail testDetail = new TestDetail();
-		List<TestDetail> testDetaillist = new ArrayList<>();
-
-		/* testDetaillist = testDetailsRepository */
-
 		return Response.status(200).entity(testDetailsRepository.findAll()).build();
-
 	}
 
 	@POST
@@ -367,8 +354,8 @@ public class TestStrategyController {
 				testDetail.setTestCommand(json.get("command").toString());
 			}
 
-			if (json.containsKey("deviceType")) {
-				testDetail.setDeviceType(json.get("deviceType").toString());
+			if (json.containsKey("deviceFamily")) {
+				testDetail.setDeviceFamily(json.get("deviceFamily").toString());
 			}
 			if (json.containsKey("vendor")) {
 				testDetail.setVendor(json.get("vendor").toString());
@@ -622,9 +609,8 @@ public class TestStrategyController {
 			}
 
 			Set<TestRules> setrules = new HashSet<TestRules>(rulelst);
-			TestDetail savetest = new TestDetail();
 			List<TestDetail> savetest1 = new ArrayList<TestDetail>();
-			List testNameCheck = new ArrayList<>();
+			List<String> testNameCheck = new ArrayList<>();
 			testDetail.setTestrules(setrules);
 			try {
 				savetest1 = testDetailsRepository.findAll();
@@ -636,8 +622,7 @@ public class TestStrategyController {
 					}
 				}
 				if (!(testNameCheck.contains(testDetail.getTestName()))) {
-
-					savetest = testDetailsRepository.save(testDetail);
+					testDetailsRepository.save(testDetail);
 					str = "Test saved successfully";
 				} else {
 					str = "Test is Duplicate";
@@ -666,7 +651,7 @@ public class TestStrategyController {
 			result = testDetailsRepository.findByTestNameContaining(value);
 
 		} else if (key.equalsIgnoreCase("Device Type")) {
-			result = testDetailsRepository.findByDeviceTypeContaining(value);
+			result = testDetailsRepository.findByDeviceFamilyContaining(value);
 		} else if (key.equalsIgnoreCase("Vendor")) {
 			result = testDetailsRepository.findByVendorContaining(value);
 		} else if (key.equalsIgnoreCase("Device Model")) {
@@ -717,8 +702,8 @@ public class TestStrategyController {
 				testDetail.setTestCommand(json.get("command").toString());
 			}
 
-			if (json.containsKey("deviceType")) {
-				testDetail.setDeviceType(json.get("deviceType").toString());
+			if (json.containsKey("deviceFamily")) {
+				testDetail.setDeviceFamily(json.get("deviceFamily").toString());
 			}
 			if (json.containsKey("vendor")) {
 				testDetail.setVendor(json.get("vendor").toString());
@@ -973,7 +958,7 @@ public class TestStrategyController {
 			}
 
 			String testName = json.get("testName").toString();
-			List testNameForVersion = testDetailsRepository.findByTestName(testName);
+			List<TestDetail> testNameForVersion = testDetailsRepository.findByTestName(testName);
 
 			for (int l = 0; l < testNameForVersion.size(); l++) {
 				boolean is_enabled = false;
@@ -1027,21 +1012,15 @@ public class TestStrategyController {
 		return null;
 	}
 
-	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getTestList", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	public Response getTestList() {
 
-		JSONObject obj = new JSONObject();
-		String jsonArray = "";
 		// Create first level
 		RequestInfoDao dao = new RequestInfoDao();
-		HashSet setOfTest = new HashSet<>();
 		List<TestDetail> mainList = new ArrayList<TestDetail>();
-		List<TestDetail> mainList1 = new ArrayList<TestDetail>();
 		mainList = dao.getAllTests();
-		String testNameToString = null;
 		int testNameSize = 0, testNameSize1 = 0;
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
 
@@ -1057,7 +1036,7 @@ public class TestStrategyController {
 				model.setFullTestName(mainList.get(i).getTestName());
 				model.setTestId(mainList.get(i).getTestId());
 				model.setVendor((mainList.get(i).getVendor()));
-				model.setDeviceType(mainList.get(i).getDeviceType());
+				model.setDeviceFamily(mainList.get(i).getDeviceFamily());
 				model.setDeviceModel(mainList.get(i).getDeviceModel());
 				model.setOs(mainList.get(i).getOs());
 				model.setOsVersion(mainList.get(i).getOsVersion());
@@ -1081,7 +1060,7 @@ public class TestStrategyController {
 				child.setVersion(mainList.get(i).getVersion());
 				child.setTestId(mainList.get(i).getTestId());
 				child.setVendor((mainList.get(i).getVendor()));
-				child.setDeviceType(mainList.get(i).getDeviceType());
+				child.setDeviceFamily(mainList.get(i).getDeviceFamily());
 				child.setDeviceModel(mainList.get(i).getDeviceModel());
 				child.setOs(mainList.get(i).getOs());
 				child.setOsVersion(mainList.get(i).getOsVersion());
@@ -1119,7 +1098,7 @@ public class TestStrategyController {
 						child.setVersion(mainList.get(i).getVersion());
 						child.setTestId(mainList.get(i).getTestId());
 						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceType(mainList.get(i).getDeviceType());
+						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
 						child.setDeviceModel(mainList.get(i).getDeviceModel());
 						child.setOs(mainList.get(i).getOs());
 						child.setOsVersion(mainList.get(i).getOsVersion());
@@ -1159,7 +1138,7 @@ public class TestStrategyController {
 					model.setFullTestName(mainList.get(i).getTestName());
 					model.setTestId(mainList.get(i).getTestId());
 					model.setVendor((mainList.get(i).getVendor()));
-					model.setDeviceType(mainList.get(i).getDeviceType());
+					model.setDeviceFamily(mainList.get(i).getDeviceFamily());
 					model.setDeviceModel(mainList.get(i).getDeviceModel());
 					model.setOs(mainList.get(i).getOs());
 					model.setOsVersion(mainList.get(i).getOsVersion());
@@ -1182,7 +1161,7 @@ public class TestStrategyController {
 					child.setVersion(mainList.get(i).getVersion());
 					child.setTestId(mainList.get(i).getTestId());
 					child.setVendor((mainList.get(i).getVendor()));
-					child.setDeviceType(mainList.get(i).getDeviceType());
+					child.setDeviceFamily(mainList.get(i).getDeviceFamily());
 					child.setDeviceModel(mainList.get(i).getDeviceModel());
 					child.setOs(mainList.get(i).getOs());
 					child.setOsVersion(mainList.get(i).getOsVersion());
@@ -1227,7 +1206,7 @@ public class TestStrategyController {
 						child.setVersion(mainList.get(i).getVersion());
 						child.setTestId(mainList.get(i).getTestId());
 						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceType(mainList.get(i).getDeviceType());
+						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
 						child.setDeviceModel(mainList.get(i).getDeviceModel());
 						child.setOs(mainList.get(i).getOs());
 						child.setOsVersion(mainList.get(i).getOsVersion());
@@ -1253,7 +1232,7 @@ public class TestStrategyController {
 						child.setVersion(mainList.get(i).getVersion());
 						child.setTestId(mainList.get(i).getTestId());
 						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceType(mainList.get(i).getDeviceType());
+						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
 						child.setDeviceModel(mainList.get(i).getDeviceModel());
 						child.setOs(mainList.get(i).getOs());
 						child.setOsVersion(mainList.get(i).getOsVersion());
@@ -1283,7 +1262,7 @@ public class TestStrategyController {
 
 	}
 
-	@SuppressWarnings({ "null", "unchecked" })
+	@SuppressWarnings({ "unchecked" })
 	@POST
 	@RequestMapping(value = "/getTestnamesAndVersionList", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response getTestnamesAndVersionList(@RequestBody String request) throws ParseException {
@@ -1371,12 +1350,9 @@ public class TestStrategyController {
 
 	}
 
-	@SuppressWarnings({ "null", "unchecked" })
 	@POST
 	@RequestMapping(value = "/getSearchTestList", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response getSearchTestList(@RequestBody String request) throws ParseException {
-
-		JSONObject obj = new JSONObject();
 
 		String key = "", value = "";
 
@@ -1396,8 +1372,8 @@ public class TestStrategyController {
 			 * Search request based on Region, Vendor, Status, Model, Import Id and
 			 * Management IP
 			 */
-			if (key.equalsIgnoreCase("Device Type")) {
-				mainList = testDetailsRepository.findByDeviceType(value);
+			if (key.equalsIgnoreCase("Device Family")) {
+				mainList = testDetailsRepository.findByDeviceFamily(value);
 
 			} else if (key.equalsIgnoreCase("Vendor")) {
 				mainList = testDetailsRepository.findByVendor(value);
@@ -1433,7 +1409,7 @@ public class TestStrategyController {
 				model.setFullTestName(mainList.get(i).getTestName());
 				model.setTestId(mainList.get(i).getTestId());
 				model.setVendor((mainList.get(i).getVendor()));
-				model.setDeviceType(mainList.get(i).getDeviceType());
+				model.setDeviceFamily(mainList.get(i).getDeviceFamily());
 				model.setDeviceModel(mainList.get(i).getDeviceModel());
 				model.setOs(mainList.get(i).getOs());
 				model.setOsVersion(mainList.get(i).getOsVersion());
@@ -1457,7 +1433,7 @@ public class TestStrategyController {
 				child.setVersion(mainList.get(i).getVersion());
 				child.setTestId(mainList.get(i).getTestId());
 				child.setVendor((mainList.get(i).getVendor()));
-				child.setDeviceType(mainList.get(i).getDeviceType());
+				child.setDeviceFamily(mainList.get(i).getDeviceFamily());
 				child.setDeviceModel(mainList.get(i).getDeviceModel());
 				child.setOs(mainList.get(i).getOs());
 				child.setOsVersion(mainList.get(i).getOsVersion());
@@ -1495,7 +1471,7 @@ public class TestStrategyController {
 						child.setVersion(mainList.get(i).getVersion());
 						child.setTestId(mainList.get(i).getTestId());
 						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceType(mainList.get(i).getDeviceType());
+						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
 						child.setDeviceModel(mainList.get(i).getDeviceModel());
 						child.setOs(mainList.get(i).getOs());
 						child.setOsVersion(mainList.get(i).getOsVersion());
@@ -1535,7 +1511,7 @@ public class TestStrategyController {
 					model.setFullTestName(mainList.get(i).getTestName());
 					model.setTestId(mainList.get(i).getTestId());
 					model.setVendor((mainList.get(i).getVendor()));
-					model.setDeviceType(mainList.get(i).getDeviceType());
+					model.setDeviceFamily(mainList.get(i).getDeviceFamily());
 					model.setDeviceModel(mainList.get(i).getDeviceModel());
 					model.setOs(mainList.get(i).getOs());
 					model.setOsVersion(mainList.get(i).getOsVersion());
@@ -1559,7 +1535,7 @@ public class TestStrategyController {
 					child.setVersion(mainList.get(i).getVersion());
 					child.setTestId(mainList.get(i).getTestId());
 					child.setVendor((mainList.get(i).getVendor()));
-					child.setDeviceType(mainList.get(i).getDeviceType());
+					child.setDeviceFamily(mainList.get(i).getDeviceFamily());
 					child.setDeviceModel(mainList.get(i).getDeviceModel());
 					child.setOs(mainList.get(i).getOs());
 					child.setOsVersion(mainList.get(i).getOsVersion());
@@ -1604,7 +1580,7 @@ public class TestStrategyController {
 						child.setVersion(mainList.get(i).getVersion());
 						child.setTestId(mainList.get(i).getTestId());
 						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceType(mainList.get(i).getDeviceType());
+						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
 						child.setDeviceModel(mainList.get(i).getDeviceModel());
 						child.setOs(mainList.get(i).getOs());
 						child.setOsVersion(mainList.get(i).getOsVersion());
@@ -1630,7 +1606,7 @@ public class TestStrategyController {
 						child.setVersion(mainList.get(i).getVersion());
 						child.setTestId(mainList.get(i).getTestId());
 						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceType(mainList.get(i).getDeviceType());
+						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
 						child.setDeviceModel(mainList.get(i).getDeviceModel());
 						child.setOs(mainList.get(i).getOs());
 						child.setOsVersion(mainList.get(i).getOsVersion());
@@ -1660,12 +1636,9 @@ public class TestStrategyController {
 
 	}
 
-	@SuppressWarnings({ "null", "unchecked" })
 	@POST
 	@RequestMapping(value = "/getDeviceInfoByHostName", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response getDeviceInfo(@RequestBody String request) throws ParseException {
-
-		JSONObject obj = new JSONObject();
 
 		String key = "", value = "";
 
@@ -1675,9 +1648,7 @@ public class TestStrategyController {
 
 		key = (String) json.get("key");
 		value = (String) json.get("value");
-
-		RequestInfoDao dao = new RequestInfoDao();
-
+		
 		List<RequestInfoEntity> mainList = new ArrayList<RequestInfoEntity>();
 
 		if (value != null && !value.isEmpty()) {
@@ -1715,7 +1686,7 @@ public class TestStrategyController {
 		HashSet<String> testNameList = new HashSet<>();
 		String response = null;
 
-		String deviceType = null, deviceModel = null, vendor = null, os = null, osVersion = null, region = null,
+		String deviceFamily = null, deviceModel = null, vendor = null, os = null, osVersion = null, region = null,
 				networkType = null, requestType = null;
 		JSONParser parser = new JSONParser();
 		JSONObject json;
@@ -1732,8 +1703,8 @@ public class TestStrategyController {
 					}
 				}
 			}
-			if (json.containsKey("deviceType")) {
-				deviceType = json.get("deviceType").toString();
+			if (json.containsKey("deviceFamily")) {
+				deviceFamily = json.get("deviceFamily").toString();
 			}
 			if (json.containsKey("vendor")) {
 				vendor = json.get("vendor").toString();
@@ -1761,8 +1732,8 @@ public class TestStrategyController {
 			String testName = null;
 			masterTestDetails = predefineTestDetailsRepository.findAll();
 			testDetailsList = testDetailsRepository
-					.findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(
-							deviceType, deviceModel, os, osVersion, vendor, region, networkType);
+					.findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(
+							deviceFamily, deviceModel, os, osVersion, vendor, region, networkType);
 			String testCategory = null;
 			for (int i = 0; i < testDetailsList.size(); i++) {
 				switch (requestType) {
@@ -1792,8 +1763,8 @@ public class TestStrategyController {
 			while (itrator.hasNext()) {
 				testName = itrator.next();
 				testDetailsListAllVersion = testDetailsRepository
-						.findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(
-								deviceType, deviceModel, os, osVersion, vendor, region, testName);
+						.findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(
+								deviceFamily, deviceModel, os, osVersion, vendor, region, testName);
 
 				for (int i = 0; i < testDetailsListAllVersion.size(); i++) {
 
@@ -1803,8 +1774,8 @@ public class TestStrategyController {
 				}
 
 				testDetailsListLatestVersion = testDetailsRepository
-						.findByDeviceTypeAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
-								deviceType, deviceModel, os, osVersion, vendor, region, version, testName);
+						.findByDeviceFamilyAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
+								deviceFamily, deviceModel, os, osVersion, vendor, region, version, testName);
 
 				if (null != testDetailsListLatestVersion || !testDetailsListLatestVersion.isEmpty()) {
 
@@ -1861,13 +1832,14 @@ public class TestStrategyController {
 		return Response.status(200).entity(testDetails).build();
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getAllVersion", method = { RequestMethod.POST,
 			RequestMethod.PUT }, produces = "application/json", consumes = "application/json")
 	public Response getAllVersion(@RequestBody String request) throws ParseException {
 		JSONObject obj = new JSONObject();
 		JSONArray arrayElementOneArray = new JSONArray();
-		HashSet<String> set = new HashSet();
+		HashSet<String> set = new HashSet<>();
 		List<FirmwareUpgradeDetail> mainList = new ArrayList<FirmwareUpgradeDetail>();
 		List<FirmwareUpgradeDetail> mainList1 = new ArrayList<FirmwareUpgradeDetail>();
 		String vendorName = "", isVendor = null, secondCheck = null, isFamily = null, isVersion = null;
@@ -1926,57 +1898,37 @@ public class TestStrategyController {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/searchAllRequest", method = { RequestMethod.POST,
 			RequestMethod.PUT }, produces = "application/json", consumes = "application/json")
 	public Response searchAllRequest(@RequestBody String request) throws ParseException {
 		JSONObject obj = new JSONObject();
-		JSONArray arrayElementOneArray = new JSONArray();
 		DeviceDiscoveryEntity entity = new DeviceDiscoveryEntity();
 		SiteInfoEntity entity1 = new SiteInfoEntity();
 		List<DeviceDiscoveryEntity> mainList = new ArrayList<DeviceDiscoveryEntity>();
 		List<DeviceDiscoveryEntity> mainList2 = new ArrayList<DeviceDiscoveryEntity>();
 		List<SiteInfoEntity> mainList1 = new ArrayList<SiteInfoEntity>();
-		String vendorName = null, vendorFamily = null, osVersion = "", customer = null, region = null, site = null;
+		String vendorName = null;
 
 		JSONParser parser = new JSONParser();
 
 		JSONObject json = (JSONObject) parser.parse(request);
 
-		vendorName = (String) json.get("vendor");
-		vendorFamily = (String) json.get("family");
-		osVersion = (String) json.get("osVersion");
-		customer = (String) json.get("customer");
-		region = (String) json.get("region");
-		site = (String) json.get("site");
+		vendorName = (String) json.get("vendor");		
 
 		mainList = deviceDiscoveryRepository.findAllByDVendor(vendorName);
 
 		for (int i = 0; i < mainList.size(); i++) {
-
-			String osVersionNew = mainList.get(i).getdOsVersion();
-
-			// mainList1 = siteInfoRepository.findAll();
-			String s = "200";
-			int j = Integer.parseInt(osVersionNew);
-			// Integer j=Integer.valueOf(osVersionNew);
-			// int k=Integer.parseInt(osVersion);
-			// Integer k=Integer.valueOf(osVersion);
-
-			// if(j < k)
-			{
-				entity.setdHostName(mainList.get(i).getdHostName());
-				entity.setdMgmtIp(mainList.get(i).getdMgmtIp());
-				entity.setdOs(mainList.get(i).getdOs());
-				// entity.setdOsVersion(osVersionNew);
-				entity.setdContact(mainList.get(i).getdContact());
-				entity1.setcCustName(mainList1.get(i).getcCustName());
-				entity.setdModel(mainList.get(i).getdModel());
-				entity.setdType(mainList.get(i).getdType());
-				entity.setCustSiteId(entity1);
-				mainList2.add(entity);
-			}
-
+			entity.setdHostName(mainList.get(i).getdHostName());
+			entity.setdMgmtIp(mainList.get(i).getdMgmtIp());
+			entity.setdOs(mainList.get(i).getdOs());
+			entity.setdContact(mainList.get(i).getdContact());
+			entity1.setcCustName(mainList1.get(i).getcCustName());
+			entity.setdModel(mainList.get(i).getdModel());
+			entity.setdType(mainList.get(i).getdType());
+			entity.setCustSiteId(entity1);
+			mainList2.add(entity);
 		}
 
 		obj.put("Firmware Upgrade", mainList2);

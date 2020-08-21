@@ -69,19 +69,27 @@ public class TemplateManagementService implements Observer {
 
 			JSONObject json = (JSONObject) parser.parse(newFeature);
 			AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
-
-			addNewFeatureTemplateMngmntPojo.setTemplateid(json.get("templateId").toString());
-			addNewFeatureTemplateMngmntPojo.setFeatureName(json.get("featureName").toString());
-			addNewFeatureTemplateMngmntPojo.setParentName(json.get("isAParent").toString());
+			if (json.get("templateId") != null) {
+				addNewFeatureTemplateMngmntPojo.setTemplateid(json.get("templateId").toString());
+			}
+			if (json.get("featureName") != null) {
+				addNewFeatureTemplateMngmntPojo.setFeatureName(json.get("featureName").toString());
+			}
+			if (json.get("isAParent") != null) {
+				addNewFeatureTemplateMngmntPojo.setParentName(json.get("isAParent").toString());
+			}
 			JSONArray cmdArray = (JSONArray) (json.get("commands"));
-
 			CommandPojo commandPojo = null;
 			List<CommandPojo> commandPojoList = new ArrayList<CommandPojo>();
 			for (int i = 0; i < cmdArray.size(); i++) {
 				JSONObject obj1 = (JSONObject) cmdArray.get(i);
 				commandPojo = new CommandPojo();
-				commandPojo.setCommand_value(obj1.get("commandLine").toString());
-				commandPojo.setNo_command_value(obj1.get("nocommandLine").toString());
+				if (obj1.get("commandLine") != null) {
+					commandPojo.setCommand_value(obj1.get("commandLine").toString());
+				}
+				if (obj1.get("nocommandLine") != null) {
+					commandPojo.setNo_command_value(obj1.get("nocommandLine").toString());
+				}
 				commandPojoList.add(commandPojo);
 			}
 			addNewFeatureTemplateMngmntPojo.setCmdList(commandPojoList);
@@ -95,25 +103,33 @@ public class TemplateManagementService implements Observer {
 			JSONArray attribMapArray = (JSONArray) (json.get("attribMappings"));
 			if (attribMapArray != null) {
 				TemplateFeatureEntity currentFeature = templateFeatureRepo.findByCommandAndComandDisplayFeature(
-						json.get("templateId").toString(), json.get("featureName").toString());
+						addNewFeatureTemplateMngmntPojo.getTemplateid(),
+						addNewFeatureTemplateMngmntPojo.getFeatureName());
 				List<MasterAttribPojo> templateAttribList = new ArrayList<MasterAttribPojo>();
 
 				for (int i = 0; i < attribMapArray.size(); i++) {
 
 					JSONObject jsonObj = (JSONObject) attribMapArray.get(i);
 					MasterAttribPojo templatePojo = new MasterAttribPojo();
-					templatePojo.setAttribLabel(jsonObj.get("attribLabel").toString());
-					templatePojo.setAttribute(jsonObj.get("attribute").toString());
-					if (jsonObj.containsKey("validations")) {
-						JSONArray jsonValidationArr = (JSONArray) jsonObj.get("validations");
-						String[] validationArr = new String[jsonValidationArr.size()];
-						for (int j = 0; j < jsonValidationArr.size(); j++) {
-							validationArr[j] = jsonValidationArr.get(j).toString();
-						}
-
-						templatePojo.setValidations(validationArr);
+					if (jsonObj.get("attribLabel") != null) {
+						templatePojo.setAttribLabel(jsonObj.get("attribLabel").toString());
 					}
-					templatePojo.setUiControl(jsonObj.get("uiControl").toString());
+					if (jsonObj.get("attribute") != null) {
+						templatePojo.setAttribute(jsonObj.get("attribute").toString());
+					}
+					if (jsonObj.containsKey("validations")) {
+						if (jsonObj.get("validations") != null) {
+							JSONArray jsonValidationArr = (JSONArray) jsonObj.get("validations");
+							String[] validationArr = new String[jsonValidationArr.size()];
+							for (int j = 0; j < jsonValidationArr.size(); j++) {
+								validationArr[j] = jsonValidationArr.get(j).toString();
+							}
+							templatePojo.setValidations(validationArr);
+						}
+					}
+					if (jsonObj.get("uiControl") != null) {
+						templatePojo.setUiControl(jsonObj.get("uiControl").toString());
+					}
 					if (jsonObj.containsKey("category")) {
 						if (jsonObj.get("category") != null) {
 							templatePojo.setCategory(jsonObj.get("category").toString());
@@ -185,48 +201,13 @@ public class TemplateManagementService implements Observer {
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
-	/*
-	 * @SuppressWarnings("unchecked")
-	 * 
-	 * @POST
-	 * 
-	 * @RequestMapping(value = "/saveCommandWithPosition", method =
-	 * RequestMethod.POST, consumes = "application/json", produces =
-	 * "application/json")
-	 * 
-	 * @ResponseBody public Response saveCommandWithPosition(@RequestBody String
-	 * templateId) { JSONParser parser = new JSONParser(); JSONObject obj = new
-	 * JSONObject();
-	 * 
-	 * TemplateManagementNewService templateManagementNewService = new
-	 * TemplateManagementNewService(); String finalJsonArray = ""; try {
-	 * 
-	 * List<GetTemplateMngmntActiveDataPojo> templateactiveList =
-	 * templateManagementNewService .getDataForRightPanel(templateId, true);
-	 * 
-	 * obj.put(new String("output"), templateactiveList); } catch (Exception e) {
-	 * e.printStackTrace(); }
-	 * 
-	 * return Response .status(200) .header("Access-Control-Allow-Origin", "*")
-	 * .header("Access-Control-Allow-Headers",
-	 * "origin, content-type, accept, authorization")
-	 * .header("Access-Control-Allow-Credentials", "true")
-	 * .header("Access-Control-Allow-Methods",
-	 * "GET, POST, PUT, DELETE, OPTIONS, HEAD") .header("Access-Control-Max-Age",
-	 * "1209600").entity(obj) .build(); }
-	 * 
-	 * @Override public void update(Observable o, Object arg) { // TODO
-	 * Auto-generated method stub
-	 * 
-	 * }
-	 */
-
+	
 	@POST
 	@RequestMapping(value = "/saveFinalTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response saveFinalTemplate(@RequestBody String newFeature) {
 		JSONParser parser = new JSONParser();
-		JSONObject obj = new JSONObject();
+		
 		TemplateManagementDB templateDao = new TemplateManagementDB();
 		GetTemplateConfigurationData templateSaveFlowService = new GetTemplateConfigurationData();
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();

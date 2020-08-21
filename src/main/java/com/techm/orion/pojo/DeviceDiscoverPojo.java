@@ -12,7 +12,7 @@ public class DeviceDiscoverPojo {
 	private String vendor;
 
 	
-	private String series;
+	private String deviceFamily;
 
 	
 	private String model;
@@ -55,12 +55,12 @@ public class DeviceDiscoverPojo {
 		this.vendor = vendor;
 	}
 
-	public String getSeries() {
-		return series;
+	public String getDeviceFamily() {
+		return deviceFamily;
 	}
 
-	public void setSeries(String series) {
-		this.series = series;
+	public void setDeviceFamily(String deviceFamily) {
+		this.deviceFamily = deviceFamily;
 	}
 
 	public String getModel() {

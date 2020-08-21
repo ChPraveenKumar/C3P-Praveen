@@ -400,6 +400,8 @@ public class BackUpAndRestoreController {
 				requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
 
 				requestInfoEntity.setRequestVersion(1.0);
+				
+				requestInfoEntity.setFamily(requestDetail.get(i).getdDeviceFamily());
 
 				requestInfoEntity.setSiteName(requestDetail.get(i).getCustSiteId().getcSiteName());
 				requestInfoEntity.setCertificationSelectionBit("1010011");
@@ -694,6 +696,8 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setVendor(requestDetail.get(i).getdVendor());
 
 					requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
+					
+					requestInfoEntity.setFamily(requestDetail.get(i).getdDeviceFamily());
 
 					requestInfoEntity.setRequestVersion(request_version);
 
@@ -934,7 +938,7 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
 
 						requestInfoEntity.setRequestVersion(request_version);
-						requestInfoEntity.setFamily(requestDetail.get(i).getdSeries());
+						requestInfoEntity.setFamily(requestDetail.get(i).getdDeviceFamily());
 						requestInfoEntity.setStartUp(false);
 
 						requestInfoEntity.setSiteName(requestDetail.get(i).getCustSiteId().getcSiteName());
@@ -1092,7 +1096,7 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
 
 					requestInfoEntity.setRequestVersion(request_version);
-					requestInfoEntity.setFamily(requestDetail.get(i).getdSeries());
+					requestInfoEntity.setFamily(requestDetail.get(i).getdDeviceFamily());
 					requestInfoEntity.setStartUp(false);
 
 					requestInfoEntity.setSiteName(requestDetail.get(i).getCustSiteId().getcSiteName());
@@ -1250,7 +1254,7 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
 
 					requestInfoEntity.setRequestVersion(request_version);
-					requestInfoEntity.setFamily(requestDetail.get(i).getdSeries());
+					requestInfoEntity.setFamily(requestDetail.get(i).getdDeviceFamily());
 					requestInfoEntity.setStartUp(false);
 
 					requestInfoEntity.setSiteName(requestDetail.get(i).getCustSiteId().getcSiteName());
@@ -1386,14 +1390,14 @@ public class BackUpAndRestoreController {
 					object.put("managementIp", "");
 
 				}
-				object.put("type", "Router");
-				if( getAllDevice.get(i).getdSeries()!=null)
+				object.put("DeviceFamily", getAllDevice.get(i).getdDeviceFamily());
+				if( getAllDevice.get(i).getdDeviceFamily()!=null)
 				{
-				object.put("series", getAllDevice.get(i).getdSeries());
+				object.put("DeviceFamily", getAllDevice.get(i).getdDeviceFamily());
 				}
 				else
 				{
-					object.put("series", "");
+					object.put("DeviceFamily", "");
 
 				}
 				if(getAllDevice.get(i).getdModel()!=null)
@@ -1563,7 +1567,7 @@ public class BackUpAndRestoreController {
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
 				object.put("type", "Router");
-				object.put("series", getAllDevice.get(i).getdSeries());
+				object.put("series", getAllDevice.get(i).getdDeviceFamily());
 				object.put("model", getAllDevice.get(i).getdModel());
 				object.put("os", getAllDevice.get(i).getdOs());
 				object.put("osVersion", getAllDevice.get(i).getdOsVersion());

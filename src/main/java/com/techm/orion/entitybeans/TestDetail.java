@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * This class will work as entity class
  */
 @Entity
-@Table(name = "T_TSTSTRATEGY_M_TSTDETAILS")
+@Table(name = "t_tststrategy_m_tstdetails")
 public class TestDetail implements Serializable
 
 {
@@ -46,17 +46,14 @@ public class TestDetail implements Serializable
 	@Column(name = "testCommand")
 	private String testCommand;
 
-	@Column(name = "testType")
-	private String testType;
-
 	@Column(name = "testName")
 	private String testName;
 
 	@Column(name = "testCategory")
 	private String testCategory;
 
-	@Column(name = "deviceType")
-	private String deviceType;
+	@Column(name = "deviceFamily")
+	private String deviceFamily;
 
 	@Column(name = "vendor")
 	private String vendor;
@@ -84,6 +81,9 @@ public class TestDetail implements Serializable
 
 	@Column(name = "version")
 	private String version;
+
+	@Column(name = "testType")
+	private String testType;
 
 	private boolean isEnabled = false;
 
@@ -141,6 +141,14 @@ public class TestDetail implements Serializable
 		this.listRules = listRules;
 	}
 
+	public String getTestType() {
+		return testType;
+	}
+
+	public void setTestType(String testType) {
+		this.testType = testType;
+	}
+
 	public List<TestFeatureList> getListFeatures() {
 		return listFeatures;
 	}
@@ -149,12 +157,12 @@ public class TestDetail implements Serializable
 		this.listFeatures = listFeatures;
 	}
 
-	public String getDeviceType() {
-		return deviceType;
+	public String getDeviceFamily() {
+		return deviceFamily;
 	}
 
-	public void setDeviceType(String deviceType) {
-		this.deviceType = deviceType;
+	public void setDeviceFamily(String deviceFamily) {
+		this.deviceFamily = deviceFamily;
 	}
 
 	public String getVendor() {
@@ -259,14 +267,6 @@ public class TestDetail implements Serializable
 
 	public void setTestCommand(String testCommand) {
 		this.testCommand = testCommand;
-	}
-
-	public String getTestType() {
-		return testType;
-	}
-
-	public void setTestType(String testType) {
-		this.testType = testType;
 	}
 
 	public Set<TestRules> getTestrules() {

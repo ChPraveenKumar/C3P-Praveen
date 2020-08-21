@@ -7,21 +7,19 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
-@Table(name = "T_TPMGMT_GLBLIST_M_Vendor", uniqueConstraints = { @UniqueConstraint(columnNames = { "vendor" }) })
+@Table(name = "c3p_t_glblist_m_vendor", uniqueConstraints = { @UniqueConstraint(columnNames = { "vendor" }) })
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class Vendors implements Serializable {
 
@@ -36,6 +34,9 @@ public class Vendors implements Serializable {
 
 	@Column(name = "vendor")
 	private String vendor;
+	
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "vendor")
+	private Set<DeviceFamily> deviceFamily = new HashSet<DeviceFamily>();
 
 	@Transient
 	private boolean value = false;
@@ -79,36 +80,15 @@ public class Vendors implements Serializable {
 
 	public void setValue(boolean value) {
 		this.value = value;
+	}	
+
+	@JsonManagedReference
+	public Set<DeviceFamily> getDeviceFamily() {
+		return deviceFamily;
 	}
 
-	@JsonIgnore
-	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "vendor")
-	private Set<OS> os;
-
-	@JsonIgnore
-	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "vendor")
-	private Set<Models> models;
-
-	public Set<Models> getModels() {
-		return models;
-	}
-
-	public void setModels(Set<Models> models) {
-		this.models = models;
-	}
-
-	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE
-
-	})
-
-	private Set<DeviceTypes> devicetypes = new HashSet<DeviceTypes>();
-
-	public Set<OS> getOs() {
-		return os;
-	}
-
-	public void setOs(Set<OS> os) {
-		this.os = os;
+	public void setDeviceFamily(Set<DeviceFamily> devicefamily) {
+		this.deviceFamily = devicefamily;
 	}
 
 	public int getId() {
@@ -125,14 +105,6 @@ public class Vendors implements Serializable {
 
 	public void setVendor(String vendor) {
 		this.vendor = vendor;
-	}
-
-	public Set<DeviceTypes> getDevicetypes() {
-		return devicetypes;
-	}
-
-	public void setDevicetypes(Set<DeviceTypes> devicetypes) {
-		this.devicetypes = devicetypes;
 	}
 
 }

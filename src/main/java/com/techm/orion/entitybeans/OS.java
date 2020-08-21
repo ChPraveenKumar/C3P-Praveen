@@ -10,18 +10,16 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
-import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 //test commit
 
 @Entity
-@Table(name = "T_TPMGMT_GLBLIST_M_OS", uniqueConstraints = { @UniqueConstraint(columnNames = { "os" }) })
-// @Table(name = "T_TPMGMT_GLBLIST_M_OS")
+@Table(name = "c3p_t_glblist_m_os")
 public class OS implements Serializable {
 
 	/**
@@ -35,14 +33,15 @@ public class OS implements Serializable {
 
 	private String os;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
-	@JoinColumn(name = "vendor_id")
-	private Vendors vendor;
-
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "os")
 	private Set<OSversion> osversion;
 
+	@OneToOne(cascade = { CascadeType.ALL })
+	@JoinColumn(name="device_family")
+	private DeviceFamily deviceFamily;
+	
+	
 	public Set<OSversion> getOsversion() {
 		return osversion;
 	}
@@ -67,12 +66,12 @@ public class OS implements Serializable {
 		this.os = os;
 	}
 
-	public Vendors getVendor() {
-		return vendor;
+	public DeviceFamily getDeviceFamily() {
+		return deviceFamily;
 	}
 
-	public void setVendor(Vendors vendor) {
-		this.vendor = vendor;
+	public void setDeviceFamily(DeviceFamily deviceFamily) {
+		this.deviceFamily = deviceFamily;
 	}
 
 }

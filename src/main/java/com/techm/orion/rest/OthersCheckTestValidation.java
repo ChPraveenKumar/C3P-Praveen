@@ -170,7 +170,6 @@ public class OthersCheckTestValidation extends Thread {
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
 							RequestInfoDao dao = new RequestInfoDao();
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-							TestDetail test = new TestDetail();
 							listOfTests = dao.findTestFromTestStrategyDB(configRequest.getModel(),
 									configRequest.getDeviceType(), configRequest.getOs(), configRequest.getOsVersion(),
 									configRequest.getVendor(), configRequest.getRegion(), "Others");
@@ -376,9 +375,9 @@ public class OthersCheckTestValidation extends Thread {
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
 							RequestInfoDao dao = new RequestInfoDao();
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-							TestDetail test = new TestDetail();
+							//TestDetail test = new TestDetail();
 							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getModel(),
-									requestinfo.getDeviceType(), requestinfo.getOs(), requestinfo.getOsVersion(),
+									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Others");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Others",version);

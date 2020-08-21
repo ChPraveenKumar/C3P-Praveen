@@ -133,7 +133,7 @@ public class InventoryManagmentService {
 			deviceinfoPojo.setOs(deviceinfo.getdOs());
 			deviceinfoPojo.setOsVersion(deviceinfo.getdOsVersion());
 			deviceinfoPojo.setVendor(deviceinfo.getdVendor());
-			deviceinfoPojo.setSeries(deviceinfo.getdSeries());
+			deviceinfoPojo.setDeviceFamily(deviceinfo.getdDeviceFamily());
 			deviceinfoPojo.setType(deviceinfo.getdType());
 			deviceinfoPojo.setModel(deviceinfo.getdModel());
 			deviceinfoPojo.setVnfSupport(deviceinfo.getdVNFSupport());

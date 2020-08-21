@@ -30,23 +30,8 @@ public interface CustomerStagingImportRepo extends JpaRepository<CustomerStaging
 	int updateResultExisting(@Param("iPV4ManagementAddress") String iPV4ManagementAddress,
 			@Param("importId") String importId);
 
-	@Query("SELECT new com.techm.orion.entitybeans.CustomerStagingEntity (count(distinct importId) AS countStatus, userName, count(importId) AS totalDevices,"
-			+ "count(case when result='New' then 1 end) as count_new,"
-			+ "count( case when result='Existing' then 1 end) as count_existing ,count( case when outcome_result='Success' then 1 end) as count_success ,"
-			+ "count( case when outcome_result='Exception' then 1 end) as count_exception,"
-			+ "importId, executionDate, status," + "createdBy)  FROM CustomerStagingEntity group by importId")
-	List<CustomerStagingEntity> findAllStaggingData();
-
-	@Query("SELECT new com.techm.orion.entitybeans.CustomerStagingEntity ( count(distinct importId) AS countStatus, userName, count(importId) AS totalDevices,"
-			+ "count(case when result='New' then 1 end) as count_new,"
-			+ "count( case when result='Existing' then 1 end) as count_existing ,count( case when outcome_result='Success' then 1 end) as count_success ,"
-			+ "count( case when outcome_result='Exception' then 1 end) as count_exception,"
-			+ "importId, executionDate, status,"
-			+ "createdBy)  FROM CustomerStagingEntity where userName=:userName  group by importId")
-	List<CustomerStagingEntity> findMyStaggingData(@Param("userName") String userName);
-
 	@Query("SELECT new com.techm.orion.entitybeans.CustomerStagingEntity (hostname,iPV4ManagementAddress, result, outcomeResult,"
-			+ "rootCause)  FROM CustomerStagingEntity where importId=:importId")
+			+ "rootCause, iPV6ManagementAddress)  FROM CustomerStagingEntity where importId=:importId")
 	List<CustomerStagingEntity> generateReport(@Param("importId") String importId);
 
 	@Query("SELECT new com.techm.orion.entitybeans.CustomerStagingEntity (executionDate, count(importId) AS totalDevices,createdBy, "
@@ -63,16 +48,16 @@ public interface CustomerStagingImportRepo extends JpaRepository<CustomerStaging
 			+ "osVersion ) FROM CustomerStagingEntity where importId=:importId")
 	List<CustomerStagingEntity> checkSupportedFields(@Param("importId") String importId);
 
-	@Query(value = "SELECT distinct model  FROM t_tpmgmt_glblist_m_models", nativeQuery = true)
+	@Query(value = "SELECT distinct model  FROM c3p_t_glblist_m_models", nativeQuery = true)
 	List<String> findModel();
 
-	@Query(value = "SELECT vendor FROM t_tpmgmt_glblist_m_vendor", nativeQuery = true)
+	@Query(value = "SELECT vendor FROM c3p_t_glblist_m_vendor", nativeQuery = true)
 	List<String> findSupportedVendor();
 
-	@Query(value = "SELECT distinct os FROM t_tpmgmt_glblist_m_os", nativeQuery = true)
+	@Query(value = "SELECT distinct os FROM c3p_t_glblist_m_os", nativeQuery = true)
 	List<String> findOS();
 
-	@Query(value = "SELECT distinct osversion FROM t_tpmgmt_glblist_m_osversion", nativeQuery = true)
+	@Query(value = "SELECT distinct osversion FROM c3p_t_glblist_m_osversion", nativeQuery = true)
 	List<String> findOSVersion();
 
 	@Query("SELECT c FROM CustomerStagingEntity c where importId=:importId")
@@ -87,4 +72,7 @@ public interface CustomerStagingImportRepo extends JpaRepository<CustomerStaging
 			+ " contactNumber,country, market, siteRegion, siteState, siteStatus, siteSubregion FROM CustomerStagingEntity"
 			+ " where importId=:importId AND result in('New', 'Existing') AND outcomeResult='Success'")
 	List<CustomerStagingEntity> getStaggingData(@Param("importId") String importId);
+	
+	@Query(value = "SELECT device_family FROM c3p_t_glblist_m_device_family" , nativeQuery = true)
+	List<String> findFamily();
 }

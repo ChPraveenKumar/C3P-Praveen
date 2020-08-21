@@ -36,7 +36,7 @@ import com.techm.orion.entitybeans.ImportMasterStagingEntity;
 import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.DeviceInterfaceRepo;
-import com.techm.orion.repositories.DiscrepancyMsgRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ImportMasterStagingRepo;
 import com.techm.orion.repositories.InternetInfoRepo;
 import com.techm.orion.repositories.RequestDetailsImportRepo;
@@ -81,7 +81,7 @@ public class ImportFile {
 	private ExcelFileValidation excelFileValidation;
 	
 	@Autowired
-	DiscrepancyMsgRepository msgRepo;
+	public ErrorValidationRepository errorValidationRepository;
 	
 	@Autowired
 	CustomerStagingInteface customerStagingInteface;
@@ -439,18 +439,20 @@ public class ImportFile {
 		return sb.toString().concat("-1");
 	}
 
-	/* Web service call to validate file against predefine set of rules for Customer OnBoarding process */
+	/*
+	 * Web service call to validate file against predefine set of rules for
+	 * Customer OnBoarding process
+	 */
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/fileValidationCSVForCOB", method = RequestMethod.POST, produces = "application/json")
 	@ResponseBody
 	public ResponseEntity handleFileValidationForCOB(@RequestParam("file") MultipartFile file) {
-		
-		logger.info("\n" + "Inside fileValidationCSVForCOB Service");
+
+		logger.info("Inside fileValidationCSVForCOB Service");
 		JSONObject obj = new JSONObject();
-		Map<String, List> validateFileColumn =null;
-		Map<String, String> validateNoOfRequest =null;
-		boolean status= false;
+		Map<String, List<String>> validateFileColumn = null;
+		boolean status = false;
 		try {
 			String FILE_NAME = file.getOriginalFilename();
 			/* Loading file path from properties file */
@@ -463,56 +465,54 @@ public class ImportFile {
 			String TOTAL_FILE_PATH = FILE_LOCAL_PATH.concat(fileNameAsImport.concat("_").concat(FILE_NAME));
 			files.add(file.getOriginalFilename());
 			boolean flagCSV = false;
-
-			//ExcelFileValidation fileValidation = new ExcelFileValidation();
 			String extension = FilenameUtils.getExtension(file.getOriginalFilename());
 			Resource filePath = storageService.loadFile(TOTAL_FILE_PATH);
 
 			if (extension.equals("csv")) {
 				flagCSV = true;
 			} else {
-				throw new IOException(msgRepo.findDiscrepancyMsg("csv format"));
+				throw new IOException(errorValidationRepository.findByErrorId("C3P_CB_001"));
 			}
 
 			if (flagCSV) {
-			    validateFileColumn = excelFileValidation.validateColumnCSVForCOB(filePath);
-				
-				if (validateFileColumn !=null && validateFileColumn.containsKey("Valid")) {
-					validateNoOfRequest= excelFileValidation.validateColumnValuesCSVForCOB(filePath);
-
-					if (validateNoOfRequest.containsKey("Valid Single Request")) {
-						status= true;
-						obj.put(new String("response"), status);
-						obj.put(new String("successMessage"), validateNoOfRequest.get("Valid Single Request"));
-						obj.put(new String("errorMessage"), "");	
-
-					} else if (validateNoOfRequest.containsKey("Invalid Single Request")) {
-						status= false;
-						obj.put(new String("response"), status);
-						obj.put(new String("errorMessage"), validateNoOfRequest.get("Invalid Single Request"));
-						obj.put(new String("successMessage"), "");
-
-					} else if (validateNoOfRequest.containsKey("Valid Multiple Request")) {
-						status= true;
-						obj.put(new String("response"), status);
-						obj.put(new String("successMessage"), validateNoOfRequest.get("Valid Multiple Request"));
-						obj.put(new String("errorMessage"), "");
-					} else if (validateNoOfRequest.containsKey("Fields are missing")) {
-						status = false;
-						obj.put(new String("response"), status);
-						obj.put(new String("errorMessage"), validateNoOfRequest.get("Fields are missing"));
-						obj.put(new String("successMessage"), "");
-					} else if (validateNoOfRequest.containsKey("No records found")) {
-						status = false;
-						obj.put(new String("response"), status);
-						obj.put(new String("errorMessage"), validateNoOfRequest.get("No records found"));
-						obj.put(new String("successMessage"), "");
+				validateFileColumn = excelFileValidation.validateColumnCSVForCOB(filePath);
+				logger.info("validateFileColumn -->" + validateFileColumn);
+				if (validateFileColumn.containsKey("Valid")) {
+					status = true;
+					obj.put(new String("response"), status);
+					obj.put(new String("successMessage"), validateFileColumn.get("Valid"));
+					obj.put(new String("errorMessage"), "");
+				} else if (validateFileColumn.containsKey("C3P_CB_012")
+						|| validateFileColumn.containsKey("C3P_CB_014")) {
+					status = false;
+					StringBuilder errorMessage = new StringBuilder();
+					if (validateFileColumn.containsKey("C3P_CB_012")) {
+						errorMessage.append(excelFileValidation.getErrorInformation("C3P_CB_012",
+								validateFileColumn.get("C3P_CB_012")));
+						errorMessage.append("\n");
 					}
-
-				} else if (validateFileColumn.containsKey("mandatory csv col")) {
+					if (validateFileColumn.containsKey("C3P_CB_014")) {
+						errorMessage.append(excelFileValidation.getErrorInformation("C3P_CB_014",
+								validateFileColumn.get("C3P_CB_014")));
+					}
+					obj.put(new String("response"), status);
+					obj.put(new String("successMessage"), "");
+					obj.put(new String("errorMessage"), errorMessage);
+				} else if (validateFileColumn.containsKey("C3P_CB_013")) {
 					status = false;
 					obj.put(new String("response"), status);
-					obj.put(new String("errorMessage"), validateFileColumn.get("mandatory csv col").get(0));
+					obj.put(new String("errorMessage"), excelFileValidation.getErrorInformation("C3P_CB_013",
+							validateFileColumn.get("C3P_CB_013")));
+					obj.put(new String("successMessage"), "");
+				} else if (validateFileColumn.containsKey("error")) {
+					status = false;
+					obj.put(new String("response"), status);
+					obj.put(new String("errorMessage"), validateFileColumn.get("error").get(0));
+					obj.put(new String("successMessage"), "");
+				} else if (validateFileColumn.containsKey("error")) {
+					status = false;
+					obj.put(new String("response"), status);
+					obj.put(new String("errorMessage"), validateFileColumn.get("error").get(0));
 					obj.put(new String("successMessage"), "");
 				} else {
 					status = false;
@@ -527,7 +527,7 @@ public class ImportFile {
 			obj.put(new String("response"), status);
 			obj.put(new String("errorMessage"), e.getMessage());
 			obj.put(new String("successMessage"), "");
-			logger.error("\n" + "exception in fileValidationCSVForCOB service" + e.getMessage());
+			logger.error("exception in fileValidationCSVForCOB service" + e.getMessage());
 		}
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
@@ -542,25 +542,27 @@ public class ImportFile {
 	@ResponseBody
 	public ResponseEntity uploadCSVFile(@RequestParam("file") MultipartFile file, @RequestParam String userName) {
 
-		logger.info("\n" + "Inside csvFileSaveInDB Service");
+		logger.info("Inside csvFileSaveInDB Service");
 		JSONObject obj = new JSONObject();
 		boolean success = false;
+		List<Map<String, String>> consCSVData = null;
 		try {
-			success = customerStagingInteface.saveDataFromUploadFile(file, userName);
+			consCSVData = excelFileValidation.consolidateCSVData(file);
+			success = customerStagingInteface.saveDataFromUploadFile(consCSVData, userName);
             if(success== true)
             {
-            	obj.put("status", msgRepo.findDiscrepancyMsg("saved file"));
+            	obj.put("status", errorValidationRepository.findByErrorId("C3P_CB_009"));
             	obj.put("statusCode", success );
             }
             else
             {
-            	obj.put("status", msgRepo.findDiscrepancyMsg("not saved"));
+            	obj.put("status", errorValidationRepository.findByErrorId("C3P_CB_010"));
             	obj.put("statusCode", success );
             }
 		} catch (Exception e) {
 			obj.put(new String("status"), e.getMessage());
 			obj.put(new String("statusCode"), success);
-			logger.error("\n" + "exception in csvFileSaveInDB service" + e.getMessage());
+			logger.error("exception in csvFileSaveInDB service" + e.getMessage());
 
 		}
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
@@ -576,7 +578,7 @@ public class ImportFile {
 	@ResponseBody
 	public ResponseEntity dashboardData(@RequestParam String user,
 			@RequestParam String requestType) {
-		logger.info("\n" + "Inside getDashboardData Service");
+		logger.info("Inside getDashboardData Service");
 		JSONObject obj = new JSONObject();
 		List<ImportMasterStagingEntity> importMasterData =null;
 		int myRequestCount, allRequestCount= 0;
@@ -606,7 +608,7 @@ public class ImportFile {
             
 		} catch (Exception e) {
 			obj.put(new String("message"), e);
-			logger.error("\n" + "exception in getDashboardData service" + e.getMessage());
+			logger.error("exception in getDashboardData service" + e.getMessage());
 
 		}
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
@@ -622,7 +624,7 @@ public class ImportFile {
 	public ResponseEntity discoverDashboard(@RequestParam String user,
 			@RequestParam String requestType) {
 
-		logger.info("\n" + "Inside getMyDashboardData Service");
+		logger.info("Inside getMyDashboardData Service");
 		JSONObject obj = new JSONObject();
 		List<ImportMasterStagingEntity> importMasterData =null;
 		JSONArray outputArray = new JSONArray();
@@ -651,7 +653,7 @@ public class ImportFile {
             }
 		} catch (Exception e) {
 			obj.put(new String("message"), e);
-			logger.error("\n" + "exception in getMyDashboardData service" + e.getMessage());
+			logger.error("exception in getMyDashboardData service" + e.getMessage());
 		}
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 
@@ -667,7 +669,7 @@ public class ImportFile {
 	@ResponseBody
 	public ResponseEntity generateReportCOB(@RequestParam String importId) {
 
-		logger.info("\n" + "Inside generateReport Service");
+		logger.info("Inside generateReport Service");
 		JSONObject obj = new JSONObject();
 		List<CustomerStagingEntity> listStaggingData, listStaggingStatus =null;
 		JSONArray staggingArrayData = new JSONArray();
@@ -680,6 +682,7 @@ public class ImportFile {
 				object = new JSONObject();
 				object.put("hostname", entity.getHostname());
 				object.put("mgtmtIP", entity.getiPV4ManagementAddress());
+				object.put("ipv6Value", entity.getiPV6ManagementAddress());
 				object.put("result", entity.getResult());
 				object.put("status", entity.getOutcomeResult());
 				object.put("rootCause", entity.getRootCause());	
@@ -702,7 +705,7 @@ public class ImportFile {
             	obj.put("dashBoardStatus", staggingArrayStatus);
 		} catch (Exception e) {
 			obj.put(new String("message"), e);
-			logger.error("\n" + "exception in generateReport service" + e.getMessage());
+			logger.error("exception in generateReport service" + e.getMessage());
 		}
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 

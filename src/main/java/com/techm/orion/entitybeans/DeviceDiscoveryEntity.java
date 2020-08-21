@@ -44,8 +44,8 @@ public class DeviceDiscoveryEntity {
 	@Column(name = "d_vendor")
 	private String dVendor;
 
-	@Column(name = "d_sries")
-	private String dSeries;
+	@Column(name = "d_device_family")
+	private String dDeviceFamily;
 
 	@Column(name = "d_model")
 	private String dModel;
@@ -319,12 +319,12 @@ public class DeviceDiscoveryEntity {
 		this.dVendor = dVendor;
 	}
 
-	public String getdSeries() {
-		return dSeries;
+	public String getdDeviceFamily() {
+		return dDeviceFamily;
 	}
 
-	public void setdSeries(String dSeries) {
-		this.dSeries = dSeries;
+	public void setdDeviceFamily(String dDeviceFamily) {
+		this.dDeviceFamily = dDeviceFamily;
 	}
 
 	public String getdModel() {

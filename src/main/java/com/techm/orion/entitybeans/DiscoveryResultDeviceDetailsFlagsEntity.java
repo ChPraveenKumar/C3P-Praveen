@@ -84,8 +84,8 @@ public class DiscoveryResultDeviceDetailsFlagsEntity implements Serializable
 	@Column(name = "d_serial_number_flag", length = 10)
 	private String dSerialNumberFlag="0";
 
-	@Column(name = "d_sries_flag", length = 10)
-	private String dSriesFlag="0";
+	@Column(name = "d_device_family_flag", length = 10)
+	private String dDeviceFamilyFlag="0";
 
 	@Column(name = "d_upsince_flag", length = 10)
 	private String dUpsinceFlag="0";
@@ -228,12 +228,12 @@ public class DiscoveryResultDeviceDetailsFlagsEntity implements Serializable
 		this.dSerialNumberFlag = dSerialNumberFlag;
 	}
 
-	public String getdSriesFlag() {
-		return dSriesFlag;
+	public String getdDeviceFamilyFlag() {
+		return dDeviceFamilyFlag;
 	}
 
-	public void setdSriesFlag(String dSriesFlag) {
-		this.dSriesFlag = dSriesFlag;
+	public void setdDeviceFamilyFlag(String dDeviceFamilyFlag) {
+		this.dDeviceFamilyFlag = dDeviceFamilyFlag;
 	}
 
 	public String getdUpsinceFlag() {

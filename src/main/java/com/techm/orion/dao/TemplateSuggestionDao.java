@@ -622,7 +622,7 @@ public class TemplateSuggestionDao {
 			String status = null;
 			while (rs.next()) {
 				basicDetails.put("vendor", rs.getString("TempVendor"));
-				basicDetails.put("deviceType", rs.getString("TempDeviceType"));
+				basicDetails.put("deviceFamily", rs.getString("TempDeviceFamily"));
 				basicDetails.put("model", rs.getString("TempModel"));
 				basicDetails.put("region", rs.getString("TempRegion"));
 				basicDetails.put("os", rs.getString("TempDeviceOs"));
@@ -631,19 +631,7 @@ public class TemplateSuggestionDao {
 				basicDetails.put("raisedBy", rs.getString("createdby"));
 				basicDetails.put("networkType", rs.getString("networkType"));
 				String comment = rs.getString("comment_section");
-				// String suserComment = StringUtils.substringAfter(comment, "suser , ");
-				// suserComment = StringUtils.substringBefore(suserComment, "admin : ");
-				// String adminComment = StringUtils.substringAfter(comment, "admin : ");
-				// if (suserComment != null && !suserComment.equals("")) {
-				// String substring1 = suserComment.substring(0, 21);
-				// suserComment = StringUtils.substringAfter(suserComment, substring1);
-				// }
-				// if (adminComment != null && !adminComment.equals("")) {
-				// String substring = adminComment.substring(0, 21);
-				// adminComment = StringUtils.substringAfter(adminComment, substring);
-				// }
 				basicDetails.put("comment", comment);
-				// basicDetails.put("note", adminComment);
 				status = rs.getString("templateStatus");
 			}
 			rs = ps2.executeQuery();
@@ -707,7 +695,7 @@ public class TemplateSuggestionDao {
 		try {
 
 			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(TempId, '_V', templateVersion) from templateconfig_basic_details where templateStatus='Approved' and TempId LIKE ?)";
-			String query2 = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempId LIKE ?";
+			String query2 = "SELECT * FROM templateconfig_basic_details WHERE TempId LIKE ?";
 
 			preparedStmt = connection.prepareStatement(query2);
 			preparedStmt.setString(1, tempId+"%");

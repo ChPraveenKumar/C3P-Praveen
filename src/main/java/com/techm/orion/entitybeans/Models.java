@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 
-@Table(name = "T_TPMGMT_GLBLIST_M_Models")
+@Table(name = "c3p_t_glblist_m_models")
 public class Models implements Serializable{
 
 	/**
@@ -36,8 +36,8 @@ public class Models implements Serializable{
 	private String model;
 
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
-	@JoinColumn(name = "devicetype_id")
-	private DeviceTypes devicetype;
+	@JoinColumn(name = "devicefamily_id")
+	private DeviceFamily deviceFamily;
 
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "vendor_id")
@@ -123,11 +123,12 @@ public class Models implements Serializable{
 		this.model = model;
 	}
 
-	public DeviceTypes getDevicetype() {
-		return devicetype;
+	public DeviceFamily getDeviceFamily() {
+		return deviceFamily;
 	}
 
-	public void setDevicetype(DeviceTypes devicetype) {
-		this.devicetype = devicetype;
+	public void setDeviceFamily(DeviceFamily deviceFamily) {
+		this.deviceFamily = deviceFamily;
 	}
+
 }

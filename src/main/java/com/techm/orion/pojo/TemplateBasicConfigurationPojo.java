@@ -3,7 +3,7 @@ package com.techm.orion.pojo;
 public class TemplateBasicConfigurationPojo {
 
 	private String vendor;
-	private String deviceType;
+	private String deviceFamily;
 	private String model;
 	private String deviceOs;
 	private String osVersion;
@@ -95,11 +95,11 @@ public class TemplateBasicConfigurationPojo {
 	public void setVendor(String vendor) {
 		this.vendor = vendor;
 	}
-	public String getDeviceType() {
-		return deviceType;
+	public String getDeviceFamily() {
+		return deviceFamily;
 	}
-	public void setDeviceType(String deviceType) {
-		this.deviceType = deviceType;
+	public void setDeviceFamily(String deviceFamily) {
+		this.deviceFamily = deviceFamily;
 	}
 	public String getModel() {
 		return model;

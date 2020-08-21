@@ -74,7 +74,7 @@ public class ConfigMngmntService implements Observer {
 	public JSONObject createConfigurationDcm(@RequestBody String configRequest) {
 		// DcmConfigService dcmConfigService=new DcmConfigService();
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "", requestType = null;
+		String requestType = null;
 		String requestIdForConfig = "";
 		String res = "false";
 		String data = "Failure";
@@ -467,7 +467,7 @@ public class ConfigMngmntService implements Observer {
 				 * Atrribute
 				 */
 				String seriesId = dcmConfigService.getSeriesId(configReqToSendToC3pCode.getVendor(),
-						configReqToSendToC3pCode.getDeviceType(), configReqToSendToC3pCode.getModel());
+						configReqToSendToC3pCode.getFamily(), configReqToSendToC3pCode.getModel());
 				/* Get Series according to template id */
 				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
 				seriesId = templatemanagementDao.getSeriesId(configReqToSendToC3pCode.getTemplateID(), seriesId);
@@ -964,7 +964,7 @@ public class ConfigMngmntService implements Observer {
 				 * Atrribute
 				 */
 				String seriesId = dcmConfigService.getSeriesId(configReqToSendToC3pCode.getVendor(),
-						configReqToSendToC3pCode.getDeviceType(), configReqToSendToC3pCode.getModel());
+						configReqToSendToC3pCode.getFamily(), configReqToSendToC3pCode.getModel());
 				/* Get Series according to template id */
 				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
 				seriesId = templatemanagementDao.getSeriesId(configReqToSendToC3pCode.getTemplateID(), seriesId);
@@ -1615,7 +1615,7 @@ public class ConfigMngmntService implements Observer {
 			configReqToSendToC3pCode.setHostname(json.get("hostName").toString().toUpperCase());
 
 			configReqToSendToC3pCode.setVendor(json.get("vendor").toString().toUpperCase());
-			configReqToSendToC3pCode.setFamily(json.get("model").toString());
+			configReqToSendToC3pCode.setFamily(json.get("family").toString());
 
 			configReqToSendToC3pCode.setRequestVersion(1.0);
 
@@ -1712,7 +1712,7 @@ public class ConfigMngmntService implements Observer {
 				}
 
 				String seriesId = dcmConfigService.getSeriesId(configReqToSendToC3pCode.getVendor(),
-						configReqToSendToC3pCode.getDeviceType(), configReqToSendToC3pCode.getModel());
+						configReqToSendToC3pCode.getFamily(), configReqToSendToC3pCode.getModel());
 
 				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
 				seriesId = templatemanagementDao.getSeriesId(configReqToSendToC3pCode.getTemplateID(), seriesId);
