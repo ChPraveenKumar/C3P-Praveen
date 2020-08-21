@@ -621,13 +621,14 @@ public class CustomerStagingEntity implements Serializable {
 	}
 
 	public CustomerStagingEntity(String hostname, String iPV4ManagementAddress, String result, String outcomeResult,
-			String rootCause) {
+			String rootCause, String iPV6ManagementAddress) {
 		super();
 		this.result = result;
 		this.outcomeResult = outcomeResult;
 		this.rootCause = rootCause;
 		this.iPV4ManagementAddress = iPV4ManagementAddress;
 		this.hostname = hostname;
+		this.iPV6ManagementAddress =iPV6ManagementAddress;
 	}	
 	
 	public CustomerStagingEntity(Date executionDate,long totalDevices,String createdBy, long count_exception, 

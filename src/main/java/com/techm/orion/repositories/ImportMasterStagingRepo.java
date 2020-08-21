@@ -19,10 +19,10 @@ public interface ImportMasterStagingRepo extends JpaRepository<ImportMasterStagi
 	@Query("SELECT data FROM ImportMasterStagingEntity data where importId=:importId")
 	List<ImportMasterStagingEntity> getImportStaggingData(@Param("importId") String importId);
 	
-	@Query("SELECT allimport FROM ImportMasterStagingEntity allimport group by importId")
+	@Query("SELECT allimport FROM ImportMasterStagingEntity allimport")
 	List<ImportMasterStagingEntity> getAllImport();
 	
-	@Query("SELECT myimport FROM ImportMasterStagingEntity myimport where userName=:userName group by importId order by executionProcessDate Desc")
+	@Query("SELECT myimport FROM ImportMasterStagingEntity myimport where userName=:userName order by executionProcessDate Desc")
 	List<ImportMasterStagingEntity> getMyImport(@Param("userName") String userName);
 	
 	@Query("SELECT count(distinct importId) FROM ImportMasterStagingEntity where userName=:userName and status='Successful'")
