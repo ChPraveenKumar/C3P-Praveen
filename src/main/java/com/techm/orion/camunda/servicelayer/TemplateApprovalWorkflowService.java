@@ -90,8 +90,8 @@ public class TemplateApprovalWorkflowService implements Observer {
 				templateVersion = (json.get("templateVersion").toString());
 
 			} else {
-				templateVersion = templateId.substring(templateId.indexOf("v") + 1, templateId.length());
-				templateId = templateId.substring(0, templateId.indexOf("v") - 1);
+				templateVersion = templateId.substring(templateId.indexOf("V") + 1, templateId.length());
+				templateId = templateId.substring(0, templateId.indexOf("V") - 1);
 
 			}
 			status = json.get("status").toString();

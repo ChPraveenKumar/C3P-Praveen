@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
@@ -667,9 +666,9 @@ public class GetTemplateConfigurationData implements Observer {
 				if (json.get("readFlag") != null) {
 					dao.updateReadFlagForTemplate(
 							json.get("templateid").toString().substring(0,
-									json.get("templateid").toString().indexOf("v") - 1),
+									json.get("templateid").toString().indexOf("V") - 1),
 							json.get("templateid").toString().substring(
-									json.get("templateid").toString().indexOf("v") + 1,
+									json.get("templateid").toString().indexOf("V") + 1,
 									json.get("templateid").toString().length()),
 							json.get("readFlag").toString());
 				}
@@ -677,10 +676,10 @@ public class GetTemplateConfigurationData implements Observer {
 				List<TemplateBasicConfigurationPojo> templatelistforcomment = dao.getTemplateList();
 				for (int i = 0; i < templatelistforcomment.size(); i++) {
 					if (templatelistforcomment.get(i).getTemplateId().equalsIgnoreCase(json.get("templateid").toString()
-							.substring(0, json.get("templateid").toString().indexOf("v") - 1))) {
+							.substring(0, json.get("templateid").toString().indexOf("V") - 1))) {
 						if (templatelistforcomment.get(i).getVersion()
 								.equalsIgnoreCase(json.get("templateid").toString().substring(
-										json.get("templateid").toString().indexOf("v") + 1,
+										json.get("templateid").toString().indexOf("V") + 1,
 										json.get("templateid").toString().length()))) {
 							comment = templatelistforcomment.get(i).getComment();
 						}
@@ -1407,7 +1406,7 @@ public class GetTemplateConfigurationData implements Observer {
 				templateIdToSaveInTransactionTable = json.get("templateid").toString() + "_V" + nextVersionS;
 			} else {
 				templateId = json.get("templateid").toString().substring(0,
-						json.get("templateid").toString().indexOf("v") - 1) + "_V" + "1.0";
+						json.get("templateid").toString().indexOf("V") - 1) + "_V" + "1.0";
 				nextVersion = 1.1;
 				templateIdToSaveInTransactionTable = json.get("templateid").toString() + "_V"
 						+ f.format(Double.toString(nextVersion));

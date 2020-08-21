@@ -73,6 +73,6 @@ public interface CustomerStagingImportRepo extends JpaRepository<CustomerStaging
 			+ " where importId=:importId AND result in('New', 'Existing') AND outcomeResult='Success'")
 	List<CustomerStagingEntity> getStaggingData(@Param("importId") String importId);
 	
-	@Query(value = "SELECT distinct series FROM t_tpmgmt_m_series" , nativeQuery = true)
+	@Query(value = "SELECT device_family FROM c3p_t_glblist_m_device_family" , nativeQuery = true)
 	List<String> findFamily();
 }
