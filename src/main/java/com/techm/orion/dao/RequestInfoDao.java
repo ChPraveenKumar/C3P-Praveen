@@ -4903,13 +4903,13 @@ public class RequestInfoDao {
 	/*
 	 * Owner: Ruchita Salvi Module: Test Strategy
 	 */
-	public List<TestDetail> findTestFromTestStrategyDB(String devicemodel, String devicetype, String os,
+	public List<TestDetail> findTestFromTestStrategyDB(String devicemodel, String deviceFamily, String os,
 			String osversion, String vendor, String region, String testCategory) {
 		List<TestDetail> list = new ArrayList<TestDetail>();
-		String queryTstDetails = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_type = ? and os=? and os_version=? and vendor=? and region=? and test_category=?";
+		String queryTstDetails = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_family = ? and os=? and os_version=? and vendor=? and region=? and test_category=?";
 		String queryTstRules = "select * from t_tststrategy_m_tstrules where test_name=?";
-		String queryTstDetailsTestName = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_type = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=?";
-		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_type = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=? and version=?";
+		String queryTstDetailsTestName = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_family = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=?";
+		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_family = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=? and version=?";
 
 		ResultSet rs = null, rs1 = null, rs2 = null, rs3 = null;
 		String maxVersion = null;
@@ -4917,7 +4917,7 @@ public class RequestInfoDao {
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(queryTstDetails);) {
 			preparedStmt.setString(1, devicemodel);
-			preparedStmt.setString(2, devicetype);
+			preparedStmt.setString(2, deviceFamily);
 			preparedStmt.setString(3, os);
 			preparedStmt.setString(4, osversion);
 			preparedStmt.setString(5, vendor);
@@ -4933,7 +4933,7 @@ public class RequestInfoDao {
 						
 						try (PreparedStatement tstDetailsTestNamePs = connection.prepareStatement(queryTstDetailsTestName);) {
 							tstDetailsTestNamePs.setString(1, devicemodel);
-							tstDetailsTestNamePs.setString(2, devicetype);
+							tstDetailsTestNamePs.setString(2, deviceFamily);
 							tstDetailsTestNamePs.setString(3, os);
 							tstDetailsTestNamePs.setString(4, osversion);
 							tstDetailsTestNamePs.setString(5, vendor);
@@ -4951,7 +4951,7 @@ public class RequestInfoDao {
 								try (PreparedStatement tstDetailsTestNameVPs = connection.prepareStatement(queryTstDetailsTestNameV);) {						
 							
 									tstDetailsTestNameVPs.setString(1, devicemodel);
-									tstDetailsTestNameVPs.setString(2, devicetype);
+									tstDetailsTestNameVPs.setString(2, deviceFamily);
 									tstDetailsTestNameVPs.setString(3, os);
 									tstDetailsTestNameVPs.setString(4, osversion);
 									tstDetailsTestNameVPs.setString(5, vendor);
@@ -5520,6 +5520,7 @@ public class RequestInfoDao {
 		return snippet;
 	}
 
+	/* Adding changes for device family */
 	public List<TestDetail> getAllTests() {
 		List<TestDetail> list = new ArrayList<TestDetail>();
 		String query = "select * from t_tststrategy_m_tstdetails";
@@ -5534,8 +5535,8 @@ public class RequestInfoDao {
 				request.setTestName(rs.getString("test_name"));
 				request.setVersion(rs.getString("version"));
 				request.setTestId(rs.getString("id"));
-				request.setVendor(rs.getString("vendor"));
-				request.setDeviceType(rs.getString("device_type"));
+				request.setVendor(rs.getString("vendor"));				
+				request.setDeviceFamily(rs.getString("device_family"));
 				request.setDeviceModel(rs.getString("device_model"));
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
@@ -5863,7 +5864,7 @@ public class RequestInfoDao {
 	public Map<String, String> insertRequestInDB(RequestInfoPojo requestInfoSO) {
 		Map<String, String> hmap = new HashMap<String, String>();
 		String Os = null, model = null, region = null, version = null, hostname = null,
-				alphaneumeric_req_id, customer = null, siteName = null, siteId = null, vendor = null, deviceType = null;
+				alphaneumeric_req_id, customer = null, siteName = null, family=null,siteId = null, vendor = null, deviceType = null;
 		String request_creator_name = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
 		String  networktype = null;
@@ -5945,6 +5946,11 @@ public class RequestInfoDao {
 			if (requestInfoSO.getCustomer() != null || requestInfoSO.getCustomer() != "") {
 				customer = requestInfoSO.getCustomer();
 			}
+			
+			if (requestInfoSO.getFamily() != null || requestInfoSO.getFamily() != "") {
+				family = requestInfoSO.getFamily();
+			}
+			
 			if (requestInfoSO.getSiteName() != null || requestInfoSO.getSiteName() != "") {
 				siteName = requestInfoSO.getSiteName();
 			}
@@ -6023,6 +6029,10 @@ public class RequestInfoDao {
 
 			if (customer != "") {
 				requestEntity.setCustomer(customer);
+			}
+			
+			if (family != "") {
+				requestEntity.setFamily(family);
 			}
 			if (siteName != "") {
 				requestEntity.setSiteName(siteName);
@@ -6121,6 +6131,7 @@ public class RequestInfoDao {
 		return hmap;
 	}
 
+
 	public List<TestDetail> findByTestName(String testNameUsed) {
 		String query = "SELECT test_name,version FROM t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
 		List<TestDetail> requestInfoList = null;
@@ -6149,8 +6160,9 @@ public class RequestInfoDao {
 
 	}
 
+	/* Adding changes for device family */
 	public List<TestDetail> findByTestNameForSearch(String testNameUsed) {
-		String query = "SELECT test_name,version,comment,device_type,vendor,device_model,os,created_on,created_by,is_enabled FROM t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
+		String query = "SELECT test_name,version,comment,device_family,vendor,device_model,os,created_on,created_by,is_enabled FROM t_tststrategy_m_tstdetails where test_name LIKE ? order by test_name,version asc";
 		List<TestDetail> requestInfoList = null;
 		TestDetail request = null;
 		ResultSet rs = null;
@@ -6168,7 +6180,7 @@ public class RequestInfoDao {
 				request.setVersion(rs.getString("version"));
 
 				request.setComment(rs.getString("comment"));
-				request.setDeviceType(rs.getString("device_type"));
+				request.setDeviceFamily(rs.getString("device_family"));
 				request.setVendor(rs.getString("vendor"));
 				request.setDeviceModel(rs.getString("device_model"));
 				request.setOs(rs.getString("os"));
@@ -6185,7 +6197,6 @@ public class RequestInfoDao {
 		return requestInfoList;
 
 	}
-
 	public List<FirmwareUpgradeDetail> findByVendorName(String vendor) {
 		String query = "SELECT * FROM firmware_upgrade_single_device where vendor LIKE ?";
 		List<FirmwareUpgradeDetail> requestInfoList = null;
@@ -6820,7 +6831,7 @@ public class RequestInfoDao {
 		Map<String, String> hmap = new HashMap<String, String>();
 		String Os = null, model = null, region = null, version = null, hostname = null,
 				alphaneumeric_req_id = null, customer = null, siteName = null, siteId = null, vendor = null,
-				deviceType = null;
+				deviceType = null,deviceFamily=null;
 		String request_creator_name = null, batchId = null, requestStatus = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
 		String networktype = null;
@@ -6894,6 +6905,9 @@ public class RequestInfoDao {
 			if (requestInfoSO.getDeviceType() != null || requestInfoSO.getDeviceType() != "") {
 				deviceType = requestInfoSO.getDeviceType();
 			}
+			if (requestInfoSO.getFamily()!= null || requestInfoSO.getFamily() != "") {
+				deviceFamily = requestInfoSO.getFamily();
+			}
 
 			if (requestInfoSO.getRequestVersion() != 0) {
 				request_version = requestInfoSO.getRequestVersion();
@@ -6933,8 +6947,10 @@ public class RequestInfoDao {
 			}
 
 			if (model != "") {
-				requestEntity.setModel(model);
-				requestEntity.setFamily(model);
+				requestEntity.setModel(model);	
+			}
+			if(deviceFamily!="") {
+				requestEntity.setFamily(deviceFamily);
 			}
 			if (region != "") {
 				requestEntity.setRegion(region);

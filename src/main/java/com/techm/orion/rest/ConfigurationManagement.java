@@ -103,8 +103,8 @@ public class ConfigurationManagement {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
 			} else {
-				DeviceDiscoveryEntity networkfunctio = deviceRepo
-						.findDVNFSupportByDHostName(configReqToSendToC3pCode.getHostname());
+				//DeviceDiscoveryEntity networkfunctio = deviceRepo
+				//		.findDVNFSupportByDHostName(configReqToSendToC3pCode.getHostname());
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
 					if (!requestType.equalsIgnoreCase("Test")) {
@@ -142,7 +142,7 @@ public class ConfigurationManagement {
 			configReqToSendToC3pCode.setHostname(json.get("hostname").toString().toUpperCase());
 			// configReqToSendToC3pCode.setVpn(json.get("VPN").toString());
 			configReqToSendToC3pCode.setVendor(json.get("vendor").toString().toUpperCase());
-			configReqToSendToC3pCode.setFamily(json.get("model").toString());
+			configReqToSendToC3pCode.setFamily(json.get("deviceFamily").toString());
 			configReqToSendToC3pCode.setVnfConfig(json.get("vnfConfig").toString());
 
 			if (!json.containsKey("requestVersion")) {
@@ -271,7 +271,7 @@ public class ConfigurationManagement {
 				 * Atrribute
 				 */
 				String seriesIdValue = dcmConfigService.getSeriesId(configReqToSendToC3pCode.getVendor(),
-						configReqToSendToC3pCode.getDeviceType(), configReqToSendToC3pCode.getModel());
+						configReqToSendToC3pCode.getFamily(), configReqToSendToC3pCode.getModel());
 				String seriesId;
 				/* Get Series according to template id */
 				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();

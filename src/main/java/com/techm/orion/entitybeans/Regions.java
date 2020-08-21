@@ -12,7 +12,7 @@ import javax.persistence.UniqueConstraint;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Table(name = "T_TPMGMT_GLBLIST_M_Regions", uniqueConstraints = { @UniqueConstraint(columnNames = { "region" }) })
+@Table(name = "c3p_t_glblist_m_regions", uniqueConstraints = { @UniqueConstraint(columnNames = { "region" }) })
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class Regions implements Serializable {
 

@@ -72,6 +72,10 @@ public class GetConfigurationTemplate {
 			createConfigRequest.setSiteid(json.get("siteid").toString().toUpperCase());
 
 			createConfigRequest.setDeviceType(json.get("deviceType").toString());
+			if(json.get("deviceFamily") !=null) {
+				createConfigRequest.setFamily(json.get("deviceFamily").toString());
+			}
+			
 			createConfigRequest.setModel(json.get("model").toString());
 			createConfigRequest.setOs(json.get("os").toString());
 			createConfigRequest.setOsVersion(json.get("osVersion").toString());
@@ -230,7 +234,7 @@ public class GetConfigurationTemplate {
 			 * Atrribute
 			 */
 			String seriesId = dcmConfigService.getSeriesId(createConfigRequest.getVendor(),
-					createConfigRequest.getDeviceType(), createConfigRequest.getModel());
+					createConfigRequest.getFamily(), createConfigRequest.getModel());
 			/* Get Series according to template id */
 			TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
 			seriesId = templatemanagementDao.getSeriesId(createConfigRequest.getTemplateID(), seriesId);

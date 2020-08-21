@@ -22,23 +22,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techm.orion.entitybeans.DeviceTypeModel_Interfaces;
-import com.techm.orion.entitybeans.DeviceTypes;
-import com.techm.orion.entitybeans.GlobalLstInterfaceRqst;
+import com.techm.orion.entitybeans.DeviceFamily;
 import com.techm.orion.entitybeans.GlobalLstReq;
-import com.techm.orion.entitybeans.Interfaces;
 import com.techm.orion.entitybeans.Model_OSversion;
 import com.techm.orion.entitybeans.Models;
 import com.techm.orion.entitybeans.OS;
 import com.techm.orion.entitybeans.OSversion;
 import com.techm.orion.entitybeans.Regions;
 import com.techm.orion.entitybeans.Services;
-import com.techm.orion.entitybeans.Vendor_devicetypes;
 import com.techm.orion.entitybeans.Vendors;
-import com.techm.orion.repositories.DeviceTypeModel_InterfacesRepo;
-import com.techm.orion.repositories.DeviceTypeRepository;
-import com.techm.orion.repositories.GlobalLstDataRepository;
-import com.techm.orion.repositories.InterfacesRepository;
+import com.techm.orion.repositories.DeviceFamilyRepository;
 import com.techm.orion.repositories.Model_OSversionRepo;
 import com.techm.orion.repositories.ModelsRepository;
 import com.techm.orion.repositories.OSRepository;
@@ -46,7 +39,6 @@ import com.techm.orion.repositories.OSversionRepository;
 import com.techm.orion.repositories.RegionsRepository;
 import com.techm.orion.repositories.ServicesRepository;
 import com.techm.orion.repositories.VendorRepository;
-import com.techm.orion.repositories.Vendor_devicetypesRepo;
 
 @RestController
 public class GblLstController {
@@ -55,10 +47,7 @@ public class GblLstController {
 	public VendorRepository vendorRepository;
 
 	@Autowired
-	public DeviceTypeRepository deviceTypeRepository;
-
-	@Autowired
-	public Vendor_devicetypesRepo vendor_devicetypesRepo;
+	public DeviceFamilyRepository deviceFamilyRepository;
 
 	@Autowired
 	public ModelsRepository modelsRepository;
@@ -73,27 +62,10 @@ public class GblLstController {
 	public Model_OSversionRepo model_osversionRepo;
 
 	@Autowired
-	public InterfacesRepository interfacesRepository;
-
-	@Autowired
-	public DeviceTypeModel_InterfacesRepo deviceTypeModel_InterfacesRepo;
-
-	@Autowired
 	public ServicesRepository servicesRepository;
 
 	@Autowired
 	public RegionsRepository regionsRepository;
-
-	@Autowired
-	public GlobalLstDataRepository globalLstDataRepository;
-
-	@GET
-	@RequestMapping(value = "/gbllst", method = RequestMethod.GET, produces = "application/json")
-	public Response getGbllist() {
-
-		return Response.status(200).entity(globalLstDataRepository.findAll()).build();
-
-	}
 
 	@POST
 	@RequestMapping(value = "/services", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -102,10 +74,8 @@ public class GblLstController {
 		try {
 			servicesRepository.save(services);
 		} catch (DataIntegrityViolationException e) {
-			// TODO Auto-generated catch block
 			return Response.status(409).entity("Service is Duplicate").build();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			return Response.status(422).entity("Could not save service").build();
 		}
 		return Response.status(200).entity("Service added successfully").build();
@@ -126,7 +96,6 @@ public class GblLstController {
 			try {
 				servicesRepository.delete(existingservices);
 			} catch (NoSuchElementException e) {
-				// TODO Auto-generated catch block
 				return Response.status(200).entity("Servie cannot be Deleted").build();
 			}
 		} else {
@@ -152,10 +121,8 @@ public class GblLstController {
 		try {
 			regionsRepository.save(regions);
 		} catch (DataIntegrityViolationException e) {
-			// TODO Auto-generated catch block
 			return Response.status(409).entity("Region is Duplicate").build();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			return Response.status(422).entity("Could not save Region").build();
 		}
 
@@ -178,7 +145,6 @@ public class GblLstController {
 			try {
 				regionsRepository.delete(existingregions);
 			} catch (NoSuchElementException e) {
-				// TODO Auto-generated catch block
 				return Response.status(200).entity("Region cannot be Deleted").build();
 			}
 		} else {
@@ -204,10 +170,8 @@ public class GblLstController {
 		try {
 			vendorRepository.save(vendors);
 		} catch (DataIntegrityViolationException e) {
-			// TODO Auto-generated catch block
 			return Response.status(409).entity("Vendor is Duplicate").build();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			return Response.status(422).entity("Could not save Vendor").build();
 		}
 
@@ -219,23 +183,14 @@ public class GblLstController {
 	public Response delVendor(@RequestParam String vendor) {
 
 		Vendors vendors = new Vendors();
-		Set<Vendors> existingvendorset = new HashSet<Vendors>();
-		List<Vendor_devicetypes> vendor_devicetypes = new ArrayList<Vendor_devicetypes>();
+		Set<Vendors> existingvendorset = new HashSet<Vendors>();		
 
 		existingvendorset = vendorRepository.findByVendor(vendor);
 		if (null != existingvendorset && !existingvendorset.isEmpty()) {
-			vendors = existingvendorset.iterator().next();
-			vendor_devicetypes = vendor_devicetypesRepo.findAllByVendorid(vendors.getId());
-
-			if (null != vendor_devicetypes && !vendor_devicetypes.isEmpty()) {
-
-				vendor_devicetypesRepo.delete(vendor_devicetypes);
-
-			}
+			vendors = existingvendorset.iterator().next();		
 			try {
 				vendorRepository.delete(vendors);
 			} catch (NoSuchElementException e) {
-				// TODO Auto-generated catch block
 				return Response.status(200).entity("Vendor does not exist so cannot Delete").build();
 			}
 		} else {
@@ -255,36 +210,45 @@ public class GblLstController {
 
 	@GET
 	@RequestMapping(value = "/vendors", method = RequestMethod.GET, produces = "application/json")
-	public Response getVendor(@RequestParam String devicetype) {
-		DeviceTypes existingdevicetype = new DeviceTypes();
-		Set<DeviceTypes> Devicetypeset = new HashSet<DeviceTypes>();
-		List<Vendor_devicetypes> vendor_devicetypes = new ArrayList<Vendor_devicetypes>();
-		Set<Vendors> vendorSet = new HashSet<Vendors>();
-		List<Vendors> vendorTypesList = new ArrayList<Vendors>();
-
-		List<Vendors> vendorTypesListAll = new ArrayList<Vendors>();
-
-		Devicetypeset = deviceTypeRepository.findByDevicetype(devicetype);
-		if (null != Devicetypeset && !Devicetypeset.isEmpty()) {
-			existingdevicetype = Devicetypeset.iterator().next();
-			vendor_devicetypes = vendor_devicetypesRepo.findAllByDevicetypeid(existingdevicetype.getId());
-			for (Vendor_devicetypes vendor_devicetype : vendor_devicetypes) {
-				vendorSet.clear();
-
-				vendorSet = vendorRepository.findById(vendor_devicetype.getVendorid());
-				vendorTypesList.addAll(vendorSet);
-			}
-		}
-
-		vendorTypesListAll = vendorRepository.findAll();
-
-		for (int i = 0; i < vendorTypesList.size(); i++) {
-			for (int j = 0; j < vendorTypesListAll.size(); j++) {
-				if (vendorTypesList.get(i).getId() == vendorTypesListAll.get(j).getId()) {
-					vendorTypesListAll.get(j).setValue(true);
+	public Response getVendor(@RequestParam String deviceFamily) {
+		
+		List<Vendors> getAllVendors = vendorRepository.findAll();
+		List<Vendors> resultVendors = new ArrayList<Vendors>();
+		
+		for(Vendors vendor:getAllVendors) {
+			for(DeviceFamily family:vendor.getDeviceFamily()) {
+				if(deviceFamily.equals(family.getDeviceFamily())) {
+					vendor.setValue(true);
 				}
 			}
+			resultVendors.add(vendor);
 		}
+		/*
+		 * DeviceFamily existingdevicetype = new DeviceFamily(); Set<DeviceFamily>
+		 * Devicetypeset = new HashSet<DeviceFamily>(); List<Vendor_devicetypes>
+		 * vendor_devicetypes = new ArrayList<Vendor_devicetypes>(); Set<Vendors>
+		 * vendorSet = new HashSet<Vendors>(); List<Vendors> vendorTypesList = new
+		 * ArrayList<Vendors>();
+		 * 
+		 * List<Vendors> vendorTypesListAll = new ArrayList<Vendors>();
+		 * 
+		 * //Devicetypeset = deviceTypeRepository.findByDevicetype(devicetype); if (null
+		 * != Devicetypeset && !Devicetypeset.isEmpty()) { existingdevicetype =
+		 * Devicetypeset.iterator().next(); vendor_devicetypes =
+		 * vendor_devicetypesRepo.findAllByDevicetypeid(existingdevicetype.getId()); for
+		 * (Vendor_devicetypes vendor_devicetype : vendor_devicetypes) {
+		 * vendorSet.clear();
+		 * 
+		 * vendorSet = vendorRepository.findById(vendor_devicetype.getVendorid());
+		 * vendorTypesList.addAll(vendorSet); } }
+		 * 
+		 * vendorTypesListAll = vendorRepository.findAll();
+		 * 
+		 * for (int i = 0; i < vendorTypesList.size(); i++) { for (int j = 0; j <
+		 * vendorTypesListAll.size(); j++) { if (vendorTypesList.get(i).getId() ==
+		 * vendorTypesListAll.get(j).getId()) {
+		 * vendorTypesListAll.get(j).setValue(true); } } }
+		 */
 		return Response.status(200).entity(vendorRepository.findAll()).build();
 
 	}
@@ -298,171 +262,6 @@ public class GblLstController {
 	}
 
 	@GET
-	@RequestMapping(value = "/interfacesdt", method = RequestMethod.GET, produces = "application/json")
-	public Response getinterfacesfordevicetype(@RequestParam String devicetype) {
-
-		DeviceTypes deviceTypes = new DeviceTypes();
-
-		deviceTypes.setDevicetype(devicetype);
-		Set<Interfaces> interfaceset = new HashSet<Interfaces>();
-		interfaceset = interfacesRepository.findByDevicetypes(deviceTypes);
-
-		if (null != interfaceset && !interfaceset.isEmpty()) {
-			return Response.status(200).entity(interfaceset).build();
-		} else {
-			return Response.status(422).entity("No interfaces found for the devicetype").build();
-		}
-
-	}
-
-	@GET
-	@RequestMapping(value = "/interfacesdtandmodel", method = RequestMethod.GET, produces = "application/json")
-	public Response getinterfacesfordevicetypeandmodel(@RequestParam String devicetype, String model) {
-
-		DeviceTypes deviceTypes = new DeviceTypes();
-		DeviceTypeModel_Interfaces deviceTypeModel_Interfaces = new DeviceTypeModel_Interfaces();
-		int devicetypeid = 0;
-		int modelid = 0;
-
-		deviceTypes.setDevicetype(devicetype);
-		Set<DeviceTypes> devicetypeset = new HashSet<DeviceTypes>();
-
-		Set<DeviceTypeModel_Interfaces> deviceTypeModel_Interfacesset = new HashSet<DeviceTypeModel_Interfaces>();
-
-		devicetypeset = deviceTypeRepository.findByDevicetype(devicetype);
-		if (null != devicetypeset && !devicetypeset.isEmpty()) {
-			devicetypeid = devicetypeset.iterator().next().getId();
-		} else {
-			return Response.status(422).entity("Device type is not existing").build();
-		}
-
-		Set<Models> modelsset = new HashSet<Models>();
-
-		modelsset = modelsRepository.findByModel(model);
-		if (null != modelsset && !modelsset.isEmpty()) {
-			modelid = modelsset.iterator().next().getId();
-		} else {
-			return Response.status(422).entity("Model is not existing").build();
-		}
-		deviceTypeModel_Interfacesset = deviceTypeModel_InterfacesRepo.findByDeviceTypeidAndModelid(devicetypeid,
-				modelid);
-		if (null != deviceTypeModel_Interfacesset && !deviceTypeModel_Interfacesset.isEmpty()) {
-			List<Integer> intrfcid = new ArrayList<Integer>();
-			for (DeviceTypeModel_Interfaces deviceTypeModel_Interface : deviceTypeModel_Interfacesset) {
-
-				intrfcid.add(deviceTypeModel_Interface.getInterfacesid());
-
-			}
-			Set<Interfaces> interfacesset = new HashSet<Interfaces>();
-			interfacesset = (Set<Interfaces>) interfacesRepository.findAll();
-
-			for (Interfaces interfaces : interfacesset) {
-				if (intrfcid.contains(interfaces.getId())) {
-					interfaces.setValue(true);
-				}
-			}
-
-			return Response.status(200).entity(interfacesset).build();
-		}
-
-		else {
-			return Response.status(422).entity("No interfaces found for the devicetype and model").build();
-		}
-
-	}
-
-	@GET
-	@RequestMapping(value = "/interfaces", method = RequestMethod.GET, produces = "application/json")
-	public Response getinterfaces() {
-
-		return Response.status(200).entity(interfacesRepository.findAll()).build();
-
-	}
-
-	@POST
-	@RequestMapping(value = "/interfaces", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	public Response setInterfaces(@RequestBody GlobalLstReq rqst) {
-
-		List<GlobalLstInterfaceRqst> globalLstInterfaceRqstslist = rqst.getGlobalLstInterfaceRqsts();
-		String model;
-		int modelid = 0;
-		String devicetype;
-		int devicetypeid = 0;
-		String interfaces = null;
-
-		Set<Interfaces> interfaceslist = new HashSet<Interfaces>();
-
-		for (GlobalLstInterfaceRqst globalLstInterfaceRqst : globalLstInterfaceRqstslist) {
-
-			for (Interfaces intrfc : globalLstInterfaceRqst.getInterfaces()) {
-				DeviceTypeModel_Interfaces deviceTypeModel_Interfaces = new DeviceTypeModel_Interfaces();
-				model = globalLstInterfaceRqst.getModel();
-
-				if (null != modelsRepository.findByModel(model) && !modelsRepository.findByModel(model).isEmpty()) {
-					modelid = modelsRepository.findByModel(model).iterator().next().getId();
-				} else {
-					Response.status(422).entity("Model needs to be existing").build();
-				}
-
-				deviceTypeModel_Interfaces.setModelid(modelid);
-
-				devicetype = globalLstInterfaceRqst.getDevicetype();
-				DeviceTypes devicetypeexisting = null;
-				if (null != deviceTypeRepository.findByDevicetype(devicetype)
-						&& !deviceTypeRepository.findByDevicetype(devicetype).isEmpty()) {
-
-					devicetypeexisting = deviceTypeRepository.findByDevicetype(devicetype).iterator().next();
-					devicetypeid = devicetypeexisting.getId();
-				} else {
-					Response.status(422).entity("Device Type needs to be existing").build();
-				}
-				deviceTypeModel_Interfaces.setDeviceTypeid(devicetypeid);
-
-				Set<DeviceTypes> deviceTypesset = new HashSet<DeviceTypes>();
-
-				interfaceslist = interfacesRepository.findByInterfaces(intrfc.getInterfaces());
-				Interfaces interfacesobj = new Interfaces();
-
-				if (null != interfaceslist && !interfaceslist.isEmpty()) {
-					interfacesobj = interfaceslist.iterator().next();
-					deviceTypeModel_Interfaces.setInterfacesid(interfacesobj.getId());
-					// interfacesRepository.findByInterfaces(interfaces)
-
-				} else {
-					interfacesobj.setInterfaces(intrfc.getInterfaces());
-
-					interfacesobj.setDevicetypes(devicetypeexisting);
-					// devicetypeexisting.setInterfaces(interfaces);
-					try {
-
-						interfacesobj = interfacesRepository.save(interfacesobj);
-					} catch (DataIntegrityViolationException e) {
-						// TODO Auto-generated catch block
-						return Response.status(409).entity("Interface is Duplicate").build();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						return Response.status(422).entity("Could not save interface").build();
-					}
-
-					deviceTypeModel_Interfaces.setInterfacesid(interfacesobj.getId());
-
-				}
-
-				try {
-					deviceTypeModel_InterfacesRepo.save(deviceTypeModel_Interfaces);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					return Response.status(200).entity("Interface already added and mapped please change Interface")
-							.build();
-				}
-			}
-
-		}
-
-		return Response.status(200).entity("Interfaces added successfully").build();
-	}
-
-	@GET
 	@RequestMapping(value = "/osversionformodel", method = RequestMethod.GET, produces = "application/json")
 	public Response getOsversionformodel(@RequestParam String model, String os) {
 
@@ -471,8 +270,6 @@ public class GblLstController {
 		Set<OSversion> osversionsetmodel = new HashSet<OSversion>();
 		Set<OSversion> osversionsetos = new HashSet<OSversion>();
 
-		Set<OS> setos = new HashSet<OS>();
-		Set<OS> existingosset = new HashSet<OS>();
 		List<Model_OSversion> model_osversionlst = new ArrayList<Model_OSversion>();
 		List<OSversion> osversionlst = new ArrayList<OSversion>();
 		existingmodelset = modelsRepository.findByModel(model);
@@ -557,35 +354,52 @@ public class GblLstController {
 		List<OSversion> osversionsformodels = new ArrayList<OSversion>();
 
 		for (OSversion osversion : osversions)
-
 		{
 			OSversion osversionformodel = new OSversion();
 			Set<Models> models = new HashSet<Models>();
 			for (Models model : osversion.getModels()) {
-
 				models.add(model);
 			}
 			osversionformodel.setModels(models);
 			osversionformodel.setOsversion(osversion.getOsversion());
 			osversionsformodels.add(osversionformodel);
 		}
-		Object response = null;
-
+		
 		Set<OS> existingosset = new HashSet<OS>();
 
 		Set<OSversion> osvers = new HashSet<OSversion>();
 
 		Set<OSversion> existingosversionset = new HashSet<OSversion>();
 
-		OSversion existingosversion = new OSversion();
+		//OSversion existingosversion = new OSversion();
 
 		Set<Models> existingmodelset = new HashSet<Models>();
 
 		OS os = new OS();
 
 		for (OSversion osversion : osversions) {
+			/*Find the OS present in DB*/
+			existingosset = osRepository.findByOs(osversion.getOs().getOs());
+			if (null != existingosset && !existingosset.isEmpty()) {
+				os = existingosset.iterator().next();
+				//existingosversion.setOs(os);
+				/*Checks for the OS and OS Version relationship presents in DB*/
+				OSversion osVerByOS = osversionRepository.findByOsversionOs(osversion.getOsversion(), os.getId());
+				logger.info("osVerByOS - "+osVerByOS);
+				if(osVerByOS!=null) {
+					return Response.status(422).entity("OS & OS Version exists").build();
+				}else {
+					OSversion saveOsVer = new OSversion();
+					saveOsVer.setOsversion(osversion.getOsversion());
+					saveOsVer.setOs(os);					
+					osvers.add(saveOsVer);
+				}
+			} else {
+				return Response.status(422).entity("OS does not exist").build();
+			}
+			
 
-			existingosversionset = osversionRepository.findByOsversion(osversion.getOsversion());
+			/*existingosversionset = osversionRepository.findByOsversion(osversion.getOsversion());
 			if (null != existingosversionset && !existingosversionset.isEmpty()) {
 				existingosversion = existingosversionset.iterator().next();
 				for (OSversion checkos : osversionsformodels) {
@@ -631,92 +445,99 @@ public class GblLstController {
 					return Response.status(422).entity("OS does not exist").build();
 				}
 
-			}
+			}*/
 		}
 
 		os.setOsversion(osvers);
 		try {
-			if (osversions.get(0).isValue()) {
-				os = osRepository.save(os);
-			}
+			for (OSversion osversion : osvers) {
+				osversionRepository.save(osversion);
+			}			
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			return Response.status(422).entity("Error in saving OS Verion and mapping with OS").build();
 		}
 
 		try {
 			for (OSversion osversion : osversionsformodels) {
-				for (Models model : osversion.getModels()) {
-					Models mainMod = model;
-					Model_OSversion model_osversion = new Model_OSversion();
-					if (model.isValue()) {
-						existingmodelset = modelsRepository.findByModel(model.getModel());
+				existingosversionset = osversionRepository.findByOsversion(osversion.getOsversion());
+				if(existingosversionset !=null && existingosversionset.size()>0) {
+					OSversion dbOsVer = existingosversionset.iterator().next();
+					logger.info("dbOsVer version-"+dbOsVer.getId());
+					for (Models model : osversion.getModels()) {
+						Models mainMod = model;
+						Model_OSversion model_osversion = new Model_OSversion();
+						logger.info("model is value-"+model.isValue());
+						if (model.isValue()) {
+							existingmodelset = modelsRepository.findByModel(model.getModel());
 
-						if (null != existingmodelset && !existingmodelset.isEmpty()) {
+							if (null != existingmodelset && !existingmodelset.isEmpty()) {
 
-							model = existingmodelset.iterator().next();
+								model = existingmodelset.iterator().next();
 
-							model_osversion.setModelid(model.getId());
+								model_osversion.setModelid(model.getId());
 
-							existingosversionset = osversionRepository.findByOsversion(osversion.getOsversion());
+								//existingosversionset = osversionRepository.findByOsversion(osversion.getOsversion());
 
-							model_osversion.setOsversionid(existingosversionset.iterator().next().getId());
-
-							try {
-								if (osversions.get(0).isValue()) {
-									List<Model_OSversion> tempList = model_osversionRepo.findAllByModelidAndOsversionid(
-											model_osversion.getModelid(), model_osversion.getOsversionid());
-									if (tempList.size() == 0) {
-										model_osversionRepo.save(model_osversion);
-									}
-								} else {
-									if (mainMod.isValue()) {
-										List<Model_OSversion> tempList = model_osversionRepo
-												.findAllByModelidAndOsversionid(model_osversion.getModelid(),
-														model_osversion.getOsversionid());
+								model_osversion.setOsversionid(dbOsVer.getId());
+								logger.info("model_osversion model id-"+model_osversion.getModelid());
+								logger.info("model_osversion osver id-"+model_osversion.getOsversionid());
+								try {
+									if (osversions.get(0).isValue()) {
+										List<Model_OSversion> tempList = model_osversionRepo.findAllByModelidAndOsversionid(
+												model_osversion.getModelid(), model_osversion.getOsversionid());
 										if (tempList.size() == 0) {
 											model_osversionRepo.save(model_osversion);
 										}
 									} else {
-										List<Model_OSversion> tempList = model_osversionRepo
-												.findAllByModelidAndOsversionid(model_osversion.getModelid(),
-														model_osversion.getOsversionid());
-										model_osversion.setId(tempList.get(0).getId());
-										model_osversionRepo.delete(model_osversion);
+										if (mainMod.isValue()) {
+											List<Model_OSversion> tempList = model_osversionRepo
+													.findAllByModelidAndOsversionid(model_osversion.getModelid(),
+															model_osversion.getOsversionid());
+											if (tempList.size() == 0) {
+												model_osversionRepo.save(model_osversion);
+											}
+										} else {
+											List<Model_OSversion> tempList = model_osversionRepo
+													.findAllByModelidAndOsversionid(model_osversion.getModelid(),
+															model_osversion.getOsversionid());
+											model_osversion.setId(tempList.get(0).getId());
+											model_osversionRepo.delete(model_osversion);
+										}
 									}
+								} catch (Exception e) {
+									return Response.status(409).entity("OS Version is Duplicate").build();
 								}
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								return Response.status(409).entity("OS Version is Duplicate").build();
+							} else {
+								return Response.status(422).entity("Model does not exist").build();
 							}
+
 						} else {
-							return Response.status(422).entity("Model does not exist").build();
-						}
+							existingmodelset = modelsRepository.findByModel(model.getModel());
+							if (null != existingmodelset && !existingmodelset.isEmpty()) {
 
-					} else {
-						existingmodelset = modelsRepository.findByModel(model.getModel());
-						if (null != existingmodelset && !existingmodelset.isEmpty()) {
+								model = existingmodelset.iterator().next();
 
-							model = existingmodelset.iterator().next();
+								model_osversion.setModelid(model.getId());
 
-							model_osversion.setModelid(model.getId());
+								//existingosversionset = osversionRepository.findByOsversion(osversion.getOsversion());
 
-							existingosversionset = osversionRepository.findByOsversion(osversion.getOsversion());
+								model_osversion.setOsversionid(dbOsVer.getId());
+								List<Model_OSversion> tempList = model_osversionRepo.findAllByModelidAndOsversionid(
+										model_osversion.getModelid(), model_osversion.getOsversionid());
+								if (tempList.size() != 0) {
+									model_osversion.setId(tempList.get(0).getId());
+									model_osversionRepo.delete(model_osversion);
 
-							model_osversion.setOsversionid(existingosversionset.iterator().next().getId());
-							List<Model_OSversion> tempList = model_osversionRepo.findAllByModelidAndOsversionid(
-									model_osversion.getModelid(), model_osversion.getOsversionid());
-							if (tempList.size() != 0) {
-								model_osversion.setId(tempList.get(0).getId());
-								model_osversionRepo.delete(model_osversion);
-
+								}
 							}
 						}
 					}
-				}
+				} else {
+					logger.info("No availbale OS Version present in OS Version for OS Version -"+osversion.getOsversion());
+				}				
+				
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		String resstr = null;
@@ -750,8 +571,7 @@ public class GblLstController {
 			osversionformodel.setOsversion(osversion.getOsversion());
 			osversionsformodels.add(osversionformodel);
 		}
-		Object response = null;
-
+		
 		Set<OS> existingosset = new HashSet<OS>();
 
 		Set<OSversion> osvers = new HashSet<OSversion>();
@@ -828,7 +648,6 @@ public class GblLstController {
 		try {
 			for (OSversion osversion : osversionsformodels) {
 				for (Models model : osversion.getModels()) {
-					Model_OSversion model_osversion = new Model_OSversion();
 					existingmodelset = modelsRepository.findByModel(model.getModel());
 					existingosversionset.clear();
 					existingosversionset = osversionRepository.findByOsversion(osversion.getOsversion());
@@ -884,33 +703,18 @@ public class GblLstController {
 
 	@GET
 	@RequestMapping(value = "/os", method = RequestMethod.GET, produces = "application/json")
-	public Response getOs(@RequestParam String vendor) {
+	public Response getOs(@RequestParam String family) {
+		Set<DeviceFamily> familyList = deviceFamilyRepository.findByDeviceFamily(family);
 
-		Set<OS> oslist = new HashSet<OS>();
+		if (null != familyList && !familyList.isEmpty()) {
+			List<DeviceFamily> list = new ArrayList<>(familyList);
+			List<OS> oslist = osRepository.findByDeviceFamily(list.get(0));
+			return Response.status(200).entity(oslist).build();
 
-		Vendors existingvendor = new Vendors();
-		Set<Vendors> existingvendorset = new HashSet<Vendors>();
-		existingvendorset = vendorRepository.findByVendor(vendor);
-
-		if (null != existingvendorset && !existingvendorset.isEmpty()) {
-
-			existingvendor = existingvendorset.iterator().next();
-
-			oslist = osRepository.findByVendor(existingvendor);
-
-			if (null != oslist && !oslist.isEmpty()) {
-				return Response.status(200).entity(oslist).build();
-			} else {
-				return Response.status(422).entity("There is no os for this vendor").build();
-			}
+		} else {
+			return Response.status(422).entity("There is no os for this family").build();
 
 		}
-
-		return Response.status(422)
-				.entity("Vendor is not existing cannot add OS with a new vendor. Please first add the Vendor").build();
-
-		// return Response.status(200).entity(vendorslist).build();
-
 	}
 
 	@DELETE
@@ -927,7 +731,6 @@ public class GblLstController {
 			try {
 				osRepository.delete(existingos);
 			} catch (NoSuchElementException e) {
-				// TODO Auto-generated catch block
 				return Response.status(200).entity("OS does not exist so cannot delete").build();
 			}
 		}
@@ -944,9 +747,7 @@ public class GblLstController {
 		Vendors existingvendor = new Vendors();
 		Set<OS> osset = new HashSet<OS>();
 		Set<Vendors> vendorsset = new HashSet<Vendors>();
-		OS existingos = new OS();
-		vendor = os.getVendor();
-
+		OS existingos = new OS();		
 		vendorsset = vendorRepository.findByVendor(vendor.getVendor());
 
 		if (null != vendorsset && !vendorsset.isEmpty()) {
@@ -977,11 +778,8 @@ public class GblLstController {
 
 					vendorRepository.save(existingvendor);
 				} catch (DataIntegrityViolationException e) {
-
-					// TODO Auto-generated catch block
 					return Response.status(409).entity("Add new OS for " + existingvendor.getVendor()).build();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					return Response.status(422).entity("Could not save OS").build();
 				}
 			}
@@ -996,63 +794,32 @@ public class GblLstController {
 	@POST
 	@RequestMapping(value = "/os", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response setOS(@RequestBody OS os) {
-
-		Vendors vendor = new Vendors();
-		Vendors existingvendor = new Vendors();
-		Set<OS> osset = new HashSet<OS>();
-		Set<Vendors> vendorsset = new HashSet<Vendors>();
-		OS existingos = new OS();
-		vendor = os.getVendor();
-
-		vendorsset = vendorRepository.findByVendor(vendor.getVendor());
-
-		// find if vendor exisits
-		// find all os associated with the vendor
-		// check if os is already present
-		// add os to this list
-		// set this llist for the vendor
-
-		if (null != vendorsset && !vendorsset.isEmpty()) {
-			existingvendor = vendorsset.iterator().next();
-
-			if (null != existingvendor) {
-				if (null != osset && !osset.isEmpty()) {
-					existingos = osset.iterator().next();
-
-					if (null != existingos) {
-
-						// existingvendor.setOs(existingos);
-					}
-				} else {
-
-					Set<OS> lst = existingvendor.getOs();
-					List<OS> exsistingOSListForVendor = new ArrayList<OS>(lst);
-					exsistingOSListForVendor.add(os);
-					Set<OS> fnl = new HashSet<OS>(exsistingOSListForVendor);
-					existingvendor.setOs(fnl);
-				}
-
-				os.setVendor(existingvendor);
-
+		DeviceFamily deviceFamily = os.getDeviceFamily();
+		Set<DeviceFamily> familyList = deviceFamilyRepository.findByDeviceFamily(deviceFamily.getDeviceFamily());
+		if(familyList !=null && familyList.size()>0) {
+			DeviceFamily family = familyList.iterator().next();
+			logger.info("family-"+family.getDeviceFamily());
+			logger.info("family id-"+family.getId());
+			List<OS> osByDFamily = osRepository.findByDeviceFamily(family);
+			
+			logger.info("osByDFamily -"+osByDFamily);
+			if(osByDFamily!=null && osByDFamily.size()>0) {
+				return Response.status(422).entity("More than one OS & Device Family is not allowed for existing device family").build();
+			}else {				
 				try {
-
-					osset = osRepository.findByVendor(existingvendor);
-					if (null != osset && !osset.isEmpty()) {
-						if (osset.contains(os))
-							return Response.status(200).entity("OS is duplicate").build();
-					}
-
-					vendorRepository.save(existingvendor);
+					OS newOS = new OS();
+					newOS.setOs(os.getOs());
+					newOS.setDeviceFamily(family);
+					osRepository.save(newOS);
 				} catch (DataIntegrityViolationException e) {
-
+					return Response.status(422).entity("Could not save OS Due to Data Integrity").build();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					return Response.status(422).entity("Could not save OS").build();
-				}
+				}								
 			}
-		} else {
-			return Response.status(422).entity("Vendor should be existing").build();
-		}
+		}else {
+			return Response.status(200).entity("Selected Device Family is not preset").build();
+		}	
 
 		return Response.status(200).entity("OS added successfully").build();
 
@@ -1071,11 +838,7 @@ public class GblLstController {
 	public Response getModelsbyOsversion(@RequestParam String osversion) {
 		Set<OSversion> osversionset = new HashSet<OSversion>();
 		OSversion existingosversion = new OSversion();
-		List<Model_OSversion> model_osversion_list = new ArrayList<Model_OSversion>();
-		List<Models> model_list_all = new ArrayList<Models>();
-
-		Set<Models> modelSet = new HashSet<Models>();
-		List<OSversion> osversionList = new ArrayList<OSversion>();
+		List<Model_OSversion> model_osversion_list = new ArrayList<Model_OSversion>();		
 		List<Models> allmodels = new ArrayList<Models>();
 		allmodels = modelsRepository.findAll();
 		osversionset = osversionRepository.findByOsversion(osversion);
@@ -1103,21 +866,19 @@ public class GblLstController {
 
 	@GET
 	@RequestMapping(value = "/model", method = RequestMethod.GET, produces = "application/json")
-	public Response getModel(@RequestParam String devicetype, String vendor, String osVersion) {
-		List<Vendor_devicetypes> vendor_devicetypes = new ArrayList<Vendor_devicetypes>();
+	public Response getModel(@RequestParam String devicefamily, String vendor, String osVersion) {	
 		Vendors vendors = new Vendors();
-		DeviceTypes existingdeviceType = new DeviceTypes();
-		Vendors existingvendor = new Vendors();
-
+		DeviceFamily existingdeviceType = new DeviceFamily();
+		
 		Set<Vendors> vendorset = new HashSet<Vendors>();
 		vendorset = vendorRepository.findByVendor(vendor);
 
-		Set<DeviceTypes> deviceTypesset = new HashSet<DeviceTypes>();
+		Set<DeviceFamily> deviceTypesset = new HashSet<DeviceFamily>();
 		if (null != vendorset && !vendorset.isEmpty()) {
 
 			vendors = vendorset.iterator().next();
 
-			deviceTypesset = deviceTypeRepository.findByDevicetype(devicetype);
+			deviceTypesset = deviceFamilyRepository.findByDeviceFamily(devicefamily);
 
 			List<Models> Modelslst = new ArrayList<Models>();
 			List<Model_OSversion> modelOsVersionRelation = new ArrayList<Model_OSversion>();
@@ -1130,7 +891,7 @@ public class GblLstController {
 			if (null != deviceTypesset && !deviceTypesset.isEmpty()) {
 				existingdeviceType = deviceTypesset.iterator().next();
 
-				Modelslst = modelsRepository.findByDevicetypeAndVendor(existingdeviceType, vendors);
+				Modelslst = modelsRepository.findByDeviceFamilyAndVendor(existingdeviceType, vendors);
 				if (osVersion != null) {
 					for (Models model : Modelslst) {
 						for (Model_OSversion modelOsver : modelOsVersionRelation) {
@@ -1144,7 +905,7 @@ public class GblLstController {
 
 				return Response.status(200).entity(Modelslst).build();
 			} else {
-				return Response.status(200).entity("Device Type does not exist").build();
+				return Response.status(200).entity("Device Family does not exist").build();
 			}
 
 		} else {
@@ -1193,35 +954,53 @@ public class GblLstController {
 		List<Models> modelsreq = globalLstReq.getModels();
 		Set<Models> existingmodels = new HashSet<Models>();
 		Vendors existingvendor = new Vendors();
-		Set<Vendors> Vendorset = new HashSet<Vendors>();
+		Set<Vendors> vendorset = new HashSet<Vendors>();
 		Set<Models> modelstobesaved = new HashSet<Models>();
-		List<Interfaces> interfaces = null;
-		Set<Interfaces> existinginterfaces = null;
 
-		Set<DeviceTypes> existingdeviceTypesset = new HashSet<DeviceTypes>();
-		DeviceTypes existingdeviceType = new DeviceTypes();
-		DeviceTypes savedevicetype = new DeviceTypes();
+		Set<DeviceFamily> existingdeviceTypesset = new HashSet<DeviceFamily>();
+		DeviceFamily savedevicetype = new DeviceFamily();
 		Models savemodels = new Models();
 		boolean isAdd = false, isModify = false;
 		for (Models model : modelsreq) {
 			existingmodels = modelsRepository.findByModel(model.getModel());
 			if (null != existingmodels && !existingmodels.isEmpty()) {
-
 				return Response.status(422).entity("Model is existing and associated to other vendor.").build();
 				// existingmodels.iterator().next().setVendor(model.getVendor());
 				// modelstobesaved.add(existingmodels.iterator().next());
 			} else {
 				modelstobesaved.add(model);
+				existingdeviceTypesset = deviceFamilyRepository.findByDeviceFamily(model.getDeviceFamily().getDeviceFamily());
+				if(existingdeviceTypesset!=null && existingdeviceTypesset.size()>0) {
+					savedevicetype = existingdeviceTypesset.iterator().next();
+				}else {
+					return Response.status(422).entity("Device Family does not exist").build();
+				}
+				
+				vendorset = vendorRepository.findByVendor(model.getVendor().getVendor());
+				if (null != vendorset && !vendorset.isEmpty()) {
+					existingvendor = vendorset.iterator().next();
+				} else {
+					return Response.status(422).entity("Vendor is not existing").build();
 
+				}
+				savemodels = new Models();
+				savemodels.setDeviceFamily(savedevicetype);
+				savemodels.setVendor(existingvendor);
+				savemodels.setModel(model.getModel());
+				modelsRepository.save(savemodels);
+				isAdd = true;
 			}
 		}
 
-		existingdeviceTypesset.clear();
-		List<Models> existingmodelset = new ArrayList<Models>();
-		if (null != globalLstReq.getModels() && null != globalLstReq.getModels().get(0).getDevicetype()
-				&& null != globalLstReq.getModels().get(0).getDevicetype().getDevicetype()) {
-			existingdeviceTypesset = deviceTypeRepository
-					.findByDevicetype(globalLstReq.getModels().get(0).getDevicetype().getDevicetype());
+		
+		/*List<Models> existingmodelset = new ArrayList<Models>();
+		if (null != globalLstReq.getModels() && null != globalLstReq.getModels().get(0).getDeviceFamily()
+		 && null != globalLstReq.getModels().get(0).getDevicetype().getDevicetype() ) {
+			/*
+			 * existingdeviceTypesset = deviceTypeRepository
+			 * .findByDevicetype(globalLstReq.getModels().get(0).getDevicetype().
+			 * getDevicetype());
+			 
 
 			if (null != existingdeviceTypesset && !existingdeviceTypesset.isEmpty()) {
 				existingdeviceType = existingdeviceTypesset.iterator().next();
@@ -1229,12 +1008,12 @@ public class GblLstController {
 				existingdeviceType.setModels(modelstobesaved);
 
 				for (Models modelsave1 : modelstobesaved) {
-					modelsave1.setDevicetype(existingdeviceType);
-					existingmodelset = modelsRepository.findByDevicetype(existingdeviceType);
+					modelsave1.setDeviceFamily(existingdeviceType);
+					existingmodelset = modelsRepository.findByDeviceFamily(existingdeviceType);
 
-					Vendorset = vendorRepository.findByVendor(modelsave1.getVendor().getVendor());
-					if (null != Vendorset && !Vendorset.isEmpty()) {
-						existingvendor = Vendorset.iterator().next();
+					vendorset = vendorRepository.findByVendor(modelsave1.getVendor().getVendor());
+					if (null != vendorset && !vendorset.isEmpty()) {
+						existingvendor = vendorset.iterator().next();
 						modelsave1.setVendor(existingvendor);
 
 					} else {
@@ -1251,7 +1030,7 @@ public class GblLstController {
 
 				try {
 					if (globalLstReq.getModels().get(0).isValue()) {
-						savedevicetype = deviceTypeRepository.save(existingdeviceType);
+						savedevicetype = deviceFamilyRepository.save(existingdeviceType);
 						isAdd = true;
 					} else {
 						savedevicetype = existingdeviceType;
@@ -1271,60 +1050,55 @@ public class GblLstController {
 
 		} else {
 			return Response.status(422).entity("Device Type is not set").build();
-		}
+		}*/
 
-		for (Models model : savedevicetype.getModels()) {
-			interfaces = globalLstReq.getInterfaces();
-			if (null != interfaces && !interfaces.isEmpty()) {
-				existingdeviceTypesset = deviceTypeRepository
-						.findByDevicetype(globalLstReq.getModels().get(0).getDevicetype().getDevicetype());
-
-				if (null != existingdeviceTypesset && !existingdeviceTypesset.isEmpty()) {
-					existingdeviceType = existingdeviceTypesset.iterator().next();
-
-				} else {
-					return Response.status(422).entity("Device Type does not exist").build();
-				}
-
-				for (Interfaces intrfc : interfaces) {
-					DeviceTypeModel_Interfaces deviceTypeModel_Interfaces = new DeviceTypeModel_Interfaces();
-					deviceTypeModel_Interfaces.setDeviceTypeid(existingdeviceType.getId());
-
-					deviceTypeModel_Interfaces.setModelid(model.getId());
-					existinginterfaces = interfacesRepository.findByInterfaces(intrfc.getInterfaces());
-					if (null != existinginterfaces && !existinginterfaces.isEmpty()) {
-						deviceTypeModel_Interfaces.setInterfacesid(existinginterfaces.iterator().next().getId());
-						Set<DeviceTypeModel_Interfaces> datafromjointable = deviceTypeModel_InterfacesRepo
-								.findByDeviceTypeidAndModelid(existingdeviceType.getId(), model.getId());
-						boolean entryExistsInJtable = false;
-						if (!datafromjointable.isEmpty()) {
-							List<DeviceTypeModel_Interfaces> dmi = new ArrayList<DeviceTypeModel_Interfaces>();
-							dmi.addAll(datafromjointable);
-							for (int i = 0; i < dmi.size(); i++) {
-								if (dmi.get(i).getInterfacesid() == deviceTypeModel_Interfaces.getInterfacesid()) {
-									entryExistsInJtable = true;
-									if (!intrfc.isValue()) {
-										deviceTypeModel_Interfaces.setId(dmi.get(i).getId());
-										deviceTypeModel_InterfacesRepo.delete(deviceTypeModel_Interfaces);
-
-									}
-								}
-
-							}
-
-						}
-
-						if (intrfc.isValue() && !entryExistsInJtable) {
-							deviceTypeModel_InterfacesRepo.save(deviceTypeModel_Interfaces);
-						}
-
-					} else {
-						return Response.status(422).entity("Interfaces does not exist").build();
-					}
-				}
-			}
-
-		}
+		/*
+		 * for (Models model : savedevicetype.getModels()) { interfaces =
+		 * globalLstReq.getInterfaces(); if (null != interfaces &&
+		 * !interfaces.isEmpty()) { existingdeviceTypesset = deviceTypeRepository
+		 * .findByDevicetype(globalLstReq.getModels().get(0).getDevicetype().
+		 * getDevicetype());
+		 * 
+		 * if (null != existingdeviceTypesset && !existingdeviceTypesset.isEmpty()) {
+		 * existingdeviceType = existingdeviceTypesset.iterator().next();
+		 * 
+		 * } else { return
+		 * Response.status(422).entity("Device Type does not exist").build(); }
+		 * 
+		 * for (Interfaces intrfc : interfaces) { DeviceTypeModel_Interfaces
+		 * deviceTypeModel_Interfaces = new DeviceTypeModel_Interfaces();
+		 * deviceTypeModel_Interfaces.setDeviceTypeid(existingdeviceType.getId());
+		 * 
+		 * deviceTypeModel_Interfaces.setModelid(model.getId()); existinginterfaces =
+		 * interfacesRepository.findByInterfaces(intrfc.getInterfaces()); if (null !=
+		 * existinginterfaces && !existinginterfaces.isEmpty()) {
+		 * deviceTypeModel_Interfaces.setInterfacesid(existinginterfaces.iterator().next
+		 * ().getId()); Set<DeviceTypeModel_Interfaces> datafromjointable =
+		 * deviceTypeModel_InterfacesRepo
+		 * .findByDeviceTypeidAndModelid(existingdeviceType.getId(), model.getId());
+		 * boolean entryExistsInJtable = false; if (!datafromjointable.isEmpty()) {
+		 * List<DeviceTypeModel_Interfaces> dmi = new
+		 * ArrayList<DeviceTypeModel_Interfaces>(); dmi.addAll(datafromjointable); for
+		 * (int i = 0; i < dmi.size(); i++) { if (dmi.get(i).getInterfacesid() ==
+		 * deviceTypeModel_Interfaces.getInterfacesid()) { entryExistsInJtable = true;
+		 * if (!intrfc.isValue()) {
+		 * deviceTypeModel_Interfaces.setId(dmi.get(i).getId());
+		 * deviceTypeModel_InterfacesRepo.delete(deviceTypeModel_Interfaces);
+		 * 
+		 * } }
+		 * 
+		 * }
+		 * 
+		 * }
+		 * 
+		 * if (intrfc.isValue() && !entryExistsInJtable) {
+		 * deviceTypeModel_InterfacesRepo.save(deviceTypeModel_Interfaces); }
+		 * 
+		 * } else { return
+		 * Response.status(422).entity("Interfaces does not exist").build(); } } }
+		 * 
+		 * }
+		 */
 
 		// save or delete OS version
 
@@ -1385,21 +1159,20 @@ public class GblLstController {
 	public Response setModel(@RequestBody GlobalLstReq globalLstReq) {
 
 		List<Models> modelsreq = globalLstReq.getModels();
-		List<Interfaces> modelsInterface = globalLstReq.getInterfaces();
+		//List<Interfaces> modelsInterface = globalLstReq.getInterfaces();
 		List<OSversion> modelsOSversions = globalLstReq.getOsversions();
 		Set<Models> existingmodels = new HashSet<Models>();
 		Vendors existingvendor = new Vendors();
 		Set<Vendors> Vendorset = new HashSet<Vendors>();
 		Set<Models> modelstobesaved = new HashSet<Models>();
-		List<Interfaces> interfaces = null;
-		Set<Interfaces> existinginterfaces = null;
+		//List<Interfaces> interfaces = null;
+		//Set<Interfaces> existinginterfaces = null;
 		Set<Integer> interfacesforcheck = new HashSet<Integer>();
 		Set<Integer> osVersionforcheck = new HashSet<Integer>();
 
-		Set<DeviceTypes> existingdeviceTypesset = new HashSet<DeviceTypes>();
-		DeviceTypes existingdeviceType = new DeviceTypes();
-		DeviceTypes savedevicetype = new DeviceTypes();
-		Models savemodels = new Models();
+		Set<DeviceFamily> existingdeviceTypesset = new HashSet<DeviceFamily>();
+		DeviceFamily existingdeviceType = new DeviceFamily();
+		DeviceFamily savedevicetype = new DeviceFamily();
 		boolean isAdd = false, isModify = false;
 		if (!globalLstReq.getIsModify()) {
 			for (Models model : modelsreq) {
@@ -1423,11 +1196,12 @@ public class GblLstController {
 
 				if (null != existingmodels && !existingmodels.isEmpty()) {
 					int modelID = existingmodels.iterator().next().getId();
-					Set<DeviceTypeModel_Interfaces> checkforInterface = deviceTypeModel_InterfacesRepo
-							.findByModelid(modelID);
-					for (DeviceTypeModel_Interfaces data : checkforInterface) {
-						interfacesforcheck.add((Integer) data.getInterfacesid());
-					}
+					/*
+					 * Set<DeviceTypeModel_Interfaces> checkforInterface =
+					 * deviceTypeModel_InterfacesRepo .findByModelid(modelID); for
+					 * (DeviceTypeModel_Interfaces data : checkforInterface) {
+					 * interfacesforcheck.add((Integer) data.getInterfacesid()); }
+					 */
 
 					List<Model_OSversion> checkforOsVersion = model_osversionRepo.findAllByModelid(modelID);
 					for (Model_OSversion data : checkforOsVersion) {
@@ -1441,11 +1215,10 @@ public class GblLstController {
 					}
 				}
 
-				for (Interfaces data : modelsInterface) {
-					if (data.isValue()) {
-						requestInterface.add(data.getMulti_intf_id());
-					}
-				}
+				/*
+				 * for (Interfaces data : modelsInterface) { if (data.isValue()) {
+				 * requestInterface.add(data.getMulti_intf_id()); } }
+				 */
 
 				modelstobesaved.add(model);
 			}
@@ -1463,10 +1236,13 @@ public class GblLstController {
 
 		existingdeviceTypesset.clear();
 		List<Models> existingmodelset = new ArrayList<Models>();
-		if (null != globalLstReq.getModels() && null != globalLstReq.getModels().get(0).getDevicetype()
-				&& null != globalLstReq.getModels().get(0).getDevicetype().getDevicetype()) {
-			existingdeviceTypesset = deviceTypeRepository
-					.findByDevicetype(globalLstReq.getModels().get(0).getDevicetype().getDevicetype());
+		if (null != globalLstReq.getModels() && null != globalLstReq.getModels().get(0).getDeviceFamily()
+		/* && null != globalLstReq.getModels().get(0).getDevicetype().getDevicetype() */) {
+			/*
+			 * existingdeviceTypesset = deviceTypeRepository
+			 * .findByDevicetype(globalLstReq.getModels().get(0).getDevicetype().
+			 * getDevicetype())
+			 */;
 
 			if (null != existingdeviceTypesset && !existingdeviceTypesset.isEmpty()) {
 				existingdeviceType = existingdeviceTypesset.iterator().next();
@@ -1474,8 +1250,8 @@ public class GblLstController {
 				existingdeviceType.setModels(existingmodels);
 
 				for (Models modelsave1 : existingmodels) {
-					modelsave1.setDevicetype(existingdeviceType);
-					existingmodelset = modelsRepository.findByDevicetype(existingdeviceType);
+					modelsave1.setDeviceFamily(existingdeviceType);
+					existingmodelset = modelsRepository.findByDeviceFamily(existingdeviceType);
 
 					Vendorset = vendorRepository.findByVendor(modelsave1.getVendor().getVendor());
 					if (null != Vendorset && !Vendorset.isEmpty()) {
@@ -1496,7 +1272,7 @@ public class GblLstController {
 
 				try {
 					if (globalLstReq.getModels().get(0).isValue()) {
-						savedevicetype = deviceTypeRepository.save(existingdeviceType);
+						savedevicetype = deviceFamilyRepository.save(existingdeviceType);
 						savedevicetype.setModels(modelstobesaved);
 						isAdd = true;
 					} else {
@@ -1512,65 +1288,62 @@ public class GblLstController {
 				}
 
 			} else {
-				return Response.status(422).entity("Device Type does not exist").build();
+				return Response.status(422).entity("Device Family does not exist").build();
 			}
 
 		} else {
-			return Response.status(422).entity("Device Type is not set").build();
+			return Response.status(422).entity("Device Family is not set").build();
 		}
 
-		for (Models model : savedevicetype.getModels()) {
-			interfaces = globalLstReq.getInterfaces();
-			if (null != interfaces && !interfaces.isEmpty()) {
-				existingdeviceTypesset = deviceTypeRepository
-						.findByDevicetype(globalLstReq.getModels().get(0).getDevicetype().getDevicetype());
-
-				if (null != existingdeviceTypesset && !existingdeviceTypesset.isEmpty()) {
-					existingdeviceType = existingdeviceTypesset.iterator().next();
-
-				} else {
-					return Response.status(422).entity("Device Type does not exist").build();
-				}
-
-				for (Interfaces intrfc : interfaces) {
-					DeviceTypeModel_Interfaces deviceTypeModel_Interfaces = new DeviceTypeModel_Interfaces();
-					deviceTypeModel_Interfaces.setDeviceTypeid(existingdeviceType.getId());
-
-					deviceTypeModel_Interfaces.setModelid(model.getId());
-					existinginterfaces = interfacesRepository.findByInterfaces(intrfc.getInterfaces());
-					if (null != existinginterfaces && !existinginterfaces.isEmpty()) {
-						deviceTypeModel_Interfaces.setInterfacesid(existinginterfaces.iterator().next().getId());
-						Set<DeviceTypeModel_Interfaces> datafromjointable = deviceTypeModel_InterfacesRepo
-								.findByDeviceTypeidAndModelid(existingdeviceType.getId(), model.getId());
-						boolean entryExistsInJtable = false;
-						if (!datafromjointable.isEmpty()) {
-							List<DeviceTypeModel_Interfaces> dmi = new ArrayList<DeviceTypeModel_Interfaces>();
-							dmi.addAll(datafromjointable);
-							for (int i = 0; i < dmi.size(); i++) {
-								if (dmi.get(i).getInterfacesid() == deviceTypeModel_Interfaces.getInterfacesid()) {
-									entryExistsInJtable = true;
-									if (!intrfc.isValue()) {
-										deviceTypeModel_Interfaces.setId(dmi.get(i).getId());
-										deviceTypeModel_InterfacesRepo.delete(deviceTypeModel_Interfaces);
-
-									}
-								}
-
-							}
-
-						}
-
-						if (intrfc.isValue() && !entryExistsInJtable) {
-							deviceTypeModel_InterfacesRepo.save(deviceTypeModel_Interfaces);
-						}
-
-					} else {
-						return Response.status(422).entity("Interfaces does not exist").build();
-					}
-				}
-			}
-
-		}
+		/*
+		 * for (Models model : savedevicetype.getModels()) { interfaces =
+		 * globalLstReq.getInterfaces(); if (null != interfaces &&
+		 * !interfaces.isEmpty()) {
+		 * 
+		 * existingdeviceTypesset = deviceTypeRepository
+		 * .findByDevicetype(globalLstReq.getModels().get(0).getDevicetype().
+		 * getDevicetype()) ;
+		 * 
+		 * if (null != existingdeviceTypesset && !existingdeviceTypesset.isEmpty()) {
+		 * existingdeviceType = existingdeviceTypesset.iterator().next();
+		 * 
+		 * } else { return
+		 * Response.status(422).entity("Device Type does not exist").build(); }
+		 * 
+		 * for (Interfaces intrfc : interfaces) { DeviceTypeModel_Interfaces
+		 * deviceTypeModel_Interfaces = new DeviceTypeModel_Interfaces();
+		 * deviceTypeModel_Interfaces.setDeviceTypeid(existingdeviceType.getId());
+		 * 
+		 * deviceTypeModel_Interfaces.setModelid(model.getId()); existinginterfaces =
+		 * interfacesRepository.findByInterfaces(intrfc.getInterfaces()); if (null !=
+		 * existinginterfaces && !existinginterfaces.isEmpty()) {
+		 * deviceTypeModel_Interfaces.setInterfacesid(existinginterfaces.iterator().next
+		 * ().getId()); Set<DeviceTypeModel_Interfaces> datafromjointable =
+		 * deviceTypeModel_InterfacesRepo
+		 * .findByDeviceTypeidAndModelid(existingdeviceType.getId(), model.getId());
+		 * boolean entryExistsInJtable = false; if (!datafromjointable.isEmpty()) {
+		 * List<DeviceTypeModel_Interfaces> dmi = new
+		 * ArrayList<DeviceTypeModel_Interfaces>(); dmi.addAll(datafromjointable); for
+		 * (int i = 0; i < dmi.size(); i++) { if (dmi.get(i).getInterfacesid() ==
+		 * deviceTypeModel_Interfaces.getInterfacesid()) { entryExistsInJtable = true;
+		 * if (!intrfc.isValue()) {
+		 * deviceTypeModel_Interfaces.setId(dmi.get(i).getId());
+		 * deviceTypeModel_InterfacesRepo.delete(deviceTypeModel_Interfaces);
+		 * 
+		 * } }
+		 * 
+		 * }
+		 * 
+		 * }
+		 * 
+		 * if (intrfc.isValue() && !entryExistsInJtable) {
+		 * deviceTypeModel_InterfacesRepo.save(deviceTypeModel_Interfaces); }
+		 * 
+		 * } else { return
+		 * Response.status(422).entity("Interfaces does not exist").build(); } } }
+		 * 
+		 * }
+		 */
 
 		// save or delete OS version
 
@@ -1628,66 +1401,55 @@ public class GblLstController {
 	}
 
 	@DELETE
-	@RequestMapping(value = "/devicetype", method = RequestMethod.DELETE, produces = "application/json")
-	public Response delDevicetype(@RequestParam String devicetype) {
+	@RequestMapping(value = "/deviceFamily", method = RequestMethod.DELETE, produces = "application/json")
+	public Response delDevicetype(@RequestParam String devicefamily) {
 
-		DeviceTypes existingdevicetype = new DeviceTypes();
+		DeviceFamily existingdevicetype = new DeviceFamily();
 
-		List<Vendor_devicetypes> vendor_devicetypes = new ArrayList<Vendor_devicetypes>();
+		//List<Vendor_devicetypes> vendor_devicetypes = new ArrayList<Vendor_devicetypes>();
 
-		existingdevicetype = deviceTypeRepository.findByDevicetype(devicetype).iterator().next();
+		// existingdevicetype =
+		existingdevicetype = deviceFamilyRepository.findByDeviceFamily(devicefamily).iterator().next();
 
-		vendor_devicetypes = vendor_devicetypesRepo.findAllByDevicetypeid(existingdevicetype.getId());
+		//vendor_devicetypes = vendor_devicetypesRepo.findAllByDevicetypeid(existingdevicetype.getId());
 
-		if (null != vendor_devicetypes && !vendor_devicetypes.isEmpty()) {
+		//if (null != vendor_devicetypes && !vendor_devicetypes.isEmpty()) {
 
-			vendor_devicetypesRepo.delete(vendor_devicetypes);
+			//vendor_devicetypesRepo.delete(vendor_devicetypes);
 			// vendors.getModels().setVendor(null);
 
-		}
+		//}
 		try {
-			deviceTypeRepository.delete(existingdevicetype);
+			if(existingdevicetype !=null) {
+				deviceFamilyRepository.delete(existingdevicetype);
+			}
 		} catch (NoSuchElementException e) {
 			// TODO Auto-generated catch block
-			return Response.status(200).entity("Device Type does not exist so cannot delete").build();
+			return Response.status(200).entity("Device Family does not exist so cannot delete").build();
 		}
 		// vendorRepository.deleteAll();
-		return Response.status(200).entity("Device Type deleted successfully").build();
+		return Response.status(200).entity("Device Family deleted successfully").build();
 
 	}
 
 	@GET
-	@RequestMapping(value = "/devicetypes", method = RequestMethod.GET, produces = "application/json")
+	@RequestMapping(value = "/deviceFamilies", method = RequestMethod.GET, produces = "application/json")
 	public Response getDevicetypes() {
 
-		return Response.status(200).entity(deviceTypeRepository.findAll()).build();
+		return Response.status(200).entity(deviceFamilyRepository.findAll()).build();
 
 	}
 
 	@GET
-	@RequestMapping(value = "/devicetype", method = RequestMethod.GET, produces = "application/json")
+	@RequestMapping(value = "/deviceFamily", method = RequestMethod.GET, produces = "application/json")
 	public Response getDevicetype(@RequestParam String vendor) {
 
-		Vendors existingvendor = new Vendors();
-		Set<Vendors> Vendorset = new HashSet<Vendors>();
-		List<Vendor_devicetypes> vendor_devicetypes = new ArrayList<Vendor_devicetypes>();
-		List<DeviceTypes> deviceTypesList = new ArrayList<DeviceTypes>();
-		List<Long> devicetypeidlist = new ArrayList<Long>();
-		Set<DeviceTypes> devicetypeSet = new HashSet<DeviceTypes>();
+		Set<Vendors> exsistingvendor = vendorRepository.findByVendor(vendor);
+		List<Vendors> list = new ArrayList<>(exsistingvendor);
+		if (list.size() > 0) {
+			List<DeviceFamily> deviceFamilyList = deviceFamilyRepository.findByVendor(list.get(0));
 
-		Vendorset = vendorRepository.findByVendor(vendor);
-		if (null != Vendorset && !Vendorset.isEmpty()) {
-			existingvendor = Vendorset.iterator().next();
-
-			vendor_devicetypes = vendor_devicetypesRepo.findAllByVendorid(existingvendor.getId());
-
-			for (Vendor_devicetypes vendor_devicetype : vendor_devicetypes) {
-				devicetypeSet.clear();
-				devicetypeSet = deviceTypeRepository.findById(vendor_devicetype.getDevicetypeid());
-				deviceTypesList.addAll(devicetypeSet);
-			}
-
-			return Response.status(200).entity(deviceTypesList).build();
+			return Response.status(200).entity(deviceFamilyList).build();
 		}
 
 		else {
@@ -1702,18 +1464,16 @@ public class GblLstController {
 
 		Vendors existingvendor = new Vendors();
 
-		DeviceTypes existingdevicetypes = new DeviceTypes();
-		Vendor_devicetypes vendor_devicetypes = new Vendor_devicetypes();
-
+		
 		List<Vendors> vendors = globalLstReq.getVendors();
 
 		Set<Vendors> vends = new HashSet<Vendors>();
-		Set<DeviceTypes> deviceTypesListexisting = new HashSet<DeviceTypes>();
-		Set<DeviceTypes> deviceTypesList = new HashSet<DeviceTypes>();
+		//Set<DeviceFamily> deviceTypesListexisting = new HashSet<DeviceFamily>();
+		//Set<DeviceFamily> deviceTypesList = new HashSet<DeviceFamily>();
 
-		List<Vendor_devicetypes> existingvendor_devicetypeslist = new ArrayList<Vendor_devicetypes>();
+		//List<Vendor_devicetypes> existingvendor_devicetypeslist = new ArrayList<Vendor_devicetypes>();
 
-		Vendor_devicetypes existingvendor_devicetypes = new Vendor_devicetypes();
+		//Vendor_devicetypes existingvendor_devicetypes = new Vendor_devicetypes();
 		try {
 			for (Vendors vendor : vendors) {
 				vends.clear();
@@ -1721,164 +1481,177 @@ public class GblLstController {
 				if (null != vends && !vends.isEmpty()) {
 					existingvendor = vends.iterator().next();
 					if (null != existingvendor) {
-						vendor_devicetypes.setVendorid(existingvendor.getId());
+						//vendor_devicetypes.setVendorid(existingvendor.getId());
 					}
 				} else {
 
 					return Response.status(200).entity("Vendor should be existing").build();
 
 				}
-				String errorstr = null;
+				//String errorstr = null;
 				try {
-					for (DeviceTypes devicetype : vendor.getDevicetypes()) {
-						deviceTypesListexisting.clear();
-						Vendor_devicetypes vendor_devicetypesmul = new Vendor_devicetypes();
-						// deviceTypesList=devicetype;
-						deviceTypesListexisting = deviceTypeRepository.findByDevicetype(devicetype.getDevicetype());
-						if (null != deviceTypesListexisting && !deviceTypesListexisting.isEmpty()) {
-							existingdevicetypes = deviceTypesListexisting.iterator().next();
-							if (null != existingdevicetypes) {
-								existingvendor_devicetypeslist = vendor_devicetypesRepo
-										.findAllByDevicetypeid(existingdevicetypes.getId());
-								if (null != existingvendor_devicetypeslist
-										&& !existingvendor_devicetypeslist.isEmpty()) {
-									existingvendor_devicetypes = existingvendor_devicetypeslist.iterator().next();
-
-								}
-
-								existingvendor_devicetypes.setDevicetypeid(existingdevicetypes.getId());
-								existingvendor_devicetypes.setVendorid(vendor_devicetypes.getVendorid());
-							}
-						} else {
-							return Response.status(422).entity("Device Type should be exising").build();
-
-						}
-						// use more then 1 object
-
-						try {
-							vendor_devicetypesRepo.save(existingvendor_devicetypes);
-						} catch (DataIntegrityViolationException e) {
-							// TODO Auto-generated catch block
-
-							// errorstr="vendor-devicetype is duplicate";
-							return Response.status(409)
-									.entity("Vendor-DeviceType is duplicate. Please change the devicetype="
-											+ devicetype.getDevicetype())
-									.build();
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							return Response.status(422).entity("Could not map Vendor and Device Type").build();
-
-						}
-
-					}
+					/*
+					 * for (DeviceFamily devicetype : vendor.getDevicetypes()) {
+					 * deviceTypesListexisting.clear(); Vendor_devicetypes vendor_devicetypesmul =
+					 * new Vendor_devicetypes(); // deviceTypesList=devicetype;
+					 * deviceTypesListexisting =
+					 * deviceTypeRepository.findByDevicetype(devicetype.getDevicetype()); if (null
+					 * != deviceTypesListexisting && !deviceTypesListexisting.isEmpty()) {
+					 * existingdevicetypes = deviceTypesListexisting.iterator().next(); if (null !=
+					 * existingdevicetypes) { existingvendor_devicetypeslist =
+					 * vendor_devicetypesRepo .findAllByDevicetypeid(existingdevicetypes.getId());
+					 * if (null != existingvendor_devicetypeslist &&
+					 * !existingvendor_devicetypeslist.isEmpty()) { existingvendor_devicetypes =
+					 * existingvendor_devicetypeslist.iterator().next();
+					 * 
+					 * }
+					 * 
+					 * existingvendor_devicetypes.setDevicetypeid(existingdevicetypes.getId());
+					 * existingvendor_devicetypes.setVendorid(vendor_devicetypes.getVendorid()); } }
+					 * else { return
+					 * Response.status(422).entity("Device Type should be exising").build();
+					 * 
+					 * } // use more then 1 object
+					 * 
+					 * try { vendor_devicetypesRepo.save(existingvendor_devicetypes); } catch
+					 * (DataIntegrityViolationException e) { // TODO Auto-generated catch block
+					 * 
+					 * // errorstr="vendor-devicetype is duplicate"; return Response.status(409)
+					 * .entity("Vendor-DeviceType is duplicate. Please change the devicetype=" +
+					 * devicetype.getDevicetype()) .build(); } catch (Exception e) { // TODO
+					 * Auto-generated catch block return
+					 * Response.status(422).entity("Could not map Vendor and Device Type").build();
+					 * 
+					 * }
+					 * 
+					 * }
+					 */
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
-					return Response.status(422).entity("Could not map Vendor and Device Type").build();
+					return Response.status(422).entity("Could not map Vendor and Device Family").build();
 
 				}
 			}
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			logger.info("Vendor or Device Type already exist ");
+			logger.info("Vendor or Device Family already exist ");
 			// return Response.status(500).entity("vendor and devicetype already
 			// exist").build();
 		}
 
-		return Response.status(200).entity("Device Type added succesfully").build();
+		return Response.status(200).entity("Device Family added succesfully").build();
 	}
 
 	@POST
-	@RequestMapping(value = "/devicetype", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	public Response setDevicetype(@RequestBody GlobalLstReq globalLstReq) {
+	@RequestMapping(value = "/deviceFamily", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public Response setDeviceFamily(@RequestBody GlobalLstReq globalLstReq) {
 		List<Vendors> vendors = globalLstReq.getVendors();
+		logger.info("vendors -"+vendors);
 		boolean isAdd = false;
 		for (Vendors vendor : vendors) {
+			//logger.error(msg);
 			Set<Vendors> existingVendorFromDB = vendorRepository.findByVendor(vendor.getVendor());
+			
 			Vendors existingvendor = existingVendorFromDB.iterator().next();
-			for (DeviceTypes devicetype : vendor.getDevicetypes()) {
-				Set<DeviceTypes> dt = deviceTypeRepository.findByDevicetype(devicetype.getDevicetype());
+			logger.info("existingvendor -"+existingvendor);			
+			
+			for (DeviceFamily devicefamily : vendor.getDeviceFamily()) {
+				logger.info("devicefamily -"+devicefamily.getDeviceFamily());
+				Set<DeviceFamily> dt = deviceFamilyRepository.findByDeviceFamily(devicefamily.getDeviceFamily());
 				// when adding completly new device in db and assosiated to respected vendor.
 				if (dt.isEmpty()) {
-					devicetype = deviceTypeRepository.save(devicetype);
-					Vendor_devicetypes toAdd = new Vendor_devicetypes();
-					toAdd.setDevicetypeid(devicetype.getId());
-					toAdd.setVendorid(existingvendor.getId());
-					vendor_devicetypesRepo.save(toAdd);
+					logger.info("devicefamily vendor id -"+existingvendor.getId());
+					devicefamily.setVendor(existingvendor);
+					logger.info("devicefamily 000-"+devicefamily.getDeviceFamily());
+					devicefamily = deviceFamilyRepository.save(devicefamily);
 					isAdd = true;
-
-				} // adding device type to assosiated to vendor if assosiation doesnt exist in
-					// vedor device type assosiation
-				else if (vendor_devicetypesRepo
-						.findAllByVendoridAndDevicetypeid(existingvendor.getId(), dt.iterator().next().getId())
-						.isEmpty()) {
-					Vendor_devicetypes toAdd = new Vendor_devicetypes();
-					toAdd.setDevicetypeid(dt.iterator().next().getId());
-					toAdd.setVendorid(existingvendor.getId());
-					vendor_devicetypesRepo.save(toAdd);
-					isAdd = true;
-
-				} else {
-					return Response.status(409).entity("Device type is duplicate").build();
 				}
+
 			}
+			// adding device type to assosiated to vendor if assosiation doesnt exist in
+			// vedor device type assosiation
+			/*
+			 * else if (vendor_devicetypesRepo
+			 * .findAllByVendoridAndDevicetypeid(existingvendor.getId(),
+			 * dt.iterator().next().getId()) .isEmpty()) { Vendor_devicetypes toAdd = new
+			 * Vendor_devicetypes(); toAdd.setDevicetypeid(dt.iterator().next().getId());
+			 * toAdd.setVendorid(existingvendor.getId());
+			 * vendor_devicetypesRepo.save(toAdd); isAdd = true;
+			 * 
+			 * } else { return
+			 * Response.status(409).entity("Device type is duplicate").build(); }
+			 */
+			// }
 
 		}
 		String resstr = null;
 		if (isAdd) {
 			resstr = "added";
 		} else {
-			return Response.status(409).entity("Device type is duplicate").build();
+			return Response.status(409).entity("Device Family is duplicate").build();
 		}
-		return Response.status(200).entity("Device Type " + resstr + " succesfully").build();
+		return Response.status(200).entity("Device Family " + resstr + " succesfully").build();
 	}
 
 	@POST
-	@RequestMapping(value = "/modifydevicetype", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@RequestMapping(value = "/modifyDeviceFamily", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public Response modifydevicetype(@RequestBody GlobalLstReq globalLstReq) {
 		List<Vendors> vendors = globalLstReq.getVendors();
 		boolean isModify = false;
 		for (Vendors vendor : vendors) {
 			Set<Vendors> existingVendorFromDB = vendorRepository.findByVendor(vendor.getVendor());
 			Vendors existingvendor = existingVendorFromDB.iterator().next();
-			// when we adding extra vendor in modify device type in that case we have value
+			// when we adding extra vendor in modify Device Family in that case we have value
 			// as true and vendor_value is false
 			if (vendor.isValue() && !vendor.getVendor_value()) {
-				for (DeviceTypes devicetype : vendor.getDevicetypes()) {
-					Set<DeviceTypes> dt = deviceTypeRepository.findByDevicetype(devicetype.getDevicetype());
-					if (!dt.isEmpty()) {// we cant modify if device type is not exist
-						if (vendor_devicetypesRepo
-								.findAllByVendoridAndDevicetypeid(existingvendor.getId(), dt.iterator().next().getId())
-								.isEmpty()) {// making sure assosiation doesnt exist
-							Vendor_devicetypes toAdd = new Vendor_devicetypes();
-							toAdd.setDevicetypeid(dt.iterator().next().getId());
-							toAdd.setVendorid(existingvendor.getId());
-							vendor_devicetypesRepo.save(toAdd);
-							isModify = true;
-						}
+				
+				for (DeviceFamily devicefamily : vendor.getDeviceFamily()) {
+					logger.info("devicefamily -"+devicefamily.getDeviceFamily());
+					Set<DeviceFamily> dt = deviceFamilyRepository.findByDeviceFamily(devicefamily.getDeviceFamily());
+					// when adding completly new device in db and assosiated to respected vendor.
+					if (dt !=null && dt.size()>0) {
+						devicefamily = dt.iterator().next();
+						logger.info("devicefamily vendor id -"+existingvendor.getId());
+						devicefamily.setVendor(existingvendor);
+						logger.info("devicefamily 000-"+devicefamily.getDeviceFamily());
+						devicefamily = deviceFamilyRepository.save(devicefamily);
+						isModify = true;
 					}
-
 				}
+				
+				/*
+				 * for (DeviceFamily devicetype : vendor.getDevicetypes()) { Set<DeviceFamily>
+				 * dt = deviceTypeRepository.findByDevicetype(devicetype.getDevicetype()); if
+				 * (!dt.isEmpty()) {// we cant modify if device type is not exist if
+				 * (vendor_devicetypesRepo
+				 * .findAllByVendoridAndDevicetypeid(existingvendor.getId(),
+				 * dt.iterator().next().getId()) .isEmpty()) {// making sure assosiation doesnt
+				 * exist Vendor_devicetypes toAdd = new Vendor_devicetypes();
+				 * toAdd.setDevicetypeid(dt.iterator().next().getId());
+				 * toAdd.setVendorid(existingvendor.getId());
+				 * vendor_devicetypesRepo.save(toAdd); isModify = true; } }
+				 * 
+				 * }
+				 */
 				// when we are removing any existing vendor in modify
-			} else if (vendor.getVendor_value() && !vendor.isValue()) {
-				for (DeviceTypes devicetype : vendor.getDevicetypes()) {
-					Set<DeviceTypes> dt = deviceTypeRepository.findByDevicetype(devicetype.getDevicetype());
-					if (!dt.isEmpty()) {// we cant modify if device type is not exist
-						if (!vendor_devicetypesRepo
-								.findAllByVendoridAndDevicetypeid(existingvendor.getId(), dt.iterator().next().getId())
-								.isEmpty()) {// making sure assosiation doesnt exist
-							Vendor_devicetypes todelete = new Vendor_devicetypes();
-							todelete.setDevicetypeid(dt.iterator().next().getId());
-							todelete.setVendorid(existingvendor.getId());
-							todelete.setId(
-									vendor_devicetypesRepo.findAllByVendoridAndDevicetypeid(existingvendor.getId(),
-											dt.iterator().next().getId()).iterator().next().getId());
-							vendor_devicetypesRepo.delete(todelete);
-							isModify = true;
-						}
-					}
-				}
+			} else if (vendor.getVendor_value() && !vendor.isValue()) {				
+				
+				
+				/*
+				 * for (DeviceFamily devicetype : vendor.getDevicetypes()) { Set<DeviceFamily>
+				 * dt = deviceTypeRepository.findByDevicetype(devicetype.getDevicetype()); if
+				 * (!dt.isEmpty()) {// we cant modify if device type is not exist if
+				 * (!vendor_devicetypesRepo
+				 * .findAllByVendoridAndDevicetypeid(existingvendor.getId(),
+				 * dt.iterator().next().getId()) .isEmpty()) {// making sure assosiation doesnt
+				 * exist Vendor_devicetypes todelete = new Vendor_devicetypes();
+				 * todelete.setDevicetypeid(dt.iterator().next().getId());
+				 * todelete.setVendorid(existingvendor.getId()); todelete.setId(
+				 * vendor_devicetypesRepo.findAllByVendoridAndDevicetypeid(existingvendor.getId(
+				 * ), dt.iterator().next().getId()).iterator().next().getId());
+				 * vendor_devicetypesRepo.delete(todelete); isModify = true; } } }
+				 */
 			}
 		}
 		String resstr = null;
@@ -1887,7 +1660,7 @@ public class GblLstController {
 		} else {
 			return Response.status(409).entity("No Modification took place").build();
 		}
-		return Response.status(200).entity("Device Type " + resstr + " succesfully").build();
+		return Response.status(200).entity("Device Family " + resstr + " succesfully").build();
 
 	}
 
@@ -1911,15 +1684,15 @@ public class GblLstController {
 			}
 		}
 
-		Vendors existingvendor = new Vendors();
+		//Vendors existingvendor = new Vendors();
 		Set<Vendors> existingvendorset = new HashSet<Vendors>();
 		existingvendorset = vendorRepository.findByVendor(vendor);
 
 		if (null != existingvendorset && !existingvendorset.isEmpty()) {
 
-			existingvendor = existingvendorset.iterator().next();
+			//existingvendor = existingvendorset.iterator().next();
 
-			oslist = osRepository.findByVendor(existingvendor);
+			 //oslist = osRepository.findByVendor(existingvendor);
 
 		}
 

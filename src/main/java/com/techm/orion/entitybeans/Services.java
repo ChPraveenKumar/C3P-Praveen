@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "T_TPMGMT_GLBLIST_M_Services", uniqueConstraints = { @UniqueConstraint(columnNames = { "service" }) })
+@Table(name = "c3p_t_glblist_m_services", uniqueConstraints = { @UniqueConstraint(columnNames = { "service" }) })
 public class Services implements Serializable// ,Identifiable<Integer> {
 {
 	/**

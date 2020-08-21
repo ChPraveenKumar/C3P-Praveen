@@ -932,6 +932,10 @@ public class InvokeFtl {
 			List<AttribCreateConfigPojo> masterAttribute, List<AttribCreateConfigPojo> templateAttribute,
 			String templateId) {
 		logger.info("createFinalTemplate -templateId - "+templateId);
+		logger.info("createFinalTemplate -masterAttribute - "+masterAttribute);
+		logger.info("createFinalTemplate -templateAttribute - "+templateAttribute);
+		logger.info("createFinalTemplate -cammandsBySeriesId - "+cammandsBySeriesId);
+		logger.info("createFinalTemplate -cammandByTemplate - "+cammandByTemplate);
 		String s = ")!" + '"' + '"' + "}";
 		if (masterAttribute != null) {
 			if (cammandsBySeriesId != null) {

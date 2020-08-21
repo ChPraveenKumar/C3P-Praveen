@@ -71,7 +71,7 @@ public interface DeviceDiscoveryRepository extends
 
 	List<DeviceDiscoveryEntity> findDModelByDVendor(String vendor);
 
-	@Query(value = "SELECT d_hostname FROM c3pdbschema.c3p_deviceinfo where d_vendor=:vendor and d_model=:model", nativeQuery = true)
+	@Query(value = "SELECT d_hostname FROM c3p_deviceinfo where d_vendor=:vendor and d_model=:model", nativeQuery = true)
 	List<String> findAllDHostNameByDModelAndDVendor(
 			@Param("model") String model, @Param("vendor") String vendor);
 
@@ -202,11 +202,11 @@ public interface DeviceDiscoveryRepository extends
 			String customer, String region, String vendortosearch,
 			String networktosearch, String sitetosearch);
 
-	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDSeries(
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDDeviceFamily(
 			String customer, String region, String vendortosearch,
 			String networktosearch, String sitetosearch, String devicetosearch);
 
-	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDSeriesAndDModel(
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDDeviceFamilyAndDModel(
 			String customer, String region, String vendortosearch,
 			String networktosearch, String sitetosearch, String devicetosearch,
 			String modeltosearch);
@@ -215,13 +215,13 @@ public interface DeviceDiscoveryRepository extends
 			String customer, String region, String vendortosearch,
 			String networktosearch, String sitetosearch, String modeltosearch);
 
-	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDSeriesAndDModel(
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDDeviceFamilyAndDModel(
 			String customer, String region, String vendortosearch,
 			String networktosearch, String devicetosearch, String modeltosearch);
 
 	List<DeviceDiscoveryEntity> findAllByCustSiteId(int temp);
 
-	List<DeviceDiscoveryEntity> findAllByDVendorAndDSeries(String vendor,
+	List<DeviceDiscoveryEntity> findAllByDVendorAndDDeviceFamily(String vendor,
 			String deviceFamily);
 
 	List<DeviceDiscoveryEntity> findByDSshCredProfile(String profileName);
@@ -265,7 +265,7 @@ public interface DeviceDiscoveryRepository extends
 	@Query("SELECT data FROM DeviceDiscoveryEntity data where dIPAddrSix=:dIPAddrSix")
 	List<DeviceDiscoveryEntity> existingDeviceInfoIpV6(@Param("dIPAddrSix") String dIPAddrSix);
 
-	String findDevices = "SELECT * FROM c3p_deviceinfo u where u.d_vendor = ?1 and u.d_sries = ?2 and u.d_os_version < ?3";
+	String findDevices = "SELECT * FROM c3p_deviceinfo u where u.d_vendor = ?1 and u.d_device_family = ?2 and u.d_os_version < ?3";
 
 	@Query(value = findDevices, nativeQuery = true)
 	@Modifying

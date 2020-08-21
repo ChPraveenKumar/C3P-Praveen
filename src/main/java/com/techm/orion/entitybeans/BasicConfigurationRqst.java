@@ -8,7 +8,7 @@ public class BasicConfigurationRqst {
 
 	private String vendor;
 
-	private String devicetype;
+	private String deviceFamily;
 
 	private String model;
 
@@ -24,12 +24,12 @@ public class BasicConfigurationRqst {
 		this.vendor = vendor;
 	}
 
-	public String getDevicetype() {
-		return devicetype;
+	public String getDeviceFamily() {
+		return deviceFamily;
 	}
 
-	public void setDevicetype(String devicetype) {
-		this.devicetype = devicetype;
+	public void setDeviceFamily(String deviceFamily) {
+		this.deviceFamily = deviceFamily;
 	}
 
 	public String getModel() {

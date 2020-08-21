@@ -155,8 +155,8 @@ public class DeviceDiscrepancyService {
 			if (device.getdIpAddrsSix() != null) {
 				entity.setdIPAddrSix(device.getdIpAddrsSix());
 			}
-			if (device.getdSries() != null) {
-				entity.setdSeries(device.getdSries());
+			if (device.getdDeviceFamily() != null) {
+				entity.setdDeviceFamily(device.getdDeviceFamily());
 			}
 			if (device.getdModel() != null) {
 				entity.setdModel(device.getdModel());
@@ -234,8 +234,8 @@ public class DeviceDiscrepancyService {
 		if (device.getdIpAddrsSix() != null) {
 			entity.setdIPAddrSix(device.getdIpAddrsSix());
 		}
-		if (device.getdSries() != null) {
-			entity.setdSeries(device.getdSries());
+		if (device.getdDeviceFamily() != null) {
+			entity.setdDeviceFamily(device.getdDeviceFamily());
 		}
 		if (device.getdModel() != null) {
 			entity.setdModel(device.getdModel());

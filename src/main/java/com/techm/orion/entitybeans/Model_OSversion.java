@@ -11,18 +11,18 @@ import javax.persistence.UniqueConstraint;
 
 @Entity
 
-@Table(name = "T_TPMGMT_GLBLIST_J_model_OSversion", uniqueConstraints = {
-		@UniqueConstraint(columnNames = { "Model_id", "OSversion_id" }) })
+@Table(name = " c3p_t_glblist_j_model_osversion", uniqueConstraints = {
+		@UniqueConstraint(columnNames = { "model_id", "osversion_id" }) })
 public class Model_OSversion {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
 
-	@Column(name = "Model_id")
+	@Column(name = "model_id")
 	private int modelid;
 
-	@Column(name = "OSversion_id")
+	@Column(name = "osversion_id")
 	private int osversionid;
 
 	@Transient

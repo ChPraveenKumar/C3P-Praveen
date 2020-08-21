@@ -48,8 +48,8 @@ import com.techm.orion.entitybeans.WebServiceEntity;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.repositories.DeviceFamilyRepository;
 import com.techm.orion.repositories.DeviceInterfaceRepo;
-import com.techm.orion.repositories.DeviceTypeRepository;
 import com.techm.orion.repositories.InternetInfoRepo;
 import com.techm.orion.repositories.ModelsRepository;
 import com.techm.orion.repositories.OSRepository;
@@ -89,7 +89,7 @@ public class ExcelReader {
 	VendorRepository vendorRepository;
 
 	@Autowired
-	DeviceTypeRepository deviceTypeRepository;
+	DeviceFamilyRepository deviceFamilyRepository;
 
 	@Autowired
 	ModelsRepository modelsRepository;
@@ -1212,7 +1212,7 @@ public class ExcelReader {
 			ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
 
 			List<String> vendorlist = vendorRepository.findVendors();
-			List<String> devicelist = deviceTypeRepository.findDevice();
+			List<String> devicelist = deviceFamilyRepository.findDevice();
 			List<String> modellist = modelsRepository.findModel();
 			List<String> oslist = oSRepository.findOs();
 			List<String> osVersionlist = oSversionRepository.findOsVersion();

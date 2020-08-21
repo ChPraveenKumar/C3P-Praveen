@@ -48,16 +48,16 @@ public interface CustomerStagingImportRepo extends JpaRepository<CustomerStaging
 			+ "osVersion ) FROM CustomerStagingEntity where importId=:importId")
 	List<CustomerStagingEntity> checkSupportedFields(@Param("importId") String importId);
 
-	@Query(value = "SELECT distinct model  FROM t_tpmgmt_glblist_m_models", nativeQuery = true)
+	@Query(value = "SELECT distinct model  FROM c3p_t_glblist_m_models", nativeQuery = true)
 	List<String> findModel();
 
-	@Query(value = "SELECT vendor FROM t_tpmgmt_glblist_m_vendor", nativeQuery = true)
+	@Query(value = "SELECT vendor FROM c3p_t_glblist_m_vendor", nativeQuery = true)
 	List<String> findSupportedVendor();
 
-	@Query(value = "SELECT distinct os FROM t_tpmgmt_glblist_m_os", nativeQuery = true)
+	@Query(value = "SELECT distinct os FROM c3p_t_glblist_m_os", nativeQuery = true)
 	List<String> findOS();
 
-	@Query(value = "SELECT distinct osversion FROM t_tpmgmt_glblist_m_osversion", nativeQuery = true)
+	@Query(value = "SELECT distinct osversion FROM c3p_t_glblist_m_osversion", nativeQuery = true)
 	List<String> findOSVersion();
 
 	@Query("SELECT c FROM CustomerStagingEntity c where importId=:importId")

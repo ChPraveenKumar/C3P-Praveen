@@ -12,17 +12,17 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 
 	Set<TestDetail> findByTestIdAndVersion(String testId, String version);
 	
-	List<TestDetail> findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(String deviceType,String deviceModel,String os,String osVersion,String vendor,String region,String networkType);
+	List<TestDetail> findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(String deviceFamily,String deviceModel,String os,String osVersion,String vendor,String region,String networkType);
 	
 	
 	
-	List<TestDetail> findByDeviceTypeIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(String deviceType,String deviceModel,String os,String osVersion,String vendor,String region,String testName);
+	List<TestDetail> findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(String deviceFamily,String deviceModel,String os,String osVersion,String vendor,String region,String testName);
 	
 	Set<TestDetail>findByTestNameContaining(String testName);
 	
 	List<TestDetail>findByTestName(String testName);
 	
-	Set<TestDetail>findByDeviceTypeContaining(String deviceType);
+	Set<TestDetail>findByDeviceFamilyContaining(String deviceFamily);
 	
 	Set<TestDetail>findByDeviceModelContaining(String deviceModel);
 	
@@ -38,8 +38,8 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 
 	Set<TestDetail>findByRegionContaining(String region);
 
-	List<TestDetail> findByDeviceTypeAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
-			String deviceType, String deviceModel, String os, String osVersion,
+	List<TestDetail> findByDeviceFamilyAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
+			String deviceFamily, String deviceModel, String os, String osVersion,
 			String vendor, String region, String version, String testName);
 
 	List<TestDetail> findByRegion(String value);
@@ -53,7 +53,7 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 
 	List<TestDetail> findByOsVersion(String value);
 
-	List<TestDetail> findByDeviceType(String value);
+	List<TestDetail> findByDeviceFamily(String value);
 
 	List<TestDetail> findByDeviceModel(String value);
 	

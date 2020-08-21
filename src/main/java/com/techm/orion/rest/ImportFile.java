@@ -509,6 +509,11 @@ public class ImportFile {
 					obj.put(new String("response"), status);
 					obj.put(new String("errorMessage"), validateFileColumn.get("error").get(0));
 					obj.put(new String("successMessage"), "");
+				} else if (validateFileColumn.containsKey("error")) {
+					status = false;
+					obj.put(new String("response"), status);
+					obj.put(new String("errorMessage"), validateFileColumn.get("error").get(0));
+					obj.put(new String("successMessage"), "");
 				} else {
 					status = false;
 					obj.put(new String("response"), status);

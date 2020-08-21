@@ -81,7 +81,7 @@ public class SearchTemplateListService implements Observer {
 								versioningModelObject.setVendor(objToAdd.getVendor());
 								versioningModelObject.setRegion(objToAdd.getRegion());
 								versioningModelObject.setModel(objToAdd.getModel());
-								versioningModelObject.setDeviceType(objToAdd.getDeviceType());
+								versioningModelObject.setDeviceFamily(objToAdd.getDeviceFamily());
 								versioningModelObject.setDeviceOsVersion(objToAdd.getOsVersion());
 								versioningModelObject.setDeviceOs(objToAdd.getDeviceOs());
 								if (objToAdd.getComment().equalsIgnoreCase("undefined")) {

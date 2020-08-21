@@ -106,8 +106,8 @@ public class DiscoveryResultDeviceDetailsEntity implements Serializable
 	@Column(name = "d_serial_number", length = 10)
 	private String dSerialNumber;
 
-	@Column(name = "d_sries", length = 10)
-	private String dSries;
+	@Column(name = "d_deviceFamily", length = 10)
+	private String dDeviceFamily;
 
 	@Column(name = "d_upsince", length = 10)
 	private String dUpsince;
@@ -263,12 +263,12 @@ public class DiscoveryResultDeviceDetailsEntity implements Serializable
 		this.dSerialNumber = dSerialNumber;
 	}
 
-	public String getdSries() {
-		return dSries;
+	public String getdDeviceFamily() {
+		return dDeviceFamily;
 	}
 
-	public void setdSries(String dSries) {
-		this.dSries = dSries;
+	public void setdDeviceFamily(String dDeviceFamily) {
+		this.dDeviceFamily = dDeviceFamily;
 	}
 
 	public String getdUpsince() {

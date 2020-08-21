@@ -417,7 +417,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 				if(col[3] !=null)
 					deviceEntity.setdVendor(col[3].toString());
 				if(col[4] !=null)
-					deviceEntity.setdSeries(col[4].toString());
+					deviceEntity.setdDeviceFamily(col[4].toString());
 				if(col[5] !=null)
 					deviceEntity.setdModel(col[5].toString());
 				if(col[6] !=null)

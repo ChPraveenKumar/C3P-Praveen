@@ -56,10 +56,8 @@ public class TemplateManagementDetailsService {
 	}
 
 	public Map<String, String> getDataForRightPanel(String templateId, boolean selectAll) throws Exception {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		GetTemplateMngmntPojo getTemplateMngmntPojo = null;
+		TemplateManagementDao templateManagementDao = new TemplateManagementDao();		
 		Map<String, String> templatecommandList = new HashMap<String, String>();
-		List<GetTemplateMngmntPojo> templateactiveList = new ArrayList<GetTemplateMngmntPojo>();
 		templatecommandList = templateManagementDao.getDataForRightPanel(templateId, selectAll);
 		return templatecommandList;
 	}
@@ -81,7 +79,7 @@ public class TemplateManagementDetailsService {
 		List<GetTemplateMngmntPojo> templateactiveList = new ArrayList<GetTemplateMngmntPojo>();
 		templatecommandList = templateManagementDao.getDataForActivefeatures(templateId);
 
-		for (Iterator iterator = templatecommandList.iterator(); iterator.hasNext();) {
+		for (Iterator<GetTemplateMngmntActiveDataPojo> iterator = templatecommandList.iterator(); iterator.hasNext();) {
 			GetTemplateMngmntActiveDataPojo getTemplateMngmntActiveDataPojo = (GetTemplateMngmntActiveDataPojo) iterator
 					.next();
 			getTemplateMngmntPojo = new GetTemplateMngmntPojo();
@@ -109,7 +107,7 @@ public class TemplateManagementDetailsService {
 		List<GetTemplateMngmntPojo> templateactiveList = new ArrayList<GetTemplateMngmntPojo>();
 		templatecommandList = templateManagementDao.getChildCommandValue(nameArrray, checkedArray, templateid);
 
-		for (Iterator iterator = templatecommandList.iterator(); iterator.hasNext();) {
+		for (Iterator<GetTemplateMngmntActiveDataPojo> iterator = templatecommandList.iterator(); iterator.hasNext();) {
 			GetTemplateMngmntActiveDataPojo getTemplateMngmntActiveDataPojo = (GetTemplateMngmntActiveDataPojo) iterator
 					.next();
 			getTemplateMngmntPojo = new GetTemplateMngmntPojo();
@@ -131,7 +129,7 @@ public class TemplateManagementDetailsService {
 		List<GetTemplateMngmntPojo> templateactiveList = new ArrayList<GetTemplateMngmntPojo>();
 		templatecommandList = templateManagementDao.getCommandValue(id, templateId);
 
-		for (Iterator iterator = templatecommandList.iterator(); iterator.hasNext();) {
+		for (Iterator<GetTemplateMngmntActiveDataPojo> iterator = templatecommandList.iterator(); iterator.hasNext();) {
 			GetTemplateMngmntActiveDataPojo getTemplateMngmntActiveDataPojo = (GetTemplateMngmntActiveDataPojo) iterator
 					.next();
 			getTemplateMngmntPojo = new GetTemplateMngmntPojo();
@@ -145,40 +143,29 @@ public class TemplateManagementDetailsService {
 	}
 
 	public String updateDeactivatedFeature(String id, String templateId) throws Exception {
-
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		GetTemplateMngmntPojo getTemplateMngmntPojo = null;
-		List<GetTemplateMngmntActiveDataPojo> templatecommandList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
-
 		String result = templateManagementDao.updateDeactivatedFeature(id, templateId);
-
 		return result;
 	}
 
 	public String getTemplateForTemplateId(String templateId) throws Exception {
-
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-
 		String result = templateManagementDao.getFinalConfigurationTemplate(templateId);
-
 		return result;
 	}
 
 	public List<TemplateLeftPanelJSONModel> getActiveFeatures(String templateId) throws Exception {
-
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		// RequestInfoDao templateManagementDao=new RequestInfoDao();
-		GetTemplateMngmntPojo getTemplateMngmntPojo = new GetTemplateMngmntPojo();
 		List<TemplateLeftPanelJSONModel> templatecommandList = new ArrayList<TemplateLeftPanelJSONModel>();
 		templatecommandList = templateManagementDao.getDataFeatures(templateId);
 		return templatecommandList;
 	}
 
-	public Map<String, String> addTemplate(String vendor, String deviceType, String model, String os, String osVersion,
+	public Map<String, String> addTemplate(String vendor, String model, String os, String osVersion,
 			String region, String templateId) {
 		Map<String, String> result = new HashMap<String, String>();
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		result = templateManagementDao.createTemplateBasicConfig(vendor, deviceType, model, os, osVersion, region,
+		result = templateManagementDao.createTemplateBasicConfig(vendor, model, os, osVersion, region,
 				templateId);
 		return result;
 	}
@@ -213,12 +200,10 @@ public class TemplateManagementDetailsService {
 
 	public String saveFinaltemplate(String templateId, String finaltemplate, String version) {
 		String result = null;
-		boolean dbSave = false;
 		try {
 			TemplateManagementDetailsService.loadProperties();
 			String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
 					.getProperty("templateCreationPath");
-			String test = finaltemplate;
 			if (version.equalsIgnoreCase("1.0")) {
 				TextReport.writeFile(responseDownloadPath, templateId, finaltemplate);
 			} else {
@@ -226,7 +211,6 @@ public class TemplateManagementDetailsService {
 
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

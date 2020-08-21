@@ -320,9 +320,7 @@ public class DeviceDiscoveryController implements Observer {
 		JSONObject obj = new JSONObject();
 		try {
 			List<DeviceDiscoveryEntity> getAllDevice = deviceInforepo.findAll();
-
 			
-			List<DiscoveryResultDeviceDetailsEntity> devices = discoveryResultDeviceDetailsRepo.findAll();
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {
 				List<ServiceRequestPojo> requests = inventoryServiceRepo
@@ -331,7 +329,7 @@ public class DeviceDiscoveryController implements Observer {
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
 				object.put("type", "Router");
-				object.put("series", getAllDevice.get(i).getdSeries());
+				object.put("deviceFamily", getAllDevice.get(i).getdDeviceFamily());
 				object.put("model", getAllDevice.get(i).getdModel());
 				object.put("os", getAllDevice.get(i).getdOs());
 				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
@@ -635,7 +633,7 @@ public class DeviceDiscoveryController implements Observer {
 			dumpDeviceDetails.setdMgmtip(ipAddress);
 			dumpDeviceDetails.setdVendor("");
 			dumpDeviceDetails.setdModel("");
-			dumpDeviceDetails.setdSries("");
+			dumpDeviceDetails.setdDeviceFamily("");
 			dumpDeviceDetails.setdStatus("Unavailable");
 			dumpDeviceDetails.setDeviceDiscoveryDashboardEntity(discovery);
 			if (isFoundinInventory)
@@ -677,7 +675,7 @@ public class DeviceDiscoveryController implements Observer {
 			dumpDeviceDetails.setdMgmtip(managementIp);
 			dumpDeviceDetails.setdVendor(deviceinfoData.get("vendor").toString());
 			dumpDeviceDetails.setdModel(deviceinfoData.get("model").toString());
-			dumpDeviceDetails.setdSries(deviceinfoData.get("family").toString());
+			dumpDeviceDetails.setdDeviceFamily(deviceinfoData.get("family").toString());
 			dumpDeviceDetails.setdStatus("Available");
 			dumpDeviceDetails.setDeviceDiscoveryDashboardEntity(discovery);
 			if (isFoundinInventory)
@@ -810,8 +808,8 @@ public class DeviceDiscoveryController implements Observer {
 				entity.setdReleaseVer(disres.get(i).getdReleasever());
 			if (disres.get(i).getdSerialNumber() != null)
 				entity.setdSerialNumber(disres.get(i).getdSerialNumber());
-			if (disres.get(i).getdSries() != null)
-				entity.setdSeries(disres.get(i).getdSries());
+			if (disres.get(i).getdDeviceFamily() != null)
+				entity.setdDeviceFamily(disres.get(i).getdDeviceFamily());
 			if (disres.get(i).getdStatus() != null)
 				entity.setdStatus(disres.get(i).getdStatus());
 			if (disres.get(i).getdUpsince() != null)

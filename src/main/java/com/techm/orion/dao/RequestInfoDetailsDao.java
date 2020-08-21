@@ -190,6 +190,7 @@ public class RequestInfoDetailsDao {
 				pojo.setModel(entity.getModel());
 				pojo.setVendor(entity.getVendor());
 				pojo.setDeviceType(entity.getDeviceType());
+				pojo.setFamily(entity.getFamily());
 				pojo.setOs(entity.getOs());
 				pojo.setOsVersion(entity.getOsVersion());
 				pojo.setRegion(entity.getRegion());

@@ -604,7 +604,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
 							TestDetail test = new TestDetail();
 							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getModel(),
-									requestinfo.getDeviceType(), requestinfo.getOs(), requestinfo.getOsVersion(),
+									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Device Prevalidation");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Device Prevalidation",version);
@@ -714,9 +714,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							RequestInfoDao dao = new RequestInfoDao();
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							TestDetail test = new TestDetail();
 							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getModel(),
-									requestinfo.getDeviceType(), requestinfo.getOs(), requestinfo.getOsVersion(),
+									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Device Prevalidation");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Device Prevalidation",version);

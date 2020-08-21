@@ -11,7 +11,7 @@ public interface RegionsRepository extends CrudRepository<Regions, Integer> {
 
 	List<Regions> findByRegion(String region);
 
-	String FIND_REGION = "SELECT region FROM t_tpmgmt_glblist_m_regions";
+	String FIND_REGION = "SELECT region FROM c3p_t_glblist_m_regions";
 
 	@Query(value = FIND_REGION, nativeQuery = true)
 	public List<String> findRegion();

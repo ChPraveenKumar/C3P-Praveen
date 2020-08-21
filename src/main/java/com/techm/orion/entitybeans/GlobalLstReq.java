@@ -12,7 +12,7 @@ public class GlobalLstReq {
 	
 	private List<GlobalLstInterfaceRqst> globalLstInterfaceRqsts;
 	
-	private List<Interfaces>  interfaces;
+	//private List<Interfaces>  interfaces;
 	
 	private Boolean isModify;
 
@@ -26,13 +26,13 @@ public class GlobalLstReq {
 		this.isModify = isModify;
 	}
 
-	public List<Interfaces> getInterfaces() {
+	/*public List<Interfaces> getInterfaces() {
 		return interfaces;
 	}
 
 	public void setInterfaces(List<Interfaces> interfaces) {
 		this.interfaces = interfaces;
-	}
+	}*/
 
 	public List<GlobalLstInterfaceRqst> getGlobalLstInterfaceRqsts() {
 		return globalLstInterfaceRqsts;

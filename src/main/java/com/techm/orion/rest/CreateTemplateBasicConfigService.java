@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
@@ -31,44 +33,11 @@ import com.techm.orion.service.TemplateManagementDetailsService;
 public class CreateTemplateBasicConfigService implements Observer {
 
 	private static final Logger logger = LogManager.getLogger(CreateTemplateBasicConfigService.class);
-
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
+	@Autowired
+	RequestInfoDao requestInfoDao;
 
 	TemplateManagementDao templateManagemnetDao = new TemplateManagementDao();
 	TemplateManagementDetailsService templateMngmntDtlService = new TemplateManagementDetailsService();
-
-	/*
-	 * @POST
-	 * 
-	 * @RequestMapping(value = "/update", method = RequestMethod.POST, consumes =
-	 * "application/json", produces = "application/json")
-	 * 
-	 * @ResponseBody public Response update(@RequestBody String searchParameters) {
-	 * 
-	 * JSONObject obj = new JSONObject();
-	 * 
-	 * DcmConfigService dcmConfigService = new DcmConfigService(); boolean result =
-	 * false; try { Gson gson = new Gson(); EIPAMPojo dto =
-	 * gson.fromJson(searchParameters, EIPAMPojo.class); String customerName =
-	 * dto.getCustomer(); String siteid = dto.getSite(); String ipAdd = dto.getIp();
-	 * String maskAdd = dto.getMask();
-	 * 
-	 * result = dcmConfigService.updateEIPAMRecord(customerName, siteid, ipAdd,
-	 * maskAdd); if (result) { obj.put(new String("output"),
-	 * "Updated Successfully");
-	 * 
-	 * } else { obj.put(new String("output"), "Error Saving Data"); }
-	 * 
-	 * } catch (Exception e) { logger.error(e); }
-	 * 
-	 * return Response .status(200) .header("Access-Control-Allow-Origin", "*")
-	 * .header("Access-Control-Allow-Headers",
-	 * "origin, content-type, accept, authorization")
-	 * .header("Access-Control-Allow-Credentials", "true")
-	 * .header("Access-Control-Allow-Methods",
-	 * "GET, POST, PUT, DELETE, OPTIONS, HEAD") .header("Access-Control-Max-Age",
-	 * "1209600").entity(obj) .build(); }
-	 */
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -87,7 +56,7 @@ public class CreateTemplateBasicConfigService implements Observer {
 			Gson gson = new Gson();
 			TemplateBasicConfigurationPojo dto = gson.fromJson(params, TemplateBasicConfigurationPojo.class);
 			String vendor = dto.getVendor();
-			String deviceType = dto.getDeviceType();
+			String deviceFamily = dto.getDeviceFamily();
 			String model = dto.getModel();
 			String os = dto.getDeviceOs();
 			String osVersion = dto.getOsVersion();
@@ -98,7 +67,7 @@ public class CreateTemplateBasicConfigService implements Observer {
 			 * null
 			 */
 			String series = dto.getSeries();
-			tempIDafterSaveBasicDetails = ConfigService.addTemplate(vendor, deviceType, model, os, osVersion, region,
+			tempIDafterSaveBasicDetails = ConfigService.addTemplate(vendor, model, os, osVersion, region,
 					templateId);
 			if (tempIDafterSaveBasicDetails.containsKey("status")) {
 				String status = tempIDafterSaveBasicDetails.get("status");
@@ -120,7 +89,7 @@ public class CreateTemplateBasicConfigService implements Observer {
 					if (series != null) {
 						tempserieskey = series;
 					} else {
-						tempserieskey = vendor + deviceType + model.substring(0, 2);
+						tempserieskey=vendor.toUpperCase() + deviceFamily + model.substring(0, 2);
 					}
 					boolean result = dao.updateMasterFeatureAndCommandTable(tempserieskey);
 					if (result) {

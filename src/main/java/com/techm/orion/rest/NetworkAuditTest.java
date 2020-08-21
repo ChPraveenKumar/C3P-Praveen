@@ -146,7 +146,6 @@ public class NetworkAuditTest extends Thread {
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
 							RequestInfoDao dao = new RequestInfoDao();
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-							TestDetail test = new TestDetail();
 							listOfTests = dao.findTestFromTestStrategyDB(configRequest.getModel(),
 									configRequest.getDeviceType(), configRequest.getOs(), configRequest.getOsVersion(),
 									configRequest.getVendor(), configRequest.getRegion(), "Network Audit");
@@ -329,7 +328,7 @@ public class NetworkAuditTest extends Thread {
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							TestDetail test = new TestDetail();
 							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getModel(),
-									requestinfo.getDeviceType(), requestinfo.getOs(), requestinfo.getOsVersion(),
+									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Network Audit");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Network Audit",version);

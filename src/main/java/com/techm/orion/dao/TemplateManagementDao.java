@@ -329,7 +329,7 @@ public class TemplateManagementDao {
 				pojo = new TemplateBasicConfigurationPojo();
 				pojo.setVendor(rs1.getString("TempVendor"));
 				pojo.setModel(rs1.getString("TempModel"));
-				pojo.setDeviceType(rs1.getString("TempDeviceType"));
+				pojo.setDeviceFamily(rs1.getString("TempDeviceFamily"));
 				pojo.setDeviceOs(rs1.getString("TempDeviceOs"));
 				pojo.setOsVersion(rs1.getString("TempOsVersion"));
 				pojo.setRegion(rs1.getString("TempRegion"));
@@ -412,9 +412,7 @@ public class TemplateManagementDao {
 	public boolean saveTemperorySequence(String templateId, String versionToSave) {
 		boolean res = false;
 		connection = ConnectionFactory.getConnection();
-
 		boolean result = false;
-
 		boolean isNewFeature = false;
 		// save new command in c3p_template_master_feature_list
 		// update the new command in c3p_template_transaction_feature_list
@@ -1778,11 +1776,11 @@ public class TemplateManagementDao {
 	}
 
 	@SuppressWarnings("resource")
-	public final Map<String, String> createTemplateBasicConfig(String vendor, String deviceType, String model,
-			String os, String osVersion, String region, String templateId) {
+	public final Map<String, String> createTemplateBasicConfig(String vendor, String model, String os, String osVersion,
+			String region, String templateId) {
 		Map<String, String> resultmap = new HashMap<String, String>();
 		String tempid = null;
-		tempid = getTemplateID(vendor, deviceType, model, os, osVersion, region);
+		tempid = getTemplateID(vendor, model, os, osVersion, region);
 		connection = ConnectionFactory.getConnection();
 		DuplicateDataException exception = null;
 		boolean isPresent = false;
@@ -1815,14 +1813,12 @@ public class TemplateManagementDao {
 					resultmap.put("errorDescription", null);
 					resultmap.put("version", "1.0");
 				} else {
-
 					resultmap.put("tempid", tempid);
 					resultmap.put("status", "failure");
 					resultmap.put("errorCode", exception.getError_code());
 					resultmap.put("errorType", exception.getError_type());
 					resultmap.put("errorDescription", exception.getError_description());
 					resultmap.put("version", "1.0");
-
 				}
 
 			} catch (SQLException e) {
@@ -1844,13 +1840,13 @@ public class TemplateManagementDao {
 	}
 
 	@SuppressWarnings("resource")
-	public final Map<String, String> addTemplate(String vendor, String deviceType, String model, String os,
+	public final Map<String, String> addTemplate(String vendor, String deviceFamily, String model, String os,
 			String osVersion, String region, String oldTemplateId, String oldVersion, String comment,
 			String networkType) {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
 		String tempid = null, oldversion = null;
-		String query1 = "INSERT INTO templateconfig_basic_details(TempId,TempVendor,TempDeviceType,TempModel,TempDeviceOs,TempOsVersion,TempRegion,createdDate,templateVersion,templateParentVersion,updatedDate,comment_section,createdby,templateApprover,networkType)"
+		String query1 = "INSERT INTO templateconfig_basic_details(TempId,TempVendor,TempDeviceFamily,TempModel,TempDeviceOs,TempOsVersion,TempRegion,createdDate,templateVersion,templateParentVersion,updatedDate,comment_section,createdby,templateApprover,networkType)"
 				+ "VALUES(?,?,?,?,?,?,?,now(),?,?,now(),?,?,?,?)";
 		String query2 = "SELECT * FROM templateconfig_basic_details";
 
@@ -1868,7 +1864,7 @@ public class TemplateManagementDao {
 				if (rs1.getString("TempId").equalsIgnoreCase(tempid)) {
 					isPresent = true;
 					vendor = rs1.getString("TempVendor");
-					deviceType = rs1.getString("TempDeviceType");
+					deviceFamily = rs1.getString("TempDeviceFamily");
 					model = rs1.getString("TempModel");
 					os = rs1.getString("TempDeviceOs");
 					osVersion = rs1.getString("TempOsVersion");
@@ -1891,7 +1887,7 @@ public class TemplateManagementDao {
 
 				ps.setString(1, tempid.toUpperCase());
 				ps.setString(2, vendor.toUpperCase());
-				ps.setString(3, deviceType.toUpperCase());
+				ps.setString(3, deviceFamily);
 				ps.setString(4, model.toUpperCase());
 				ps.setString(5, os.toUpperCase());
 				ps.setString(6, osVersion.toUpperCase());
@@ -1936,7 +1932,7 @@ public class TemplateManagementDao {
 				PreparedStatement ps1 = connection.prepareStatement(query1);
 				ps1.setString(1, tempid.toUpperCase());
 				ps1.setString(2, vendor.toUpperCase());
-				ps1.setString(3, deviceType.toUpperCase());
+				ps1.setString(3, deviceFamily);
 				ps1.setString(4, model.toUpperCase());
 				ps1.setString(5, os.toUpperCase());
 				ps1.setString(6, osVersion.toUpperCase());
@@ -1981,8 +1977,7 @@ public class TemplateManagementDao {
 		return resultmap;
 	}
 
-	private String getTemplateID(String vendor, String deviceType, String model, String os, String osVersion,
-			String region) {
+	private String getTemplateID(String vendor, String model, String os, String osVersion, String region) {
 		String temp = null;
 		// will be modified once edit flow is enabled have to check version and
 		// accordingliy append the version
@@ -2119,7 +2114,7 @@ public class TemplateManagementDao {
 				pojo = new TemplateBasicConfigurationPojo();
 				pojo.setVendor(rs1.getString("TempVendor"));
 				pojo.setModel(rs1.getString("TempModel"));
-				pojo.setDeviceType(rs1.getString("TempDeviceType"));
+				pojo.setDeviceFamily(rs1.getString("TempDeviceFamily"));
 				pojo.setDeviceOs(rs1.getString("TempDeviceOs"));
 				pojo.setOsVersion(rs1.getString("TempOsVersion"));
 				pojo.setRegion(rs1.getString("TempRegion"));
@@ -2244,27 +2239,27 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		String query = null;
 		if (key.equalsIgnoreCase("Template ID")) {
-			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempId LIKE ? and templateVersion LIKE ?";
-		} else if (key.equalsIgnoreCase("Device Type")) {
-			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempDeviceType LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE TempId LIKE ? and templateVersion LIKE ?";
+		} else if (key.equalsIgnoreCase("Device Family")) {
+			query = "SELECT * FROM templateconfig_basic_details WHERE TempDeviceFamily LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Vendor")) {
-			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempVendor LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE TempVendor LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Model")) {
-			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempModel LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE TempModel LIKE ?";
 
 		} else if (key.equalsIgnoreCase("OS")) {
-			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempDeviceOs LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE TempDeviceOs LIKE ?";
 
 		} else if (key.equalsIgnoreCase("OS Version")) {
-			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE TempOsVersion LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE TempOsVersion LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Status")) {
-			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE templateStatus LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE templateStatus LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Approver")) {
-			query = "SELECT * FROM c3pdbschema.templateconfig_basic_details WHERE templateApprover LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE templateApprover LIKE ?";
 
 		}
 		ResultSet rs = null;
@@ -2298,7 +2293,7 @@ public class TemplateManagementDao {
 				template = new TemplateBasicConfigurationPojo();
 				template.setVendor(rs.getString("TempVendor"));
 				template.setTemplateId(rs.getString("TempId"));
-				template.setDeviceType(rs.getString("TempDeviceType"));
+				template.setDeviceFamily(rs.getString("TempDeviceFamily"));
 				template.setModel(rs.getString("TempModel"));
 				template.setDeviceOs(rs.getString("TempDeviceOs"));
 				template.setOsVersion(rs.getString("TempOsVersion"));
@@ -2862,7 +2857,7 @@ public class TemplateManagementDao {
 				templateBscCnfgPojo = new TemplateBasicConfigurationPojo();
 				templateBscCnfgPojo.setVendor(rs.getString("TempVendor"));
 				templateBscCnfgPojo.setModel(rs.getString("TempModel"));
-				templateBscCnfgPojo.setDeviceType(rs.getString("TempDeviceType"));
+				templateBscCnfgPojo.setDeviceFamily(rs.getString("TempDeviceFamily"));
 				templateBscCnfgPojo.setDeviceOs(rs.getString("TempDeviceOs"));
 				templateBscCnfgPojo.setOsVersion(rs.getString("TempOsVersion"));
 				templateBscCnfgPojo.setRegion(rs.getString("TempRegion"));
@@ -2901,68 +2896,22 @@ public class TemplateManagementDao {
 
 		List<CommandPojo> cammandPojo = new ArrayList<>();
 		try {
-			/*
-			 * If Template id is null get all commmands Related series into
-			 * c3p_template_master_command_list table
-			 */
-			/*if (templateId == null) {
-				query1 = "select  distinct(c3p_template_master_command_list.command_value),c3p_template_master_command_list.command_id,c3p_template_transaction_command_list.command_position  from c3p_template_master_command_list ,c3p_template_transaction_command_list where  command_type=? and c3p_template_master_command_list.command_id =c3p_template_transaction_command_list.command_id and c3p_template_master_command_list.command_sequence_id =c3p_template_transaction_command_list.command_sequence_id order by c3p_template_transaction_command_list.command_position asc;";
-				pst = connection.prepareStatement(query1);
-				pst.setString(1, "Generic_" + seriesId);
-			} else {*/
-				/*
-				 * If Template id is not null get all commmands Related series into
-				 * c3p_template_master_command_list,c3p_template_transaction_command_list table
-				 */
-				query1 = "select c3p_template_master_command_list.command_value,c3p_template_master_command_list.command_id,c3p_template_transaction_command_list.command_position  from c3p_template_master_command_list ,c3p_template_transaction_command_list where command_type=? and c3p_template_master_command_list.command_id =c3p_template_transaction_command_list.command_id and c3p_template_master_command_list.command_sequence_id =c3p_template_transaction_command_list.command_sequence_id and command_template_id=? order by c3p_template_transaction_command_list.command_position asc;";
-				pst = connection.prepareStatement(query1);
-				pst.setString(1, "Generic_" + seriesId);
-				pst.setString(2, templateId);
-
-//			}
-
+			query1 = "select c3p_template_master_command_list.command_value,c3p_template_master_command_list.command_id,c3p_template_transaction_command_list.command_position  from c3p_template_master_command_list ,c3p_template_transaction_command_list where command_type=? and c3p_template_master_command_list.command_id =c3p_template_transaction_command_list.command_id and c3p_template_master_command_list.command_sequence_id =c3p_template_transaction_command_list.command_sequence_id and command_template_id=? order by c3p_template_transaction_command_list.command_position asc;";
+			pst = connection.prepareStatement(query1);
+			pst.setString(1, "Generic_" + seriesId);
+			pst.setString(2, templateId);
 			res = pst.executeQuery();
 			CommandPojo cammand = null;
-/*			if (res.wasNull() == true || !res.isBeforeFirst()) {
-				PreparedStatement pst1 = null;
-				ResultSet res1 = null;
-				try {
-					String seriesQuery = "select distinct(c3p_template_master_command_list.command_sequence_id),c3p_template_master_command_list.command_id,c3p_template_master_command_list.command_value from c3p_template_master_command_list  where  command_type=? order by c3p_template_master_command_list.command_sequence_id asc;";
-					pst1 = connection.prepareStatement(seriesQuery);
-					pst1.setString(1, "Generic_" + seriesId);
-					res1 = pst1.executeQuery();
-					while (res1.next()) {
-						cammand = new CommandPojo();
-						cammand.setId(res1.getString("c3p_template_master_command_list.command_id"));
-						cammand.setCommandValue(res1.getString("c3p_template_master_command_list.command_value"));
-						cammand.setPosition(Integer
-								.parseInt((res1.getString("c3p_template_master_command_list.command_sequence_id"))));
-						cammandPojo.add(cammand);
-					}
 
-				} catch (Exception e) {
-					e.printStackTrace();
-				} finally {
-					DBUtil.close(res1);
-					DBUtil.close(pst1);
-					DBUtil.close(connection);
-				}
-			} else {
-				while (res.next()) {
-					cammand = new CommandPojo();
-					cammand.setId(res.getString("c3p_template_master_command_list.command_id"));
-					cammand.setCommandValue(res.getString("c3p_template_master_command_list.command_value"));
-					cammand.setPosition(res.getInt("c3p_template_transaction_command_list.command_position"));
-					cammandPojo.add(cammand);
-				}
-			}*/
 			while (res.next()) {
+				
 				cammand = new CommandPojo();
 				cammand.setId(res.getString("c3p_template_master_command_list.command_id"));
 				cammand.setCommandValue(res.getString("c3p_template_master_command_list.command_value"));
 				cammand.setPosition(res.getInt("c3p_template_transaction_command_list.command_position"));
-				cammandPojo.add(cammand);
+				cammandPojo.add(cammand);			
 			}
+			logger.info("cammandPojo - "+cammandPojo);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -2973,9 +2922,10 @@ public class TemplateManagementDao {
 
 		return cammandPojo;
 
-	}/*
-		 * Dhanshri Mane 14-1-2020 GetCammands related Features
-		 */
+	}
+	/*
+	 * Dhanshri Mane 14-1-2020 GetCammands related Features
+	 */
 
 	public List<CommandPojo> getCammandByTemplateAndfeatureId(int featureId, String templateId) {
 
@@ -2994,41 +2944,7 @@ public class TemplateManagementDao {
 				pst.setString(2, templateId);
 				res = pst.executeQuery();
 				CommandPojo cammand = null;
-				/*if (res.wasNull() == true || !res.isBeforeFirst()) {
-					PreparedStatement pst1 = null;
-					ResultSet res1 = null;
-					try {
-						String seriesQuery = "select distinct(c3p_template_master_command_list.command_sequence_id),c3p_template_master_command_list.command_value,c3p_template_master_command_list.command_id,c3p_template_master_command_list.no_form_command from c3p_template_master_command_list where  command_id=? order by c3p_template_master_command_list.command_sequence_id asc;";
-						pst1 = connection.prepareStatement(seriesQuery);
-						pst1.setInt(1, featureId);
-						res1 = pst1.executeQuery();
-						while (res1.next()) {
-							cammand = new CommandPojo();
-							cammand.setId(res1.getString("c3p_template_master_command_list.command_id"));
-							cammand.setCommandValue(res1.getString("c3p_template_master_command_list.command_value"));
-							cammand.setNo_command_value(
-									res1.getString("c3p_template_master_command_list.no_form_command"));
-							cammandPojo.add(cammand);
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					} finally {
-						DBUtil.close(res1);
-						DBUtil.close(pst1);
-						DBUtil.close(connection);
-					}
-				} else {
 					while (res.next()) {
-						cammand = new CommandPojo();
-						cammand.setId(res.getString("c3p_template_master_command_list.command_id"));
-						cammand.setCommandValue(res.getString("c3p_template_master_command_list.command_value"));
-						cammand.setNo_command_value(res.getString("c3p_template_master_command_list.no_form_command"));
-						cammand.setPosition(res.getInt("c3p_template_transaction_command_list.command_position"));
-						cammandPojo.add(cammand);
-					}
-				}*/
-				
-				while (res.next()) {
 					cammand = new CommandPojo();
 					cammand.setId(res.getString("c3p_template_master_command_list.command_id"));
 					cammand.setCommandValue(res.getString("c3p_template_master_command_list.command_value"));
@@ -3039,7 +2955,7 @@ public class TemplateManagementDao {
 			}
 
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+	
 			e.printStackTrace();
 		} finally {
 			DBUtil.close(connection);
@@ -3069,7 +2985,7 @@ public class TemplateManagementDao {
 				while (res.next()) {
 					deviceDetails.setVendor(res.getString("TempVendor"));
 					deviceDetails.setModel(res.getString("TempModel"));
-					deviceDetails.setDevicetype(res.getString("TempDeviceType"));
+					deviceDetails.setDeviceFamily(res.getString("TempDeviceFamily"));
 					deviceDetails.setRegion(res.getString("TempRegion"));
 					deviceDetails.setOs(res.getString("TempDeviceOs"));
 					deviceDetails.setOsVersion(res.getString("TempOsVersion"));

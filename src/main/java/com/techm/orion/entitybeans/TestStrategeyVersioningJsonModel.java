@@ -14,7 +14,8 @@ public class TestStrategeyVersioningJsonModel {
 	private String testId = null;
 
 	private String vendor = null;
-	private String deviceType = null;
+	private String deviceFamily = null;
+
 	private String deviceModel = null;
 	private String os = null;
 	private String osVersion = null;
@@ -75,12 +76,12 @@ public class TestStrategeyVersioningJsonModel {
 		this.vendor = vendor;
 	}
 
-	public String getDeviceType() {
-		return deviceType;
+	public String getDeviceFamily() {
+		return deviceFamily;
 	}
 
-	public void setDeviceType(String deviceType) {
-		this.deviceType = deviceType;
+	public void setDeviceFamily(String deviceFamily) {
+		this.deviceFamily = deviceFamily;
 	}
 
 	public String getDeviceModel() {

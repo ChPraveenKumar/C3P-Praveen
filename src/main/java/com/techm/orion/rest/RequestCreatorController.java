@@ -224,7 +224,7 @@ public class RequestCreatorController {
 						deviceDetails.put("vendor", device.getdVendor());
 						deviceDetails.put("managmentIP", device.getdMgmtIp());
 						deviceDetails.put("deviceType", device.getdType());
-						deviceDetails.put("deviceFamily", device.getdSeries());
+						deviceDetails.put("deviceFamily", device.getdDeviceFamily());
 						deviceDetails.put("model", device.getdModel());
 						deviceDetails.put("os_osVerion", device.getdOs() + "/" + device.getdOsVersion());
 					}
@@ -255,7 +255,7 @@ public class RequestCreatorController {
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 
 			// template suggestion
-			if (json.containsKey("templateId") && json.get("templateId").toString() != "") {
+			if (json.containsKey("templateId") && json.get("templateId") !=null && !json.get("templateId").toString().isEmpty()) {
 				createConfigRequest.setTemplateID(json.get("templateId").toString());
 			}
 			createConfigRequest.setCustomer(json.get("customer").toString());
@@ -263,6 +263,7 @@ public class RequestCreatorController {
 			SiteInfoEntity siteId = siteRepo.findCSiteIdByCSiteName(createConfigRequest.getSiteName());
 			createConfigRequest.setSiteid(siteId.getcSiteId());
 			createConfigRequest.setDeviceType(json.get("deviceType").toString());
+			createConfigRequest.setFamily(json.get("deviceFamily").toString());
 			createConfigRequest.setModel(json.get("model").toString());
 			createConfigRequest.setOs(json.get("os").toString());
 			createConfigRequest.setOsVersion(json.get("osVersion").toString());
@@ -355,12 +356,13 @@ public class RequestCreatorController {
 				 * Atrribute
 				 */
 				String seriesId = dcmConfigService.getSeriesId(createConfigRequest.getVendor(),
-						createConfigRequest.getDeviceType(), createConfigRequest.getModel());
+						createConfigRequest.getFamily(), createConfigRequest.getModel());
+				logger.info("seriesId ->"+seriesId);
 				/* Get Series according to template id */
 				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
 				seriesId = templatemanagementDao.getSeriesId(createConfigRequest.getTemplateID(), seriesId);
 				seriesId = StringUtils.substringAfter(seriesId, "Generic_");
-
+				logger.info("seriesId ->"+seriesId);
 				List<AttribCreateConfigPojo> masterAttribute = new ArrayList<>();
 				List<AttribCreateConfigPojo> byAttribSeriesId = service.getByAttribSeriesId(seriesId);
 				if (byAttribSeriesId != null && !byAttribSeriesId.isEmpty()) {

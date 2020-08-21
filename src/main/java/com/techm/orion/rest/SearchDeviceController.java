@@ -2,7 +2,6 @@ package com.techm.orion.rest;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -16,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,21 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
-import com.techm.orion.entitybeans.DiscoveryResultDeviceDetailsEntity;
-import com.techm.orion.entitybeans.PredefineTestDetailEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
-import com.techm.orion.entitybeans.TestDetail;
-import com.techm.orion.entitybeans.TestFeatureList;
-import com.techm.orion.models.VersioningJSONModel;
-import com.techm.orion.pojo.ReoprtFlags;
-import com.techm.orion.pojo.RequestInfoSO;
-import com.techm.orion.pojo.SearchParamPojo;
-import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
-import com.techm.orion.repositories.DiscoveryResultDeviceDetailsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
@@ -149,7 +136,7 @@ public class SearchDeviceController implements Observer {
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
 				object.put("type", "Router");
-				object.put("series", getAllDevice.get(i).getdSeries());
+				object.put("deviceFamily", getAllDevice.get(i).getdDeviceFamily());
 				object.put("model", getAllDevice.get(i).getdModel());
 				object.put("os", getAllDevice.get(i).getdOs());
 				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
@@ -299,7 +286,7 @@ public class SearchDeviceController implements Observer {
 				// find with customer and region and vendor and network type and
 				// site and device family
 				getAllDevice = deviceInforepo
-						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDSeries(
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDDeviceFamily(
 								customer, region, vendortosearch,
 								networktosearch, sitetosearch, devicetosearch);
 
@@ -308,7 +295,7 @@ public class SearchDeviceController implements Observer {
 				// find with customer and region and vendor and network type and
 				// site and device family and model
 				getAllDevice = deviceInforepo
-						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDSeriesAndDModel(
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDDeviceFamilyAndDModel(
 								customer, region, vendortosearch,
 								networktosearch, sitetosearch, devicetosearch,
 								modeltosearch);
@@ -318,7 +305,7 @@ public class SearchDeviceController implements Observer {
 				// find with customer and region and vendor and network type and
 				// site and device family
 				getAllDevice = deviceInforepo
-						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDSeries(
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDDeviceFamily(
 								customer, region, vendortosearch,
 								networktosearch, sitetosearch, devicetosearch);
 
@@ -336,7 +323,7 @@ public class SearchDeviceController implements Observer {
 				// find with customer and region and vendor and network type and
 				// device family and model
 				getAllDevice = deviceInforepo
-						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDSeriesAndDModel(
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDDeviceFamilyAndDModel(
 								customer, region, vendortosearch,
 								networktosearch, devicetosearch, modeltosearch);
 
@@ -349,7 +336,7 @@ public class SearchDeviceController implements Observer {
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
 				object.put("type", "Router");
-				object.put("series", getAllDevice.get(i).getdSeries());
+				object.put("deviceFamily", getAllDevice.get(i).getdDeviceFamily());
 				object.put("model", getAllDevice.get(i).getdModel());
 				object.put("os", getAllDevice.get(i).getdOs());
 				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
@@ -398,7 +385,7 @@ public class SearchDeviceController implements Observer {
 			List<DeviceDiscoveryEntity> findCSiteNameByCCustName = deviceInforepo
 					.findAllByDVendor(vendor);
 			findCSiteNameByCCustName.forEach(site -> {
-				model.add(site.getdSeries());
+				model.add(site.getdDeviceFamily());
 			});
 		} catch (Exception e) {
 			logger.error(e);
@@ -418,7 +405,7 @@ public class SearchDeviceController implements Observer {
 			String deviceFamily = json.get("deviceFamily").toString();
 
 			List<DeviceDiscoveryEntity> findCSiteNameByCCustName = deviceInforepo
-					.findAllByDVendorAndDSeries(vendor, deviceFamily);
+					.findAllByDVendorAndDDeviceFamily(vendor, deviceFamily);
 			findCSiteNameByCCustName.forEach(site -> {
 				model.add(site.getdModel());
 			});
