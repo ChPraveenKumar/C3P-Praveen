@@ -438,7 +438,7 @@ public class DeviceDiscrepancyService {
 	 */
 	@SuppressWarnings("unchecked")
 	public JSONObject getInterfaceDetails(String vendor, String networkType, String ipAddress, String deviceId) {
-		List<MasterOIDEntity> masterOidEntities = masterOIDRepository.findOidAndDisplayNameAndScope(vendor,
+		List<MasterOIDEntity> masterOidEntities = masterOIDRepository.findOidAndDisplayName(vendor,
 				networkType);
 		List<ForkDiscrepancyResultEntity> childOids = null;
 		JSONObject objInterfaces = new JSONObject();
@@ -449,14 +449,11 @@ public class DeviceDiscrepancyService {
 		for (MasterOIDEntity masterEntity : masterOidEntities) {
 			childList = new JSONArray();
 			masterJson = new JSONObject();
-			logger.info("masterEntity - OID"+ masterEntity.getOidName());
 			childOids = forkDiscrepancyResultRepository.findForkDiscrepancy(ipAddress, deviceId,
 					masterEntity.getOidName());
-			logger.info("childOids - size"+ childOids.size());
 			masterJson.put("id", masterEntity.getOidName());
 			masterJson.put("category", masterEntity.getOidCategory());
 			masterJson.put("displayName", masterEntity.getOidDisplayName());
-			masterJson.put("columnDisplay", masterEntity.getOidDefaultFlag());
 
 			for (ForkDiscrepancyResultEntity childOid : childOids) {
 				childJson = new JSONObject();
