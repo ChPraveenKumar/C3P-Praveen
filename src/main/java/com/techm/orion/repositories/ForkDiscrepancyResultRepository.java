@@ -13,14 +13,14 @@ import com.techm.orion.entitybeans.ForkDiscrepancyResultEntity;
 @Repository
 public interface ForkDiscrepancyResultRepository extends JpaRepository<ForkDiscrepancyResultEntity, Long> {
 
-	@Query(value = "SELECT distinct fid_discrepancy_flag FROM c3p_t_fork_inv_discrepancy where fid_discrepancy_flag between '1' and '2' and device_id= :deviceId and fid_resolved_flag =\"N\";", nativeQuery = true)
+	@Query(value = "SELECT distinct fid_discrepancy_flag FROM c3p_t_fork_inv_discrepancy where fid_discrepancy_flag between '1' and '2' and device_id= :deviceId and fid_resolved_flag ='N';", nativeQuery = true)
 	Set<String> findForkDiscrepancyValue(@Param("deviceId") String deviceId);
 
-	@Query(value = "SELECT * FROM c3p_t_fork_inv_discrepancy where fid_discrepancy_flag between '1' and '2' and device_id= :deviceId and fid_discovery_id =:discovryId and fid_in_scope =\"Y\";", nativeQuery = true)
+	@Query(value = "SELECT * FROM c3p_t_fork_inv_discrepancy where fid_discrepancy_flag between '1' and '2' and device_id= :deviceId and fid_discovery_id =:discovryId and fid_in_scope ='Y';", nativeQuery = true)
 	List<ForkDiscrepancyResultEntity> findForkDiscrepancyValueByDeviceId(@Param("deviceId") String deviceId,
 			@Param("discovryId") int discovryId);
 
-	@Query(value = "SELECT fid_discovery_id FROM c3p_t_fork_inv_discrepancy where fid_discrepancy_flag between '1' and '2' and device_id= :deviceId and fid_in_scope =\"Y\";", nativeQuery = true)
+	@Query(value = "SELECT fid_discovery_id FROM c3p_t_fork_inv_discrepancy where fid_discrepancy_flag between '1' and '2' and device_id= :deviceId and fid_in_scope ='Y';", nativeQuery = true)
 	Integer findForkDiscoveryId(@Param("deviceId") String deviceId);
 
 	@Query(value = "SELECT * FROM c3p_t_fork_inv_discrepancy where device_id =:deviceId and fid_oid_no =:odNo and fid_child_oid_no =:childOid and fid_ip_address =:ipAddress", nativeQuery = true)

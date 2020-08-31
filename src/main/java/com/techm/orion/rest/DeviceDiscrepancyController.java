@@ -1,7 +1,6 @@
 package com.techm.orion.rest;
 
 import javax.ws.rs.POST;
-import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -97,16 +96,21 @@ public class DeviceDiscrepancyController {
 		return null;
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/ignoreAndOverWrite", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response ignoreAndOverWrite(@RequestBody String request) {
-
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(service.ignoreAndOverWrite(request)).build();
+	public ResponseEntity<JSONObject> ignoreAndOverWrite(@RequestBody String request) {
+		JSONObject resultJson = service.ignoreAndOverWrite(request);
+		ResponseEntity<JSONObject> responseEntity = null;
+		if(resultJson !=null) {
+			responseEntity = new ResponseEntity<JSONObject>(resultJson, HttpStatus.OK);
+		}else {
+			resultJson = new JSONObject();
+			resultJson.put("Error", "Missing mandatory input parameters in the request");
+			responseEntity = new ResponseEntity<JSONObject>(resultJson, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
 	}
 
 	/*

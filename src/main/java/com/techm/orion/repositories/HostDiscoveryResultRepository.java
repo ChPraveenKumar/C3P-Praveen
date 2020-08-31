@@ -25,7 +25,7 @@ public interface HostDiscoveryResultRepository extends JpaRepository<HostDiscove
 	@Query(value = "SELECT hdr_ip_address FROM c3pdbschema.c3p_t_host_discovery_result where hdr_discovery_id = :discovryId ", nativeQuery = true)
 	Set<String> findMgmtIP(@Param("discovryId") int discovryId);
 
-	@Query(value = "SELECT * FROM c3p_t_host_discovery_result where device_id =:deviceId And hdr_oid_id =:odNo And hdr_ip_address=:ipAddress", nativeQuery = true)
-	HostDiscoveryResultEntity findDeviceHostDiscovery(@Param("deviceId") String deviceId, @Param("odNo") String odNo,
+	@Query(value = "SELECT * FROM c3p_t_host_discovery_result where device_id =:deviceId And hdr_oid_id =:odNo And hdr_ip_address=:ipAddress and hdr_discrepancy_flag between '1' and '2' order by hdr_row_id desc", nativeQuery = true)
+	List<HostDiscoveryResultEntity> findDeviceHostDiscovery(@Param("deviceId") String deviceId, @Param("odNo") String odNo,
 			@Param("ipAddress") String ipAddress);
 }

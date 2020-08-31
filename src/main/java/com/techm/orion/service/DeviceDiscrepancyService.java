@@ -274,38 +274,43 @@ public class DeviceDiscrepancyService {
 		return discrepancyArray;
 	}
 
+	@SuppressWarnings("unchecked")
 	public JSONObject ignoreAndOverWrite(@RequestBody String request) {
 		MasterOIDEntity masterOIDEntity = null;
 		HostDiscrepancyResultEntity hostDiscrepancyResultEntity = null;
-		HostDiscoveryResultEntity hostDiscoveryResultEntity = null;
+		List<HostDiscoveryResultEntity> hostDiscoveryResultEntities = null;
 		ForkDiscrepancyResultEntity forkDiscrepancyResultEntity = null;
-		ForkDiscoveryResultEntity forkDiscoveryResultEntity = null;
+		List<ForkDiscoveryResultEntity> forkDiscoveryResultEntities = null;
 		DeviceDiscoveryEntity deviceDiscovertEntity = null;
-
+		JSONObject resultObj = null;
 		JSONObject obj = new JSONObject();
 		JSONParser parser = new JSONParser();
 		String ipAddress = null;
+		boolean isSucess = false;
 		// String hostName = null;
 		try {
 			obj = (JSONObject) parser.parse(request);
 			ipAddress = obj.get("ipAddress").toString();
 			// hostName = obj.get("hostName").toString();
-			deviceDiscovertEntity = discoveryRepo.findAllByMgmtId(ipAddress); // deviceDiscoveryRepository.findHostNameAndMgmtip(ipAddress,
-																				// hostName);
+			deviceDiscovertEntity = discoveryRepo.findAllByMgmtId(ipAddress);
 			String logedInUserName = dcmConfigService.getLogedInUserName();
-
+		
+			logger.info(" logedInUserName " +logedInUserName);	
 			if (deviceDiscovertEntity != null) {
+				logger.info(" deviceDiscovertEntity id" +deviceDiscovertEntity.getdId());	
 				// if child oid is not null and not empty fetch data from fork tables
 
 				if ((obj.get("childOid") != null && !obj.get("childOid").equals(""))) {
 					forkDiscrepancyResultEntity = forkDiscrepancyResultRepository.findDeviceForkDiscrepancy(
 							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(),
 							obj.get("childOid").toString(), ipAddress);
-					forkDiscoveryResultEntity = forkDiscoveryResultRepository.findDeviceForkDiscovery(
+					forkDiscoveryResultEntities = forkDiscoveryResultRepository.findDeviceForkDiscovery(
 							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(),
-							obj.get("childOid").toString(), ipAddress);
+							obj.get("childOid").toString(), ipAddress);				
+					
 
 					if (forkDiscrepancyResultEntity != null) {
+						logger.info(" forkDiscrepancyResultEntity.getFidChildOIDNo() ->" +forkDiscrepancyResultEntity.getFidChildOIDNo());
 						if ("Overwrite".equals(obj.get("Action"))) {
 							forkDiscrepancyResultEntity
 									.setFidPreviousValue(forkDiscrepancyResultEntity.getFidExistingValue());
@@ -319,9 +324,12 @@ public class DeviceDiscrepancyService {
 						forkDiscrepancyResultEntity.setFidUpdatedBy(logedInUserName);
 						forkDiscrepancyResultEntity.setFidUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
 						forkDiscrepancyResultRepository.save(forkDiscrepancyResultEntity);
+						isSucess = true;
 					}
 
-					if (forkDiscoveryResultEntity != null) {
+					if (forkDiscoveryResultEntities != null && forkDiscoveryResultEntities.size()>0) {
+						ForkDiscoveryResultEntity forkDiscoveryResultEntity = forkDiscoveryResultEntities.get(0);
+						logger.info(" forkDiscoveryResultEntity.getFdrChildOIDNo() ->" +forkDiscoveryResultEntity.getFdrChildOIDNo());
 						if ("Overwrite".equals(obj.get("Action"))) {
 							forkDiscoveryResultEntity
 									.setFdrExistingValue(forkDiscoveryResultEntity.getFdrDiscoverValue());
@@ -332,15 +340,17 @@ public class DeviceDiscrepancyService {
 						forkDiscoveryResultEntity.setFdrUpdatedBy(logedInUserName);
 						forkDiscoveryResultEntity.setFdrUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
 						forkDiscoveryResultRepository.save(forkDiscoveryResultEntity);
+						isSucess = true;
 					}
 
 				} else {
 					// if child oid is null and empty fetch data from host tables
 					hostDiscrepancyResultEntity = hostDiscrepancyResultRepository.findDeviceHostDiscrepancy(
 							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(), ipAddress);
-					hostDiscoveryResultEntity = hostDiscoveryResultRepository.findDeviceHostDiscovery(
+					hostDiscoveryResultEntities = hostDiscoveryResultRepository.findDeviceHostDiscovery(
 							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(), ipAddress);
 					if (hostDiscrepancyResultEntity != null) {
+						logger.info(" hostDiscrepancyResultEntity.getHidOIDNo() ->" +hostDiscrepancyResultEntity.getHidOIDNo());
 						if ("Overwrite".equals(obj.get("Action"))) {
 							hostDiscrepancyResultEntity
 									.setHidPreviousValue(hostDiscrepancyResultEntity.getHidExistingValue());
@@ -356,9 +366,12 @@ public class DeviceDiscrepancyService {
 						hostDiscrepancyResultEntity.setHidResolvedTimestamp(Timestamp.valueOf(LocalDateTime.now()));
 						hostDiscrepancyResultEntity.setHidUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
 						hostDiscrepancyResultRepository.save(hostDiscrepancyResultEntity);
+						isSucess = true;
 					}
 
-					if (hostDiscoveryResultEntity != null) {
+					if (hostDiscoveryResultEntities != null && hostDiscoveryResultEntities.size()>0) {
+						HostDiscoveryResultEntity hostDiscoveryResultEntity = hostDiscoveryResultEntities.get(0);
+						logger.info(" hostDiscoveryResultEntity.getHidOIDNo() ->" +hostDiscoveryResultEntity.getHdrOIDNo());
 						if ("Overwrite".equals(obj.get("Action"))) {
 							hostDiscoveryResultEntity
 									.setHdrExistingValue(hostDiscoveryResultEntity.getHdrDiscoverValue());
@@ -367,7 +380,8 @@ public class DeviceDiscrepancyService {
 						// host discovery
 						hostDiscoveryResultEntity.setHdrDiscrepancyFalg("0");
 						hostDiscoveryResultEntity.setHdrUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
-
+						hostDiscoveryResultRepository.save(hostDiscoveryResultEntity);
+						isSucess = true;
 						/*
 						 * If Category = "Host" for this OID, then find the value in "Column name".
 						 * Update the corresponding column of table "Device Info"
@@ -395,11 +409,27 @@ public class DeviceDiscrepancyService {
 
 				}
 			}
+			
+			resultObj = new JSONObject();
+			if(isSucess) {
+				if ("Overwrite".equals(obj.get("Action"))) {
+					resultObj.put("msg", "Overwritten sucessfully");
+				}else {
+					resultObj.put("msg", "Ignored sucessfully");
+				}
+			}else {
+				if ("Overwrite".equals(obj.get("Action"))) {
+					resultObj.put("msg", "Overwritten failed");
+				}else {
+					resultObj.put("msg", "Ignored failed");
+				}
+			}			
 
 		} catch (Exception exe) {
-			logger.error("exception of ignoreAndOverWrite method" + exe.getMessage());			
+			exe.printStackTrace();
+			logger.error("exception of ignoreAndOverWrite method" + exe.getMessage());	
 		}
-		return obj;
+		return resultObj;
 	}
 
 	/*
@@ -419,9 +449,10 @@ public class DeviceDiscrepancyService {
 		for (MasterOIDEntity masterEntity : masterOidEntities) {
 			childList = new JSONArray();
 			masterJson = new JSONObject();
+			logger.info("masterEntity - OID"+ masterEntity.getOidName());
 			childOids = forkDiscrepancyResultRepository.findForkDiscrepancy(ipAddress, deviceId,
 					masterEntity.getOidName());
-
+			logger.info("childOids - size"+ childOids.size());
 			masterJson.put("id", masterEntity.getOidName());
 			masterJson.put("category", masterEntity.getOidCategory());
 			masterJson.put("displayName", masterEntity.getOidDisplayName());

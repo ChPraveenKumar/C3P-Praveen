@@ -33,7 +33,7 @@ public class HostDiscoveryResultEntity {
 	@Column(name = "hdr_discovered_value", length = 100)
 	private String hdrDiscoverValue;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "hdr_discovery_id")
 	private DeviceDiscoveryDashboardEntity discoveryId;
 

@@ -40,7 +40,7 @@ public class HostDiscrepancyResultEntity {
 	@Column(name = "hid_discovered_value", length = 100)
 	private String hidDiscoverValue;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "hid_discovery_id")
 	private DeviceDiscoveryDashboardEntity discoveryId;
 

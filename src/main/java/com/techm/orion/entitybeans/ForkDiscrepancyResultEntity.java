@@ -43,7 +43,7 @@ public class ForkDiscrepancyResultEntity {
 	@Column(name = "fid_discovered_value", length = 100)
 	private String fidDiscoverValue;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "fid_discovery_id")
 	private DeviceDiscoveryDashboardEntity discoveryId;
 

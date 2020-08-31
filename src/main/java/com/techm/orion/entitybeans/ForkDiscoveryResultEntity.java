@@ -37,7 +37,7 @@ public class ForkDiscoveryResultEntity {
 	@Column(name = "fdr_discovered_value", length = 100)
 	private String fdrDiscoverValue;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "fdr_discovery_id")
 	private DeviceDiscoveryDashboardEntity discoveryId;
 
