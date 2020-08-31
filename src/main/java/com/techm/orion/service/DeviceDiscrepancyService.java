@@ -413,15 +413,15 @@ public class DeviceDiscrepancyService {
 			resultObj = new JSONObject();
 			if(isSucess) {
 				if ("Overwrite".equals(obj.get("Action"))) {
-					resultObj.put("msg", "Overwritten sucessfully");
+					resultObj.put("msg", "Discrepancy overwritten successfully");
 				}else {
-					resultObj.put("msg", "Ignored sucessfully");
+					resultObj.put("msg", "Discrepancy ignored successfully");
 				}
 			}else {
 				if ("Overwrite".equals(obj.get("Action"))) {
-					resultObj.put("msg", "Overwritten failed");
+					resultObj.put("msg", "Discrepancy overwritten is failed");
 				}else {
-					resultObj.put("msg", "Ignored failed");
+					resultObj.put("msg", "Discrepancy ignore is failed");
 				}
 			}			
 
