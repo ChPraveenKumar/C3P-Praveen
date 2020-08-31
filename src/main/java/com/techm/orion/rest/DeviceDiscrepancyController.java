@@ -10,6 +10,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -18,9 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.techm.orion.service.DeviceDiscrepancyService;
 
-
 /*Added Dhanshri Mane: Device Discrepancy*/
-
 @RestController
 @RequestMapping("/deviceDiscrepancy")
 public class DeviceDiscrepancyController {
@@ -30,52 +30,127 @@ public class DeviceDiscrepancyController {
 	DeviceDiscrepancyService service;
 
 	@POST
-	@RequestMapping(value = "/discrepancy", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@RequestMapping(value = "/discrepancyValue", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response decripancyManagment(@RequestBody String request) {
+	public JSONObject decripancyManagmentValue(@RequestBody String request) {
 		JSONParser parser = new JSONParser();
-		JSONObject discripancyObject = new JSONObject();
+		JSONObject discripancyValue = new JSONObject();
 		try {
 			JSONObject requestJson = (JSONObject) parser.parse(request);
-			String discoveryName = requestJson.get("deviceName").toString();
-			if (discoveryName != null && discoveryName != "") {
-				discripancyObject = service.discripancyService(discoveryName);
-
+			String hostName = null;
+			String managmentIp = null;
+			if (requestJson.get("hostname") != null) {
+				hostName = requestJson.get("hostname").toString();
+			}
+			if (requestJson.get("managementIp") != null) {
+				managmentIp = requestJson.get("managementIp").toString();
+			}
+			if (hostName != null && managmentIp != null) {
+				discripancyValue = service.discripancyValue(managmentIp, hostName);
 			}
 
 		} catch (ParseException e) {
 			logger.info(e);
 		}
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(discripancyObject).build();
+		return discripancyValue;
 	}
 
 	@POST
-	@RequestMapping(value = "/discrepancyValue", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@RequestMapping(value = "/deviceDiscrepancyTab", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response decripancyManagmentValue(@RequestBody String request) {
+	public JSONArray deviceDiscrepancyTab(@RequestBody String request) {
 		JSONParser parser = new JSONParser();
-		JSONArray discripancyObject = new JSONArray();
 		try {
 			JSONObject requestJson = (JSONObject) parser.parse(request);
-			String discoveryName = requestJson.get("deviceName").toString();
-			String hostName = requestJson.get("hostname").toString();
-			String managmentIp = requestJson.get("managementIp").toString();
-			if (discoveryName != null && discoveryName != "") {
-				discripancyObject = service.discripancyValue(discoveryName, hostName, managmentIp);
+			String hostName = null;
+			String managmentIp = null;
+			if (requestJson.get("hostname") != null) {
+				hostName = requestJson.get("hostname").toString();
+			}
+			if (requestJson.get("managementIp") != null) {
+				managmentIp = requestJson.get("managementIp").toString();
+			}
+			if (hostName != null && managmentIp != null) {
+				return service.getDiscrepancyReport(managmentIp, hostName);
 			}
 
 		} catch (ParseException e) {
 			logger.info(e);
 		}
+		return null;
+	}
+
+	@POST
+	@RequestMapping(value = "/discrepancy", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject decripancyManagment(@RequestBody String request) {
+		JSONParser parser = new JSONParser();
+		try {
+			JSONObject requestJson = (JSONObject) parser.parse(request);
+			if (requestJson.get("discoveryName") != null && requestJson.get("discoveryName") != "") {
+				return service.discripancyService(requestJson.get("discoveryName").toString());
+			}
+
+		} catch (ParseException e) {
+			logger.info(e);
+		}
+		return null;
+	}
+
+	@POST
+	@RequestMapping(value = "/ignoreAndOverWrite", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response ignoreAndOverWrite(@RequestBody String request) {
+
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(discripancyObject).build();
+				.header("Access-Control-Max-Age", "1209600").entity(service.ignoreAndOverWrite(request)).build();
+	}
+
+	/*
+	 * Webservice for Display of Interfaces from new table
+	 */
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/intefaceDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<JSONObject> intefaceDetails(@RequestBody String request) {
+		JSONObject interfaces = null;
+		ResponseEntity<JSONObject> responseEntity = null;
+		try {	
+			JSONParser parser = new JSONParser();
+			JSONObject requestJson = (JSONObject) parser.parse(request);
+			String vendor = null;
+			String networkType = null;
+			String ipAddress = null;
+			String deviceId = null;
+			if (requestJson.get("vendor") != null) {
+				vendor = requestJson.get("vendor").toString();
+			}
+			if (requestJson.get("networType") != null) {
+				networkType = requestJson.get("networType").toString();
+			}
+			if (requestJson.get("ipAddress") != null) {
+				ipAddress = requestJson.get("ipAddress").toString();
+			}
+			if (requestJson.get("deviceId") != null) {
+				deviceId = requestJson.get("deviceId").toString();
+			}
+			if (vendor != null && networkType != null && ipAddress !=null && deviceId !=null) {
+				interfaces = service.getInterfaceDetails(vendor, networkType, ipAddress, deviceId);
+				responseEntity = new ResponseEntity<JSONObject>(interfaces, HttpStatus.OK);
+			}else {
+				interfaces = new JSONObject();
+				interfaces.put("Error", "Missing mandatory input parameters in the request");
+				responseEntity = new ResponseEntity<JSONObject>(interfaces, HttpStatus.BAD_REQUEST);
+			}
+			
+		} catch (Exception e) {
+			logger.error("exception of intefaceDetails Service" + e.getMessage());
+		}
+		return responseEntity; 
 	}
 
 }
