@@ -98,10 +98,10 @@ public class ShowMemoryTest {
 			String filepath = null;
 
 			if (type.equalsIgnoreCase("Pre")) {
-				filepath = ShowMemoryTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//"
+				filepath = ShowMemoryTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder")
 						+ "Pre_" + hostname + "_" + region + "_MemoryInfo.txt";
 			} else {
-				filepath = ShowMemoryTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + type
+				filepath = ShowMemoryTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
 						+ "_" + hostname + "_" + region + "_MemoryInfo.txt";
 			}
 			if (filepath != null) {
@@ -185,7 +185,7 @@ public class ShowMemoryTest {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				filepath = ShowMemoryTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + type
+				filepath = ShowMemoryTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
 						+ "_" + routername + "_" + region + "_MemoryInfo.txt";
 				File file = new File(filepath);
 

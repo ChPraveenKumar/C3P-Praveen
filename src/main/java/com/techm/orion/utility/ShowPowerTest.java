@@ -98,10 +98,10 @@ public class ShowPowerTest {
 			String filepath = null;
 
 			if (type.equalsIgnoreCase("Pre")) {
-				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + "Pre_"
+				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "Pre_"
 						+ hostname + "_" + region + "_PowerInfo.txt";
 			} else {
-				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + type
+				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
 						+ "_" + hostname + "_" + region + "_PowerInfo.txt";
 			}
 			if (filepath != null) {
@@ -157,7 +157,7 @@ public class ShowPowerTest {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + type
+				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
 						+ "_" + routername + "_" + region + "_PowerInfo.txt";
 				File file = new File(filepath);
 

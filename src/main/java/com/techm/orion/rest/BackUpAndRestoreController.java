@@ -5,9 +5,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.ws.rs.GET;
@@ -16,10 +18,13 @@ import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +39,7 @@ import com.google.gson.JsonParser;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.BatchIdEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.entitybeans.FirmwareUpgradeSingleDeviceEntity;
 import com.techm.orion.entitybeans.RequestDetailsBackUpAndRestoreEntity;
 import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
@@ -42,12 +48,14 @@ import com.techm.orion.entitybeans.VendorDetails;
 import com.techm.orion.models.BackUpRequestVersioningJSONModel;
 import com.techm.orion.pojo.BatchPojo;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
+import com.techm.orion.pojo.FirmwareUpgradeDetail;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DeviceInterfaceRepo;
+import com.techm.orion.repositories.FirmUpgradeSingleDeviceRepository;
 import com.techm.orion.repositories.InternetInfoRepo;
 import com.techm.orion.repositories.RequestDetailsBackUpAndRestoreRepo;
 import com.techm.orion.repositories.RequestDetailsImportRepo;
@@ -57,15 +65,6 @@ import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.VendorDetailsRepository;
 import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.DcmConfigService;
-import java.util.Set;
-import java.util.HashSet;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.json.simple.JSONArray;
-import org.springframework.http.ResponseEntity;
-import com.techm.orion.entitybeans.FirmwareUpgradeSingleDeviceEntity;
-import com.techm.orion.pojo.FirmwareUpgradeDetail;
-import com.techm.orion.repositories.FirmUpgradeSingleDeviceRepository;
 
 @Controller
 @RequestMapping("/BackUpConfigurationAndTest")
@@ -721,7 +720,15 @@ public class BackUpAndRestoreController {
 
 					batchIdEntity.setRequestInfoEntity(requestInfoEntity);
 
-					requestInfoDetailsRepositories.save(requestInfoEntity);
+					RequestInfoEntity resultEntity = requestInfoDetailsRepositories.save(requestInfoEntity);
+					if (resultEntity.getInfoId() > 0) {
+						/* Creating request Agains device then update isNew flag */
+						int isNew = requestDetail.get(i).getdNewDevice();
+						if (isNew == 1) {
+							requestDetail.get(i).setdNewDevice(0);
+							deviceDiscoveryRepository.save(requestDetail.get(i));
+						}
+					}
 
 					dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
 					dao.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");

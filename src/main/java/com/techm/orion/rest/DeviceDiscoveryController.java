@@ -51,6 +51,8 @@ import com.techm.orion.repositories.DeviceDiscoveryInterfaceRepository;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DiscoveryResultDeviceDetailsRepository;
 import com.techm.orion.repositories.DiscoveryResultDeviceInterfaceRepository;
+import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
+import com.techm.orion.repositories.HostDiscrepancyResultRepository;
 import com.techm.orion.service.InventoryManagmentService;
 
 @Controller
@@ -85,179 +87,169 @@ public class DeviceDiscoveryController implements Observer {
 	@Autowired
 	DeviceDiscoveryRepository deviceDiscoveryRepo;
 
+	@Autowired
+	ForkDiscrepancyResultRepository forkDiscrepancyRepo;
+
+	@Autowired
+	HostDiscrepancyResultRepository hostDoscreapncyRepo;
+
 	@POST
 	@RequestMapping(value = "/discovernow", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response deviceDiscovery(@RequestBody String configRequest) {
+	public JSONObject deviceDiscovery(@RequestBody String configRequest) {
 
-		JSONObject obj = new JSONObject();
-		DeviceDiscoveryDashboardEntity deviceDiscoverDashboard = new DeviceDiscoveryDashboardEntity();
+		JSONObject deviceinfo = new JSONObject();
 		try {
-			JSONObject deviceinfo = null, interfaceinfo = null, ipaddressJson = null;
+			String pythonScriptFolder = DeviceDiscoveryController.TSA_PROPERTIES.getProperty("pythonScriptPath");
 
 			DeviceDiscoveryController.loadProperties();
-			String ipAddress = null, startIp = null, endIp = null, networkMask = null;
-			String pythonScriptFolder = DeviceDiscoveryController.TSA_PROPERTIES.getProperty("pythonScriptPath");
-			String snmpDump = DeviceDiscoveryController.TSA_PROPERTIES.getProperty("snmpDump");
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
-			String discoveryName = json.get("discoveryName").toString();
+
+			String mgmtip = null, community = null, discovery_id = null, device_id = null, vendor = null,
+					networktype = null;
+
+			JSONObject requestJSON = new JSONObject();
 			if (json.containsKey("ipAddress")) {
-				ipAddress = json.get("ipAddress").toString();
-			}
-			String discoveryType = json.get("discoveryType").toString();
-			String ipType = json.get("ipType").toString();
-			if (json.containsKey("startIp")) {
-				startIp = json.get("startIp").toString();
-			}
-			if (json.containsKey("endIp")) {
-				endIp = json.get("endIp").toString();
-			}
-			if (json.containsKey("netMask")) {
-				networkMask = json.get("netMask").toString();
-			}
-
-			String createdBy = json.get("createdBy").toString();
-			String s = null;
-
-			if (discoveryType.equalsIgnoreCase("ipRange")) {
-				int countForNonInventoriedDevices = 0;
-				// go for ip allocation
-				Date date = new Date();
-				// 1.Store discovery details in discovery details table
-				deviceDiscoverDashboard.setDiscoveryName(discoveryName);
-				deviceDiscoverDashboard.setDiscoveryCreatedBy(createdBy);
-				deviceDiscoverDashboard.setDiscoveryNextRun(date);
-				deviceDiscoverDashboard.setDiscoveryRecurrance("NA");
-
-				deviceDiscoverDashboard.setDiscoveryStatus("In Progress");
-				DeviceDiscoveryDashboardEntity result = deviceDiscoveryDashboardRepo.save(deviceDiscoverDashboard);
-
-				String[] cmd = null;
-				Process p;
-				BufferedReader in;
-				BufferedReader bre;
-				InetAddress netmask = InetAddress.getByName(networkMask);
-				int cidr = convertNetmaskToCIDR(netmask);
-				logger.info("Cidr" + cidr);
-				String paramCidr = Integer.toString(cidr);
-				String[] cmdIPCalc = { "python", pythonScriptFolder + "ip_range_calculate.py", "-m", startIp,
-						paramCidr };
-
-				p = Runtime.getRuntime().exec(cmdIPCalc);
-				in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-				String ret = in.readLine();
-				logger.info("Response" + ret);
-				bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-				String line;
-				if (ret != null) {
-					logger.info(s);
-
-					// we get outputjson here
-
-					String output = ret;
-					output = output.replaceAll("'", "\"");
-					logger.info("Output" + output);
-
-					ipaddressJson = (JSONObject) parser.parse(output);
-
-				}
-				JSONArray iparray = (JSONArray) ipaddressJson.get("ipaddrs");
-
-				for (int counter = 0; counter < iparray.size(); counter++) {
-					String ip = iparray.get(counter).toString();
-					deviceinfo = runDeviceInventory(pythonScriptFolder, snmpDump, discoveryName, ip);
-					String error = null;
-
-					if (deviceinfo.get("Error") != null || deviceinfo.isEmpty()) {
-						countForNonInventoriedDevices++;
-						deviceinfo.put("managementip", ip);
-						saveInDumpTables(deviceinfo, null, result, ip);
+				if (json.get("ipAddress") != null) {
+					requestJSON.put("mgmtip", json.get("ipAddress").toString());
+					mgmtip = json.get("ipAddress").toString();
+					DeviceDiscoveryEntity device = deviceInforepo.findAllByMgmtId(json.get("ipAddress").toString());
+					if (device != null) {
+						requestJSON.put("device_id", device.getdId());
+						requestJSON.put("vendor", device.getdVendor());
+						requestJSON.put("network_type", device.getdVNFSupport());
+						device_id = String.valueOf(device.getdId());
+						vendor = device.getdVendor();
+						networktype = device.getdVNFSupport();
+						//ISNewFlag cleard
+						int isNew = device.getdNewDevice();
+						if(isNew==1) {
+							device.setdNewDevice(0);
+							deviceInforepo.save(device);
+						}
 					} else {
-						// get interface details for same device
-						interfaceinfo = runDeviceInterfaceInventory(pythonScriptFolder, snmpDump, discoveryName, ip);
-						String savedRecordMgmtIp = saveInDumpTables(deviceinfo, interfaceinfo, result, ip);
+						requestJSON.put("device_id", "");
+						requestJSON.put("vendor", "");
+						requestJSON.put("network_type", "");
 					}
-					logger.info("DeviceInfo " + deviceinfo);
 				}
+			}
+			if (json.containsKey("community")) {
+				requestJSON.put("community", json.get("community").toString());
+				community = json.get("community").toString();
+			}
+			if (json.containsKey("discoveryName")) {
+				int checkDiscovryExistOrNot = checkDiscovryExistOrNot(json.get("discoveryName").toString());
+				discovery_id = String.valueOf(checkDiscovryExistOrNot);
+				if (checkDiscovryExistOrNot > 0) {
+					requestJSON.put("discovery_id", discovery_id);
+				} else {
+					DeviceDiscoveryDashboardEntity deviceDiscoverDashboard = new DeviceDiscoveryDashboardEntity();
+					Date date = new Date();
+					// 1.Store discovery details in discovery details table
+					deviceDiscoverDashboard.setDiscoveryName(json.get("discoveryName").toString());
+					if (json.get("createdBy") != null) {
+						deviceDiscoverDashboard.setDiscoveryCreatedBy(json.get("createdBy").toString());
+					}
+					deviceDiscoverDashboard.setDiscoveryNextRun(date);
+					deviceDiscoverDashboard.setDiscoveryRecurrance("NA");
+					deviceDiscoverDashboard.setDiscoveryStatus("In Progress");
+					DeviceDiscoveryDashboardEntity result = deviceDiscoveryDashboardRepo.save(deviceDiscoverDashboard);
+					requestJSON.put("discovery_id", result.getId());
+				}
+			}
 
-				DeviceDiscoveryDashboardEntity ent = deviceDiscoveryDashboardRepo.findById(result.getId());
+			String filePath = pythonScriptFolder + "c3p_snmp_discovery_reconcilation.py";      
+	        ProcessBuilder pb = new ProcessBuilder()
+	            .command("python ", filePath,mgmtip, community,
+						discovery_id, device_id, vendor, networktype);        
+	        Process p = pb.start(); 
+	        BufferedReader in = new BufferedReader(
+	            new InputStreamReader(p.getInputStream()));
+	        StringBuilder buffer = new StringBuilder();     
+	        String line = null;
+	        while ((line = in.readLine()) != null){           
+	            buffer.append(line);
+	        }
+	        int exitCode = p.waitFor();
+	        System.out.println("Value is: "+buffer.toString());                
+	        System.out.println("Process exit value:"+exitCode);        
+	        in.close();
 
-				List<DiscoveryResultDeviceDetailsEntity> nonIventoriedDevices = discoveryResultDeviceDetailsRepo
-						.findBydInventoriedAndDeviceDiscoveryDashboardEntity("1", ent);
-				// Set non inventoried and completed for dashboard
 
-				ent.setDiscoveryNonInventoriedDevices(Integer.toString(nonIventoriedDevices.size()));
-				ent.setDiscoveryStatus("Completed");
+			/*StringWriter writer = new StringWriter(); //ouput will be stored here
 
-				deviceDiscoveryDashboardRepo.save(ent);
-				Response rs = discoverDashboard("Completed", createdBy, "my");
-				obj = (JSONObject) rs.getEntity();
+		    ScriptEngineManager manager = new ScriptEngineManager();
+		    ScriptContext context = new SimpleScriptContext();
+
+		    context.setWriter(writer); //configures output redirection
+		    ScriptEngine engine = manager.getEngineByName("python");
+		    engine.put("mgmtip", mgmtip);
+		    engine.put("community", community);
+		    engine.put("discovery_id", discovery_id);
+		    engine.put("device_id", device_id);
+		    engine.put("vendor", vendor);
+		    engine.put("networktype", networktype);
+		    engine.eval(new FileReader(pythonScriptFolder + "c3p_snmp_discovery_reconcilation.py"), context);
+		    System.out.println(writer.toString()); */
+			
+						/*String[] cmd = { "python", pythonScriptFolder + "c3p_snmp_discovery_reconcilation.py", mgmtip, community,
+					discovery_id, device_id, vendor, networktype };
+
+			  Process p = Runtime.getRuntime().exec(cmd);
+			Thread.sleep(60000);
+			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			String ret = in.readLine();
+			logger.info("Response" + ret);
+			BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+			String line;
+			
+			while ((line = in.readLine()) != null) {
+				
+				logger.info("Python File Output....."+line);
+
+				// we get outputjson here
+
+				String output = line;
+				output = output.replaceAll("'", "\"");
+				logger.info("Output" + output);
+
+				if (line.contains("No SNMP response received before timeout")) {
+					deviceinfo.put("Error", "No SNMP response received before timeout");
+				} else {
+					//deviceinfo = (JSONObject) parser.parse(output);
+					deviceinfo.put("Error", "");
+				}
+				logger.info("Output");
+				return deviceinfo;
+			}
+
+			if (bre.readLine() == null) {
 
 			} else {
-				// Code for populating device inventory table
-				String error = null;
-
-				Date date = new Date();
-				// 1.Store discovery details in discovery details table
-				deviceDiscoverDashboard.setDiscoveryName(discoveryName);
-				deviceDiscoverDashboard.setDiscoveryCreatedBy(createdBy);
-				deviceDiscoverDashboard.setDiscoveryNextRun(date);
-				deviceDiscoverDashboard.setDiscoveryRecurrance("NA");
-
-				deviceDiscoverDashboard.setDiscoveryStatus("In Progress");
-				DeviceDiscoveryDashboardEntity result = deviceDiscoveryDashboardRepo.save(deviceDiscoverDashboard);
-
-				deviceinfo = runDeviceInventory(pythonScriptFolder, snmpDump, discoveryName, ipAddress);
-				if (deviceinfo.get("Error") != null) {
-					error = deviceinfo.get("Error").toString();
+				// logger.info("Error in comparison for "+files.get(0).substring(0,
+				// 4)+"_"+files.get(1).substring(0, 4));
+				logger.info("Error");
+				while ((line = bre.readLine()) != null) {
+					logger.info(line);
 				}
-				if (error == null) {
-					interfaceinfo = runDeviceInterfaceInventory(pythonScriptFolder, snmpDump, discoveryName, ipAddress);
-					// Save data in Dump tables
-
-					String savedRecordMgmtIp = saveInDumpTables(deviceinfo, interfaceinfo, result, ipAddress);
-					DeviceDiscoveryDashboardEntity ent = deviceDiscoveryDashboardRepo.findById(result.getId());
-
-					List<DiscoveryResultDeviceDetailsEntity> nonIventoriedDevices = discoveryResultDeviceDetailsRepo
-							.findBydInventoriedAndDeviceDiscoveryDashboardEntity("1", ent);
-					// Set non inventoried and completed for dashboard
-
-					ent.setDiscoveryNonInventoriedDevices(Integer.toString(nonIventoriedDevices.size()));
-					ent.setDiscoveryStatus("Completed");
-
-					deviceDiscoveryDashboardRepo.save(ent);
-
-					Response rs = discoverDashboard("Completed", createdBy, "my");
-					obj = (JSONObject) rs.getEntity();
-					obj.put("Error", "");
-
-					taskExecutor.execute(new Runnable() {
-						@Override
-						public void run() {
-							// your background task here
-							// need to check if the record inserted in dump exists in inventory
-
-							// addInInventory(nonIventoriedDevices);
-						}
-					});
-
-				} else {
-					Response rs = discoverDashboard("Completed", createdBy, "my");
-					obj = (JSONObject) rs.getEntity();
-					obj.put("Error", deviceinfo.get("Error"));
-
-				}
+				return deviceinfo;
 			}
+
+			bre.close();
+*/
+			JSONArray array = new JSONArray();
+			array.add(requestJSON);
+
+			JSONObject finalObject = new JSONObject();
+			finalObject.put("Device_Discovery", array);
+
 		} catch (Exception e) {
-			logger.error(e);
+			e.printStackTrace();
 		}
 
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+		return null;
 
 	}
 
@@ -320,7 +312,7 @@ public class DeviceDiscoveryController implements Observer {
 		JSONObject obj = new JSONObject();
 		try {
 			List<DeviceDiscoveryEntity> getAllDevice = deviceInforepo.findAll();
-			
+
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {
 				List<ServiceRequestPojo> requests = inventoryServiceRepo
@@ -354,24 +346,12 @@ public class DeviceDiscoveryController implements Observer {
 				} else if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("2")) {
 					object.put("state", "Decommissioned");
 				}
-				/*
-				 * DiscoveryResultDeviceDetailsFlagsEntity flags=new
-				 * DiscoveryResultDeviceDetailsFlagsEntity(); flags.setdCpuFlag("0");
-				 * flags.setdCpuRevision("0"); flags.setdDrmSizeFlag("0");
-				 * flags.setdFlashSizeFlag("0"); flags.setdHostnameFlag("0");
-				 * flags.setdImageFileFlag("0"); flags.setdIpAddrsSixFlag("0");
-				 * flags.setDiscoveryResultDeviceDetailsEntity(null);
-				 * flags.setdMacaddressFlag("0"); flags.setdMgmtipFlag("0");
-				 * flags.setdModelFlag("0"); flags.setdNvramSizeFlag("0");
-				 * flags.setdOsFlag("0"); flags.setdOsVersionFlag("0");
-				 * flags.setdReleaseverFlag("0"); flags.setdSerialNumberFlag("0");
-				 * flags.setdSriesFlag("0"); flags.setdStatusFlag("0");
-				 * flags.setdUpsinceFlag("0"); flags.setdVendorFlag("0");
-				 * /*getAllDevice.get(i).getDiscoveryResultDeviceDetailsFlagsEntity
-				 * ().setDiscoveryDeviceDetailsEntity(null);
-				 */
-				// object.put("discrepancyFlags", flags);
-
+				if (getAllDevice.get(i).getdNewDevice() == 1) {
+					object.put("isNew", true);
+				} else {
+					object.put("isNew", false);
+				}
+				object.put("discreapncyFlag", checkDiscreapncy(getAllDevice.get(i)));
 				outputArray.add(object);
 			}
 			obj.put("data", outputArray);
@@ -385,6 +365,28 @@ public class DeviceDiscoveryController implements Observer {
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
+	}
+
+	private String checkDiscreapncy(DeviceDiscoveryEntity deviceDiscoveryEntity) {
+		if (deviceDiscoveryEntity != null) {
+			String id = String.valueOf(deviceDiscoveryEntity.getdId());
+			try {
+				Set<String> hostdiscrepancyValue = hostDoscreapncyRepo.findHostDiscrepancyValue(id);
+				if (hostdiscrepancyValue != null && !hostdiscrepancyValue.isEmpty()) {
+					return "Yes";
+				} else {
+					Set<String> forkDiscrepancyValue = forkDiscrepancyRepo.findForkDiscrepancyValue(id);
+					if (forkDiscrepancyValue != null && !forkDiscrepancyValue.isEmpty()) {
+						return "Yes";
+					} else {
+						return "No";
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		return null;
 	}
 
 	@GET
@@ -425,6 +427,13 @@ public class DeviceDiscoveryController implements Observer {
 				// inventoryList.get(j).setdContactRole("Administrator");
 				// inventoryList.get(j).setdContactOrganization("TechMahindra");
 				inventoryList.get(j).setdStatus("Available");
+
+				/* Update IsNewFlag */
+				int isNewDevice = inventoryList.get(j).getdNewDevice();
+				if (isNewDevice == 1) {
+					inventoryList.get(j).setdNewDevice(0);
+					deviceDiscoveryRepo.save(inventoryList.get(j));
+				}
 
 				JSONArray contactDetails = new JSONArray();
 				JSONObject detail = new JSONObject();
@@ -618,8 +627,8 @@ public class DeviceDiscoveryController implements Observer {
 	private String saveInDumpTables(JSONObject deviceinfo, JSONObject interfaceinfo,
 			DeviceDiscoveryDashboardEntity discovery, String ipAddress) {
 		String managementIp = null;
-		String hostname =null;
-		
+		String hostname = null;
+
 		if (deviceinfo.get("Error") != null) {
 			boolean isFoundinInventory = checkInventory(ipAddress);
 
@@ -636,13 +645,10 @@ public class DeviceDiscoveryController implements Observer {
 			dumpDeviceDetails.setdDeviceFamily("");
 			dumpDeviceDetails.setdStatus("Unavailable");
 			dumpDeviceDetails.setDeviceDiscoveryDashboardEntity(discovery);
-			if (isFoundinInventory)
-			{
+			if (isFoundinInventory) {
 				dumpDeviceDetails.setdInventoried("0");
 				hostname = deviceDiscoveryRepo.findBydMgmtIp(ipAddress).get(0).getdHostName();
-			}
-			else
-			{
+			} else {
 				dumpDeviceDetails.setdInventoried("1");
 				hostname = "USTXCECI7200NY" + UUID.randomUUID().toString().toUpperCase();
 				hostname = hostname.substring(0, 15) + "-2";
@@ -678,13 +684,10 @@ public class DeviceDiscoveryController implements Observer {
 			dumpDeviceDetails.setdDeviceFamily(deviceinfoData.get("family").toString());
 			dumpDeviceDetails.setdStatus("Available");
 			dumpDeviceDetails.setDeviceDiscoveryDashboardEntity(discovery);
-			if (isFoundinInventory)
-			{
+			if (isFoundinInventory) {
 				dumpDeviceDetails.setdInventoried("0");
 				hostname = deviceDiscoveryRepo.findBydMgmtIp(ipAddress).get(0).getdHostName();
-			}
-			else
-			{
+			} else {
 				dumpDeviceDetails.setdInventoried("1");
 				hostname = "USTXCECI7200NY" + UUID.randomUUID().toString().toUpperCase();
 				hostname = hostname.substring(0, 15) + "-2";
@@ -853,5 +856,14 @@ public class DeviceDiscoveryController implements Observer {
 				result = false;
 		}
 		return result;
+	}
+
+	private int checkDiscovryExistOrNot(String discoveryName) {
+		DeviceDiscoveryDashboardEntity discoveryDetails = deviceDiscoveryDashboardRepo
+				.findByDiscoveryName(discoveryName);
+		if (discoveryDetails != null) {
+			return discoveryDetails.getId();
+		}
+		return 0;
 	}
 }

@@ -349,13 +349,11 @@ public class TemplateSuggestionDao {
 	}
 
 	public void updateTemplateUsageData(String TemplateId, String result) {
-		connection = ConnectionFactory.getConnection();
-
-		String templateId = TemplateId.substring(0, 14);
-		String version = TemplateId.substring(16, 19);
+		connection = ConnectionFactory.getConnection();	
 		ResultSet rs = null;
-
 		try {
+			String templateId = TemplateId.substring(0, 14);
+			String version = TemplateId.substring(16, 19);
 
 			String query1 = "SELECT * FROM c3pdbschema.template_usage_data WHERE templateId = ? and Version = ?";
 
