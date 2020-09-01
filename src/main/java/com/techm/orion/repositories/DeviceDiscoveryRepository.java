@@ -208,7 +208,7 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 
 	/* Dhanshri Mane */
 	@Query(value = "select * from c3p_deviceinfo where d_mgmtip= :mgmtip and d_hostname= :hostName ", nativeQuery = true)
-	DeviceDiscoveryEntity findHostNameAndMgmtip(@Param("mgmtip") String mgmtip, @Param("hostName") String hostNAme);
+	DeviceDiscoveryEntity findHostNameAndMgmtip(@Param("mgmtip") String mgmtip, @Param("hostName") String hostName);
 
 	DeviceDiscoveryEntity findBydId(int id);
 

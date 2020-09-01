@@ -59,6 +59,7 @@ public class DeviceDiscrepancyController {
 	@ResponseBody
 	public JSONArray deviceDiscrepancyTab(@RequestBody String request) {
 		JSONParser parser = new JSONParser();
+		JSONArray discrepancyArray = null;
 		try {
 			JSONObject requestJson = (JSONObject) parser.parse(request);
 			String hostName = null;
@@ -70,13 +71,13 @@ public class DeviceDiscrepancyController {
 				managmentIp = requestJson.get("managementIp").toString();
 			}
 			if (hostName != null && managmentIp != null) {
-				return service.getDiscrepancyReport(managmentIp, hostName);
+				discrepancyArray = service.getDiscrepancyReport(managmentIp, hostName);
 			}
 
 		} catch (ParseException e) {
 			logger.info(e);
 		}
-		return null;
+		return discrepancyArray;
 	}
 
 	@POST
@@ -84,16 +85,17 @@ public class DeviceDiscrepancyController {
 	@ResponseBody
 	public JSONObject decripancyManagment(@RequestBody String request) {
 		JSONParser parser = new JSONParser();
+		JSONObject finalObject = null;
 		try {
 			JSONObject requestJson = (JSONObject) parser.parse(request);
 			if (requestJson.get("discoveryName") != null && requestJson.get("discoveryName") != "") {
-				return service.discripancyService(requestJson.get("discoveryName").toString());
+				finalObject = service.discripancyService(requestJson.get("discoveryName").toString());
 			}
 
 		} catch (ParseException e) {
 			logger.info(e);
 		}
-		return null;
+		return finalObject;
 	}
 
 	@SuppressWarnings("unchecked")

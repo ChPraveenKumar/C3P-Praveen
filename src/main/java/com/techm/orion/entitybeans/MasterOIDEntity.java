@@ -19,7 +19,7 @@ public class MasterOIDEntity {
 	private int oidId;
 
 	@Column(name = "oid_m_no", length = 60)
-	private String oidName;
+	private String oidNo;
 
 	@Column(name = "oid_m_category", length = 45)
 	private String oidCategory;
@@ -68,12 +68,12 @@ public class MasterOIDEntity {
 		this.oidId = oidId;
 	}
 
-	public String getOidName() {
-		return oidName;
+	public String getOidNo() {
+		return oidNo;
 	}
 
-	public void setOidName(String oidName) {
-		this.oidName = oidName;
+	public void setOidNo(String oidNo) {
+		this.oidNo = oidNo;
 	}
 
 	public String getOidCategory() {

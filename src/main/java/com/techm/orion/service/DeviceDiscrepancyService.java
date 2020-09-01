@@ -111,7 +111,7 @@ public class DeviceDiscrepancyService {
 
 				JSONArray discrepancyObject = new JSONArray();
 				discrepancyDetails.forEach(deviceDiscrepancy -> {
-					String displayName = oidRepo.findOidName(deviceDiscrepancy.getHidOIDNo(),
+					String displayName = oidRepo.findOidNo(deviceDiscrepancy.getHidOIDNo(),
 							devicedetails.getdVendor());
 					JSONObject discrepancy = discrepancyStatusForLatestDiscover(
 							deviceDiscrepancy.getHidDiscrepancyFalg(), displayName,
@@ -126,7 +126,7 @@ public class DeviceDiscrepancyService {
 						.findForkDiscrepancyValueByDeviceId(String.valueOf(devicedetails.getdId()),
 								findForkDiscoveryId);
 				findForkDiscrepancyValueByDeviceId.forEach(forkDiscrepancyValue -> {
-					String displayName = oidRepo.findOidName(forkDiscrepancyValue.getFidOIDNo(),
+					String displayName = oidRepo.findOidNo(forkDiscrepancyValue.getFidOIDNo(),
 							devicedetails.getdVendor());
 					JSONObject discrepancy = discrepancyStatusForLatestDiscover(
 							forkDiscrepancyValue.getFidDiscrepancyFalg(), displayName,
@@ -239,7 +239,7 @@ public class DeviceDiscrepancyService {
 											discoveryId);
 							discrepancyDetails.forEach(deviceDiscrepancy -> {
 								logger.info(deviceDiscrepancy.getHidOIDNo());
-								String displayName = oidRepo.findOidName(deviceDiscrepancy.getHidOIDNo(),
+								String displayName = oidRepo.findOidNo(deviceDiscrepancy.getHidOIDNo(),
 										devicedetails.getdVendor());
 								JSONObject discrepancy = discrepancyStatusForLatestDiscover(
 										deviceDiscrepancy.getHidDiscrepancyFalg(), displayName,
@@ -260,7 +260,7 @@ public class DeviceDiscrepancyService {
 											discoveryId);
 							forkDiscreapncy.forEach(deviceDiscrepancy -> {
 								logger.info(deviceDiscrepancy.getFidOIDNo());
-								String displayName = oidRepo.findOidName(deviceDiscrepancy.getFidOIDNo(),
+								String displayName = oidRepo.findOidNo(deviceDiscrepancy.getFidOIDNo(),
 										devicedetails.getdVendor());
 								JSONObject discrepancy = discrepancyStatusForLatestDiscover(
 										deviceDiscrepancy.getFidDiscrepancyFalg(), displayName,
@@ -395,7 +395,7 @@ public class DeviceDiscrepancyService {
 						 * If Category = "Host" for this OID, then find the value in "Column name".
 						 * Update the corresponding column of table "Device Info"
 						 */
-						masterOIDEntity = masterOIDRepository.findByOidName(obj.get("oid").toString());
+						masterOIDEntity = masterOIDRepository.findByOidNo(obj.get("oid").toString());
 						if (masterOIDEntity != null && "Host".equals(masterOIDEntity.getOidCategory())) {
 							if ("d_device_family".equals(masterOIDEntity.getOidAttrib())) {
 								deviceDiscovertEntity.setdDeviceFamily(hostDiscoveryResultEntity.getHdrDiscoverValue());
@@ -459,8 +459,8 @@ public class DeviceDiscrepancyService {
 			childList = new JSONArray();
 			masterJson = new JSONObject();
 			childOids = forkDiscrepancyResultRepository.findForkDiscrepancy(ipAddress, deviceId,
-					masterEntity.getOidName());
-			masterJson.put("id", masterEntity.getOidName());
+					masterEntity.getOidNo());
+			masterJson.put("id", masterEntity.getOidNo());
 			masterJson.put("category", masterEntity.getOidCategory());
 			masterJson.put("displayName", masterEntity.getOidDisplayName());
 
@@ -485,7 +485,7 @@ public class DeviceDiscrepancyService {
 		discrepancyDetails.forEach(deviceDiscrepancy -> {
 			if(deviceDiscrepancy!=null) {
 			logger.info(deviceDiscrepancy.getHdrOIDNo());
-			String displayName = oidRepo.findOidName(deviceDiscrepancy.getHdrOIDNo(), vendor);
+			String displayName = oidRepo.findOidNo(deviceDiscrepancy.getHdrOIDNo(), vendor);
 			JSONObject discrepancy = discrepancyStatusForLatestDiscover(deviceDiscrepancy.getHdrDiscrepancyFalg(),
 					displayName, deviceDiscrepancy.getHdrExistingValue(), deviceDiscrepancy.getHdrDiscoverValue(),
 					false);
@@ -499,7 +499,7 @@ public class DeviceDiscrepancyService {
 		forkDiscrepancyValue.forEach(deviceDiscrepancy -> {
 			if(deviceDiscrepancy!=null) {
 			logger.info(deviceDiscrepancy.getFdrOIDNo());
-			String displayName = oidRepo.findOidName(deviceDiscrepancy.getFdrOIDNo(), vendor);
+			String displayName = oidRepo.findOidNo(deviceDiscrepancy.getFdrOIDNo(), vendor);
 			JSONObject discrepancy = discrepancyStatusForLatestDiscover(deviceDiscrepancy.getFdrDiscrepancyFalg(),
 					displayName, deviceDiscrepancy.getFdrExistingValue(), deviceDiscrepancy.getFdrDiscoverValue(),
 					false);
