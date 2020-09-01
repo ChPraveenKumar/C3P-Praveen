@@ -52,7 +52,7 @@ public class HealthCheckReport {
 		try {
 			HealthCheckReport.loadProperties();
 			String filepath = null;
-			filepath = HealthCheckReport.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//"
+			filepath = HealthCheckReport.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder")
 					+ hostname + "_" + region + "_HealthCheckReport.html";
 			StringBuilder contentBuilder = new StringBuilder();
 			BufferedReader in = new BufferedReader(new FileReader(filepath));
@@ -77,7 +77,7 @@ public class HealthCheckReport {
 			HealthCheckReport.loadProperties();
 
 			String filepath = null;
-			filepath = HealthCheckReport.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + state
+			filepath = HealthCheckReport.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + state
 					+ "_" + routername + "_" + region + "_HealthCheckReport.html";
 			File file = new File(filepath);
 
@@ -128,7 +128,7 @@ public class HealthCheckReport {
 		HealthCheckReport.loadProperties();
 		boolean status = false;
 		String filepath = null;
-		filepath = HealthCheckReport.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + state
+		filepath = HealthCheckReport.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + state
 				+ "_" + routername + "_" + region + "_HealthCheckReport.html";
 		File file = new File(filepath);
 

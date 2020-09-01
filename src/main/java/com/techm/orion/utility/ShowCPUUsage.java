@@ -100,10 +100,10 @@ public class ShowCPUUsage {
 			String filepath = null;
 
 			if (type.equalsIgnoreCase("Pre")) {
-				filepath = ShowCPUUsage.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + "Pre_"
+				filepath = ShowCPUUsage.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "Pre_"
 						+ hostname + "_" + region + "_CPUusage.txt";
 			} else {
-				filepath = ShowCPUUsage.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + type
+				filepath = ShowCPUUsage.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
 						+ "_" + hostname + "_" + region + "_CPUusage.txt";
 			}
 			if (filepath != null) {
@@ -165,7 +165,7 @@ public class ShowCPUUsage {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				filepath = ShowCPUUsage.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//" + type
+				filepath = ShowCPUUsage.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
 						+ "_" + routername + "_" + region + "_CPUusage.txt";
 				File file = new File(filepath);
 

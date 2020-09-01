@@ -118,7 +118,7 @@ public class ShowInventoryTest {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				filepath = ShowVersionTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "//"
+				filepath = ShowVersionTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder")
 						+ routername + "_" + region + "_InventoryInfo.txt";
 				File file = new File(filepath);
 

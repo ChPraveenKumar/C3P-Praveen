@@ -44,6 +44,7 @@ import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
 import com.techm.orion.entitybeans.BatchIdEntity;
 import com.techm.orion.entitybeans.CertificationTestResultEntity;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.entitybeans.TestDetail;
@@ -70,6 +71,7 @@ import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.pojo.UserValidationResultDetailPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.service.CertificationTestResultService;
@@ -87,6 +89,8 @@ public class RequestInfoDao {
 	private CertificationTestResultService certificationTestService;
 	@Autowired
 	private ServiceOrderRepo serviceOrderRepo;
+	@Autowired
+	private DeviceDiscoveryRepository deviceInforepo;
 	/* SQL information */
 	private static final String INSERT_REQUEST_INFOSO = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
 			+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -6119,6 +6123,13 @@ public class RequestInfoDao {
 					addRequestID_to_Os_Upgrade_dilevary_flags(alphaneumeric_req_id, Double.toString(request_version));
 				}
 				// updateEIPAMTable(request.getDeviceInterfaceSO().getIp());
+				/*Creating request Agains device then update isNew flag */
+                DeviceDiscoveryEntity deviceDetails = deviceInforepo.findHostNameAndMgmtip(save.getManagmentIP(),save.getHostName());
+                int isNew = deviceDetails.getdNewDevice();
+                if(isNew==1) {
+                    deviceDetails.setdNewDevice(0);
+                    deviceInforepo.save(deviceDetails);
+                }
 				hmap.put("result", "true");
 				return hmap;
 
@@ -6410,7 +6421,7 @@ public class RequestInfoDao {
 		}
 		prevalidationArray.add(vendorTest);
 		prevalidationArray.add(deviceModel);
-
+		prevalidationArray.add(iosVersion);
 		prevalidationArray.add(reachabilityObj);
 		prevalidationArray.add(backUpStatus);
 
@@ -7060,7 +7071,13 @@ public class RequestInfoDao {
 
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
 				addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
-
+				/*Creating request Agains device then update isNew flag */
+                DeviceDiscoveryEntity deviceDetails = deviceInforepo.findHostNameAndMgmtip(requestEntity.getManagmentIP(), requestEntity.getHostName());
+                int isNew = deviceDetails.getdNewDevice();
+                if(isNew==1) {
+                    deviceDetails.setdNewDevice(0);
+                    deviceInforepo.save(deviceDetails);
+                }
 				hmap.put("result", "true");
 				return hmap;
 
