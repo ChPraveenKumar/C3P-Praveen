@@ -351,56 +351,60 @@ public class TemplateSuggestionDao {
 	public void updateTemplateUsageData(String TemplateId, String result) {
 		connection = ConnectionFactory.getConnection();	
 		ResultSet rs = null;
+		logger.info("updateTemplateUsageData - TemplateId -"+TemplateId);
 		try {
-			String templateId = TemplateId.substring(0, 14);
-			String version = TemplateId.substring(16, 19);
-
-			String query1 = "SELECT * FROM template_usage_data WHERE templateId = ? and Version = ?";
-
-			PreparedStatement ps = connection.prepareStatement(query1);
-
-			ps.setString(1, templateId);
-			ps.setString(2, version);
-
-			rs = ps.executeQuery();
-
-			if (rs.next()) {
-
-				int totalUsage = Integer.parseInt(rs.getString("Total_Usage"));
-				int successRatio = Integer.parseInt(rs.getString("Success_Ratio"));
-				int failureRatio = Integer.parseInt(rs.getString("Failure_Ratio"));
-
-				String query = null;
-				// double total_success_ratio=successRatio/totalUsage;
-				if (result.equalsIgnoreCase("Success")) {
-					query = "update template_usage_data set Success_Ratio = ?,total_success_ratio = ?  WHERE templateId = ? and Version = ?";
-					PreparedStatement preparedStmt;
-
-					preparedStmt = connection.prepareStatement(query);
-
-					preparedStmt.setInt(1, ++successRatio);
-					double total_success_ratio = ((double) successRatio / (int) totalUsage);
-					preparedStmt.setDouble(2, total_success_ratio);
-					;
-					preparedStmt.setString(3, templateId);
-					preparedStmt.setString(4, version);
-
-					preparedStmt.executeUpdate();
-				} else {
-					query = "update template_usage_data set Failure_Ratio = ?,total_success_ratio = ?  WHERE templateId = ? and Version = ?";
-					PreparedStatement preparedStmt;
-
-					preparedStmt = connection.prepareStatement(query);
-
-					preparedStmt.setInt(1, ++failureRatio);
-					double total_success_ratio = ((double) successRatio / (int) totalUsage);
-					preparedStmt.setDouble(2, total_success_ratio);
-					preparedStmt.setString(3, templateId);
-					preparedStmt.setString(4, version);
-
-					preparedStmt.executeUpdate();
+			/*Added the TemplateId not null check.. TemplateId will have some data in case of config test. Other tests TemplateId will be null*/
+			if(TemplateId !=null) {
+				String templateId = TemplateId.substring(0, 14);
+				String version = TemplateId.substring(16, 19);
+	
+				String query1 = "SELECT * FROM template_usage_data WHERE templateId = ? and Version = ?";
+	
+				PreparedStatement ps = connection.prepareStatement(query1);
+	
+				ps.setString(1, templateId);
+				ps.setString(2, version);
+	
+				rs = ps.executeQuery();
+	
+				if (rs.next()) {
+	
+					int totalUsage = Integer.parseInt(rs.getString("Total_Usage"));
+					int successRatio = Integer.parseInt(rs.getString("Success_Ratio"));
+					int failureRatio = Integer.parseInt(rs.getString("Failure_Ratio"));
+	
+					String query = null;
+					// double total_success_ratio=successRatio/totalUsage;
+					if (result.equalsIgnoreCase("Success")) {
+						query = "update template_usage_data set Success_Ratio = ?,total_success_ratio = ?  WHERE templateId = ? and Version = ?";
+						PreparedStatement preparedStmt;
+	
+						preparedStmt = connection.prepareStatement(query);
+	
+						preparedStmt.setInt(1, ++successRatio);
+						double total_success_ratio = ((double) successRatio / (int) totalUsage);
+						preparedStmt.setDouble(2, total_success_ratio);
+						;
+						preparedStmt.setString(3, templateId);
+						preparedStmt.setString(4, version);
+	
+						preparedStmt.executeUpdate();
+					} else {
+						query = "update template_usage_data set Failure_Ratio = ?,total_success_ratio = ?  WHERE templateId = ? and Version = ?";
+						PreparedStatement preparedStmt;
+	
+						preparedStmt = connection.prepareStatement(query);
+	
+						preparedStmt.setInt(1, ++failureRatio);
+						double total_success_ratio = ((double) successRatio / (int) totalUsage);
+						preparedStmt.setDouble(2, total_success_ratio);
+						preparedStmt.setString(3, templateId);
+						preparedStmt.setString(4, version);
+	
+						preparedStmt.executeUpdate();
+					}
+	
 				}
-
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();

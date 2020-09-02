@@ -73,9 +73,6 @@ public class DeviceDiscoveryController implements Observer {
 	public DiscoveryResultDeviceInterfaceRepository discoveryResultDeviceInterfaceRepo;
 
 	@Autowired
-	private TaskExecutor taskExecutor;
-
-	@Autowired
 	InventoryManagmentService inventoryServiceRepo;
 
 	@Autowired
@@ -101,49 +98,37 @@ public class DeviceDiscoveryController implements Observer {
 		JSONObject deviceinfo = new JSONObject();
 		try {
 			String pythonScriptFolder = DeviceDiscoveryController.TSA_PROPERTIES.getProperty("pythonScriptPath");
-
+			DeviceDiscoveryDashboardEntity dashboardDetails =null;
 			DeviceDiscoveryController.loadProperties();
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
-
+			
 			String mgmtip = null, community = null, discovery_id = null, device_id = null, vendor = null,
 					networktype = null;
-
-			JSONObject requestJSON = new JSONObject();
 			if (json.containsKey("ipAddress")) {
 				if (json.get("ipAddress") != null) {
-					requestJSON.put("mgmtip", json.get("ipAddress").toString());
 					mgmtip = json.get("ipAddress").toString();
 					DeviceDiscoveryEntity device = deviceInforepo.findAllByMgmtId(json.get("ipAddress").toString());
 					if (device != null) {
-						requestJSON.put("device_id", device.getdId());
-						requestJSON.put("vendor", device.getdVendor());
-						requestJSON.put("network_type", device.getdVNFSupport());
 						device_id = String.valueOf(device.getdId());
 						vendor = device.getdVendor();
 						networktype = device.getdVNFSupport();
-						//ISNewFlag cleard
+						//ISNewFlag cleared
 						int isNew = device.getdNewDevice();
 						if(isNew==1) {
 							device.setdNewDevice(0);
 							deviceInforepo.save(device);
 						}
-					} else {
-						requestJSON.put("device_id", "");
-						requestJSON.put("vendor", "");
-						requestJSON.put("network_type", "");
-					}
+					} 
 				}
 			}
 			if (json.containsKey("community")) {
-				requestJSON.put("community", json.get("community").toString());
-				community = json.get("community").toString();
+				community = json.get("community").toString().toLowerCase();
 			}
 			if (json.containsKey("discoveryName")) {
-				int checkDiscovryExistOrNot = checkDiscovryExistOrNot(json.get("discoveryName").toString());
-				discovery_id = String.valueOf(checkDiscovryExistOrNot);
+				int checkDiscovryExistOrNot = checkDiscovryExistOrNot(json.get("discoveryName").toString());				
 				if (checkDiscovryExistOrNot > 0) {
-					requestJSON.put("discovery_id", discovery_id);
+					discovery_id = String.valueOf(checkDiscovryExistOrNot);
 				} else {
 					DeviceDiscoveryDashboardEntity deviceDiscoverDashboard = new DeviceDiscoveryDashboardEntity();
 					Date date = new Date();
@@ -155,14 +140,14 @@ public class DeviceDiscoveryController implements Observer {
 					deviceDiscoverDashboard.setDiscoveryNextRun(date);
 					deviceDiscoverDashboard.setDiscoveryRecurrance("NA");
 					deviceDiscoverDashboard.setDiscoveryStatus("In Progress");
-					DeviceDiscoveryDashboardEntity result = deviceDiscoveryDashboardRepo.save(deviceDiscoverDashboard);
-					requestJSON.put("discovery_id", result.getId());
+					dashboardDetails = deviceDiscoveryDashboardRepo.save(deviceDiscoverDashboard);
+					discovery_id = String.valueOf(dashboardDetails.getId());
 				}
 			}
 
 			String filePath = pythonScriptFolder + "c3p_snmp_discovery_reconcilation.py";      
 	        ProcessBuilder pb = new ProcessBuilder()
-	            .command("python ", filePath,mgmtip, community,
+	            .command("python ", filePath, mgmtip, community,
 						discovery_id, device_id, vendor, networktype);        
 	        Process p = pb.start(); 
 	        BufferedReader in = new BufferedReader(
@@ -173,83 +158,24 @@ public class DeviceDiscoveryController implements Observer {
 	            buffer.append(line);
 	        }
 	        int exitCode = p.waitFor();
-	        System.out.println("Value is: "+buffer.toString());                
-	        System.out.println("Process exit value:"+exitCode);        
+	        logger.info("Value is: "+buffer.toString());                
+	        logger.info("Process exit value:"+exitCode); 	        
+	        
+	        if(exitCode>0) {
+	        	deviceinfo.put("msg", "Discovery Failed");
+	        	dashboardDetails.setDiscoveryStatus("Failed");
+	        }else {
+	        	deviceinfo.put("msg", "Discovery Successfully Completed");
+	        	dashboardDetails.setDiscoveryStatus("Completed");
+	        }
+	       
+			deviceDiscoveryDashboardRepo.save(dashboardDetails);
 	        in.close();
-
-
-			/*StringWriter writer = new StringWriter(); //ouput will be stored here
-
-		    ScriptEngineManager manager = new ScriptEngineManager();
-		    ScriptContext context = new SimpleScriptContext();
-
-		    context.setWriter(writer); //configures output redirection
-		    ScriptEngine engine = manager.getEngineByName("python");
-		    engine.put("mgmtip", mgmtip);
-		    engine.put("community", community);
-		    engine.put("discovery_id", discovery_id);
-		    engine.put("device_id", device_id);
-		    engine.put("vendor", vendor);
-		    engine.put("networktype", networktype);
-		    engine.eval(new FileReader(pythonScriptFolder + "c3p_snmp_discovery_reconcilation.py"), context);
-		    System.out.println(writer.toString()); */
-			
-						/*String[] cmd = { "python", pythonScriptFolder + "c3p_snmp_discovery_reconcilation.py", mgmtip, community,
-					discovery_id, device_id, vendor, networktype };
-
-			  Process p = Runtime.getRuntime().exec(cmd);
-			Thread.sleep(60000);
-			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String ret = in.readLine();
-			logger.info("Response" + ret);
-			BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			String line;
-			
-			while ((line = in.readLine()) != null) {
-				
-				logger.info("Python File Output....."+line);
-
-				// we get outputjson here
-
-				String output = line;
-				output = output.replaceAll("'", "\"");
-				logger.info("Output" + output);
-
-				if (line.contains("No SNMP response received before timeout")) {
-					deviceinfo.put("Error", "No SNMP response received before timeout");
-				} else {
-					//deviceinfo = (JSONObject) parser.parse(output);
-					deviceinfo.put("Error", "");
-				}
-				logger.info("Output");
-				return deviceinfo;
-			}
-
-			if (bre.readLine() == null) {
-
-			} else {
-				// logger.info("Error in comparison for "+files.get(0).substring(0,
-				// 4)+"_"+files.get(1).substring(0, 4));
-				logger.info("Error");
-				while ((line = bre.readLine()) != null) {
-					logger.info(line);
-				}
-				return deviceinfo;
-			}
-
-			bre.close();
-*/
-			JSONArray array = new JSONArray();
-			array.add(requestJSON);
-
-			JSONObject finalObject = new JSONObject();
-			finalObject.put("Device_Discovery", array);
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		return null;
+		return deviceinfo;
 
 	}
 

@@ -139,12 +139,11 @@ public class CSVWriteAndConnectPython {
 
 			BufferedReader br = new BufferedReader(
 					new FileReader(analyserPath + "/SOTrainingData_C3P_Throughput_data.csv"));
-			while ((line = br.readLine()) != null) {
-
+			while ((line = br.readLine()) != null) {				
 				// use comma as separator
 				String[] throuhput = line.split(cvsSplitBy);
-				if (throuhput[5] != null) {
-					result = throuhput[5];
+				if (throuhput!=null && throuhput.length>3 && throuhput[4] != null) {
+					result = throuhput[4];
 					logger.info(result);
 				} else {
 					result = "Test not conducted";
