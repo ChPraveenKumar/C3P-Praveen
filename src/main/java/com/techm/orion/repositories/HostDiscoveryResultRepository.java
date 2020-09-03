@@ -12,14 +12,11 @@ import com.techm.orion.entitybeans.HostDiscoveryResultEntity;
 
 @Repository
 public interface HostDiscoveryResultRepository extends JpaRepository<HostDiscoveryResultEntity, Long> {
-
-	@Query(value = "SELECT * FROM c3p_t_host_discovery_result where hdr_discrepancy_flag between '1' and '2' and device_id=:deviceId and hdr_resolved_flag ='N'", nativeQuery = true)
-	List<HostDiscoveryResultEntity> findHostDiscoveryDiscrepancyValue(@Param("deviceId") String deviceId);
-
-	@Query(value = "SELECT * FROM c3p_t_host_discovery_result where hdr_discrepancy_flag between '1' and '2' and device_id=:deviceId ", nativeQuery = true)
+	
+	@Query(value = "SELECT * FROM c3p_t_host_discovery_result where hdr_discrepancy_flag between '1' and '2' and device_id=:deviceId", nativeQuery = true)
 	List<HostDiscoveryResultEntity> findHostDiscoveryValue(@Param("deviceId") String deviceId);
 
-	@Query(value = "SELECT distinct hdr_discovery_id FROM c3p_t_host_discovery_result where hdr_discrepancy_flag between '1' and '2' and device_id=:deviceId ", nativeQuery = true)
+	@Query(value = "SELECT distinct hdr_discovery_id FROM c3p_t_host_discovery_result where hdr_discrepancy_flag between '1' and '2' and device_id=:deviceId", nativeQuery = true)
 	Set<Integer> findDiscoveryId(@Param("deviceId") String deviceId);
 
 	@Query(value = "SELECT hdr_ip_address FROM c3p_t_host_discovery_result where hdr_discovery_id = :discovryId ", nativeQuery = true)

@@ -2,7 +2,6 @@ package com.techm.orion.rest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -11,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
@@ -54,15 +52,14 @@ import com.techm.orion.repositories.DiscoveryResultDeviceInterfaceRepository;
 import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
 import com.techm.orion.repositories.HostDiscrepancyResultRepository;
 import com.techm.orion.service.InventoryManagmentService;
+import com.techm.orion.utility.TSALabels;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/discovery")
 public class DeviceDiscoveryController implements Observer {
 	private static final Logger logger = LogManager.getLogger(DeviceDiscoveryController.class);
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
+	
 	@Autowired
 	public DeviceDiscoveryDashboardRepository deviceDiscoveryDashboardRepo;
 
@@ -96,10 +93,8 @@ public class DeviceDiscoveryController implements Observer {
 	public JSONObject deviceDiscovery(@RequestBody String configRequest) {
 
 		JSONObject deviceinfo = new JSONObject();
-		try {
-			String pythonScriptFolder = DeviceDiscoveryController.TSA_PROPERTIES.getProperty("pythonScriptPath");
-			DeviceDiscoveryDashboardEntity dashboardDetails =null;
-			DeviceDiscoveryController.loadProperties();
+		try {			
+			DeviceDiscoveryDashboardEntity dashboardDetails =null;			
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 			
@@ -126,9 +121,10 @@ public class DeviceDiscoveryController implements Observer {
 				community = json.get("community").toString().toLowerCase();
 			}
 			if (json.containsKey("discoveryName")) {
-				int checkDiscovryExistOrNot = checkDiscovryExistOrNot(json.get("discoveryName").toString());				
-				if (checkDiscovryExistOrNot > 0) {
-					discovery_id = String.valueOf(checkDiscovryExistOrNot);
+				dashboardDetails = fecthEntity(json.get("discoveryName").toString());				
+				if (dashboardDetails !=null && dashboardDetails.getId() !=0) {
+					discovery_id = String.valueOf(dashboardDetails.getId());
+					logger.info("discovery_id -"+discovery_id);
 				} else {
 					DeviceDiscoveryDashboardEntity deviceDiscoverDashboard = new DeviceDiscoveryDashboardEntity();
 					Date date = new Date();
@@ -143,9 +139,15 @@ public class DeviceDiscoveryController implements Observer {
 					dashboardDetails = deviceDiscoveryDashboardRepo.save(deviceDiscoverDashboard);
 					discovery_id = String.valueOf(dashboardDetails.getId());
 				}
-			}
-
-			String filePath = pythonScriptFolder + "c3p_snmp_discovery_reconcilation.py";      
+			}			
+			String filePath = TSALabels.PYTHON_SCRIPT_PATH.getValue() + "c3p_snmp_discovery_reconcilation.py"; 
+			logger.info("filePath :"+filePath);
+			logger.info("mgmtip :"+mgmtip);
+			logger.info("community :"+community);
+			logger.info("discovery_id :"+discovery_id);
+			logger.info("device_id :"+device_id);
+			logger.info("vendor :"+vendor);
+			logger.info("networktype :"+networktype);
 	        ProcessBuilder pb = new ProcessBuilder()
 	            .command("python ", filePath, mgmtip, community,
 						discovery_id, device_id, vendor, networktype);        
@@ -159,15 +161,19 @@ public class DeviceDiscoveryController implements Observer {
 	        }
 	        int exitCode = p.waitFor();
 	        logger.info("Value is: "+buffer.toString());                
-	        logger.info("Process exit value:"+exitCode); 	        
-	        
-	        if(exitCode>0) {
+	        logger.info("Process exit value:"+exitCode);
+	       
+	        String output = buffer.toString();
+	        if(output.isEmpty() || output.contains("Discovery : Error")) {
 	        	deviceinfo.put("msg", "Discovery Failed");
 	        	dashboardDetails.setDiscoveryStatus("Failed");
-	        }else {
+	        }else if(output.contains("Discovery : Completed")) {
 	        	deviceinfo.put("msg", "Discovery Successfully Completed");
 	        	dashboardDetails.setDiscoveryStatus("Completed");
-	        }
+	        }else {
+	        	deviceinfo.put("msg", "Discovery Failed");
+	        	dashboardDetails.setDiscoveryStatus("Failed");
+	        }     
 	       
 			deviceDiscoveryDashboardRepo.save(dashboardDetails);
 	        in.close();
@@ -184,12 +190,9 @@ public class DeviceDiscoveryController implements Observer {
 	@ResponseBody
 	public Response discoverDashboard(@RequestParam String type, @RequestParam String user,
 			@RequestParam String requestType) {
-
 		JSONObject obj = new JSONObject();
-		DeviceDiscoveryDashboardEntity deviceDiscoveryDashboard = new DeviceDiscoveryDashboardEntity();
 		try {
-
-			DeviceDiscoveryController.loadProperties();
+		
 			Set<DeviceDiscoveryDashboardEntity> setDiscoveryDashboardAll = new HashSet<DeviceDiscoveryDashboardEntity>();
 
 			Set<DeviceDiscoveryDashboardEntity> setDiscoveryDashboard = new HashSet<DeviceDiscoveryDashboardEntity>();
@@ -405,19 +408,6 @@ public class DeviceDiscoveryController implements Observer {
 	public void update(Observable o, Object arg) {
 		// TODO Auto-generated method stub
 
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 
 	public static int convertNetmaskToCIDR(InetAddress netmask) {
@@ -784,12 +774,9 @@ public class DeviceDiscoveryController implements Observer {
 		return result;
 	}
 
-	private int checkDiscovryExistOrNot(String discoveryName) {
+	private DeviceDiscoveryDashboardEntity fecthEntity(String discoveryName) {
 		DeviceDiscoveryDashboardEntity discoveryDetails = deviceDiscoveryDashboardRepo
-				.findByDiscoveryName(discoveryName);
-		if (discoveryDetails != null) {
-			return discoveryDetails.getId();
-		}
-		return 0;
+				.findByDiscoveryName(discoveryName);		
+		return discoveryDetails;
 	}
 }

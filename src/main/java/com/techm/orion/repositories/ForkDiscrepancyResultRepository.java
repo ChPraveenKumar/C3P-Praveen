@@ -16,7 +16,7 @@ public interface ForkDiscrepancyResultRepository extends JpaRepository<ForkDiscr
 	@Query(value = "SELECT distinct fid_discrepancy_flag FROM c3p_t_fork_inv_discrepancy where fid_discrepancy_flag between '1' and '2' and device_id= :deviceId and fid_resolved_flag ='N'", nativeQuery = true)
 	Set<String> findForkDiscrepancyValue(@Param("deviceId") String deviceId);
 
-	@Query(value = "SELECT * FROM c3p_t_fork_inv_discrepancy where fid_discrepancy_flag between '1' and '2' and device_id= :deviceId and fid_discovery_id =:discovryId and fid_in_scope ='Y'", nativeQuery = true)
+	@Query(value = "SELECT * FROM c3p_t_fork_inv_discrepancy where fid_discrepancy_flag between '1' and '2' and device_id= :deviceId and fid_resolved_flag ='N' and fid_discovery_id =:discovryId and fid_in_scope ='Y'", nativeQuery = true)
 	List<ForkDiscrepancyResultEntity> findForkDiscrepancyValueByDeviceId(@Param("deviceId") String deviceId,
 			@Param("discovryId") int discovryId);
 
@@ -30,6 +30,9 @@ public interface ForkDiscrepancyResultRepository extends JpaRepository<ForkDiscr
 	@Query(value = "SELECT * FROM c3p_t_fork_inv_discrepancy where fid_ip_address=:fid_ip_address and device_id=:device_id"
 			+ " and fid_oid_no=:fid_oid_no", nativeQuery = true)
 	List<ForkDiscrepancyResultEntity> findForkDiscrepancy(@Param("fid_ip_address") String fid_ip_address,
-			@Param("device_id") String device_id, @Param("fid_oid_no") String fid_oid_no);
+			@Param("device_id") String device_id, @Param("fid_oid_no") String fid_oid_no);	
+
+	@Query(value = "select fid_inv_existing_value from c3p_t_fork_inv_discrepancy where fid_child_oid_no=:oidNum and device_id= :deviceId and fid_in_scope ='Y' ", nativeQuery = true)
+	String findForkDiscrepancyValueByDeviceIdAndoidNo(@Param("oidNum") String oidNum,@Param("deviceId") String deviceId);
 
 }

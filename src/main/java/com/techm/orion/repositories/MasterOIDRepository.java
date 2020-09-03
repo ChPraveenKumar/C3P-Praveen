@@ -19,6 +19,11 @@ public interface MasterOIDRepository extends JpaRepository<MasterOIDEntity, Long
 
 	@Query(value = "SELECT * FROM c3p_m_oid_master_info where oid_m_category='Interface' and oid_m_for_vendor=:oidVendor and oid_m_network_type=:oidNetworkType and oid_m_default_flag='Y'", nativeQuery = true)
 	List<MasterOIDEntity> findOidAndDisplayName(@Param("oidVendor") String oidVendor,
+			@Param("oidNetworkType") String oidNetworkType);	
+
+	@Query(value = "select oid_m_no from c3p_m_oid_master_info where oid_m_display_name = 'Interface Name' and oid_m_for_vendor=:oidVendor and oid_m_network_type=:oidNetworkType and oid_m_category ='Interface'", nativeQuery = true)
+	String findInterFaceOidAndDisplayName(@Param("oidVendor") String oidVendor,
 			@Param("oidNetworkType") String oidNetworkType);
+
 
 }
