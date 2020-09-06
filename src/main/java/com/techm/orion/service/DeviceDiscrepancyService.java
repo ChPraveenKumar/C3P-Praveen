@@ -336,7 +336,7 @@ public class DeviceDiscrepancyService {
 							obj.get("childOid").toString(), ipAddress);
 					forkDiscoveryResultEntities = forkDiscoveryResultRepository.findDeviceForkDiscovery(
 							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(),
-							obj.get("childOid").toString(), ipAddress);
+							obj.get("childOid").toString(), ipAddress,forkDiscrepancyResultEntity.getDiscoveryId().getId());
 
 					if (forkDiscrepancyResultEntity != null) {
 						logger.info(" forkDiscrepancyResultEntity.getFidChildOIDNo() ->"
@@ -379,7 +379,7 @@ public class DeviceDiscrepancyService {
 					hostDiscrepancyResultEntity = hostDiscrepancyResultRepository.findDeviceHostDiscrepancy(
 							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(), ipAddress);
 					hostDiscoveryResultEntities = hostDiscoveryResultRepository.findDeviceHostDiscovery(
-							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(), ipAddress);
+							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(), ipAddress,hostDiscrepancyResultEntity.getDiscoveryId().getId());
 					if (hostDiscrepancyResultEntity != null) {
 						logger.info(" hostDiscrepancyResultEntity.getHidOIDNo() ->"
 								+ hostDiscrepancyResultEntity.getHidOIDNo());
@@ -419,7 +419,7 @@ public class DeviceDiscrepancyService {
 						 * If Category = "Host" for this OID, then find the value in "Column name".
 						 * Update the corresponding column of table "Device Info"
 						 */
-						masterOIDEntity = masterOIDRepository.findByOidNo(obj.get("oid").toString());
+						masterOIDEntity = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkType(obj.get("oid").toString(),deviceDiscovertEntity.getdVendor(),deviceDiscovertEntity.getdVNFSupport());
 						if (masterOIDEntity != null && "Host".equals(masterOIDEntity.getOidCategory())) {
 							if ("d_device_family".equals(masterOIDEntity.getOidAttrib())) {
 								deviceDiscovertEntity.setdDeviceFamily(hostDiscoveryResultEntity.getHdrDiscoverValue());

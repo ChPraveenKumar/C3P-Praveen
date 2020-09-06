@@ -109,7 +109,7 @@ public class DeviceDiscrepancyController {
 			responseEntity = new ResponseEntity<JSONObject>(resultJson, HttpStatus.OK);
 		}else {
 			resultJson = new JSONObject();
-			resultJson.put("Error", "Missing mandatory input parameters in the request");
+			resultJson.put("Error","Dicreapncy Not Resolved Successfully");
 			responseEntity = new ResponseEntity<JSONObject>(resultJson, HttpStatus.BAD_REQUEST);
 		}
 		return responseEntity;

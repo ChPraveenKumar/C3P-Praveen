@@ -148,10 +148,10 @@ public class DeviceDiscoveryController implements Observer {
 			logger.info("device_id :"+device_id);
 			logger.info("vendor :"+vendor);
 			logger.info("networktype :"+networktype);
-	        ProcessBuilder pb = new ProcessBuilder()
+	         ProcessBuilder pb = new ProcessBuilder()
 	            .command("python ", filePath, mgmtip, community,
-						discovery_id, device_id, vendor, networktype);        
-	        Process p = pb.start(); 
+	            		discovery_id, device_id==null?"#":device_id, vendor==null?"#":vendor, networktype==null?"#":networktype);        
+			Process p = pb.start(); 
 	        BufferedReader in = new BufferedReader(
 	            new InputStreamReader(p.getInputStream()));
 	        StringBuilder buffer = new StringBuilder();     
