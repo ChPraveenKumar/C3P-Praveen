@@ -10,6 +10,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -840,7 +841,7 @@ public class ExcelFileValidation {
 		List<String> missingManColumns = null;
 		List<String> matchingOptColumns = null;
 		InetAddressValidator validator = InetAddressValidator.getInstance();
-
+		Set<String> csvAllColumns = new HashSet<String>();
 		try (Reader reader = new FileReader(filePath.getFile());
 				CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withHeader())) {
 			Map<String, Integer> header = csvParser.getHeaderMap();
@@ -848,8 +849,12 @@ public class ExcelFileValidation {
 			Map<String, List<String>> dbColumns = getCOBHeaders();
 			List<String> dbManColumns = dbColumns.get("ManColumns");
 			List<String> dbOptColumns = dbColumns.get("OptionalColumns");
-
-			Set<String> csvAllColumns = header.keySet();
+			for (String checkHeaderWithAsterick : header.keySet()) {
+				if (checkHeaderWithAsterick.contains("*"))
+					csvAllColumns.add(checkHeaderWithAsterick.replace("*", ""));
+				else
+					csvAllColumns.add(checkHeaderWithAsterick);
+			}
 			logger.info("csvAllColumns :" + csvAllColumns);
 			logger.info("DB Mandatory :" + dbManColumns);
 			logger.info("DB Optional Column :" + dbOptColumns);
@@ -895,6 +900,8 @@ public class ExcelFileValidation {
 					for (String manColumn : dbManColumns) {
 						if (!"IPV4 Management Address".equals(manColumn)
 								&& !"IPV6 Management Address".equals(manColumn)) {
+							/*appending * for mandatory columns to keep the column name is matching with CSV header*/
+							manColumn = manColumn + "*";
 							if (csvRecord.get(manColumn) == null
 									|| (csvRecord.get(manColumn) != null && csvRecord.get(manColumn).isEmpty())) {
 								missingRow = csvRecord.getRecordNumber();
@@ -918,15 +925,17 @@ public class ExcelFileValidation {
 					 * mandatory columns
 					 */
 					for (String manColumn : dbManColumns) {
+						/*appending * for mandatory columns to keep the column name is matching with CSV header*/
+						manColumn = manColumn + "*";
 						/* Check for missing row data for mandatory columns */
-						if ("IPV4 Management Address".equals(manColumn) && csvRecord.get(manColumn) != null
+						if ("IPV4 Management Address*".equals(manColumn) && csvRecord.get(manColumn) != null
 								&& !csvRecord.get(manColumn).isEmpty()) {
 							isValidIP4Present = validator.isValidInet4Address(csvRecord.get(manColumn));
 							logger.info("isValidIP4Present 0-" + isValidIP4Present);
 							isIP46Present = true;
 							isIP4Present = true;
 						}
-						if ("IPV6 Management Address".equals(manColumn) && csvRecord.get(manColumn) != null
+						if ("IPV6 Management Address*".equals(manColumn) && csvRecord.get(manColumn) != null
 								&& !csvRecord.get(manColumn).isEmpty()) {
 							isValidIP6Present = InetAddresses.isInetAddress(csvRecord.get(manColumn));
 							logger.info("isValidIP6Present 0-" + isValidIP6Present);
@@ -1000,8 +1009,13 @@ public class ExcelFileValidation {
 			Map<String, List<String>> dbColumns = getCOBHeaders();
 			List<String> dbManColumns = dbColumns.get("ManColumns");
 			List<String> dbOptColumns = dbColumns.get("OptionalColumns");
-
-			Set<String> csvAllColumns = header.keySet();
+			Set<String> csvAllColumns = new HashSet<String>();
+			for (String checkHeaderWithAsterick : header.keySet()) {
+				if (checkHeaderWithAsterick.contains("*"))
+					csvAllColumns.add(checkHeaderWithAsterick.replace("*", ""));
+				else
+					csvAllColumns.add(checkHeaderWithAsterick);
+			}
 			logger.info("csvAllColumns :" + csvAllColumns);
 			logger.info("DB Mandatory :" + dbManColumns);
 			logger.info("DB Optional Column :" + dbOptColumns);
@@ -1021,6 +1035,8 @@ public class ExcelFileValidation {
 				Map<String, String> rowData = new HashMap<String, String>();
 				/* Check for missing row data for mandatory columns */
 				for (String manColumn : dbManColumns) {
+					/*appending * for mandatory columns to keep the column name is matching with CSV header*/
+					manColumn = manColumn + "*";
 					rowData.put(manColumn, csvRecord.get(manColumn));
 				}
 
