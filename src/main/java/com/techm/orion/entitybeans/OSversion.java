@@ -1,7 +1,6 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -10,7 +9,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -27,9 +25,9 @@ public class OSversion implements Serializable{
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int id;
-
-	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.ALL })
-	private Set<Models> models;
+	
+	@Column(name = "osversion")
+	private String osversion;
 
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	private OS os;
@@ -76,18 +74,7 @@ public class OSversion implements Serializable{
 
 	public void setValue(boolean value) {
 		this.value = value;
-	}
-
-	@Column(name = "osversion")
-	private String osversion;
-
-	public Set<Models> getModels() {
-		return models;
-	}
-
-	public void setModels(Set<Models> models) {
-		this.models = models;
-	}
+	}	
 
 	public String getOsversion() {
 		return osversion;
