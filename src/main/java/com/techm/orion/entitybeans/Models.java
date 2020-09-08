@@ -1,7 +1,6 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -11,12 +10,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 
@@ -43,10 +39,6 @@ public class Models implements Serializable{
 	@JoinColumn(name = "vendor_id")
 	private Vendors vendor;
 
-	@JsonIgnore
-	@ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "models")
-	private Set<OSversion> osversion;
-
 	@Transient
 	boolean value = false;
 
@@ -55,6 +47,8 @@ public class Models implements Serializable{
 
 	@Transient
 	private boolean multi_model_value;
+	@Transient
+	private String multi_model_text;
 
 	public boolean getMulti_model_value() {
 		return multi_model_value;
@@ -78,10 +72,7 @@ public class Models implements Serializable{
 
 	public void setMulti_model_text(String multi_model_text) {
 		this.multi_model_text = multi_model_text;
-	}
-
-	@Transient
-	private String multi_model_text;
+	}	
 
 	public boolean isValue() {
 		return value;
@@ -90,15 +81,7 @@ public class Models implements Serializable{
 	public void setValue(boolean value) {
 		this.value = value;
 	}
-
-	public Set<OSversion> getOsversion() {
-		return osversion;
-	}
-
-	public void setOsversion(Set<OSversion> osversion) {
-		this.osversion = osversion;
-	}
-
+	
 	public Vendors getVendor() {
 		return vendor;
 	}
