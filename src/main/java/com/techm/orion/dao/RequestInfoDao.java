@@ -6609,39 +6609,59 @@ public class RequestInfoDao {
 
 		certificationTestPojo3 = getCertificationTestFlagData(request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "HealthTest");
-		if (null != certificationTestPojo3.getThroughput() && certificationTestPojo3.getThroughput() != "") {
+		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("2")) {
+			throughputObj.put("testname", "Throughput");
+			throughputObj.put("status", "Failed");
+			throughputObj.put("outcome", "");
+			throughputObj.put("notes", "N/A");
+		}
+		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("1")) {
 			throughputObj.put("testname", "Throughput");
 			throughputObj.put("status", "Passed");
 			throughputObj.put("outcome", certificationTestPojo3.getThroughput());
 			throughputObj.put("notes", "N/A");
-		} else {
+		}
+		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("0")) {
 			throughputObj.put("testname", "Throughput");
-			throughputObj.put("status", "Passed");
+			throughputObj.put("status", "Not Conducted");
 			throughputObj.put("outcome", "-1");
 			throughputObj.put("notes", "N/A");
 		}
-
-		if (null != certificationTestPojo3.getLatency() && certificationTestPojo3.getLatency() != "") {
+	
+		if (certificationTestPojo3.getLatencyTest().equalsIgnoreCase("2")) {
+			latencyObj.put("testname", "Latency");
+			latencyObj.put("status", "Failed");
+			latencyObj.put("outcome", "");
+			latencyObj.put("notes", "N/A");
+		} 
+		if (certificationTestPojo3.getLatencyTest().equalsIgnoreCase("1")) {
 			latencyObj.put("testname", "Latency");
 			latencyObj.put("status", "Passed");
 			latencyObj.put("outcome", certificationTestPojo3.getLatency());
 			latencyObj.put("notes", "N/A");
-		} else {
-
+		}
+		if (certificationTestPojo3.getLatencyTest().equalsIgnoreCase("0")) {
 			latencyObj.put("testname", "Latency");
-			latencyObj.put("status", "Passed");
+			latencyObj.put("status", "Not Conducted");
 			latencyObj.put("outcome", "-1");
 			latencyObj.put("notes", "N/A");
 		}
-
-		if (null != certificationTestPojo3.getFrameLoss() && certificationTestPojo3.getFrameLoss() != "") {
+		
+		if (certificationTestPojo3.getFrameLossTest().equalsIgnoreCase("2")) {
+			FrameLossObj.put("testname", "Frameloss");
+			FrameLossObj.put("status", "Failed");
+			FrameLossObj.put("outcome", "");
+			FrameLossObj.put("notes", "N/A");
+		}
+		if (certificationTestPojo3.getFrameLossTest().equalsIgnoreCase("1")) {
 			FrameLossObj.put("testname", "Frameloss");
 			FrameLossObj.put("status", "Passed");
 			FrameLossObj.put("outcome", certificationTestPojo3.getFrameLoss());
 			FrameLossObj.put("notes", "N/A");
-		} else {
+		}
+		if (certificationTestPojo3.getFrameLossTest().equalsIgnoreCase("0")) {
 			FrameLossObj.put("testname", "Frameloss");
-			FrameLossObj.put("status", "Passed");
+			FrameLossObj.put("status", "Not Conducted");
 			FrameLossObj.put("outcome", "-1");
 			FrameLossObj.put("notes", "N/A");
 		}

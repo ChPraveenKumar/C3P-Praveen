@@ -1,6 +1,7 @@
 package com.techm.orion.serviceImpl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
@@ -43,16 +44,22 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 		logger.info("Inside saveConsolidateCSVData method to save data into stagging table");
 		boolean isSaved= false;
 		String importId = getAlphaNumericString(8);
+		Map<String, String> rowData = new HashMap<String, String>();
 		try {
-			for (Map<String, String> rowData : consCSVData) {
-				logger.info("consCSVData row Data - " + rowData);
-				logger.info("consCSVData row Data keyset - " + rowData.keySet());
+			for (Map<String, String> rowDataMap : consCSVData) {
+				logger.info("consCSVData row Data - " + rowDataMap);
+				logger.info("consCSVData row Data keyset - " + rowDataMap.keySet());
 				int countId = customerStagingImportRepo.countId();
 				customerStagingEntity.setImportId(importId);
 				customerStagingEntity.setStatus("In Progress");
 				customerStagingEntity.setStagingId(countId + 1);
 				customerStagingEntity.setUserName(userName);
-				
+				for (String keyMap : rowDataMap.keySet()) {
+					if(keyMap.contains("*"))
+						rowData.put(keyMap.replace("*", ""), rowDataMap.get(keyMap));
+					else
+						rowData.put(keyMap, rowDataMap.get(keyMap));
+				}
 				for (String key : rowData.keySet()) {
 					logger.info("consCSVData row Data key - " + key);
 					logger.info("consCSVData row Data key values- " + rowData.get(key));
