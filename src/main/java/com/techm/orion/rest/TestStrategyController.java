@@ -1851,8 +1851,8 @@ public class TestStrategyController {
 			});
 			String requestTypevalue = requestType;
 
-			testBundleRepo.findByVendorAndDeviceFamilyAndDeviceModelAndOsAndOsVersionAndNetworkFunctionAndRegion(
-					vendor, deviceFamily, deviceModel, os, osVersion, networkType, region).forEach(bundle -> {
+			testBundleRepo.findByVendorAndDeviceFamilyAndOsAndOsVersionAndNetworkFunctionAndRegion(
+					vendor, deviceFamily,os, osVersion, networkType, region).forEach(bundle -> {
 						JSONArray testDetailsArray = new JSONArray();
 						boolean auditFlag = false;
 						boolean testOnly = false;

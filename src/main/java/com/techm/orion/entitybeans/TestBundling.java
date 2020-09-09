@@ -1,11 +1,11 @@
 
 package com.techm.orion.entitybeans;
 
+import java.sql.Timestamp;
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -45,11 +45,18 @@ public class TestBundling {
 	@Column(name = "region",length =50)
 	private String region;
 	
-	@Column(name = "device_model",length =25)
-	private String deviceModel;
 
-	@ManyToMany(fetch = FetchType.EAGER)
-	@JoinTable(name = "t_tststrategy_m_tstbundling", joinColumns = @JoinColumn(name = "testbundle_id"), inverseJoinColumns = @JoinColumn(name = "testDetails_id"))
+	@Column(name = "created_by")
+	private String createdBy;
+	
+	@Column(name = "creation_date")
+	private Timestamp createdDate;
+	
+	
+	@ManyToMany
+	@JoinTable(name = "t_tststrategy_j_test_bundle", joinColumns = {
+	        @JoinColumn(name = "bundle_id", referencedColumnName = "id") }, inverseJoinColumns = {
+	                @JoinColumn(name = "test_id", referencedColumnName = "id") })
 	Set<TestDetail> testDetails;
 
 	public int getId() {
@@ -124,12 +131,21 @@ public class TestBundling {
 		this.region = region;
 	}
 
-	public String getDeviceModel() {
-		return deviceModel;
+	public String getCreatedBy() {
+		return createdBy;
 	}
 
-	public void setDeviceModel(String deviceModel) {
-		this.deviceModel = deviceModel;
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
 	}
 
+	public Timestamp getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Timestamp createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	
 }

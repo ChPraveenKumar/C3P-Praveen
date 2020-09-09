@@ -8,10 +8,11 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -128,7 +129,10 @@ public class TestDetail implements Serializable
 	private String networkType;
 	
 	@JsonIgnore
-	@ManyToMany(mappedBy = "testDetails", fetch = FetchType.LAZY)
+	@ManyToMany
+	@JoinTable(name = "t_tststrategy_j_test_bundle", joinColumns = {
+	        @JoinColumn(name = "test_id", referencedColumnName = "id") }, inverseJoinColumns = {
+	                @JoinColumn(name = "bundle_id", referencedColumnName = "id") })
 	Set<TestBundling> testbundling;
 
 	public String getRegion() {

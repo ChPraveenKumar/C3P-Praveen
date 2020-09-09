@@ -21,7 +21,7 @@ public interface TestBundlingRepository extends JpaRepository<TestBundling, Long
 	@Query(value = bundleNameList, nativeQuery = true)
 	List<String> findBundleName();
 	
-	List<TestBundling> findByVendorAndDeviceFamilyAndDeviceModelAndOsAndOsVersionAndNetworkFunctionAndRegion(String vendor,
-			String deviceFamily, String deviceModel, String os, String osVersion, String networkType, String region);
+	List<TestBundling> findByVendorAndDeviceFamilyAndOsAndOsVersionAndNetworkFunctionAndRegion(String vendor,
+			String deviceFamily,String os, String osVersion, String networkType, String region);
 
 }

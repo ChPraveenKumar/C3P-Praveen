@@ -222,7 +222,7 @@ public class ConfigurationManagement {
 						} else if ("Audit".equals(requestType)) {
 							auditFlag = category.contains("Network Audit");
 						}
-						if((auditFlag && "Audit".equals(requestType)) || (testOnly && "Test".equals(requestType)) || (!auditFlag && !testOnly && ("config".equals(requestType)))){
+						if((auditFlag && "Audit".equals(requestType)) || (testOnly && "Test".equals(requestType)) || (!auditFlag && !testOnly && ("Config".equals(requestType)))){
 							long isSelected = (long) arrayObj.get("selected");
 							if (isSelected == 1) {
 								toSaveArray.add(arrayObj);
