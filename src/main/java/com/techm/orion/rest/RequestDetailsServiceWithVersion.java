@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -46,22 +48,25 @@ import com.techm.orion.utility.ReportMileStones;
 public class RequestDetailsServiceWithVersion {
 	private static final Logger logger = LogManager.getLogger(RequestDetailsServiceWithVersion.class);
 	@Autowired
-	RequestInfoDetailsDao requestRedao;
+	private RequestInfoDetailsDao requestRedao;
 
 	@Autowired
-	DeviceDiscoveryRepository deviceInforepo;
+	private DeviceDiscoveryRepository deviceInforepo;
 
 	@Autowired
-	CreateConfigRepo configRepo;
+	private CreateConfigRepo configRepo;
 
 	@Autowired
-	AttribCreateConfigRepo attribConfigRepo;
+	private AttribCreateConfigRepo attribConfigRepo;
 
 	@Autowired
-	RequestFeatureTransactionRepository requestFeatureRepo;
-	
+	private RequestFeatureTransactionRepository requestFeatureRepo;
+
 	@Autowired
-	ReportMileStones reportMileStones;
+	private ReportMileStones reportMileStones;
+
+	@Autowired
+	private RequestInfoDao requestInfo;
 
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -69,7 +74,7 @@ public class RequestDetailsServiceWithVersion {
 	public Response search(@RequestBody String searchParameters) {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
-		String key = null, value = null, version = null, requestType =null;
+		String key = null, value = null, version = null, requestType = null;
 		try {
 			Gson gson = new Gson();
 			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
@@ -80,7 +85,7 @@ public class RequestDetailsServiceWithVersion {
 
 			if (value != null && !value.isEmpty()) {
 				try {
-					requestType= value.substring(0, 4);
+					requestType = value.substring(0, 4);
 					MileStones showMilestone = reportMileStones.getMileStones(requestType);
 					detailsList = requestRedao.getRequestWithVersion(key, value, version);
 					for (RequestInfoCreateConfig request : detailsList) {
@@ -191,7 +196,9 @@ public class RequestDetailsServiceWithVersion {
 					if (detailsList.size() > 0) {
 						for (int i = 0; i < reoportflagllist.size(); i++) {
 							if (reoportflagllist.get(i).getAlphanumeric_req_id()
-									.equalsIgnoreCase(detailsList.get(0).getAlphanumericReqId()) && reoportflagllist.get(i).getRequestVersion()==detailsList.get(0).getRequestVersion()) {
+									.equalsIgnoreCase(detailsList.get(0).getAlphanumericReqId())
+									&& reoportflagllist.get(i).getRequestVersion() == detailsList.get(0)
+											.getRequestVersion()) {
 								selected = new ReoprtFlags();
 								selected = reoportflagllist.get(i);
 								reoportflagllistforselectedRecord.add(selected);
@@ -371,7 +378,8 @@ public class RequestDetailsServiceWithVersion {
 					masterAttribute.forEach(attrib -> {
 						JSONObject masterAttribObject = new JSONObject();
 						masterAttribObject.put("name", attrib.getLabel());
-						masterAttribObject.put("value",configRepo.findAttribValuByRequestId(attrib.getId(),requestId,version));
+						masterAttribObject.put("value",
+								configRepo.findAttribValuByRequestId(attrib.getId(), requestId, version));
 						masterAttrib.add(masterAttribObject);
 					});
 
@@ -404,30 +412,29 @@ public class RequestDetailsServiceWithVersion {
 			String requestId = (String) json.get("requestId");
 			Double requestVersion = Double.valueOf(json.get("version").toString());
 			RequestDetails dao = new RequestDetails();
-			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId,requestVersion);
-			// Split test details with comma separator
-			String splitTestAndDiagnosis[] = testAndDiagnosis.toString().split(",");
-			RequestInfoDao requestinfoDao = new RequestInfoDao();
-			for (String testName : splitTestAndDiagnosis) {
-				if (testName.contains("testName")) {
-					JSONObject tests = new JSONObject();
-					if (testName.contains("\"}]")) {
-						testName = StringUtils.substringBetween(testName, "\"testName\":\"", "\"}]");
-					} else {
-						testName = StringUtils.substringBetween(testName, "\"testName\":\"", "\"}");
-					}
-					String combination = StringUtils.substringBefore(testName, "_");
-					String name = StringUtils.substringAfter(testName, "_");
-					name = StringUtils.substringBeforeLast(name, "_");
-					String version = StringUtils.substringAfterLast(testName, "_");
-					tests.put("combination", combination);
-					tests.put("testName", name);
-					tests.put("version", version);
-					int status = requestinfoDao.getTestDetails(requestId,testName,requestVersion);
-					tests.put("status", status);
-					selectedTest.add(tests);
-				}
+			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId, requestVersion);			
+			JSONArray testNameArray = (JSONArray) parser.parse(testAndDiagnosis);
+			logger.info(testNameArray);
+			Set<String> setOfTest = new HashSet<>();
+			for (int i = 0; i < testNameArray.size(); i++) {
+				JSONObject jsonObj = (JSONObject) testNameArray.get(i);
+				setOfTest.add(jsonObj.get("testName").toString());
 			}
+			RequestInfoDao requestinfoDao = new RequestInfoDao();
+			setOfTest.forEach(testName -> {
+				JSONObject tests = new JSONObject();
+				String combination = StringUtils.substringBefore(testName, "_");
+				String name = StringUtils.substringAfter(testName, "_");
+				name = StringUtils.substringBeforeLast(name, "_");
+				String version = StringUtils.substringAfterLast(testName, "_");
+				tests.put("combination", combination);
+				tests.put("testName", name);
+				tests.put("version", version);
+				int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion);
+				tests.put("status", status);
+				selectedTest.add(tests);
+
+			});
 		} catch (Exception e) {
 			logger.error(e);
 		}

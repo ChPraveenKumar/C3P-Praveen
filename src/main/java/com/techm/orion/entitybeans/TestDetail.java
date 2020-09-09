@@ -8,9 +8,11 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -46,40 +48,40 @@ public class TestDetail implements Serializable
 	@Column(name = "testCommand")
 	private String testCommand;
 
-	@Column(name = "testName")
+	@Column(name = "testName",length = 100)
 	private String testName;
 
-	@Column(name = "testCategory")
+	@Column(name = "testCategory",length = 100)
 	private String testCategory;
 
-	@Column(name = "deviceFamily")
+	@Column(name = "deviceFamily",length = 25)
 	private String deviceFamily;
 
-	@Column(name = "vendor")
+	@Column(name = "vendor",length = 50)
 	private String vendor;
 
-	@Column(name = "deviceModel")
+	@Column(name = "deviceModel",length = 25)
 	private String deviceModel;
 
-	@Column(name = "os")
+	@Column(name = "os",length = 10)
 	private String os;
 
-	@Column(name = "osVersion")
+	@Column(name = "osVersion",length = 10)
 	private String osVersion;
 
 	@Column(name = "createdOn")
 	private String createdOn;
 
-	@Column(name = "createdBy")
+	@Column(name = "createdBy",length = 100)
 	private String createdBy;
 
 	@Column(name = "comment")
 	private String comment;
 
-	@Column(name = "region")
+	@Column(name = "region",length = 25)
 	private String region;
 
-	@Column(name = "version")
+	@Column(name = "version",length = 5)
 	private String version;
 
 	@Column(name = "testType")
@@ -124,6 +126,10 @@ public class TestDetail implements Serializable
 
 	@Column(name = "network_type", length = 5)
 	private String networkType;
+	
+	@JsonIgnore
+	@ManyToMany(mappedBy = "testDetails", fetch = FetchType.LAZY)
+	Set<TestBundling> testbundling;
 
 	public String getRegion() {
 		return region;

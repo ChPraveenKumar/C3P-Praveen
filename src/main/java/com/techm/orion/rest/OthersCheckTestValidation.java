@@ -14,9 +14,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
 
@@ -42,12 +40,9 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.TestDetail;
-import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
-import com.techm.orion.service.CSVWriteAndConnectPython;
-import com.techm.orion.service.RegexTestHealthCheck;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TestStrategeyAnalyser;
@@ -81,13 +76,8 @@ public class OthersCheckTestValidation extends Thread {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
-
-		RegexTestHealthCheck regexTestHealthCheck = new RegexTestHealthCheck();
-		CSVWriteAndConnectPython csvWriteAndConnectPython = new CSVWriteAndConnectPython();
-		// FinalReportTestSSH finalReportTestSSH=new FinalReportTestSSH();
-		CreateConfigRequest configRequest = new CreateConfigRequest();
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
-		Map<String, String> hmapResult = new HashMap<String, String>();
+		
 		Boolean value = false;
 
 		JSONParser parser = new JSONParser();
@@ -97,221 +87,14 @@ public class OthersCheckTestValidation extends Thread {
 		String version = json.get("version").toString();
 
 		String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
-
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
 		if (!((type.equals("SLGB") || (type.equals("SLGM"))))) {
 
 			try {
-				configRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
 				requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-				if (configRequest.getManagementIp() != null && !configRequest.getManagementIp().equals("")) {
-					configRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
-					configRequest.setRequestId(RequestId);
-					configRequest.setRequest_version(Double.parseDouble(json.get("version").toString()));
-					String throughput = "";
-					String frameloss = "";
-					String latency = "";
-					OthersCheckTestValidation.loadProperties();
-					String sshPrivateKeyFilePath = OthersCheckTestValidation.TSA_PROPERTIES
-							.getProperty("sshPrivateKeyPath");
-					String host = configRequest.getManagementIp();
-					UserPojo userPojo = new UserPojo();
-					userPojo = requestInfoDao.getRouterCredentials(host);
-					logger.info("Request ID in others test validation" + RequestId);
-					String user = null;
-					String password = null;
-					String port = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("portSSH");
-					ArrayList<String> commandToPush = new ArrayList<String>();
-
-					String privateKeyPath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
-
-					user = userPojo.getUsername();
-					password = userPojo.getPassword();
-					/*if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
-						user = "c3pteam";
-						password = "csr1000v";
-					} else {
-						user = userPojo.getUsername();
-						password = userPojo.getPassword();
-					}*/
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGM")
-							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
-						session = jsch.getSession(user, host, Integer.parseInt(port));
-						Properties config = new Properties();
-						config.put("StrictHostKeyChecking", "no");
-						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
-								+ "Port " + port);
-						session.setConfig(config);
-						session.setPassword(password);
-						session.connect();
-						logger.info("After session.connect others milestone");
-						try {
-							Thread.sleep(10000);
-						} catch (Exception ee) {
-						}
-						try {
-
-							channel = session.openChannel("shell");
-							OutputStream ops = channel.getOutputStream();
-
-							PrintStream ps = new PrintStream(ops, true);
-							logger.info("Channel Connected to machine " + host + " server");
-							channel.connect();
-							InputStream input = channel.getInputStream();
-
-							/*
-							 * Owner: Ruchita Salvi Module: Test Strategey Logic: To find and run and
-							 * analyse custom tests
-							 */
-							// fetch extra health test added
-							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							RequestInfoDao dao = new RequestInfoDao();
-							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-							listOfTests = dao.findTestFromTestStrategyDB(configRequest.getModel(),
-									configRequest.getDeviceType(), configRequest.getOs(), configRequest.getOsVersion(),
-									configRequest.getVendor(), configRequest.getRegion(), "Others");
-							List<TestDetail> selectedTests = dao.findSelectedTests(configRequest.getRequestId(),
-									"Others",version);
-							List<Boolean> results = null;
-							if (selectedTests.size() > 0) {
-								for (int i = 0; i < listOfTests.size(); i++) {
-									for (int j = 0; j < selectedTests.size(); j++) {
-										if (selectedTests.get(j).getTestName()
-												.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
-											finallistOfTests.add(listOfTests.get(j));
-										}
-									}
-								}
-								if (finallistOfTests.size() > 0) {
-									results = new ArrayList<Boolean>();
-									for (int i = 0; i < finallistOfTests.size(); i++) {
-									
-										// conduct and analyse the tests
-										DeviceDiscoveryEntity device = deviceRepo
-												.findByDHostName(requestinfo.getHostname().toUpperCase());
-										if(device.getdConnect().equalsIgnoreCase("NETCONF"))
-										{
-											VNFHelper helper=new VNFHelper();
-											helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
-										}
-										else if(device.getdConnect().equalsIgnoreCase("RESTCONF"))
-										{
-											ODLClient client=new ODLClient();
-											client.performTest(finallistOfTests.get(i),requestinfo, user, password);
-										}
-										else
-										{
-											// conduct and analyse the tests
-											ps.println("terminal length 0");
-											ps.println(finallistOfTests.get(i).getTestCommand());
-											try {
-												Thread.sleep(8000);
-											} catch (Exception ee) {
-											}
-											// printResult(input,
-											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-											Boolean res = analyser.printAndAnalyse(input, channel,
-													requestinfo.getAlphanumericReqId(),
-													Double.toString(requestinfo.getRequestVersion()),
-													finallistOfTests.get(i), "Others Test");
-											results.add(res);
-										}
-									
-								
-									}
-								} else {
-
-								}
-							} else {
-								// No new health test added
-								/*
-								 * Owner: Ruchita Salvi Module: Test Strategey END
-								 */
-								String status = requestInfoDao.getPreviousMileStoneStatus(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()));
-								String switchh = "1";
-
-								requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()), "others_test", "0",
-										status);
-
-							}
-							/*
-							 * Owner: Ruchita Salvi Module: Test Strategey END
-							 */
-							if (selectedTests.size() > 0) {
-								String status = requestInfoDao.getPreviousMileStoneStatus(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()));
-								String switchh = "1";
-
-								requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()), "others_test", "1",
-										status);
-							}
-
-							logger.info("DONE");
-							channel.disconnect();
-							session.disconnect();
-							value = true;
-							if (results != null) {
-								for (int i = 0; i < results.size(); i++) {
-									if (!results.get(i)) {
-										value = false;
-										break;
-									}
-
-								}
-							}
-							if (!channel.isClosed()) {
-								channel.disconnect();
-							}
-							session.disconnect();
-							try {
-								Thread.sleep(15000);
-							} catch (Exception ee) {
-							}
-							logger.info("DONE");
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-						} catch (IOException ex) {
-							logger.info("Error in others check first catch " + ex.getMessage());
-							logger.info("Error trace " + ex.getStackTrace());
-							logger.info("" + ex.getCause());
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-							requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-									Double.toString(configRequest.getRequest_version()), "others_test", "2", "Failure");
-
-							String response = "";
-							String responseDownloadPath = "";
-							try {
-								response = invokeFtl.generateHealthCheckTestResultFailure(configRequest);
-								requestInfoDao.updateHealthCheckTestStatus(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()), 0, 0, 0);
-								requestInfoDao.updateRouterFailureHealthCheck(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()));
-								responseDownloadPath = OthersCheckTestValidation.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath,
-										configRequest.getRequestId() + "V"
-												+ Double.toString(configRequest.getRequest_version()) + "_.txt",
-										response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-
-							}
-						}
-
-						session.disconnect();
-					} else {
-						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-						obj = osHealthChk.healthcheckCommandTest(request, "POST");
-					}
-
-				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					String statusVAlue = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
 
@@ -521,37 +304,7 @@ public class OthersCheckTestValidation extends Thread {
 			}
 			// when reachability fails
 			catch (Exception ex) {
-				if (configRequest.getManagementIp() != null && !configRequest.getManagementIp().equals("")) {
-					logger.info("Error in health check send catch " + ex.getMessage());
-					logger.info("Error trace " + ex.getStackTrace());
-					ex.printStackTrace();
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), "others_test", "2", "Failure");
-
-					String response = "";
-					String responseDownloadPath = "";
-					try {
-						response = invokeFtl.generateHealthCheckTestResultFailure(configRequest);
-						requestInfoDao.updateHealthCheckTestStatus(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()), 0, 0, 0);
-						requestInfoDao.updateRouterFailureHealthCheck(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()));
-						responseDownloadPath = OthersCheckTestValidation.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-						TextReport.writeFile(
-								responseDownloadPath, configRequest.getRequestId() + "V"
-										+ Double.toString(configRequest.getRequest_version()) + "_CustomTests.txt",
-								response);
-						requestInfoDao.releaselockDeviceForRequest(configRequest.getManagementIp(),
-								configRequest.getRequestId());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-
-					}
-
-				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					logger.info("Error in health check send catch " + ex.getMessage());
 					logger.info("Error trace " + ex.getStackTrace());
 					ex.printStackTrace();
@@ -574,7 +327,7 @@ public class OthersCheckTestValidation extends Thread {
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_CustomTests.txt",
 								response);
-						requestInfoDao.releaselockDeviceForRequest(configRequest.getManagementIp(),
+						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 								requestinfo.getAlphanumericReqId());
 					} catch (Exception e) {
 						// TODO Auto-generated catch block

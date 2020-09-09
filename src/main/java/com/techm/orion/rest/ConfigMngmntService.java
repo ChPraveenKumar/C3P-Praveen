@@ -1671,10 +1671,20 @@ public class ConfigMngmntService implements Observer {
 						JSONArray toSaveArray = new JSONArray();
 
 						for (int i = 0; i < dynamicArray.size(); i++) {
+							boolean auditFlag = false;
+							boolean testOnly = false;
 							JSONObject arrayObj = (JSONObject) dynamicArray.get(i);
-							long isSelected = (long) arrayObj.get("selected");
-							if (isSelected == 1) {
-								toSaveArray.add(arrayObj);
+							String category=arrayObj.get("testCategory").toString();
+							if ("Test".equals(requestType)) {
+								testOnly = !category.contains("Network Audit");
+							} else if ("Audit".equals(requestType)) {
+								auditFlag = category.contains("Network Audit");
+							}
+							if((auditFlag && "Audit".equals(requestType)) || (testOnly && "Test".equals(requestType)) || (!auditFlag && !testOnly && ("config".equals(requestType)))){
+								long isSelected = (long) arrayObj.get("selected");
+								if (isSelected == 1) {
+									toSaveArray.add(arrayObj);
+								}	
 							}
 						}
 

@@ -62,7 +62,7 @@ public class ConfigurationManagement {
 	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public JSONObject createConfigurationDcm(@RequestBody String configRequest) {
-		logger.info("createConfigurationDcm - configRequest - "+configRequest);
+		
 		long startTime = System.currentTimeMillis();
 		// DcmConfigService dcmConfigService=new DcmConfigService();
 		JSONObject obj = new JSONObject();
@@ -212,17 +212,25 @@ public class ConfigurationManagement {
 					JSONArray dynamicArray = (JSONArray) certificationTestFlag.get("dynamic");
 					JSONArray toSaveArray = new JSONArray();
 
-					for (int i = 0; i < dynamicArray.size(); i++) {
+					for (int i = 0; i < dynamicArray.size(); i++) {						
+						boolean auditFlag = false;
+						boolean testOnly = false;
 						JSONObject arrayObj = (JSONObject) dynamicArray.get(i);
-						long isSelected = (long) arrayObj.get("selected");
-						if (isSelected == 1) {
-							toSaveArray.add(arrayObj);
+						String category=arrayObj.get("testCategory").toString();
+						if ("Test".equals(requestType)) {
+							testOnly = !category.contains("Network Audit");
+						} else if ("Audit".equals(requestType)) {
+							auditFlag = category.contains("Network Audit");
 						}
+						if((auditFlag && "Audit".equals(requestType)) || (testOnly && "Test".equals(requestType)) || (!auditFlag && !testOnly && ("config".equals(requestType)))){
+							long isSelected = (long) arrayObj.get("selected");
+							if (isSelected == 1) {
+								toSaveArray.add(arrayObj);
+							}	
+						}						
 					}
-
 					String testsSelected = toSaveArray.toString();
 					configReqToSendToC3pCode.setTestsSelected(testsSelected);
-
 				}
 			}
 

@@ -184,22 +184,7 @@ public class InvokeFtl {
 		return res;
 	}
 
-	public String generateDileveryConfigFile(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
 
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "DeliveryCongifurationTemplate.ftl.txt");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	/* Method overloadng for UIRevamp */
 	public String generateDileveryConfigFile(RequestInfoPojo configRequest) throws Exception {
 		String res = null;
 		try {
@@ -491,23 +476,7 @@ public class InvokeFtl {
 		}
 		return res;
 	}
-
-	public String generateNetworkTestResultFileFailure(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", configRequest);
-			res = freemarkerDo(tree, "NetworkTestTemplateFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	/* Method overloading for UIRevamp */
+	
 	public String generateNetworkTestResultFileFailure(RequestInfoPojo configRequest) throws Exception {
 		String res = null;
 		try {
@@ -523,22 +492,6 @@ public class InvokeFtl {
 		return res;
 	}
 
-	public String generateHealthCheckTestResultFailure(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", configRequest);
-			res = freemarkerDo(tree, "HealthCheckTestTemplateFailure2.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	/* Method overloading for UIRevamp */
 	public String generateHealthCheckTestResultFailure(RequestInfoPojo configRequest) throws Exception {
 		String res = null;
 		try {
@@ -554,22 +507,6 @@ public class InvokeFtl {
 		return res;
 	}
 
-	public String generateNetworkAuditTestResultFailure(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("networkAuditTest", configRequest);
-			res = freemarkerDo(tree, "NetworkAuditFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	/* Method overloading for UIRevamp */
 	public String generateNetworkAuditTestResultFailure(RequestInfoPojo configRequest) throws Exception {
 		String res = null;
 		try {

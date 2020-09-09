@@ -44,6 +44,7 @@ import com.techm.orion.pojo.FirmwareUpgradeDetail;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.PredefineTestDetailsRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.TestBundlingRepository;
 import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
 import com.techm.orion.repositories.TestRulesRepository;
@@ -72,6 +73,9 @@ public class TestStrategyController {
 
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+
+	@Autowired
+	private TestBundlingRepository testBundleRepo;
 
 	@GET
 	@RequestMapping(value = "/testfeatureList", method = RequestMethod.GET, produces = "application/json")
@@ -161,7 +165,7 @@ public class TestStrategyController {
 						.findByDeviceFamilyAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
 								deviceType, deviceModel, os, osVersion, vendor, region, version, testName);
 
-				if (null != testDetailsListLatestVersion && testDetailsListLatestVersion.size() >0) {
+				if (null != testDetailsListLatestVersion && testDetailsListLatestVersion.size() > 0) {
 
 					int n = testDetailsListLatestVersion.size();
 
@@ -324,8 +328,7 @@ public class TestStrategyController {
 
 	@POST
 	@RequestMapping(value = "/savetestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response saveBasicConfiguration(@RequestBody String teststrategesaveRqst)
-			 {
+	public Response saveBasicConfiguration(@RequestBody String teststrategesaveRqst) {
 
 		String str = "";
 		JSONParser parser = new JSONParser();
@@ -672,8 +675,7 @@ public class TestStrategyController {
 
 	@POST
 	@RequestMapping(value = "/edittestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response editBasicConfiguration(@RequestBody String teststrategeeditRqst)
-			{
+	public Response editBasicConfiguration(@RequestBody String teststrategeeditRqst) {
 		RequestInfoDao dao = new RequestInfoDao();
 		String str = "";
 		JSONParser parser = new JSONParser();
@@ -994,8 +996,7 @@ public class TestStrategyController {
 
 	@POST
 	@RequestMapping(value = "/networkAuditReport", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response networkAuditReport(@RequestBody String teststrategeeditRqst)
-			{
+	public Response networkAuditReport(@RequestBody String teststrategeeditRqst) {
 
 		JSONParser parser = new JSONParser();
 		try {
@@ -1648,7 +1649,7 @@ public class TestStrategyController {
 
 		key = (String) json.get("key");
 		value = (String) json.get("value");
-		
+
 		List<RequestInfoEntity> mainList = new ArrayList<RequestInfoEntity>();
 
 		if (value != null && !value.isEmpty()) {
@@ -1676,14 +1677,15 @@ public class TestStrategyController {
 	@SuppressWarnings({ "null", "unchecked" })
 	@POST
 	@RequestMapping(value = "/newCertificationtestsfordevice", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response getTestsForDeviceNewUi(@RequestBody String request) {
-
+	public JSONArray getTestsForDeviceNewUi(@RequestBody String request) {
+		JSONArray testDetailsValue = new JSONArray();
 		List<TestDetail> testDetailsList = new ArrayList<TestDetail>();
 		List<TestDetail> testDetailsListLatestVersion = new ArrayList<TestDetail>();
 		List<TestDetail> testDetailsFinal = new ArrayList<TestDetail>();
 		List<TestDetail> testDetailsListAllVersion = new ArrayList<TestDetail>();
 		List<PredefineTestDetailEntity> masterTestDetails = new ArrayList<>();
 		HashSet<String> testNameList = new HashSet<>();
+		Set<String> testCategoryList = new HashSet<>();
 		String response = null;
 
 		String deviceFamily = null, deviceModel = null, vendor = null, os = null, osVersion = null, region = null,
@@ -1730,7 +1732,7 @@ public class TestStrategyController {
 			}
 			String version = null;
 			String testName = null;
-			masterTestDetails = predefineTestDetailsRepository.findAll();
+					
 			testDetailsList = testDetailsRepository
 					.findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(
 							deviceFamily, deviceModel, os, osVersion, vendor, region, networkType);
@@ -1739,17 +1741,20 @@ public class TestStrategyController {
 				switch (requestType) {
 				case "config":
 					testNameList.add(testDetailsList.get(i).getTestName());
+					testCategoryList.add(testDetailsList.get(i).getTestCategory());
 					break;
 				case "test":
 					testCategory = testDetailsList.get(i).getTestCategory();
 					if (!testCategory.equals("Network Audit")) {
 						testNameList.add(testDetailsList.get(i).getTestName());
+						testCategoryList.add(testDetailsList.get(i).getTestCategory());
 					}
 					break;
 				case "audit":
 					testCategory = testDetailsList.get(i).getTestCategory();
 					if (testCategory.equals("Network Audit")) {
 						testNameList.add(testDetailsList.get(i).getTestName());
+						testCategoryList.add(testDetailsList.get(i).getTestCategory());
 					}
 					break;
 
@@ -1809,27 +1814,83 @@ public class TestStrategyController {
 
 							logger.info("");
 						}
-					}
-
+					}	
 					testDetailsFinal.addAll(aList);
 				}
 
 				else {
-					response = "Records not found";
-					return Response.status(200).entity(response).build();
+					JSONObject testDetails= new JSONObject();
+					testDetails.put("msg", "Record not found");
+					testDetailsValue.add(testDetails);
+					return testDetailsValue;
 				}
+				/*predefineTestDetailsRepository.findAll().forEach(predefineTest->{
+					TestDetail testObject = new TestDetail();
+					testObject.setTestName(predefineTest.getTestName());
+					testObject.setTestCategory(predefineTest.getTestCategory());
+					testObject.setVersion(String.valueOf(predefineTest.getVersion()));
+					testObject.setId(predefineTest.getId());
+					testDetailsFinal.add(testObject);
+					testCategoryList.add(predefineTest.getTestCategory());					
+				});*/
 			}
+			testCategoryList.forEach(category -> {
+				JSONArray testDetailsArray = new JSONArray();
+				testDetailsFinal.stream().filter(it -> category.equals(it.getTestCategory())).forEach(testInfo -> {
+					JSONObject testObject = new JSONObject();
+					testObject.put("testName", testInfo.getTestName()+"_"+testInfo.getVersion());
+					testObject.put("testCategory", testInfo.getTestCategory());
+					testObject.put("testId", testInfo.getTestId());
+					testObject.put("isBundle", false);
+					testDetailsArray.add(testObject);
+				});
+				JSONObject testObject2 = new JSONObject();
+				testObject2.put("name", category);
+				testObject2.put("tests", testDetailsArray);
+				testDetailsValue.add(testObject2);
+			});
+			String requestTypevalue = requestType;
+
+			testBundleRepo.findByVendorAndDeviceFamilyAndDeviceModelAndOsAndOsVersionAndNetworkFunctionAndRegion(
+					vendor, deviceFamily, deviceModel, os, osVersion, networkType, region).forEach(bundle -> {
+						JSONArray testDetailsArray = new JSONArray();
+						boolean auditFlag = false;
+						boolean testOnly = false;
+
+						Set<TestDetail> testDetail = bundle.getTestDetails();
+						if ("test".equals(requestTypevalue)) {
+							testOnly = testDetail.stream()
+									.anyMatch(testInfo -> !testInfo.getTestCategory().equals("Network Audit"));
+						} else if ("audit".equals(requestTypevalue)) {
+							auditFlag = testDetail.stream()
+									.anyMatch(testInfo -> testInfo.getTestCategory().equals("Network Audit"));
+						}
+						if((auditFlag && "audit".equals(requestTypevalue)) || (testOnly && "test".equals(requestTypevalue)) || (!auditFlag && !testOnly && ("config".equals(requestTypevalue)))){
+						for (TestDetail testInfo : testDetail) {								
+							JSONObject testObject = new JSONObject();
+							testObject.put("testCategory", testInfo.getTestCategory());			
+							testObject.put("testName", testInfo.getTestName()+"_"+testInfo.getVersion());
+							testObject.put("testId", testInfo.getTestId());
+							testObject.put("isBundle", true);
+							testDetailsArray.add(testObject);
+						}
+						JSONObject testObject2 = new JSONObject();
+						testObject2.put("name", bundle.getTestBundle());
+						testObject2.put("tests", testDetailsArray);
+						testDetailsValue.add(testObject2);
+						}
+					});					
+
+			logger.info(testDetailsValue);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			response = "Unable read GUI input";
-			return Response.status(200).entity(response).build();
-		}
-		JSONObject testDetails = new JSONObject();
-		testDetails.put("default", masterTestDetails);
-		testDetails.put("dynamic", testDetailsFinal);
-
-		return Response.status(200).entity(testDetails).build();
+			JSONObject testDetails= new JSONObject();
+			testDetails.put("msg", "Unable read GUI input");
+			testDetailsValue.add(testDetails);
+			return testDetailsValue;
+		}		
+		return testDetailsValue;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -1915,7 +1976,7 @@ public class TestStrategyController {
 
 		JSONObject json = (JSONObject) parser.parse(request);
 
-		vendorName = (String) json.get("vendor");		
+		vendorName = (String) json.get("vendor");
 
 		mainList = deviceDiscoveryRepository.findAllByDVendor(vendorName);
 
@@ -1939,7 +2000,7 @@ public class TestStrategyController {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-	
+
 	@SuppressWarnings({ "null", "unchecked", "unused" })
 	@POST
 	@RequestMapping(value = "/testListForBatch", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -1954,7 +2015,8 @@ public class TestStrategyController {
 		HashSet<String> testNameList = new HashSet<>();
 		String response = null;
 
-		String deviceModel = null, vendor = null, deviceFamily = null, version = null, region = null, testName = null, networkType = null, requestType = null;
+		String deviceModel = null, vendor = null, deviceFamily = null, version = null, region = null, testName = null,
+				networkType = null, requestType = null;
 
 		List<String> featuresFromUI = new ArrayList<String>();
 		HashMap<String, String> uiInput = new HashMap<>();
@@ -1990,19 +2052,13 @@ public class TestStrategyController {
 		}
 
 		masterTestDetails = predefineTestDetailsRepository.findAll();
-		
-		if (deviceModel.equals("")) {
-	
-			testDetailsList = testDetailsRepository.findBySelectionWithoutModel(region, vendor,
-					networkType);
-		}
-		else
-		{
-			testDetailsList = testDetailsRepository.findBySelection(region, vendor,
-					networkType, deviceModel);
-		}
 
-	
+		if (deviceModel.equals("")) {
+
+			testDetailsList = testDetailsRepository.findBySelectionWithoutModel(region, vendor, networkType);
+		} else {
+			testDetailsList = testDetailsRepository.findBySelection(region, vendor, networkType, deviceModel);
+		}
 
 		String testCategory = null;
 		for (int i = 0; i < testDetailsList.size(); i++) {
@@ -2038,18 +2094,16 @@ public class TestStrategyController {
 
 			for (int i = 0; i < testDetailsListAllVersion.size(); i++) {
 
-				if (testName.equals(testDetailsListAllVersion.get(i)
-						.getTestName())) {
+				if (testName.equals(testDetailsListAllVersion.get(i).getTestName())) {
 					version = testDetailsListAllVersion.get(i).getVersion();
 				}
 			}
 
 			testDetailsListLatestVersion = testDetailsRepository
 					.findByRegionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndNetworkTypeAndTestNameIgnoreCaseContainingAndVersion(
-							region, vendor, networkType, testName,version);
+							region, vendor, networkType, testName, version);
 
-			if (null != testDetailsListLatestVersion
-					|| !testDetailsListLatestVersion.isEmpty()) {
+			if (null != testDetailsListLatestVersion || !testDetailsListLatestVersion.isEmpty()) {
 
 				int n = testDetailsListLatestVersion.size();
 
@@ -2063,17 +2117,15 @@ public class TestStrategyController {
 
 				if (featuresFromUI != null && featuresFromUI.size() > 0) {
 					for (int i = 0; i < aList.size(); i++) {
-						List<TestFeatureList> dbFeatures = testFeatureListRepository
-								.findByTestDetail(aList.get(i));
+						List<TestFeatureList> dbFeatures = testFeatureListRepository.findByTestDetail(aList.get(i));
 
 						for (int j = 0; j < dbFeatures.size(); j++) {
-							if (featuresFromUI.contains(dbFeatures.get(j)
-									.getTestFeature())) {
+							if (featuresFromUI.contains(dbFeatures.get(j).getTestFeature())) {
 								aList.get(i).setSelected(true);
 								aList.get(i).setDisabled(false);
 							}
 						}
-						
+
 					}
 				} else {
 					for (int i = 0; i < aList.size(); i++) {
@@ -2098,7 +2150,5 @@ public class TestStrategyController {
 
 		return Response.status(200).entity(testDetails).build();
 	}
-
-
 
 }

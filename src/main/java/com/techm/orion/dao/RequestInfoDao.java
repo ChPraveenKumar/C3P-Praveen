@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -76,6 +77,7 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.service.CertificationTestResultService;
 import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.webService.GetAllDetailsService;
 
 @Controller
@@ -4913,7 +4915,7 @@ public class RequestInfoDao {
 		String queryTstDetails = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_family = ? and os=? and os_version=? and vendor=? and region=? and test_category=?";
 		String queryTstRules = "select * from t_tststrategy_m_tstrules where test_name=?";
 		String queryTstDetailsTestName = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_family = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=?";
-		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_family = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=? and version=?";
+		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_family = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=?";
 
 		ResultSet rs = null, rs1 = null, rs2 = null, rs3 = null;
 		String maxVersion = null;
@@ -4962,7 +4964,7 @@ public class RequestInfoDao {
 									tstDetailsTestNameVPs.setString(6, region);
 									tstDetailsTestNameVPs.setString(7, testCategory);
 									tstDetailsTestNameVPs.setString(8, testName);
-									tstDetailsTestNameVPs.setString(9, maxVersion);
+//									tstDetailsTestNameVPs.setString(9, maxVersion);
 		
 									rs3 = tstDetailsTestNameVPs.executeQuery();
 									if (rs3 != null) {
@@ -5388,13 +5390,14 @@ public class RequestInfoDao {
 	 */
 	public List<TestDetail> findSelectedTests(String requestID, String testCategory,String version) {
 		List<TestDetail> resultList = new ArrayList<TestDetail>();
-		String query = "select TestsSelected from  t_tststrategy_m_config_transaction where RequestId = ?";
+		String query = "select TestsSelected from  t_tststrategy_m_config_transaction where RequestId = ? and request_version =?";
 		ResultSet rs = null;
 		String res = null;
 		
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
+			preparedStmt.setString(2, version);
 			rs = preparedStmt.executeQuery();
 			if (rs != null) {
 				while (rs.next()) {
@@ -5416,10 +5419,11 @@ public class RequestInfoDao {
 			logger.error("SQL Exception in findSelectedTests method "+exe.getMessage());
 		}finally {
 			DBUtil.close(rs);
-		}
-		return resultList;
+		}		
+		resultList=resultList.stream().filter(UtilityMethods.distinctByKey(p -> p.getTestName())).collect(Collectors.toList());		
+			return resultList;
 	}	
-
+	
 	public String getPreviousMileStoneStatus(String requestID, String version) {
 		String status = null;
 		// logic to get previous status from reqestinfoso
