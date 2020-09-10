@@ -2,6 +2,8 @@ package com.techm.orion.rest;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +24,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,15 +39,21 @@ import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.PredefineTestDetailEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
+
+import com.techm.orion.entitybeans.TestBundling;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestFeatureList;
 import com.techm.orion.entitybeans.TestRules;
 import com.techm.orion.entitybeans.TestStrategeyVersioningJsonModel;
+import com.techm.orion.models.TemplateVersioningJSONModel;
 import com.techm.orion.pojo.BatchPojo;
 import com.techm.orion.pojo.FirmwareUpgradeDetail;
+import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.pojo.TestStrategyPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.PredefineTestDetailsRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+
 import com.techm.orion.repositories.TestBundlingRepository;
 import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
@@ -67,6 +77,10 @@ public class TestStrategyController {
 
 	@Autowired
 	private PredefineTestDetailsRepository predefineTestDetailsRepository;
+
+	/*
+	 * @Autowired TestBundleJoinRepo testBundleJoinRepo;
+	 */
 
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
@@ -220,7 +234,12 @@ public class TestStrategyController {
 	@SuppressWarnings("unused")
 	@GET
 	@RequestMapping(value = "/getTestDetails", method = RequestMethod.GET, produces = "application/json")
-	public Response getSeriess(@RequestParam String testid, String version) {
+	public ResponseEntity getSeriess(@RequestParam String testid, String version) {
+
+		int testDetailsId = 0;
+        List<Integer> findBundleIds = new ArrayList();
+        List<String> bundleNameList = new ArrayList();
+		String testBundling = null;
 
 		Set<TestDetail> settestDetails = new HashSet<TestDetail>();
 
@@ -237,7 +256,7 @@ public class TestStrategyController {
 		List<TestRules> testruleslistsectionfinal = new ArrayList<TestRules>();
 		List<TestRules> testruleslistsnippetfinal = new ArrayList<TestRules>();
 		List<TestRules> testruleslistkeywordfinal = new ArrayList<TestRules>();
-
+		RequestInfoDao dao = new RequestInfoDao();
 		TestDetail detail = null;
 		boolean ischeck = false;
 		settestDetails = testDetailsRepository.findByTestIdAndVersion(testid, version);
@@ -300,6 +319,16 @@ public class TestStrategyController {
 				}
 			}
 
+			testDetailsId = testdetaillist.get(0).getId();
+
+			findBundleIds=dao.findBundleId(testDetailsId);
+
+			for(int i=0;i<findBundleIds.size();i++)
+			{
+			testBundling = testBundleRepo.findByBundleName(findBundleIds.get(i).intValue());
+			bundleNameList.add(testBundling);
+			}
+			detail.setBundleName(bundleNameList);
 			testfeaturelist = testFeatureListRepository.findByTestDetail(testdetaillist.get(0));
 			detail.setListFeatures(testfeaturelist);
 			detail.setText_attributes(testruleslisttextfinal);
@@ -312,9 +341,10 @@ public class TestStrategyController {
 
 		}
 		if (ischeck) {
-			return Response.status(200).entity(detail).build();
+			return new ResponseEntity(detail, HttpStatus.OK);
 		} else {
-			return Response.status(200).entity("Unable to fetch data for the test.").build();
+			
+			return new ResponseEntity("Unable to fetch data for the test.", HttpStatus.OK);
 
 		}
 
@@ -331,6 +361,9 @@ public class TestStrategyController {
 	public Response saveBasicConfiguration(@RequestBody String teststrategesaveRqst) {
 
 		String str = "";
+
+		int bundleId = 0;
+
 		JSONParser parser = new JSONParser();
 		try {
 			JSONObject json = (JSONObject) parser.parse(teststrategesaveRqst);
@@ -403,6 +436,7 @@ public class TestStrategyController {
 			testDetail.setTestfeaturelist(setFeatureList);
 
 			List<TestRules> rulelst = new ArrayList<TestRules>();
+			List<TestBundling> bundleList = new ArrayList<TestBundling>();
 
 			if (json.containsKey("text_attributes")) {
 
@@ -611,10 +645,31 @@ public class TestStrategyController {
 
 			}
 
+			if (json.containsKey("bundle_attributes")) {
+
+				JSONArray attribarray = (JSONArray) json.get("bundle_attributes");
+				for (int i = 0; i < attribarray.size(); i++) {
+					TestBundling bundleDetail = new TestBundling();
+
+					JSONObject attribobj = (JSONObject) attribarray.get(i);
+
+					if (attribobj.containsKey("id")) {
+
+						bundleId = Integer.parseInt(attribobj.get("id").toString());
+						bundleDetail.setId(bundleId);
+					}
+
+					bundleList.add(bundleDetail);
+				}
+
+			}
+
 			Set<TestRules> setrules = new HashSet<TestRules>(rulelst);
+			Set<TestBundling> hash_Set = new HashSet<TestBundling>(bundleList);
 			List<TestDetail> savetest1 = new ArrayList<TestDetail>();
 			List<String> testNameCheck = new ArrayList<>();
 			testDetail.setTestrules(setrules);
+			testDetail.setTestbundling(hash_Set);
 			try {
 				savetest1 = testDetailsRepository.findAll();
 
@@ -625,7 +680,8 @@ public class TestStrategyController {
 					}
 				}
 				if (!(testNameCheck.contains(testDetail.getTestName()))) {
-					testDetailsRepository.save(testDetail);
+					TestDetail save = testDetailsRepository.save(testDetail);
+
 					str = "Test saved successfully";
 				} else {
 					str = "Test is Duplicate";
@@ -1013,253 +1069,71 @@ public class TestStrategyController {
 		return null;
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/getTestList", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
-	public Response getTestList() {
+	public ResponseEntity getTestList() {
 
 		// Create first level
 		RequestInfoDao dao = new RequestInfoDao();
-		List<TestDetail> mainList = new ArrayList<TestDetail>();
-		mainList = dao.getAllTests();
-		int testNameSize = 0, testNameSize1 = 0;
+		List<TestStrategyPojo> mainList = new ArrayList<TestStrategyPojo>();
+		mainList = dao.getAllTestsForTestStrategy();
+
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
+		List<TestStrategeyVersioningJsonModel> versioningModel = new ArrayList<TestStrategeyVersioningJsonModel>();
+		TestStrategyPojo objToAdd = null;
 
-		List<TestStrategeyVersioningJsonModel> modelList = new ArrayList<TestStrategeyVersioningJsonModel>();
+		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
 
 		for (int i = 0; i < mainList.size(); i++) {
-			if ((modelList.size() == 0)) {
-				model = new TestStrategeyVersioningJsonModel();
-				String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
-
-				model.setTestName(testNameToSetArr[0]);
-				model.setVersion(mainList.get(i).getVersion());
-				model.setFullTestName(mainList.get(i).getTestName());
-				model.setTestId(mainList.get(i).getTestId());
-				model.setVendor((mainList.get(i).getVendor()));
-				model.setDeviceFamily(mainList.get(i).getDeviceFamily());
-				model.setDeviceModel(mainList.get(i).getDeviceModel());
-				model.setOs(mainList.get(i).getOs());
-				model.setOsVersion(mainList.get(i).getOsVersion());
-				model.setRegion(mainList.get(i).getRegion());
-				model.setCreatedOn(mainList.get(i).getCreatedOn());
-				model.setCreatedBy(mainList.get(i).getCreatedBy());
-				model.setComment(mainList.get(i).getComment());
-				model.setNetworkType(mainList.get(i).getNetworkType());
-
-				TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
-				List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
-
-				testNameSize = testNameToSetArr.length;
-
-				if (testNameSize == 2) {
-					child.setTestName(testNameToSetArr[1]);
-				} else {
-					child.setTestName(testNameToSetArr[2]);
-				}
-				child.setFullTestName(mainList.get(i).getTestName());
-				child.setVersion(mainList.get(i).getVersion());
-				child.setTestId(mainList.get(i).getTestId());
-				child.setVendor((mainList.get(i).getVendor()));
-				child.setDeviceFamily(mainList.get(i).getDeviceFamily());
-				child.setDeviceModel(mainList.get(i).getDeviceModel());
-				child.setOs(mainList.get(i).getOs());
-				child.setOsVersion(mainList.get(i).getOsVersion());
-				child.setRegion(mainList.get(i).getRegion());
-				child.setCreatedOn(mainList.get(i).getCreatedOn());
-				child.setCreatedBy(mainList.get(i).getCreatedBy());
-				child.setComment(mainList.get(i).getComment());
-				child.setNetworkType(mainList.get(i).getNetworkType());
-
-				childList.add(child);
-				model.setChildList(childList);
-				modelList.add(model);
-			} else {
-
-				boolean flag = false;
+			boolean objectPrsent = false;
+			if (modelList.size() > 0) {
 				for (int j = 0; j < modelList.size(); j++) {
-					String[] arrOfStrMain = mainList.get(i).getTestName().split("_");
-					// String[] arrOfStrModel =
-					// modelList.get(j).getTest_name().split("_");
-
-					if (arrOfStrMain[0].equalsIgnoreCase(modelList.get(j).getTestName())) {
-						flag = true;
-						List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
-						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
-
-						testNameSize1 = arrOfStrMain.length;
-
-						if (testNameSize1 == 2) {
-							child.setTestName(arrOfStrMain[1]);
-						} else {
-							child.setTestName(arrOfStrMain[2]);
-						}
-						child.setVersion(mainList.get(i).getVersion());
-						child.setFullTestName(mainList.get(i).getTestName());
-						child.setVersion(mainList.get(i).getVersion());
-						child.setTestId(mainList.get(i).getTestId());
-						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
-						child.setDeviceModel(mainList.get(i).getDeviceModel());
-						child.setOs(mainList.get(i).getOs());
-						child.setOsVersion(mainList.get(i).getOsVersion());
-						child.setRegion(mainList.get(i).getRegion());
-						child.setCreatedOn(mainList.get(i).getCreatedOn());
-						child.setCreatedBy(mainList.get(i).getCreatedBy());
-						child.setComment(mainList.get(i).getComment());
-						child.setNetworkType(mainList.get(i).getNetworkType());
-
-						childList = modelList.get(j).getChildList();
-						if (childList.size() == 0) {
-							childList.add(child);
-						} else {
-							boolean found = false;
-
-							for (int k = 0; k < childList.size(); k++) {
-								if (childList.get(k).getTestName().equalsIgnoreCase(arrOfStrMain[testNameSize1 - 1])) {
-									found = true;
-								}
-							}
-
-							if (!found) {
-								childList.add(child);
-							}
-						}
-
-						modelList.get(j).setChildList(childList);
-
-					}
-				}
-				if (flag == false) {
-					model = new TestStrategeyVersioningJsonModel();
-					String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
-
-					model.setTestName(testNameToSetArr[0]);
-					model.setVersion(mainList.get(i).getVersion());
-					model.setFullTestName(mainList.get(i).getTestName());
-					model.setTestId(mainList.get(i).getTestId());
-					model.setVendor((mainList.get(i).getVendor()));
-					model.setDeviceFamily(mainList.get(i).getDeviceFamily());
-					model.setDeviceModel(mainList.get(i).getDeviceModel());
-					model.setOs(mainList.get(i).getOs());
-					model.setOsVersion(mainList.get(i).getOsVersion());
-					model.setRegion(mainList.get(i).getRegion());
-					model.setCreatedOn(mainList.get(i).getCreatedOn());
-					model.setCreatedBy(mainList.get(i).getCreatedBy());
-					model.setComment(mainList.get(i).getComment());
-					model.setNetworkType(mainList.get(i).getNetworkType());
-					TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
-					List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
-
-					testNameSize = testNameToSetArr.length;
-
-					if (testNameSize == 2) {
-						child.setTestName(testNameToSetArr[1]);
-					} else {
-						child.setTestName(testNameToSetArr[2]);
-					}
-					child.setFullTestName(mainList.get(i).getTestName());
-					child.setVersion(mainList.get(i).getVersion());
-					child.setTestId(mainList.get(i).getTestId());
-					child.setVendor((mainList.get(i).getVendor()));
-					child.setDeviceFamily(mainList.get(i).getDeviceFamily());
-					child.setDeviceModel(mainList.get(i).getDeviceModel());
-					child.setOs(mainList.get(i).getOs());
-					child.setOsVersion(mainList.get(i).getOsVersion());
-					child.setRegion(mainList.get(i).getRegion());
-					child.setCreatedOn(mainList.get(i).getCreatedOn());
-					child.setCreatedBy(mainList.get(i).getCreatedBy());
-					child.setComment(mainList.get(i).getComment());
-					child.setNetworkType(mainList.get(i).getNetworkType());
-
-					childList.add(child);
-					model.setChildList(childList);
-					modelList.add(model);
-				}
-
-			}
-
-		}
-
-		// /////////Loop end for two level
-
-		// //This loop will iterate over all the children
-		for (int i = 0; i < mainList.size(); i++) {
-
-			String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
-			String testNameMain = testNameToSetArr[0] + testNameToSetArr[2];
-			String testNameToSet = testNameToSetArr[1] + "_" + testNameToSetArr[2];
-
-			// mainList1 =dao.findByTestName(testNameUsed);
-
-			for (int j = 0; j < modelList.size(); j++) {
-				List<TestStrategeyVersioningJsonModel> childListToIterate = new ArrayList<TestStrategeyVersioningJsonModel>();
-				childListToIterate = modelList.get(j).getChildList();
-				String[] testNameToSetArr1 = modelList.get(j).getFullTestName().split("_");
-				String testNameChild = testNameToSetArr1[0] + testNameToSetArr1[2];
-
-				for (int k = 0; k < childListToIterate.size(); k++) {
-					if (mainList.get(i).getTestName().equalsIgnoreCase(childListToIterate.get(k).getFullTestName())) {
-						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
-						child.setTestName(mainList.get(i).getVersion());
-						child.setTestName(testNameToSet);
-						child.setFullTestName(mainList.get(i).getTestName());
-						child.setVersion(mainList.get(i).getVersion());
-						child.setTestId(mainList.get(i).getTestId());
-						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
-						child.setDeviceModel(mainList.get(i).getDeviceModel());
-						child.setOs(mainList.get(i).getOs());
-						child.setOsVersion(mainList.get(i).getOsVersion());
-						child.setRegion(mainList.get(i).getRegion());
-						child.setCreatedOn(mainList.get(i).getCreatedOn());
-						child.setCreatedBy(mainList.get(i).getCreatedBy());
-						child.setComment(mainList.get(i).getComment());
-						child.setNetworkType(mainList.get(i).getNetworkType());
-
-						Boolean flag = mainList.get(i).isEnabled();
-						child.setEnabled(flag);
-
-						List<TestStrategeyVersioningJsonModel> childList = childListToIterate.get(k).getChildList();
-						childList.add(child);
+					if (modelList.get(j).getTestName().equalsIgnoreCase(mainList.get(i).getTestName())) {
+						objectPrsent = true;
 						break;
-
-					} else if (testNameMain.equals(testNameChild)) {
-
-						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
-						child.setTestName(mainList.get(i).getVersion());
-						child.setTestName(testNameToSet);
-						child.setFullTestName(mainList.get(i).getTestName());
-						child.setVersion(mainList.get(i).getVersion());
-						child.setTestId(mainList.get(i).getTestId());
-						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
-						child.setDeviceModel(mainList.get(i).getDeviceModel());
-						child.setOs(mainList.get(i).getOs());
-						child.setOsVersion(mainList.get(i).getOsVersion());
-						child.setRegion(mainList.get(i).getRegion());
-						child.setCreatedOn(mainList.get(i).getCreatedOn());
-						child.setCreatedBy(mainList.get(i).getCreatedBy());
-						child.setComment(mainList.get(i).getComment());
-						child.setNetworkType(mainList.get(i).getNetworkType());
-
-						Boolean flag = mainList.get(i).isEnabled();
-						child.setEnabled(flag);
-
-						List<TestStrategeyVersioningJsonModel> childList = childListToIterate.get(k).getChildList();
-						childList.add(child);
-
 					}
-
 				}
+			}
+			if (objectPrsent == false) {
+				model = new TestStrategeyVersioningJsonModel();
+				objToAdd = new TestStrategyPojo();
+				objToAdd = mainList.get(i);
+
+				model.setTestId(objToAdd.getTestId());
+				model.setTestName(objToAdd.getTestName());
+				model.setName(objToAdd.getTestName().substring(0, 14));
+				model.setFullTestName(objToAdd.getTestName().substring(15));
+				model.setVendor(objToAdd.getVendor());
+				model.setRegion(objToAdd.getRegion());
+				model.setDeviceModel(objToAdd.getDeviceModel());
+				model.setTest_category(objToAdd.getTest_category());
+				model.setDevice_family(objToAdd.getDeviceFamily());
+				model.setOs(objToAdd.getOs());
+				model.setOsVersion(objToAdd.getOsVersion());
+				model.setCreatedBy(objToAdd.getCreatedBy());
+				model.setCreatedOn(objToAdd.getCreatedOn());
+
+				model.setCreatedBy(objToAdd.getCreatedBy());
+
+				modelList = new ArrayList<TestStrategyPojo>();
+				for (int k = 0; k < mainList.size(); k++) {
+					if (mainList.get(k).getTestName().equalsIgnoreCase(model.getTestName())) {
+						modelList.add(mainList.get(k));
+					}
+				}
+				Collections.reverse(modelList);
+
+				modelList.get(0).setEnabled(true);
+				model.setChildList(modelList);
+				versioningModel.add(model);
+
 			}
 
 		}
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(modelList).build();
+
+		return new ResponseEntity(versioningModel, HttpStatus.OK);
 
 	}
 
@@ -1351,289 +1225,103 @@ public class TestStrategyController {
 
 	}
 
+	@SuppressWarnings("rawtypes")
 	@POST
 	@RequestMapping(value = "/getSearchTestList", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response getSearchTestList(@RequestBody String request) throws ParseException {
+	public ResponseEntity getSearchTestList(@RequestBody String request) throws ParseException {
 
 		String key = "", value = "";
 
 		JSONParser parser = new JSONParser();
+
+		RequestInfoDao dao = new RequestInfoDao();
+		List<TestStrategyPojo> mainList = new ArrayList<TestStrategyPojo>();
+
+		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
+		List<TestStrategeyVersioningJsonModel> versioningModel = new ArrayList<TestStrategeyVersioningJsonModel>();
+		TestStrategyPojo objToAdd = null;
+
+		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
 
 		JSONObject json = (JSONObject) parser.parse(request);
 
 		key = (String) json.get("key");
 		value = (String) json.get("value");
 
-		RequestInfoDao dao = new RequestInfoDao();
-
-		List<TestDetail> mainList = new ArrayList<TestDetail>();
-
 		if (value != null && !value.isEmpty()) {
-			/*
-			 * Search request based on Region, Vendor, Status, Model, Import Id and
-			 * Management IP
-			 */
+
 			if (key.equalsIgnoreCase("Device Family")) {
-				mainList = testDetailsRepository.findByDeviceFamily(value);
+				mainList = dao.findByForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("Vendor")) {
-				mainList = testDetailsRepository.findByVendor(value);
+				mainList = dao.findByForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("Model")) {
-				mainList = testDetailsRepository.findByDeviceModel(value);
+				mainList = dao.findByForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("OS")) {
-				mainList = testDetailsRepository.findByOs(value);
+				mainList = dao.findByForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("Test Name")) {
-				mainList = dao.findByTestNameForSearch(value);
+				mainList = dao.findByForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("OS Version")) {
-				mainList = testDetailsRepository.findByOsVersion(value);
+				mainList = dao.findByForSearch(key, value);
+
+			} else if (key.equalsIgnoreCase("Test Category")) {
+				mainList = dao.findByForSearch(key, value);
 
 			}
 
 		}
 
-		int testNameSize = 0, testNameSize1 = 0;
-		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
-
-		List<TestStrategeyVersioningJsonModel> modelList = new ArrayList<TestStrategeyVersioningJsonModel>();
-
 		for (int i = 0; i < mainList.size(); i++) {
-			if ((modelList.size() == 0)) {
-				model = new TestStrategeyVersioningJsonModel();
-				String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
-
-				model.setTestName(testNameToSetArr[0]);
-				model.setVersion(mainList.get(i).getVersion());
-				model.setFullTestName(mainList.get(i).getTestName());
-				model.setTestId(mainList.get(i).getTestId());
-				model.setVendor((mainList.get(i).getVendor()));
-				model.setDeviceFamily(mainList.get(i).getDeviceFamily());
-				model.setDeviceModel(mainList.get(i).getDeviceModel());
-				model.setOs(mainList.get(i).getOs());
-				model.setOsVersion(mainList.get(i).getOsVersion());
-				model.setRegion(mainList.get(i).getRegion());
-				model.setCreatedOn(mainList.get(i).getCreatedOn());
-				model.setCreatedBy(mainList.get(i).getCreatedBy());
-				model.setComment(mainList.get(i).getComment());
-				model.setNetworkType(mainList.get(i).getNetworkType());
-
-				TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
-				List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
-
-				testNameSize = testNameToSetArr.length;
-
-				if (testNameSize == 2) {
-					child.setTestName(testNameToSetArr[1]);
-				} else {
-					child.setTestName(testNameToSetArr[2]);
-				}
-				child.setFullTestName(mainList.get(i).getTestName());
-				child.setVersion(mainList.get(i).getVersion());
-				child.setTestId(mainList.get(i).getTestId());
-				child.setVendor((mainList.get(i).getVendor()));
-				child.setDeviceFamily(mainList.get(i).getDeviceFamily());
-				child.setDeviceModel(mainList.get(i).getDeviceModel());
-				child.setOs(mainList.get(i).getOs());
-				child.setOsVersion(mainList.get(i).getOsVersion());
-				child.setRegion(mainList.get(i).getRegion());
-				child.setCreatedOn(mainList.get(i).getCreatedOn());
-				child.setCreatedBy(mainList.get(i).getCreatedBy());
-				child.setComment(mainList.get(i).getComment());
-				child.setNetworkType(mainList.get(i).getNetworkType());
-
-				childList.add(child);
-				model.setChildList(childList);
-				modelList.add(model);
-			} else {
-
-				boolean flag = false;
+			boolean objectPrsent = false;
+			if (modelList.size() > 0) {
 				for (int j = 0; j < modelList.size(); j++) {
-					String[] arrOfStrMain = mainList.get(i).getTestName().split("_");
-					// String[] arrOfStrModel =
-					// modelList.get(j).getTest_name().split("_");
-
-					if (arrOfStrMain[0].equalsIgnoreCase(modelList.get(j).getTestName())) {
-						flag = true;
-						List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
-						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
-
-						testNameSize1 = arrOfStrMain.length;
-
-						if (testNameSize1 == 2) {
-							child.setTestName(arrOfStrMain[1]);
-						} else {
-							child.setTestName(arrOfStrMain[2]);
-						}
-						child.setVersion(mainList.get(i).getVersion());
-						child.setFullTestName(mainList.get(i).getTestName());
-						child.setVersion(mainList.get(i).getVersion());
-						child.setTestId(mainList.get(i).getTestId());
-						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
-						child.setDeviceModel(mainList.get(i).getDeviceModel());
-						child.setOs(mainList.get(i).getOs());
-						child.setOsVersion(mainList.get(i).getOsVersion());
-						child.setRegion(mainList.get(i).getRegion());
-						child.setCreatedOn(mainList.get(i).getCreatedOn());
-						child.setCreatedBy(mainList.get(i).getCreatedBy());
-						child.setComment(mainList.get(i).getComment());
-						child.setNetworkType(mainList.get(i).getNetworkType());
-
-						childList = modelList.get(j).getChildList();
-						if (childList.size() == 0) {
-							childList.add(child);
-						} else {
-							boolean found = false;
-
-							for (int k = 0; k < childList.size(); k++) {
-								if (childList.get(k).getTestName().equalsIgnoreCase(arrOfStrMain[testNameSize1 - 1])) {
-									found = true;
-								}
-							}
-
-							if (!found) {
-								childList.add(child);
-							}
-						}
-
-						modelList.get(j).setChildList(childList);
-
-					}
-				}
-				if (flag == false) {
-					model = new TestStrategeyVersioningJsonModel();
-					String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
-
-					model.setTestName(testNameToSetArr[0]);
-					model.setVersion(mainList.get(i).getVersion());
-					model.setFullTestName(mainList.get(i).getTestName());
-					model.setTestId(mainList.get(i).getTestId());
-					model.setVendor((mainList.get(i).getVendor()));
-					model.setDeviceFamily(mainList.get(i).getDeviceFamily());
-					model.setDeviceModel(mainList.get(i).getDeviceModel());
-					model.setOs(mainList.get(i).getOs());
-					model.setOsVersion(mainList.get(i).getOsVersion());
-					model.setRegion(mainList.get(i).getRegion());
-					model.setCreatedOn(mainList.get(i).getCreatedOn());
-					model.setCreatedBy(mainList.get(i).getCreatedBy());
-					model.setComment(mainList.get(i).getComment());
-					model.setNetworkType(mainList.get(i).getNetworkType());
-
-					TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
-					List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
-
-					testNameSize = testNameToSetArr.length;
-
-					if (testNameSize == 2) {
-						child.setTestName(testNameToSetArr[1]);
-					} else {
-						child.setTestName(testNameToSetArr[2]);
-					}
-					child.setFullTestName(mainList.get(i).getTestName());
-					child.setVersion(mainList.get(i).getVersion());
-					child.setTestId(mainList.get(i).getTestId());
-					child.setVendor((mainList.get(i).getVendor()));
-					child.setDeviceFamily(mainList.get(i).getDeviceFamily());
-					child.setDeviceModel(mainList.get(i).getDeviceModel());
-					child.setOs(mainList.get(i).getOs());
-					child.setOsVersion(mainList.get(i).getOsVersion());
-					child.setRegion(mainList.get(i).getRegion());
-					child.setCreatedOn(mainList.get(i).getCreatedOn());
-					child.setCreatedBy(mainList.get(i).getCreatedBy());
-					child.setComment(mainList.get(i).getComment());
-					child.setNetworkType(mainList.get(i).getNetworkType());
-
-					childList.add(child);
-					model.setChildList(childList);
-					modelList.add(model);
-				}
-
-			}
-
-		}
-
-		// /////////Loop end for two level
-
-		// //This loop will iterate over all the children
-		for (int i = 0; i < mainList.size(); i++) {
-
-			String[] testNameToSetArr = mainList.get(i).getTestName().split("_");
-			String testNameMain = testNameToSetArr[0] + testNameToSetArr[2];
-			String testNameToSet = testNameToSetArr[1] + "_" + testNameToSetArr[2];
-
-			// mainList1 =dao.findByTestName(testNameUsed);
-
-			for (int j = 0; j < modelList.size(); j++) {
-				List<TestStrategeyVersioningJsonModel> childListToIterate = new ArrayList<TestStrategeyVersioningJsonModel>();
-				childListToIterate = modelList.get(j).getChildList();
-				String[] testNameToSetArr1 = modelList.get(j).getFullTestName().split("_");
-				String testNameChild = testNameToSetArr1[0] + testNameToSetArr1[2];
-
-				for (int k = 0; k < childListToIterate.size(); k++) {
-					if (mainList.get(i).getTestName().equalsIgnoreCase(childListToIterate.get(k).getFullTestName())) {
-						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
-						child.setTestName(mainList.get(i).getVersion());
-						child.setTestName(testNameToSet);
-						child.setFullTestName(mainList.get(i).getTestName());
-						child.setVersion(mainList.get(i).getVersion());
-						child.setTestId(mainList.get(i).getTestId());
-						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
-						child.setDeviceModel(mainList.get(i).getDeviceModel());
-						child.setOs(mainList.get(i).getOs());
-						child.setOsVersion(mainList.get(i).getOsVersion());
-						child.setRegion(mainList.get(i).getRegion());
-						child.setCreatedOn(mainList.get(i).getCreatedOn());
-						child.setCreatedBy(mainList.get(i).getCreatedBy());
-						child.setComment(mainList.get(i).getComment());
-						child.setNetworkType(mainList.get(i).getNetworkType());
-
-						Boolean flag = mainList.get(i).isEnabled();
-						child.setEnabled(flag);
-
-						List<TestStrategeyVersioningJsonModel> childList = childListToIterate.get(k).getChildList();
-						childList.add(child);
+					if (modelList.get(j).getTestName().equalsIgnoreCase(mainList.get(i).getTestName())) {
+						objectPrsent = true;
 						break;
-
-					} else if (testNameMain.equals(testNameChild)) {
-
-						TestStrategeyVersioningJsonModel child = new TestStrategeyVersioningJsonModel();
-						child.setTestName(mainList.get(i).getVersion());
-						child.setTestName(testNameToSet);
-						child.setFullTestName(mainList.get(i).getTestName());
-						child.setVersion(mainList.get(i).getVersion());
-						child.setTestId(mainList.get(i).getTestId());
-						child.setVendor((mainList.get(i).getVendor()));
-						child.setDeviceFamily(mainList.get(i).getDeviceFamily());
-						child.setDeviceModel(mainList.get(i).getDeviceModel());
-						child.setOs(mainList.get(i).getOs());
-						child.setOsVersion(mainList.get(i).getOsVersion());
-						child.setRegion(mainList.get(i).getRegion());
-						child.setCreatedOn(mainList.get(i).getCreatedOn());
-						child.setCreatedBy(mainList.get(i).getCreatedBy());
-						child.setComment(mainList.get(i).getComment());
-						child.setNetworkType(mainList.get(i).getNetworkType());
-
-						Boolean flag = mainList.get(i).isEnabled();
-						child.setEnabled(flag);
-
-						List<TestStrategeyVersioningJsonModel> childList = childListToIterate.get(k).getChildList();
-						childList.add(child);
-
 					}
-
 				}
+			}
+			if (objectPrsent == false) {
+				model = new TestStrategeyVersioningJsonModel();
+				objToAdd = new TestStrategyPojo();
+				objToAdd = mainList.get(i);
+				model.setTestId(objToAdd.getTestId());
+				model.setTestName(objToAdd.getTestName());
+				model.setName(objToAdd.getTestName().substring(0, 14));
+				model.setFullTestName(objToAdd.getTestName().substring(15));
+				model.setVendor(objToAdd.getVendor());
+				model.setRegion(objToAdd.getRegion());
+				model.setDeviceModel(objToAdd.getDeviceModel());
+				model.setTest_category(objToAdd.getTest_category());
+				model.setCreatedBy(objToAdd.getCreatedBy());
+				model.setCreatedOn(objToAdd.getCreatedOn());
+				model.setOs(objToAdd.getOs() + "/" + objToAdd.getOsVersion());
+
+				model.setDevice_family(objToAdd.getDeviceFamily());
+
+				model.setCreatedBy(objToAdd.getCreatedBy());
+
+				modelList = new ArrayList<TestStrategyPojo>();
+				for (int k = 0; k < mainList.size(); k++) {
+					if (mainList.get(k).getTestName().equalsIgnoreCase(model.getTestName())) {
+						modelList.add(mainList.get(k));
+					}
+				}
+				Collections.reverse(modelList);
+
+				modelList.get(0).setEnabled(true);
+				model.setChildList(modelList);
+				versioningModel.add(model);
+
 			}
 
 		}
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(modelList).build();
+
+		return new ResponseEntity(versioningModel, HttpStatus.OK);
 
 	}
 

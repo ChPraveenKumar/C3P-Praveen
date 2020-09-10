@@ -49,40 +49,40 @@ public class TestDetail implements Serializable
 	@Column(name = "testCommand")
 	private String testCommand;
 
-	@Column(name = "testName",length = 100)
+	@Column(name = "testName")
 	private String testName;
 
-	@Column(name = "testCategory",length = 100)
+	@Column(name = "testCategory")
 	private String testCategory;
 
-	@Column(name = "deviceFamily",length = 25)
+	@Column(name = "deviceFamily")
 	private String deviceFamily;
 
-	@Column(name = "vendor",length = 50)
+	@Column(name = "vendor")
 	private String vendor;
 
-	@Column(name = "deviceModel",length = 25)
+	@Column(name = "deviceModel")
 	private String deviceModel;
 
-	@Column(name = "os",length = 10)
+	@Column(name = "os")
 	private String os;
 
-	@Column(name = "osVersion",length = 10)
+	@Column(name = "osVersion")
 	private String osVersion;
 
 	@Column(name = "createdOn")
 	private String createdOn;
 
-	@Column(name = "createdBy",length = 100)
+	@Column(name = "createdBy")
 	private String createdBy;
 
 	@Column(name = "comment")
 	private String comment;
 
-	@Column(name = "region",length = 25)
+	@Column(name = "region")
 	private String region;
 
-	@Column(name = "version",length = 5)
+	@Column(name = "version")
 	private String version;
 
 	@Column(name = "testType")
@@ -92,6 +92,10 @@ public class TestDetail implements Serializable
 
 	@Transient
 	boolean selected = false;
+
+	@Transient
+	private List<String> bundleName;
+
 
 	@Transient
 	boolean disabled = true;
@@ -133,7 +137,7 @@ public class TestDetail implements Serializable
 	@JoinTable(name = "t_tststrategy_j_test_bundle", joinColumns = {
 	        @JoinColumn(name = "test_id", referencedColumnName = "id") }, inverseJoinColumns = {
 	                @JoinColumn(name = "bundle_id", referencedColumnName = "id") })
-	Set<TestBundling> testbundling;
+    Set<TestBundling> testbundling;
 
 	public String getRegion() {
 		return region;
@@ -145,6 +149,14 @@ public class TestDetail implements Serializable
 
 	public List<TestRules> getListRules() {
 		return listRules;
+	}
+	
+	public List<String> getBundleName() {
+		return bundleName;
+	}
+
+	public void setBundleName(List<String> bundleName) {
+		this.bundleName = bundleName;
 	}
 
 	public void setListRules(List<TestRules> listRules) {
@@ -374,4 +386,13 @@ public class TestDetail implements Serializable
 	public void setNetworkType(String networkType) {
 		this.networkType = networkType;
 	}
+
+	public Set<TestBundling> getTestbundling() {
+		return testbundling;
+	}
+
+	public void setTestbundling(Set<TestBundling> testbundling) {
+		this.testbundling = testbundling;
+	}
+	
 }

@@ -30,34 +30,37 @@ public class TestBundling {
 	@Column(name = "network_function", length = 5)
 	private String networkFunction;
 
-	@Column(name = "vendor",length =50)
+	@Column(name = "vendor")
 	private String vendor;
 
-	@Column(name = "deviceFamily",length =25)
+	@Column(name = "deviceFamily")
 	private String deviceFamily;
-
-	@Column(name = "os",length =10)
-	private String os;
-
-	@Column(name = "osVersion",length =10)
-	private String osVersion;
-
-	@Column(name = "region",length =50)
-	private String region;
+	
+	@Column(name = "deviceModel")
+	private String deviceModel;
 	
 
+
+	@Column(name = "os")
+	private String os;
+
+	@Column(name = "osVersion")
+	private String osVersion;
+
+	@Column(name = "region")
+	private String region;
+	
 	@Column(name = "created_by")
 	private String createdBy;
 	
 	@Column(name = "creation_date")
 	private Timestamp createdDate;
 	
-	
 	@ManyToMany
 	@JoinTable(name = "t_tststrategy_j_test_bundle", joinColumns = {
 	        @JoinColumn(name = "bundle_id", referencedColumnName = "id") }, inverseJoinColumns = {
 	                @JoinColumn(name = "test_id", referencedColumnName = "id") })
-	Set<TestDetail> testDetails;
+	private Set<TestDetail> testDetails;
 
 	public int getId() {
 		return id;
@@ -73,6 +76,14 @@ public class TestBundling {
 
 	public void setNetworkFunction(String networkFunction) {
 		this.networkFunction = networkFunction;
+	}
+	
+	public String getDeviceModel() {
+		return deviceModel;
+	}
+
+	public void setDeviceModel(String deviceModel) {
+		this.deviceModel = deviceModel;
 	}
 
 	public Set<TestDetail> getTestDetails() {
@@ -147,5 +158,4 @@ public class TestBundling {
 		this.createdDate = createdDate;
 	}
 
-	
 }

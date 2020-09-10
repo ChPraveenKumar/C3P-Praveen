@@ -48,6 +48,7 @@ import com.techm.orion.entitybeans.CertificationTestResultEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
+import com.techm.orion.entitybeans.TestBundling;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestRules;
 import com.techm.orion.pojo.AlertInformationPojo;
@@ -69,6 +70,8 @@ import com.techm.orion.pojo.ModifyConfigResultPojo;
 import com.techm.orion.pojo.ReoprtFlags;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
+import com.techm.orion.pojo.TestBundlePojo;
+import com.techm.orion.pojo.TestStrategyPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.pojo.UserValidationResultDetailPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
@@ -7570,4 +7573,246 @@ public class RequestInfoDao {
 			logger.error("SQL Exception in updateRequestInfoSoByAlpReqVersion method "+exe.getMessage());
 		}
 	}
+	@SuppressWarnings("unchecked")
+	public List<TestBundlePojo> findTestIdList(int bundleId) {
+		String query = null;
+		List<TestBundlePojo> requestInfoList = new ArrayList<TestBundlePojo>();
+
+		TestBundlePojo obj = null;
+		ResultSet rs = null;
+
+		query = "SELECT test_id FROM t_tststrategy_j_test_bundle where bundle_id LIKE ?";
+
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+
+			pst.setString(1, bundleId + "%");
+
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				obj = new TestBundlePojo();
+				obj.setTest_id(rs.getInt("test_id"));
+
+				requestInfoList.add(obj);
+			}
+
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findByTestNameForSearch method " + exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+
+		return requestInfoList;
+	}
+	
+	public List<TestStrategyPojo> getTestsForTestStrategyOnId(int testId) {
+		List<TestStrategyPojo> list = new ArrayList<TestStrategyPojo>();
+		String query = "select * from t_tststrategy_m_tstdetails where id LIKE ?";
+		ResultSet rs = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			pst.setString(1, testId + "%");
+			rs = pst.executeQuery();
+			TestStrategyPojo request;
+			while (rs.next()) {
+				request = new TestStrategyPojo();
+				request.setTestName(rs.getString("test_name"));
+				request.setVersion(rs.getString("version"));
+				request.setTestId(rs.getString("id"));
+				request.setVendor(rs.getString("vendor"));
+				request.setDeviceFamily(rs.getString("device_family"));
+				request.setDeviceModel(rs.getString("device_model"));
+				request.setDevice_type(rs.getString("device_type"));
+				request.setTest_category(rs.getString("test_category"));
+				request.setOs(rs.getString("os"));
+				request.setOsVersion(rs.getString("os_version"));
+				request.setRegion(rs.getString("region"));
+				request.setCreatedOn(rs.getString("created_on"));
+				request.setCreatedBy(rs.getString("created_by"));
+
+				request.setEnabled(rs.getBoolean("is_enabled"));
+
+				list.add(request);
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getAllTests method " + exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+		return list;
+	}
+	public List<TestBundling> findByTestNameForSearch(String key, String value) {
+		String query = null;
+		List<TestBundling> requestInfoList = null;
+		TestBundling request = null;
+		ResultSet rs = null;
+
+		if (key.equals("Device Family")) {
+			query = "SELECT * FROM t_tststrategy_m_testbundling where device_family LIKE ?";
+		} else if (key.equals("Vendor")) {
+			query = "SELECT * FROM t_tststrategy_m_testbundling where vendor LIKE ?";
+		} else if (key.equals("Os")) {
+			query = "SELECT * FROM t_tststrategy_m_testbundling where os LIKE ?";
+		} else if (key.equals("OS Version")) {
+			query = "SELECT * FROM t_tststrategy_m_testbundling where os_version LIKE ?";
+		} else if (key.equals("Bundle Name")) {
+			query = "SELECT * FROM t_tststrategy_m_testbundling where test_bundle LIKE ?";
+		}
+
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			requestInfoList = new ArrayList<TestBundling>();
+			pst.setString(1, value + "%");
+
+			rs = pst.executeQuery();
+			while (rs.next()) {
+
+				request = new TestBundling();
+				request.setId(rs.getInt("id"));
+				request.setDeviceFamily(rs.getString("device_family"));
+				request.setDeviceModel(rs.getString("device_model"));
+				request.setNetworkFunction(rs.getString("network_function"));
+				request.setOs(rs.getString("os"));
+				request.setOsVersion(rs.getString("os_version"));
+				request.setRegion(rs.getString("region"));
+				request.setVendor(rs.getString("vendor"));
+				request.setTestBundle(rs.getString("test_bundle"));
+				request.setCreatedBy(rs.getString("created_by"));
+				request.setCreatedDate(rs.getTimestamp("creation_date"));
+
+				requestInfoList.add(request);
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findByTestNameForSearch method " + exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+		return requestInfoList;
+
+	}
+	
+	@SuppressWarnings("unchecked")
+	public List<Integer> findBundleId(int testId) {
+		String query = null;
+		List<Integer>bundleId=new ArrayList();;
+
+		
+		ResultSet rs = null;
+
+		query = "SELECT bundle_id FROM t_tststrategy_j_test_bundle where test_id LIKE ?";
+
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+
+			pst.setString(1, testId + "%");
+
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				
+				bundleId.add(rs.getInt("bundle_id"));
+
+				
+			}
+
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findByTestNameForSearch method " + exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+
+		return bundleId;
+	}
+	public List<TestStrategyPojo> getAllTestsForTestStrategy() {
+		List<TestStrategyPojo> list = new ArrayList<TestStrategyPojo>();
+		String query = "select * from t_tststrategy_m_tstdetails";
+		ResultSet rs = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+
+			rs = pst.executeQuery();
+			TestStrategyPojo request;
+			while (rs.next()) {
+				request = new TestStrategyPojo();
+				request.setTestName(rs.getString("test_name"));
+				request.setVersion(rs.getString("version"));
+				request.setTestId(rs.getString("id"));
+				request.setVendor(rs.getString("vendor"));
+				request.setDeviceFamily(rs.getString("device_family"));
+				request.setDeviceModel(rs.getString("device_model"));
+				request.setDevice_type(rs.getString("device_type"));
+				request.setTest_category(rs.getString("test_category"));
+				request.setOs(rs.getString("os"));
+				request.setOsVersion(rs.getString("os_version"));
+				request.setRegion(rs.getString("region"));
+				request.setCreatedOn(rs.getString("created_on"));
+				request.setCreatedBy(rs.getString("created_by"));
+
+				request.setEnabled(rs.getBoolean("is_enabled"));
+
+				list.add(request);
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getAllTests method " + exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+		return list;
+	}
+	public List<TestStrategyPojo> findByForSearch(String key, String value) {
+		String query = null;
+		List<TestStrategyPojo> requestInfoList = null;
+		TestStrategyPojo request = null;
+		ResultSet rs = null;
+
+		if (key.equals("Device Family")) {
+			query = "SELECT * FROM t_tststrategy_m_tstdetails where device_family LIKE ?";
+		} else if (key.equals("Vendor")) {
+			query = "SELECT * FROM t_tststrategy_m_tstdetails where vendor LIKE ?";
+		} else if (key.equals("Os")) {
+			query = "SELECT * FROM t_tststrategy_m_tstdetails where os LIKE ?";
+		} else if (key.equals("OS Version")) {
+			query = "SELECT * FROM t_tststrategy_m_tstdetails where os_version LIKE ?";
+		} else if (key.equals("Test Name")) {
+			query = "SELECT * FROM t_tststrategy_m_tstdetails where test_name LIKE ?";
+		} else if (key.equals("Model")) {
+			query = "SELECT * FROM t_tststrategy_m_tstdetails where device_model LIKE ?";
+		} else if (key.equals("Test Category")) {
+			query = "SELECT * FROM t_tststrategy_m_tstdetails where test_category LIKE ?";
+		}
+
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			requestInfoList = new ArrayList<TestStrategyPojo>();
+			pst.setString(1, value + "%");
+
+			rs = pst.executeQuery();
+			while (rs.next()) {
+
+				request = new TestStrategyPojo();
+				request.setTestName(rs.getString("test_name"));
+				request.setVersion(rs.getString("version"));
+				request.setTestId(rs.getString("id"));
+				request.setVendor(rs.getString("vendor"));
+				request.setDeviceFamily(rs.getString("device_family"));
+				request.setDeviceModel(rs.getString("device_model"));
+				request.setDevice_type(rs.getString("device_type"));
+				request.setTest_category(rs.getString("test_category"));
+				request.setOs(rs.getString("os"));
+				request.setOsVersion(rs.getString("os_version"));
+				request.setRegion(rs.getString("region"));
+				request.setCreatedOn(rs.getString("created_on"));
+				request.setCreatedBy(rs.getString("created_by"));
+
+				request.setEnabled(rs.getBoolean("is_enabled"));
+
+				requestInfoList.add(request);
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findByTestNameForSearch method " + exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+		return requestInfoList;
+	}
+	
 }

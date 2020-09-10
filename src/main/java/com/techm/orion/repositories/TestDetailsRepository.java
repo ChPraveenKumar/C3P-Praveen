@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.techm.orion.entitybeans.TestDetail;
+import com.techm.orion.pojo.TestStrategyPojo;
 
 public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer> {
 
@@ -44,18 +45,18 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 
 	List<TestDetail> findByRegion(String value);
 
-	List<TestDetail> findByVendor(String value);
+	List<TestStrategyPojo> findByVendor(String value);
 
 	
 
 	
-	List<TestDetail> findByOs(String value);
+	List<TestStrategyPojo> findByOs(String value);
 
-	List<TestDetail> findByOsVersion(String value);
+	List<TestStrategyPojo> findByOsVersion(String value);
 
-	List<TestDetail> findByDeviceFamily(String value);
+	List<TestStrategyPojo> findByDeviceFamily(String value);
 
-	List<TestDetail> findByDeviceModel(String value);
+	List<TestStrategyPojo> findByDeviceModel(String value);
 	
 	
 	List<TestDetail> findByRegionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndNetworkType(
@@ -85,6 +86,62 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 
 	List<TestDetail> findByRegionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndNetworkTypeAndTestNameIgnoreCaseContainingAndVersion(
 			String region, String vendor, String networkType, String testName, String version);
+	String testName = "SELECT * FROM t_tststrategy_m_tstdetails e WHERE e.id LIKE %?1%";
+	@Query(value = testName, nativeQuery = true)
+	List<TestDetail> findByTestId(String testId);
+
+	List<TestDetail> findByOsAndOsVersionAndVendorAndRegionAndNetworkType(String os, String osVersion, String vendor,
+			String region, String networkFunction);
+
+	List<TestDetail> findByDeviceFamilyAndOsVersionAndVendorAndRegionAndNetworkType(String deviceFamily,
+			String osVersion, String vendor, String region, String networkFunction);
+
+	List<TestDetail> findByDeviceFamilyAndOsAndVendorAndRegionAndNetworkType(String deviceFamily, String os,
+			String vendor, String region, String networkFunction);
+
+	List<TestDetail> findByDeviceFamilyAndOsAndOsVersionAndVendorAndNetworkType(String deviceFamily, String os,
+			String osVersion, String vendor, String networkFunction);
+
+	List<TestDetail> findByOsVersionAndVendorAndNetworkTypeAndRegion(String osVersion, String vendor, String networkFunction,String region);
+
+	List<TestDetail> findByOsAndVendorAndNetworkTypeAndRegion(String os, String vendor, String networkFunction,String region);
+
+	List<TestDetail> findByOsAndOsVersionAndVendorAndNetworkType(String os, String osVersion, String vendor,
+			String networkFunction);
+
+	List<TestDetail> findByDeviceFamilyAndVendorAndNetworkTypeAndRegion(String deviceFamily, String vendor, String networkFunction, String region);
+
+	List<TestDetail> findByDeviceFamilyAndOsVersionAndVendorAndNetworkType(String deviceFamily, String osVersion,
+			String vendor, String networkFunction);
+
+	List<TestDetail> findByDeviceFamilyAndOsAndVendorAndNetworkType(String deviceFamily, String os, String vendor,
+			String networkFunction);
+
+	
+
+	List<TestDetail> findByDeviceFamilyAndVendorAndNetworkType(String deviceFamily, String vendor,
+			String networkFunction);
+
+	List<TestDetail> findByOsVersionAndVendorAndNetworkType(String osVersion, String vendor, String networkFunction);
+
+	List<TestDetail> findByOsAndVendorAndNetworkType(String os, String vendor, String networkFunction);
+
+	List<TestDetail> findByVendorAndNetworkType(String vendor, String networkFunction);
+
+	List<TestDetail> findByVendorAndRegionAndNetworkType(String vendor, String region, String networkFunction);
+
+
+
+	List<TestStrategyPojo> findByTestCategory(String value);
+
+	List<TestDetail> findByTestCategory(int intValue, String tempTestCategoryName);
+
+	
+
+
+	
+	
+
 	
 	
 
