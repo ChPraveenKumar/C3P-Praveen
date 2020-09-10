@@ -134,7 +134,7 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 
 	List<TestStrategyPojo> findByTestCategory(String value);
 
-	List<TestDetail> findByTestCategory(int intValue, String tempTestCategoryName);
+
 
 	
 	List<TestDetail> findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(String deviceFamily, String os,
