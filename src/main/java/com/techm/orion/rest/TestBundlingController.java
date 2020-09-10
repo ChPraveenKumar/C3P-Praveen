@@ -413,6 +413,11 @@ public class TestBundlingController {
 
 				listOfTestDetails = testDetailsRepository.findByVendorAndNetworkType(vendor, networkFunction);
 			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("000")) {
+
+				listOfTestDetails = testDetailsRepository.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily,os,
+						osVersion, vendor, region, networkFunction);
+			}
 
 			// listOfTestBundle = testBundleJoinRepo.findAll();
 			for (int i = 0; i < listOfTestDetails.size(); i++) {
@@ -476,7 +481,7 @@ public class TestBundlingController {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 			String bundleName = null, networkFunction = null, deviceFamily = null, vendor = null, os = null,
-					osVersion = null, region = null, model = null;
+					osVersion = null, region = null,model=null;
 
 			if (json.get("bundleName") != null) {
 				bundleName = json.get("bundleName").toString();
@@ -501,6 +506,7 @@ public class TestBundlingController {
 			if (json.get("region") != null) {
 				region = json.get("region").toString();
 			}
+			
 
 			JSONArray testListJson = null;
 			if (json.containsKey("tests")) {
@@ -518,8 +524,7 @@ public class TestBundlingController {
 				}
 			}
 			if (bundleName != null && networkFunction != null) {
-				testList = testBundleServce.saveBundle(bundleName, networkFunction, vendor, deviceFamily, os, osVersion,
-						region, testDetails);
+				testList = testBundleServce.saveBundle(bundleName, networkFunction,vendor,deviceFamily,os,osVersion,region, testDetails);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -536,6 +541,8 @@ public class TestBundlingController {
 
 		JSONObject obj = null;
 
+		
+		
 		int testId = 0;
 		String testBundleName = null;
 		JSONArray outputArray = null;
@@ -697,9 +704,9 @@ public class TestBundlingController {
 				listOfTestDetails = testBundlingRepository.findByVendorAndNetworkFunction(vendor, networkFunction);
 			}
 			outputArray = new JSONArray();
-
+			
 			for (int i = 0; i < listOfTestDetails.size(); i++) {
-
+				
 				obj = new JSONObject();
 				testBundleName = listOfTestDetails.get(i).getTestBundle();
 				testId = listOfTestDetails.get(i).getId();
@@ -708,7 +715,7 @@ public class TestBundlingController {
 				outputArray.add(obj);
 			}
 
-			// obj.put("BundleList", outputArray);
+			//obj.put("BundleList", outputArray);
 		} catch (Exception e) {
 			logger.error(e);
 			obj.put("data", "No Record Found");
@@ -771,20 +778,25 @@ public class TestBundlingController {
 	public ResponseEntity getSearchBundleList(@RequestBody String request) throws ParseException {
 
 		String key = "", value = "";
-		int bundleId = 0, tempTestId = 0;
+		int bundleId = 0,tempTestId = 0;
 
 		JSONParser parser = new JSONParser();
 
 		List<TestBundlePojo> testIdList = new ArrayList<TestBundlePojo>();
 
+	
+
 		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
 		List<TestStrategyPojo> testDetail = new ArrayList<TestStrategyPojo>();
-
+		
 		RequestInfoDao dao = new RequestInfoDao();
 		List<TestBundling> mainList = new ArrayList<TestBundling>();
 
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
 		List<TestStrategeyVersioningJsonModel> versioningModel = new ArrayList<TestStrategeyVersioningJsonModel>();
+	
+
+
 
 		JSONObject json = (JSONObject) parser.parse(request);
 
@@ -805,12 +817,13 @@ public class TestBundlingController {
 			} else if (key.equalsIgnoreCase("OS Version")) {
 				mainList = dao.findByTestNameForSearch(key, value);
 
-			} else if (key.equalsIgnoreCase("Bundle Name")) {
+			}  else if (key.equalsIgnoreCase("Bundle Name")) {
 
 				List temp = new ArrayList<>();
 				mainList = dao.findByTestNameForSearch(key, value);
-
+				
 			}
+				
 
 			for (TestBundling temp : mainList) {
 				model = new TestStrategeyVersioningJsonModel();
@@ -823,7 +836,7 @@ public class TestBundlingController {
 				model.setCreatedBy(temp.getCreatedBy());
 				model.setCreatedOn(temp.getCreatedDate().toString());
 				modelList = new ArrayList<TestStrategyPojo>();
-
+				
 				for (int i = 0; i < testIdList.size(); i++) {
 					tempTestId = testIdList.get(i).getTest_id();
 					testDetail = dao.getTestsForTestStrategyOnId(tempTestId);
@@ -834,34 +847,40 @@ public class TestBundlingController {
 				modelList.get(0).setEnabled(true);
 				model.setChildList(modelList);
 				versioningModel.add(model);
-			}
+			}	
 
 		}
 
 		return new ResponseEntity(versioningModel, HttpStatus.OK);
 
 	}
-
+	
+	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@POST
 	@RequestMapping(value = "/getBundleView", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public ResponseEntity getBundleView(@RequestBody String request) throws ParseException {
 
 		String key = "", value = "";
-		int bundleId = 0, tempTestId = 0;
+		int bundleId = 0,tempTestId = 0;
 
 		JSONParser parser = new JSONParser();
 
 		List<TestBundlePojo> testIdList = new ArrayList<TestBundlePojo>();
 
+	
+
 		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
 		List<TestStrategyPojo> testDetail = new ArrayList<TestStrategyPojo>();
-
+		
 		RequestInfoDao dao = new RequestInfoDao();
 		List<TestBundling> mainList = new ArrayList<TestBundling>();
 
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
 		List<TestStrategeyVersioningJsonModel> versioningModel = new ArrayList<TestStrategeyVersioningJsonModel>();
+	
+
+
 
 		JSONObject json = (JSONObject) parser.parse(request);
 
@@ -870,12 +889,13 @@ public class TestBundlingController {
 
 		if (value != null && !value.isEmpty()) {
 
-			if (key.equalsIgnoreCase("Bundle Name")) {
+		 if (key.equalsIgnoreCase("Bundle Name")) {
 
 				List temp = new ArrayList<>();
 				mainList = dao.findByTestNameForSearch(key, value);
-
+				
 			}
+				
 
 			for (TestBundling temp : mainList) {
 				model = new TestStrategeyVersioningJsonModel();
@@ -888,7 +908,7 @@ public class TestBundlingController {
 				model.setCreatedBy(temp.getCreatedBy());
 				model.setCreatedOn(temp.getCreatedDate().toString());
 				modelList = new ArrayList<TestStrategyPojo>();
-
+				
 				for (int i = 0; i < testIdList.size(); i++) {
 					tempTestId = testIdList.get(i).getTest_id();
 					testDetail = dao.getTestsForTestStrategyOnId(tempTestId);
@@ -899,12 +919,13 @@ public class TestBundlingController {
 				modelList.get(0).setEnabled(true);
 				model.setChildList(modelList);
 				versioningModel.add(model);
-			}
+			}	
 
 		}
 
 		return new ResponseEntity(versioningModel, HttpStatus.OK);
 
 	}
+
 
 }
