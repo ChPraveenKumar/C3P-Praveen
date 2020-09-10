@@ -36,11 +36,6 @@ public class TestBundling {
 	@Column(name = "deviceFamily")
 	private String deviceFamily;
 	
-	@Column(name = "deviceModel")
-	private String deviceModel;
-	
-
-
 	@Column(name = "os")
 	private String os;
 
@@ -78,14 +73,6 @@ public class TestBundling {
 		this.networkFunction = networkFunction;
 	}
 	
-	public String getDeviceModel() {
-		return deviceModel;
-	}
-
-	public void setDeviceModel(String deviceModel) {
-		this.deviceModel = deviceModel;
-	}
-
 	public Set<TestDetail> getTestDetails() {
 		return testDetails;
 	}

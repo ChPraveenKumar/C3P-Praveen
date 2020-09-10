@@ -487,7 +487,7 @@ public class VnfConfigService implements Observer {
 							RequestInfoDao dao = new RequestInfoDao();
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							listOfTests = dao.findTestFromTestStrategyDB(createConfigRequest.getModel(),
+							listOfTests = dao.findTestFromTestStrategyDB(
 									createConfigRequest.getDeviceType(), createConfigRequest.getOs(),
 									createConfigRequest.getOsVersion(), createConfigRequest.getVendor(),
 									createConfigRequest.getRegion(), "Device Prevalidation");
@@ -636,7 +636,7 @@ public class VnfConfigService implements Observer {
 							RequestInfoDao dao = new RequestInfoDao();
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getModel(),
+							listOfTests = dao.findTestFromTestStrategyDB(
 									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Device Prevalidation");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),

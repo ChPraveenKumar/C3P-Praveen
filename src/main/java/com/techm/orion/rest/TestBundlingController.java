@@ -1,9 +1,7 @@
 package com.techm.orion.rest;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -31,7 +29,6 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.DeviceFamily;
 import com.techm.orion.entitybeans.OS;
 import com.techm.orion.entitybeans.OSversion;
-
 import com.techm.orion.entitybeans.TestBundling;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestStrategeyVersioningJsonModel;
@@ -42,7 +39,6 @@ import com.techm.orion.pojo.TestStrategyPojo;
 import com.techm.orion.repositories.DeviceFamilyRepository;
 import com.techm.orion.repositories.OSRepository;
 import com.techm.orion.repositories.OSversionRepository;
-
 import com.techm.orion.repositories.TestBundlingRepository;
 import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.VendorRepository;
@@ -288,140 +284,35 @@ public class TestBundlingController {
 				deviceFamily = json.get("deviceFamily").toString();
 			}
 
-			// Implementation of search logic based on fields received from UI
-			String nonMandatoryfiltersbits = "000";
-
-			if (deviceFamily.equals("All")) {
-				nonMandatoryfiltersbits = "100";
+			if (region.equals("All")) {
+				region = "%";
+			} else {
+				region = "%" + region;
 			}
-			if (os.equals("All")) {
-				nonMandatoryfiltersbits = "110";
+
+			if (vendor.equals("All")) {
+				vendor = "%";
+			} else {
+				vendor = "%" + vendor;
 			}
 			if (osVersion.equals("All")) {
-				nonMandatoryfiltersbits = "111";
+				osVersion = "%";
+			} else {
+				osVersion = "%" + osVersion;
+			}
+			if (os.equals("All")) {
+				os = "%";
+			} else {
+				os = "%" + os;
+			}
+			if (deviceFamily.equals("All")) {
+				deviceFamily = "%";
+			} else {
+				deviceFamily = "%" + deviceFamily;
 			}
 
-			if (region.equals("All")) {
-				nonMandatoryfiltersbits = "211";
-			}
-			if (deviceFamily.equals("All") && os.equals("All")) {
-				nonMandatoryfiltersbits = "221";
-			}
-			if (deviceFamily.equals("All") && osVersion.equals("All")) {
-				nonMandatoryfiltersbits = "222";
-			}
-			if (deviceFamily.equals("All") && region.equals("All")) {
-				nonMandatoryfiltersbits = "322";
-			}
-			if (os.equals("All") && osVersion.equals("All")) {
-				nonMandatoryfiltersbits = "332";
-			}
-			if (os.equals("All") && region.equals("All")) {
-				nonMandatoryfiltersbits = "333";
-			}
-			if (region.equals("All") && osVersion.equals("All")) {
-				nonMandatoryfiltersbits = "433";
-			}
-			if ((deviceFamily.equals("All") && os.equals("All"))
-					&& (deviceFamily.equals("All") && osVersion.equals("All"))) {
-				nonMandatoryfiltersbits = "443";
-			}
-			if ((osVersion.equals("All") && os.equals("All")) && (region.equals("All") && osVersion.equals("All"))) {
-				nonMandatoryfiltersbits = "444";
-			}
-			if ((deviceFamily.equals("All") && os.equals("All"))
-					&& (region.equals("All") && deviceFamily.equals("All"))) {
-				nonMandatoryfiltersbits = "544";
-			}
-			if ((deviceFamily.equals("All") && osVersion.equals("All"))
-					&& (region.equals("All") && deviceFamily.equals("All"))) {
-				nonMandatoryfiltersbits = "554";
-			}
-			if ((deviceFamily.equals("All") && os.equals("All")) && (region.equals("All") && osVersion.equals("All"))) {
-				nonMandatoryfiltersbits = "555";
-			}
-			/* getting Test Details list based on search */
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("100")) {
-
-				listOfTestDetails = testDetailsRepository.findByOsAndOsVersionAndVendorAndRegionAndNetworkType(os,
-						osVersion, vendor, region, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("110")) {
-
-				listOfTestDetails = testDetailsRepository
-						.findByDeviceFamilyAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily, osVersion, vendor,
-								region, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("111")) {
-
-				listOfTestDetails = testDetailsRepository.findByDeviceFamilyAndOsAndVendorAndRegionAndNetworkType(
-						deviceFamily, os, vendor, region, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("211")) {
-
-				listOfTestDetails = testDetailsRepository.findByDeviceFamilyAndOsAndOsVersionAndVendorAndNetworkType(
-						deviceFamily, os, osVersion, vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("221")) {
-
-				listOfTestDetails = testDetailsRepository.findByOsVersionAndVendorAndNetworkTypeAndRegion(osVersion,
-						vendor, networkFunction, region);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("222")) {
-
-				listOfTestDetails = testDetailsRepository.findByOsAndVendorAndNetworkTypeAndRegion(os, vendor,
-						networkFunction, region);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("322")) {
-
-				listOfTestDetails = testDetailsRepository.findByOsAndOsVersionAndVendorAndNetworkType(os, osVersion,
-						vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("332")) {
-
-				listOfTestDetails = testDetailsRepository.findByDeviceFamilyAndVendorAndNetworkTypeAndRegion(
-						deviceFamily, vendor, networkFunction, region);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("333")) {
-
-				listOfTestDetails = testDetailsRepository.findByDeviceFamilyAndOsVersionAndVendorAndNetworkType(
-						deviceFamily, osVersion, vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("433")) {
-
-				listOfTestDetails = testDetailsRepository.findByDeviceFamilyAndOsAndVendorAndNetworkType(deviceFamily,
-						os, vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("443")) {
-				listOfTestDetails = testDetailsRepository.findByVendorAndRegionAndNetworkType(vendor, region,
-						networkFunction);
-
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("444")) {
-
-				listOfTestDetails = testDetailsRepository.findByDeviceFamilyAndVendorAndNetworkType(deviceFamily,
-						vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("544")) {
-
-				listOfTestDetails = testDetailsRepository.findByOsVersionAndVendorAndNetworkType(osVersion, vendor,
-						networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("554")) {
-
-				listOfTestDetails = testDetailsRepository.findByOsAndVendorAndNetworkType(os, vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("555")) {
-
-				listOfTestDetails = testDetailsRepository.findByVendorAndNetworkType(vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("000")) {
-
-				listOfTestDetails = testDetailsRepository
-						.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily, os,
-								osVersion, vendor, region, networkFunction);
-			}
-
+			listOfTestDetails = testDetailsRepository.getTesListData(deviceFamily, os, region, osVersion, vendor,
+					networkFunction);
 			// listOfTestBundle = testBundleJoinRepo.findAll();
 			for (int i = 0; i < listOfTestDetails.size(); i++) {
 
@@ -441,7 +332,6 @@ public class TestBundlingController {
 
 				tempTestCategoryName = versioningModelObject.getName();
 
-				
 				for (int i = 0; i < listOfTest.size(); i++) {
 
 					listOfTestId = dao.getAllTestsForSearch(listOfTest.get(i).intValue(), tempTestCategoryName);
@@ -453,10 +343,9 @@ public class TestBundlingController {
 							objToAdd = new TestBundlePojo();
 
 							objToAdd.setTestId(listOfTestId.get(j).getId());
-						
-							
-							String s=listOfTestId.get(j).getTestName();
-					        String seriesId = StringUtils.substringAfterLast(s, "_");
+
+							String s = listOfTestId.get(j).getTestName();
+							String seriesId = StringUtils.substringAfterLast(s, "_");
 
 							objToAdd.setTestName(seriesId);
 							versioningModelChildList.add(objToAdd);
@@ -489,7 +378,7 @@ public class TestBundlingController {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 			String bundleName = null, networkFunction = null, deviceFamily = null, vendor = null, os = null,
-					osVersion = null, region = null, model = null;
+					osVersion = null, region = null;
 
 			if (json.get("bundleName") != null) {
 				bundleName = json.get("bundleName").toString();
@@ -552,7 +441,6 @@ public class TestBundlingController {
 		int testId = 0;
 		String testBundleName = null;
 		JSONArray outputArray = null;
-		HashMap<Integer, String> hmap = new HashMap<Integer, String>();
 
 		String networkFunction = null, region = null, vendor = null, osVersion = null, os = null, deviceFamily = null;
 
@@ -563,6 +451,7 @@ public class TestBundlingController {
 
 			if (json.containsKey("networkFunction")) {
 				networkFunction = json.get("networkFunction").toString();
+
 			}
 			if (json.containsKey("region")) {
 				region = json.get("region").toString();
@@ -579,136 +468,41 @@ public class TestBundlingController {
 			if (json.containsKey("deviceFamily")) {
 				deviceFamily = json.get("deviceFamily").toString();
 			}
-
-			// Implementation of search logic based on fields received from UI
-			String nonMandatoryfiltersbits = "000";
-
-			if (deviceFamily.equals("All")) {
-				nonMandatoryfiltersbits = "100";
-			}
-			if (os.equals("All")) {
-				nonMandatoryfiltersbits = "110";
-			}
-			if (osVersion.equals("All")) {
-				nonMandatoryfiltersbits = "111";
+			if (networkFunction.equals("All")) {
+				networkFunction = "%";
+			} else {
+				networkFunction = "%" + networkFunction;
 			}
 
 			if (region.equals("All")) {
-				nonMandatoryfiltersbits = "211";
+				region = "%";
+			} else {
+				region = "%" + region;
 			}
-			if (deviceFamily.equals("All") && os.equals("All")) {
-				nonMandatoryfiltersbits = "221";
-			}
-			if (deviceFamily.equals("All") && osVersion.equals("All")) {
-				nonMandatoryfiltersbits = "222";
-			}
-			if (deviceFamily.equals("All") && region.equals("All")) {
-				nonMandatoryfiltersbits = "322";
-			}
-			if (os.equals("All") && osVersion.equals("All")) {
-				nonMandatoryfiltersbits = "332";
-			}
-			if (os.equals("All") && region.equals("All")) {
-				nonMandatoryfiltersbits = "333";
-			}
-			if (region.equals("All") && osVersion.equals("All")) {
-				nonMandatoryfiltersbits = "433";
-			}
-			if ((deviceFamily.equals("All") && os.equals("All"))
-					&& (deviceFamily.equals("All") && osVersion.equals("All"))) {
-				nonMandatoryfiltersbits = "443";
-			}
-			if ((osVersion.equals("All") && os.equals("All")) && (region.equals("All") && osVersion.equals("All"))) {
-				nonMandatoryfiltersbits = "444";
-			}
-			if ((deviceFamily.equals("All") && os.equals("All"))
-					&& (region.equals("All") && deviceFamily.equals("All"))) {
-				nonMandatoryfiltersbits = "544";
-			}
-			if ((deviceFamily.equals("All") && osVersion.equals("All"))
-					&& (region.equals("All") && deviceFamily.equals("All"))) {
-				nonMandatoryfiltersbits = "554";
-			}
-			if ((deviceFamily.equals("All") && os.equals("All")) && (region.equals("All") && osVersion.equals("All"))) {
-				nonMandatoryfiltersbits = "555";
-			}
-			/* getting Test Details list based on search */
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("100")) {
 
-				listOfTestDetails = testBundlingRepository.findByOsAndOsVersionAndVendorAndRegionAndNetworkFunction(os,
-						osVersion, vendor, region, networkFunction);
+			if (vendor.equals("All")) {
+				vendor = "%";
+			} else {
+				vendor = "%" + vendor;
 			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("110")) {
+			if (osVersion.equals("All")) {
+				osVersion = "%";
+			} else {
+				osVersion = "%" + osVersion;
+			}
+			if (os.equals("All")) {
+				os = "%";
+			} else {
+				os = "%" + os;
+			}
+			if (deviceFamily.equals("All")) {
+				deviceFamily = "%";
+			} else {
+				deviceFamily = "%" + deviceFamily;
+			}
+			listOfTestDetails = testBundlingRepository.getTestBundleDate(deviceFamily, os, region, osVersion, vendor,
+					networkFunction);
 
-				listOfTestDetails = testBundlingRepository
-						.findByDeviceFamilyAndOsVersionAndVendorAndRegionAndNetworkFunction(deviceFamily, osVersion,
-								vendor, region, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("111")) {
-
-				listOfTestDetails = testBundlingRepository.findByDeviceFamilyAndOsAndVendorAndRegionAndNetworkFunction(
-						deviceFamily, os, vendor, region, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("211")) {
-
-				listOfTestDetails = testBundlingRepository
-						.findByDeviceFamilyAndOsAndOsVersionAndVendorAndNetworkFunction(deviceFamily, os, osVersion,
-								vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("221")) {
-
-				listOfTestDetails = testBundlingRepository.findByOsVersionAndVendorAndNetworkFunctionAndRegion(
-						osVersion, vendor, networkFunction, region);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("222")) {
-
-				listOfTestDetails = testBundlingRepository.findByOsAndVendorAndNetworkFunctionAndRegion(os, vendor,
-						networkFunction, region);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("322")) {
-
-				listOfTestDetails = testBundlingRepository.findByOsAndOsVersionAndVendorAndNetworkFunction(os,
-						osVersion, vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("332")) {
-
-				listOfTestDetails = testBundlingRepository.findByDeviceFamilyAndVendorAndNetworkFunctionAndRegion(
-						deviceFamily, vendor, networkFunction, region);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("333")) {
-
-				listOfTestDetails = testBundlingRepository.findByDeviceFamilyAndOsVersionAndVendorAndNetworkFunction(
-						deviceFamily, osVersion, vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("433")) {
-
-				listOfTestDetails = testBundlingRepository
-						.findByDeviceFamilyAndOsAndVendorAndNetworkFunction(deviceFamily, os, vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("443")) {
-				listOfTestDetails = testBundlingRepository.findByVendorAndRegionAndNetworkFunction(vendor, region,
-						networkFunction);
-
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("444")) {
-
-				listOfTestDetails = testBundlingRepository.findByDeviceFamilyAndVendorAndNetworkFunction(deviceFamily,
-						vendor, networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("544")) {
-
-				listOfTestDetails = testBundlingRepository.findByOsVersionAndVendorAndNetworkFunction(osVersion, vendor,
-						networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("554")) {
-
-				listOfTestDetails = testBundlingRepository.findByOsAndVendorAndNetworkFunction(os, vendor,
-						networkFunction);
-			}
-			if (nonMandatoryfiltersbits.equalsIgnoreCase("555")) {
-
-				listOfTestDetails = testBundlingRepository.findByVendorAndNetworkFunction(vendor, networkFunction);
-			}
 			outputArray = new JSONArray();
 
 			for (int i = 0; i < listOfTestDetails.size(); i++) {
@@ -819,10 +613,7 @@ public class TestBundlingController {
 				mainList = dao.findByTestNameForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("Bundle Name")) {
-
-				List temp = new ArrayList<>();
 				mainList = dao.findByTestNameForSearch(key, value);
-
 			}
 
 			for (TestBundling temp : mainList) {
@@ -865,10 +656,10 @@ public class TestBundlingController {
 
 		JSONParser parser = new JSONParser();
 
-		List<TestBundlePojo> testIdList = new ArrayList<TestBundlePojo>();
+		List<TestDetail> testIdList = new ArrayList<TestDetail>();
 
-		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
-		List<TestStrategyPojo> testDetail = new ArrayList<TestStrategyPojo>();
+		List<TestDetail> modelList = new ArrayList<TestDetail>();
+		List<TestDetail> testDetail = new ArrayList<TestDetail>();
 
 		RequestInfoDao dao = new RequestInfoDao();
 		List<TestBundling> mainList = new ArrayList<TestBundling>();
@@ -884,36 +675,34 @@ public class TestBundlingController {
 		if (value != null && !value.isEmpty()) {
 
 			if (key.equalsIgnoreCase("Bundle Name")) {
-
-				List temp = new ArrayList<>();
 				mainList = dao.findByTestNameForSearch(key, value);
 
 			}
-
 			for (TestBundling temp : mainList) {
 				model = new TestStrategeyVersioningJsonModel();
 				bundleId = temp.getId();
-				testIdList = dao.findTestIdList(bundleId);
+				testIdList = dao.findTestId(bundleId);
 				model.setBundleName(temp.getTestBundle());
 				model.setVendor(temp.getVendor());
-				model.setDeviceModel(temp.getDeviceFamily());
-				model.setOs(temp.getOs() + "/" + temp.getOsVersion());
+				model.setDevice_family(temp.getDeviceFamily());
+				model.setOs(temp.getOs());
+				model.setOsVersion(temp.getOsVersion());
 				model.setCreatedBy(temp.getCreatedBy());
 				model.setCreatedOn(temp.getCreatedDate().toString());
-				modelList = new ArrayList<TestStrategyPojo>();
+				model.setRegion(temp.getRegion());
+				modelList = new ArrayList<TestDetail>();
 
 				for (int i = 0; i < testIdList.size(); i++) {
-					tempTestId = testIdList.get(i).getTest_id();
-					testDetail = dao.getTestsForTestStrategyOnId(tempTestId);
+					tempTestId = testIdList.get(i).getId();
+					testDetail = dao.getBundleView(tempTestId);
 					modelList.add(testDetail.get(0));
 				}
 				Collections.reverse(modelList);
 
 				modelList.get(0).setEnabled(true);
-				model.setChildList(modelList);
+				model.setChildList1(modelList);
 				versioningModel.add(model);
 			}
-
 		}
 
 		return new ResponseEntity(versioningModel, HttpStatus.OK);

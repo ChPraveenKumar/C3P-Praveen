@@ -2,7 +2,6 @@ package com.techm.orion.rest;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,6 +15,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -39,21 +39,17 @@ import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.PredefineTestDetailEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
-
 import com.techm.orion.entitybeans.TestBundling;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestFeatureList;
 import com.techm.orion.entitybeans.TestRules;
 import com.techm.orion.entitybeans.TestStrategeyVersioningJsonModel;
-import com.techm.orion.models.TemplateVersioningJSONModel;
 import com.techm.orion.pojo.BatchPojo;
 import com.techm.orion.pojo.FirmwareUpgradeDetail;
-import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.pojo.TestStrategyPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.PredefineTestDetailsRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
-
 import com.techm.orion.repositories.TestBundlingRepository;
 import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
@@ -90,6 +86,9 @@ public class TestStrategyController {
 
 	@Autowired
 	private TestBundlingRepository testBundleRepo;
+
+	@Autowired
+	private TestBundlingController bundlecontroller;
 
 	@GET
 	@RequestMapping(value = "/testfeatureList", method = RequestMethod.GET, produces = "application/json")
@@ -152,8 +151,8 @@ public class TestStrategyController {
 			String version = null;
 			String testName = null;
 			testDetailsList = testDetailsRepository
-					.findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(
-							deviceType, deviceModel, os, osVersion, vendor, region, networkType);
+					.findByDeviceFamilyIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(
+							deviceType, os, osVersion, vendor, region, networkType);
 
 			for (int i = 0; i < testDetailsList.size(); i++) {
 
@@ -165,8 +164,8 @@ public class TestStrategyController {
 			while (itrator.hasNext()) {
 				testName = itrator.next();
 				testDetailsListAllVersion = testDetailsRepository
-						.findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(
-								deviceType, deviceModel, os, osVersion, vendor, region, testName);
+						.findByDeviceFamilyIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(
+								deviceType, os, osVersion, vendor, region, testName);
 
 				for (int i = 0; i < testDetailsListAllVersion.size(); i++) {
 
@@ -176,8 +175,8 @@ public class TestStrategyController {
 				}
 
 				testDetailsListLatestVersion = testDetailsRepository
-						.findByDeviceFamilyAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
-								deviceType, deviceModel, os, osVersion, vendor, region, version, testName);
+						.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(deviceType, os,
+								osVersion, vendor, region, version, testName);
 
 				if (null != testDetailsListLatestVersion && testDetailsListLatestVersion.size() > 0) {
 
@@ -237,8 +236,8 @@ public class TestStrategyController {
 	public ResponseEntity getSeriess(@RequestParam String testid, String version) {
 
 		int testDetailsId = 0;
-        List<Integer> findBundleIds = new ArrayList();
-        List<String> bundleNameList = new ArrayList();
+		List<Integer> findBundleIds = new ArrayList();
+		List<String> bundleNameList = new ArrayList();
 		String testBundling = null;
 
 		Set<TestDetail> settestDetails = new HashSet<TestDetail>();
@@ -321,12 +320,11 @@ public class TestStrategyController {
 
 			testDetailsId = testdetaillist.get(0).getId();
 
-			findBundleIds=dao.findBundleId(testDetailsId);
+			findBundleIds = dao.findBundleId(testDetailsId);
 
-			for(int i=0;i<findBundleIds.size();i++)
-			{
-			testBundling = testBundleRepo.findByBundleName(findBundleIds.get(i).intValue());
-			bundleNameList.add(testBundling);
+			for (int i = 0; i < findBundleIds.size(); i++) {
+				testBundling = testBundleRepo.findByBundleName(findBundleIds.get(i).intValue());
+				bundleNameList.add(testBundling);
 			}
 			detail.setBundleName(bundleNameList);
 			testfeaturelist = testFeatureListRepository.findByTestDetail(testdetaillist.get(0));
@@ -343,7 +341,7 @@ public class TestStrategyController {
 		if (ischeck) {
 			return new ResponseEntity(detail, HttpStatus.OK);
 		} else {
-			
+
 			return new ResponseEntity("Unable to fetch data for the test.", HttpStatus.OK);
 
 		}
@@ -383,8 +381,8 @@ public class TestStrategyController {
 			if (json.containsKey("testType")) {
 				testDetail.setTestType(json.get("testType").toString());
 			}
-			if (json.containsKey("connectionProtocol")) {
-				testDetail.setTestConnectionProtocol(json.get("connectionProtocol").toString());
+			if (json.containsKey("testConnectionProtocol")) {
+				testDetail.setTestConnectionProtocol(json.get("testConnectionProtocol").toString());
 			}
 			if (json.containsKey("command")) {
 				testDetail.setTestCommand(json.get("command").toString());
@@ -1090,7 +1088,12 @@ public class TestStrategyController {
 			boolean objectPrsent = false;
 			if (modelList.size() > 0) {
 				for (int j = 0; j < modelList.size(); j++) {
-					if (modelList.get(j).getTestName().equalsIgnoreCase(mainList.get(i).getTestName())) {
+					String s = modelList.get(j).getTestName();
+					String seriesId = StringUtils.substringBefore(s, "_");
+					String s1 = mainList.get(i).getTestName();
+					String seriesId1 = StringUtils.substringBefore(s1, "_");
+
+					if (s.equalsIgnoreCase(s1)) {
 						objectPrsent = true;
 						break;
 					}
@@ -1102,7 +1105,9 @@ public class TestStrategyController {
 				objToAdd = mainList.get(i);
 
 				model.setTestId(objToAdd.getTestId());
-				model.setTestName(objToAdd.getTestName());
+				String s = objToAdd.getTestName();
+				String seriesId = StringUtils.substringBefore(s, "_");
+				model.setTestName(seriesId);
 				model.setName(objToAdd.getTestName().substring(0, 14));
 				model.setFullTestName(objToAdd.getTestName().substring(15));
 				model.setVendor(objToAdd.getVendor());
@@ -1119,7 +1124,10 @@ public class TestStrategyController {
 
 				modelList = new ArrayList<TestStrategyPojo>();
 				for (int k = 0; k < mainList.size(); k++) {
-					if (mainList.get(k).getTestName().equalsIgnoreCase(model.getTestName())) {
+
+					String s1 = mainList.get(k).getTestName();
+					String seriesId1 = StringUtils.substringBefore(s1, "_");
+					if (seriesId1.equalsIgnoreCase(model.getTestName())) {
 						modelList.add(mainList.get(k));
 					}
 				}
@@ -1128,7 +1136,6 @@ public class TestStrategyController {
 				modelList.get(0).setEnabled(true);
 				model.setChildList(modelList);
 				versioningModel.add(model);
-
 			}
 
 		}
@@ -1299,8 +1306,8 @@ public class TestStrategyController {
 				model.setTest_category(objToAdd.getTest_category());
 				model.setCreatedBy(objToAdd.getCreatedBy());
 				model.setCreatedOn(objToAdd.getCreatedOn());
-				model.setOs(objToAdd.getOs() + "/" + objToAdd.getOsVersion());
-
+				model.setOs(objToAdd.getOs());
+				model.setOsVersion(objToAdd.getOsVersion());
 				model.setDevice_family(objToAdd.getDeviceFamily());
 
 				model.setCreatedBy(objToAdd.getCreatedBy());
@@ -1371,7 +1378,6 @@ public class TestStrategyController {
 		List<TestDetail> testDetailsListLatestVersion = new ArrayList<TestDetail>();
 		List<TestDetail> testDetailsFinal = new ArrayList<TestDetail>();
 		List<TestDetail> testDetailsListAllVersion = new ArrayList<TestDetail>();
-		List<PredefineTestDetailEntity> masterTestDetails = new ArrayList<>();
 		HashSet<String> testNameList = new HashSet<>();
 		Set<String> testCategoryList = new HashSet<>();
 		String response = null;
@@ -1399,9 +1405,6 @@ public class TestStrategyController {
 			if (json.containsKey("vendor")) {
 				vendor = json.get("vendor").toString();
 			}
-			if (json.containsKey("deviceModel")) {
-				deviceModel = json.get("deviceModel").toString();
-			}
 			if (json.containsKey("os")) {
 				os = json.get("os").toString();
 			}
@@ -1418,24 +1421,49 @@ public class TestStrategyController {
 			if (json.containsKey("requestType")) {
 				requestType = json.get("requestType").toString().toLowerCase();
 			}
-			String version = null;
-			String testName = null;
-					
-			testDetailsList = testDetailsRepository
-					.findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndNetworkType(
-							deviceFamily, deviceModel, os, osVersion, vendor, region, networkType);
+			if (region.equals("All")) {
+				region = "%";
+			} else {
+				region = "%" + region;
+			}
+
+			if (vendor.equals("All")) {
+				vendor = "%";
+			} else {
+				vendor = "%" + vendor;
+			}
+			if (osVersion.equals("All")) {
+				osVersion = "%";
+			} else {
+				osVersion = "%" + osVersion;
+			}
+			if (os.equals("All")) {
+				os = "%";
+			} else {
+				os = "%" + os;
+			}
+			if (deviceFamily.equals("All")) {
+				deviceFamily = "%";
+			} else {
+				deviceFamily = "%" + deviceFamily;
+			}
+
+			testDetailsList = testDetailsRepository.getTesListData(deviceFamily, os, region, osVersion, vendor,
+					networkType);
 			String testCategory = null;
 			for (int i = 0; i < testDetailsList.size(); i++) {
 				switch (requestType) {
 				case "config":
 					testNameList.add(testDetailsList.get(i).getTestName());
 					testCategoryList.add(testDetailsList.get(i).getTestCategory());
+					testDetailsFinal.add(testDetailsList.get(i));
 					break;
 				case "test":
 					testCategory = testDetailsList.get(i).getTestCategory();
 					if (!testCategory.equals("Network Audit")) {
 						testNameList.add(testDetailsList.get(i).getTestName());
 						testCategoryList.add(testDetailsList.get(i).getTestCategory());
+						testDetailsFinal.add(testDetailsList.get(i));
 					}
 					break;
 				case "audit":
@@ -1443,6 +1471,7 @@ public class TestStrategyController {
 					if (testCategory.equals("Network Audit")) {
 						testNameList.add(testDetailsList.get(i).getTestName());
 						testCategoryList.add(testDetailsList.get(i).getTestCategory());
+						testDetailsFinal.add(testDetailsList.get(i));
 					}
 					break;
 
@@ -1452,81 +1481,62 @@ public class TestStrategyController {
 
 			}
 
-			Iterator<String> itrator = testNameList.iterator();
-			while (itrator.hasNext()) {
-				testName = itrator.next();
-				testDetailsListAllVersion = testDetailsRepository
-						.findByDeviceFamilyIgnoreCaseContainingAndDeviceModelIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(
-								deviceFamily, deviceModel, os, osVersion, vendor, region, testName);
-
-				for (int i = 0; i < testDetailsListAllVersion.size(); i++) {
-
-					if (testName.equals(testDetailsListAllVersion.get(i).getTestName())) {
-						version = testDetailsListAllVersion.get(i).getVersion();
-					}
-				}
-
-				testDetailsListLatestVersion = testDetailsRepository
-						.findByDeviceFamilyAndDeviceModelAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
-								deviceFamily, deviceModel, os, osVersion, vendor, region, version, testName);
-
-				if (null != testDetailsListLatestVersion || !testDetailsListLatestVersion.isEmpty()) {
-
-					int n = testDetailsListLatestVersion.size();
-
-					List<TestDetail> aList = new ArrayList<TestDetail>(n);
-					for (TestDetail x : testDetailsListLatestVersion) {
-
-						aList.add(x);
-					}
-					// Logic to set disabled and selected bit in the test detail
-					// array to be sent to ui based on features selected
-
-					if (featuresFromUI != null && featuresFromUI.size() > 0) {
-						for (int i = 0; i < aList.size(); i++) {
-							List<TestFeatureList> dbFeatures = testFeatureListRepository.findByTestDetail(aList.get(i));
-
-							for (int j = 0; j < dbFeatures.size(); j++) {
-								if (featuresFromUI.contains(dbFeatures.get(j).getTestFeature())) {
-									aList.get(i).setSelected(true);
-									aList.get(i).setDisabled(false);
-								}
-							}
-							logger.info("");
-						}
-					} else {
-						for (int i = 0; i < aList.size(); i++) {
-
-							aList.get(i).setSelected(false);
-							aList.get(i).setDisabled(false);
-
-							logger.info("");
-						}
-					}	
-					testDetailsFinal.addAll(aList);
-				}
-
-				else {
-					JSONObject testDetails= new JSONObject();
-					testDetails.put("msg", "Record not found");
-					testDetailsValue.add(testDetails);
-					return testDetailsValue;
-				}
-				/*predefineTestDetailsRepository.findAll().forEach(predefineTest->{
-					TestDetail testObject = new TestDetail();
-					testObject.setTestName(predefineTest.getTestName());
-					testObject.setTestCategory(predefineTest.getTestCategory());
-					testObject.setVersion(String.valueOf(predefineTest.getVersion()));
-					testObject.setId(predefineTest.getId());
-					testDetailsFinal.add(testObject);
-					testCategoryList.add(predefineTest.getTestCategory());					
-				});*/
-			}
+			/*
+			 * Iterator<String> itrator = testNameList.iterator(); while (itrator.hasNext())
+			 * { testName = itrator.next(); testDetailsListAllVersion =
+			 * testDetailsRepository
+			 * .findByDeviceFamilyIgnoreCaseContainingAndOsIgnoreCaseContainingAndOsVersionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndRegionIgnoreCaseContainingAndTestNameIgnoreCaseContaining(
+			 * deviceFamily, os, osVersion, vendor, region, testName);
+			 * 
+			 * for (int i = 0; i < testDetailsListAllVersion.size(); i++) {
+			 * 
+			 * if (testName.equals(testDetailsListAllVersion.get(i).getTestName())) {
+			 * version = testDetailsListAllVersion.get(i).getVersion(); } }
+			 * 
+			 * testDetailsListLatestVersion = testDetailsRepository
+			 * .findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndVersionAndTestName(
+			 * deviceFamily,os, osVersion, vendor, region, version, testName);
+			 * 
+			 * if (null != testDetailsListLatestVersion ||
+			 * !testDetailsListLatestVersion.isEmpty()) {
+			 * 
+			 * int n = testDetailsListLatestVersion.size();
+			 * 
+			 * List<TestDetail> aList = new ArrayList<TestDetail>(n); for (TestDetail x :
+			 * testDetailsListLatestVersion) {
+			 * 
+			 * aList.add(x); } // Logic to set disabled and selected bit in the test detail
+			 * // array to be sent to ui based on features selected
+			 * 
+			 * if (featuresFromUI != null && featuresFromUI.size() > 0) { for (int i = 0; i
+			 * < aList.size(); i++) { List<TestFeatureList> dbFeatures =
+			 * testFeatureListRepository.findByTestDetail(aList.get(i));
+			 * 
+			 * for (int j = 0; j < dbFeatures.size(); j++) { if
+			 * (featuresFromUI.contains(dbFeatures.get(j).getTestFeature())) {
+			 * aList.get(i).setSelected(true); aList.get(i).setDisabled(false); } }
+			 * logger.info(""); } } else { for (int i = 0; i < aList.size(); i++) {
+			 * 
+			 * aList.get(i).setSelected(false); aList.get(i).setDisabled(false);
+			 * 
+			 * logger.info(""); } } testDetailsFinal.addAll(aList); }
+			 * 
+			 * else { JSONObject testDetails= new JSONObject(); testDetails.put("msg",
+			 * "Record not found"); testDetailsValue.add(testDetails); return
+			 * testDetailsValue; }
+			 * predefineTestDetailsRepository.findAll().forEach(predefineTest->{ TestDetail
+			 * testObject = new TestDetail();
+			 * testObject.setTestName(predefineTest.getTestName());
+			 * testObject.setTestCategory(predefineTest.getTestCategory());
+			 * testObject.setVersion(String.valueOf(predefineTest.getVersion()));
+			 * testObject.setId(predefineTest.getId()); testDetailsFinal.add(testObject);
+			 * testCategoryList.add(predefineTest.getTestCategory()); }); }
+			 */
 			testCategoryList.forEach(category -> {
 				JSONArray testDetailsArray = new JSONArray();
 				testDetailsFinal.stream().filter(it -> category.equals(it.getTestCategory())).forEach(testInfo -> {
 					JSONObject testObject = new JSONObject();
-					testObject.put("testName", testInfo.getTestName()+"_"+testInfo.getVersion());
+					testObject.put("testName", testInfo.getTestName() + "_" + testInfo.getVersion());
 					testObject.put("testCategory", testInfo.getTestCategory());
 					testObject.put("testId", testInfo.getTestId());
 					testObject.put("isBundle", false);
@@ -1539,8 +1549,8 @@ public class TestStrategyController {
 			});
 			String requestTypevalue = requestType;
 
-			testBundleRepo.findByVendorAndDeviceFamilyAndOsAndOsVersionAndNetworkFunctionAndRegion(
-					vendor, deviceFamily,os, osVersion, networkType, region).forEach(bundle -> {
+			testBundleRepo.getTestBundleDate(deviceFamily, os, region, osVersion, vendor, networkType)
+					.forEach(bundle -> {
 						JSONArray testDetailsArray = new JSONArray();
 						boolean auditFlag = false;
 						boolean testOnly = false;
@@ -1553,31 +1563,33 @@ public class TestStrategyController {
 							auditFlag = testDetail.stream()
 									.anyMatch(testInfo -> testInfo.getTestCategory().equals("Network Audit"));
 						}
-						if((auditFlag && "audit".equals(requestTypevalue)) || (testOnly && "test".equals(requestTypevalue)) || (!auditFlag && !testOnly && ("config".equals(requestTypevalue)))){
-						for (TestDetail testInfo : testDetail) {								
-							JSONObject testObject = new JSONObject();
-							testObject.put("testCategory", testInfo.getTestCategory());			
-							testObject.put("testName", testInfo.getTestName()+"_"+testInfo.getVersion());
-							testObject.put("testId", testInfo.getTestId());
-							testObject.put("isBundle", true);
-							testDetailsArray.add(testObject);
+						if ((auditFlag && "audit".equals(requestTypevalue))
+								|| (testOnly && "test".equals(requestTypevalue))
+								|| (!auditFlag && !testOnly && ("config".equals(requestTypevalue)))) {
+							for (TestDetail testInfo : testDetail) {
+								JSONObject testObject = new JSONObject();
+								testObject.put("testCategory", testInfo.getTestCategory());
+								testObject.put("testName", testInfo.getTestName() + "_" + testInfo.getVersion());
+								testObject.put("testId", testInfo.getTestId());
+								testObject.put("isBundle", true);
+								testDetailsArray.add(testObject);
+							}
+							JSONObject testObject2 = new JSONObject();
+							testObject2.put("name", bundle.getTestBundle());
+							testObject2.put("tests", testDetailsArray);
+							testDetailsValue.add(testObject2);
 						}
-						JSONObject testObject2 = new JSONObject();
-						testObject2.put("name", bundle.getTestBundle());
-						testObject2.put("tests", testDetailsArray);
-						testDetailsValue.add(testObject2);
-						}
-					});					
+					});
 
 			logger.info(testDetailsValue);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			JSONObject testDetails= new JSONObject();
+			JSONObject testDetails = new JSONObject();
 			testDetails.put("msg", "Unable read GUI input");
 			testDetailsValue.add(testDetails);
 			return testDetailsValue;
-		}		
+		}
 		return testDetailsValue;
 	}
 
@@ -1745,7 +1757,7 @@ public class TestStrategyController {
 
 			testDetailsList = testDetailsRepository.findBySelectionWithoutModel(region, vendor, networkType);
 		} else {
-			testDetailsList = testDetailsRepository.findBySelection(region, vendor, networkType, deviceModel);
+			testDetailsList = testDetailsRepository.findBySelection(region, vendor, networkType);
 		}
 
 		String testCategory = null;

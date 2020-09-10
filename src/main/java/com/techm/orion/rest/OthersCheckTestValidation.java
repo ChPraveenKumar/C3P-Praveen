@@ -159,8 +159,7 @@ public class OthersCheckTestValidation extends Thread {
 							RequestInfoDao dao = new RequestInfoDao();
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							//TestDetail test = new TestDetail();
-							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getModel(),
-									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
+							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Others");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Others",version);

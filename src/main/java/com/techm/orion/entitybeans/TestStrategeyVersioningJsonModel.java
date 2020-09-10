@@ -8,6 +8,7 @@ import com.techm.orion.pojo.TestStrategyPojo;
 public class TestStrategeyVersioningJsonModel {
 
 	List<TestStrategyPojo> childList = new ArrayList<TestStrategyPojo>();
+	List<TestDetail> childList1 = new ArrayList<TestDetail>();
 
 	private String testName = null;
 
@@ -31,7 +32,6 @@ public class TestStrategeyVersioningJsonModel {
 	private boolean isEnabled = false;
 
 	private String device_family;
-
 
 	private String test_category;
 
@@ -66,6 +66,7 @@ public class TestStrategeyVersioningJsonModel {
 	public void setDevice_family(String device_family) {
 		this.device_family = device_family;
 	}
+
 	public String getTest_category() {
 		return test_category;
 	}
@@ -160,6 +161,14 @@ public class TestStrategeyVersioningJsonModel {
 
 	public void setEnabled(boolean isEnabled) {
 		this.isEnabled = isEnabled;
+	}
+
+	public List<TestDetail> getChildList1() {
+		return childList1;
+	}
+
+	public void setChildList1(List<TestDetail> childList1) {
+		this.childList1 = childList1;
 	}
 
 }

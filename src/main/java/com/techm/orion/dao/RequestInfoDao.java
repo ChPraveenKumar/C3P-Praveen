@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -77,6 +78,7 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.service.CertificationTestResultService;
 import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.webService.GetAllDetailsService;
 
 @Controller
@@ -4914,26 +4916,26 @@ public class RequestInfoDao {
 	/*
 	 * Owner: Ruchita Salvi Module: Test Strategy
 	 */
-	public List<TestDetail> findTestFromTestStrategyDB(String devicemodel, String deviceFamily, String os,
-			String osversion, String vendor, String region, String testCategory) {
+	public List<TestDetail> findTestFromTestStrategyDB(String deviceFamily, String os, String osversion, String vendor,
+			String region, String testCategory) {
 		List<TestDetail> list = new ArrayList<TestDetail>();
-		String queryTstDetails = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_family = ? and os=? and os_version=? and vendor=? and region=? and test_category=?";
+		String queryTstDetails = "select * from  t_tststrategy_m_tstdetails where (device_family like ? or device_family like '%All')  and (os like ? or os like '%All') and (os_version like ? or os_version like '%All') and (vendor like ? or vendor like '%All') and (region like ? or region like '%All') and test_category=?";
 		String queryTstRules = "select * from t_tststrategy_m_tstrules where test_name=?";
-		String queryTstDetailsTestName = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_family = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=?";
-		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where device_model = ? and device_family = ? and os=? and os_version=? and vendor=? and region=? and test_category=? and test_name=? and version=?";
+		String queryTstDetailsTestName = "select * from  t_tststrategy_m_tstdetails where  (device_family like ? or device_family like '%All') and (os like ? or os like '%All')  and (os_version like ? or os_version like '%All') and (vendor like ? or vendor like '%All') and (region like ? or region like '%All') and test_category=? and test_name=?";
+		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where (device_family like ? or device_family like '%All') and (os like ? or os like '%All') and (os_version like ? or os_version like '%All') and (vendor like ? or vendor like '%All') and (region like ? or region like '%All') and test_category=? and test_name=? and version=?";
 
 		ResultSet rs = null, rs1 = null, rs2 = null, rs3 = null;
 		String maxVersion = null;
 		Set<String> setOfTest = new HashSet<>();
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(queryTstDetails);) {
-			preparedStmt.setString(1, devicemodel);
-			preparedStmt.setString(2, deviceFamily);
-			preparedStmt.setString(3, os);
-			preparedStmt.setString(4, osversion);
-			preparedStmt.setString(5, vendor);
-			preparedStmt.setString(6, region);
-			preparedStmt.setString(7, testCategory);
+
+			preparedStmt.setString(1, deviceFamily);
+			preparedStmt.setString(2, os);
+			preparedStmt.setString(3, osversion);
+			preparedStmt.setString(4, vendor);
+			preparedStmt.setString(5, region);
+			preparedStmt.setString(6, testCategory);
 
 			rs = preparedStmt.executeQuery();
 			if (rs != null) {
@@ -4944,14 +4946,14 @@ public class RequestInfoDao {
 
 						try (PreparedStatement tstDetailsTestNamePs = connection
 								.prepareStatement(queryTstDetailsTestName);) {
-							tstDetailsTestNamePs.setString(1, devicemodel);
-							tstDetailsTestNamePs.setString(2, deviceFamily);
-							tstDetailsTestNamePs.setString(3, os);
-							tstDetailsTestNamePs.setString(4, osversion);
-							tstDetailsTestNamePs.setString(5, vendor);
-							tstDetailsTestNamePs.setString(6, region);
-							tstDetailsTestNamePs.setString(7, testCategory);
-							tstDetailsTestNamePs.setString(8, testName);
+
+							tstDetailsTestNamePs.setString(1, deviceFamily);
+							tstDetailsTestNamePs.setString(2, os);
+							tstDetailsTestNamePs.setString(3, osversion);
+							tstDetailsTestNamePs.setString(4, vendor);
+							tstDetailsTestNamePs.setString(5, region);
+							tstDetailsTestNamePs.setString(6, testCategory);
+							tstDetailsTestNamePs.setString(7, testName);
 
 							rs2 = tstDetailsTestNamePs.executeQuery();
 
@@ -4963,15 +4965,14 @@ public class RequestInfoDao {
 								try (PreparedStatement tstDetailsTestNameVPs = connection
 										.prepareStatement(queryTstDetailsTestNameV);) {
 
-									tstDetailsTestNameVPs.setString(1, devicemodel);
-									tstDetailsTestNameVPs.setString(2, deviceFamily);
-									tstDetailsTestNameVPs.setString(3, os);
-									tstDetailsTestNameVPs.setString(4, osversion);
-									tstDetailsTestNameVPs.setString(5, vendor);
-									tstDetailsTestNameVPs.setString(6, region);
-									tstDetailsTestNameVPs.setString(7, testCategory);
-									tstDetailsTestNameVPs.setString(8, testName);
-									tstDetailsTestNameVPs.setString(9, maxVersion);
+									tstDetailsTestNameVPs.setString(1, deviceFamily);
+									tstDetailsTestNameVPs.setString(2, os);
+									tstDetailsTestNameVPs.setString(3, osversion);
+									tstDetailsTestNameVPs.setString(4, vendor);
+									tstDetailsTestNameVPs.setString(5, region);
+									tstDetailsTestNameVPs.setString(6, testCategory);
+									tstDetailsTestNameVPs.setString(7, testName);
+									tstDetailsTestNameVPs.setString(8, maxVersion);
 
 									rs3 = tstDetailsTestNameVPs.executeQuery();
 									if (rs3 != null) {
@@ -5040,6 +5041,7 @@ public class RequestInfoDao {
 			DBUtil.close(rs2);
 			DBUtil.close(rs3);
 		}
+		list = list.stream().filter(UtilityMethods.distinctByKey(p -> p.getTestName())).collect(Collectors.toList());
 		return list;
 	}
 
@@ -5109,7 +5111,7 @@ public class RequestInfoDao {
 
 					}
 					obj.put("value", rs.getString("ResultText"));
-					String testNameAndVersion = getTestNameAndVesrion(rs.getString("testName"));
+					String testNameAndVersion = rs.getString("testName");
 					obj.put("testName", testNameAndVersion);
 					array.add(obj);
 				}
@@ -5413,6 +5415,7 @@ public class RequestInfoDao {
 			rs = preparedStmt.executeQuery();
 			if (rs != null) {
 				while (rs.next()) {
+
 					res = rs.getString("TestsSelected");
 					if (rs.getString("TestsSelected") != null) {
 						JSONArray jsonArray = new JSONArray(res);
@@ -5423,6 +5426,7 @@ public class RequestInfoDao {
 								test.setTestName(explrObject.getString("testName"));
 								resultList.add(test);
 							}
+
 						}
 					}
 				}
@@ -5432,6 +5436,8 @@ public class RequestInfoDao {
 		} finally {
 			DBUtil.close(rs);
 		}
+		resultList = resultList.stream().filter(UtilityMethods.distinctByKey(p -> p.getTestName()))
+				.collect(Collectors.toList());
 		return resultList;
 	}
 
@@ -6205,7 +6211,6 @@ public class RequestInfoDao {
 				request = new TestBundling();
 				request.setId(rs.getInt("id"));
 				request.setDeviceFamily(rs.getString("device_family"));
-				request.setDeviceModel(rs.getString("device_model"));
 				request.setNetworkFunction(rs.getString("network_function"));
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
@@ -7770,13 +7775,13 @@ public class RequestInfoDao {
 		}
 		return requestInfoList;
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public List<Integer> findBundleId(int testId) {
 		String query = null;
-		List<Integer>bundleId=new ArrayList();;
+		List<Integer> bundleId = new ArrayList();
+		;
 
-		
 		ResultSet rs = null;
 
 		query = "SELECT bundle_id FROM t_tststrategy_j_test_bundle where test_id LIKE ?";
@@ -7788,10 +7793,9 @@ public class RequestInfoDao {
 
 			rs = pst.executeQuery();
 			while (rs.next()) {
-				
+
 				bundleId.add(rs.getInt("bundle_id"));
 
-				
 			}
 
 		} catch (SQLException exe) {
@@ -7802,6 +7806,7 @@ public class RequestInfoDao {
 
 		return bundleId;
 	}
+
 	public List<TestDetail> getAllTestsForSearch(int i, String tempTestCategoryName) {
 		List<TestDetail> list = new ArrayList<TestDetail>();
 		String query = "select * from t_tststrategy_m_tstdetails where id = ? and test_category = ?";
@@ -7837,4 +7842,66 @@ public class RequestInfoDao {
 		}
 		return list;
 	}
+
+	public List<TestDetail> getBundleView(int testId) {
+		List<TestDetail> list = new ArrayList<TestDetail>();
+		String query = "select * from t_tststrategy_m_tstdetails where id LIKE ?";
+		ResultSet rs = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+			pst.setString(1, testId + "%");
+			rs = pst.executeQuery();
+			TestDetail request;
+			while (rs.next()) {
+				request = new TestDetail();
+				request.setTestName(rs.getString("test_name"));
+				request.setVersion(rs.getString("version"));
+				request.setTestId(rs.getString("id"));
+				request.setVendor(rs.getString("vendor"));
+				request.setTestConnectionProtocol(rs.getString("test_connection_protocol"));
+				request.setTestCommand(rs.getString("test_command"));
+				request.setTestCategory(rs.getString("test_category"));
+
+				list.add(request);
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getAllTests method " + exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+		return list;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<TestDetail> findTestId(int bundleId) {
+		String query = null;
+		List<TestDetail> requestInfoList = new ArrayList<TestDetail>();
+
+		TestDetail obj = null;
+		ResultSet rs = null;
+
+		query = "SELECT test_id FROM t_tststrategy_j_test_bundle where bundle_id LIKE ?";
+
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement pst = connection.prepareStatement(query);) {
+
+			pst.setString(1, bundleId + "%");
+
+			rs = pst.executeQuery();
+			while (rs.next()) {
+				obj = new TestDetail();
+				obj.setId(rs.getInt("test_id"));
+
+				requestInfoList.add(obj);
+			}
+
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in findByTestNameForSearch method " + exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+
+		return requestInfoList;
+	}
+
 }

@@ -414,7 +414,6 @@ public class RequestDetailsServiceWithVersion {
 			RequestDetails dao = new RequestDetails();
 			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId, requestVersion);			
 			JSONArray testNameArray = (JSONArray) parser.parse(testAndDiagnosis);
-			logger.info(testNameArray);
 			Set<String> setOfTest = new HashSet<>();
 			for (int i = 0; i < testNameArray.size(); i++) {
 				JSONObject jsonObj = (JSONObject) testNameArray.get(i);

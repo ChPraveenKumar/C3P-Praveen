@@ -193,7 +193,7 @@ public class NetworkTestValidation extends Thread {
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
 							TestDetail test = new TestDetail();
-							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getModel(),
+							listOfTests = dao.findTestFromTestStrategyDB(
 									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Network Test");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
