@@ -96,7 +96,6 @@ public class TestDetail implements Serializable
 	@Transient
 	private List<String> bundleName;
 
-
 	@Transient
 	boolean disabled = true;
 
@@ -131,13 +130,11 @@ public class TestDetail implements Serializable
 
 	@Column(name = "network_type", length = 5)
 	private String networkType;
-	
+
 	@JsonIgnore
 	@ManyToMany
-	@JoinTable(name = "t_tststrategy_j_test_bundle", joinColumns = {
-	        @JoinColumn(name = "test_id", referencedColumnName = "id") }, inverseJoinColumns = {
-	                @JoinColumn(name = "bundle_id", referencedColumnName = "id") })
-    Set<TestBundling> testbundling;
+	@JoinTable(name = "t_tststrategy_j_test_bundle", joinColumns = {@JoinColumn(name = "test_id", referencedColumnName = "id") }, inverseJoinColumns = {@JoinColumn(name = "bundle_id", referencedColumnName = "id") })
+	Set<TestBundling> testbundling;
 
 	public String getRegion() {
 		return region;
@@ -150,7 +147,7 @@ public class TestDetail implements Serializable
 	public List<TestRules> getListRules() {
 		return listRules;
 	}
-	
+
 	public List<String> getBundleName() {
 		return bundleName;
 	}
@@ -394,5 +391,5 @@ public class TestDetail implements Serializable
 	public void setTestbundling(Set<TestBundling> testbundling) {
 		this.testbundling = testbundling;
 	}
-	
+
 }

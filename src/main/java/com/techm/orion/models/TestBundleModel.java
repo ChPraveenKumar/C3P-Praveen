@@ -8,8 +8,14 @@ import com.techm.orion.pojo.TestBundlePojo;
 
 public class TestBundleModel {
 	
-	List<TestBundlePojo>tests=new ArrayList<TestBundlePojo>();
+	private List<TestBundlePojo>tests=new ArrayList<TestBundlePojo>();
 
+	public List<TestBundlePojo> getTests() {
+		return tests;
+	}
+	public void setTests(List<TestBundlePojo> tests) {
+		this.tests = tests;
+	}
 	private String name;
 	public String getName() {
 		return name;
@@ -18,11 +24,12 @@ public class TestBundleModel {
 		this.name = name;
 	}
 
-	public List<TestBundlePojo> getTests() {
-		return tests;
+	public boolean addTest(TestBundlePojo test) {
+		return tests.add(test);
 	}
-	public void setTests(List<TestBundlePojo> tests) {
-		this.tests = tests;
+	public void removeTest(TestBundlePojo test) {
+		tests.remove(test);
 	}
+
 
 }

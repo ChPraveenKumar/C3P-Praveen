@@ -279,11 +279,13 @@ public class RequestInfoDao {
 			} else {
 				networktype = "Legacy";
 			}
-			// Call insertInternetCvrfso method to insert the data in internetlcvrfso table
+			// Call insertInternetCvrfso method to insert the data in
+			// internetlcvrfso table
 			insertInternetCvrfso(request);
 			// Call insertMisArPeSO method to insert the data in misarpeso table
 			insertMisArPeSo(request);
-			// Call insertMisArPeSO method to insert the data in deviceinterfaceso table
+			// Call insertMisArPeSO method to insert the data in
+			// deviceinterfaceso table
 			insertDeviceInterfaceSo(request);
 			// Logic to add banner text in new
 			// table-----------------------------------------------------------------------------------------------------
@@ -1037,7 +1039,8 @@ public class RequestInfoDao {
 
 		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
 			// query =
-			// "SELECT * FROM requestinfoso WHERE request_status NOT IN('Cancelled') and
+			// "SELECT * FROM requestinfoso WHERE request_status NOT
+			// IN('Cancelled') and
 			// alphanumeric_req_id rlike'SR|OS'";
 			query = "SELECT * FROM requestinfoso WHERE (request_status NOT IN('Cancelled') AND import_status IS NULL) OR import_status IN('Success')";
 		}
@@ -1536,7 +1539,8 @@ public class RequestInfoDao {
 	}
 
 	/*
-	 * Code changes for JDBC to JPA migration --- Alert Page(To display All alerts)
+	 * Code changes for JDBC to JPA migration --- Alert Page(To display All
+	 * alerts)
 	 */
 
 	public List<AlertInformationPojo> getALLAlertDataFromDB() {
@@ -2994,7 +2998,10 @@ public class RequestInfoDao {
 		Calendar now = Calendar.getInstance();
 		SimpleDateFormat format = new SimpleDateFormat("MM/dd");
 		String[] days = new String[7];
-		int delta = -now.get(GregorianCalendar.DAY_OF_WEEK) + 2; // add 2 if your week start on monday
+		int delta = -now.get(GregorianCalendar.DAY_OF_WEEK) + 2; // add 2 if
+																	// your week
+																	// start on
+																	// monday
 		List<String> daysArray = new ArrayList<String>();
 
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -3315,7 +3322,10 @@ public class RequestInfoDao {
 		Calendar now = Calendar.getInstance();
 		SimpleDateFormat format = new SimpleDateFormat("MM/dd");
 		String[] days = new String[7];
-		int delta = -now.get(GregorianCalendar.DAY_OF_WEEK) + 2; // add 2 if your week start on monday
+		int delta = -now.get(GregorianCalendar.DAY_OF_WEEK) + 2; // add 2 if
+																	// your week
+																	// start on
+																	// monday
 		List<String> daysArray = new ArrayList<String>();
 
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -6017,8 +6027,9 @@ public class RequestInfoDao {
 			}
 			if (requestInfoSO.getRequestType().equalsIgnoreCase("IOSUPGRADE")) {
 				/*
-				 * zipcode = requestInfoSO.getZipcode(); managed = requestInfoSO.getManaged();
-				 * downtimerequired = requestInfoSO.getDownTimeRequired(); lastupgradedon =
+				 * zipcode = requestInfoSO.getZipcode(); managed =
+				 * requestInfoSO.getManaged(); downtimerequired =
+				 * requestInfoSO.getDownTimeRequired(); lastupgradedon =
 				 * requestInfoSO.getLastUpgradedOn();
 				 */}
 			if (requestInfoSO.getNetworkType() != null || requestInfoSO.getNetworkType() != "") {
@@ -6192,12 +6203,14 @@ public class RequestInfoDao {
 			query = "SELECT * FROM t_tststrategy_m_testbundling where device_family LIKE ?";
 		} else if (key.equals("Vendor")) {
 			query = "SELECT * FROM t_tststrategy_m_testbundling where vendor LIKE ?";
-		} else if (key.equals("Os")) {
+		} else if (key.equals("OS")) {
 			query = "SELECT * FROM t_tststrategy_m_testbundling where os LIKE ?";
 		} else if (key.equals("OS Version")) {
 			query = "SELECT * FROM t_tststrategy_m_testbundling where os_version LIKE ?";
 		} else if (key.equals("Bundle Name")) {
 			query = "SELECT * FROM t_tststrategy_m_testbundling where test_bundle LIKE ?";
+		} else if (key.equals("Region")) {
+			query = "SELECT * FROM t_tststrategy_m_testbundling where region LIKE ?";
 		}
 
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -6217,8 +6230,8 @@ public class RequestInfoDao {
 				request.setRegion(rs.getString("region"));
 				request.setVendor(rs.getString("vendor"));
 				request.setTestBundle(rs.getString("test_bundle"));
-				request.setCreatedBy(rs.getString("created_by"));
-				request.setCreatedDate(rs.getTimestamp("creation_date"));
+				request.setUpdatedBy(rs.getString("created_by"));
+				request.setUpdatedDate(rs.getTimestamp("creation_date"));
 
 				requestInfoList.add(request);
 			}
@@ -7167,6 +7180,7 @@ public class RequestInfoDao {
 	/*
 	 * Getting Test name with version
 	 */
+	@SuppressWarnings("unused")
 	private String getTestNameAndVesrion(String name) {
 		String testNameAndVersion = null;
 		String testName = null;
@@ -7580,12 +7594,12 @@ public class RequestInfoDao {
 				request.setVendor(rs.getString("vendor"));
 				request.setDeviceFamily(rs.getString("device_family"));
 				request.setDeviceModel(rs.getString("device_model"));
-				request.setDevice_type(rs.getString("device_type"));
+
 				request.setTest_category(rs.getString("test_category"));
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
 				request.setRegion(rs.getString("region"));
-				request.setCreatedOn(rs.getString("created_on"));
+				request.setCreatedDate(rs.getString("created_on"));
 				request.setCreatedBy(rs.getString("created_by"));
 
 				request.setEnabled(rs.getBoolean("is_enabled"));
@@ -7593,7 +7607,7 @@ public class RequestInfoDao {
 				list.add(request);
 			}
 		} catch (SQLException exe) {
-			logger.error("SQL Exception in getAllTests method " + exe.getMessage());
+			logger.error("SQL Exception in getAllTestsForTestStrategy method " + exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
 		}
@@ -7629,12 +7643,12 @@ public class RequestInfoDao {
 					request.setVendor(rs.getString("vendor"));
 					request.setDeviceFamily(rs.getString("device_family"));
 					request.setDeviceModel(rs.getString("device_model"));
-					request.setDevice_type(rs.getString("device_type"));
+
 					request.setTest_category(rs.getString("test_category"));
 					request.setOs(rs.getString("os"));
 					request.setOsVersion(rs.getString("os_version"));
 					request.setRegion(rs.getString("region"));
-					request.setCreatedOn(rs.getString("created_on"));
+					request.setCreatedDate(rs.getString("created_on"));
 					request.setCreatedBy(rs.getString("created_by"));
 
 					request.setEnabled(rs.getBoolean("is_enabled"));
@@ -7642,7 +7656,7 @@ public class RequestInfoDao {
 				}
 
 			} catch (SQLException exe) {
-				logger.error("SQL Exception in findByTestNameForSearch method " + exe.getMessage());
+				logger.error("SQL Exception in findById method " + exe.getMessage());
 			} finally {
 				DBUtil.close(rs);
 			}
@@ -7650,7 +7664,6 @@ public class RequestInfoDao {
 		return requestInfoList;
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<TestBundlePojo> findTestIdList(int bundleId) {
 		String query = null;
 		List<TestBundlePojo> requestInfoList = new ArrayList<TestBundlePojo>();
@@ -7674,7 +7687,7 @@ public class RequestInfoDao {
 			}
 
 		} catch (SQLException exe) {
-			logger.error("SQL Exception in findByTestNameForSearch method " + exe.getMessage());
+			logger.error("SQL Exception in findTestIdList method " + exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
 		}
@@ -7699,12 +7712,12 @@ public class RequestInfoDao {
 				request.setVendor(rs.getString("vendor"));
 				request.setDeviceFamily(rs.getString("device_family"));
 				request.setDeviceModel(rs.getString("device_model"));
-				request.setDevice_type(rs.getString("device_type"));
+
 				request.setTest_category(rs.getString("test_category"));
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
 				request.setRegion(rs.getString("region"));
-				request.setCreatedOn(rs.getString("created_on"));
+				request.setCreatedDate(rs.getString("created_on"));
 				request.setCreatedBy(rs.getString("created_by"));
 
 				request.setEnabled(rs.getBoolean("is_enabled"));
@@ -7712,7 +7725,7 @@ public class RequestInfoDao {
 				list.add(request);
 			}
 		} catch (SQLException exe) {
-			logger.error("SQL Exception in getAllTests method " + exe.getMessage());
+			logger.error("SQL Exception in getTestsForTestStrategyOnId method " + exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
 		}
@@ -7729,16 +7742,14 @@ public class RequestInfoDao {
 			query = "SELECT * FROM t_tststrategy_m_tstdetails where device_family LIKE ?";
 		} else if (key.equals("Vendor")) {
 			query = "SELECT * FROM t_tststrategy_m_tstdetails where vendor LIKE ?";
-		} else if (key.equals("Os")) {
+		} else if (key.equals("OS")) {
 			query = "SELECT * FROM t_tststrategy_m_tstdetails where os LIKE ?";
 		} else if (key.equals("OS Version")) {
 			query = "SELECT * FROM t_tststrategy_m_tstdetails where os_version LIKE ?";
 		} else if (key.equals("Test Name")) {
 			query = "SELECT * FROM t_tststrategy_m_tstdetails where test_name LIKE ?";
-		} else if (key.equals("Model")) {
-			query = "SELECT * FROM t_tststrategy_m_tstdetails where device_model LIKE ?";
-		} else if (key.equals("Test Category")) {
-			query = "SELECT * FROM t_tststrategy_m_tstdetails where test_category LIKE ?";
+		} else if (key.equals("Region")) {
+			query = "SELECT * FROM t_tststrategy_m_tstdetails where region LIKE ?";
 		}
 
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -7756,12 +7767,12 @@ public class RequestInfoDao {
 				request.setVendor(rs.getString("vendor"));
 				request.setDeviceFamily(rs.getString("device_family"));
 				request.setDeviceModel(rs.getString("device_model"));
-				request.setDevice_type(rs.getString("device_type"));
+
 				request.setTest_category(rs.getString("test_category"));
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
 				request.setRegion(rs.getString("region"));
-				request.setCreatedOn(rs.getString("created_on"));
+				request.setCreatedDate(rs.getString("created_on"));
 				request.setCreatedBy(rs.getString("created_by"));
 
 				request.setEnabled(rs.getBoolean("is_enabled"));
@@ -7769,18 +7780,16 @@ public class RequestInfoDao {
 				requestInfoList.add(request);
 			}
 		} catch (SQLException exe) {
-			logger.error("SQL Exception in findByTestNameForSearch method " + exe.getMessage());
+			logger.error("SQL Exception in findByForSearch method " + exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
 		}
 		return requestInfoList;
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<Integer> findBundleId(int testId) {
 		String query = null;
-		List<Integer> bundleId = new ArrayList();
-		;
+		List<Integer> bundleId = new ArrayList<Integer>();
 
 		ResultSet rs = null;
 
@@ -7799,7 +7808,7 @@ public class RequestInfoDao {
 			}
 
 		} catch (SQLException exe) {
-			logger.error("SQL Exception in findByTestNameForSearch method " + exe.getMessage());
+			logger.error("SQL Exception in findBundleId method " + exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
 		}
@@ -7836,7 +7845,7 @@ public class RequestInfoDao {
 				list.add(request);
 			}
 		} catch (SQLException exe) {
-			logger.error("SQL Exception in getAllTests method " + exe.getMessage());
+			logger.error("SQL Exception in getAllTestsForSearch method " + exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
 		}
@@ -7846,7 +7855,9 @@ public class RequestInfoDao {
 	public List<TestDetail> getBundleView(int testId) {
 		List<TestDetail> list = new ArrayList<TestDetail>();
 		String query = "select * from t_tststrategy_m_tstdetails where id LIKE ?";
-		ResultSet rs = null;
+		String queryTstRules = "select * from t_tststrategy_m_tstrules where test_name=?";
+		ResultSet rs = null, rs1 = null;
+		List<TestRules> rulelist = new ArrayList<TestRules>();
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, testId + "%");
@@ -7862,17 +7873,46 @@ public class RequestInfoDao {
 				request.setTestCommand(rs.getString("test_command"));
 				request.setTestCategory(rs.getString("test_category"));
 
+				try {
+
+					PreparedStatement tstRulesPs = connection.prepareStatement(queryTstRules);
+
+					tstRulesPs.setString(1, request.getTestId());
+					rs1 = tstRulesPs.executeQuery();
+					while (rs1.next()) {
+						TestRules rule = new TestRules();
+						rule.setId(rs1.getInt("id"));
+						rule.setDataType(rs1.getString("data_type"));
+						rule.setAfterText(rs1.getString("after_text"));
+						rule.setBeforeText(rs1.getString("before_text"));
+						rule.setFromColumn(rs1.getString("from_column"));
+						rule.setNumberOfChars(rs1.getString("number_of_chars"));
+						rule.setReferenceColumn(rs1.getString("reference_column"));
+						rule.setReportedLabel(rs1.getString("reported_label"));
+						rule.setSectionName(rs1.getString("section_name"));
+						rule.setWhereKeyword(rs1.getString("where_keyword"));
+						rule.setEvaluation(rs1.getString("evaluation"));
+						rule.setOperator(rs1.getString("operator"));
+						rule.setValue1(rs1.getString("value1"));
+						rule.setValue2(rs1.getString("value2"));
+						rule.setSnippet(rs1.getString("snippet"));
+						rule.setKeyword(rs1.getString("keyword"));
+						rulelist.add(rule);
+					}
+				} catch (SQLException exe) {
+					logger.error("SQL Exception in getBundleViewDB 2 method " + exe.getMessage());
+				}
+				request.setListRules(rulelist);
 				list.add(request);
 			}
 		} catch (SQLException exe) {
-			logger.error("SQL Exception in getAllTests method " + exe.getMessage());
+			logger.error("SQL Exception in getBundleView DB1 method " + exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
 		}
 		return list;
 	}
 
-	@SuppressWarnings("unchecked")
 	public List<TestDetail> findTestId(int bundleId) {
 		String query = null;
 		List<TestDetail> requestInfoList = new ArrayList<TestDetail>();
@@ -7896,7 +7936,7 @@ public class RequestInfoDao {
 			}
 
 		} catch (SQLException exe) {
-			logger.error("SQL Exception in findByTestNameForSearch method " + exe.getMessage());
+			logger.error("SQL Exception in findTestId method " + exe.getMessage());
 		} finally {
 			DBUtil.close(rs);
 		}

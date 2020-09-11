@@ -7,8 +7,9 @@ import com.techm.orion.pojo.TestStrategyPojo;
 
 public class TestStrategeyVersioningJsonModel {
 
-	List<TestStrategyPojo> childList = new ArrayList<TestStrategyPojo>();
-	List<TestDetail> childList1 = new ArrayList<TestDetail>();
+	private List<TestStrategyPojo> testStrategyPojoList = new ArrayList<TestStrategyPojo>();
+	private List<TestDetail> testStrategyPojoList1 = new ArrayList<TestDetail>();
+
 
 	private String testName = null;
 
@@ -31,7 +32,7 @@ public class TestStrategeyVersioningJsonModel {
 	private String createdBy;
 	private boolean isEnabled = false;
 
-	private String device_family;
+	private String deviceFamily;
 
 	private String test_category;
 
@@ -43,9 +44,7 @@ public class TestStrategeyVersioningJsonModel {
 		this.name = name;
 	}
 
-	public List<TestStrategyPojo> getChildList() {
-		return childList;
-	}
+
 
 	public String getBundleName() {
 		return bundleName;
@@ -55,16 +54,14 @@ public class TestStrategeyVersioningJsonModel {
 		this.bundleName = bundleName;
 	}
 
-	public void setChildList(List<TestStrategyPojo> childList) {
-		this.childList = childList;
+
+
+	public String getDeviceFamily() {
+		return deviceFamily;
 	}
 
-	public String getDevice_family() {
-		return device_family;
-	}
-
-	public void setDevice_family(String device_family) {
-		this.device_family = device_family;
+	public void setDeviceFamily(String deviceFamily) {
+		this.deviceFamily = deviceFamily;
 	}
 
 	public String getTest_category() {
@@ -163,12 +160,20 @@ public class TestStrategeyVersioningJsonModel {
 		this.isEnabled = isEnabled;
 	}
 
-	public List<TestDetail> getChildList1() {
-		return childList1;
+	public List<TestStrategyPojo> getTestStrategyPojoList() {
+		return testStrategyPojoList;
 	}
 
-	public void setChildList1(List<TestDetail> childList1) {
-		this.childList1 = childList1;
+	public void setTestStrategyPojoList(List<TestStrategyPojo> testStrategyPojoList) {
+		this.testStrategyPojoList = testStrategyPojoList;
+	}
+
+	public List<TestDetail> getTestStrategyPojoList1() {
+		return testStrategyPojoList1;
+	}
+
+	public void setTestStrategyPojoList1(List<TestDetail> testStrategyPojoList1) {
+		this.testStrategyPojoList1 = testStrategyPojoList1;
 	}
 
 }

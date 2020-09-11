@@ -80,7 +80,7 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 	String testName = "SELECT * FROM t_tststrategy_m_tstdetails e WHERE e.id LIKE %?1%";
 
 	@Query(value = testName, nativeQuery = true)
-	List<TestDetail> findByTestId(String testId);
+	List<TestDetail> findByTestId(int tempTestId);
 
 	@Query(value = "select * from t_tststrategy_m_tstdetails  where region like :region or region like '%All' and os like :os or os like '%All' and os_version like :osVersion and os_version like '%All' and device_family like :devicefamily or device_family like '%All'  and vendor like :vendor and vendor like '%All' and network_type like :networkfunction or network_type like '%ALL' ", nativeQuery = true)
 	List<TestDetail> getTesListData(@Param("devicefamily") String devicefamily, @Param("os") String os,

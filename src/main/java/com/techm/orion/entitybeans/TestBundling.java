@@ -45,16 +45,15 @@ public class TestBundling {
 	@Column(name = "region")
 	private String region;
 	
-	@Column(name = "created_by")
-	private String createdBy;
+	@Column(name = "updated_by")
+	private String updatedBy;
 	
-	@Column(name = "creation_date")
-	private Timestamp createdDate;
+	@Column(name = "updated_date")
+	private Timestamp updatedDate;
 	
+
 	@ManyToMany
-	@JoinTable(name = "t_tststrategy_j_test_bundle", joinColumns = {
-	        @JoinColumn(name = "bundle_id", referencedColumnName = "id") }, inverseJoinColumns = {
-	                @JoinColumn(name = "test_id", referencedColumnName = "id") })
+	@JoinTable(name = "t_tststrategy_j_test_bundle", joinColumns = {@JoinColumn(name = "bundle_id", referencedColumnName = "id") }, inverseJoinColumns = {@JoinColumn(name = "test_id", referencedColumnName = "id")})
 	private Set<TestDetail> testDetails;
 
 	public int getId() {
@@ -129,20 +128,20 @@ public class TestBundling {
 		this.region = region;
 	}
 
-	public String getCreatedBy() {
-		return createdBy;
+	public String getUpdatedBy() {
+		return updatedBy;
 	}
 
-	public void setCreatedBy(String createdBy) {
-		this.createdBy = createdBy;
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
 	}
 
-	public Timestamp getCreatedDate() {
-		return createdDate;
+	public Timestamp getUpdatedDate() {
+		return updatedDate;
 	}
 
-	public void setCreatedDate(Timestamp createdDate) {
-		this.createdDate = createdDate;
+	public void setUpdatedDate(Timestamp updatedDate) {
+		this.updatedDate = updatedDate;
 	}
 
 }

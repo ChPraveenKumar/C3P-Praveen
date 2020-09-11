@@ -2,17 +2,11 @@ package com.techm.orion.pojo;
 
 public class TestBundlePojo {
 
-
-
 	private String testName;
-	
-	private int testId;
-	
+
 	private int test_id;
-	
+
 	private int bundle_id;
-
-
 
 	public int getTest_id() {
 		return test_id;
@@ -30,14 +24,6 @@ public class TestBundlePojo {
 		this.bundle_id = bundle_id;
 	}
 
-	public int getTestId() {
-		return testId;
-	}
-
-	public void setTestId(int testId) {
-		this.testId = testId;
-	}
-
 	public String getTestName() {
 		return testName;
 	}
@@ -45,6 +31,5 @@ public class TestBundlePojo {
 	public void setTestName(String testName) {
 		this.testName = testName;
 	}
-
 
 }

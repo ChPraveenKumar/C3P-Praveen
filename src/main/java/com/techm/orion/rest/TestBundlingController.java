@@ -48,16 +48,16 @@ import com.techm.orion.service.TestBundleService;
 public class TestBundlingController {
 
 	@Autowired
-	public VendorRepository vendorRepository;
+	private VendorRepository vendorRepository;
 
 	@Autowired
-	public DeviceFamilyRepository deviceFamilyRepository;
+	private DeviceFamilyRepository deviceFamilyRepository;
 
 	@Autowired
-	public OSRepository osRepository;
+	private OSRepository osRepository;
 
 	@Autowired
-	public OSversionRepository osversionRepository;
+	private OSversionRepository osversionRepository;
 
 	@Autowired
 	private TestDetailsRepository testDetailsRepository;
@@ -70,6 +70,8 @@ public class TestBundlingController {
 
 	private static final Logger logger = LogManager.getLogger(TestBundlingController.class);
 
+	RequestInfoDao dao = new RequestInfoDao();
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/deviceFamilyBundling", method = RequestMethod.POST, produces = "application/json")
@@ -93,9 +95,9 @@ public class TestBundlingController {
 				object.put(1, deviceFamilyList);
 
 			}
-		} catch (ParseException e) {
+		} catch (ParseException exe) {
 
-			logger.error(e);
+			logger.error("Exception occurred while parsing the Json object"+exe.getMessage());
 		}
 
 		return new ResponseEntity(deviceFamilyList, HttpStatus.OK);
@@ -117,7 +119,7 @@ public class TestBundlingController {
 			obj = (JSONObject) parser.parse(request);
 			String family = obj.get("family").toString();
 
-			if (family.equals("All")) {
+			if ("All".equals(family)) {
 
 				oslist = osRepository.findAll();
 				for (OS i : oslist) {
@@ -143,8 +145,8 @@ public class TestBundlingController {
 				}
 			}
 
-		} catch (Exception e) {
-			logger.error(e);
+		} catch (Exception exe) {
+			logger.error("Exception occurred while fetching the data object"+exe.getMessage());
 		}
 
 		return new ResponseEntity(outputArray, HttpStatus.OK);
@@ -171,7 +173,7 @@ public class TestBundlingController {
 			obj = (JSONObject) parser.parse(request);
 			String os = obj.get("os").toString();
 
-			if (os.equals("All")) {
+			if ("All".equals(os)) {
 				osversionlst = (List<OSversion>) osversionRepository.findAll();
 				for (OSversion i : osversionlst) {
 					object = new JSONObject();
@@ -198,8 +200,8 @@ public class TestBundlingController {
 
 				}
 			}
-		} catch (Exception e) {
-			// TODO: handle exception
+		} catch (Exception exe) {
+			logger.error("Exception occurred while fetching the data object"+exe.getMessage());
 		}
 		return new ResponseEntity(outputArray, HttpStatus.OK);
 
@@ -231,8 +233,8 @@ public class TestBundlingController {
 				Str = "Bundle name does not exist";
 			}
 			object.put("Validation", Str);
-		} catch (Exception e) {
-			// TODO: handle exception
+		} catch (Exception exe) {
+			logger.error("Exception occurred while fetching the data object"+exe.getMessage());
 		}
 		return new ResponseEntity(object, HttpStatus.OK);
 
@@ -246,14 +248,14 @@ public class TestBundlingController {
 
 		JSONObject obj = null;
 		JSONArray jsonArray = new JSONArray();
-		List<TestBundleModel> versioningModel = new ArrayList<TestBundleModel>();
+		List<TestBundleModel> versioningModel = new ArrayList<>();
 		List<TestBundlePojo> versioningModelChildList = new ArrayList<TestBundlePojo>();
 		TestBundlePojo objToAdd = null;
 		TestBundleModel versioningModelObject = null;
 		List<Integer> listOfTest = new ArrayList<>();
 		Set tempTestCategory = new HashSet<>();
 		int testId = 0;
-		RequestInfoDao dao = new RequestInfoDao();
+		
 		String tempTestCategoryName = null, testCategory = null;
 
 		List<TestDetail> listOfTestId;
@@ -284,28 +286,28 @@ public class TestBundlingController {
 				deviceFamily = json.get("deviceFamily").toString();
 			}
 
-			if (region.equals("All")) {
+			if ("All".equals(region)) {
 				region = "%";
 			} else {
 				region = "%" + region;
 			}
 
-			if (vendor.equals("All")) {
+			if ("All".equals(vendor)) {
 				vendor = "%";
 			} else {
 				vendor = "%" + vendor;
 			}
-			if (osVersion.equals("All")) {
+			if ("All".equals(osVersion)) {
 				osVersion = "%";
 			} else {
 				osVersion = "%" + osVersion;
 			}
-			if (os.equals("All")) {
+			if ("All".equals(os)) {
 				os = "%";
 			} else {
 				os = "%" + os;
 			}
-			if (deviceFamily.equals("All")) {
+			if ("All".equals(deviceFamily)) {
 				deviceFamily = "%";
 			} else {
 				deviceFamily = "%" + deviceFamily;
@@ -313,11 +315,11 @@ public class TestBundlingController {
 
 			listOfTestDetails = testDetailsRepository.getTesListData(deviceFamily, os, region, osVersion, vendor,
 					networkFunction);
-			// listOfTestBundle = testBundleJoinRepo.findAll();
-			for (int i = 0; i < listOfTestDetails.size(); i++) {
+			
+			for (TestDetail tempObj : listOfTestDetails) {
 
-				testCategory = listOfTestDetails.get(i).getTestCategory();
-				testId = listOfTestDetails.get(i).getId();
+				testCategory = tempObj.getTestCategory();
+				testId = tempObj.getId();
 				listOfTest.add(testId);
 				tempTestCategory.add(testCategory);
 			}
@@ -342,7 +344,7 @@ public class TestBundlingController {
 						for (int j = 0; j < listOfTestId.size(); j++) {
 							objToAdd = new TestBundlePojo();
 
-							objToAdd.setTestId(listOfTestId.get(j).getId());
+							objToAdd.setTest_id(listOfTestId.get(j).getId());
 
 							String s = listOfTestId.get(j).getTestName();
 							String seriesId = StringUtils.substringAfterLast(s, "_");
@@ -532,7 +534,7 @@ public class TestBundlingController {
 
 		// Create first level
 
-		RequestInfoDao dao = new RequestInfoDao();
+		
 		List<TestStrategyPojo> mainList = new ArrayList<TestStrategyPojo>();
 
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
@@ -553,8 +555,8 @@ public class TestBundlingController {
 			model.setVendor(temp.getVendor());
 			model.setDeviceModel(temp.getDeviceFamily());
 			model.setOs(temp.getOs() + "/" + temp.getOsVersion());
-			model.setCreatedBy(temp.getCreatedBy());
-			model.setCreatedOn(temp.getCreatedDate().toString());
+			model.setCreatedBy(temp.getUpdatedBy());
+			model.setCreatedOn(temp.getUpdatedDate().toString());
 			modelList = new ArrayList<TestStrategyPojo>();
 			for (int i = 0; i < testIdList.size(); i++) {
 				tempTestId = testIdList.get(i).getTest_id();
@@ -564,7 +566,7 @@ public class TestBundlingController {
 			Collections.reverse(modelList);
 
 			modelList.get(0).setEnabled(true);
-			model.setChildList(modelList);
+			model.setTestStrategyPojoList(modelList);
 			versioningModel.add(model);
 		}
 
@@ -587,7 +589,7 @@ public class TestBundlingController {
 		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
 		List<TestStrategyPojo> testDetail = new ArrayList<TestStrategyPojo>();
 
-		RequestInfoDao dao = new RequestInfoDao();
+		
 		List<TestBundling> mainList = new ArrayList<TestBundling>();
 
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
@@ -615,6 +617,10 @@ public class TestBundlingController {
 			} else if (key.equalsIgnoreCase("Bundle Name")) {
 				mainList = dao.findByTestNameForSearch(key, value);
 			}
+			else if (key.equalsIgnoreCase("Region")) {
+				mainList = dao.findByTestNameForSearch(key, value);
+
+			} 
 
 			for (TestBundling temp : mainList) {
 				model = new TestStrategeyVersioningJsonModel();
@@ -622,10 +628,10 @@ public class TestBundlingController {
 				testIdList = dao.findTestIdList(bundleId);
 				model.setBundleName(temp.getTestBundle());
 				model.setVendor(temp.getVendor());
-				model.setDeviceModel(temp.getDeviceFamily());
+				model.setDeviceFamily(temp.getDeviceFamily());
 				model.setOs(temp.getOs() + "/" + temp.getOsVersion());
-				model.setCreatedBy(temp.getCreatedBy());
-				model.setCreatedOn(temp.getCreatedDate().toString());
+				model.setCreatedBy(temp.getUpdatedBy());
+				model.setCreatedOn(temp.getUpdatedDate().toString());
 				modelList = new ArrayList<TestStrategyPojo>();
 
 				for (int i = 0; i < testIdList.size(); i++) {
@@ -636,7 +642,7 @@ public class TestBundlingController {
 				Collections.reverse(modelList);
 
 				modelList.get(0).setEnabled(true);
-				model.setChildList(modelList);
+				model.setTestStrategyPojoList(modelList);
 				versioningModel.add(model);
 			}
 
@@ -661,7 +667,7 @@ public class TestBundlingController {
 		List<TestDetail> modelList = new ArrayList<TestDetail>();
 		List<TestDetail> testDetail = new ArrayList<TestDetail>();
 
-		RequestInfoDao dao = new RequestInfoDao();
+	
 		List<TestBundling> mainList = new ArrayList<TestBundling>();
 
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
@@ -684,23 +690,24 @@ public class TestBundlingController {
 				testIdList = dao.findTestId(bundleId);
 				model.setBundleName(temp.getTestBundle());
 				model.setVendor(temp.getVendor());
-				model.setDevice_family(temp.getDeviceFamily());
+				model.setDeviceFamily(temp.getDeviceFamily());
 				model.setOs(temp.getOs());
 				model.setOsVersion(temp.getOsVersion());
-				model.setCreatedBy(temp.getCreatedBy());
-				model.setCreatedOn(temp.getCreatedDate().toString());
+				model.setCreatedBy(temp.getUpdatedBy());
+				model.setCreatedOn(temp.getUpdatedDate().toString());
 				model.setRegion(temp.getRegion());
 				modelList = new ArrayList<TestDetail>();
 
 				for (int i = 0; i < testIdList.size(); i++) {
 					tempTestId = testIdList.get(i).getId();
 					testDetail = dao.getBundleView(tempTestId);
+					//testDetail=testDetailsRepository.findByTestId(tempTestId);
 					modelList.add(testDetail.get(0));
 				}
 				Collections.reverse(modelList);
 
 				modelList.get(0).setEnabled(true);
-				model.setChildList1(modelList);
+				model.setTestStrategyPojoList1(modelList);
 				versioningModel.add(model);
 			}
 		}
