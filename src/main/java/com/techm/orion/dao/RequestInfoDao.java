@@ -6230,8 +6230,8 @@ public class RequestInfoDao {
 				request.setRegion(rs.getString("region"));
 				request.setVendor(rs.getString("vendor"));
 				request.setTestBundle(rs.getString("test_bundle"));
-				request.setUpdatedBy(rs.getString("created_by"));
-				request.setUpdatedDate(rs.getTimestamp("creation_date"));
+				request.setUpdatedBy(rs.getString("updated_by"));
+				request.setUpdatedDate(rs.getTimestamp("updated_date"));
 
 				requestInfoList.add(request);
 			}

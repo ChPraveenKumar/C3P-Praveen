@@ -1086,9 +1086,10 @@ public class TestStrategyController {
 		TestStrategyPojo objToAdd = null;
 		List<String> tempStringList = new ArrayList<>();
 		String tempString=null,tempString1=null,tempString2=null,tempString3=null,tempString4=null,tempString5=null,tempString6=null,tempString7=null;
-
+        int testCount = 0;
 		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
-
+		try{
+		
 		for (int i = 0; i < mainList.size(); i++) {
 			 tempString = mainList.get(i).getTestName();
 			 tempString1 = StringUtils.substringBefore(tempString, "_");
@@ -1111,8 +1112,9 @@ public class TestStrategyController {
 				model = new TestStrategeyVersioningJsonModel();
 				objToAdd = new TestStrategyPojo();
 				objToAdd = mainList.get(i);
-
+				testCount = mainList.size();
 				model.setTestId(objToAdd.getTestId());
+				model.setTestCount(testCount);
 				tempString6 = objToAdd.getTestName();
 				tempString7 = StringUtils.substringBefore(tempString6, "_");
 				tempStringList.add(tempString7);
@@ -1145,10 +1147,15 @@ public class TestStrategyController {
 				modelList.get(0).setEnabled(true);
 				model.setTestStrategyPojoList(modelList);
 				versioningModel.add(model);
+				
 			}
 		
 		}
-
+		}
+		catch(Exception exe)
+		{
+			logger.error("Exception occurred while fetching the data object"+exe.getMessage());
+		}
 		return new ResponseEntity(versioningModel, HttpStatus.OK);
 
 	}

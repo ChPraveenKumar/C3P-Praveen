@@ -35,6 +35,16 @@ public class TestStrategeyVersioningJsonModel {
 	private String deviceFamily;
 
 	private String test_category;
+	
+	private int testCount;
+
+	public int getTestCount() {
+		return testCount;
+	}
+
+	public void setTestCount(int testCount) {
+		this.testCount = testCount;
+	}
 
 	public String getName() {
 		return name;
