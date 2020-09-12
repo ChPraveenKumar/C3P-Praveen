@@ -87,7 +87,6 @@ public class TestStrategyController {
 	@Autowired
 	private TestBundlingRepository testBundleRepo;
 
-	
 	RequestInfoDao dao = new RequestInfoDao();
 
 	@GET
@@ -256,7 +255,7 @@ public class TestStrategyController {
 		List<TestRules> testruleslistsectionfinal = new ArrayList<TestRules>();
 		List<TestRules> testruleslistsnippetfinal = new ArrayList<TestRules>();
 		List<TestRules> testruleslistkeywordfinal = new ArrayList<TestRules>();
-		
+
 		TestDetail detail = null;
 		boolean ischeck = false;
 		settestDetails = testDetailsRepository.findByTestIdAndVersion(testid, version);
@@ -733,7 +732,7 @@ public class TestStrategyController {
 	@POST
 	@RequestMapping(value = "/edittestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response editBasicConfiguration(@RequestBody String teststrategeeditRqst) {
-		
+
 		String str = "";
 		JSONParser parser = new JSONParser();
 		try {
@@ -1077,7 +1076,7 @@ public class TestStrategyController {
 	public ResponseEntity getTestList() {
 
 		// Create first level
-		
+
 		List<TestStrategyPojo> mainList = new ArrayList<TestStrategyPojo>();
 		mainList = dao.getAllTestsForTestStrategy();
 
@@ -1085,76 +1084,75 @@ public class TestStrategyController {
 		List<TestStrategeyVersioningJsonModel> versioningModel = new ArrayList<TestStrategeyVersioningJsonModel>();
 		TestStrategyPojo objToAdd = null;
 		List<String> tempStringList = new ArrayList<>();
-		String tempString=null,tempString1=null,tempString2=null,tempString3=null,tempString4=null,tempString5=null,tempString6=null,tempString7=null;
-        int testCount = 0;
+		String tempString = null, tempString1 = null, tempString2 = null, tempString3 = null, tempString4 = null,
+				tempString5 = null, tempString6 = null, tempString7 = null;
+		int testCount = 0;
 		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
-		try{
-		
-		for (int i = 0; i < mainList.size(); i++) {
-			 tempString = mainList.get(i).getTestName();
-			 tempString1 = StringUtils.substringBefore(tempString, "_");
-			
-			boolean objectPrsent = false;
-			if (modelList.size() > 0) {
-				for (int j = 0; j < modelList.size(); j++) {
-					tempString2 = modelList.get(j).getTestName();
-					tempString3 = StringUtils.substringBefore(tempString2, "_");
-					tempString4 = mainList.get(i).getTestName();
-					tempString5 = StringUtils.substringBefore(tempString4, "_");
+		try {
 
-					if (tempString3.equalsIgnoreCase(tempString5)) {
-						objectPrsent = true;
-						break;
+			for (int i = 0; i < mainList.size(); i++) {
+				tempString = mainList.get(i).getTestName();
+				tempString1 = StringUtils.substringBefore(tempString, "_");
+
+				boolean objectPrsent = false;
+				if (modelList.size() > 0) {
+					for (int j = 0; j < modelList.size(); j++) {
+						tempString2 = modelList.get(j).getTestName();
+						tempString3 = StringUtils.substringBefore(tempString2, "_");
+						tempString4 = mainList.get(i).getTestName();
+						tempString5 = StringUtils.substringBefore(tempString4, "_");
+
+						if (tempString3.equalsIgnoreCase(tempString5)) {
+							objectPrsent = true;
+							break;
+						}
 					}
 				}
-			}
-			if (!objectPrsent && !tempStringList.contains(tempString1)) {
-				model = new TestStrategeyVersioningJsonModel();
-				objToAdd = new TestStrategyPojo();
-				objToAdd = mainList.get(i);
-				testCount = mainList.size();
-				model.setTestId(objToAdd.getTestId());
-				model.setTestCount(testCount);
-				tempString6 = objToAdd.getTestName();
-				tempString7 = StringUtils.substringBefore(tempString6, "_");
-				tempStringList.add(tempString7);
-				model.setTestName(tempString7);
-				model.setName(tempString7);
-				model.setFullTestName(StringUtils.substringAfter(objToAdd.getTestName().substring(15),"_"));
-				model.setVendor(objToAdd.getVendor());
-				model.setRegion(objToAdd.getRegion());
-				model.setDeviceModel(objToAdd.getDeviceModel());
-				model.setTest_category(objToAdd.getTest_category());
-				model.setDeviceFamily(objToAdd.getDeviceFamily());
-				model.setOs(objToAdd.getOs());
-				model.setOsVersion(objToAdd.getOsVersion());
-				model.setCreatedBy(objToAdd.getCreatedBy());
-				model.setCreatedOn(objToAdd.getCreatedDate());
+				if (!objectPrsent && !tempStringList.contains(tempString1)) {
+					model = new TestStrategeyVersioningJsonModel();
+					objToAdd = new TestStrategyPojo();
+					objToAdd = mainList.get(i);
+					testCount = mainList.size();
+					model.setTestId(objToAdd.getTestId());
+					model.setTestCount(testCount);
+					tempString6 = objToAdd.getTestName();
+					tempString7 = StringUtils.substringBefore(tempString6, "_");
+					tempStringList.add(tempString7);
+					model.setTestName(tempString7);
+					model.setName(tempString7);
+					model.setFullTestName(StringUtils.substringAfter(objToAdd.getTestName().substring(15), "_"));
+					model.setVendor(objToAdd.getVendor());
+					model.setRegion(objToAdd.getRegion());
+					model.setDeviceModel(objToAdd.getDeviceModel());
+					model.setTest_category(objToAdd.getTest_category());
+					model.setDeviceFamily(objToAdd.getDeviceFamily());
+					model.setOs(objToAdd.getOs());
+					model.setOsVersion(objToAdd.getOsVersion());
+					model.setCreatedBy(objToAdd.getCreatedBy());
+					model.setCreatedOn(objToAdd.getCreatedDate());
 
-				model.setCreatedBy(objToAdd.getCreatedBy());
+					model.setCreatedBy(objToAdd.getCreatedBy());
 
-				modelList = new ArrayList<TestStrategyPojo>();
-				for (TestStrategyPojo tempObj : mainList) {
+					modelList = new ArrayList<TestStrategyPojo>();
+					for (TestStrategyPojo tempObj : mainList) {
 
-					String s11 = tempObj.getTestName();
-					String seriesId1 = StringUtils.substringBefore(s11, "_");
-					if (seriesId1.equalsIgnoreCase(model.getTestName())) {
-						modelList.add(tempObj);
+						String s11 = tempObj.getTestName();
+						String seriesId1 = StringUtils.substringBefore(s11, "_");
+						if (seriesId1.equalsIgnoreCase(model.getTestName())) {
+							modelList.add(tempObj);
+						}
 					}
-				}
-				Collections.reverse(modelList);
+					Collections.reverse(modelList);
 
-				modelList.get(0).setEnabled(true);
-				model.setTestStrategyPojoList(modelList);
-				versioningModel.add(model);
-				
+					modelList.get(0).setEnabled(true);
+					model.setTestStrategyPojoList(modelList);
+					versioningModel.add(model);
+
+				}
+
 			}
-		
-		}
-		}
-		catch(Exception exe)
-		{
-			logger.error("Exception occurred while fetching the data object"+exe.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception occurred while fetching the data object" + exe.getMessage());
 		}
 		return new ResponseEntity(versioningModel, HttpStatus.OK);
 
@@ -1182,7 +1180,6 @@ public class TestStrategyController {
 		List<TestDetail> mainList1 = new ArrayList<TestDetail>();
 		List<TestDetail> mainList2 = new ArrayList<TestDetail>();
 
-	
 		JSONArray array;
 
 		mainList = dao.findByTestName(testNameUsed);
@@ -1257,7 +1254,6 @@ public class TestStrategyController {
 
 		JSONParser parser = new JSONParser();
 
-		
 		List<TestStrategyPojo> mainList = new ArrayList<TestStrategyPojo>();
 
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
@@ -1266,7 +1262,8 @@ public class TestStrategyController {
 
 		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
 		List<String> tempStringList = new ArrayList<>();
-		String tempString=null,tempString1=null,tempString2=null,tempString3=null,tempString4=null,tempString5=null,tempString6=null,tempString7=null;
+		String tempString = null, tempString1 = null, tempString2 = null, tempString3 = null, tempString4 = null,
+				tempString5 = null, tempString6 = null, tempString7 = null;
 
 		JSONObject json = (JSONObject) parser.parse(request);
 
@@ -1298,9 +1295,9 @@ public class TestStrategyController {
 		}
 
 		for (int i = 0; i < mainList.size(); i++) {
-			 tempString = mainList.get(i).getTestName();
-			 tempString1 = StringUtils.substringBefore(tempString, "_");
-			
+			tempString = mainList.get(i).getTestName();
+			tempString1 = StringUtils.substringBefore(tempString, "_");
+
 			boolean objectPrsent = false;
 			if (modelList.size() > 0) {
 				for (int j = 0; j < modelList.size(); j++) {
@@ -1326,7 +1323,7 @@ public class TestStrategyController {
 				tempStringList.add(tempString7);
 				model.setTestName(tempString7);
 				model.setName(tempString7);
-				model.setFullTestName(StringUtils.substringAfter(objToAdd.getTestName().substring(15),"_"));
+				model.setFullTestName(StringUtils.substringAfter(objToAdd.getTestName().substring(15), "_"));
 				model.setVendor(objToAdd.getVendor());
 				model.setRegion(objToAdd.getRegion());
 				model.setDeviceModel(objToAdd.getDeviceModel());
@@ -1354,7 +1351,7 @@ public class TestStrategyController {
 				model.setTestStrategyPojoList(modelList);
 				versioningModel.add(model);
 			}
-		
+
 		}
 
 		return new ResponseEntity(versioningModel, HttpStatus.OK);
@@ -1404,15 +1401,14 @@ public class TestStrategyController {
 	public JSONArray getTestsForDeviceNewUi(@RequestBody String request) {
 		JSONArray testDetailsValue = new JSONArray();
 		List<TestDetail> testDetailsList = new ArrayList<TestDetail>();
-		
+
 		List<TestDetail> testDetailsFinal = new ArrayList<TestDetail>();
-	
+
 		HashSet<String> testNameList = new HashSet<>();
 		Set<String> testCategoryList = new HashSet<>();
-		
 
-		String deviceFamily = null, vendor = null, os = null, osVersion = null, region = null,
-				networkType = null, requestType = null;
+		String deviceFamily = null, vendor = null, os = null, osVersion = null, region = null, networkType = null,
+				requestType = null;
 		JSONParser parser = new JSONParser();
 		JSONObject json;
 		List<String> featuresFromUI = new ArrayList<String>();
@@ -1455,12 +1451,6 @@ public class TestStrategyController {
 			} else {
 				region = "%" + region;
 			}
-
-			if ("All".equals(vendor)) {
-				vendor = "%";
-			} else {
-				vendor = "%" + vendor;
-			}
 			if ("All".equals(osVersion)) {
 				osVersion = "%";
 			} else {
@@ -1476,7 +1466,6 @@ public class TestStrategyController {
 			} else {
 				deviceFamily = "%" + deviceFamily;
 			}
-
 			testDetailsList = testDetailsRepository.getTesListData(deviceFamily, os, region, osVersion, vendor,
 					networkType);
 			String testCategory = null;
@@ -1527,7 +1516,7 @@ public class TestStrategyController {
 			});
 			String requestTypevalue = requestType;
 
-			testBundleRepo.getTestBundleDate(deviceFamily, os, region, osVersion, vendor, networkType)
+			testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion, vendor, networkType)
 					.forEach(bundle -> {
 						JSONArray testDetailsArray = new JSONArray();
 						boolean auditFlag = false;
@@ -1582,7 +1571,6 @@ public class TestStrategyController {
 		List<FirmwareUpgradeDetail> mainList = new ArrayList<FirmwareUpgradeDetail>();
 		List<FirmwareUpgradeDetail> mainList1 = new ArrayList<FirmwareUpgradeDetail>();
 		String vendorName = "", isVendor = null, secondCheck = null, isFamily = null, isVersion = null;
-		
 
 		JSONParser parser = new JSONParser();
 
@@ -1790,7 +1778,7 @@ public class TestStrategyController {
 
 					aList.add(x);
 				}
-			
+
 				if (featuresFromUI != null && featuresFromUI.size() > 0) {
 					for (int i = 0; i < aList.size(); i++) {
 						List<TestFeatureList> dbFeatures = testFeatureListRepository.findByTestDetail(aList.get(i));

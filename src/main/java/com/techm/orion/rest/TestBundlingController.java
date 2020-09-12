@@ -71,7 +71,7 @@ public class TestBundlingController {
 	private static final Logger logger = LogManager.getLogger(TestBundlingController.class);
 
 	RequestInfoDao dao = new RequestInfoDao();
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/deviceFamilyBundling", method = RequestMethod.POST, produces = "application/json")
@@ -97,7 +97,7 @@ public class TestBundlingController {
 			}
 		} catch (ParseException exe) {
 
-			logger.error("Exception occurred while parsing the Json object"+exe.getMessage());
+			logger.error("Exception occurred while parsing the Json object" + exe.getMessage());
 		}
 
 		return new ResponseEntity(deviceFamilyList, HttpStatus.OK);
@@ -146,7 +146,7 @@ public class TestBundlingController {
 			}
 
 		} catch (Exception exe) {
-			logger.error("Exception occurred while fetching the data object"+exe.getMessage());
+			logger.error("Exception occurred while fetching the data object" + exe.getMessage());
 		}
 
 		return new ResponseEntity(outputArray, HttpStatus.OK);
@@ -201,7 +201,7 @@ public class TestBundlingController {
 				}
 			}
 		} catch (Exception exe) {
-			logger.error("Exception occurred while fetching the data object"+exe.getMessage());
+			logger.error("Exception occurred while fetching the data object" + exe.getMessage());
 		}
 		return new ResponseEntity(outputArray, HttpStatus.OK);
 
@@ -234,7 +234,7 @@ public class TestBundlingController {
 			}
 			object.put("Validation", Str);
 		} catch (Exception exe) {
-			logger.error("Exception occurred while fetching the data object"+exe.getMessage());
+			logger.error("Exception occurred while fetching the data object" + exe.getMessage());
 		}
 		return new ResponseEntity(object, HttpStatus.OK);
 
@@ -255,7 +255,7 @@ public class TestBundlingController {
 		List<Integer> listOfTest = new ArrayList<>();
 		Set tempTestCategory = new HashSet<>();
 		int testId = 0;
-		
+
 		String tempTestCategoryName = null, testCategory = null;
 
 		List<TestDetail> listOfTestId;
@@ -291,12 +291,6 @@ public class TestBundlingController {
 			} else {
 				region = "%" + region;
 			}
-
-			if ("All".equals(vendor)) {
-				vendor = "%";
-			} else {
-				vendor = "%" + vendor;
-			}
 			if ("All".equals(osVersion)) {
 				osVersion = "%";
 			} else {
@@ -312,10 +306,11 @@ public class TestBundlingController {
 			} else {
 				deviceFamily = "%" + deviceFamily;
 			}
+			
 
 			listOfTestDetails = testDetailsRepository.getTesListData(deviceFamily, os, region, osVersion, vendor,
 					networkFunction);
-			
+
 			for (TestDetail tempObj : listOfTestDetails) {
 
 				testCategory = tempObj.getTestCategory();
@@ -470,39 +465,28 @@ public class TestBundlingController {
 			if (json.containsKey("deviceFamily")) {
 				deviceFamily = json.get("deviceFamily").toString();
 			}
-			if (networkFunction.equals("All")) {
-				networkFunction = "%";
-			} else {
-				networkFunction = "%" + networkFunction;
-			}
-
-			if (region.equals("All")) {
+			if ("All".equals(region)) {
 				region = "%";
 			} else {
 				region = "%" + region;
 			}
-
-			if (vendor.equals("All")) {
-				vendor = "%";
-			} else {
-				vendor = "%" + vendor;
-			}
-			if (osVersion.equals("All")) {
+			if ("All".equals(osVersion)) {
 				osVersion = "%";
 			} else {
 				osVersion = "%" + osVersion;
 			}
-			if (os.equals("All")) {
+			if ("All".equals(os)) {
 				os = "%";
 			} else {
 				os = "%" + os;
 			}
-			if (deviceFamily.equals("All")) {
+			if ("All".equals(deviceFamily)) {
 				deviceFamily = "%";
 			} else {
 				deviceFamily = "%" + deviceFamily;
 			}
-			listOfTestDetails = testBundlingRepository.getTestBundleDate(deviceFamily, os, region, osVersion, vendor,
+
+			listOfTestDetails = testBundlingRepository.getTestBundleData(deviceFamily, os, region, osVersion, vendor,
 					networkFunction);
 
 			outputArray = new JSONArray();
@@ -534,7 +518,6 @@ public class TestBundlingController {
 
 		// Create first level
 
-		
 		List<TestStrategyPojo> mainList = new ArrayList<TestStrategyPojo>();
 
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
@@ -589,7 +572,6 @@ public class TestBundlingController {
 		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
 		List<TestStrategyPojo> testDetail = new ArrayList<TestStrategyPojo>();
 
-		
 		List<TestBundling> mainList = new ArrayList<TestBundling>();
 
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
@@ -616,11 +598,10 @@ public class TestBundlingController {
 
 			} else if (key.equalsIgnoreCase("Bundle Name")) {
 				mainList = dao.findByTestNameForSearch(key, value);
-			}
-			else if (key.equalsIgnoreCase("Region")) {
+			} else if (key.equalsIgnoreCase("Region")) {
 				mainList = dao.findByTestNameForSearch(key, value);
 
-			} 
+			}
 
 			for (TestBundling temp : mainList) {
 				model = new TestStrategeyVersioningJsonModel();
@@ -667,7 +648,6 @@ public class TestBundlingController {
 		List<TestDetail> modelList = new ArrayList<TestDetail>();
 		List<TestDetail> testDetail = new ArrayList<TestDetail>();
 
-	
 		List<TestBundling> mainList = new ArrayList<TestBundling>();
 
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
@@ -701,7 +681,7 @@ public class TestBundlingController {
 				for (int i = 0; i < testIdList.size(); i++) {
 					tempTestId = testIdList.get(i).getId();
 					testDetail = dao.getBundleView(tempTestId);
-					
+
 					modelList.add(testDetail.get(0));
 				}
 				Collections.reverse(modelList);
