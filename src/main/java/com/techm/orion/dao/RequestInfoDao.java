@@ -7897,12 +7897,29 @@ public class RequestInfoDao {
 						rule.setValue2(rs1.getString("value2"));
 						rule.setSnippet(rs1.getString("snippet"));
 						rule.setKeyword(rs1.getString("keyword"));
+
 						rulelist.add(rule);
+						if (rs1.getString("data_type").equals("Text")) {
+							request.setText_attributes(rulelist);
+						}
+						if (rs1.getString("data_type").equals("Snippet")) {
+							request.setSnippet_attributes(rulelist);
+						}
+						if (rs1.getString("data_type").equals("Section")) {
+							request.setSection_attributes(rulelist);
+						}
+						if (rs1.getString("data_type").equals("Table")) {
+							request.setTable_attributes(rulelist);
+						}
+						if (rs1.getString("data_type").equals("Keyword")) {
+							request.setKeyword_attributes(rulelist);
+						}
+
 					}
 				} catch (SQLException exe) {
 					logger.error("SQL Exception in getBundleViewDB 2 method " + exe.getMessage());
 				}
-				request.setListRules(rulelist);
+
 				list.add(request);
 			}
 		} catch (SQLException exe) {

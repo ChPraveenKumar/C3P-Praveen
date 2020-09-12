@@ -701,7 +701,7 @@ public class TestBundlingController {
 				for (int i = 0; i < testIdList.size(); i++) {
 					tempTestId = testIdList.get(i).getId();
 					testDetail = dao.getBundleView(tempTestId);
-					//testDetail=testDetailsRepository.findByTestId(tempTestId);
+					
 					modelList.add(testDetail.get(0));
 				}
 				Collections.reverse(modelList);
