@@ -11,6 +11,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -91,6 +94,9 @@ public class TestDetail implements Serializable
 	boolean selected = false;
 
 	@Transient
+	private List<String> bundleName;
+
+	@Transient
 	boolean disabled = true;
 
 	@Transient
@@ -125,6 +131,11 @@ public class TestDetail implements Serializable
 	@Column(name = "network_type", length = 5)
 	private String networkType;
 
+	@JsonIgnore
+	@ManyToMany
+	@JoinTable(name = "t_tststrategy_j_test_bundle", joinColumns = {@JoinColumn(name = "test_id", referencedColumnName = "id") }, inverseJoinColumns = {@JoinColumn(name = "bundle_id", referencedColumnName = "id") })
+	Set<TestBundling> testbundling;
+
 	public String getRegion() {
 		return region;
 	}
@@ -135,6 +146,14 @@ public class TestDetail implements Serializable
 
 	public List<TestRules> getListRules() {
 		return listRules;
+	}
+
+	public List<String> getBundleName() {
+		return bundleName;
+	}
+
+	public void setBundleName(List<String> bundleName) {
+		this.bundleName = bundleName;
 	}
 
 	public void setListRules(List<TestRules> listRules) {
@@ -364,4 +383,13 @@ public class TestDetail implements Serializable
 	public void setNetworkType(String networkType) {
 		this.networkType = networkType;
 	}
+
+	public Set<TestBundling> getTestbundling() {
+		return testbundling;
+	}
+
+	public void setTestbundling(Set<TestBundling> testbundling) {
+		this.testbundling = testbundling;
+	}
+
 }

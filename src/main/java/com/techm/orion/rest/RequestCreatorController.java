@@ -375,7 +375,7 @@ public class RequestCreatorController {
 				} else {
 					cammandsBySeriesId = dao.getCammandsBySeriesId(seriesId, createConfigRequest.getTemplateID());
 				}
-				logger.info("generateCreateRequestDetails - cammandsBySeriesId-  "+cammandsBySeriesId);
+				
 				List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
 				List<CommandPojo> cammandByTemplate = new ArrayList<>();
 				for (String feature : featureList) {

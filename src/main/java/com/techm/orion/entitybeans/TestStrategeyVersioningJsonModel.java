@@ -3,30 +3,84 @@ package com.techm.orion.entitybeans;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.techm.orion.pojo.TestStrategyPojo;
+
 public class TestStrategeyVersioningJsonModel {
 
-	List<TestStrategeyVersioningJsonModel> childList = new ArrayList<TestStrategeyVersioningJsonModel>();
+	private List<TestStrategyPojo> testStrategyPojoList = new ArrayList<TestStrategyPojo>();
+	private List<TestDetail> testStrategyPojoList1 = new ArrayList<TestDetail>();
+
+
 	private String testName = null;
 
-	private String version = null;
+	private String name = null;
+
+	private String bundleName;
+
 	private String fullTestName = null;
 
 	private String testId = null;
 
 	private String vendor = null;
-	private String deviceFamily = null;
 
 	private String deviceModel = null;
 	private String os = null;
 	private String osVersion = null;
 	private String region = null;
 	private String createdOn;
-	private String networkType;
-
-	private String comment;
 
 	private String createdBy;
 	private boolean isEnabled = false;
+
+	private String deviceFamily;
+
+	private String test_category;
+	
+	private int testCount;
+
+	public int getTestCount() {
+		return testCount;
+	}
+
+	public void setTestCount(int testCount) {
+		this.testCount = testCount;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+
+
+	public String getBundleName() {
+		return bundleName;
+	}
+
+	public void setBundleName(String bundleName) {
+		this.bundleName = bundleName;
+	}
+
+
+
+	public String getDeviceFamily() {
+		return deviceFamily;
+	}
+
+	public void setDeviceFamily(String deviceFamily) {
+		this.deviceFamily = deviceFamily;
+	}
+
+	public String getTest_category() {
+		return test_category;
+	}
+
+	public void setTest_category(String test_category) {
+		this.test_category = test_category;
+	}
 
 	public String getFullTestName() {
 		return fullTestName;
@@ -44,22 +98,6 @@ public class TestStrategeyVersioningJsonModel {
 		this.testName = testName;
 	}
 
-	public String getVersion() {
-		return version;
-	}
-
-	public void setVersion(String version) {
-		this.version = version;
-	}
-
-	public List<TestStrategeyVersioningJsonModel> getChildList() {
-		return childList;
-	}
-
-	public void setChildList(List<TestStrategeyVersioningJsonModel> childList) {
-		this.childList = childList;
-	}
-
 	public String getTestId() {
 		return testId;
 	}
@@ -74,14 +112,6 @@ public class TestStrategeyVersioningJsonModel {
 
 	public void setVendor(String vendor) {
 		this.vendor = vendor;
-	}
-
-	public String getDeviceFamily() {
-		return deviceFamily;
-	}
-
-	public void setDeviceFamily(String deviceFamily) {
-		this.deviceFamily = deviceFamily;
 	}
 
 	public String getDeviceModel() {
@@ -124,14 +154,6 @@ public class TestStrategeyVersioningJsonModel {
 		this.createdOn = createdOn;
 	}
 
-	public String getComment() {
-		return comment;
-	}
-
-	public void setComment(String comment) {
-		this.comment = comment;
-	}
-
 	public String getCreatedBy() {
 		return createdBy;
 	}
@@ -148,11 +170,20 @@ public class TestStrategeyVersioningJsonModel {
 		this.isEnabled = isEnabled;
 	}
 
-	public String getNetworkType() {
-		return networkType;
+	public List<TestStrategyPojo> getTestStrategyPojoList() {
+		return testStrategyPojoList;
 	}
 
-	public void setNetworkType(String networkType) {
-		this.networkType = networkType;
+	public void setTestStrategyPojoList(List<TestStrategyPojo> testStrategyPojoList) {
+		this.testStrategyPojoList = testStrategyPojoList;
 	}
+
+	public List<TestDetail> getTestStrategyPojoList1() {
+		return testStrategyPojoList1;
+	}
+
+	public void setTestStrategyPojoList1(List<TestDetail> testStrategyPojoList1) {
+		this.testStrategyPojoList1 = testStrategyPojoList1;
+	}
+
 }

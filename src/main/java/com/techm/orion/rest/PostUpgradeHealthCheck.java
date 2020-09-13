@@ -34,7 +34,6 @@ import com.google.gson.Gson;
 import com.jcraft.jsch.Channel;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
-import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.HealthCheckComponent;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
@@ -42,7 +41,6 @@ import com.techm.orion.utility.HealthCheckReport;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.PingTest;
 import com.techm.orion.utility.ShowCPUUsage;
-import com.techm.orion.utility.ShowInventoryTest;
 import com.techm.orion.utility.ShowMemoryTest;
 import com.techm.orion.utility.ShowPowerTest;
 import com.techm.orion.utility.ShowVersionTest;
@@ -69,7 +67,6 @@ public class PostUpgradeHealthCheck extends Thread {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
-		CreateConfigRequest configRequest = new CreateConfigRequest();
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
 		boolean value = true;
 		String testToFail = null;
@@ -82,187 +79,9 @@ public class PostUpgradeHealthCheck extends Thread {
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
 
-			configRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
+			
 			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if (configRequest.getManagementIp() != null && !configRequest.getManagementIp().equals("")) {
-
-				configRequest.setRequestId(RequestId);
-				configRequest.setRequest_version(Double.parseDouble(json.get("version").toString()));
-				String host = configRequest.getManagementIp();
-				UserPojo userPojo = new UserPojo();
-				userPojo = requestInfoDao.getRouterCredentials();
-
-				String user = userPojo.getUsername();
-				String password = userPojo.getPassword();
-				String port = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("portSSH");
-				PingTest pingClass = new PingTest();
-
-				if (type.equalsIgnoreCase("Pre")) {
-					testToFail = "pre_health_checkup";
-				} else {
-					testToFail = "health_check";
-				}
-				boolean reachability = pingClass.cmdPingCall(host, configRequest.getHostname(),
-						configRequest.getRegion());
-				if (reachability) {
-					rechabilityTst = 1;
-				} else {
-					rechabilityTst = 0;
-
-				}
-
-				if (rechabilityTst == 1) {
-					String OsversionOnDevice = null;
-					ShowVersionTest versionTest = new ShowVersionTest();
-					OsversionOnDevice = versionTest.versionInfo(host, user, password, configRequest.getHostname(),
-							configRequest.getRegion(), type);
-
-					String memoryResult = null, powerResult = null, cpu_usage_result = null;
-
-					if (OsversionOnDevice.equalsIgnoreCase("JSchException")) {
-						value = false;
-						requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()), testToFail, "2", "Failure");
-						requestInfoDao.editRequestForReportIOSWebserviceInfo(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()), "Device Reachability Failure",
-								"Failure", "Could not connect to the router.");
-
-						try {
-							List<HealthCheckComponent> resultList = new ArrayList<HealthCheckComponent>();
-							HealthCheckReport healthCheckReport = new HealthCheckReport();
-							healthCheckReport.createFailureReport(resultList, configRequest.getHostname(),
-									configRequest.getRegion(), type);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-					} else {
-						ShowInventoryTest inventoryTest = new ShowInventoryTest();
-						ShowMemoryTest memoryTest = new ShowMemoryTest();
-						ShowPowerTest powerTest = new ShowPowerTest();
-						ShowCPUUsage cpu_usage = new ShowCPUUsage();
-						memoryResult = memoryTest.memoryInfo(host, user, password, configRequest.getHostname(),
-								configRequest.getRegion(), type);
-						powerResult = powerTest.powerInfo(host, user, password, configRequest.getHostname(),
-								configRequest.getRegion(), type);
-						cpu_usage_result = cpu_usage.cpuUsageInfo(host, user, password, configRequest.getHostname(),
-								configRequest.getRegion(), type);
-						// Create Health check report
-						List<HealthCheckComponent> resultList = new ArrayList<HealthCheckComponent>();
-						HealthCheckComponent memoryComp = new HealthCheckComponent();
-						memoryComp.setTestname("Memory Check");
-						memoryComp.setTestresult(memoryResult);
-
-						resultList.add(memoryComp);
-						//resultList.add(memoryComp);
-
-						HealthCheckComponent powerComp = new HealthCheckComponent();
-						powerComp.setTestname("Power Check");
-						powerComp.setTestresult(powerResult);
-
-						resultList.add(powerComp);
-
-						HealthCheckComponent cpu_usage_comp = new HealthCheckComponent();
-						cpu_usage_comp.setTestname("CPU Check");
-						cpu_usage_comp.setTestresult(cpu_usage_result);
-
-						resultList.add(cpu_usage_comp);
-
-						HealthCheckReport healthCheckReport = new HealthCheckReport();
-						healthCheckReport.createReport(resultList, configRequest.getHostname(),
-								configRequest.getRegion(), type);
-
-						if (memoryResult.equalsIgnoreCase("pass") && powerResult.equalsIgnoreCase("pass")
-								&& cpu_usage_result.equalsIgnoreCase("pass")) {
-							value = true;
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-							if (type.equalsIgnoreCase("Post")) {
-								requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()), "health_check", "1",
-										"In Progress");
-
-							} else if (type.equalsIgnoreCase("Pre")) {
-								requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()), "pre_health_checkup", "1",
-										"In Progress");
-
-							}
-							requestInfoDao.releaselockDeviceForRequest(configRequest.getManagementIp(),
-									configRequest.getRequestId());
-
-						} else {
-							value = false;
-							jsonArray = new Gson().toJson(value);
-							// released device lock
-							requestInfoDao.releaselockDeviceForRequest(configRequest.getManagementIp(),
-									configRequest.getRequestId());
-							obj.put(new String("output"), jsonArray);
-							if (type.equalsIgnoreCase("Post")) {
-								requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()), "health_check", "2",
-										"Failure");
-								requestInfoDao.editRequestForReportIOSWebserviceInfo(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()),
-										"Device Reachability Failure", "Failure", "Could not connect to the router.");
-							} else if (type.equalsIgnoreCase("Pre")) {
-								requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()), "pre_health_checkup", "2",
-										"Failure");
-
-							} else {
-
-							}
-							HealthCheckReport healthCheckReportfailure = new HealthCheckReport();
-							resultList = null;
-							healthCheckReport.createReport(resultList, configRequest.getHostname(),
-									configRequest.getRegion(), type);
-						}
-
-					}
-				} else {
-					value = false;
-					// released device lock
-					requestInfoDao.releaselockDeviceForRequest(configRequest.getManagementIp(),
-							configRequest.getRequestId());
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
-					if (type.equalsIgnoreCase("Post")) {
-						requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()), "health_check", "2", "Failure");
-						requestInfoDao.editRequestForReportIOSWebserviceInfo(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()), "Device Reachability Failure",
-								"Failure", "Could not connect to the router.");
-					} else if (type.equalsIgnoreCase("Pre")) {
-						requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()), "pre_health_checkup", "2",
-								"Failure");
-					} else {
-
-					}
-
-					String response = "";
-					String responseDownloadPath = "";
-					try {
-						response = invokeFtl.generateHealthCheckTestResultFailure(configRequest);
-						requestInfoDao.updateHealthCheckTestStatus(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()), 0, 0, 0);
-						requestInfoDao.updateRouterFailureHealthCheck(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()));
-						responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-						TextReport.writeFile(
-								responseDownloadPath, configRequest.getRequestId() + "V"
-										+ Double.toString(configRequest.getRequest_version()) + "_HealthCheck.txt",
-								response);
-						requestInfoDao.releaselockDeviceForRequest(configRequest.getManagementIp(),
-								configRequest.getRequestId());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-
-					}
-				}
-			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
 				requestinfo.setAlphanumericReqId(RequestId);
 				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
@@ -300,8 +119,8 @@ public class PostUpgradeHealthCheck extends Thread {
 						value = false;
 						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), testToFail, "2", "Failure");
-						requestInfoDao.editRequestForReportIOSWebserviceInfo(configRequest.getRequestId(),
-								Double.toString(configRequest.getRequest_version()), "Device Reachability Failure",
+						requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure",
 								"Failure", "Could not connect to the router.");
 
 						try {
@@ -372,8 +191,8 @@ public class PostUpgradeHealthCheck extends Thread {
 							value = false;
 							jsonArray = new Gson().toJson(value);
 							// released device lock
-							requestInfoDao.releaselockDeviceForRequest(configRequest.getManagementIp(),
-									configRequest.getRequestId());
+							requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+									requestinfo.getAlphanumericReqId());
 							obj.put(new String("output"), jsonArray);
 							if (type.equalsIgnoreCase("Post")) {
 								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -450,33 +269,7 @@ public class PostUpgradeHealthCheck extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e1) {
-			if (configRequest.getManagementIp() != null && !configRequest.getManagementIp().equals("")) {
-				e1.printStackTrace();
-				if (e1.getMessage().contains("invalid server's version string")
-						|| e1.getMessage().contains("Auth fail")) {
-					value = false;
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), testToFail, "2", "Failure");
-					requestInfoDao.editRequestForReportIOSWebserviceInfo(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), "Device Reachability Failure",
-							"Failure", "Could not connect to the router.");
-
-					String response = "";
-					String responseDownloadPath = "";
-
-					try {
-						response = invokeFtl.generateCustomerIOSHealthCheckFailedPost(configRequest);
-
-						responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES
-								.getProperty("responseDownloadPathHealthCheckFolder");
-						TextReport.writeFile(responseDownloadPath, type + "_" + configRequest.getHostname() + "_"
-								+ configRequest.getRegion() + "_HealthCheckReport.txt", response);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
 				e1.printStackTrace();
 				if (e1.getMessage().contains("invalid server's version string")

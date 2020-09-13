@@ -3,10 +3,12 @@ package com.techm.orion.rest;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -27,6 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
+import com.techm.orion.dao.RequestDetails;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.pojo.CreateConfigRequest;
@@ -83,7 +86,8 @@ public class GetReportData implements Observer {
 			createConfigRequestDCM.setRequestId(json.get("requestID").toString());
 			createConfigRequestDCM.setTestType(json.get("testType").toString());
 			createConfigRequestDCM.setVersion_report(json.get("version").toString());
-			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(json.get("requestID").toString(),json.get("version").toString());
+			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(json.get("requestID").toString(),
+					json.get("version").toString());
 
 			if (createConfigRequestDCM.getTestType().equalsIgnoreCase("deliverConfig")) {
 
@@ -928,6 +932,7 @@ public class GetReportData implements Observer {
 	public Response customerReportUIRevamp(@RequestBody String configRequest) {
 		JSONObject obj = new JSONObject();
 		RequestInfoDao dao = new RequestInfoDao();
+		RequestDetails requestDetailsDao = new RequestDetails();
 		try {
 
 			JSONParser parser = new JSONParser();
@@ -949,7 +954,25 @@ public class GetReportData implements Observer {
 
 			String type = createConfigRequestDCM.getAlphanumericReqId().substring(0,
 					Math.min(createConfigRequestDCM.getAlphanumericReqId().length(), 4));
+			String testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(
+					createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
+			logger.info(testAndDiagnosis);
+			Set<String> setOfTestBundle = new HashSet<>();
+			if (testAndDiagnosis != null) {
+				org.json.simple.JSONArray testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
+				org.json.simple.JSONArray bundleNamesArray = null;
+				for (int i = 0; i < testArray.size(); i++) {
+					JSONObject jsonObj = (JSONObject) testArray.get(i);
+					bundleNamesArray = (org.json.simple.JSONArray) jsonObj.get("bundleName");
+					if (bundleNamesArray != null && bundleNamesArray.size() != 0) {
+						for (int k = 0; k < bundleNamesArray.size(); k++) {
+							setOfTestBundle.add((String) bundleNamesArray.get(k));
+						}
+					}
 
+				}
+			}
+			
 			if (type.equalsIgnoreCase("SLGF")) {
 				CreateConfigRequest req = new CreateConfigRequest();
 				req = dao.getOSDilevarySteps(createConfigRequestDCM.getAlphanumericReqId(), stringVersion);
@@ -1134,6 +1157,7 @@ public class GetReportData implements Observer {
 			if (type.equalsIgnoreCase("SLGF")) {
 				obj.put("status", reqDetail.getStatus());
 			}
+			obj.put("bundleList", setOfTestBundle);
 		} catch (Exception e) {
 			logger.error(e);
 		}

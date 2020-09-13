@@ -74,7 +74,6 @@ public class NetworkTestValidation extends Thread {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
-		CreateConfigRequest configRequest = new CreateConfigRequest();
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
 		Boolean value = false;
 
@@ -93,256 +92,8 @@ public class NetworkTestValidation extends Thread {
 			try {
 
 				logger.info("Request ID in network test validation" + RequestId);
-
-				configRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
-
 				requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-				if (configRequest.getManagementIp() != null && !configRequest.getManagementIp().equals("")) {
-					configRequest.setRequestId(RequestId);
-					configRequest.setRequest_version(Double.parseDouble(json.get("version").toString()));
-
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")
-							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
-							|| type.equalsIgnoreCase("SNNM")) {
-						NetworkTestValidation.loadProperties();
-						String host = configRequest.getManagementIp();
-						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials(host);
-						String user = null, password = null;
-
-						user = userPojo.getUsername();
-						password = userPojo.getPassword();
-						/*if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
-							user = "c3pteam";
-							password = "csr1000v";
-						} else {
-							user = userPojo.getUsername();
-							password = userPojo.getPassword();
-						}*/
-						String port = NetworkTestValidation.TSA_PROPERTIES.getProperty("portSSH");
-						ArrayList<String> commandToPush = new ArrayList<String>();
-
-						session = jsch.getSession(user, host, Integer.parseInt(port));
-						Properties config = new Properties();
-						config.put("StrictHostKeyChecking", "no");
-						session.setConfig(config);
-						session.setPassword(password);
-						logger.info("Before session.connet in network test validation Username" + user
-								+ " Password " + password + " host" + host);
-						session.connect();
-						try {
-							Thread.sleep(5000);
-						} catch (Exception ee) {
-						}
-						try {
-							channel = session.openChannel("shell");
-							OutputStream ops = channel.getOutputStream();
-							PrintStream ps = new PrintStream(ops, true);
-							logger.info("Channel Connected to machine " + host + " server");
-							channel.connect();
-							InputStream input = channel.getInputStream();
-							input = channel.getInputStream();
-							ps.println("terminal length 0");
-							if (configRequest.getCertificationBit().substring(0, 1).equalsIgnoreCase("1")) {
-								ps.println("show ip interface brief");
-								printResult(input, channel, configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()));
-								configRequest.setNetwork_test_interfaceStatus("Passed");
-							}
-							if (configRequest.getCertificationBit().substring(1, 2).equalsIgnoreCase("1")) {
-								ps.println("show interface " + configRequest.getC3p_interface().getName());
-								printResult(input, channel, configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()));
-								configRequest.setNetwork_test_wanInterface("Passed");
-							}
-							if (configRequest.getCertificationBit().substring(2, 3).equalsIgnoreCase("1")) {
-								ps.println("show version");
-								printResult(input, channel, configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()));
-								configRequest.setNetwork_test_platformIOS("Passed");
-							}
-							if (configRequest.getCertificationBit().substring(3, 4).equalsIgnoreCase("1")) {
-								ps.println("sh ip bgp summary");
-								printResult(input, channel, configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()));
-								configRequest.setNetwork_test_BGPNeighbor("Passed");
-							}
-
-							try {
-								Thread.sleep(6000);
-							} catch (Exception ee) {
-							}
-
-							printResult(input, channel, configRequest.getRequestId(),
-									Double.toString(configRequest.getRequest_version()));
-
-							if (channel.isClosed()) {
-								channel.connect();
-
-							}
-
-							/*
-							 * Owner: Ruchita Salvi Module: Test Strategey Logic: To find and run and
-							 * analyse custom tests
-							 */
-
-							// input = channel.getInputStream();
-							// fetch extra network test added
-							List<Boolean> results = null;
-							RequestInfoDao dao = new RequestInfoDao();
-							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							listOfTests = dao.findTestFromTestStrategyDB(configRequest.getModel(),
-									configRequest.getDeviceType(), configRequest.getOs(), configRequest.getOsVersion(),
-									configRequest.getVendor(), configRequest.getRegion(), "Network Test");
-							List<TestDetail> selectedTests = dao.findSelectedTests(configRequest.getRequestId(),
-									"Network Test",version);
-							if (selectedTests.size() > 0) {
-								for (int i = 0; i < listOfTests.size(); i++) {
-									for (int j = 0; j < selectedTests.size(); j++) {
-										if (selectedTests.get(j).getTestName()
-												.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
-											finallistOfTests.add(listOfTests.get(i));
-
-										}
-
-									}
-								}
-
-								if (finallistOfTests.size() > 0) {
-									results = new ArrayList<Boolean>();
-									for (int i = 0; i < finallistOfTests.size(); i++) {
-
-										// conduct and analyse the tests
-										ps.println(finallistOfTests.get(i).getTestCommand());
-										try {
-											Thread.sleep(6000);
-										} catch (Exception ee) {
-										}
-
-										// printResult(input,
-										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-										Boolean res = analyser.printAndAnalyse(input, channel,
-												configRequest.getRequestId(),
-												Double.toString(configRequest.getRequest_version()),
-												finallistOfTests.get(i), "Network Test");
-										results.add(res);
-									}
-								}
-
-							} else {
-								// No new network test added
-							}
-
-							/*
-							 * END
-							 */
-
-							logger.info("Certification bits in network test "
-									+ configRequest.getCertificationBit().substring(0, 1).equalsIgnoreCase("1")
-									+ configRequest.getCertificationBit().substring(1, 2)
-									+ configRequest.getCertificationBit().substring(2, 3)
-									+ configRequest.getCertificationBit().substring(3, 4));
-							// working on simulator so condition has been set to true
-							if (configRequest.getCertificationBit().substring(0, 1).equalsIgnoreCase("1")
-									|| configRequest.getCertificationBit().substring(1, 2).equalsIgnoreCase("1")
-									|| configRequest.getCertificationBit().substring(2, 3).equalsIgnoreCase("1")
-									|| configRequest.getCertificationBit().substring(3, 4).equalsIgnoreCase("1")) {
-								boolean result = true;
-								if (listOfTests.size() > 0) {
-									if (results != null && !results.isEmpty()) {
-										for (int i = 0; i < results.size(); i++) {
-											if (results.get(i) == false) {
-												result = false;
-											}
-										}
-									}
-								
-								}
-								requestInfoDao.updateNetworkTestStatus(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()),
-										Integer.parseInt(configRequest.getCertificationBit().substring(0, 1)),
-										Integer.parseInt(configRequest.getCertificationBit().substring(1, 2)),
-										Integer.parseInt(configRequest.getCertificationBit().substring(2, 3)),
-										Integer.parseInt(configRequest.getCertificationBit().substring(3, 4)));
-
-								String status = requestInfoDao.getPreviousMileStoneStatus(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()));
-
-								requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()), "network_test", "1",
-										status);
-							}
-							
-							else {
-								// db call to set flag false
-								requestInfoDao.updateNetworkTestStatus(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()),
-										Integer.parseInt(configRequest.getCertificationBit().substring(0, 1)),
-										Integer.parseInt(configRequest.getCertificationBit().substring(1, 2)),
-										Integer.parseInt(configRequest.getCertificationBit().substring(2, 3)),
-										Integer.parseInt(configRequest.getCertificationBit().substring(3, 4)));
-								requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()), "network_test", "2",
-										"Failure");
-							}
-							value = true;// hardcoded for default tests
-
-							// this is to evaluate according to newly added tests else it is true by
-							// default.
-							if (results != null) {
-								for (int i = 0; i < results.size(); i++) {
-									if (!results.get(i)) {
-										value = false;
-										break;
-									}
-
-								}
-							}
-							channel.disconnect();
-							session.disconnect();
-							logger.info("DONE");
-							jsonArray = new Gson().toJson(value);
-							try {
-								Thread.sleep(15000);
-							} catch (Exception ee) {
-							}
-							obj.put(new String("output"), jsonArray);
-						} catch (IOException ex) {
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-							requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-									Double.toString(configRequest.getRequest_version()), "network_test", "2",
-									"Failure");
-
-							String response = "";
-							String responseDownloadPath = "";
-							try {
-								response = invokeFtl.generateNetworkTestResultFileFailure(configRequest);
-								responseDownloadPath = NetworkTestValidation.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath, configRequest.getRequestId() + "V"
-										+ Double.toString(configRequest.getRequest_version()) + "_networkTest.txt",
-										response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-
-							}
-
-						}
-						channel.disconnect();
-						session.disconnect();
-					}
-
-					else {
-						value = true;
-						logger.info("DONE Network Test");
-						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
-					}
-
-				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					String statusVAlue = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
 					requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -442,7 +193,7 @@ public class NetworkTestValidation extends Thread {
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
 							TestDetail test = new TestDetail();
-							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getModel(),
+							listOfTests = dao.findTestFromTestStrategyDB(
 									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Network Test");
 							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
@@ -529,8 +280,8 @@ public class NetworkTestValidation extends Thread {
 									}
 								
 								}
-								requestInfoDao.updateNetworkTestStatus(configRequest.getRequestId(),
-										Double.toString(configRequest.getRequest_version()),
+								requestInfoDao.updateNetworkTestStatus(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(0, 1)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(1, 2)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(2, 3)),
@@ -619,28 +370,7 @@ public class NetworkTestValidation extends Thread {
 			}
 			// when reachability fails
 			catch (Exception ex) {
-				if (configRequest.getManagementIp() != null && !configRequest.getManagementIp().equals("")) {
-
-					logger.info("Exception in network tst" + ex.getMessage());
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
-					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), "network_test", "2", "Failure");
-					String response = "";
-					String responseDownloadPath = "";
-					try {
-						response = invokeFtl.generateNetworkTestResultFileFailure(configRequest);
-						responseDownloadPath = NetworkTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath");
-						TextReport.writeFile(
-								responseDownloadPath, configRequest.getRequestId() + "V"
-										+ Double.toString(configRequest.getRequest_version()) + "_networkTest.txt",
-								response);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-
-					}
-
-				} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
 					logger.info("Exception in network tst" + ex.getMessage());
 					jsonArray = new Gson().toJson(value);
