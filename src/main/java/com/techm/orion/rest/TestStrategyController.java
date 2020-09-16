@@ -1449,22 +1449,22 @@ public class TestStrategyController {
 			if ("All".equals(region)) {
 				region = "%";
 			} else {
-				region = "%" + region;
+				region = "%" + region+"%";
 			}
 			if ("All".equals(osVersion)) {
 				osVersion = "%";
 			} else {
-				osVersion = "%" + osVersion;
+				osVersion = "%" + osVersion+"%";
 			}
 			if ("All".equals(os)) {
 				os = "%";
 			} else {
-				os = "%" + os;
+				os = "%" + os+"%";
 			}
 			if ("All".equals(deviceFamily)) {
 				deviceFamily = "%";
 			} else {
-				deviceFamily = "%" + deviceFamily;
+				deviceFamily = "%" + deviceFamily+"%";
 			}
 			testDetailsList = testDetailsRepository.getTesListData(deviceFamily, os, region, osVersion, vendor,
 					networkType);

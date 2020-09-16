@@ -35,6 +35,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.util.StringUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -4930,10 +4931,31 @@ public class RequestInfoDao {
 			String region, String testCategory) {
 		List<TestDetail> list = new ArrayList<TestDetail>();
 
-		String queryTstDetails = "select * from  t_tststrategy_m_tstdetails where (device_family like ? or device_family like '%All')  and (os like ? or os like '%All') and (os_version like ? or os_version like '%All') and vendor =? and (upper(region) like ? or region like '%All') and test_category=?";
+		if ("All".equals(region)) {
+			region = "%";
+		} else {
+			region = "%" + region +"%";
+		}
+		if ("All".equals(osversion)) {
+			osversion = "%";
+		} else {
+			osversion = "%" + osversion +"%";
+		}
+		if ("All".equals(os)) {
+			os = "%";
+		} else {
+			os = "%" + os+"%";
+		}
+		if ("All".equals(deviceFamily)) {
+			deviceFamily = "%";
+		} else {
+			deviceFamily = "%" + deviceFamily+"%";
+		}
+		
+		String queryTstDetails = "select * from  t_tststrategy_m_tstdetails where (device_family like ? or device_family like '%All')  and (os like ? or os like '%All') and (os_version like ? or os_version like '%All') and vendor =? and (region like ? or region like '%All') and test_category=?";
 		String queryTstRules = "select * from t_tststrategy_m_tstrules where test_name=?";
-		String queryTstDetailsTestName = "select * from  t_tststrategy_m_tstdetails where  (device_family like ? or device_family like '%All') and (os like ? or os like '%All')  and (os_version like ? or os_version like '%All') and vendor=? and (upper(region) like ? or region like '%All') and test_category=? and test_name=?";
-		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where (device_family like ? or device_family like '%All') and (os like ? or os like '%All') and (os_version like ? or os_version like '%All') and vendor =? and (upper(region) like ? or region like '%All') and test_category=? and test_name=? and version=?";
+		String queryTstDetailsTestName = "select * from  t_tststrategy_m_tstdetails where  (device_family like ? or device_family like '%All') and (os like ? or os like '%All')  and (os_version like ? or os_version like '%All') and vendor=? and (region like ? or region like '%All') and test_category=? and test_name=?";
+		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where (device_family like ? or device_family like '%All') and (os like ? or os like '%All') and (os_version like ? or os_version like '%All') and vendor =? and (region like ? or region like '%All') and test_category=? and test_name=? and version=?";
 		
 		ResultSet rs = null, rs1 = null, rs2 = null, rs3 = null;
 		String maxVersion = null;
@@ -5123,6 +5145,7 @@ public class RequestInfoDao {
 					}
 					obj.put("value", rs.getString("ResultText"));
 					String testNameAndVersion = rs.getString("testName");
+			        testNameAndVersion = StringUtils.substringAfter(testNameAndVersion, "_");
 					obj.put("testName", testNameAndVersion);
 					array.add(obj);
 				}
@@ -5166,9 +5189,9 @@ public class RequestInfoDao {
 					obj.put("status", rs.getString("TestResult"));
 					obj.put("CollectedValue", rs.getString("CollectedValue").replace(",", "$"));
 					obj.put("EvaluationCriteria", rs.getString("EvaluationCriteria"));
-					testName = StringUtils.substringAfter(rs.getString("testName"), "_");
+					testName = rs.getString("testName");
 					testName = StringUtils.substringAfter(testName, "_");
-					testName = StringUtils.substringBefore(testName, "_");
+					testName = StringUtils.substringBeforeLast(testName, "_");
 					obj.put("testname", testName);
 					obj.put("reportLabel", rs.getString("ResultText"));
 

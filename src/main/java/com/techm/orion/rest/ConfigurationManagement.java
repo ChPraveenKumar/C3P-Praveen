@@ -137,11 +137,11 @@ public class ConfigurationManagement {
 			if (json.containsKey("osVersion")) {
 				configReqToSendToC3pCode.setOsVersion(json.get("osVersion").toString());
 			}
-			configReqToSendToC3pCode.setRegion(json.get("region").toString().toUpperCase());
+			configReqToSendToC3pCode.setRegion(json.get("region").toString());
 			// configReqToSendToC3pCode.setService(json.get("service").toString().toUpperCase());
-			configReqToSendToC3pCode.setHostname(json.get("hostname").toString().toUpperCase());
+			configReqToSendToC3pCode.setHostname(json.get("hostname").toString());
 			// configReqToSendToC3pCode.setVpn(json.get("VPN").toString());
-			configReqToSendToC3pCode.setVendor(json.get("vendor").toString().toUpperCase());
+			configReqToSendToC3pCode.setVendor(json.get("vendor").toString());
 			configReqToSendToC3pCode.setFamily(json.get("deviceFamily").toString());
 			configReqToSendToC3pCode.setVnfConfig(json.get("vnfConfig").toString());
 
