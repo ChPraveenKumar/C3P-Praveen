@@ -18,6 +18,8 @@ public interface DeviceDiscoveryDashboardRepository extends JpaRepository<Device
 			String user);
 
 	DeviceDiscoveryDashboardEntity findById(int id);
+	
+	
 
 	/* Dhanshri Mane */
 	@Query(value = "select  count(discovery_status) from c3p_t_device_discovery_dashboard where discovery_status=:status and discovery_created_by like :creatorName ", nativeQuery = true)
