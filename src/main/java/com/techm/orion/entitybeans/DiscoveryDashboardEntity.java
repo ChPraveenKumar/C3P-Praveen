@@ -9,61 +9,58 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-
-
 @Entity
 @Table(name = "c3p_t_discovery_dashboard")
 
 public class DiscoveryDashboardEntity {
-	
+
 	@Id
 	@Column(name = "dis_row_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int disId;
-	
+
 	@Column(name = "dis_dash_id", length = 20)
 	private String disDashId;
-	
+
 	@Column(name = "dis_name", length = 100)
 	private String disName;
-	
+
 	@Column(name = "dis_status", length = 20)
 	private String disStatus;
-	
+
 	@Column(name = "dis_ip_type", length = 10)
 	private String disIpType;
-	
+
 	@Column(name = "dis_discovery_type", length = 10)
 	private String disDiscoveryType;
-	
+
 	@Column(name = "dis_start_ip", length = 40)
 	private String disStartIp;
-	
+
 	@Column(name = "dis_end_ip", length = 40)
 	private String disEndIp;
-	
+
 	@Column(name = "dis_network_mask", length = 40)
 	private String disNetworkMask;
-	
+
 	@Column(name = "dis_profile_name", length = 45)
 	private String disProfileName;
-	
+
 	@Column(name = "dis_schedule_id", length = 45)
 	private String disScheduleId;
-	
+
 	@Column(name = "dis_created_date")
 	private Timestamp disCreatedDate;
-	
+
 	@Column(name = "dis_created_by", length = 45)
 	private String disCreatedBy;
-	
+
 	@Column(name = "dis_updated_date")
 	private Timestamp disUpdatedDate;
-	
+
 	@Column(name = "dis_import_id", length = 20)
 	private String disImportId;
-	
-	
+
 	public int getDisId() {
 		return disId;
 	}
@@ -183,5 +180,5 @@ public class DiscoveryDashboardEntity {
 	public void setDisImportId(String disImportId) {
 		this.disImportId = disImportId;
 	}
-	
+
 }
