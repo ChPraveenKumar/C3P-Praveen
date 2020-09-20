@@ -169,7 +169,7 @@ public class OthersCheckTestValidation extends Thread {
 									for (int j = 0; j < selectedTests.size(); j++) {
 										if (selectedTests.get(j).getTestName()
 												.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
-											finallistOfTests.add(listOfTests.get(j));
+											finallistOfTests.add(listOfTests.get(i));
 										}
 									}
 								}

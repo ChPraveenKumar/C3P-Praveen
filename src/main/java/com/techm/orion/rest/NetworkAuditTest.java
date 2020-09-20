@@ -183,11 +183,11 @@ public class NetworkAuditTest extends Thread {
 													Double.toString(requestinfo.getRequestVersion()), "network_audit",
 													"1", status);
 										}
-
+									}
 										channel.disconnect();
 										session.disconnect();
 										value = true;
-									}
+									
 								}
 
 							} else {
