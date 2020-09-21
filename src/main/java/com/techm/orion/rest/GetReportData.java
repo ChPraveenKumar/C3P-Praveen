@@ -958,7 +958,7 @@ public class GetReportData implements Observer {
 					createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 			logger.info(testAndDiagnosis);
 			Set<String> setOfTestBundle = new HashSet<>();
-			if (testAndDiagnosis != null) {
+			if (testAndDiagnosis != null && !testAndDiagnosis.equals("")) {
 				org.json.simple.JSONArray testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
 				org.json.simple.JSONArray bundleNamesArray = null;
 				for (int i = 0; i < testArray.size(); i++) {

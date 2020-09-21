@@ -35,9 +35,9 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.poi.util.StringUtil;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
@@ -1540,8 +1540,7 @@ public class RequestInfoDao {
 	}
 
 	/*
-	 * Code changes for JDBC to JPA migration --- Alert Page(To display All
-	 * alerts)
+	 * Code changes for JDBC to JPA migration --- Alert Page(To display All alerts)
 	 */
 
 	public List<AlertInformationPojo> getALLAlertDataFromDB() {
@@ -5117,45 +5116,32 @@ public class RequestInfoDao {
 	public org.json.simple.JSONArray getDynamicTestResult(String requestId, String version, String testtype) {
 		org.json.simple.JSONObject res = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
-
-		if (!version.contains(".")) {
-			version = version + ".0";
-		}
-		String query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
-		ResultSet rs = null;
-
-		try (Connection connection = ConnectionFactory.getConnection();
-				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
-			preparedStmt.setString(1, requestId);
-			preparedStmt.setString(2, testtype);
-			rs = preparedStmt.executeQuery();
-			if (rs != null) {
-				while (rs.next()) {
+		try {
+			JSONParser parser = new JSONParser();
+			RequestDetails dao = new RequestDetails();
+			Double requestVersion = Double.valueOf(version);			
+			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId, requestVersion);
+			org.json.simple.JSONArray testNameArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
+			for (int i = 0; i < testNameArray.size(); i++) {
+				org.json.simple.JSONObject jsonObj = (org.json.simple.JSONObject) testNameArray.get(i);
+				String category = jsonObj.get("testCategory").toString();
+				if (null != category && testtype.equals(category)) {
 					org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
-					obj.put("category", rs.getString("TestCategory"));
-					if (rs.getString("TestResult").equalsIgnoreCase("Passed")) {
-						obj.put("status", "1");
-
-					} else if (rs.getString("TestResult").equalsIgnoreCase("Failed")) {
-						obj.put("status", "2");
-
-					} else {
-						obj.put("status", "0");
-
-					}
-					obj.put("value", rs.getString("ResultText"));
-					String testNameAndVersion = rs.getString("testName");
-			        testNameAndVersion = StringUtils.substringAfter(testNameAndVersion, "_");
+					obj.put("category", category);
+					int status = getTestDetails(requestId, jsonObj.get("testName").toString(), requestVersion);
+					obj.put("status",status);
+					String testNameAndVersion = jsonObj.get("testName").toString();
+					testNameAndVersion = StringUtils.substringAfter(testNameAndVersion, "_");
 					obj.put("testName", testNameAndVersion);
 					array.add(obj);
 				}
 			}
+		} catch (org.json.simple.parser.ParseException e) {
+			e.printStackTrace();
+		}catch (SQLException e) {
+			logger.info(e);
+		} 
 
-		} catch (SQLException exe) {
-			logger.error("SQL Exception in getDynamicTestResult method " + exe.getMessage());
-		} finally {
-			DBUtil.close(rs);
-		}
 		res.put("custom", array);
 		return array;
 	}

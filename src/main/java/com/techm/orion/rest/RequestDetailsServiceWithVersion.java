@@ -65,9 +65,6 @@ public class RequestDetailsServiceWithVersion {
 	@Autowired
 	private ReportMileStones reportMileStones;
 
-	@Autowired
-	private RequestInfoDao requestInfo;
-
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -412,28 +409,30 @@ public class RequestDetailsServiceWithVersion {
 			String requestId = (String) json.get("requestId");
 			Double requestVersion = Double.valueOf(json.get("version").toString());
 			RequestDetails dao = new RequestDetails();
-			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId, requestVersion);			
+			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId, requestVersion);
 			JSONArray testNameArray = (JSONArray) parser.parse(testAndDiagnosis);
 			Set<String> setOfTest = new HashSet<>();
-			for (int i = 0; i < testNameArray.size(); i++) {
-				JSONObject jsonObj = (JSONObject) testNameArray.get(i);
-				setOfTest.add(jsonObj.get("testName").toString());
-			}
-			RequestInfoDao requestinfoDao = new RequestInfoDao();
-			setOfTest.forEach(testName -> {
-				JSONObject tests = new JSONObject();
-				String combination = StringUtils.substringBefore(testName, "_");
-				String name = StringUtils.substringAfter(testName, "_");
-				name = StringUtils.substringBeforeLast(name, "_");
-				String version = StringUtils.substringAfterLast(testName, "_");
-				tests.put("combination", combination);
-				tests.put("testName", name);
-				tests.put("version", version);
-				int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion);
-				tests.put("status", status);
-				selectedTest.add(tests);
+			if (testNameArray != null && !testNameArray.equals("")) {
+				for (int i = 0; i < testNameArray.size(); i++) {
+					JSONObject jsonObj = (JSONObject) testNameArray.get(i);
+					setOfTest.add(jsonObj.get("testName").toString());
+				}
+				RequestInfoDao requestinfoDao = new RequestInfoDao();
+				setOfTest.forEach(testName -> {
+					JSONObject tests = new JSONObject();
+					String combination = StringUtils.substringBefore(testName, "_");
+					String name = StringUtils.substringAfter(testName, "_");
+					name = StringUtils.substringBeforeLast(name, "_");
+					String version = StringUtils.substringAfterLast(testName, "_");
+					tests.put("combination", combination);
+					tests.put("testName", name);
+					tests.put("version", version);
+					int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion);
+					tests.put("status", status);
+					selectedTest.add(tests);
 
-			});
+				});
+			}
 		} catch (Exception e) {
 			logger.error(e);
 		}
