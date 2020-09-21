@@ -236,7 +236,7 @@ Double requestVersion =Double.valueOf(version);
 							}
 
 						} else if (!afterText.isEmpty() && !noOfChars.isEmpty()) {
-							Pattern pattern = Pattern.compile("^.*?(?>"+ afterText + ")", Pattern.MULTILINE);
+							Pattern pattern = Pattern.compile("^.*?(?>"+ afterText + ")", Pattern.DOTALL);
 							Matcher matcher = pattern.matcher(text);
 							while (matcher.find()) {
 								output = matcher.group().substring(matcher.group().indexOf(afterText)-chars,matcher.group().indexOf(afterText));

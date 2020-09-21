@@ -248,7 +248,6 @@ public class HealthCheckTestValidation extends Thread {
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
 							RequestInfoDao dao = new RequestInfoDao();
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-							TestDetail test = new TestDetail();
 							listOfTests = dao.findTestFromTestStrategyDB(
 									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Health Check");
