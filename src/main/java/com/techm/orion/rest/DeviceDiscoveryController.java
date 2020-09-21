@@ -44,11 +44,11 @@ import com.techm.orion.service.InventoryManagmentService;
 @RequestMapping("/discovery")
 public class DeviceDiscoveryController implements Observer {
 	private static final Logger logger = LogManager.getLogger(DeviceDiscoveryController.class);
-	
+
 	@Autowired
 	private DiscoveryDashboardRepository discoveryDashboardRepo;
 	@Autowired
-	private InventoryManagmentService inventoryServiceRepo;	
+	private InventoryManagmentService inventoryServiceRepo;
 	@Autowired
 	private DeviceDiscoveryRepository deviceInforepo;
 	@Autowired
@@ -59,7 +59,6 @@ public class DeviceDiscoveryController implements Observer {
 	private ForkDiscrepancyResultRepository forkDiscrepancyRepo;
 	@Autowired
 	private HostDiscrepancyResultRepository hostDoscreapncyRepo;
-	
 
 	@SuppressWarnings("unchecked")
 	@GET
@@ -71,47 +70,75 @@ public class DeviceDiscoveryController implements Observer {
 		JSONObject obj = new JSONObject();
 		int myDiscoverySize = 0;
 		int allDiscoverySize = 0;
+		List<DiscoveryDashboardEntity> discoveryDashboard = null;
+		List<DiscoveryDashboardEntity> discoveryDashboardByUser = null;
 		List<DiscoveryDashboardEntity> discoveryDetails = null;
 		try {
-			Set<DiscoveryDashboardEntity> discoveryDashboard =  discoveryDashboardRepo.findByDisStatusIgnoreCase(type);
-			Set<DiscoveryDashboardEntity> discoveryDashboardByUser =  discoveryDashboardRepo.findByDisStatusIgnoreCaseAndDisCreatedByIgnoreCase(type, user);
-			if ("all".equals(requestType)) {				
-				if(discoveryDashboard !=null && !discoveryDashboard.isEmpty()) {
+			// Pull the all types data from DB
+			if ("all".equals(type)) {
+				discoveryDashboard = discoveryDashboardRepo.findAll();
+				Set<DiscoveryDashboardEntity> allDiscoveryDashboardByUser = discoveryDashboardRepo
+						.findByDisCreatedByIgnoreCase(user);
+				if (allDiscoveryDashboardByUser != null && !allDiscoveryDashboardByUser.isEmpty()) {
+					discoveryDashboardByUser = new ArrayList<DiscoveryDashboardEntity>(allDiscoveryDashboardByUser);
+				} else {
+					discoveryDashboardByUser = new ArrayList<DiscoveryDashboardEntity>();
+				}
+
+			} else {
+				Set<DiscoveryDashboardEntity> discoveryDashboardDB = discoveryDashboardRepo
+						.findByDisStatusIgnoreCase(type);
+				Set<DiscoveryDashboardEntity> discoveryDashboardByUserDB = discoveryDashboardRepo
+						.findByDisStatusIgnoreCaseAndDisCreatedByIgnoreCase(type, user);
+				if (discoveryDashboardDB != null && !discoveryDashboardDB.isEmpty()) {
+					discoveryDashboard = new ArrayList<DiscoveryDashboardEntity>(discoveryDashboardDB);
+				} else {
+					discoveryDashboard = new ArrayList<DiscoveryDashboardEntity>();
+				}
+				if (discoveryDashboardByUserDB != null && !discoveryDashboardByUserDB.isEmpty()) {
+					discoveryDashboardByUser = new ArrayList<DiscoveryDashboardEntity>(discoveryDashboardByUserDB);
+				} else {
+					discoveryDashboardByUser = new ArrayList<DiscoveryDashboardEntity>();
+				}
+			}
+
+			if ("all".equals(requestType)) {
+				if (discoveryDashboard != null && !discoveryDashboard.isEmpty()) {
 					discoveryDetails = new ArrayList<DiscoveryDashboardEntity>(discoveryDashboard);
-				}else {
+				} else {
 					discoveryDetails = new ArrayList<DiscoveryDashboardEntity>();
 				}
-				allDiscoverySize = discoveryDetails.size();				
-				
-				if(discoveryDashboardByUser !=null && !discoveryDashboardByUser.isEmpty()) {
+				allDiscoverySize = discoveryDetails.size();
+
+				if (discoveryDashboardByUser != null && !discoveryDashboardByUser.isEmpty()) {
 					myDiscoverySize = discoveryDashboardByUser.size();
 				}
-				
+
 				obj.put("discoveryDetails", discoveryDetails);
 				obj.put("myDiscovery", myDiscoverySize);
 				obj.put("allDiscovery", allDiscoverySize);
-			}else {
-				if(discoveryDashboard !=null && !discoveryDashboard.isEmpty()) {
+			} else {
+				if (discoveryDashboard != null && !discoveryDashboard.isEmpty()) {
 					allDiscoverySize = discoveryDashboard.size();
 				}
-				
-				if(discoveryDashboardByUser !=null && !discoveryDashboardByUser.isEmpty()) {
+
+				if (discoveryDashboardByUser != null && !discoveryDashboardByUser.isEmpty()) {
 					discoveryDetails = new ArrayList<DiscoveryDashboardEntity>(discoveryDashboardByUser);
-				}else {
+				} else {
 					discoveryDetails = new ArrayList<DiscoveryDashboardEntity>();
 				}
 				myDiscoverySize = discoveryDetails.size();
-				
+
 				obj.put("discoveryDetails", discoveryDetails);
 				obj.put("myDiscovery", myDiscoverySize);
 				obj.put("allDiscovery", allDiscoverySize);
-			}			
+			}
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
-			
+
 		} catch (Exception exe) {
-			logger.error("Exception occured in discoverDashboard method - "+exe.getMessage());
+			logger.error("Exception occured in discoverDashboard method - " + exe.getMessage());
 			JSONObject errObj = new JSONObject();
-			errObj.put("Error", "Exception due to "+exe.getMessage());
+			errObj.put("Error", "Exception due to " + exe.getMessage());
 			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
 		}
 
@@ -238,7 +265,7 @@ public class DeviceDiscoveryController implements Observer {
 				inventoryList.get(j).setdEndOfSupportDate("Not Available");
 				inventoryList.get(j).setdEndOfLife("Not Available");
 				inventoryList.get(j).setdPollUsing("IP Address");
-				inventoryList.get(j).setdLoginDetails(inventoryList.get(j).getdConnect());			
+				inventoryList.get(j).setdLoginDetails(inventoryList.get(j).getdConnect());
 				inventoryList.get(j).setdStatus("Available");
 
 				/* Update IsNewFlag */
@@ -256,7 +283,7 @@ public class DeviceDiscoveryController implements Observer {
 				detail.put("dContactRole", "Administrator");
 				detail.put("dContactOrganization", "TechMahindra");
 				detail.put("dContactEmail", inventoryList.get(j).getdContactEmail());
-				detail.put("dContactPhone", inventoryList.get(j).getdContactPhone());			
+				detail.put("dContactPhone", inventoryList.get(j).getdContactPhone());
 
 				contactDetails.add(detail);
 
@@ -314,5 +341,5 @@ public class DeviceDiscoveryController implements Observer {
 			}
 		}
 		return cidr;
-	}	
+	}
 }
