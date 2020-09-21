@@ -15,15 +15,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.techm.orion.entitybeans.DeviceDiscoveryDashboardEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.entitybeans.DiscoveryDashboardEntity;
+import com.techm.orion.entitybeans.DiscoveryStatusEntity;
 import com.techm.orion.entitybeans.ForkDiscoveryResultEntity;
 import com.techm.orion.entitybeans.ForkDiscrepancyResultEntity;
 import com.techm.orion.entitybeans.HostDiscoveryResultEntity;
 import com.techm.orion.entitybeans.HostDiscrepancyResultEntity;
 import com.techm.orion.entitybeans.MasterOIDEntity;
-import com.techm.orion.repositories.DeviceDiscoveryDashboardRepository;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.DiscoveryDashboardRepository;
+import com.techm.orion.repositories.DiscoveryStatusEntityRepository;
 import com.techm.orion.repositories.ForkDiscoveryResultRepository;
 import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
 import com.techm.orion.repositories.HostDiscoveryResultRepository;
@@ -49,7 +51,7 @@ public class DeviceDiscrepancyService {
 	@Autowired
 	private MasterOIDRepository oidRepo;
 	@Autowired
-	private DeviceDiscoveryDashboardRepository dashboardRepo;
+	private DiscoveryDashboardRepository dashboardRepo;
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	@Autowired
@@ -62,37 +64,72 @@ public class DeviceDiscrepancyService {
 	private HostDiscoveryResultRepository hostDiscoveryResultRepository;
 	@Autowired
 	private MasterOIDRepository masterOIDRepository;
+	@Autowired
+	private DiscoveryStatusEntityRepository discoveryStatusEntityRepository;
 
 	@SuppressWarnings("unchecked")
 	public JSONObject discripancyService(String discoveryName) {
 		JSONObject finalObject = new JSONObject();
-		JSONArray discrepancyArray = new JSONArray();
 
-		DeviceDiscoveryDashboardEntity discoveryDetails = dashboardRepo.findByDiscoveryName(discoveryName);
+		DiscoveryDashboardEntity discoveryDetails = dashboardRepo.findByDisName(discoveryName);
 		if (discoveryDetails != null) {
-			finalObject.put("discrepancyName", discoveryDetails.getDiscoveryName());
-			finalObject.put("executionDateTime", discoveryDetails.getDiscoveryNextRun());
+			finalObject.put("discoveryDashboardId", discoveryDetails.getDisDashId());
+			finalObject.put("discoveryName", discoveryDetails.getDisName());
+			finalObject.put("discoveryStatus", discoveryDetails.getDisStatus());
+			finalObject.put("discoveryIpType", discoveryDetails.getDisIpType());
+			finalObject.put("discoveryType", discoveryDetails.getDisDiscoveryType());
+			finalObject.put("discoveryStartIp", discoveryDetails.getDisStartIp());
+			finalObject.put("discoveryEndIp", discoveryDetails.getDisEndIp());
+			finalObject.put("discoveryNetworkMask", discoveryDetails.getDisNetworkMask());
+			finalObject.put("discoveryProfileName", discoveryDetails.getDisProfileName());
+			finalObject.put("discoveryScheduledId", discoveryDetails.getDisScheduleId());
+			finalObject.put("discoveryCreatedDate", discoveryDetails.getDisCreatedDate());
+			finalObject.put("discoveryCreatedBy", discoveryDetails.getDisCreatedBy());
+			finalObject.put("discoveryUpdatedDate", discoveryDetails.getDisUpdatedDate());
+			finalObject.put("discoveryImportId", discoveryDetails.getDisImportId());
+			List<DiscoveryStatusEntity> details = discoveryStatusEntityRepository.findByDiscoveryId(discoveryDetails);
+			JSONArray discrepancyStatusArray = new JSONArray();
+			details.forEach(discoveryStatusEntity -> {
+				JSONObject discrepencyObject;
+				discrepencyObject = new JSONObject();
+				discrepencyObject.put("dsIpAddr", discoveryStatusEntity.getDsIpAddr());
+				discrepencyObject.put("dsCreatedDate", discoveryStatusEntity.getDsCreatedDate());
+				discrepencyObject.put("dsCreatedBy", discoveryStatusEntity.getDsCreatedBy());
+				discrepencyObject.put("dsUpdatedDate", discoveryStatusEntity.getDsUpdatedDate());
+				discrepencyObject.put("dsStatus", discoveryStatusEntity.getDsStatus());
+				discrepencyObject.put("dsComment", discoveryStatusEntity.getDsComment());
+				discrepencyObject.put("dsDeviceId", discoveryStatusEntity.getDsDeviceId());
+				discrepencyObject.put("dsHostName", discoveryStatusEntity.getDsHostName());
+				discrepencyObject.put("dsDeviceFlag", discoveryStatusEntity.getDsDeviceFlag());
 
-			Set<String> mgmtIp = hostDiscoveryrepo.findMgmtIP(discoveryDetails.getId());
-			mgmtIp.forEach(ip -> {
-				JSONObject discripancyObject = new JSONObject();
-				DeviceDiscoveryEntity deviceDetails = discoveryRepo.findAllByMgmtId(ip);
+				DeviceDiscoveryEntity deviceDetails = discoveryRepo
+						.findAllByMgmtId(discoveryStatusEntity.getDsIpAddr());
+				JSONArray discreapancyObjectValue = new JSONArray();
 				if (deviceDetails != null) {
-					discripancyObject.put("managementIp", deviceDetails.getdMgmtIp());
-					discripancyObject.put("hostname", deviceDetails.getdHostName());
-					// discripancyObject.put("status", "Success");
-					if (deviceDetails.getdNewDevice() == 0) {
-						discripancyObject.put("newOrExisting", "New");
-					} else {
-						discripancyObject.put("newOrExisting", "Existing");
-					}
-					JSONArray discroveryDiscreapncy = discroveryDiscreapncy(deviceDetails.getdId(),
-							deviceDetails.getdVendor(), deviceDetails.getdVNFSupport());
-					discripancyObject.put("discrepancy", discroveryDiscreapncy);
+					List<HostDiscoveryResultEntity> discrepancyDetails = hostDiscoveryResultRepository
+							.findHostDeviceDiscoveryValue(String.valueOf(deviceDetails.getdId()),
+									discoveryDetails.getDisId());
+					discrepancyDetails.forEach(deviceDiscrepancy -> {
+
+						discreapancyObjectValue
+								.add(hostDiscrepancyValue(deviceDiscrepancy, deviceDetails.getdVendor()));
+					});
+					List<ForkDiscoveryResultEntity> forkDiscrepancyValue = forkDiscoveryResultRepository
+							.findHostDeviceDiscoveryValue(String.valueOf(deviceDetails.getdId()),
+									discoveryDetails.getDisId());
+					forkDiscrepancyValue.forEach(deviceDiscrepancy -> {
+						if (deviceDiscrepancy != null) {
+							discreapancyObjectValue
+									.add(forkDiscrepancyValueData(deviceDiscrepancy, deviceDetails.getdId(),
+											deviceDetails.getdVendor(), deviceDetails.getdVNFSupport()));
+						}
+					});
 				}
-				discrepancyArray.add(discripancyObject);
+				discrepencyObject.put("discreapancy", discreapancyObjectValue);
+				discrepancyStatusArray.add(discrepencyObject);
 			});
-			finalObject.put("result", discrepancyArray);
+
+			finalObject.put("discrepancyStatusArray", discrepancyStatusArray);
 		}
 		return finalObject;
 	}
@@ -161,12 +198,25 @@ public class DeviceDiscrepancyService {
 	@SuppressWarnings("unchecked")
 	private JSONObject getDiscoveryDetails(int findDiscoveryId) {
 		JSONObject details = new JSONObject();
-		DeviceDiscoveryDashboardEntity discoveryDetails = dashboardRepo.findById(findDiscoveryId);
+		DiscoveryDashboardEntity discoveryDetails = dashboardRepo.findByDisId(findDiscoveryId);
+
 		if (discoveryDetails != null) {
-			details.put("createdBy", discoveryDetails.getDiscoveryCreatedBy());
-			details.put("discoveryName", discoveryDetails.getDiscoveryName());
-			details.put("date", discoveryDetails.getDiscoveryNextRun());
-			details.put("status", discoveryDetails.getDiscoveryStatus());
+			details.put("discoveryDashboardId", discoveryDetails.getDisId());
+			details.put("discoveryDashboardId", discoveryDetails.getDisDashId());
+			details.put("discoveryName", discoveryDetails.getDisName());
+			details.put("discoveryStatus", discoveryDetails.getDisStatus());
+			details.put("discoveryIpType", discoveryDetails.getDisIpType());
+			details.put("discoveryType", discoveryDetails.getDisDiscoveryType());
+			details.put("discoveryStartIp", discoveryDetails.getDisStartIp());
+			details.put("discoveryEndIp", discoveryDetails.getDisEndIp());
+			details.put("discoveryNetworkMask", discoveryDetails.getDisNetworkMask());
+			details.put("discoveryProfileName", discoveryDetails.getDisProfileName());
+			details.put("discoveryScheduledId", discoveryDetails.getDisScheduleId());
+			details.put("discoveryCreatedDate", discoveryDetails.getDisCreatedDate());
+			details.put("discoveryCreatedBy", discoveryDetails.getDisCreatedBy());
+			details.put("discoveryUpdatedDate", discoveryDetails.getDisUpdatedDate());
+			details.put("discoveryImportId", discoveryDetails.getDisImportId());
+
 		}
 		return details;
 	}
@@ -336,8 +386,8 @@ public class DeviceDiscrepancyService {
 							obj.get("childOid").toString(), ipAddress);
 					forkDiscoveryResultEntities = forkDiscoveryResultRepository.findDeviceForkDiscovery(
 							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(),
-							obj.get("childOid").toString(), ipAddress,forkDiscrepancyResultEntity.getDiscoveryId().getId());
-
+							obj.get("childOid").toString(), ipAddress,
+							forkDiscrepancyResultEntity.getDiscoveryId().getDisId());
 					if (forkDiscrepancyResultEntity != null) {
 						logger.info(" forkDiscrepancyResultEntity.getFidChildOIDNo() ->"
 								+ forkDiscrepancyResultEntity.getFidChildOIDNo());
@@ -379,7 +429,8 @@ public class DeviceDiscrepancyService {
 					hostDiscrepancyResultEntity = hostDiscrepancyResultRepository.findDeviceHostDiscrepancy(
 							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(), ipAddress);
 					hostDiscoveryResultEntities = hostDiscoveryResultRepository.findDeviceHostDiscovery(
-							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(), ipAddress,hostDiscrepancyResultEntity.getDiscoveryId().getId());
+							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(), ipAddress,
+							hostDiscrepancyResultEntity.getDiscoveryId().getDisId());
 					if (hostDiscrepancyResultEntity != null) {
 						logger.info(" hostDiscrepancyResultEntity.getHidOIDNo() ->"
 								+ hostDiscrepancyResultEntity.getHidOIDNo());
@@ -419,7 +470,9 @@ public class DeviceDiscrepancyService {
 						 * If Category = "Host" for this OID, then find the value in "Column name".
 						 * Update the corresponding column of table "Device Info"
 						 */
-						masterOIDEntity = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkType(obj.get("oid").toString(),deviceDiscovertEntity.getdVendor(),deviceDiscovertEntity.getdVNFSupport());
+						masterOIDEntity = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkType(
+								obj.get("oid").toString(), deviceDiscovertEntity.getdVendor(),
+								deviceDiscovertEntity.getdVNFSupport());
 						if (masterOIDEntity != null && "Host".equals(masterOIDEntity.getOidCategory())) {
 							if ("d_device_family".equals(masterOIDEntity.getOidAttrib())) {
 								deviceDiscovertEntity.setdDeviceFamily(hostDiscoveryResultEntity.getHdrDiscoverValue());
@@ -503,47 +556,56 @@ public class DeviceDiscrepancyService {
 	@SuppressWarnings("unchecked")
 	private JSONArray discroveryDiscreapncy(int deviceId, String vendor, String networkType) {
 		JSONArray discrepancyObject = new JSONArray();
-		List<HostDiscoveryResultEntity> discrepancyDetails = hostDiscoveryrepo
+		List<HostDiscoveryResultEntity> discrepancyDetails = hostDiscoveryResultRepository
 				.findHostDiscoveryValue(String.valueOf(deviceId));
-		Set<Integer> discoverIdList = hostDiscoveryrepo.findDiscoveryId(String.valueOf(deviceId));
-		discoverIdList.addAll(forkDiscoveryRepo.findDiscoveryId(String.valueOf(deviceId)));
+		Set<Integer> discoverIdList = hostDiscoveryResultRepository.findDiscoveryId(String.valueOf(deviceId));
+		discoverIdList.addAll(forkDiscoveryResultRepository.findDiscoveryId(String.valueOf(deviceId)));
 
-		
-			discrepancyDetails.forEach(deviceDiscrepancy -> {
-				if (deviceDiscrepancy != null) {
-					logger.info(deviceDiscrepancy.getHdrOIDNo());
-					String displayName = oidRepo.findOidNo(deviceDiscrepancy.getHdrOIDNo(), vendor);
-					JSONObject discrepancy = discrepancyStatusForLatestDiscover(
-							deviceDiscrepancy.getHdrDiscrepancyFalg(), displayName,
-							deviceDiscrepancy.getHdrExistingValue(), deviceDiscrepancy.getHdrDiscoverValue(), false);
-					discrepancy.put("oid", deviceDiscrepancy.getHdrOIDNo());
-					discrepancy.put("childOid", "");
-					discrepancyObject.add(discrepancy);
-				}
-			});
-			List<ForkDiscoveryResultEntity> forkDiscrepancyValue = forkDiscoveryRepo
-					.findHostDiscoveryValue(String.valueOf(deviceId));
+		discrepancyDetails.forEach(deviceDiscrepancy -> {
+			if (deviceDiscrepancy != null) {
+				discrepancyObject.add(hostDiscrepancyValue(deviceDiscrepancy, vendor));
+			}
+		});
+		List<ForkDiscoveryResultEntity> forkDiscrepancyValue = forkDiscoveryResultRepository
+				.findHostDiscoveryValue(String.valueOf(deviceId));
 
-			forkDiscrepancyValue.forEach(deviceDiscrepancy -> {
-				if (deviceDiscrepancy != null) {
-					logger.info(deviceDiscrepancy.getFdrOIDNo());
-					String fidChildOIDNo = deviceDiscrepancy.getFdrChildOIDNo();
-					fidChildOIDNo = StringUtils.substringAfterLast(fidChildOIDNo, ".");
-					String oidName = oidRepo.findInterFaceOidAndDisplayName(vendor, networkType);
-					String finalOid = oidName + "." + fidChildOIDNo;
-					String forkDiscreapancy = forkDiscoveryRepo.findForkDiscrepancyValueByDeviceIdAndoidNo(finalOid,
-							String.valueOf(deviceId));
-					String displayName = oidRepo.findOidNo(deviceDiscrepancy.getFdrOIDNo(), vendor);
-					JSONObject discrepancy = discrepancyStatusForLatestDiscover(
-							deviceDiscrepancy.getFdrDiscrepancyFalg(), oidName + " " + forkDiscreapancy,
-							displayName + " Old : " + deviceDiscrepancy.getFdrExistingValue(),
-							displayName + " New : " + deviceDiscrepancy.getFdrExistingValue(), false);
-					discrepancy.put("oid", deviceDiscrepancy.getFdrOIDNo());
-					discrepancy.put("childOid", deviceDiscrepancy.getFdrChildOIDNo());
-					discrepancyObject.add(discrepancy);
-				}
-			});
-		
+		forkDiscrepancyValue.forEach(deviceDiscrepancy -> {
+			if (deviceDiscrepancy != null) {
+				discrepancyObject.add(forkDiscrepancyValueData(deviceDiscrepancy, deviceId, vendor, networkType));
+			}
+		});
+
 		return discrepancyObject;
+	}
+
+	private JSONObject forkDiscrepancyValueData(ForkDiscoveryResultEntity deviceDiscrepancy, int deviceId,
+			String vendor, String networkType) {
+
+		logger.info(deviceDiscrepancy.getFdrOIDNo());
+		String fidChildOIDNo = deviceDiscrepancy.getFdrChildOIDNo();
+		fidChildOIDNo = StringUtils.substringAfterLast(fidChildOIDNo, ".");
+		String oidName = masterOIDRepository.findInterFaceOidAndDisplayName(vendor, networkType);
+		String finalOid = oidName + "." + fidChildOIDNo;
+		String forkDiscreapancy = forkDiscoveryResultRepository.findForkDiscrepancyValueByDeviceIdAndoidNo(finalOid,
+				String.valueOf(deviceId));
+		String displayName = masterOIDRepository.findOidNo(deviceDiscrepancy.getFdrOIDNo(), vendor);
+		JSONObject discrepancy = discrepancyStatusForLatestDiscover(deviceDiscrepancy.getFdrDiscrepancyFalg(),
+				oidName + " " + forkDiscreapancy, displayName + " Old : " + deviceDiscrepancy.getFdrExistingValue(),
+				displayName + " New : " + deviceDiscrepancy.getFdrExistingValue(), false);
+		discrepancy.put("oid", deviceDiscrepancy.getFdrOIDNo());
+		discrepancy.put("childOid", deviceDiscrepancy.getFdrChildOIDNo());
+		return discrepancy;
+
+	}
+
+	private JSONObject hostDiscrepancyValue(HostDiscoveryResultEntity deviceDiscrepancy, String vendor) {
+		logger.info(deviceDiscrepancy.getHdrOIDNo());
+		String displayName = masterOIDRepository.findOidNo(deviceDiscrepancy.getHdrOIDNo(), vendor);
+		JSONObject discrepancy = discrepancyStatusForLatestDiscover(deviceDiscrepancy.getHdrDiscrepancyFalg(),
+				displayName, deviceDiscrepancy.getHdrExistingValue(), deviceDiscrepancy.getHdrDiscoverValue(), false);
+		discrepancy.put("oid", deviceDiscrepancy.getHdrOIDNo());
+		discrepancy.put("childOid", "");
+		return discrepancy;
+
 	}
 }

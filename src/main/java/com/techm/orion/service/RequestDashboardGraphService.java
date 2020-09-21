@@ -11,8 +11,8 @@ import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.techm.orion.repositories.DeviceDiscoveryDashboardRepository;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.DiscoveryDashboardRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 
 /*Dhanshri Mane: Added For Request Dashboard*/
@@ -21,16 +21,13 @@ public class RequestDashboardGraphService {
 	private static final Logger logger = LogManager.getLogger(RequestDashboardGraphService.class);
 
 	@Autowired
-	DcmConfigService dcmConfigService;
-
+	private DcmConfigService dcmConfigService;
 	@Autowired
-	RequestInfoDetailsRepositories repo;
-
+	private RequestInfoDetailsRepositories repo;
 	@Autowired
-	DeviceDiscoveryRepository discoveryRepo;
-
+	private DeviceDiscoveryRepository discoveryRepo;
 	@Autowired
-	public DeviceDiscoveryDashboardRepository deviceDiscoveryDashboardRepo;
+	private DiscoveryDashboardRepository discoveryDashboardRepository;
 
 	public JSONObject getTotals(String customer, String region, String site, String vendor, String type,
 			String dashboardType) {
@@ -346,8 +343,8 @@ public class RequestDashboardGraphService {
 		} else {
 			loggedUser = "%";
 		}
-		deviceCountObjet.put("completed", deviceDiscoveryDashboardRepo.getRequestStatusCount("Completed", loggedUser));
-		deviceCountObjet.put("scheduled", deviceDiscoveryDashboardRepo.getRequestStatusCount("Scheduled", loggedUser));
+		deviceCountObjet.put("completed", discoveryDashboardRepository.getRequestStatusCount("Completed", loggedUser));
+		deviceCountObjet.put("scheduled", discoveryDashboardRepository.getRequestStatusCount("Scheduled", loggedUser));
 		return deviceCountObjet;
 	}
 

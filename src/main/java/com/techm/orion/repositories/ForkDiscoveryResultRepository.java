@@ -25,4 +25,7 @@ public interface ForkDiscoveryResultRepository extends JpaRepository<ForkDiscove
 	
 	@Query(value = "select fdr_inv_existing_value from c3p_t_fork_discovery_result where fdr_child_oid_no=:oidNum and device_id= :deviceId ", nativeQuery = true)
 	String findForkDiscrepancyValueByDeviceIdAndoidNo(@Param("oidNum") String oidNum,@Param("deviceId") String deviceId);
+	
+	@Query(value = "SELECT * FROM c3p_t_fork_discovery_result where fdr_discrepancy_flag between '1' and '2' and device_id=:deviceId and fdr_discovery_id=:discovryId ", nativeQuery = true)
+	List<ForkDiscoveryResultEntity> findHostDeviceDiscoveryValue(@Param("deviceId") String deviceId,@Param("discovryId") int discovryId);
 }
