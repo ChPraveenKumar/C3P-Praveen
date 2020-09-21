@@ -40,8 +40,8 @@ public class DiscoveryStatusEntity {
 	@Column(name = "ds_comment", length = 100)
 	private String dsComment;
 
-	@Column(name = "ds_device_id", length = 16)
-	private int dsDeviceId;
+	@Column(name = "ds_device_id", nullable=true, length = 16)
+	private Integer dsDeviceId;
 
 	@Column(name = "ds_hostname", length = 45)
 	private String dsHostName;
@@ -109,11 +109,11 @@ public class DiscoveryStatusEntity {
 		this.dsComment = dsComment;
 	}
 
-	public int getDsDeviceId() {
+	public Integer getDsDeviceId() {
 		return dsDeviceId;
 	}
 
-	public void setDsDeviceId(int dsDeviceId) {
+	public void setDsDeviceId(Integer dsDeviceId) {
 		this.dsDeviceId = dsDeviceId;
 	}
 
