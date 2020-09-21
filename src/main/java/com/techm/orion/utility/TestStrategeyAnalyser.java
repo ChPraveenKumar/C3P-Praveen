@@ -228,7 +228,7 @@ Double requestVersion =Double.valueOf(version);
 
 						if (!beforeText.isEmpty() && !afterText.isEmpty()) {
 							String value = beforeText + "(.*?)" + afterText;
-							Pattern pattern = Pattern.compile(value, Pattern.MULTILINE);
+							Pattern pattern = Pattern.compile(value, Pattern.DOTALL);
 							Matcher matcher = pattern.matcher(text);
 							while (matcher.find()) {
 								output = matcher.group(1);
@@ -236,17 +236,17 @@ Double requestVersion =Double.valueOf(version);
 							}
 
 						} else if (!afterText.isEmpty() && !noOfChars.isEmpty()) {
-							Pattern pattern = Pattern.compile("^(?!" + afterText + ").*$", Pattern.MULTILINE);
+							Pattern pattern = Pattern.compile("^.*?(?>"+ afterText + ")", Pattern.DOTALL);
 							Matcher matcher = pattern.matcher(text);
 							while (matcher.find()) {
-								output = matcher.group(1).substring(matcher.group(1).indexOf(beforeText), chars);
+								output = matcher.group().substring(matcher.group().indexOf(afterText)-chars,matcher.group().indexOf(afterText));
 							}
 
 						} else if (!beforeText.isEmpty() && !noOfChars.isEmpty()) {
-							Pattern pattern = Pattern.compile("^(?!" + beforeText + ").*$", Pattern.MULTILINE);
+							Pattern pattern = Pattern.compile("(?<="+ beforeText + ")(.*)", Pattern.DOTALL);
 							Matcher matcher = pattern.matcher(text);
 							while (matcher.find()) {
-								output = matcher.group(1).substring(matcher.group(1).indexOf(beforeText), chars);
+								output = matcher.group(1).substring(0, chars);
 							}
 
 						}
