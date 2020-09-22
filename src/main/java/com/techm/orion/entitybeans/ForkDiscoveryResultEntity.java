@@ -39,7 +39,7 @@ public class ForkDiscoveryResultEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "fdr_discovery_id")
-	private DeviceDiscoveryDashboardEntity discoveryId;
+	private DiscoveryDashboardEntity discoveryId;
 
 	@Column(name = "fdr_discrepancy_flag", length = 1)
 	private String fdrDiscrepancyFalg;
@@ -166,11 +166,11 @@ public class ForkDiscoveryResultEntity {
 		this.fdrHerf = fdrHerf;
 	}
 
-	public DeviceDiscoveryDashboardEntity getDiscoveryId() {
+	public DiscoveryDashboardEntity getDiscoveryId() {
 		return discoveryId;
 	}
 
-	public void setDiscoveryId(DeviceDiscoveryDashboardEntity discoveryId) {
+	public void setDiscoveryId(DiscoveryDashboardEntity discoveryId) {
 		this.discoveryId = discoveryId;
 	}
 
