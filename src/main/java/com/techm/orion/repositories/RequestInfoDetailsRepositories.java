@@ -241,6 +241,9 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	
 	@Query(value = "select  count(r_status) from c3p_t_request_info where r_status=:status and r_request_creator_name like :creatorName ", nativeQuery = true)
 	int  getRequestStatusCount( @Param("status") String status,@Param("creatorName") String creatorName);
+	
+	@Query(value = "select count(r_hostname) from c3p_t_request_info where r_hostname=:hostName ", nativeQuery = true)
+	int  getRequestCountByHost(@Param("hostName") String hostName);
 	/*Dhanshri Mane :Ends Method*/	
 }
 
