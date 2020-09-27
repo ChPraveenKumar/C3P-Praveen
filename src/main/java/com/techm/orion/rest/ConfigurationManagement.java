@@ -58,13 +58,13 @@ public class ConfigurationManagement {
 
 	private static DecimalFormat df2 = new DecimalFormat("#.##");
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public JSONObject createConfigurationDcm(@RequestBody String configRequest) {
 		
 		long startTime = System.currentTimeMillis();
-		// DcmConfigService dcmConfigService=new DcmConfigService();
 		JSONObject obj = new JSONObject();
 		String requestType = null;
 		String requestIdForConfig = "";
@@ -88,7 +88,7 @@ public class ConfigurationManagement {
 				configReqToSendToC3pCode.setRequestType("SLGC");
 			}
 			
-			if (!json.get("networkType").toString().equals("")&& json.get("networkType") != null) {
+			if (json.get("networkType") != null && !json.get("networkType").toString().isEmpty()) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
 
@@ -102,9 +102,7 @@ public class ConfigurationManagement {
 				} else {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
-			} else {
-				//DeviceDiscoveryEntity networkfunctio = deviceRepo
-				//		.findDVNFSupportByDHostName(configReqToSendToC3pCode.getHostname());
+			} else {			
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
 					if (!requestType.equalsIgnoreCase("Test")) {
@@ -159,13 +157,7 @@ public class ConfigurationManagement {
 			// This version is 1 is this will be freshly created request every time so
 			// parent will be 1.
 			configReqToSendToC3pCode.setRequestParentVersion(1.0);
-			
-			/*
-			 * CreateConfigRequestDCM mappedObj = mapper.readValue(configRequest,
-			 * CreateConfigRequestDCM.class);
-			 */
 
-			// get request creator name
 
 			if (requestType.equals("SLGB")) {
 				request_creator_name = json.get("request_creator_name").toString();
@@ -180,18 +172,15 @@ public class ConfigurationManagement {
 				configReqToSendToC3pCode.setRequestCreatorName(request_creator_name);
 			}
 
-			/*
-			 * Date date = new Date(); SimpleDateFormat sdf = new
-			 * SimpleDateFormat("dd/MM/yyyy");
-			 * 
-			 * String strDate = sdf.format(date);
-			 * configReqToSendToC3pCode.setRequestCreatedOn(strDate);
-			 */
-			JSONObject certificationTestFlag = (JSONObject) json.get("certificationTests");
+			JSONObject certificationTestFlag = null;
+			
+			if(json.get("certificationTests") !=null) {
+				certificationTestFlag = (JSONObject) json.get("certificationTests");
+			}
 
 			if (!(requestType.equals("SLGB"))) {
 
-				if (certificationTestFlag.containsKey("default")) {
+				if (certificationTestFlag !=null && certificationTestFlag.containsKey("default")) {
 					// flag test selection
 					JSONObject defaultObj = (JSONObject) certificationTestFlag.get("default");
 
@@ -208,7 +197,7 @@ public class ConfigurationManagement {
 
 			if (!(requestType.equals("SLGB"))) {
 
-				if (certificationTestFlag.containsKey("dynamic")) {
+				if (certificationTestFlag !=null && certificationTestFlag.containsKey("dynamic")) {
 					JSONArray dynamicArray = (JSONArray) certificationTestFlag.get("dynamic");
 					JSONArray toSaveArray = new JSONArray();
 
@@ -245,23 +234,11 @@ public class ConfigurationManagement {
 			
 				LocalDateTime nowDate = LocalDateTime.now();
 				Timestamp timestamp = Timestamp.valueOf(nowDate);
-				configReqToSendToC3pCode.setRequestCreatedOn(timestamp.toString());
-				/* ps.setString(37,TimeZ); *//* Added for TimeZ */
-
+				configReqToSendToC3pCode.setRequestCreatedOn(timestamp.toString());			
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-			/*
-			 * if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("IOSUPGRADE"))
-			 * { configReqToSendToC3pCode.setZipcode(json.get("zipcode").toString());
-			 * configReqToSendToC3pCode.setManaged(json.get("managed").toString());
-			 * configReqToSendToC3pCode.setDownTimeRequired(json.get("downtimeRequired").
-			 * toString());
-			 * configReqToSendToC3pCode.setLastUpgradedOn(json.get("lastUpgradedOn").
-			 * toString()); }
-			 */
 			logger.info("createConfigurationDcm - configReqToSendToC3pCode -NetworkType- "+configReqToSendToC3pCode.getNetworkType());
 			Map<String, String> result = null;
 			if (configReqToSendToC3pCode.getRequestType().contains("Config")

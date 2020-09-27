@@ -2658,7 +2658,6 @@ public class TemplateManagementDao {
 	public final boolean updateTemplateDBEdit(String tempID, String prevVersion, String series) throws SQLException {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String tempid = null;
 		String oldTemplateId = tempID.substring(0, tempID.indexOf("V") - 1) + "_V" + prevVersion;
 		String query1 = "SELECT * FROM c3p_template_master_feature_list WHERE command_type IN (?,?)";
 		String query3 = "SELECT * FROM c3p_template_master_command_list where command_id=? AND command_type IN (?,?)";
@@ -2669,10 +2668,9 @@ public class TemplateManagementDao {
 		String query6 = "select * from c3p_template_transaction_feature_list where command_feature_template_id=?";
 		List<Integer> checkedFeatureIds = new ArrayList<Integer>();
 		List<Integer> toCopyFeatureIds = new ArrayList<Integer>();
-		Statement pst = null;
 		ResultSet rs = null;
 		GetTemplateMngmntActiveDataPojo pojo = null;
-		Statement ps = connection.createStatement();
+		//Statement ps = connection.createStatement();
 		PreparedStatement psSupport = null;
 		List<GetTemplateMngmntActiveDataPojo> listOfBlocks = null, listOfBlocks1 = null;
 		boolean firstUpdate = false;
@@ -2781,26 +2779,9 @@ public class TemplateManagementDao {
 				}
 
 				int[] recordsAffected2 = null;
-				boolean isPresentCommandList = false;
-
-				// check if entries for this record exist in command list table
-				/*
-				 * String query4 = "SELECT * FROM c3p_template_transaction_command_list"; pst =
-				 * connection.createStatement(); rs = pst.executeQuery(query4); while
-				 * (rs.next()) { if(rs.getString("command_transaction_template_id"
-				 * ).equalsIgnoreCase(tempID)) { isPresentCommandList=true; break; } }
-				 */
+				boolean isPresentCommandList = false;			
 				result = true;
-				// insert these commands in active table
-				/*
-				 * if(!isPresent) { for(int i=0; i<listOfBlocks.size();i++) { String
-				 * insertBatchQuery=
-				 * "INSERT INTO c3p_template_transaction_feature_list(id,command_feature_template_id)"
-				 * + "VALUES('"+listOfBlocks.get(i).getId()+"','" +tempID+ "')";
-				 * ps.addBatch(insertBatchQuery); } recordsAffected1=ps.executeBatch();
-				 * 
-				 * }
-				 */
+				
 				String query7 = "select * from c3p_template_transaction_command_list where command_template_id=?";
 				PreparedStatement psmt = connection.prepareStatement(query7);
 				psmt.setString(1, oldTemplateId);
@@ -2814,13 +2795,19 @@ public class TemplateManagementDao {
 					listOfBlocks1.add(pojo1);
 				}
 				if (!isPresentCommandList) {
-					for (int i = 0; i < listOfBlocks1.size(); i++) {
-						String insertBatchQuery = "INSERT INTO c3p_template_transaction_command_list(command_id,command_sequence_id,command_template_id)"
-								+ "VALUES('" + listOfBlocks1.get(i).getCommandId() + "','"
-								+ listOfBlocks1.get(i).getCommandSequenceId() + "','" + tempID + "')";
-						ps.addBatch(insertBatchQuery);
+					try (PreparedStatement psBatch = connection.prepareStatement(
+							"INSERT INTO c3p_template_transaction_command_list(command_id,command_sequence_id,command_template_id) VALUES(?, ?, ?)")) {
+						for (int i = 0; i < listOfBlocks1.size(); i++) {
+							psBatch.setString(1, listOfBlocks1.get(i).getCommandId());
+							psBatch.setString(2, listOfBlocks1.get(i).getCommandSequenceId());
+							psBatch.setString(3, tempID);
+							psBatch.addBatch();
+						}
+						recordsAffected2 = psBatch.executeBatch();
+					} catch (SQLException exe) {
+						logger.error("SQL Exception>" + exe.getMessage());
 					}
-					recordsAffected2 = ps.executeBatch();
+					
 				}
 
 				// int i=0;
@@ -2832,11 +2819,9 @@ public class TemplateManagementDao {
 			} else {
 				result = false;
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+		} catch (SQLException e) {			
 			e.printStackTrace();
-		} finally {
-			ps.close();
+		} finally {			
 			DBUtil.close(connection);
 		}
 		return result;

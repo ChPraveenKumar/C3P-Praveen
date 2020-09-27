@@ -46,14 +46,15 @@ public class CreateScheduleReqDBService {
 			String businessKey = json.get("requestId").toString();
 			String version = json.get("version").toString();
 
-			String query = "select ScheduledTime from requestinfoso where RequestType_Flag = 'S' and request_version = '"
-					+ version + "' and alphanumeric_req_id like '" + businessKey + "'";
+			String query = "select ScheduledTime from requestinfoso where RequestType_Flag = 'S' and request_version = ? and alphanumeric_req_id like ?";
 
 			ResultSet rs = null;
 			CreateScheduleReqPojo scheduleReqObj = null;
 
 			try(Connection connection = ConnectionFactory.getConnection();
 					PreparedStatement statement = connection.prepareStatement(query) ) {
+				statement.setString(1, version);
+				statement.setString(2, businessKey);
 				rs = statement.executeQuery();
 
 				while (rs.next()) {
@@ -101,8 +102,7 @@ public class CreateScheduleReqDBService {
 			ResultSet rs = null;
 			String insertQuery = "INSERT INTO camundahistory(history_processId,history_requestId,history_versionId,history_user) VALUES(?,?,?,?)";
 			String updateQuery = "update camundahistory set history_processId = ?,history_user = ? where history_requestId = ? and history_versionId= ?";
-			String countQuery = "select count(history_processId) count from camundahistory where history_versionId = '"
-					+ version + "' and history_requestId like '" + businessKey + "'";
+			String countQuery = "select count(history_processId) count from camundahistory where history_versionId = ? and history_requestId like ?";
 
 			try(Connection connection = ConnectionFactory.getConnection();
 					PreparedStatement preparedStmt1 = connection.prepareStatement(insertQuery);
@@ -112,6 +112,8 @@ public class CreateScheduleReqDBService {
 
 				try(PreparedStatement countPs = connection.prepareStatement(countQuery)) {
 					scheduleReqObj = new CreateScheduleReqPojo();
+					countPs.setString(1, version);
+					countPs.setString(2, businessKey);
 					rs = countPs.executeQuery();
 					while (rs.next()) {					
 						scheduleReqObj.setHistory_processId(rs.getString("count"));

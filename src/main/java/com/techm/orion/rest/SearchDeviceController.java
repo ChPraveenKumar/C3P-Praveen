@@ -3,9 +3,8 @@ package com.techm.orion.rest;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -16,6 +15,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,7 +34,7 @@ import com.techm.orion.service.InventoryManagmentService;
 
 @Controller
 @RequestMapping("/searchdeviceinventory")
-public class SearchDeviceController implements Observer {
+public class SearchDeviceController {
 
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
@@ -172,6 +173,7 @@ public class SearchDeviceController implements Observer {
 				.build();
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/filterInventoryDashboard", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -415,12 +417,125 @@ public class SearchDeviceController implements Observer {
 		return Response.status(200).entity(model).build();
 	}
 
-	@Override
-	public void update(Observable o, Object arg) {
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/backuppage", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<JSONObject> searchFromBackUpPage(@RequestBody String searchParameters) {
+		String customer = null;
+		String region = null;
+		String site = null;
+		String searchType = null;
+		String searchValue = null;
+		JSONObject responseObject = new JSONObject();
+		List<DeviceDiscoveryEntity> getFilterDevices = null;
+		List<DeviceDiscoveryEntity> filterResults = null;
+		ResponseEntity<JSONObject> responseEntity = null;
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(searchParameters);
+			JSONObject object = new JSONObject();
+			
+			searchType = getJsonData(json, "field");
+			if(searchType !=null) {
+				searchValue = getJsonData(json, "value");
+			}
+			customer = getJsonData(json, "customer");
+			region = getJsonData(json, "region");
+			site = getJsonData(json, "site");
+			logger.info("searchType : "+searchType +", searchValue: "+searchValue + ", customer: " +customer+ ", region: "+region+", site:"+site);
+			/*Filter for All case.*/
+			if(searchType == null && customer == null && region == null && site == null) {
+				filterResults = deviceInforepo.findAll();				
+			}else {
+				/*Search with filter options like customer, region & site*/
+				if(customer !=null && region !=null && site !=null) {
+					// find with customer and region and vendor
+					getFilterDevices = deviceInforepo
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(
+									customer, region, site);
+				}else if(customer !=null && region !=null && site == null) {
+					// find with customer and region and vendor
+					getFilterDevices = deviceInforepo
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegion(customer, region);
+				}else if(customer !=null && region == null && site == null) {
+					// find with customer and region and vendor
+					getFilterDevices = deviceInforepo.findByCustSiteIdCCustName(customer);
+				}else {
+					getFilterDevices = deviceInforepo.findAll();
+				}
+				
+				/*filter the getFileterDevices list further based on searchType & value*/
+				if(searchType !=null && searchValue !=null && getFilterDevices !=null) {
+					final String filterValue = searchValue;
+					if("Host Name".equals(searchType)) {
+						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdHostName())).collect(Collectors.toList());
+					}else if ("Management Ip".equals(searchType)) {
+						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdMgmtIp())).collect(Collectors.toList());
+					}else if ("OS".equals(searchType)) {
+						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdOs())).collect(Collectors.toList());
+					}else if ("OS Version".equals(searchType)) {
+						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdOsVersion())).collect(Collectors.toList());
+					}else if ("Model".equals(searchType)) {
+						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdModel())).collect(Collectors.toList());
+					}else if ("Device Family".equals(searchType)) {
+						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdDeviceFamily())).collect(Collectors.toList());
+					}else if ("EOL".equals(searchType)) {
+						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdEndOfLife())).collect(Collectors.toList());
+					}else if ("EOS".equals(searchType)) {
+						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdEndOfSaleDate())).collect(Collectors.toList());
+					}					
+				}else if(getFilterDevices !=null){
+					filterResults = getFilterDevices.stream().collect(Collectors.toList());
+				}				
+			}
+
+			JSONArray outputArray = new JSONArray();
+			for(DeviceDiscoveryEntity deviceInfo :filterResults) {
+				object = new JSONObject();
+				object.put("hostName", deviceInfo.getdHostName());
+				object.put("managementIp", deviceInfo.getdMgmtIp());
+				object.put("type", "Router");
+				object.put("deviceFamily", deviceInfo.getdDeviceFamily());
+				object.put("model", deviceInfo.getdModel());
+				object.put("os", deviceInfo.getdOs());
+				object.put("osVersion", deviceInfo.getdOsVersion());
+				object.put("vendor", deviceInfo.getdVendor());
+				object.put("status", "Available");				
+				if (deviceInfo.getCustSiteId() != null) {					
+					SiteInfoEntity siteInfo = deviceInfo.getCustSiteId();
+					object.put("customer", siteInfo.getcCustName());
+					object.put("site", siteInfo.getcSiteName());
+					object.put("region", siteInfo.getcSiteRegion());
+				}			
+				object.put("eos", deviceInfo.getdEndOfSupportDate());
+				object.put("eol", deviceInfo.getdEndOfSaleDate());						
+
+				outputArray.add(object);
+			}
+			
+			responseObject.put("data", outputArray);
+			responseEntity = new ResponseEntity<JSONObject>(responseObject, HttpStatus.OK);
+		} catch (Exception exe) {
+			responseObject = new JSONObject();
+			responseObject.put("Error","Filter is not successful");
+			responseEntity = new ResponseEntity<JSONObject>(responseObject, HttpStatus.BAD_REQUEST);
+			logger.error("Exception occured :"+exe.getMessage());
+		}
 		
-
+		return responseEntity;
+		
 	}
-
-
-
+	
+	private String getJsonData(JSONObject json, String key) {
+		String jsonData = null;
+		if (json.containsKey(key) && json.get(key) !=null) {
+			jsonData = json.get(key).toString();
+			if("undefined".equals(jsonData) && jsonData.trim().isEmpty()) {
+				jsonData = null;
+				logger.info("jsonData is undefined for input key "+key);				
+			}
+		}
+		return jsonData;
+	}
 }
