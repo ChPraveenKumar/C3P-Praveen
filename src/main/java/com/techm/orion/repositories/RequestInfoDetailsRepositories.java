@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.techm.orion.entitybeans.RequestInfoEntity;
 
@@ -245,6 +246,14 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	@Query(value = "select count(r_hostname) from c3p_t_request_info where r_hostname=:hostName ", nativeQuery = true)
 	int  getRequestCountByHost(@Param("hostName") String hostName);
 	/*Dhanshri Mane :Ends Method*/	
+	
+
+	/**/
+	@Modifying
+	@Transactional
+	@Query("UPDATE RequestInfoEntity e SET e.dateofProcessing= :dateofProcessing  where e.alphanumericReqId =:alphanumericReqId And e.requestVersion = :requestVersion")
+	int updateDateOfProcessing(@Param("dateofProcessing") Date dateOfProcessing,
+			@Param("alphanumericReqId") String alphanumericReqId, @Param("requestVersion") Double requestVersion);
 }
 
 

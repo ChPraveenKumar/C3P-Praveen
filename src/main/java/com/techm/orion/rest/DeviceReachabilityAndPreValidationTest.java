@@ -585,7 +585,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					// notification
 					String type = requestinfo.getAlphanumericReqId().substring(0,
 							Math.min(requestinfo.getAlphanumericReqId().length(), 4));
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGM")) {
+					if (type.equalsIgnoreCase("SLGC") ) {
 						String response = "";
 						String responseDownloadPath = "";
 						try {
@@ -649,7 +649,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							obj.put(new String("output"), jsonArray);
 						}
 					} else if (type.equalsIgnoreCase("SLGB") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA")|| type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM") ) {
+							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM") || type.equalsIgnoreCase("SLGM")) {
 
 						String response = "";
 						String responseDownloadPath = "";

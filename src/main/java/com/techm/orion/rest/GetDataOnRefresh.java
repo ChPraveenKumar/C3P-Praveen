@@ -58,7 +58,7 @@ public class GetDataOnRefresh implements Observer {
 			int numberOfNotificationsForFE = 0;
 			List<RequestInfoCreateConfig> feRequestListNum = new ArrayList<RequestInfoCreateConfig>();
 			requestList.forEach(request -> {
-				if (request.getReadFE() == true) {
+				if (request.getReadFE() == false) {
 					feRequestListNum.add(request);
 				}
 			});
@@ -126,8 +126,9 @@ public class GetDataOnRefresh implements Observer {
 				templateNames.add(temp);
 			}
 
+		
+			
 			jsonList = new Gson().toJson(list);
-			jsonFeRequestList = "undefined";
 			totalCount = notificationCount;
 
 			templateNameList = new Gson().toJson(templateNames);

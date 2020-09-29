@@ -226,7 +226,7 @@ public class FEFlowService implements Observer {
 				RequestInfoEntity req = reository.findByAlphanumericReqIdAndRequestVersion(RequestId, Double.valueOf(version));
 
 				//get series
-				String series=getSeries(req.getVendor(), req.getDeviceType(),req.getModel());
+				String series=getSeries(req.getVendor(), req.getFamily(),req.getModel());
 				
 				Set<Series>setSeries=seriesrepo.findBySeries(series);
 				 List<Series> listSeries = new ArrayList<>(setSeries);
