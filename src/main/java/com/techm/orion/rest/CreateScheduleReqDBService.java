@@ -46,7 +46,7 @@ public class CreateScheduleReqDBService {
 			String businessKey = json.get("requestId").toString();
 			String version = json.get("version").toString();
 
-			String query = "select ScheduledTime from requestinfoso where RequestType_Flag = 'S' and request_version = ? and alphanumeric_req_id like ?";
+			String query = "select ScheduledTime from c3p_t_request_info where r_request_type_flag = 'S' and r_request_version = ? and r_alphanumeric_req_id like ?";
 
 			ResultSet rs = null;
 			CreateScheduleReqPojo scheduleReqObj = null;
