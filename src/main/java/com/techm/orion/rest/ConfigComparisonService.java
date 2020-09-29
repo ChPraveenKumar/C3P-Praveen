@@ -15,6 +15,7 @@ import java.util.Properties;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -69,7 +70,7 @@ public class ConfigComparisonService implements Observer {
 			String label = keys[5];
 			String test_name = keys[0] + "_" + keys[1] + "_" + keys[2];
 			// String requestId="SR-DC394C0";
-			String snippet = dao.getSnippet(data_type, label, test_name);
+			String snippet = dao.getSnippet(label, test_name);
 			// write it to temp file StandardConfiguration.txt
 			String filepath1 = standardConfigPath + "StandardConfiguration.txt";
 			FileWriter fw1 = null;
@@ -210,7 +211,8 @@ public class ConfigComparisonService implements Observer {
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 			String RequestId = json.get("testLabel").toString();
 			String requestId = json.get("requestID").toString();
-
+			String reportLabel = json.get("reportLabel").toString();
+			String testName = StringUtils.substringBeforeLast(RequestId, "_");
 			String outputFile = null;
 			// USCI7200IO12.4_NA_Test_1.0_Snippet_Router Uptime
 			// get snippet from DB
@@ -220,14 +222,7 @@ public class ConfigComparisonService implements Observer {
 			String tempRequestId = dao.findByRequestId(requestId);
 			String tempRequestId1 = tempRequestId.substring(0, 15);
 			String tempRequestId12 = tempRequestId1.concat(RequestId);
-
-			String[] keys = tempRequestId12.split("_");
-
-			String data_type = keys[4];
-			String label = keys[5];
-			String test_name = keys[0] + "_" + keys[1] + "_" + keys[2];
-			// String requestId="SR-DC394C0";
-			String snippet = dao.getSnippet(data_type, label, test_name);
+			String snippet = dao.getSnippet(reportLabel, testName);
 			// write it to temp file StandardConfiguration.txt
 			String filepath1 = standardConfigPath + "StandardConfiguration.txt";
 			FileWriter fw1 = null;
