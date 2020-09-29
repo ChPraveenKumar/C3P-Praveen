@@ -1067,10 +1067,10 @@ public class GetReportData implements Observer {
 
 				if (createConfigRequest.getPre_cpu_usage_percentage() == 0
 						&& createConfigRequest.getPost_cpu_usage_percentage() == 0) {
-					cpu.put("outcome", "Pass");
+					cpu.put("outcome", "Passed");
 				} else if (createConfigRequest.getPre_cpu_usage_percentage() < 0
 						&& createConfigRequest.getPost_cpu_usage_percentage() < 0) {
-					cpu.put("outcome", "Fail");
+					cpu.put("outcome", "Failed");
 				}
 
 				healthCheckArray.put(cpu);
@@ -1081,9 +1081,9 @@ public class GetReportData implements Observer {
 				mem.put("postUpgradeValue", createConfigRequest.getPost_memory_info());
 				if (Double.parseDouble(createConfigRequest.getPre_memory_info()) > 0
 						&& Double.parseDouble(createConfigRequest.getPost_memory_info()) > 0) {
-					mem.put("outcome", "Pass");
+					mem.put("outcome", "Passed");
 				} else {
-					mem.put("outcome", "Fail");
+					mem.put("outcome", "Failed");
 
 				}
 
@@ -1095,9 +1095,9 @@ public class GetReportData implements Observer {
 				pow.put("postUpgradeValue", createConfigRequest.getPost_power_info());
 				if (createConfigRequest.getPre_power_info().equalsIgnoreCase("fail")
 						|| createConfigRequest.getPost_power_info().equalsIgnoreCase("fail")) {
-					pow.put("outcome", "Fail");
+					pow.put("outcome", "Failed");
 				} else {
-					pow.put("outcome", "Pass");
+					pow.put("outcome", "Passed");
 
 				}
 				healthCheckArray.put(pow);
