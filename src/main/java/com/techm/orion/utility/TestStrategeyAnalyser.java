@@ -92,6 +92,10 @@ Double requestVersion =Double.valueOf(version);
 					+ version + filename;
 
 			file1 = new File(filepath1);
+			if(file1.exists())
+			{
+				file1.delete();
+			}
 			while (input.available() > 0) {
 				int i = input.read(tmp, 0, SIZE);
 				if (i < 0) {
@@ -107,6 +111,8 @@ Double requestVersion =Double.valueOf(version);
 					tempTextToAnalyse.concat(s);
 
 				}
+				
+				
 				if (!(s.equals(""))) {
 					// if file doesnt exists, then create it
 					if (!file1.exists()) {
@@ -124,6 +130,8 @@ Double requestVersion =Double.valueOf(version);
 					}
 
 				}
+				
+				
 
 			}
 			try {

@@ -99,6 +99,11 @@ public class RequestDetailsServiceWithVersion {
 							request.setCommissionFlag("Commission");
 
 						}
+						
+						if(request.getRequestType().equalsIgnoreCase("SLGB"))
+						{
+							request.setRequestType("BackUp");
+						}
 					}
 
 					jsonArray = new Gson().toJson(detailsList);

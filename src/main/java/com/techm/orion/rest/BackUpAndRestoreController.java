@@ -902,7 +902,7 @@ public class BackUpAndRestoreController {
 
 						requestInfoEntity.setRequestType(requestType);
 						
-						alphaneumeric_req_id = "SLGC-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+						alphaneumeric_req_id = "SLGM-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
 						requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
 						if (j == 0) {
 							requestInfoEntity.setStatus("In Progress");

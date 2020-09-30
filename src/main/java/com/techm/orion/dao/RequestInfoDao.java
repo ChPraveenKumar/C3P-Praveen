@@ -4755,63 +4755,63 @@ public class RequestInfoDao {
 
 			while (rs.next()) {
 				if (rs.getInt("login_flag") == 1) {
-					req.setOs_upgrade_dilevary_login_flag("Pass");
+					req.setOs_upgrade_dilevary_login_flag("Passed");
 				} else if (rs.getInt("login_flag") == 2) {
-					req.setOs_upgrade_dilevary_login_flag("Fail");
+					req.setOs_upgrade_dilevary_login_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_login_flag("Not conducted");
 
 				}
 				if (rs.getInt("flash_size_flag") == 1) {
-					req.setOs_upgrade_dilevary_flash_size_flag("Pass");
+					req.setOs_upgrade_dilevary_flash_size_flag("Passed");
 				} else if (rs.getInt("flash_size_flag") == 2) {
-					req.setOs_upgrade_dilevary_flash_size_flag("Fail");
+					req.setOs_upgrade_dilevary_flash_size_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_flash_size_flag("Not Conducted");
 
 				}
 				if (rs.getInt("back_up_flag") == 1) {
-					req.setOs_upgrade_dilevary_backup_flag("Pass");
+					req.setOs_upgrade_dilevary_backup_flag("Passed");
 				} else if (rs.getInt("back_up_flag") == 2) {
-					req.setOs_upgrade_dilevary_backup_flag("Fail");
+					req.setOs_upgrade_dilevary_backup_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_backup_flag("Not conducted");
 
 				}
 				if (rs.getInt("os_download_flag") == 1) {
-					req.setOs_upgrade_dilevary_os_download_flag("Pass");
+					req.setOs_upgrade_dilevary_os_download_flag("Passed");
 				} else if (rs.getInt("os_download_flag") == 2) {
-					req.setOs_upgrade_dilevary_os_download_flag("Fail");
+					req.setOs_upgrade_dilevary_os_download_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_os_download_flag("Not conducted");
 
 				}
 				if (rs.getInt("boot_system_flash_flag") == 1) {
-					req.setOs_upgrade_dilevary_boot_system_flash_flag("Pass");
+					req.setOs_upgrade_dilevary_boot_system_flash_flag("Passed");
 				} else if (rs.getInt("boot_system_flash_flag") == 2) {
-					req.setOs_upgrade_dilevary_boot_system_flash_flag("Fail");
+					req.setOs_upgrade_dilevary_boot_system_flash_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_boot_system_flash_flag("Not conducted");
 
 				}
 				if (rs.getInt("reload_flag") == 1) {
-					req.setOs_upgrade_dilevary_reload_flag("Pass");
+					req.setOs_upgrade_dilevary_reload_flag("Passed");
 				} else if (rs.getInt("reload_flag") == 2) {
-					req.setOs_upgrade_dilevary_reload_flag("Fail");
+					req.setOs_upgrade_dilevary_reload_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_reload_flag("Not conducted");
 
 				}
 				if (rs.getInt("post_login_flag") == 1) {
-					req.setOs_upgrade_dilevary_post_login_flag("Pass");
+					req.setOs_upgrade_dilevary_post_login_flag("Passed");
 				} else if (rs.getInt("post_login_flag") == 2) {
-					req.setOs_upgrade_dilevary_post_login_flag("Fail");
+					req.setOs_upgrade_dilevary_post_login_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_post_login_flag("Not conducted");
