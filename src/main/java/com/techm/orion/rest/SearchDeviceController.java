@@ -209,7 +209,7 @@ public class SearchDeviceController {
 			if (json.containsKey("model")) {
 				modeltosearch = json.get("model").toString();
 			}
-
+			logger.info("customer -"+customer + ", region-"+region+ ", sitetosearch-"+sitetosearch+", devicetosearch-"+devicetosearch+", modeltosearch-"+modeltosearch+", networktosearch"+networktosearch);
 			// Implementation of search logic based on fields received from UI
 			String nonMandatoryfiltersbits = "000";
 
@@ -230,10 +230,7 @@ public class SearchDeviceController {
 			}
 			if (!(devicetosearch.equals(""))) {
 				nonMandatoryfiltersbits = "222";
-			}
-			if (!(modeltosearch.equals(""))) {
-				nonMandatoryfiltersbits = "322";
-			}
+			}			
 			if (!(sitetosearch.equals("")) && !(devicetosearch.equals(""))) {
 				nonMandatoryfiltersbits = "332";
 			}
@@ -243,6 +240,12 @@ public class SearchDeviceController {
 			if (!(devicetosearch.equals("")) && !(modeltosearch.equals(""))) {
 				nonMandatoryfiltersbits = "433";
 			}
+			if (!(sitetosearch.equals("")) && !(devicetosearch.equals("")) && !(modeltosearch.equals(""))) {
+				nonMandatoryfiltersbits = "322";
+			}
+			
+			
+			logger.info("nonMandatoryfiltersbits -"+nonMandatoryfiltersbits);
 
 			if (nonMandatoryfiltersbits.equalsIgnoreCase("000")) {
 				// find only with customer
@@ -286,11 +289,11 @@ public class SearchDeviceController {
 			}
 			if (nonMandatoryfiltersbits.equalsIgnoreCase("222")) {
 				// find with customer and region and vendor and network type and
-				// site and device family
+				// device family
 				getAllDevice = deviceInforepo
-						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDDeviceFamily(
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDDeviceFamily(
 								customer, region, vendortosearch,
-								networktosearch, sitetosearch, devicetosearch);
+								networktosearch, devicetosearch);
 
 			}
 			if (nonMandatoryfiltersbits.equalsIgnoreCase("322")) {
@@ -328,8 +331,7 @@ public class SearchDeviceController {
 						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDDeviceFamilyAndDModel(
 								customer, region, vendortosearch,
 								networktosearch, devicetosearch, modeltosearch);
-
-			}
+			}			
 
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {
