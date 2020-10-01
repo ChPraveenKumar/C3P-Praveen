@@ -35,7 +35,7 @@ public class CreateScheduleReqDBService {
 	@POST
 	@RequestMapping(value = "/selectRequestInDB", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public String selectRequestInDB(@RequestBody String request) {
+	public JSONObject selectRequestInDB(@RequestBody String request) {
 		String scheduleDateTime = null;
 
 		try {
@@ -45,8 +45,12 @@ public class CreateScheduleReqDBService {
 			// Require requestId and version from camunda
 			String businessKey = json.get("requestId").toString();
 			String version = json.get("version").toString();
+			
+			
+			String query = "select r_scheduled_time from c3p_t_request_info where r_request_type_flag = 'S' and r_request_version = ? and r_alphanumeric_req_id like ?";
+					
 
-			String query = "select ScheduledTime from c3p_t_request_info where r_request_type_flag = 'S' and r_request_version = ? and r_alphanumeric_req_id like ?";
+			//String query = "select r_scheduled_time from c3p_t_request_info where r_request_type_flag = 'S' and r_request_version = ? and r_alphanumeric_req_id like ?";
 
 			ResultSet rs = null;
 			CreateScheduleReqPojo scheduleReqObj = null;
@@ -59,7 +63,7 @@ public class CreateScheduleReqDBService {
 
 				while (rs.next()) {
 					scheduleReqObj = new CreateScheduleReqPojo();
-					scheduleReqObj.setScheduledTime(rs.getString("ScheduledTime"));
+					scheduleReqObj.setScheduledTime(rs.getString("r_scheduled_time"));
 				}
 
 				if (scheduleReqObj == null || scheduleReqObj.getScheduledTime() == null) {
@@ -71,7 +75,9 @@ public class CreateScheduleReqDBService {
 				}
 
 				scheduleDateTime = scheduleReqObj.getScheduledTime();
+		
 			} catch (SQLException exe) {
+				exe.printStackTrace();
 				logger.error("SQL Exception in selectRequestInDB method "+exe.getMessage());
 			} finally {
 				DBUtil.close(rs);
@@ -80,7 +86,10 @@ public class CreateScheduleReqDBService {
 			logger.error(ex);
 		}
 
-		return scheduleDateTime;
+		
+		JSONObject obj = new JSONObject();
+		obj.put(new String("output"), scheduleDateTime);
+		return obj;
 
 	}
 

@@ -54,7 +54,7 @@ public class GenerateReport {
 		String requestData = null;
 		String requestId = null;
 		String version = null;
-		String pythonScriptFolder = TSALabels.PYTHON_SCRIPT_PATH.getValue() + "inputfile.py";
+		String pythonScriptFolder = TSALabels.PYTHON_SCRIPT_PATH.getValue() + "pdfConverter.py";
 		
 		File pythonFileCheck = new File(pythonScriptFolder);
 		try {
