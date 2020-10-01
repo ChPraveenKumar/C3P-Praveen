@@ -299,7 +299,7 @@ public class NetworkAuditTest extends Thread {
 						responseDownloadPath = NetworkAuditTest.TSA_PROPERTIES.getProperty("responseDownloadPath");
 						TextReport.writeFile(responseDownloadPath,
 								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_CustomTests.txt",
+										+ Double.toString(requestinfo.getRequestVersion()) + "_CurrentVersionConfig.txt",
 								response);
 						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 								requestinfo.getAlphanumericReqId());

@@ -6462,17 +6462,15 @@ public class RequestInfoDao {
 			vendorTest.put("EvaluationCriteria", "N/A");
 		}
 		if (deliveryStatus.equals("1")) {
-			backUpStatus.put("backupstatus", "Success");
-		} else {
-			backUpStatus.put("backupstatus", "Failed");
-		}
-		prevalidationArray.add(vendorTest);
-		prevalidationArray.add(deviceModel);
-
-		prevalidationArray.add(reachabilityObj);
-		prevalidationArray.add(backUpStatus);
-
-		obj.put("Prevalidation", prevalidationArray);
+            backUpStatus.put("backupstatus", "Success");
+        } else {
+            backUpStatus.put("backupstatus", "Failed");
+        }
+        prevalidationArray.add(vendorTest);
+        prevalidationArray.add(deviceModel);
+        prevalidationArray.add(reachabilityObj);        
+        obj.put("Prevalidation", prevalidationArray);
+        obj.put("Backupstatus", backUpStatus);
 		return obj;
 
 	}
