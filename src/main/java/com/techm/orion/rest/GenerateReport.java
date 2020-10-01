@@ -54,8 +54,9 @@ public class GenerateReport {
 		String requestData = null;
 		String requestId = null;
 		String version = null;
-
-		File pythonFileCheck = new File(TSALabels.PYTHON_SCRIPT_PATH.getValue());
+		String pythonScriptFolder = TSALabels.PYTHON_SCRIPT_PATH.getValue() + "inputfile.py";
+		
+		File pythonFileCheck = new File(pythonScriptFolder);
 		try {
 			if (!pythonFileCheck.exists()) {
 				throw new Exception("file is not found!");

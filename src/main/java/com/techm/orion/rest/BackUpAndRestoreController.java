@@ -407,7 +407,7 @@ public class BackUpAndRestoreController {
 				requestInfoEntity.setRequestParentVersion(1.0);
 				requestInfoEntity.setRequestTypeFlag("M");
 
-				requestInfoEntity.setRequestCreatorName("admin");
+				requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
 
 				if (!(scheduledTime.isEmpty())) {
 					requestInfoEntity.setBackUpScheduleTime(scheduledTime);
@@ -953,7 +953,7 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setRequestParentVersion(1.0);
 						requestInfoEntity.setRequestTypeFlag("M");
 
-						requestInfoEntity.setRequestCreatorName("admin");
+						requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
 
 						if (!(scheduledTime.isEmpty())) {
 
@@ -1111,7 +1111,7 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
 
-					requestInfoEntity.setRequestCreatorName("admin");
+					requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
 
 					if (!(scheduledTime.isEmpty())) {
 
@@ -1263,7 +1263,7 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
 
-					requestInfoEntity.setRequestCreatorName("admin");
+					requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
 
 					if (!(scheduledTime.isEmpty())) {
 
