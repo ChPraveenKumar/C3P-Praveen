@@ -78,6 +78,7 @@ public class GenerateReport {
 			String[] cmd = { "python", pythonFileCheck.getPath(), downloadHtmlFilePath.getPath(),
 					home + "/" + "Downloads" + "/" + requestId + "_" + fileName + "_" + "V" + version + ".pdf" };
 			Process processInstance = Runtime.getRuntime().exec(cmd);
+			Thread.sleep(1700);
 
 			File file = new File(
 					home + "/" + "Downloads" + "/" + requestId + "_" + fileName + "_" + "V" + version + ".pdf");
