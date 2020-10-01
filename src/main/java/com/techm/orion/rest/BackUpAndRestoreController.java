@@ -407,7 +407,7 @@ public class BackUpAndRestoreController {
 				requestInfoEntity.setRequestParentVersion(1.0);
 				requestInfoEntity.setRequestTypeFlag("M");
 
-				requestInfoEntity.setRequestCreatorName("admin");
+				requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
 
 				if (!(scheduledTime.isEmpty())) {
 					requestInfoEntity.setBackUpScheduleTime(scheduledTime);
@@ -902,7 +902,7 @@ public class BackUpAndRestoreController {
 
 						requestInfoEntity.setRequestType(requestType);
 						
-						alphaneumeric_req_id = "SLGC-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+						alphaneumeric_req_id = "SLGM-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
 						requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
 						if (j == 0) {
 							requestInfoEntity.setStatus("In Progress");
@@ -953,7 +953,7 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setRequestParentVersion(1.0);
 						requestInfoEntity.setRequestTypeFlag("M");
 
-						requestInfoEntity.setRequestCreatorName("admin");
+						requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
 
 						if (!(scheduledTime.isEmpty())) {
 
@@ -1111,7 +1111,7 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
 
-					requestInfoEntity.setRequestCreatorName("admin");
+					requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
 
 					if (!(scheduledTime.isEmpty())) {
 
@@ -1155,7 +1155,7 @@ public class BackUpAndRestoreController {
 
 		JsonArray attribJson = null;
 		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
-				templateId = null, requestType = null;
+				templateId = null, requestType = null, requestId=null;
 
 		HashMap<String, String> map = new HashMap<String, String>();
 
@@ -1174,6 +1174,7 @@ public class BackUpAndRestoreController {
 			tempHostName = attribJson.get(n).getAsJsonObject().get("hostname").getAsString();
 			tempManagementIp = attribJson.get(n).getAsJsonObject().get("managementIp").getAsString();
 			requestType = attribJson.get(n).getAsJsonObject().get("requestType").getAsString();
+			templateId = attribJson.get(n).getAsJsonObject().get("templateId").getAsString();
 			map.put(tempHostName, tempManagementIp);
 
 		}
@@ -1209,12 +1210,6 @@ public class BackUpAndRestoreController {
 				for (int i = 0; i < requestDetail.size(); i++) {
 					RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
 
-					if (map.size() > 1) {
-
-						requestInfoEntity.setBatchId(batchId);
-
-					}
-
 					if (j == 0) {
 
 						requestInfoEntity.setStatus("In Progress");
@@ -1227,7 +1222,6 @@ public class BackUpAndRestoreController {
 					LocalDateTime nowDate = LocalDateTime.now();
 					timestamp = Timestamp.valueOf(nowDate);
 					requestInfoEntity.setDateofProcessing(timestamp);
-					requestInfoEntity.setTemplateUsed(templateId);
 					requestInfoEntity.setCertificationTests(json.get("certificationTests"));
 
 					requestInfoEntity.setBatchSize(map.size());
@@ -1269,27 +1263,32 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
 
-					requestInfoEntity.setRequestCreatorName("admin");
+					requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
 
 					if (!(scheduledTime.isEmpty())) {
 
 						timestamp = Timestamp.valueOf(scheduledTime);
 						requestInfoEntity.setSceheduledTime(timestamp);
 					}
-
-					batchIdEntity.setBatchStatus("In Progress");
-
-					batchIdEntity.setBatchId(batchId);
-
-					batchIdEntity.setRequestInfoEntity(requestInfoEntity);
-
-					requestInfoDetailsRepositories.save(requestInfoEntity);
-
-					dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
-					dao.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
-					dao.addRequestID_to_Os_Upgrade_dilevary_flags(alphaneumeric_req_id, Double.toString(request_version));
-					batchInfoRepo.save(batchIdEntity);
-
+					if (map.size() > 1) {
+						requestInfoEntity.setBatchId(batchId);
+						batchIdEntity.setBatchStatus("In Progress");	
+						batchIdEntity.setBatchId(batchId);
+						batchIdEntity.setRequestInfoEntity(requestInfoEntity);
+						requestInfoDetailsRepositories.save(requestInfoEntity);
+						
+						dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
+						dao.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
+						dao.addRequestID_to_Os_Upgrade_dilevary_flags(alphaneumeric_req_id, Double.toString(request_version));
+						batchInfoRepo.save(batchIdEntity);
+					}
+					else
+					{
+						requestInfoEntity.setTemplateUsed(templateId);
+						String jsonString = mapper.writeValueAsString(requestInfoEntity);
+						if(attribJson.size()==1)
+						requestId = myObj.getTemplateId(jsonString);
+					}
 					j++;
 				}
 
@@ -1297,7 +1296,7 @@ public class BackUpAndRestoreController {
 			if (j == 1) {
 
 				obj.put("output", "Request created successfully");
-				obj.put(new String("requestId"), new String(alphaneumeric_req_id));
+				obj.put(new String("requestId"), new String(requestId));
 				obj.put(new String("version"), "1.0");
 			} else {
 				obj.put("batchId", batchId);

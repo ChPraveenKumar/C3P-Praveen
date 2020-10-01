@@ -92,6 +92,10 @@ Double requestVersion =Double.valueOf(version);
 					+ version + filename;
 
 			file1 = new File(filepath1);
+			if(file1.exists())
+			{
+				file1.delete();
+			}
 			while (input.available() > 0) {
 				int i = input.read(tmp, 0, SIZE);
 				if (i < 0) {
@@ -107,6 +111,8 @@ Double requestVersion =Double.valueOf(version);
 					tempTextToAnalyse.concat(s);
 
 				}
+				
+				
 				if (!(s.equals(""))) {
 					// if file doesnt exists, then create it
 					if (!file1.exists()) {
@@ -124,6 +130,8 @@ Double requestVersion =Double.valueOf(version);
 					}
 
 				}
+				
+				
 
 			}
 			try {
@@ -669,7 +677,7 @@ Double requestVersion =Double.valueOf(version);
 							resultText = rules.get(i).getReportedLabel();
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
-									"Invalid rule please contact admisitrator", rules.get(i).getDataType(),requestVersion);
+									"Incorrect data collection rules detected, please contact Administrator", rules.get(i).getDataType(),requestVersion);
 							// Update main request status to partial success
 						}
 
@@ -1131,7 +1139,7 @@ Double requestVersion =Double.valueOf(version);
 							resultText = rules.get(i).getReportedLabel();
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
-									"Invalid rule please contact administrator", rules.get(i).getDataType(),requestVersion);
+									"Incorrect data collection rules detected, please contact Administrator", rules.get(i).getDataType(),requestVersion);
 							// Update main request status to partial success
 						}
 
@@ -1607,7 +1615,7 @@ Double requestVersion =Double.valueOf(version);
 							resultText = rules.get(i).getReportedLabel();
 							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
-									"Invalid rule please contact administrator", rules.get(i).getDataType(),requestVersion);
+									"Incorrect data collection rules detected, please contact Administrator", rules.get(i).getDataType(),requestVersion);
 							// Update main request status to partial success
 						}
 						logger.info("Out");
@@ -1678,7 +1686,7 @@ Double requestVersion =Double.valueOf(version);
 									test.getTestCategory(),
 
 									result, resultText, output, "Snnipet starts with: " + evaluationOperator,
-									"Invalid Snnipet configured, please contact administrator",
+									"Incorrect data collection rules detected, please contact Administrator",
 									rules.get(i).getDataType(),requestVersion);
 						}
 
@@ -1726,7 +1734,7 @@ Double requestVersion =Double.valueOf(version);
 									test.getTestCategory(),
 
 									result, resultText, collectedValue, "Keyword starts with: " + evaluationOperator,
-									"Invalid Keyword configured, please contact administrator",
+									"Incorrect data collection rules detected, please contact Administrator",
 									rules.get(i).getDataType(),requestVersion);
 						}
 

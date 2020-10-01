@@ -153,7 +153,12 @@ public class RequestInfoScheduler {
 
 									logger.error(e);
 								}
-								
+								try {
+
+									Thread.sleep(2000);
+								} catch (Exception e) {
+									logger.error(e);
+								}
 								obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
 								dao.updateRequestExecutionStatus(detailsList.get(j).getAlphanumericReqId());
 								

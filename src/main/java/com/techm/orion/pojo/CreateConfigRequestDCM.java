@@ -238,6 +238,18 @@ public class CreateConfigRequestDCM implements Serializable {
 
 	private String batchId;
 
+	
+	private String deviceFamily;
+
+	public String getDeviceFamily() {
+		return deviceFamily;
+	}
+
+	public void setDeviceFamily(String deviceFamily) {
+		this.deviceFamily = deviceFamily;
+	}
+
+
 	public String getBatchId() {
 		return batchId;
 	}

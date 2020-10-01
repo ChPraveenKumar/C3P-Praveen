@@ -179,6 +179,9 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 
 	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteName(
 			String customer, String region, String vendortosearch, String networktosearch, String sitetosearch);
+	
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDDeviceFamily(
+			String customer, String region, String vendortosearch, String networktosearch, String devicetosearch);	
 
 	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDDeviceFamily(
 			String customer, String region, String vendortosearch, String networktosearch, String sitetosearch,

@@ -4755,63 +4755,63 @@ public class RequestInfoDao {
 
 			while (rs.next()) {
 				if (rs.getInt("login_flag") == 1) {
-					req.setOs_upgrade_dilevary_login_flag("Pass");
+					req.setOs_upgrade_dilevary_login_flag("Passed");
 				} else if (rs.getInt("login_flag") == 2) {
-					req.setOs_upgrade_dilevary_login_flag("Fail");
+					req.setOs_upgrade_dilevary_login_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_login_flag("Not conducted");
 
 				}
 				if (rs.getInt("flash_size_flag") == 1) {
-					req.setOs_upgrade_dilevary_flash_size_flag("Pass");
+					req.setOs_upgrade_dilevary_flash_size_flag("Passed");
 				} else if (rs.getInt("flash_size_flag") == 2) {
-					req.setOs_upgrade_dilevary_flash_size_flag("Fail");
+					req.setOs_upgrade_dilevary_flash_size_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_flash_size_flag("Not Conducted");
 
 				}
 				if (rs.getInt("back_up_flag") == 1) {
-					req.setOs_upgrade_dilevary_backup_flag("Pass");
+					req.setOs_upgrade_dilevary_backup_flag("Passed");
 				} else if (rs.getInt("back_up_flag") == 2) {
-					req.setOs_upgrade_dilevary_backup_flag("Fail");
+					req.setOs_upgrade_dilevary_backup_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_backup_flag("Not conducted");
 
 				}
 				if (rs.getInt("os_download_flag") == 1) {
-					req.setOs_upgrade_dilevary_os_download_flag("Pass");
+					req.setOs_upgrade_dilevary_os_download_flag("Passed");
 				} else if (rs.getInt("os_download_flag") == 2) {
-					req.setOs_upgrade_dilevary_os_download_flag("Fail");
+					req.setOs_upgrade_dilevary_os_download_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_os_download_flag("Not conducted");
 
 				}
 				if (rs.getInt("boot_system_flash_flag") == 1) {
-					req.setOs_upgrade_dilevary_boot_system_flash_flag("Pass");
+					req.setOs_upgrade_dilevary_boot_system_flash_flag("Passed");
 				} else if (rs.getInt("boot_system_flash_flag") == 2) {
-					req.setOs_upgrade_dilevary_boot_system_flash_flag("Fail");
+					req.setOs_upgrade_dilevary_boot_system_flash_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_boot_system_flash_flag("Not conducted");
 
 				}
 				if (rs.getInt("reload_flag") == 1) {
-					req.setOs_upgrade_dilevary_reload_flag("Pass");
+					req.setOs_upgrade_dilevary_reload_flag("Passed");
 				} else if (rs.getInt("reload_flag") == 2) {
-					req.setOs_upgrade_dilevary_reload_flag("Fail");
+					req.setOs_upgrade_dilevary_reload_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_reload_flag("Not conducted");
 
 				}
 				if (rs.getInt("post_login_flag") == 1) {
-					req.setOs_upgrade_dilevary_post_login_flag("Pass");
+					req.setOs_upgrade_dilevary_post_login_flag("Passed");
 				} else if (rs.getInt("post_login_flag") == 2) {
-					req.setOs_upgrade_dilevary_post_login_flag("Fail");
+					req.setOs_upgrade_dilevary_post_login_flag("Failed");
 
 				} else {
 					req.setOs_upgrade_dilevary_post_login_flag("Not conducted");
@@ -5176,6 +5176,7 @@ public class RequestInfoDao {
 					obj.put("CollectedValue", rs.getString("CollectedValue").replace(",", "$"));
 					obj.put("EvaluationCriteria", rs.getString("EvaluationCriteria"));
 					testName = rs.getString("testName");
+					obj.put("fullTestName", testName);
 					testName = StringUtils.substringAfter(testName, "_");
 					testName = StringUtils.substringBeforeLast(testName, "_");
 					obj.put("testname", testName);
@@ -5530,7 +5531,7 @@ public class RequestInfoDao {
 
 	// To retrieve user stored snippet
 	// Author: Ruchita Salvi Date : 13.01.2020
-	public String getSnippet(String data_type, String label, String test_name) {
+	public String getSnippet(String label, String test_name) {
 		int id = 0;
 		String snippet = null;
 		String query = "select id from t_tststrategy_m_tstdetails where test_name = ?";
@@ -6461,17 +6462,15 @@ public class RequestInfoDao {
 			vendorTest.put("EvaluationCriteria", "N/A");
 		}
 		if (deliveryStatus.equals("1")) {
-			backUpStatus.put("backupstatus", "Success");
-		} else {
-			backUpStatus.put("backupstatus", "Failed");
-		}
-		prevalidationArray.add(vendorTest);
-		prevalidationArray.add(deviceModel);
-
-		prevalidationArray.add(reachabilityObj);
-		prevalidationArray.add(backUpStatus);
-
-		obj.put("Prevalidation", prevalidationArray);
+            backUpStatus.put("backupstatus", "Success");
+        } else {
+            backUpStatus.put("backupstatus", "Failed");
+        }
+        prevalidationArray.add(vendorTest);
+        prevalidationArray.add(deviceModel);
+        prevalidationArray.add(reachabilityObj);        
+        obj.put("Prevalidation", prevalidationArray);
+        obj.put("Backupstatus", backUpStatus);
 		return obj;
 
 	}
@@ -6655,39 +6654,59 @@ public class RequestInfoDao {
 
 		certificationTestPojo3 = getCertificationTestFlagData(request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "HealthTest");
-		if (null != certificationTestPojo3.getThroughput() && certificationTestPojo3.getThroughput() != "") {
+		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("2")) {
+			throughputObj.put("testname", "Throughput");
+			throughputObj.put("status", "Failed");
+			throughputObj.put("outcome", "");
+			throughputObj.put("notes", "N/A");
+		}
+		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("1")) {
 			throughputObj.put("testname", "Throughput");
 			throughputObj.put("status", "Passed");
 			throughputObj.put("outcome", certificationTestPojo3.getThroughput());
 			throughputObj.put("notes", "N/A");
-		} else {
+		}
+		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("0")) {
 			throughputObj.put("testname", "Throughput");
-			throughputObj.put("status", "Passed");
+			throughputObj.put("status", "Not Conducted");
 			throughputObj.put("outcome", "-1");
 			throughputObj.put("notes", "N/A");
 		}
-
-		if (null != certificationTestPojo3.getLatency() && certificationTestPojo3.getLatency() != "") {
+	
+		if (certificationTestPojo3.getLatencyTest().equalsIgnoreCase("2")) {
+			latencyObj.put("testname", "Latency");
+			latencyObj.put("status", "Failed");
+			latencyObj.put("outcome", "");
+			latencyObj.put("notes", "N/A");
+		} 
+		if (certificationTestPojo3.getLatencyTest().equalsIgnoreCase("1")) {
 			latencyObj.put("testname", "Latency");
 			latencyObj.put("status", "Passed");
 			latencyObj.put("outcome", certificationTestPojo3.getLatency());
 			latencyObj.put("notes", "N/A");
-		} else {
-
+		}
+		if (certificationTestPojo3.getLatencyTest().equalsIgnoreCase("0")) {
 			latencyObj.put("testname", "Latency");
-			latencyObj.put("status", "Passed");
+			latencyObj.put("status", "Not Conducted");
 			latencyObj.put("outcome", "-1");
 			latencyObj.put("notes", "N/A");
 		}
-
-		if (null != certificationTestPojo3.getFrameLoss() && certificationTestPojo3.getFrameLoss() != "") {
+		
+		if (certificationTestPojo3.getFrameLossTest().equalsIgnoreCase("2")) {
+			FrameLossObj.put("testname", "Frameloss");
+			FrameLossObj.put("status", "Failed");
+			FrameLossObj.put("outcome", "");
+			FrameLossObj.put("notes", "N/A");
+		}
+		if (certificationTestPojo3.getFrameLossTest().equalsIgnoreCase("1")) {
 			FrameLossObj.put("testname", "Frameloss");
 			FrameLossObj.put("status", "Passed");
 			FrameLossObj.put("outcome", certificationTestPojo3.getFrameLoss());
 			FrameLossObj.put("notes", "N/A");
-		} else {
+		}
+		if (certificationTestPojo3.getFrameLossTest().equalsIgnoreCase("0")) {
 			FrameLossObj.put("testname", "Frameloss");
-			FrameLossObj.put("status", "Passed");
+			FrameLossObj.put("status", "Not Conducted");
 			FrameLossObj.put("outcome", "-1");
 			FrameLossObj.put("notes", "N/A");
 		}

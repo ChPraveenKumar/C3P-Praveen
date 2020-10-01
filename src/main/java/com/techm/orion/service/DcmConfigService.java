@@ -1844,5 +1844,13 @@ public class DcmConfigService {
 	    }
 		 return path;
 	}
+	
+	public String getTemplateNameTS(String region, String vendor, String deviceFamily, String os, String osVersion) {
+		String templateid = null;
+		templateid = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase() + deviceFamily.toUpperCase()
+				+ os.substring(0, 2).toUpperCase() + osVersion;
+
+		return templateid;
+	}
 
 }

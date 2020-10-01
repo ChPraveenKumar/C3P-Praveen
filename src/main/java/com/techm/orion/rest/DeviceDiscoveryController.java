@@ -37,6 +37,7 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DiscoveryDashboardRepository;
 import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
 import com.techm.orion.repositories.HostDiscrepancyResultRepository;
+import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.service.InventoryManagmentService;
 
 @Controller
@@ -59,6 +60,8 @@ public class DeviceDiscoveryController implements Observer {
 	private ForkDiscrepancyResultRepository forkDiscrepancyRepo;
 	@Autowired
 	private HostDiscrepancyResultRepository hostDoscreapncyRepo;
+	@Autowired
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
 	@SuppressWarnings("unchecked")
 	@GET
@@ -158,8 +161,6 @@ public class DeviceDiscoveryController implements Observer {
 
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {
-				List<ServiceRequestPojo> requests = inventoryServiceRepo
-						.getRequestDeatils(getAllDevice.get(i).getdHostName());
 				JSONObject object = new JSONObject();
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
@@ -180,7 +181,7 @@ public class DeviceDiscoveryController implements Observer {
 				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
 				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
 
-				object.put("requests", requests.size());
+				object.put("requests", requestInfoDetailsRepositories.getRequestCountByHost(getAllDevice.get(i).getdHostName()));
 				if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("0")) {
 					object.put("state", "");
 				} else if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("1")) {

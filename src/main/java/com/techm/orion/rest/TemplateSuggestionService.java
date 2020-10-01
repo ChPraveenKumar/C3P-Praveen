@@ -583,4 +583,73 @@ public class TemplateSuggestionService implements Observer {
 
 	}
 
+@POST
+	@RequestMapping(value = "/getFeaturesForTS", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response getFeaturesForTS(@RequestBody String configRequest) {
+		DcmConfigService dcmConfigService = new DcmConfigService();
+		
+		JSONObject obj = new JSONObject();
+		String jsonArray = "";
+
+		JSONArray array = new JSONArray();
+
+		JSONObject jsonObj;
+		try {
+
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(configRequest);
+
+			CreateConfigRequestDCM createConfigRequestDCM = new CreateConfigRequestDCM();
+
+			createConfigRequestDCM.setDeviceFamily(json.get("deviceFamily").toString());
+			createConfigRequestDCM.setOs(json.get("os").toString());
+			createConfigRequestDCM.setOsVersion(json.get("osVersion").toString());
+
+			createConfigRequestDCM.setRegion(json.get("region").toString().toUpperCase());
+
+			createConfigRequestDCM.setVendor(json.get("vendor").toString().toUpperCase());
+
+			String templateId = dcmConfigService.getTemplateNameTS(createConfigRequestDCM.getRegion(),
+					createConfigRequestDCM.getVendor(), createConfigRequestDCM.getDeviceFamily(),
+					createConfigRequestDCM.getOs(), createConfigRequestDCM.getOsVersion());
+
+			String networkType = json.get("networkType").toString();
+
+			List<String> getFfeatureList = templateSuggestionDao.getListOfFeaturesForDeviceDetail(templateId,
+					networkType);
+			Set<String> uniqueFeatureList = new HashSet<>(getFfeatureList);
+			// uniqueFeatureList.addAll(getFfeatureList);
+			List<String> featureList = new ArrayList<>(uniqueFeatureList);
+			// featureList.addAll(uniqueFeatureList);
+
+			if (featureList.size() > 0) {
+				for (int i = 0; i < featureList.size(); i++) {
+					jsonObj = new JSONObject();
+					jsonObj.put("value", featureList.get(i));
+
+					array.put(jsonObj);
+				}
+				jsonArray = array.toString();
+				obj.put(new String("Result"), "Success");
+				obj.put(new String("Message"), "Success");
+				obj.put(new String("featureList"), jsonArray);
+				obj.put(new String("templateId"), templateId);
+			} else {
+				obj.put(new String("Result"), "Failure");
+				obj.put(new String("Message"), "No features Present.Create the template first");
+				obj.put(new String("featureList"), null);
+			}
+
+		} catch (Exception e) {
+			logger.error(e);
+		}
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
+				.header("Access-Control-Allow-Credentials", "true")
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+
+	}
+
 }
