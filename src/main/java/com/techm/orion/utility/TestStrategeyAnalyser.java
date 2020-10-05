@@ -71,7 +71,7 @@ Double requestVersion =Double.valueOf(version);
 			filename = "_Reachability.txt";
 			webserviceinfoFlag = "Application_test";
 		} else if (testIdentifier.equalsIgnoreCase("Health Check")) {
-			filename = "__HealthCheck.txt";
+			filename = "_HealthCheck.txt";
 			webserviceinfoFlag = "health_check";
 
 		} else if (testIdentifier.equalsIgnoreCase("Network Test")) {
