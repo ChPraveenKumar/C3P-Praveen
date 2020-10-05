@@ -276,7 +276,7 @@ public class TemplateManagementDao {
 	public int updateTemplateStatus(String templateid, String version, String status, String approverCommet) {
 		int res = 0;
 		connection = ConnectionFactory.getConnection();
-		String query2 = "update templateConfig_basic_details set templateStatus = ?, comment_section= concat(?, comment_section), updatedDate=? where TempId = ? and templateVersion = ? ";
+		String query2 = "update templateconfig_basic_details set templateStatus = ?, comment_section= concat(?, comment_section), updatedDate=? where TempId = ? and templateVersion = ? ";
 		try {
 
 			java.util.Date dt = new java.util.Date();
