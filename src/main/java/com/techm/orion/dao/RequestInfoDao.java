@@ -6468,6 +6468,7 @@ public class RequestInfoDao {
         }
         prevalidationArray.add(vendorTest);
         prevalidationArray.add(deviceModel);
+        prevalidationArray.add(iosVersion);
         prevalidationArray.add(reachabilityObj);        
         obj.put("Prevalidation", prevalidationArray);
         obj.put("Backupstatus", backUpStatus);
