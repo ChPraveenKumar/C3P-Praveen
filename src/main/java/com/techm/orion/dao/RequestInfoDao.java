@@ -6764,8 +6764,11 @@ public class RequestInfoDao {
 			}
 		}
 		obj.put("Prevalidation", prevalidationArray);
-		obj.put("Network", networkArray);
-		obj.put("Health_Check", healthArray);
+		if(request.getAlphanumericReqId() !=null && !request.getAlphanumericReqId().startsWith("SLGA"))
+		{
+			obj.put("Network", networkArray);
+			obj.put("Health_Check", healthArray);
+		}
 		obj.put("Others", othersArray);
 		obj.put("NetworkAudit", networkAuditArray);
 		return obj;
