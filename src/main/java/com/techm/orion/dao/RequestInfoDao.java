@@ -6764,7 +6764,7 @@ public class RequestInfoDao {
 			}
 		}
 		obj.put("Prevalidation", prevalidationArray);
-		if(!request.getAlphanumericReqId().startsWith("SLGA"))
+		if(request.getAlphanumericReqId() !=null && !request.getAlphanumericReqId().startsWith("SLGA"))
 		{
 			obj.put("Network", networkArray);
 			obj.put("Health_Check", healthArray);
