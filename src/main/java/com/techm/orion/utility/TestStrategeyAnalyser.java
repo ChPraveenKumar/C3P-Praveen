@@ -55,15 +55,15 @@ public class TestStrategeyAnalyser {
 	public boolean printAndAnalyse(InputStream input, Channel channel, String requestID, String version,
 			TestDetail test, String testIdentifier) throws Exception {
 		TestStrategeyAnalyser.loadProperties();
-Double requestVersion =Double.valueOf(version);
+		Double requestVersion =Double.valueOf(version);
 		RequestInfoDao dao = new RequestInfoDao();
 		boolean res = false;
-		BufferedWriter bw1 = null;
-		FileWriter fw1 = null;
+		BufferedWriter bufferWriter = null;
+		FileWriter fileWriter = null;
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
-		File file1 = null;
-		String filepath1 = null;
+		File isFilePresent = null;
+		String isFilepathPresent = null;
 		String tempTextToAnalyse = null;
 		String filename = null;
 		String webserviceinfoFlag = null;
@@ -88,14 +88,19 @@ Double requestVersion =Double.valueOf(version);
 
 		}
 		try {
-			filepath1 = TestStrategeyAnalyser.PROPERTIES.getProperty("responseDownloadPath") + requestID + "V"
+			isFilepathPresent = TestStrategeyAnalyser.PROPERTIES.getProperty("responseDownloadPath") + requestID + "V"
 					+ version + filename;
-
-			file1 = new File(filepath1);
-			if(file1.exists())
-			{
-				file1.delete();
+			isFilePresent = new File(isFilepathPresent);	
+			/*
+			 *  In case of network audit we are deleting the existing file to avoid the overriding 
+			 *  the show run output 
+			 */
+			if ("network_audit".equalsIgnoreCase(webserviceinfoFlag)) {
+				if (isFilePresent.exists()) {
+					isFilePresent.delete();
+				}
 			}
+
 			while (input.available() > 0) {
 				int i = input.read(tmp, 0, SIZE);
 				if (i < 0) {
@@ -110,28 +115,23 @@ Double requestVersion =Double.valueOf(version);
 				} else {
 					tempTextToAnalyse.concat(s);
 
-				}
-				
+				}	
 				
 				if (!(s.equals(""))) {
 					// if file doesnt exists, then create it
-					if (!file1.exists()) {
-						file1.createNewFile();
-
-						fw1 = new FileWriter(file1, true);
-						bw1 = new BufferedWriter(fw1);
-						bw1.append(s);
-						bw1.close();
+					if (!isFilePresent.exists()) {
+						isFilePresent.createNewFile();
+						fileWriter = new FileWriter(isFilePresent, true);
+						bufferWriter = new BufferedWriter(fileWriter);
+						bufferWriter.append(s);
+						bufferWriter.close();
 					} else {
-						fw1 = new FileWriter(file1.getAbsoluteFile(), true);
-						bw1 = new BufferedWriter(fw1);
-						bw1.append(s);
-						bw1.close();
+						fileWriter = new FileWriter(isFilePresent.getAbsoluteFile(), true);
+						bufferWriter = new BufferedWriter(fileWriter);
+						bufferWriter.append(s);
+						bufferWriter.close();
 					}
-
-				}
-				
-				
+				}		
 
 			}
 			try {
@@ -148,7 +148,7 @@ Double requestVersion =Double.valueOf(version);
 			rules = test.getListRules();
 			int chars = 0;
 
-			if (text.contains("Destination host unreachable")) {
+			if (text !=null && text.contains("Destination host unreachable")) {
 				String output = null;
 				if (text.contains("% Invalid input detected at '^' marker")) {
 					output = "Invalid command";
@@ -177,8 +177,8 @@ Double requestVersion =Double.valueOf(version);
 				requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "2",
 						"failure");
 				res = false;
-			} else if (text.contains("% Invalid input detected at '^' marker") || text.contains("Request timed out")
-					|| text.contains("% Type \"show ?\" for a list of subcommands")) {
+			} else if (text !=null && (text.contains("% Invalid input detected at '^' marker") || text.contains("Request timed out")
+					|| text.contains("% Type \"show ?\" for a list of subcommands"))) {
 				String output = null;
 				if (text.contains("% Invalid input detected at '^' marker")) {
 					output = "Invalid command";
