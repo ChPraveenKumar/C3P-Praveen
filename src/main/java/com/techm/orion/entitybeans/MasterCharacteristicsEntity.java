@@ -15,7 +15,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-
 @Table(name = "c3p_m_characteristics")
 public class MasterCharacteristicsEntity implements Serializable
 
@@ -36,41 +35,40 @@ public class MasterCharacteristicsEntity implements Serializable
 
 	@Column(name = "c_name")
 	private int cName;
-	
+
 	@Column(name = "c_f_id")
 	private String cFId;
-	
+
 	@Column(name = "c_constraintid")
 	private String cConstraintid;
-	
+
 	@Column(name = "c_uicomponent")
 	private String cUicomponent;
-	
+
 	@Column(name = "f_flag")
 	private String fFlag;
-	
+
 	@Column(name = "c_validations")
 	private String cValidations;
-	
 
 	@Column(name = "c_created_by")
 	private String cCreatedBy;
-	
+
 	@Column(name = "c_created_date")
 	private Timestamp cCreatedDate;
-	
+
 	@Column(name = "c_updated_by")
 	private String cUpdatedBy;
-	
+
 	@Column(name = "c_updated_date")
 	private Timestamp cUpdatedDate;
-	
+
 	@Column(name = "c_basetype")
 	private String cBasetype;
-	
+
 	@Column(name = "c_schemalocation")
 	private String cSchemalocation;
-	
+
 	@Column(name = "c_type")
 	private String cType;
 
@@ -193,6 +191,5 @@ public class MasterCharacteristicsEntity implements Serializable
 	public void setcType(String cType) {
 		this.cType = cType;
 	}
-	
-	
+
 }

@@ -15,7 +15,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
-
 @Table(name = "c3p_m_features")
 public class MasterFeatureEntity implements Serializable
 
@@ -36,68 +35,67 @@ public class MasterFeatureEntity implements Serializable
 
 	@Column(name = "f_name")
 	private int fName;
-	
+
 	@Column(name = "f_category")
 	private String fCategory;
-	
+
 	@Column(name = "f_isbundled")
 	private String fIsbundled;
-	
+
 	@Column(name = "f_isenabled")
 	private String fIsenabled;
-	
+
 	@Column(name = "f_flag")
 	private String fFlag;
-	
+
 	@Column(name = "f_replicationind")
 	private Boolean fReplicationind;
-	
+
 	@Column(name = "f_version")
 	private String fVersion;
-	
+
 	@Column(name = "f_vendor")
 	private String fVendor;
-	
+
 	@Column(name = "f_family")
 	private String fFamily;
-	
+
 	@Column(name = "f_model")
 	private String fModel;
 
 	@Column(name = "f_os")
 	private String fOs;
-	
+
 	@Column(name = "f_osversion")
 	private String fOsversion;
-	
+
 	@Column(name = "f_networkfun")
 	private String fNetworkfun;
-	
+
 	@Column(name = "f_created_by")
 	private String fCreatedBy;
-	
+
 	@Column(name = "f_region")
 	private String fRegion;
-	
+
 	@Column(name = "f_created_date")
 	private Timestamp fCreatedDate;
-	
+
 	@Column(name = "f_updated_by")
 	private String fUpdatedBy;
-	
+
 	@Column(name = "f_updated_date")
 	private Timestamp fUpdatedDate;
-	
+
 	@Column(name = "f_basetype")
 	private String fBasetype;
-	
+
 	@Column(name = "f_schemalocation")
 	private String fSchemalocation;
-	
+
 	@Column(name = "f_comments")
 	private String fComments;
-	
-	
+
 	public String getfComments() {
 		return fComments;
 	}
