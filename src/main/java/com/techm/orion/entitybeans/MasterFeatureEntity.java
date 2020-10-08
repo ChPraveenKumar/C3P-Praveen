@@ -34,7 +34,7 @@ public class MasterFeatureEntity implements Serializable
 	private String fId;
 
 	@Column(name = "f_name")
-	private int fName;
+	private String fName;
 
 	@Column(name = "f_category")
 	private String fCategory;
@@ -123,11 +123,11 @@ public class MasterFeatureEntity implements Serializable
 		this.fId = fId;
 	}
 
-	public int getfName() {
+	public String getfName() {
 		return fName;
 	}
 
-	public void setfName(int fName) {
+	public void setfName(String fName) {
 		this.fName = fName;
 	}
 
