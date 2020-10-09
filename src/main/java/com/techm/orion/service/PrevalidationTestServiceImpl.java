@@ -197,11 +197,13 @@ public class PrevalidationTestServiceImpl {
 	public boolean PreValidation(RequestInfoPojo configRequest, String version, String mountStatus) throws Exception {
 		InvokeFtl invokeFtl = new InvokeFtl();
 		String[] ar = null;
-		String[] data = null;
-		String[] data1 = null;
+		String[] data = null, dataOS=null;
+		String[] data1 = null, data1OS=null;
 		String[] comp = new String[10];
+		String[] compOSV = new String[6];
 		String str1 = "";
 		String exp = TSALabels.REGEX_FILTER_PRE_VALIDATION.getValue();
+		String expOS=TSALabels.REGEX_FILTER_PRE_VALIDATION_OS_VERSION.getValue();
 		String store = "";
 		boolean value = false;
 		PreValidateTest preValidateTest = new PreValidateTest();
@@ -227,6 +229,28 @@ public class PrevalidationTestServiceImpl {
 			}
 
 		}
+		
+		/*Temp fix in case of IOS-XE*/
+		String OSV=null;
+
+		dataOS = expOS.split("\\|");
+		Matcher mOS = Pattern.compile("(?m)^(.*?\\b" + dataOS[1] + "\\b).*$").matcher(text);
+
+		while (mOS.find()) {
+			ar = mOS.group().split(data[2]);
+			break;
+		}
+		for (String s : ar){
+			
+		
+			if(s.contains("Version"))
+			{
+				String str[]=s.split(" ");
+				OSV=str[2];
+			}
+			
+		}
+		
 		int vendorflag = 2;
 		int versionflag = 2;
 		int modelflag = 2;
@@ -247,7 +271,14 @@ public class PrevalidationTestServiceImpl {
 		}
 		if (!comp[2].equalsIgnoreCase("")) {
 			preValidateTest.setOsVersionGUIValue(configRequest.getOsVersion());
-			preValidateTest.setOsVersionActualValue(comp[2].substring(0, 4));
+			if(("CSR1000V").equalsIgnoreCase(configRequest.getModel()))
+			{
+				preValidateTest.setOsVersionActualValue(comp[2].substring(0, 4));
+			}
+			else
+			{
+			preValidateTest.setOsVersionActualValue(OSV);
+			}
 
 		}
 
