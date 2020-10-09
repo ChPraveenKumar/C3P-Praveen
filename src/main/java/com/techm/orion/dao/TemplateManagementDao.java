@@ -539,7 +539,7 @@ public class TemplateManagementDao {
 			preparedStmt = connection.prepareStatement(query1);
 			if (version != null) {
 				preparedStmt.setString(1,
-						Global.templateid.substring(0, Global.templateid.indexOf("V") - 1) + "_V" + version);
+						Global.templateid.substring(0, Global.templateid.indexOf("_V")) + "_V" + version);
 			} else {
 				preparedStmt.setString(1, Global.templateid);
 			}
@@ -566,7 +566,7 @@ public class TemplateManagementDao {
 							Global.globalSessionRightPanel.get(i).getList().get(j).getCommand_sequence_id());
 					if (version != null) {
 						preparedStmt.setString(3,
-								Global.templateid.substring(0, Global.templateid.indexOf("V") - 1) + "_V" + version);
+								Global.templateid.substring(0, Global.templateid.indexOf("_V")) + "_V" + version);
 					} else {
 						preparedStmt.setString(3, Global.templateid);
 					}
@@ -2618,8 +2618,8 @@ public class TemplateManagementDao {
 			int rs2 = positionSmt.executeUpdate();
 
 			PreparedStatement basicSmt = connection.prepareStatement(queryBasicDetails);
-			basicSmt.setString(1, tempID.substring(0, tempID.indexOf("V") - 1));
-			basicSmt.setString(2, tempID.substring(tempID.indexOf("V") + 1, tempID.length()));
+			basicSmt.setString(1, tempID.substring(0, tempID.indexOf("_V")));
+			basicSmt.setString(2, tempID.substring(tempID.indexOf("_V") + 2, tempID.length()));
 			basicSmt.execute("SET FOREIGN_KEY_CHECKS=0");
 			basicSmt.execute("SET SQL_SAFE_UPDATES=0");
 			int rs3 = basicSmt.executeUpdate();
@@ -2658,7 +2658,7 @@ public class TemplateManagementDao {
 	public final boolean updateTemplateDBEdit(String tempID, String prevVersion, String series) throws SQLException {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String oldTemplateId = tempID.substring(0, tempID.indexOf("V") - 1) + "_V" + prevVersion;
+		String oldTemplateId = tempID.substring(0, tempID.indexOf("_V")) + "_V" + prevVersion;
 		String query1 = "SELECT * FROM c3p_template_master_feature_list WHERE command_type IN (?,?)";
 		String query3 = "SELECT * FROM c3p_template_master_command_list where command_id=? AND command_type IN (?,?)";
 		String query4 = "SELECT * FROM c3p_template_master_feature_list";

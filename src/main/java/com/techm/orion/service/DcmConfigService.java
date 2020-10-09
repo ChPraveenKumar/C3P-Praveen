@@ -1019,15 +1019,15 @@ public class DcmConfigService {
 				if (isTemplateAvailable) {
 					for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 						tempString = listOfTemplatesAvailable.get(i).substring(0,
-								listOfTemplatesAvailable.get(i).indexOf("V") - 1);
+								listOfTemplatesAvailable.get(i).indexOf("_V"));
 						if (tempString.equalsIgnoreCase(templateid)) {
 							if (highestVersion == 0) {
 								highestVersion = Float.parseFloat(listOfTemplatesAvailable.get(i).substring(
-										listOfTemplatesAvailable.get(i).indexOf("V") + 1,
+										listOfTemplatesAvailable.get(i).indexOf("_V") + 2,
 										listOfTemplatesAvailable.get(i).length()));
 							} else {
 								tempVersion = Float.parseFloat(listOfTemplatesAvailable.get(i).substring(
-										listOfTemplatesAvailable.get(i).indexOf("V") + 1,
+										listOfTemplatesAvailable.get(i).indexOf("_V") + 2,
 										listOfTemplatesAvailable.get(i).length()));
 								if (tempVersion > highestVersion) {
 									highestVersion = tempVersion;
@@ -1096,7 +1096,7 @@ public class DcmConfigService {
 				if (listOfTemplatesAvailable.size() > 0) {
 					for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 						tempString = listOfTemplatesAvailable.get(i).substring(0,
-								listOfTemplatesAvailable.get(i).indexOf("V") - 1);
+								listOfTemplatesAvailable.get(i).indexOf("_V"));
 						if (tempString.equalsIgnoreCase(templateID)) {
 							isTemplateAvailable = true;
 							break;
@@ -1106,16 +1106,16 @@ public class DcmConfigService {
 						float highestVersion = 0, tempVersion = 0;
 						for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 							tempString = listOfTemplatesAvailable.get(i).substring(0,
-									listOfTemplatesAvailable.get(i).indexOf("V") - 1);
+									listOfTemplatesAvailable.get(i).indexOf("_V"));
 							if (tempString.equalsIgnoreCase(templateID)) {
 								if (highestVersion == 0) {
 									highestVersion = Float.parseFloat(listOfTemplatesAvailable.get(i).substring(
-											listOfTemplatesAvailable.get(i).indexOf("V") + 1,
+											listOfTemplatesAvailable.get(i).indexOf("_V") + 2,
 											listOfTemplatesAvailable.get(i).length()));
 
 								} else {
 									tempVersion = Float.parseFloat(listOfTemplatesAvailable.get(i).substring(
-											listOfTemplatesAvailable.get(i).indexOf("V") + 1,
+											listOfTemplatesAvailable.get(i).indexOf("_V") + 2,
 											listOfTemplatesAvailable.get(i).length()));
 									if (tempVersion > highestVersion) {
 										highestVersion = tempVersion;
@@ -1568,7 +1568,7 @@ public class DcmConfigService {
 				if (listOfTemplatesAvailable.size() > 0) {
 					for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 						tempString = listOfTemplatesAvailable.get(i).substring(0,
-								listOfTemplatesAvailable.get(i).indexOf("V") - 1);
+								listOfTemplatesAvailable.get(i).indexOf("_V"));
 						if (tempString.equalsIgnoreCase(templateID)) {
 							isTemplateAvailable = true;
 							break;
@@ -1578,16 +1578,16 @@ public class DcmConfigService {
 						float highestVersion = 0, tempVersion = 0;
 						for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 							tempString = listOfTemplatesAvailable.get(i).substring(0,
-									listOfTemplatesAvailable.get(i).indexOf("V") - 1);
+									listOfTemplatesAvailable.get(i).indexOf("_V"));
 							if (tempString.equalsIgnoreCase(templateID)) {
 								if (highestVersion == 0) {
 									highestVersion = Float.parseFloat(listOfTemplatesAvailable.get(i).substring(
-											listOfTemplatesAvailable.get(i).indexOf("V") + 1,
+											listOfTemplatesAvailable.get(i).indexOf("_V") + 2,
 											listOfTemplatesAvailable.get(i).length()));
 
 								} else {
 									tempVersion = Float.parseFloat(listOfTemplatesAvailable.get(i).substring(
-											listOfTemplatesAvailable.get(i).indexOf("V") + 1,
+											listOfTemplatesAvailable.get(i).indexOf("_V") + 2,
 											listOfTemplatesAvailable.get(i).length()));
 									if (tempVersion > highestVersion) {
 										highestVersion = tempVersion;
