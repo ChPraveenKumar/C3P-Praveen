@@ -48,6 +48,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 		try {
 			JSONObject json = (JSONObject) parser.parse(string);
 			templateId = json.get("templateid").toString();
+			templateId = templateId.replace("-", "_");
 			if (json.get("templateVersion") != null) {
 				templateVersion = numberFormat.format(Double.parseDouble(json.get("templateVersion").toString()));
 			} else {

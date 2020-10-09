@@ -273,11 +273,11 @@ public class PrevalidationTestServiceImpl {
 			preValidateTest.setOsVersionGUIValue(configRequest.getOsVersion());
 			if(("CSR1000V").equalsIgnoreCase(configRequest.getModel()))
 			{
-				preValidateTest.setOsVersionActualValue(comp[2].substring(0, 4));
+				preValidateTest.setOsVersionActualValue(OSV);
 			}
 			else
-			{
-			preValidateTest.setOsVersionActualValue(OSV);
+			{			
+				preValidateTest.setOsVersionActualValue(comp[2].substring(0, 4));
 			}
 
 		}

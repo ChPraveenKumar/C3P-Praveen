@@ -530,6 +530,7 @@ public class TemplateManagementDao {
 		return result;
 	}
 
+	/** This method is not using ****
 	public boolean updateTransactionCommandTable(String templateId, String version) {
 		boolean result = false;
 		String query1 = null, query2 = null;
@@ -547,14 +548,14 @@ public class TemplateManagementDao {
 			preparedStmt.execute("SET SQL_SAFE_UPDATES=0");
 			int update = preparedStmt.executeUpdate();
 
-			/*
+			/**
 			 * if (!isPresentCommandList) { for (int i = 0; i < listOfBlocks1.size(); i++) {
 			 * String insertBatchQuery =
 			 * "INSERT INTO c3p_template_transaction_command_list(command_id,command_sequence_id,command_template_id)"
 			 * + "VALUES('" + listOfBlocks1.get(i).getCommandId() + "','" +
 			 * listOfBlocks1.get(i).getCommandSequenceId() + "','" + tempID + "')";
 			 * ps.addBatch(insertBatchQuery); } recordsAffected2 = ps.executeBatch();
-			 */
+			 *
 
 			query2 = "Insert into c3p_template_transaction_command_list(command_id,command_sequence_id,command_template_id) values (?,?,?)";
 			preparedStmt = connection.prepareStatement(query2);
@@ -584,7 +585,7 @@ public class TemplateManagementDao {
 			DBUtil.close(connection);
 		}
 		return result;
-	}
+	}*/
 
 	public boolean updateMasterCommandTableWithNewCommand(String commandId, int sequenceId, String commandValue) {
 		boolean result = false;
@@ -2618,6 +2619,7 @@ public class TemplateManagementDao {
 			int rs2 = positionSmt.executeUpdate();
 
 			PreparedStatement basicSmt = connection.prepareStatement(queryBasicDetails);
+			tempID = tempID.replace("-", "_");				
 			basicSmt.setString(1, tempID.substring(0, tempID.indexOf("_V")));
 			basicSmt.setString(2, tempID.substring(tempID.indexOf("_V") + 2, tempID.length()));
 			basicSmt.execute("SET FOREIGN_KEY_CHECKS=0");

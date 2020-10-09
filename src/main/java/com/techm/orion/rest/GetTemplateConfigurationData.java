@@ -658,29 +658,25 @@ public class GetTemplateConfigurationData implements Observer {
 		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
 		TemplateManagementDao dao = new TemplateManagementDao();
 		JSONObject jsonObj;
+		String templateId = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
+			templateId = json.get("templateid").toString();
+			templateId = templateId.replace("-", "_");
 			if (json.containsKey("readFlag")) {
 
 				if (json.get("readFlag") != null) {
-					dao.updateReadFlagForTemplate(
-							json.get("templateid").toString().substring(0,
-									json.get("templateid").toString().indexOf("_V")),
-							json.get("templateid").toString().substring(
-									json.get("templateid").toString().indexOf("_V") + 2,
-									json.get("templateid").toString().length()),
+					dao.updateReadFlagForTemplate(templateId.substring(0, templateId.indexOf("_V")),
+							templateId.substring(templateId.indexOf("_V") + 2, templateId.length()),
 							json.get("readFlag").toString());
 				}
 
 				List<TemplateBasicConfigurationPojo> templatelistforcomment = dao.getTemplateList();
 				for (int i = 0; i < templatelistforcomment.size(); i++) {
-					if (templatelistforcomment.get(i).getTemplateId().equalsIgnoreCase(json.get("templateid").toString()
-							.substring(0, json.get("templateid").toString().indexOf("_V")))) {
+					if (templatelistforcomment.get(i).getTemplateId().equalsIgnoreCase(templateId.substring(0, templateId.indexOf("_V")))) {
 						if (templatelistforcomment.get(i).getVersion()
-								.equalsIgnoreCase(json.get("templateid").toString().substring(
-										json.get("templateid").toString().indexOf("_V") + 2,
-										json.get("templateid").toString().length()))) {
+								.equalsIgnoreCase(templateId.substring(templateId.indexOf("_V") + 2, templateId.length()))) {
 							comment = templatelistforcomment.get(i).getComment();
 						}
 					}
@@ -688,13 +684,13 @@ public class GetTemplateConfigurationData implements Observer {
 			}
 			GetTemplateMngmntPojo getTemplateMngmntPojo = new GetTemplateMngmntPojo();
 			List<GetTemplateMngmntPojo> list = new ArrayList<GetTemplateMngmntPojo>();
-			getTemplateMngmntPojo.setTemplateid(json.get("templateid").toString().replace("-", "_"));
+			getTemplateMngmntPojo.setTemplateid(templateId);
 			TemplateManagementDetailsService.loadProperties();
 			String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
 					.getProperty("templateCreationPath");
 
 			List<String> lines = Files.readAllLines(
-					Paths.get(responseDownloadPath + json.get("templateid").toString().replace("-", "_")));
+					Paths.get(responseDownloadPath + templateId));
 			List<CommandPojo> listShow = new ArrayList<CommandPojo>();
 
 			for (int i = 0; i < lines.size(); i++) {
@@ -1405,8 +1401,9 @@ public class GetTemplateConfigurationData implements Observer {
 				String nextVersionS = f.format(nextVersion);
 				templateIdToSaveInTransactionTable = json.get("templateid").toString() + "_V" + nextVersionS;
 			} else {
-				templateId = json.get("templateid").toString().substring(0,
-						json.get("templateid").toString().indexOf("_V")) + "_V" + "1.0";
+				templateId = json.get("templateid").toString();
+				templateId = templateId.replace("-", "_");
+				templateId = templateId.substring(0, templateId.indexOf("_V")) + "_V" + "1.0";
 				nextVersion = 1.1;
 				templateIdToSaveInTransactionTable = json.get("templateid").toString() + "_V"
 						+ f.format(Double.toString(nextVersion));
