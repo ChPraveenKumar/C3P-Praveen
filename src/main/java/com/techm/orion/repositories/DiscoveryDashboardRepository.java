@@ -10,7 +10,7 @@ import com.techm.orion.entitybeans.DiscoveryDashboardEntity;
 
 public interface DiscoveryDashboardRepository extends JpaRepository<DiscoveryDashboardEntity, Integer> {
 
-	DiscoveryDashboardEntity findByDisName(String disName);
+	DiscoveryDashboardEntity findByDisDashId(String disDashId);
 
 	DiscoveryDashboardEntity findByDisId(int disId);
 

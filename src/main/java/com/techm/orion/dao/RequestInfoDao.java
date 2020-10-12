@@ -5239,13 +5239,13 @@ public class RequestInfoDao {
 			reachabilityObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
-			iosVersion.put("testname", "OS");
+			iosVersion.put("testname", "OS Version");
 			iosVersion.put("status", "Failed");
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("1")) {
-			iosVersion.put("testname", "OS");
+			iosVersion.put("testname", "OS Version");
 			iosVersion.put("status", "Passed");
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
@@ -6390,7 +6390,7 @@ public class RequestInfoDao {
 			reachabilityObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
-			iosVersion.put("testname", "OS");
+			iosVersion.put("testname", "OS Version");
 			iosVersion.put("status", "Failed");
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
@@ -6398,7 +6398,7 @@ public class RequestInfoDao {
 			iosVersion.put("EvaluationCriteria", resultEnt.getActualOsVersion());
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("1")) {
-			iosVersion.put("testname", "OS");
+			iosVersion.put("testname", "OS Version");
 			iosVersion.put("status", "Passed");
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
@@ -6406,7 +6406,7 @@ public class RequestInfoDao {
 			iosVersion.put("EvaluationCriteria", resultEnt.getActualOsVersion());
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("0")) {
-			iosVersion.put("testname", "OS");
+			iosVersion.put("testname", "OS Version");
 			iosVersion.put("status", "Not Conducted");
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
@@ -6518,7 +6518,7 @@ public class RequestInfoDao {
 			reachabilityObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
-			iosVersion.put("testname", "OS");
+			iosVersion.put("testname", "OS Version");
 			iosVersion.put("status", "Failed");
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
@@ -6526,7 +6526,7 @@ public class RequestInfoDao {
 			iosVersion.put("EvaluationCriteria", resultEnt.getActualOsVersion());
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("1")) {
-			iosVersion.put("testname", "OS");
+			iosVersion.put("testname", "OS Version");
 			iosVersion.put("status", "Passed");
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
@@ -6534,7 +6534,7 @@ public class RequestInfoDao {
 			iosVersion.put("EvaluationCriteria", resultEnt.getActualOsVersion());
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("0")) {
-			iosVersion.put("testname", "OS");
+			iosVersion.put("testname", "OS Version");
 			iosVersion.put("status", "Not Conducted");
 			iosVersion.put("outcome", "N/A");
 			iosVersion.put("notes", "N/A");

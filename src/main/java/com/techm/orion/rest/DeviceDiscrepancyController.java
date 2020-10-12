@@ -88,12 +88,12 @@ public class DeviceDiscrepancyController {
 		JSONObject finalObject = null;
 		try {
 			JSONObject requestJson = (JSONObject) parser.parse(request);
-			if (requestJson.get("discoveryName") != null && requestJson.get("discoveryName") != "") {
-				finalObject = service.discripancyService(requestJson.get("discoveryName").toString());
+			if (requestJson.get("discoveryId") != null && requestJson.get("discoveryId") != "") {
+				finalObject = service.discripancyService(requestJson.get("discoveryId").toString());
 			}
 
-		} catch (ParseException e) {
-			logger.info(e);
+		} catch (ParseException exe) {
+			logger.info("Error in decripancyManagment -"+exe);
 		}
 		return finalObject;
 	}
@@ -135,8 +135,8 @@ public class DeviceDiscrepancyController {
 			if (requestJson.get("vendor") != null) {
 				vendor = requestJson.get("vendor").toString();
 			}
-			if (requestJson.get("networType") != null) {
-				networkType = requestJson.get("networType").toString();
+			if (requestJson.get("networkType") != null) {
+				networkType = requestJson.get("networkType").toString();
 			}
 			if (requestJson.get("ipAddress") != null) {
 				ipAddress = requestJson.get("ipAddress").toString();
@@ -155,6 +155,7 @@ public class DeviceDiscrepancyController {
 			
 		} catch (Exception e) {
 			logger.error("exception of intefaceDetails Service" + e.getMessage());
+			e.printStackTrace();
 		}
 		return responseEntity; 
 	}
