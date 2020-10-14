@@ -199,12 +199,12 @@ public class TemplateManagementDao {
 		connection = ConnectionFactory.getConnection();
 		String query2 = null;
 		if (Global.loggedInUser.equalsIgnoreCase("Admin")) {
-			query2 = "UPDATE templateconfig_basic_details SET readStatusAdmin=? WHERE TempId=? and templateVersion=?";
+			query2 = "UPDATE templateconfig_basic_details SET temp_read_status_admin=? WHERE temp_id=? and temp_version=?";
 		} else if (Global.loggedInUser.equalsIgnoreCase("suser")) {
-			query2 = "UPDATE templateconfig_basic_details SET readStatusApprover=? WHERE TempId=? and templateVersion=?";
+			query2 = "UPDATE templateconfig_basic_details SET temp_read_status_approver=? WHERE temp_id=? and temp_version=?";
 
 		} else {
-			query2 = "UPDATE templateconfig_basic_details SET readStatusAdmin=? WHERE TempId=? and templateVersion=?";
+			query2 = "UPDATE templateconfig_basic_details SET temp_read_status_admin=? WHERE temp_id=? and temp_version=?";
 
 		}
 		try {
@@ -228,14 +228,14 @@ public class TemplateManagementDao {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
 		String status = null;
-		String query2 = "select * from  templateconfig_basic_details where TempId = ? and templateVersion = ?";
+		String query2 = "select * from  templateconfig_basic_details where temp_id = ? and temp_version = ?";
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
 			pst.setString(1, templateid);
 			pst.setString(2, version);
 			ResultSet res = pst.executeQuery();
 			while (res.next()) {
-				status = res.getString("templateStatus");
+				status = res.getString("temp_status");
 			}
 			if (status.equalsIgnoreCase("Rejected") || status.equalsIgnoreCase("Pending")) {
 				result = false;
@@ -276,7 +276,8 @@ public class TemplateManagementDao {
 	public int updateTemplateStatus(String templateid, String version, String status, String approverCommet) {
 		int res = 0;
 		connection = ConnectionFactory.getConnection();
-		String query2 = "update templateconfig_basic_details set templateStatus = ?, comment_section= concat(?, comment_section), updatedDate=? where TempId = ? and templateVersion = ? ";
+		String query2 = "update templateconfig_basic_details set temp_status = ?, temp_comment_section= concat(?, temp_comment_section), "
+				+ "temp_updated_date=? where temp_id = ? and temp_version = ? ";
 		try {
 
 			java.util.Date dt = new java.util.Date();
@@ -312,9 +313,9 @@ public class TemplateManagementDao {
 		connection = ConnectionFactory.getConnection();
 		String query2 = null;
 		if (username.equalsIgnoreCase("Admin")) {
-			query2 = "SELECT * FROM templateconfig_basic_details where templateStatus=? or templateStatus=?";
+			query2 = "SELECT * FROM templateconfig_basic_details where temp_status=? or temp_status=?";
 		} else if (username.equalsIgnoreCase("suser")) {
-			query2 = "SELECT * FROM templateconfig_basic_details where templateStatus=?";
+			query2 = "SELECT * FROM templateconfig_basic_details where temp_status=?";
 		}
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
@@ -327,35 +328,35 @@ public class TemplateManagementDao {
 			ResultSet rs1 = pst.executeQuery();
 			while (rs1.next()) {
 				pojo = new TemplateBasicConfigurationPojo();
-				pojo.setVendor(rs1.getString("TempVendor"));
-				pojo.setModel(rs1.getString("TempModel"));
-				pojo.setDeviceFamily(rs1.getString("TempDeviceFamily"));
-				pojo.setDeviceOs(rs1.getString("TempDeviceOs"));
-				pojo.setOsVersion(rs1.getString("TempOsVersion"));
-				pojo.setRegion(rs1.getString("TempRegion"));
-				pojo.setTemplateId(rs1.getString("TempId"));
-				Timestamp d = rs1.getTimestamp("createdDate");
+				pojo.setVendor(rs1.getString("temp_vendor"));
+				pojo.setModel(rs1.getString("temp_model"));
+				pojo.setDeviceFamily(rs1.getString("temp_device_family"));
+				pojo.setDeviceOs(rs1.getString("temp_device_os"));
+				pojo.setOsVersion(rs1.getString("temp_os_version"));
+				pojo.setRegion(rs1.getString("temp_region"));
+				pojo.setTemplateId(rs1.getString("temp_id"));
+				Timestamp d = rs1.getTimestamp("temp_created_date");
 				pojo.setDate(covnertTStoString(d));
-				pojo.setVersion(rs1.getString("templateVersion"));
-				Timestamp d1 = rs1.getTimestamp("updatedDate");
+				pojo.setVersion(rs1.getString("temp_version"));
+				Timestamp d1 = rs1.getTimestamp("temp_updated_date");
 				pojo.setUpdatedDate(covnertTStoString(d1));
-				pojo.setComment(rs1.getString("comment_section"));
+				pojo.setComment(rs1.getString("temp_comment_section"));
 				if (pojo.getComment().isEmpty()) {
 					pojo.setComment("undefined");
 				}
-				pojo.setStatus(rs1.getString("templateStatus"));
-				pojo.setApprover(rs1.getString("templateApprover"));
-				pojo.setCreatedBy(rs1.getString("createdby"));
+				pojo.setStatus(rs1.getString("temp_status"));
+				pojo.setApprover(rs1.getString("temp_approver"));
+				pojo.setCreatedBy(rs1.getString("temp_created_by"));
 
 				if (username.equalsIgnoreCase("Admin")) {
-					pojo.setRead(rs1.getInt("readStatusAdmin"));
+					pojo.setRead(rs1.getInt("temp_read_status_admin"));
 				} else if (username.equalsIgnoreCase("suser")) {
-					pojo.setRead(rs1.getInt("readStatusApprover"));
+					pojo.setRead(rs1.getInt("temp_read_status_approver"));
 
 				}
 
-				if (rs1.getString("templateStatus").equalsIgnoreCase("Approved")
-						|| rs1.getString("templateStatus").equalsIgnoreCase("Rejected")) {
+				if (rs1.getString("temp_status").equalsIgnoreCase("Approved")
+						|| rs1.getString("temp_status").equalsIgnoreCase("Rejected")) {
 					pojo.setEditable(false);
 				} else {
 					pojo.setEditable(true);
@@ -379,9 +380,9 @@ public class TemplateManagementDao {
 		String query1 = null;
 		logger.info("in Approval-template number");
 		if (username.equalsIgnoreCase("suser")) {
-			query1 = "select count(TempId) as notifications from templateconfig_basic_details where  templateStatus=?  and readStatusApprover=?";
+			query1 = "select count(temp_id) as notifications from templateconfig_basic_details where  temp_status=?  and temp_read_status_approver=?";
 		} else if (username.equalsIgnoreCase("Admin")) {
-			query1 = "select count(TempId) as notifications from templateconfig_basic_details where templateStatus IN (?,?) and readStatusAdmin=?";
+			query1 = "select count(temp_id) as notifications from templateconfig_basic_details where temp_status IN (?,?) and temp_read_status_admin=?";
 		}
 		PreparedStatement preparedStmt = null;
 
@@ -495,31 +496,8 @@ public class TemplateManagementDao {
 
 				}
 			}
-
-			/*
-			 * if (updateCommandTables) { for (int i = 0; i <
-			 * Global.globalSessionRightPanel.size(); i++) { for (int j = 0; j <
-			 * Global.globalSessionRightPanel.get(i) .getList().size(); j++) { if
-			 * (Global.globalSessionRightPanel.get(i).getList() .get(j).isNew()) {
-			 * 
-			 * commandId = Integer.toString(idToSetInCommandTable); sequenceId =
-			 * Global.globalSessionRightPanel.get(i)
-			 * .getList().get(j).getCommand_sequence_id(); commandValue =
-			 * Global.globalSessionRightPanel .get(i).getList().get(j).getCommand_value();
-			 * updateInMasterCommandTable =updateMasterCommandTableWithNewCommand(commandId,
-			 * sequenceId, commandValue); Global.globalSessionRightPanel.get(i).getList()
-			 * .get(j).setNew(false); } } }
-			 * 
-			 * }
-			 */
-			if (name == null) {
+			if (name == null) 
 				updateInMasterCommandTable = true;
-			}
-			/*
-			 * if (updateInMasterCommandTable) { result =
-			 * updateTransactionCommandTable(templateId, versionToSave); } else {
-			 * logger.info("Error in updating master command table"); }
-			 */
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -545,17 +523,7 @@ public class TemplateManagementDao {
 			}
 			preparedStmt.execute("SET FOREIGN_KEY_CHECKS=0");
 			preparedStmt.execute("SET SQL_SAFE_UPDATES=0");
-			int update = preparedStmt.executeUpdate();
-
-			/*
-			 * if (!isPresentCommandList) { for (int i = 0; i < listOfBlocks1.size(); i++) {
-			 * String insertBatchQuery =
-			 * "INSERT INTO c3p_template_transaction_command_list(command_id,command_sequence_id,command_template_id)"
-			 * + "VALUES('" + listOfBlocks1.get(i).getCommandId() + "','" +
-			 * listOfBlocks1.get(i).getCommandSequenceId() + "','" + tempID + "')";
-			 * ps.addBatch(insertBatchQuery); } recordsAffected2 = ps.executeBatch();
-			 */
-
+			preparedStmt.executeUpdate();
 			query2 = "Insert into c3p_template_transaction_command_list(command_id,command_sequence_id,command_template_id) values (?,?,?)";
 			preparedStmt = connection.prepareStatement(query2);
 
@@ -588,10 +556,8 @@ public class TemplateManagementDao {
 
 	public boolean updateMasterCommandTableWithNewCommand(String commandId, int sequenceId, String commandValue) {
 		boolean result = false;
-		String query1 = null, query2 = null, query3 = null, query4 = null;
+		String query1 = null;
 		PreparedStatement preparedStmt = null;
-		Statement smt = null;
-		ResultSet rs1 = null, rs2 = null;
 		try {
 			query1 = "Insert into c3p_template_master_command_list (command_id,command_value,command_sequence_id,command_type) values (?,?,?,?)";
 			preparedStmt = connection.prepareStatement(query1);
@@ -599,12 +565,9 @@ public class TemplateManagementDao {
 			preparedStmt.setString(2, commandValue);
 			preparedStmt.setInt(3, sequenceId);
 			preparedStmt.setString(4, Global.templateid);
-
 			int update = preparedStmt.executeUpdate();
-			if (update > 0) {
+			if (update > 0) 
 				result = true;
-			}
-
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -618,7 +581,7 @@ public class TemplateManagementDao {
 		String query1 = null, query2 = null, query3 = null, query4 = null;
 		PreparedStatement preparedStmt = null;
 		Statement smt = null;
-		ResultSet rs1 = null, rs2 = null;
+		ResultSet resultSet = null;
 		int idToSetInCommandTable = 0;
 		boolean result = false;
 		try {
@@ -638,10 +601,10 @@ public class TemplateManagementDao {
 				int id = 0;
 				query3 = "select * from c3p_template_master_feature_list";
 				smt = connection.createStatement();
-				rs1 = smt.executeQuery(query3);
-				while (rs1.next()) {
-					if (rs1.getString("comand_display_feature").equalsIgnoreCase(name)) {
-						id = rs1.getInt("id");
+				resultSet = smt.executeQuery(query3);
+				while (resultSet.next()) {
+					if (resultSet.getString("comand_display_feature").equalsIgnoreCase(name)) {
+						id = resultSet.getInt("id");
 						idToSetInCommandTable = id;
 					}
 				}
@@ -678,17 +641,9 @@ public class TemplateManagementDao {
 			String newFeature, String lstCmdId) {
 		boolean res = true;
 		connection = ConnectionFactory.getConnection();
-		ResultSet rs1 = null, rs2 = null;
-		String query1 = null, query2 = null, query3 = null;
+		ResultSet resultSet = null;
+		String query1 = null;
 		PreparedStatement preparedStmt = null;
-		Statement smt = null;
-		String result = null;
-		List<GetTemplateMngmntActiveDataPojo> allFeaturesList = null;
-		List<String> sequenceIds = null;
-		List<CommandPojo> sequence = new ArrayList<CommandPojo>();
-		CommandPojo commandPojo = null;
-		List<Integer> inListSequence = new ArrayList<Integer>();
-		GetTemplateMngmntActiveDataPojo getTemplateMngmntActivePojo = null;
 		int tempCommandId = 0;
 		int topLineToUse;
 		// Global.sequenceList.clear();
@@ -702,10 +657,10 @@ public class TemplateManagementDao {
 				query1 = "select * from c3p_template_transaction_command_list where command_template_id=?";
 				preparedStmt = connection.prepareStatement(query1);
 				preparedStmt.setString(1, templateId);
-				rs1 = preparedStmt.executeQuery();
+				resultSet = preparedStmt.executeQuery();
 
-				while (rs1.next()) {
-					Global.sequenceList.add(rs1.getInt("command_sequence_id"));
+				while (resultSet.next()) {
+					Global.sequenceList.add(resultSet.getInt("command_sequence_id"));
 				}
 				for (int i = 0; i < Global.sequenceList.size(); i++) {
 					if (Global.sequenceList.get(i) == topLineToUse) {
@@ -772,33 +727,7 @@ public class TemplateManagementDao {
 				obj.setParent(comand_display_feature.substring(10, comand_display_feature.length()));
 				Global.globalSessionLeftPanel.add(obj);
 			}
-			// Add in temperory rightpanel list
-			/*
-			 * if (newFeature.equalsIgnoreCase("true")) { TemplateCommandJSONModel
-			 * commandObj = new TemplateCommandJSONModel(); commandObj.setCommand_id(0);
-			 * commandObj.setChecked(true); List<CommandPojo> list = new
-			 * ArrayList<CommandPojo>();
-			 * 
-			 * CommandPojo cmdPojo = new CommandPojo(); cmdPojo.setChecked(false);
-			 * cmdPojo.setCommand_value(command_to_add);
-			 * cmdPojo.setCommand_sequence_id(tempCommandId); cmdPojo.setNew(true);
-			 * list.add(cmdPojo); commandObj.setList(list);
-			 * 
-			 * Global.globalSessionRightPanel.add(commandObj);
-			 * 
-			 * } else { for (int i = 0; i < Global.globalSessionRightPanel.size(); i++) {
-			 * 
-			 * if (Global.globalSessionRightPanel.get(i).getCommand_id() == parentId) {
-			 * List<CommandPojo> list = new ArrayList<CommandPojo>(); list =
-			 * Global.globalSessionRightPanel.get(i).getList();
-			 * 
-			 * CommandPojo cmdPojo = new CommandPojo(); cmdPojo.setChecked(false);
-			 * cmdPojo.setCommand_value(command_to_add);
-			 * cmdPojo.setCommand_sequence_id(tempCommandId); cmdPojo.setNew(true);
-			 * list.add(cmdPojo);
-			 * 
-			 * Global.globalSessionRightPanel.get(i).setList(list); } } }
-			 */
+			
 			for (int i = 0; i < Global.globalSessionRightPanel.size(); i++) {
 
 				TemplateCommandJSONModel commandObj = new TemplateCommandJSONModel();
@@ -902,14 +831,6 @@ public class TemplateManagementDao {
 							query2 = "Select * from c3p_template_master_command_list where command_id=?";
 							pst = connection.prepareStatement(query2);
 							pst.setInt(1, Integer.parseInt(object.get("id").toString()));
-							// pst.setString(2, "Generic");
-							/*
-							 * if (array.get("templateVersion") != null) { pst.setString( 3, templateIdTouse
-							 * .substring(0, templateIdTouse .indexOf("V") - 1) + "%"); } else {
-							 * pst.setString(3, templateIdTouse);
-							 * 
-							 * }
-							 */
 							rs1 = pst.executeQuery();
 
 							while (rs1.next()) {
@@ -948,27 +869,12 @@ public class TemplateManagementDao {
 						preparedStmt.execute("SET SQL_SAFE_UPDATES=0");
 						int i = preparedStmt.executeUpdate();
 						if (i == 1) {
-							/*
-							 * query2 = "Select * from c3p_template_master_command_list where command_id=?"
-							 * ; pst = connection.prepareStatement(query2); pst.setInt(1,
-							 * Integer.parseInt(object.get("id") .toString()));
-							 * 
-							 * rs1 = pst.executeQuery();
-							 * 
-							 * while (rs1.next()) { commandPojo = new CommandPojo();
-							 * commandPojo.setCommand_id(rs1 .getString("command_id"));
-							 * commandPojo.setCommand_value(rs1 .getString("command_value"));
-							 * commandPojo.setCommand_sequence_id(rs1 .getInt("command_sequence_id"));
-							 * commandList.add(commandPojo);
-							 */
 							modelObj.setCommand_id(Integer.parseInt(object.get("id").toString()));
 							modelObj.setList(commandList);
 							model.add(modelObj);
 						}
 
 					}
-
-					// }
 				}
 				JSONObject obj = (JSONObject) checkedArray.get(k);
 				for (int i = 0; i < Global.globalSessionRightPanel.size(); i++) {
@@ -1269,11 +1175,6 @@ public class TemplateManagementDao {
 
 			GetTemplateMngmntActiveDataPojo pojo = new GetTemplateMngmntActiveDataPojo();
 
-			// query2 = "select * from c3p_template_master_feature_list WHERE command_type
-			// LIKE ? or (command_type LIKE ? and is_Save = '1')";
-			// query2 = "select * from c3p_template_master_feature_list WHERE command_type
-			// LIKE ? or (command_type BETWEEN ? AND ? and is_Save = '1')";
-
 			/* Dhanshri serach by Specific Template id with current template Id */
 			query2 = "select * from c3p_template_master_feature_list WHERE command_type =? or (command_type BETWEEN  ? AND ? )";
 
@@ -1285,15 +1186,9 @@ public class TemplateManagementDao {
 				preparedStmt.setString(1, "Generic");
 
 			}
-			/*
-			 * preparedStmt.setString( 2, "%" + templateId.substring(0,
-			 * templateId.indexOf("_V") - 1) + "%");
-			 */
+			
 			/* Dhanshri serach by Specific Template id */
 			preparedStmt.setString(2, templateId);
-			// preparedStmt.setString(2, templateId.substring(0, templateId.indexOf("V") +
-			// 1)+ 1.0);
-
 			/* pankaj changes for yes no and edit flow */
 			preparedStmt.setString(3, currentTemplateId);
 			/* pankaj changes for yes no and edit flow */
@@ -1337,13 +1232,6 @@ public class TemplateManagementDao {
 
 				}
 			}
-
-			/*
-			 * if (isPresentInTransactionList) { for (int i = 0; i < allFeaturesList.size();
-			 * i++) { for (int j = 0; j < featuresActive.size(); j++) { if
-			 * (allFeaturesList.get(i).getId() == featuresActive.get(j)) {
-			 * allFeaturesList.get(i).setActive(true); } } } }
-			 */
 
 			for (int i = 0; i < getFinalList.size(); i++) {
 				if (getFinalList.get(i).getDisplayKeyValue().equalsIgnoreCase("Basic Config1")) {
@@ -1573,21 +1461,6 @@ public class TemplateManagementDao {
 					logger.error(e.getMessage());
 				}
 			}
-			/*
-			 * } else { query =
-			 * "select * from  templateconfig_feature_command where Parent_name = ? " ;
-			 * preparedStmt = connection.prepareStatement(query); preparedStmt.setString(1,
-			 * "Routing Protocol"); //preparedStmt.setString(2, parentValue); rs =
-			 * preparedStmt.executeQuery(); int i=0; templateMngmntActiveList = new
-			 * ArrayList<GetTemplateMngmntActiveDataPojo>(); if (rs != null) { while
-			 * (rs.next()) { i++; getTemplateMngmntActivePojo=new
-			 * GetTemplateMngmntActiveDataPojo();
-			 * getTemplateMngmntActivePojo.setChildKeyValue (rs.getString("Name"));
-			 * getTemplateMngmntActivePojo.setCommandValue (rs.getString("Command_Value"));
-			 * templateMngmntActiveList.add(getTemplateMngmntActivePojo);
-			 * 
-			 * } } }
-			 */
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -1776,78 +1649,15 @@ public class TemplateManagementDao {
 	}
 
 	@SuppressWarnings("resource")
-	public final Map<String, String> createTemplateBasicConfig(String vendor, String model, String os, String osVersion,
-			String region, String templateId) {
-		Map<String, String> resultmap = new HashMap<String, String>();
-		String tempid = null;
-		tempid = getTemplateID(vendor, model, os, osVersion, region);
-		connection = ConnectionFactory.getConnection();
-		DuplicateDataException exception = null;
-		boolean isPresent = false;
-		if (templateId == null) {
-			String query2 = "SELECT * FROM templateconfig_basic_details";
-			try {
-				Statement pst = connection.createStatement();
-				ResultSet rs1 = pst.executeQuery(query2);
-				while (rs1.next()) {
-					if (rs1.getString("TempId").equalsIgnoreCase(tempid)) {
-						isPresent = true;
-						exception = new DuplicateDataException();
-						exception.setError_code("E001");
-						query2 = "SELECT * FROM errorcodedata";
-						rs1 = pst.executeQuery(query2);
-						while (rs1.next()) {
-							if (rs1.getString("ErrorId").equalsIgnoreCase(exception.getError_code())) {
-								exception.setError_description(rs1.getString("ErrorDescription"));
-								exception.setError_type(rs1.getString("ErrorType"));
-							}
-						}
-						break;
-					}
-				}
-				if (!isPresent) {
-					resultmap.put("tempid", tempid);
-					resultmap.put("status", "success");
-					resultmap.put("errorCode", null);
-					resultmap.put("errorType", null);
-					resultmap.put("errorDescription", null);
-					resultmap.put("version", "1.0");
-				} else {
-					resultmap.put("tempid", tempid);
-					resultmap.put("status", "failure");
-					resultmap.put("errorCode", exception.getError_code());
-					resultmap.put("errorType", exception.getError_type());
-					resultmap.put("errorDescription", exception.getError_description());
-					resultmap.put("version", "1.0");
-				}
-
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} finally {
-				DBUtil.close(connection);
-			}
-		} else {
-			resultmap.put("tempid", templateId);
-			resultmap.put("status", "success");
-			resultmap.put("errorCode", null);
-			resultmap.put("errorType", null);
-			resultmap.put("errorDescription", null);
-			String version = StringUtils.substringAfter(templateId, "_V");
-			resultmap.put("version", version);
-		}
-		return resultmap;
-	}
-
-	@SuppressWarnings("resource")
 	public final Map<String, String> addTemplate(String vendor, String deviceFamily, String model, String os,
 			String osVersion, String region, String oldTemplateId, String oldVersion, String comment,
-			String networkType) {
+			String networkType, String aliasName) {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
 		String tempid = null, oldversion = null;
-		String query1 = "INSERT INTO templateconfig_basic_details(TempId,TempVendor,TempDeviceFamily,TempModel,TempDeviceOs,TempOsVersion,TempRegion,createdDate,templateVersion,templateParentVersion,updatedDate,comment_section,createdby,templateApprover,networkType)"
-				+ "VALUES(?,?,?,?,?,?,?,now(),?,?,now(),?,?,?,?)";
+		String query1 = "INSERT INTO templateconfig_basic_details(temp_id,temp_vendor,temp_device_family,temp_model,temp_device_os,temp_os_version,temp_region,"
+				+ "temp_created_date,temp_version,temp_parent_version,temp_updated_date,temp_comment_section,temp_created_by,"
+				+ "temp_approver,temp_network_type, temp_alias)" + "VALUES(?,?,?,?,?,?,?,now(),?,?,now(),?,?,?,?,?)";
 		String query2 = "SELECT * FROM templateconfig_basic_details";
 
 		tempid = oldTemplateId;
@@ -1861,14 +1671,14 @@ public class TemplateManagementDao {
 			Statement pst = connection.createStatement();
 			ResultSet rs1 = pst.executeQuery(query2);
 			while (rs1.next()) {
-				if (rs1.getString("TempId").equalsIgnoreCase(tempid)) {
+				if (rs1.getString("temp_id").equalsIgnoreCase(tempid)) {
 					isPresent = true;
-					vendor = rs1.getString("TempVendor");
-					deviceFamily = rs1.getString("TempDeviceFamily");
-					model = rs1.getString("TempModel");
-					os = rs1.getString("TempDeviceOs");
-					osVersion = rs1.getString("TempOsVersion");
-					region = rs1.getString("TempRegion");
+					vendor = rs1.getString("temp_vendor");
+					deviceFamily = rs1.getString("temp_device_family");
+					model = rs1.getString("temp_model");
+					os = rs1.getString("temp_device_os");
+					osVersion = rs1.getString("temp_os_version");
+					region = rs1.getString("temp_region");
 					exception = new DuplicateDataException();
 					exception.setError_code("E001");
 					query2 = "SELECT * FROM errorcodedata";
@@ -1898,6 +1708,7 @@ public class TemplateManagementDao {
 				ps.setString(11, Global.loggedInUser);
 				ps.setString(12, "suser");
 				ps.setString(13, networkType);
+				ps.setString(14, aliasName);
 
 				// int i=0;
 				int i = ps.executeUpdate();
@@ -1943,6 +1754,7 @@ public class TemplateManagementDao {
 				ps1.setString(11, Global.loggedInUser);
 				ps1.setString(12, "suser");
 				ps1.setString(13, networkType);
+				ps1.setString(14, aliasName);
 
 				// int i=0;
 				int i = ps1.executeUpdate();
@@ -1959,14 +1771,6 @@ public class TemplateManagementDao {
 				resultmap.put("errorType", null);
 				resultmap.put("errorDescription", null);
 				resultmap.put("version", childversion);
-
-				/*
-				 * resultmap.put("tempid", null); resultmap.put("status", "failure");
-				 * resultmap.put("errorCode", exception.getError_code());
-				 * resultmap.put("errorType", exception.getError_type());
-				 * resultmap.put("errorDescription", exception.getError_description());
-				 */
-
 			}
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -1977,126 +1781,25 @@ public class TemplateManagementDao {
 		return resultmap;
 	}
 
-	private String getTemplateID(String vendor, String model, String os, String osVersion, String region) {
-		String temp = null;
-		// will be modified once edit flow is enabled have to check version and
-		// accordingliy append the version
-		temp = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase() + model.toUpperCase()
-				+ os.substring(0, 2).toUpperCase() + osVersion;
-		return temp;
-	}
-
 	public final boolean updateTemplateDB(String tempID) throws SQLException {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
-		String tempid = null;
-		String query1 = "SELECT * FROM c3p_template_master_feature_list WHERE command_type IN (?,?)";
-		String query3 = "SELECT * FROM c3p_template_master_command_list where command_id=? AND command_type IN (?,?)";
-		String query4 = "SELECT * FROM c3p_template_master_feature_list";
-
-		String query5 = "INSERT INTO c3p_template_transaction_feature_list (id,command_feature_template_id)"
+		String query = "INSERT INTO c3p_template_transaction_feature_list (id,command_feature_template_id)"
 				+ "VALUES(1,?)";
-		List<Integer> checkedFeatureIds = new ArrayList<Integer>();
-		Statement pst = null;
-		ResultSet rs = null;
-		GetTemplateMngmntActiveDataPojo pojo = null;
-		Statement ps = connection.createStatement();
-		PreparedStatement psSupport = null;
-		List<GetTemplateMngmntActiveDataPojo> listOfBlocks = null, listOfBlocks1 = null;
-		boolean firstUpdate = false;
+		PreparedStatement stmt = null;
 		try {
 			// By Default add basic config to checked list i.e
 			// c3p_transaction_feature_table
-			PreparedStatement pst1 = connection.prepareStatement(query5);
-			pst1.setString(1, tempID);
-			int inrs = pst1.executeUpdate();
-			if (inrs == 1) {
-				firstUpdate = true;
+			stmt = connection.prepareStatement(query);
+			stmt.setString(1, tempID);
+			int inrs = stmt.executeUpdate();
+			if (inrs == 1) 
 				result = true;
-			} else {
-				firstUpdate = false;
-			}
-			/*
-			 * if (firstUpdate) { psSupport = connection.prepareStatement(query1);
-			 * psSupport.setString(1, tempID); psSupport.setString(2, "Generic"); rs =
-			 * psSupport.executeQuery(); // rs = ps.executeQuery(query1); listOfBlocks = new
-			 * ArrayList<GetTemplateMngmntActiveDataPojo>(); while (rs.next()) { pojo = new
-			 * GetTemplateMngmntActiveDataPojo(); pojo.setParentKeyValue(rs
-			 * .getString("command_parent_feature")); pojo.setChildKeyValue(rs
-			 * .getString("comand_display_feature"));
-			 * pojo.setFeatureType(rs.getString("command_type"));
-			 * pojo.setId(rs.getInt("id")); if (rs.getString("comand_display_feature")
-			 * .equalsIgnoreCase("basic Config1")) { pojo.setActiveFlag(1);
-			 * pojo.setDisabled(true); } else if (rs.getString("comand_display_feature")
-			 * .equalsIgnoreCase("basic Config2")) { pojo.setActiveFlag(1);
-			 * pojo.setDisabled(true); } else if (rs.getString("comand_display_feature")
-			 * .equalsIgnoreCase("basic Config3")) { pojo.setActiveFlag(1);
-			 * pojo.setDisabled(true);
-			 * 
-			 * } else { pojo.setActiveFlag(0); pojo.setDisabled(false);
-			 * 
-			 * } listOfBlocks.add(pojo); }
-			 * 
-			 * Statement prest = connection.createStatement();
-			 * 
-			 * ResultSet rst = prest.executeQuery(query4);
-			 * 
-			 * while (rst.next()) { checkedFeatureIds.add(rst.getInt("id")); }
-			 * 
-			 * if (checkedFeatureIds.size() > 0) { listOfBlocks1 = new
-			 * ArrayList<GetTemplateMngmntActiveDataPojo>(); for (int i = 0; i <
-			 * checkedFeatureIds.size(); i++) { PreparedStatement prest1 = connection
-			 * .prepareStatement(query3); prest1.setString(1,
-			 * Integer.toString(checkedFeatureIds.get(i))); prest1.setString(2, "Generic");
-			 * prest1.setString(3, tempID); rs = prest1.executeQuery(); while (rs.next()) {
-			 * pojo = new GetTemplateMngmntActiveDataPojo();
-			 * pojo.setCommandValue(rs.getString("command_value"));
-			 * pojo.setCommandId(rs.getString("command_id")); pojo.setCommandSequenceId(rs
-			 * .getString("command_sequence_id")); pojo.setId(rs.getInt("id"));
-			 * 
-			 * listOfBlocks1.add(pojo); } } }
-			 * 
-			 * // check if entries for this record exist String query2 =
-			 * "SELECT * FROM c3p_template_transaction_feature_list"; statement =
-			 * connection.createStatement(); rs = statement.executeQuery(query2); boolean
-			 * isPresent = false; while (rs.next()) { if
-			 * (rs.getString("command_feature_template_id") .equalsIgnoreCase(tempID)) {
-			 * isPresent = true; break; } }
-			 * 
-			 * int[] recordsAffected2 = null; boolean isPresentCommandList = false;
-			 * 
-			 * // check if entries for this record exist in command list table
-			 * 
-			 * String query4 = "SELECT * FROM c3p_template_transaction_command_list"; pst =
-			 * connection.createStatement(); rs = pst.executeQuery(query4); while
-			 * (rs.next()) { if(rs.getString("command_transaction_template_id"
-			 * ).equalsIgnoreCase(tempID)) { isPresentCommandList=true; break; } }
-			 * 
-			 * result = true; // insert these commands in active table
-			 * 
-			 * if(!isPresent) { for(int i=0; i<listOfBlocks.size();i++) { String
-			 * insertBatchQuery=
-			 * "INSERT INTO c3p_template_transaction_feature_list(id,command_feature_template_id)"
-			 * + "VALUES('"+listOfBlocks.get(i).getId()+"','" +tempID+ "')";
-			 * ps.addBatch(insertBatchQuery); } recordsAffected1=ps.executeBatch();
-			 * 
-			 * }
-			 * 
-			 * if (!isPresentCommandList) { for (int i = 0; i < listOfBlocks1.size(); i++) {
-			 * String insertBatchQuery =
-			 * "INSERT INTO c3p_template_transaction_command_list(command_id,command_sequence_id,command_template_id)"
-			 * + "VALUES('" + listOfBlocks1.get(i).getCommandId() + "','" +
-			 * listOfBlocks1.get(i).getCommandSequenceId() + "','" + tempID + "')";
-			 * ps.addBatch(insertBatchQuery); } recordsAffected2 = ps.executeBatch(); }
-			 * 
-			 * // int i=0; if (recordsAffected2.length > 0) { result = true; } else { result
-			 * = false; } } else { result = false; }
-			 */
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			ps.close();
+			stmt.close();
 			DBUtil.close(connection);
 		}
 		return result;
@@ -2112,29 +1815,29 @@ public class TemplateManagementDao {
 			ResultSet rs1 = pst.executeQuery(query2);
 			while (rs1.next()) {
 				pojo = new TemplateBasicConfigurationPojo();
-				pojo.setVendor(rs1.getString("TempVendor"));
-				pojo.setModel(rs1.getString("TempModel"));
-				pojo.setDeviceFamily(rs1.getString("TempDeviceFamily"));
-				pojo.setDeviceOs(rs1.getString("TempDeviceOs"));
-				pojo.setOsVersion(rs1.getString("TempOsVersion"));
-				pojo.setRegion(rs1.getString("TempRegion"));
-				pojo.setTemplateId(rs1.getString("TempId"));
-				Timestamp d = rs1.getTimestamp("createdDate");
+				pojo.setVendor(rs1.getString("temp_vendor"));
+				pojo.setModel(rs1.getString("temp_model"));
+				pojo.setDeviceFamily(rs1.getString("temp_device_family"));
+				pojo.setDeviceOs(rs1.getString("temp_device_os"));
+				pojo.setOsVersion(rs1.getString("temp_os_version"));
+				pojo.setRegion(rs1.getString("temp_region"));
+				pojo.setTemplateId(rs1.getString("temp_id"));
+				Timestamp d = rs1.getTimestamp("temp_created_date");
 				pojo.setDate(covnertTStoString(d));
-				pojo.setVersion(rs1.getString("templateVersion"));
-				Timestamp d1 = rs1.getTimestamp("updatedDate");
+				pojo.setVersion(rs1.getString("temp_version"));
+				Timestamp d1 = rs1.getTimestamp("temp_updated_date");
 				pojo.setUpdatedDate(covnertTStoString(d1));
-				pojo.setComment(rs1.getString("comment_section"));
+				pojo.setComment(rs1.getString("temp_comment_section"));
 
 				if (pojo.getComment().isEmpty()) {
 					pojo.setComment("undefined");
 				}
-				pojo.setStatus(rs1.getString("templateStatus"));
-				pojo.setApprover(rs1.getString("templateApprover"));
-				pojo.setCreatedBy(rs1.getString("createdby"));
-				pojo.setNetworkType(rs1.getString("networkType"));
+				pojo.setStatus(rs1.getString("temp_status"));
+				pojo.setApprover(rs1.getString("temp_approver"));
+				pojo.setCreatedBy(rs1.getString("temp_created_by"));
+				pojo.setNetworkType(rs1.getString("temp_network_type"));
 
-				if (rs1.getString("templateStatus").equalsIgnoreCase("Pending")) {
+				if (rs1.getString("temp_status").equalsIgnoreCase("Pending")) {
 					pojo.setEditable(false);
 				} else {
 					pojo.setEditable(true);
@@ -2239,27 +1942,27 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		String query = null;
 		if (key.equalsIgnoreCase("Template ID")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE TempId LIKE ? and templateVersion LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_id LIKE ? and temp_version LIKE ?";
 		} else if (key.equalsIgnoreCase("Device Family")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE TempDeviceFamily LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_device_family LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Vendor")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE TempVendor LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_vendor LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Model")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE TempModel LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_model LIKE ?";
 
 		} else if (key.equalsIgnoreCase("OS")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE TempDeviceOs LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_device_os LIKE ?";
 
 		} else if (key.equalsIgnoreCase("OS Version")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE TempOsVersion LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_os_version LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Status")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE templateStatus LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_status LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Approver")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE templateApprover LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_approver LIKE ?";
 
 		}
 		ResultSet rs = null;
@@ -2291,22 +1994,22 @@ public class TemplateManagementDao {
 			templateList = new ArrayList<TemplateBasicConfigurationPojo>();
 			while (rs.next()) {
 				template = new TemplateBasicConfigurationPojo();
-				template.setVendor(rs.getString("TempVendor"));
-				template.setTemplateId(rs.getString("TempId"));
-				template.setDeviceFamily(rs.getString("TempDeviceFamily"));
-				template.setModel(rs.getString("TempModel"));
-				template.setDeviceOs(rs.getString("TempDeviceOs"));
-				template.setOsVersion(rs.getString("TempOsVersion"));
-				template.setRegion(rs.getString("TempRegion"));
-				Timestamp d = rs.getTimestamp("createdDate");
+				template.setVendor(rs.getString("temp_vendor"));
+				template.setTemplateId(rs.getString("temp_id"));
+				template.setDeviceFamily(rs.getString("temp_device_family"));
+				template.setModel(rs.getString("temp_model"));
+				template.setDeviceOs(rs.getString("temp_device_os"));
+				template.setOsVersion(rs.getString("temp_os_version"));
+				template.setRegion(rs.getString("temp_region"));
+				Timestamp d = rs.getTimestamp("temp_created_date");
 				template.setDate(covnertTStoString(d));
-				template.setVersion(rs.getString("templateVersion"));
-				Timestamp d1 = rs.getTimestamp("updatedDate");
+				template.setVersion(rs.getString("temp_version"));
+				Timestamp d1 = rs.getTimestamp("temp_updated_date");
 				template.setUpdatedDate(covnertTStoString(d1));
-				template.setStatus(rs.getString("templateStatus"));
-				template.setApprover(rs.getString("templateApprover"));
-				template.setCreatedBy(rs.getString("createdby"));
-				template.setComment(rs.getString("comment_section"));
+				template.setStatus(rs.getString("temp_status"));
+				template.setApprover(rs.getString("temp_approver"));
+				template.setCreatedBy(rs.getString("temp_created_by"));
+				template.setComment(rs.getString("temp_comment_section"));
 				if (template.getStatus().equalsIgnoreCase("Approved")
 						|| template.getStatus().equalsIgnoreCase("approved")) {
 					template.setEditable(true);
@@ -2329,7 +2032,7 @@ public class TemplateManagementDao {
 		List<String> list = new ArrayList<String>();
 		connection = ConnectionFactory.getConnection();
 		String query = null;
-		query = "select * from templateconfig_feature_active where TempId=?";
+		query = "select * from templateconfig_feature_active where temp_id=?";
 		ResultSet rs = null;
 		PreparedStatement pst = null;
 		try {
@@ -2583,7 +2286,7 @@ public class TemplateManagementDao {
 
 		String queryTransactionCommandList = "Delete from c3p_template_transaction_command_list where command_template_id IN (?)";
 
-		String queryBasicDetails = "Delete from templateconfig_basic_details where TempId=? and templateVersion=?";
+		String queryBasicDetails = "Delete from templateconfig_basic_details where temp_id=? and temp_version=?";
 
 		String queryMasterFeatureList = "Delete from c3p_template_master_feature_list where command_type=?";
 
@@ -2833,32 +2536,32 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> templateBscCnfgList = new ArrayList<TemplateBasicConfigurationPojo>();
 		TemplateBasicConfigurationPojo templateBscCnfgPojo;
 		connection = ConnectionFactory.getConnection();
-		getTempalteByDateSortedQuery = "SELECT * FROM templateconfig_basic_details WHERE TempId = ?  ORDER BY updatedDate DESC";
+		getTempalteByDateSortedQuery = "SELECT * FROM templateconfig_basic_details WHERE temp_id = ?  ORDER BY temp_updated_date DESC";
 		try {
 			PreparedStatement pst = connection.prepareStatement(getTempalteByDateSortedQuery);
 			pst.setString(1, templateId);
 			ResultSet rs = pst.executeQuery();
 			while (rs.next()) {
 				templateBscCnfgPojo = new TemplateBasicConfigurationPojo();
-				templateBscCnfgPojo.setVendor(rs.getString("TempVendor"));
-				templateBscCnfgPojo.setModel(rs.getString("TempModel"));
-				templateBscCnfgPojo.setDeviceFamily(rs.getString("TempDeviceFamily"));
-				templateBscCnfgPojo.setDeviceOs(rs.getString("TempDeviceOs"));
-				templateBscCnfgPojo.setOsVersion(rs.getString("TempOsVersion"));
-				templateBscCnfgPojo.setRegion(rs.getString("TempRegion"));
-				templateBscCnfgPojo.setTemplateId(rs.getString("TempId"));
-				Timestamp createdDt = rs.getTimestamp("createdDate");
+				templateBscCnfgPojo.setVendor(rs.getString("temp_vendor"));
+				templateBscCnfgPojo.setModel(rs.getString("temp_model"));
+				templateBscCnfgPojo.setDeviceFamily(rs.getString("temp_device_family"));
+				templateBscCnfgPojo.setDeviceOs(rs.getString("temp_device_os"));
+				templateBscCnfgPojo.setOsVersion(rs.getString("temp_os_version"));
+				templateBscCnfgPojo.setRegion(rs.getString("temp_region"));
+				templateBscCnfgPojo.setTemplateId(rs.getString("temp_id"));
+				Timestamp createdDt = rs.getTimestamp("temp_created_date");
 				templateBscCnfgPojo.setDate(covnertTStoString(createdDt));
-				templateBscCnfgPojo.setVersion(rs.getString("templateVersion"));
-				Timestamp updatedDt = rs.getTimestamp("updatedDate");
+				templateBscCnfgPojo.setVersion(rs.getString("temp_version"));
+				Timestamp updatedDt = rs.getTimestamp("temp_updated_date");
 				templateBscCnfgPojo.setUpdatedDate(covnertTStoString(updatedDt));
-				templateBscCnfgPojo.setComment(rs.getString("comment_section"));
+				templateBscCnfgPojo.setComment(rs.getString("temp_comment_section"));
 				if (templateBscCnfgPojo.getComment().isEmpty()) {
 					templateBscCnfgPojo.setComment("undefined");
 				}
-				templateBscCnfgPojo.setStatus(rs.getString("templateStatus"));
-				templateBscCnfgPojo.setApprover(rs.getString("templateApprover"));
-				templateBscCnfgPojo.setCreatedBy(rs.getString("createdby"));
+				templateBscCnfgPojo.setStatus(rs.getString("temp_status"));
+				templateBscCnfgPojo.setApprover(rs.getString("temp_approver"));
+				templateBscCnfgPojo.setCreatedBy(rs.getString("temp_created_by"));
 
 				templateBscCnfgList.add(templateBscCnfgPojo);
 			}
@@ -2956,7 +2659,7 @@ public class TemplateManagementDao {
 
 		connection = ConnectionFactory.getConnection();
 
-		String query1 = "select * from templateconfig_basic_details where TempId=?;";
+		String query1 = "select * from templateconfig_basic_details where temp_id=?;";
 
 		PreparedStatement pst;
 		ResultSet res;
@@ -2968,12 +2671,12 @@ public class TemplateManagementDao {
 				res = pst.executeQuery();
 
 				while (res.next()) {
-					deviceDetails.setVendor(res.getString("TempVendor"));
-					deviceDetails.setModel(res.getString("TempModel"));
-					deviceDetails.setDeviceFamily(res.getString("TempDeviceFamily"));
-					deviceDetails.setRegion(res.getString("TempRegion"));
-					deviceDetails.setOs(res.getString("TempDeviceOs"));
-					deviceDetails.setOsVersion(res.getString("TempOsVersion"));
+					deviceDetails.setVendor(res.getString("temp_vendor"));
+					deviceDetails.setModel(res.getString("temp_model"));
+					deviceDetails.setDeviceFamily(res.getString("temp_device_family"));
+					deviceDetails.setRegion(res.getString("temp_region"));
+					deviceDetails.setOs(res.getString("temp_device_os"));
+					deviceDetails.setOsVersion(res.getString("temp_os_version"));
 				}
 			}
 
