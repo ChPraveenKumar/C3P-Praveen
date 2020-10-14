@@ -34,7 +34,7 @@ public class MasterFeatureEntity implements Serializable
 	private String fId;
 
 	@Column(name = "f_name")
-	private int fName;
+	private String fName;
 
 	@Column(name = "f_category")
 	private String fCategory;
@@ -95,6 +95,31 @@ public class MasterFeatureEntity implements Serializable
 
 	@Column(name = "f_comments")
 	private String fComments;
+	
+	@Column(name = "f_status")
+	private String fStatus;
+	
+
+	@Column(name = "f_owner")
+	private String fOwner;
+
+	
+	public String getfStatus() {
+		return fStatus;
+	}
+
+	public void setfStatus(String fStatus) {
+		this.fStatus = fStatus;
+	}
+
+	public String getfOwner() {
+		return fOwner;
+	}
+
+	public void setfOwner(String fOwner) {
+		this.fOwner = fOwner;
+	}
+
 
 	public String getfComments() {
 		return fComments;
@@ -123,11 +148,11 @@ public class MasterFeatureEntity implements Serializable
 		this.fId = fId;
 	}
 
-	public int getfName() {
+	public String getfName() {
 		return fName;
 	}
 
-	public void setfName(int fName) {
+	public void setfName(String fName) {
 		this.fName = fName;
 	}
 

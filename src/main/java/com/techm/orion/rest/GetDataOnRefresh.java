@@ -1,6 +1,7 @@
 package com.techm.orion.rest;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -21,9 +22,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.dao.TemplateManagementDao;
+import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.repositories.MasterFeatureRepository;
 
 @Controller
 @RequestMapping("/GetNotifications")
@@ -32,6 +35,9 @@ public class GetDataOnRefresh implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetDataOnRefresh.class);
 	TemplateManagementDao templateManagementDao = new TemplateManagementDao();
 
+	@Autowired
+	MasterFeatureRepository masterFeatureRepository;
+	
 	@Autowired
 	RequestInfoDetailsDao requestInfoDao;
 	
@@ -51,7 +57,7 @@ public class GetDataOnRefresh implements Observer {
 
 		List<TemplateBasicConfigurationPojo> templateNames = new ArrayList<TemplateBasicConfigurationPojo>();
 		String user=Global.loggedInUser;
-		//String user="feuser";
+		//String user="suser";
 		switch (user) {
 		case "feuser":
 			requestList = requestInfoDao.getOwnerAssignedRequestList("feuser");
@@ -126,15 +132,45 @@ public class GetDataOnRefresh implements Observer {
 				templateNames.add(temp);
 			}
 
-		
+			/*Logic to generate feature approval notification*/
+			
+			int count=masterFeatureRepository.getCountByFStatusAndUser("Pending",user);
+			
+			List<MasterFeatureEntity>featureDetailList=new ArrayList<MasterFeatureEntity>();
+			
+			featureDetailList=masterFeatureRepository.getListByOwner("Pending", user);
+			
+			List<MasterFeatureEntity>featureList=new ArrayList<MasterFeatureEntity>();
+
+			featureDetailList.forEach(feature->{
+				MasterFeatureEntity entity=new MasterFeatureEntity();
+				entity.setfId(feature.getfId());
+				entity.setfName(feature.getfName());
+				entity.setfStatus(feature.getfStatus());
+				featureList.add(feature);
+				
+			});
+
+			Collections.reverse(featureDetailList);
+			Collections.reverse(featureList);
+			
+			Collections.reverse(templateNames);
+			Collections.reverse(list);
+
+
+			String jsonListeature=new Gson().toJson(featureDetailList);
+			String jsonFeatureNameList=new Gson().toJson(featureList);
 			
 			jsonList = new Gson().toJson(list);
-			totalCount = notificationCount;
+			totalCount = notificationCount+count;
 
 			templateNameList = new Gson().toJson(templateNames);
 			obj.put(new String("TemplateDetailedList"), jsonList);
 			obj.put(new String("TemplateList"), templateNameList);
 
+			obj.put(new String("FeatureDetailedList"), jsonListeature);
+			obj.put(new String("FeatureList"), jsonFeatureNameList);
+			
 			obj.put(new String("TemplateNotificationCount"), notificationCount);
 			obj.put(new String("NotificationCount"), totalCount);
 
