@@ -59,6 +59,7 @@ public class TemplateSuggestionDao {
 			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(temp_id, '_V', temp_version) from templateconfig_basic_details where temp_status='Approved' and temp_id= ?)";
 			String query2 = "SELECT * FROM templateconfig_basic_details WHERE temp_id=?";
 
+
 			preparedStmt = connection.prepareStatement(query2);
 			preparedStmt.setString(1, tempId);
 
@@ -187,13 +188,7 @@ public class TemplateSuggestionDao {
 	}
 
 	public List<TemplateBasicConfigurationPojo> getDataGrid(String[] feature, String templateId) {
-
-		 
-
         String query = createQuery(feature.length);
-
- 
-
         // String length=feature.length;
         String query1 = "select * from templateconfig_basic_details  where concat(temp_id,'_V',temp_version) in(Select command_feature_template_id from c3p_template_transaction_feature_list where id in("
                 + query
@@ -207,17 +202,11 @@ public class TemplateSuggestionDao {
         List<String> getVersionListForTemplate = new ArrayList<String>();
         try {
             ps = connection.prepareStatement(query1);
-
- 
-
             for (int i = 1; i <= feature.length; i++) {
                 ps.setString(i, feature[i - 1]);
             }
             ps.setString(feature.length + 1, templateId + '%');
             List<String> list = Arrays.asList(feature);
-
- 
-
             if (list.contains("Routing Protocol")) {
                 // ps.setString(feature.length+2, String.valueOf(feature.length+2)); /* comment
                 // as not getting routing protocol template suggestion*/
@@ -227,15 +216,14 @@ public class TemplateSuggestionDao {
                 ps.setString(feature.length + 2, String.valueOf(feature.length));
             }
             rs = ps.executeQuery();
-
- 
-
             while (rs.next()) {
                 templateData = new TemplateBasicConfigurationPojo();
                 templateData.setTemplateId(rs.getString("temp_id").concat("_V").concat(rs.getString("temp_version")));
                 templateData.setComment(rs.getString("temp_comment_section"));
                 templateData.setNetworkType(rs.getString("temp_network_type"));
+                templateData.setAlias(rs.getString("temp_alias"));
                 getVersionListForTemplate.add(rs.getString("temp_version"));
+
                 listTemplate.add(templateData);
             }
             // int versionSize=getVersionListForTemplate.size();
