@@ -356,7 +356,7 @@ public class GetTemplateConfigurationData implements Observer {
 			temp = temp.replace("]", s);
 			getTemplateMngmntPojo.setFinalTemplate(temp);
 			String vendor = null, deviceFamily = null, model = null, deviceOs = null, osVersion = null, region = null,
-					comment = "", networkType = null;
+					comment = "", networkType = null, aliasName = null;
 			if (json.get("vendor") != null) {
 				vendor = json.get("vendor").toString();
 			} else {
@@ -400,12 +400,15 @@ public class GetTemplateConfigurationData implements Observer {
 			} else {
 				comment = "";
 			}
+			if (json.get("aliasName") != null) {
+				aliasName = json.get("aliasName").toString();
+			}
 			if (json.get("templateVersion") != null) {
 				tempIDafterSaveBasicDetails = dao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, templateVersion, comment, networkType);
+						templateId, templateVersion, comment, networkType, aliasName);
 			} else {
 				tempIDafterSaveBasicDetails = dao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, "1.0", comment, networkType);
+						templateId, "1.0", comment, networkType, aliasName);
 				getTemplateMngmntPojo.getTemplateid().substring(getTemplateMngmntPojo.getTemplateid().length() - 3);
 			}
 

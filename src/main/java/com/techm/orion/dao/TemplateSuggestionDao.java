@@ -56,11 +56,9 @@ public class TemplateSuggestionDao {
 		List<Integer> featuresChecked = new ArrayList<Integer>();
 		try {
 
-			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(TempId, '_V', templateVersion) from templateconfig_basic_details where templateStatus='Approved' and TempId= ?)";
-			String query2 = "SELECT * FROM templateconfig_basic_details WHERE TempId=?";
-			
-			//query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select tempAlias from templateconfig_basic_details where templateStatus='Approved' and TempId= ?)";
-			//String query2 = "SELECT * FROM templateconfig_basic_details WHERE TempId=?";
+			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(temp_id, '_V', temp_version) from templateconfig_basic_details where temp_status='Approved' and temp_id= ?)";
+			String query2 = "SELECT * FROM templateconfig_basic_details WHERE temp_id=?";
+
 
 			preparedStmt = connection.prepareStatement(query2);
 			preparedStmt.setString(1, tempId);
@@ -68,7 +66,7 @@ public class TemplateSuggestionDao {
 			rs = preparedStmt.executeQuery();
 			Set<String> networkTypeList = new HashSet<>();
 			while (rs.next()) {
-				networkTypeList.add(rs.getString("networkType"));
+				networkTypeList.add(rs.getString("temp_network_type"));
 			}
 			preparedStmt.close();
 			if (networkTypeList.size() == 1) {
@@ -192,9 +190,9 @@ public class TemplateSuggestionDao {
 	public List<TemplateBasicConfigurationPojo> getDataGrid(String[] feature, String templateId) {
         String query = createQuery(feature.length);
         // String length=feature.length;
-        String query1 = "select * from templateconfig_basic_details  where concat(TempId,'_V',templateVersion) in(Select command_feature_template_id from c3p_template_transaction_feature_list where id in("
+        String query1 = "select * from templateconfig_basic_details  where concat(temp_id,'_V',temp_version) in(Select command_feature_template_id from c3p_template_transaction_feature_list where id in("
                 + query
-                + ") and command_feature_template_id like ?  group by command_feature_template_id having count(distinct id)=?) and templateStatus='Approved'";
+                + ") and command_feature_template_id like ?  group by command_feature_template_id having count(distinct id)=?) and temp_status='Approved'";
         logger.info("Query=" + query1);
         connection = ConnectionFactory.getConnection();
         PreparedStatement ps = null;
@@ -220,11 +218,12 @@ public class TemplateSuggestionDao {
             rs = ps.executeQuery();
             while (rs.next()) {
                 templateData = new TemplateBasicConfigurationPojo();
-                templateData.setTemplateId(rs.getString("TempId").concat("_V").concat(rs.getString("templateVersion")));
-                templateData.setComment(rs.getString("comment_section"));
-                templateData.setNetworkType(rs.getString("networkType"));
-                templateData.setAlias(rs.getString("tempAlias"));
-                getVersionListForTemplate.add(rs.getString("templateVersion"));
+                templateData.setTemplateId(rs.getString("temp_id").concat("_V").concat(rs.getString("temp_version")));
+                templateData.setComment(rs.getString("temp_comment_section"));
+                templateData.setNetworkType(rs.getString("temp_network_type"));
+                templateData.setAlias(rs.getString("temp_alias"));
+                getVersionListForTemplate.add(rs.getString("temp_version"));
+
                 listTemplate.add(templateData);
             }
             // int versionSize=getVersionListForTemplate.size();
@@ -599,8 +598,8 @@ public class TemplateSuggestionDao {
 		ResultSet rs = null;
 		List<String> versionList = new ArrayList<>();
 		try {
-			String query1 = "SELECT * FROM templateconfig_basic_details WHERE TempId=? And templateVersion=?";
-			String query2 = "SELECT * FROM templateconfig_basic_details WHERE TempId=? order by templateVersion asc;";
+			String query1 = "SELECT * FROM templateconfig_basic_details WHERE temp_id=? And temp_version=?";
+			String query2 = "SELECT * FROM templateconfig_basic_details WHERE temp_id=? order by temp_version asc;";
 
 			PreparedStatement ps = connection.prepareStatement(query1);
 			ps.setString(1, templateId);
@@ -612,22 +611,22 @@ public class TemplateSuggestionDao {
 
 			String status = null;
 			while (rs.next()) {
-				basicDetails.put("vendor", rs.getString("TempVendor"));
-				basicDetails.put("deviceFamily", rs.getString("TempDeviceFamily"));
-				basicDetails.put("model", rs.getString("TempModel"));
-				basicDetails.put("region", rs.getString("TempRegion"));
-				basicDetails.put("os", rs.getString("TempDeviceOs"));
-				basicDetails.put("osVersion", rs.getString("TempOsVersion"));
-				basicDetails.put("creationDate", rs.getString("createdDate"));
-				basicDetails.put("raisedBy", rs.getString("createdby"));
-				basicDetails.put("networkType", rs.getString("networkType"));
-				String comment = rs.getString("comment_section");
+				basicDetails.put("vendor", rs.getString("temp_vendor"));
+				basicDetails.put("deviceFamily", rs.getString("temp_device_family"));
+				basicDetails.put("model", rs.getString("temp_model"));
+				basicDetails.put("region", rs.getString("temp_region"));
+				basicDetails.put("os", rs.getString("temp_device_os"));
+				basicDetails.put("osVersion", rs.getString("temp_os_version"));
+				basicDetails.put("creationDate", rs.getString("temp_created_date"));
+				basicDetails.put("raisedBy", rs.getString("temp_created_by"));
+				basicDetails.put("networkType", rs.getString("temp_network_type"));
+				String comment = rs.getString("temp_comment_section");
 				basicDetails.put("comment", comment);
-				status = rs.getString("templateStatus");
+				status = rs.getString("temp_status");
 			}
 			rs = ps2.executeQuery();
 			while (rs.next()) {
-				versionList.add(rs.getString("templateVersion"));
+				versionList.add(rs.getString("temp_version"));
 			}
 			int size = versionList.size();
 			String dbVersion = versionList.get(size - 1);
@@ -685,8 +684,8 @@ public class TemplateSuggestionDao {
 		List<Integer> featuresChecked = new ArrayList<Integer>();
 		try {
 
-			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(TempId, '_V', templateVersion) from templateconfig_basic_details where templateStatus='Approved' and TempId LIKE ?)";
-			String query2 = "SELECT * FROM templateconfig_basic_details WHERE TempId LIKE ?";
+			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(temp_id, '_V', temp_version) from templateconfig_basic_details where temp_status='Approved' and temp_id LIKE ?)";
+			String query2 = "SELECT * FROM templateconfig_basic_details WHERE temp_id LIKE ?";
 
 			preparedStmt = connection.prepareStatement(query2);
 			preparedStmt.setString(1, tempId+"%");
@@ -694,7 +693,7 @@ public class TemplateSuggestionDao {
 			rs = preparedStmt.executeQuery();
 			Set<String> networkTypeList = new HashSet<>();
 			while (rs.next()) {
-				networkTypeList.add(rs.getString("networkType"));
+				networkTypeList.add(rs.getString("temp_network_type"));
 			}
 			preparedStmt.close();
 			if (networkTypeList.size() == 1) {
