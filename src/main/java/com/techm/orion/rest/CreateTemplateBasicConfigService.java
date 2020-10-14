@@ -4,10 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -19,14 +17,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
-import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.service.TemplateManagementDetailsService;
+import com.techm.orion.service.TemplateManagementNewService;
 
 @Controller
 @RequestMapping("/createTemplate")
@@ -35,6 +32,8 @@ public class CreateTemplateBasicConfigService implements Observer {
 	private static final Logger logger = LogManager.getLogger(CreateTemplateBasicConfigService.class);
 	@Autowired
 	RequestInfoDao requestInfoDao;
+	@Autowired
+	private TemplateManagementNewService templateManagementNewService ;
 
 	TemplateManagementDao templateManagemnetDao = new TemplateManagementDao();
 	TemplateManagementDetailsService templateMngmntDtlService = new TemplateManagementDetailsService();
@@ -57,18 +56,15 @@ public class CreateTemplateBasicConfigService implements Observer {
 			TemplateBasicConfigurationPojo dto = gson.fromJson(params, TemplateBasicConfigurationPojo.class);
 			String vendor = dto.getVendor();
 			String deviceFamily = dto.getDeviceFamily();
-			String model = dto.getModel();
 			String os = dto.getDeviceOs();
 			String osVersion = dto.getOsVersion();
 			String region = dto.getRegion();
-			String templateId = dto.getTemplateId();
 			/*
 			 * if basic configuration update then updated series come otherwise it will be
 			 * null
 			 */
 			String series = dto.getSeries();
-			tempIDafterSaveBasicDetails = ConfigService.addTemplate(vendor, model, os, osVersion, region,
-					templateId);
+			tempIDafterSaveBasicDetails = templateManagementNewService.addTemplate(vendor, deviceFamily, os, osVersion, region);
 			if (tempIDafterSaveBasicDetails.containsKey("status")) {
 				String status = tempIDafterSaveBasicDetails.get("status");
 				if (status.equalsIgnoreCase("success")) {
@@ -89,7 +85,7 @@ public class CreateTemplateBasicConfigService implements Observer {
 					if (series != null) {
 						tempserieskey = series;
 					} else {
-						tempserieskey=vendor.toUpperCase() + deviceFamily + model.substring(0, 2);
+						tempserieskey=vendor.toUpperCase() + deviceFamily.toUpperCase();
 					}
 					boolean result = dao.updateMasterFeatureAndCommandTable(tempserieskey);
 					if (result) {
