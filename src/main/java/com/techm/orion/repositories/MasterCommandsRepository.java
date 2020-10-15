@@ -20,4 +20,7 @@ public interface MasterCommandsRepository extends
 	
 	List<CommandPojo>findBymasterFId(String featureid);
 	
+	
+
+	
 }

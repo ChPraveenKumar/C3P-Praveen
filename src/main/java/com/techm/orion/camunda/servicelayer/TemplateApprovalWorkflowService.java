@@ -27,20 +27,24 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.rest.CamundaServiceTemplateApproval;
 import com.techm.orion.rest.GetTemplateConfigurationData;
 
 @Controller
 @RequestMapping("/createTemplate")
-@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class TemplateApprovalWorkflowService implements Observer {
 	private static final Logger logger = LogManager.getLogger(TemplateApprovalWorkflowService.class);
 
 	@Autowired
 	MasterFeatureRepository masterFeatureRepository;
+	
+	@Autowired
+	TemplateFeatureRepo templateFeatureRepo;
 
 	
 	@POST
@@ -98,16 +102,26 @@ public class TemplateApprovalWorkflowService implements Observer {
 			JSONObject json = (JSONObject) parser.parse(string);
 			if (Boolean.parseBoolean(json.get("isTemplate").toString())) {
 				templateId = json.get("templateid").toString().replace("-", "_");
+				String templateidForFeatureExtraction=templateId;
 				if (json.get("templateVersion") != null) {
 					templateVersion = (json.get("templateVersion").toString());
 
 				} else {
-					templateVersion = templateId.substring(templateId.indexOf("V") + 1, templateId.length());
-					templateId = templateId.substring(0, templateId.indexOf("V") - 1);
+					String arr[]=templateId.split("_");
+					templateVersion = arr[1].substring(arr[1].indexOf("V") + 1, arr[1].length());
+					templateId = arr[0];
 
 				}
 				status = json.get("status").toString();
 				approverComment = json.get("comment").toString();
+				
+				//get feature id based of command type
+				List<TemplateFeatureEntity>listFeatures=templateFeatureRepo.findMasterFIdByCommand(templateidForFeatureExtraction);
+				
+				listFeatures.forEach(feature -> {
+					masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(), feature.getMasterFId(), "1",json.get("comment").toString(),"Admin");
+
+				});
 				response = templateSaveFlowService.updateTemplateStatus(templateId, templateVersion, status,
 						approverComment);
 				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(templateId, templateVersion);
@@ -120,12 +134,12 @@ public class TemplateApprovalWorkflowService implements Observer {
 				approverComment = json.get("comment").toString();
 				featureID=json.get("featureid").toString();
 				
-				List<MasterFeatureEntity>entity=masterFeatureRepository.findByFId(featureID);
+				MasterFeatureEntity entity=masterFeatureRepository.findByFId(featureID);
 				String comment=null;
-				String str=entity.get(0).getfComments();
+				String str=entity.getfComments();
 				if(str!=null)
 				{
-					comment=entity.get(0).getfComments().concat(approverComment);
+					comment=entity.getfComments().concat(approverComment);
 
 				}
 				else

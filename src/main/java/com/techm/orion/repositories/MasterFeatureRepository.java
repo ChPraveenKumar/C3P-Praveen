@@ -31,7 +31,7 @@ public interface MasterFeatureRepository extends
 	@Query(value = "select * from c3p_m_features where f_owner like :owner and f_status like :status", nativeQuery = true)
 	List<MasterFeatureEntity> getListByOwner(@Param("status") String status, @Param("owner") String owner);
 
-	List<MasterFeatureEntity>findByFId(String fId);
+	MasterFeatureEntity findByFId(String fId);
 	
 	@Transactional
 	@Modifying
@@ -39,6 +39,7 @@ public interface MasterFeatureRepository extends
 	int updateMasterFeatureStatus(@Param("status") String status, @Param("infoId") String infoId, @Param("version") String version,@Param("comment") String comment, @Param("owner") String owner);
 
 
+	
 }
 	
 	

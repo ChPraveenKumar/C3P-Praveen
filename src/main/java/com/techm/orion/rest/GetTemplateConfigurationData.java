@@ -445,8 +445,7 @@ public class GetTemplateConfigurationData implements Observer {
 			temp = temp.replace("[", "${(configRequest.");
 			temp = temp.replace("]", s);
 			getTemplateMngmntPojo.setFinalTemplate(temp);
-			String vendor = null, deviceFamily = null, model = null, deviceOs = null, osVersion = null, region = null,
-					comment = "", networkType = null, aliasName = null;
+			String vendor = null, deviceFamily = null, model = null, deviceOs = null, osVersion = null, region = null, comment = "", networkType = null, aliasName = null;
 			if (json.get("vendor") != null) {
 				vendor = json.get("vendor").toString();
 			} else {
@@ -495,12 +494,16 @@ public class GetTemplateConfigurationData implements Observer {
 				aliasName = json.get("aliasName").toString();
 			}
 			if (json.get("templateVersion") != null) {
-				tempIDafterSaveBasicDetails = dao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, templateVersion, comment, networkType, aliasName);
+				tempIDafterSaveBasicDetails = dao.addTemplate(vendor,
+						deviceFamily, model, deviceOs, osVersion, region,
+						templateId, templateVersion, comment, networkType,
+						aliasName);
 			} else {
-				tempIDafterSaveBasicDetails = dao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
+				tempIDafterSaveBasicDetails = dao.addTemplate(vendor,
+						deviceFamily, model, deviceOs, osVersion, region,
 						templateId, "1.0", comment, networkType, aliasName);
-				getTemplateMngmntPojo.getTemplateid().substring(getTemplateMngmntPojo.getTemplateid().length() - 3);
+				getTemplateMngmntPojo.getTemplateid().substring(
+						getTemplateMngmntPojo.getTemplateid().length() - 3);
 			}
 
 			if (tempIDafterSaveBasicDetails.containsKey("status")) {
@@ -537,25 +540,22 @@ public class GetTemplateConfigurationData implements Observer {
 				TemplateVersioningJSONModel versioningModelObject = null;
 				viewList = templateManagmntService.getTemplateListData();
 				// create treeview json
-				for (int i = 0; i < viewList.size(); i++) {
-
+				for (TemplateBasicConfigurationPojo view : viewList) {
 					boolean objectPrsent = false;
 					if (versioningModel.size() > 0) {
-						for (int j = 0; j < versioningModel.size(); j++) {
-							if (versioningModel
-									.get(j)
-									.getTemplateId()
-									.equalsIgnoreCase(
-											viewList.get(i).getTemplateId())) {
+						for (TemplateVersioningJSONModel versioningmodel : versioningModel) {
+							if (versioningmodel.getTemplateId()
+									.equalsIgnoreCase(view.getTemplateId())) {
 								objectPrsent = true;
 								break;
 							}
 						}
+
 					}
 					if (objectPrsent == false) {
 						versioningModelObject = new TemplateVersioningJSONModel();
 						objToAdd = new TemplateBasicConfigurationPojo();
-						objToAdd = viewList.get(i);
+						objToAdd = view;
 						versioningModelObject.setTemplateId(objToAdd
 								.getTemplateId());
 						versioningModelObject.setVendor(objToAdd.getVendor());
@@ -573,14 +573,11 @@ public class GetTemplateConfigurationData implements Observer {
 						versioningModelObject.setCreatedBy(objToAdd
 								.getCreatedBy());
 						versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();
-						for (int k = 0; k < viewList.size(); k++) {
-							if (viewList
-									.get(k)
-									.getTemplateId()
-									.equalsIgnoreCase(
-											versioningModelObject
-													.getTemplateId())) {
-								versioningModelChildList.add(viewList.get(k));
+
+						for (TemplateBasicConfigurationPojo view1 : viewList) {
+							if (view1.getTemplateId().equalsIgnoreCase(
+									versioningModelObject.getTemplateId())) {
+								versioningModelChildList.add(view);
 							}
 						}
 						versioningModelObject
@@ -835,38 +832,30 @@ public class GetTemplateConfigurationData implements Observer {
 
 					List<TemplateBasicConfigurationPojo> templatelistforcomment = dao
 							.getTemplateList();
-					for (int i = 0; i < templatelistforcomment.size(); i++) {
-						if (templatelistforcomment
-								.get(i)
-								.getTemplateId()
-								.equalsIgnoreCase(
-										json.get("templateid")
-												.toString()
-												.substring(
-														0,
-														json.get("templateid")
-																.toString()
-																.indexOf("V") - 1))) {
-							if (templatelistforcomment
-									.get(i)
-									.getVersion()
-									.equalsIgnoreCase(
-											json.get("templateid")
-													.toString()
-													.substring(
-															json.get(
-																	"templateid")
-																	.toString()
-																	.indexOf(
-																			"V") + 1,
-															json.get(
-																	"templateid")
-																	.toString()
-																	.length()))) {
-								comment = templatelistforcomment.get(i)
-										.getComment();
+					for (TemplateBasicConfigurationPojo listcomment : templatelistforcomment) {
+
+						if (listcomment.getTemplateId().equalsIgnoreCase(
+								json.get("templateid")
+										.toString()
+										.substring(
+												0,
+												json.get("templateid")
+														.toString()
+														.indexOf("V") - 1))) {
+							if (listcomment.getVersion().equalsIgnoreCase(
+									json.get("templateid")
+											.toString()
+											.substring(
+													json.get("templateid")
+															.toString()
+															.indexOf("V") + 1,
+													json.get("templateid")
+															.toString()
+															.length()))) {
+								comment = listcomment.getComment();
 							}
 						}
+
 					}
 				}
 				GetTemplateMngmntPojo getTemplateMngmntPojo = new GetTemplateMngmntPojo();
@@ -907,10 +896,10 @@ public class GetTemplateConfigurationData implements Observer {
 				obj.put(new String("comment"), comment);
 			} else {
 				/* It is a feature get the commands of a feature */
-				List<MasterFeatureEntity> featureList = masterFeatureRepository
+				MasterFeatureEntity featureList = masterFeatureRepository
 						.findByFId(json.get("featureid").toString());
-				if (featureList.size() > 0) {
-					MasterFeatureEntity feature = featureList.get(0);
+				if (featureList != null) {
+					MasterFeatureEntity feature = featureList;
 
 					if (feature.getfCategory() != null) {
 						if (feature.getfCategory().equalsIgnoreCase(

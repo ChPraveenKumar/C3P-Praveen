@@ -3,19 +3,14 @@ package com.techm.orion.rest;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,35 +19,27 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.jsoup.select.Evaluator.IsEmpty;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.JsonElement;
-import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.entitybeans.BasicConfiguration;
-import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.entitybeans.Series;
-import com.techm.orion.entitybeans.TestRules;
-import com.techm.orion.pojo.AddNewFeatureTemplateMngmntPojo;
 import com.techm.orion.pojo.AttribUIComponentPojo;
 import com.techm.orion.pojo.AttribValidationPojo;
 import com.techm.orion.pojo.CategoryMasterPojo;
 import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.GenericAtrribPojo;
-import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.PredefinedAtrribPojo;
 import com.techm.orion.pojo.PredefinedMappedAtrribPojo;
-import com.techm.orion.repositories.MasterAttribRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
@@ -68,46 +55,41 @@ import com.techm.orion.service.CategoryMasterService;
 @RequestMapping("/masterFeature")
 public class MasterFeatureController {
 
-	private static final Logger logger = LogManager
-			.getLogger(MasterFeatureController.class);
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
+	@Autowired
+	private MasterFeatureRepository masterFeatureRepository;
 
 	@Autowired
-	MasterFeatureRepository masterFeatureRepository;
+	private MasterCharacteristicsRepository masterCharacteristicsRepository;
 
 	@Autowired
-	MasterCharacteristicsRepository masterCharacteristicsRepository;
-
-	@Autowired
-	AttribSevice attribSevice;
+	private AttribSevice attribSevice;
 
 	@Autowired()
-	CategoryMasterService categoryMasterService;
+	private CategoryMasterService categoryMasterService;
 
 	@Autowired
-	CategoryDropDownService categoryDropDownservice;
+	private CategoryDropDownService categoryDropDownservice;
 
 	@Autowired
-	AttribCreateConfigService service;
+	private AttribCreateConfigService service;
 
 	@Autowired
-	MasterCommandsRepository masterCommandsRepo;
+	private MasterCommandsRepository masterCommandsRepo;
 
 	@Autowired
-	SeriesRepository masterSeriesRepo;
+	private SeriesRepository masterSeriesRepo;
 
 	/*
 	 * To get Validation, Category and UI component list.
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@GET
 	@Produces("application/json")
 	@RequestMapping(value = "/getAttribData", method = RequestMethod.GET, produces = "application/json")
-	public Response getFeatureAttribData() {
+	public ResponseEntity getFeatureAttribData() {
 		JSONObject obj = new JSONObject();
 
-		List<GenericAtrribPojo>genericAttribList=new ArrayList<GenericAtrribPojo>();
+		List<GenericAtrribPojo> genericAttribList = new ArrayList<GenericAtrribPojo>();
 		List<PredefinedMappedAtrribPojo> predefinedGenericMappedAtrribList = new ArrayList<PredefinedMappedAtrribPojo>();
 		List<PredefinedAtrribPojo> predefinedGenericAtrribList = new ArrayList<PredefinedAtrribPojo>();
 		GetAttribResponseEntity getAttribResponseEntity = new GetAttribResponseEntity();
@@ -131,25 +113,22 @@ public class MasterFeatureController {
 		response.add(getAttribResponseEntity);
 
 		obj.put(new String("output"), response);
-		return Response.status(200).entity(obj).build();
+		return new ResponseEntity(obj, HttpStatus.OK);
 
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/addFeature", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response saveFeature(@RequestBody String configRequest) {
+	public ResponseEntity saveFeature(@RequestBody String configRequest) {
 
 		JSONParser parser = new JSONParser();
 		JSONObject obj = new JSONObject();
 		Timestamp timestamp = null;
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
-		TemplateManagementDB templateDao = new TemplateManagementDB();
-
-		MasterCharacteristicsEntity masterCharacteristic = new MasterCharacteristicsEntity();
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 
-		List<MasterCharacteristicsEntity> masterCharacteristicList = new ArrayList<MasterCharacteristicsEntity>();
 		JSONObject json;
 		try {
 			json = (JSONObject) parser.parse(configRequest);
@@ -212,104 +191,28 @@ public class MasterFeatureController {
 
 			{
 				// This is a Basic Configuration
-				List<BasicConfiguration> commandList = new ArrayList<BasicConfiguration>();
-
-				BasicConfiguration basicConfigEntity = null;
 				// Compute sries id
 				String series = getSeries(masterFeature.getfVendor(),
 						masterFeature.getfFamily());
 				Set<Series> seriesSet = masterSeriesRepo.findBySeries(series);
 				if (null != seriesSet && !seriesSet.isEmpty()) {
-					return Response
-							.status(200)
-							.entity("Basic configuration for this series already exist")
-							.build();
+					obj.put("output",
+							"Basic configuration for this series already exist");
+
 				} else {
 					// Save features in master feature
+					
 
 					MasterFeatureEntity ent = masterFeatureRepository
 							.save(masterFeature);
-
 					ent.setfId("F" + ent.getfRowid());
 					masterFeatureRepository.save(ent);
-					if (json.containsKey("attribMappings")) {
-						JSONArray characteristicsArray = (JSONArray) (json
-								.get("attribMappings"));
-						for (int i = 0; i < characteristicsArray.size(); i++) {
-							JSONObject jsonObject = (JSONObject) characteristicsArray
-									.get(i);
-							masterCharacteristic = new MasterCharacteristicsEntity();
-							if (jsonObject.get("attribLabel") != null) {
-								masterCharacteristic.setcName(jsonObject.get(
-										"attribLabel").toString());
-							}
-
-							masterCharacteristic.setcUicomponent(jsonObject
-									.get("uiControl").toString());
-							if (jsonObject.get("category") != null) {
-								masterCharacteristic.setcCategory(jsonObject
-										.get("category").toString());
-
-							}
-							masterCharacteristic.setcFId(ent.getfId());
-							if (jsonObject.get("validations") != null) {
-								if (jsonObject.containsKey("validations")) {
-									if (jsonObject.get("validations") != null) {
-										JSONArray jsonValidationArr = (JSONArray) jsonObject
-												.get("validations");
-										String[] validationArr = new String[jsonValidationArr
-												.size()];
-										for (int j = 0; j < jsonValidationArr
-												.size(); j++) {
-											validationArr[j] = jsonValidationArr
-													.get(j).toString();
-										}
-										masterCharacteristic
-												.setcValidations(validationArr);
-									}
-								}
-							}
-							if (timestamp != null) {
-								masterCharacteristic.setcCreatedDate(timestamp);
-							}
-							// masterCharacteristic.setcCreatedBy(Global.loggedInUser);;
-							masterCharacteristic.setcCreatedBy("admin");
-							masterCharacteristicList.add(masterCharacteristic);
-						}
-
-					}
-
-					/* save attrib config */
-					masterCharacteristicList.stream().forEach(masterAttrib -> {
-						masterCharacteristicsRepository.save(masterAttrib);
-					});
-
-					Series seriesToAddd = new Series();
-					seriesToAddd.setSeries(series);
-					List<BasicConfiguration> basicConfigList = new ArrayList<BasicConfiguration>();
-					int sequenceId = 0;
-					for (int i = 0; i < cmdArray.size(); i++) {
-
-						JSONObject obj1 = (JSONObject) cmdArray.get(i);
-						basicConfigEntity = new BasicConfiguration();
-						if (obj1.get("commandLine") != null) {
-							basicConfigEntity.setConfiguration(obj1.get(
-									"commandLine").toString());
-							basicConfigEntity.setSequence_id(++sequenceId);
-							basicConfigEntity.setSeries(seriesToAddd);
-							basicConfigEntity.setmFId(ent.getfId());
-							basicConfigList.add(basicConfigEntity);
-							
-						}
-					}
-
-					Set<BasicConfiguration> basicConfigSet = new HashSet<BasicConfiguration>(
-							basicConfigList);
-
-					seriesToAddd.setBasicConfiguration(basicConfigSet);
-
-					masterSeriesRepo.save(seriesToAddd);
-					camundaService.initiateApprovalFlow(ent.getfId(), "1.0", "Admin");
+					saveMasterCharacteistics(json, masterFeature,ent.getfId());
+					// Save basic coniguration
+					Boolean isBasicConfigurationSaved = saveBasicConfiguration(
+							series, cmdArray, ent.getfId());
+					camundaService.initiateApprovalFlow(ent.getfId(), "1.0",
+							"Admin");
 
 					obj.put("output", "Feature Created");
 				}
@@ -319,60 +222,12 @@ public class MasterFeatureController {
 				// Save features in master feature
 				MasterFeatureEntity ent = masterFeatureRepository
 						.save(masterFeature);
-
 				ent.setfId("F" + ent.getfRowid());
 				masterFeatureRepository.save(ent);
-				if (json.containsKey("attribMappings")) {
-					JSONArray characteristicsArray = (JSONArray) (json
-							.get("attribMappings"));
-					for (int i = 0; i < characteristicsArray.size(); i++) {
-						JSONObject jsonObject = (JSONObject) characteristicsArray
-								.get(i);
-						masterCharacteristic = new MasterCharacteristicsEntity();
-						if (jsonObject.get("attribLabel") != null) {
-							masterCharacteristic.setcName(jsonObject.get(
-									"attribLabel").toString());
-						}
-
-						masterCharacteristic.setcUicomponent(jsonObject.get(
-								"uiControl").toString());
-						if (jsonObject.get("category") != null) {
-							masterCharacteristic.setcCategory(jsonObject.get(
-									"category").toString());
-
-						}
-						masterCharacteristic.setcFId(ent.getfId());
-						if (jsonObject.get("validations") != null) {
-							if (jsonObject.containsKey("validations")) {
-								if (jsonObject.get("validations") != null) {
-									JSONArray jsonValidationArr = (JSONArray) jsonObject
-											.get("validations");
-									String[] validationArr = new String[jsonValidationArr
-											.size()];
-									for (int j = 0; j < jsonValidationArr
-											.size(); j++) {
-										validationArr[j] = jsonValidationArr
-												.get(j).toString();
-									}
-									masterCharacteristic
-											.setcValidations(validationArr);
-								}
-							}
-						}
-						if (timestamp != null) {
-							masterCharacteristic.setcCreatedDate(timestamp);
-						}
-						// masterCharacteristic.setcCreatedBy(Global.loggedInUser);;
-						masterCharacteristic.setcCreatedBy("admin");
-						masterCharacteristicList.add(masterCharacteristic);
-					}
-
-				}
-				/* save attrib config */
-				masterCharacteristicList.stream().forEach(masterAttrib -> {
-					masterCharacteristicsRepository.save(masterAttrib);
-				});
-
+				
+				saveMasterCharacteistics(json, masterFeature,ent.getfId());
+				
+				//To save commands
 				CommandPojo commandPojo = null;
 				Integer sequenceId = masterCommandsRepo.getMaxSequenceId();
 
@@ -396,7 +251,8 @@ public class MasterFeatureController {
 
 				masterCommandsRepo.save(commandPojoList);
 				obj.put("output", "Feature Created");
-				camundaService.initiateApprovalFlow(ent.getfId(), "1.0", "Admin");
+				// camundaService.initiateApprovalFlow(ent.getfId(), "1.0",
+				// "Admin");
 
 			}
 		} catch (ParseException e) {
@@ -410,7 +266,7 @@ public class MasterFeatureController {
 			e.printStackTrace();
 		}
 
-		return Response.status(200).entity(obj).build();
+		return new ResponseEntity(obj, HttpStatus.OK);
 	}
 
 	String getSeries(String vendor, String family) {
@@ -422,10 +278,12 @@ public class MasterFeatureController {
 
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@POST
 	@RequestMapping(value = "/searchFeature", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response findFeatureDuplication(@RequestBody String searchRequest) {
+	public ResponseEntity findFeatureDuplication(
+			@RequestBody String searchRequest) {
 		JSONParser parser = new JSONParser();
 		JSONObject obj = new JSONObject();
 		JSONObject json;
@@ -442,42 +300,32 @@ public class MasterFeatureController {
 			}
 			if (json.containsKey("family")) {
 				masterFeature.setfFamily(json.get("family").toString());
-			}
-			else
-			{
+			} else {
 				masterFeature.setfFamily("ALL");
 
 			}
 			if (json.containsKey("os")) {
 				masterFeature.setfOs(json.get("os").toString());
-			}
-			else
-			{
+			} else {
 				masterFeature.setfOs("ALL");
 
 			}
 			if (json.containsKey("osVersion")) {
 				masterFeature.setfOsversion(json.get("osVersion").toString());
-			}
-			else
-			{
+			} else {
 				masterFeature.setfOsversion("ALL");
 
 			}
 			if (json.containsKey("region")) {
 				masterFeature.setfRegion(json.get("region").toString());
-			}
-			else
-			{
+			} else {
 				masterFeature.setfRegion("ALL");
 
 			}
 			if (json.containsKey("networkFunction")) {
 				masterFeature.setfNetworkfun(json.get("networkFunction")
 						.toString());
-			}
-			else
-			{
+			} else {
 				masterFeature.setfNetworkfun("ALL");
 			}
 
@@ -489,13 +337,10 @@ public class MasterFeatureController {
 							masterFeature.getfRegion(),
 							masterFeature.getfNetworkfun(),
 							masterFeature.getfFamily());
-			
-			if(result!=0)
-			{
+
+			if (result != 0) {
 				obj.put("isExist", true);
-			}
-			else
-			{
+			} else {
 				obj.put("isExist", false);
 
 			}
@@ -504,6 +349,105 @@ public class MasterFeatureController {
 			e.printStackTrace();
 		}
 
-		return Response.status(200).entity(obj).build();
+		return new ResponseEntity(obj, HttpStatus.OK);
+	}
+
+	private Boolean saveBasicConfiguration(String series, JSONArray cmdArray,
+			String mFId) {
+		Boolean result = false;
+		Series seriesToAddd = new Series();
+		seriesToAddd.setSeries(series);
+		List<BasicConfiguration> basicConfigList = new ArrayList<BasicConfiguration>();
+		int sequenceId = 0;
+		BasicConfiguration basicConfigEntity = null;
+		for (int i = 0; i < cmdArray.size(); i++) {
+
+			JSONObject obj1 = (JSONObject) cmdArray.get(i);
+			basicConfigEntity = new BasicConfiguration();
+			if (obj1.get("commandLine") != null) {
+				basicConfigEntity.setConfiguration(obj1.get("commandLine")
+						.toString());
+				basicConfigEntity.setSequence_id(++sequenceId);
+				basicConfigEntity.setSeries(seriesToAddd);
+				basicConfigEntity.setmFId(mFId);
+				basicConfigList.add(basicConfigEntity);
+
+			}
+		}
+
+		Set<BasicConfiguration> basicConfigSet = new HashSet<BasicConfiguration>(
+				basicConfigList);
+
+		seriesToAddd.setBasicConfiguration(basicConfigSet);
+
+		Series colsAdded = masterSeriesRepo.save(seriesToAddd);
+		if (colsAdded != null) {
+			result = true;
+		}
+		return result;
+	}
+	
+	private Boolean saveMasterCharacteistics(JSONObject json, MasterFeatureEntity masterFeature, String fId)
+	{
+		Boolean result=false;
+		List<MasterCharacteristicsEntity> masterCharacteristicList = new ArrayList<MasterCharacteristicsEntity>();
+		Timestamp timestamp = null;
+
+		MasterCharacteristicsEntity masterCharacteristic = null;
+
+		if (json.containsKey("attribMappings")) {
+			JSONArray characteristicsArray = (JSONArray) (json
+					.get("attribMappings"));
+			for (int i = 0; i < characteristicsArray.size(); i++) {
+				JSONObject jsonObject = (JSONObject) characteristicsArray
+						.get(i);
+				masterCharacteristic = new MasterCharacteristicsEntity();
+				if (jsonObject.get("attribLabel") != null) {
+					masterCharacteristic.setcName(jsonObject.get(
+							"attribLabel").toString());
+				}
+
+				masterCharacteristic.setcUicomponent(jsonObject
+						.get("uiControl").toString());
+				if (jsonObject.get("category") != null) {
+					masterCharacteristic.setcCategory(jsonObject
+							.get("category").toString());
+
+				}
+				masterCharacteristic.setcFId(fId);
+				if (jsonObject.get("validations") != null) {
+					if (jsonObject.containsKey("validations")) {
+						if (jsonObject.get("validations") != null) {
+							JSONArray jsonValidationArr = (JSONArray) jsonObject
+									.get("validations");
+							String[] validationArr = new String[jsonValidationArr
+									.size()];
+							for (int j = 0; j < jsonValidationArr
+									.size(); j++) {
+								validationArr[j] = jsonValidationArr
+										.get(j).toString();
+							}
+							masterCharacteristic
+									.setcValidations(validationArr);
+						}
+					}
+				}
+				timestamp = new Timestamp(new Date().getTime());
+				if (timestamp != null) {
+					masterCharacteristic.setcCreatedDate(timestamp);
+				}
+				// masterCharacteristic.setcCreatedBy(Global.loggedInUser);;
+				masterCharacteristic.setcCreatedBy("admin");
+				masterCharacteristicList.add(masterCharacteristic);
+			}
+
+		}
+
+		/* save attrib config */
+		masterCharacteristicList.stream().forEach(masterAttrib -> {
+			masterCharacteristicsRepository.save(masterAttrib);
+		});
+		
+		return result;
 	}
 }
