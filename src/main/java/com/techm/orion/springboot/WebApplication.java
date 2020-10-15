@@ -14,11 +14,13 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
 @EnableAutoConfiguration
+@EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "com.techm.orion.repositories")
-@EntityScan(basePackages = "com.techm.orion.entitybeans")
+@EntityScan(basePackages = {"com.techm.orion.entitybeans","com.techm.orion.pojo"})
 @ComponentScan(basePackages = "com.techm.orion")
 @EnableSpringConfigured
 @EnableAsync

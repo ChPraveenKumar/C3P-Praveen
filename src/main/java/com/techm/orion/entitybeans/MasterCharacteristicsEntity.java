@@ -34,7 +34,7 @@ public class MasterCharacteristicsEntity implements Serializable
 	private String cId;
 
 	@Column(name = "c_name")
-	private int cName;
+	private String cName;
 
 	@Column(name = "c_f_id")
 	private String cFId;
@@ -72,6 +72,18 @@ public class MasterCharacteristicsEntity implements Serializable
 	@Column(name = "c_type")
 	private String cType;
 
+	public String getcCategory() {
+		return cCategory;
+	}
+
+	public void setcCategory(String cCategory) {
+		this.cCategory = cCategory;
+	}
+
+	@Column(name = "c_category")
+	private String cCategory;
+
+
 	public int getcRowid() {
 		return cRowid;
 	}
@@ -88,11 +100,11 @@ public class MasterCharacteristicsEntity implements Serializable
 		this.cId = cId;
 	}
 
-	public int getcName() {
+	public String getcName() {
 		return cName;
 	}
 
-	public void setcName(int cName) {
+	public void setcName(String cName) {
 		this.cName = cName;
 	}
 
@@ -132,8 +144,13 @@ public class MasterCharacteristicsEntity implements Serializable
 		return cValidations;
 	}
 
-	public void setcValidations(String cValidations) {
-		this.cValidations = cValidations;
+	public void setcValidations(String[] cValidations) {
+		StringBuffer sb = new StringBuffer();
+	      for(int i = 0; i < cValidations.length; i++) {
+	         sb.append(cValidations[i]);
+	      }
+	      String str = sb.toString();
+		this.cValidations = str;
 	}
 
 	public String getcCreatedBy() {

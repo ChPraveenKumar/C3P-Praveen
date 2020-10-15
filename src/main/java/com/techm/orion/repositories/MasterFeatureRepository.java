@@ -1,6 +1,11 @@
 package com.techm.orion.repositories;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,5 +15,31 @@ import com.techm.orion.entitybeans.MasterFeatureEntity;
 @Transactional
 public interface MasterFeatureRepository extends
 		JpaRepository<MasterFeatureEntity, Long> {
+	
+	
+	@Query(value = "select count(f_id) from c3p_m_features where f_vendor like :vendor and f_name like :featureName"
+			+ " and f_os like :os and f_osversion like :osVersion and f_region like :region and f_networkfun like :networkType and f_family like :family", nativeQuery = true)
+	int getCountByFVendorAndFNameAndFOsAndFOsversionAndFRegionAndFNetworkfunAndFFamily(
+			@Param("vendor") String vendor,@Param("featureName") String featureName, @Param("os") String os, @Param("osVersion") String osVersion,
+			@Param("region") String region, @Param("networkType") String networkType,@Param("family") String family);
 
+
+	@Query(value = "select count(f_id) from c3p_m_features where f_status like :status and f_owner like :owner", nativeQuery = true)
+	int getCountByFStatusAndUser(@Param("status") String status, @Param("owner") String owner);
+
+
+	@Query(value = "select * from c3p_m_features where f_owner like :owner and f_status like :status", nativeQuery = true)
+	List<MasterFeatureEntity> getListByOwner(@Param("status") String status, @Param("owner") String owner);
+
+	MasterFeatureEntity findByFId(String fId);
+	
+	@Transactional
+	@Modifying
+	@Query(value="UPDATE c3p_m_features SET f_status = :status, f_comments = :comment, f_owner = :owner WHERE f_id = :infoId and f_version = :version", nativeQuery = true)
+	int updateMasterFeatureStatus(@Param("status") String status, @Param("infoId") String infoId, @Param("version") String version,@Param("comment") String comment, @Param("owner") String owner);
+
+
+	
 }
+	
+	

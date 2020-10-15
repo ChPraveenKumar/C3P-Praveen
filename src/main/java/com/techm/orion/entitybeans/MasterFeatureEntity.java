@@ -95,6 +95,31 @@ public class MasterFeatureEntity implements Serializable
 
 	@Column(name = "f_comments")
 	private String fComments;
+	
+	@Column(name = "f_status")
+	private String fStatus;
+	
+
+	@Column(name = "f_owner")
+	private String fOwner;
+
+	
+	public String getfStatus() {
+		return fStatus;
+	}
+
+	public void setfStatus(String fStatus) {
+		this.fStatus = fStatus;
+	}
+
+	public String getfOwner() {
+		return fOwner;
+	}
+
+	public void setfOwner(String fOwner) {
+		this.fOwner = fOwner;
+	}
+
 
 	public String getfComments() {
 		return fComments;

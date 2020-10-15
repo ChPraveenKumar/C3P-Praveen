@@ -55,7 +55,7 @@ public class TpmgmtController {
 		Set<Series> existingseries = new HashSet<>();
 		String tempserieskey = null;
 		if (vendor != null && deviceFamily != null && model != null) {
-			tempserieskey = vendor.toUpperCase() + deviceFamily + model.substring(0, 2);
+			tempserieskey = vendor.toUpperCase() + deviceFamily.toUpperCase();
 			existingseries = seriesRepository.findBySeries(tempserieskey);
 		}
 		List<Series> extserieslst = new ArrayList<Series>();
