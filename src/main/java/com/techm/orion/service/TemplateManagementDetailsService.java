@@ -62,15 +62,6 @@ public class TemplateManagementDetailsService {
 		return templatecommandList;
 	}
 
-	public List<GetTemplateMngmntActiveDataPojo> getDataForLeftPanel(String templateId, String tempKey,
-			String currentTemplateId, boolean flag) throws Exception {
-
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		List<GetTemplateMngmntActiveDataPojo> templatecommandList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
-		templatecommandList = templateManagementDao.getDataForLeftPanel(templateId, tempKey, currentTemplateId, flag);
-		return templatecommandList;
-	}
-
 	public List<GetTemplateMngmntPojo> getCommandForActivefeatures(String templateId) throws Exception {
 
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
@@ -165,13 +156,6 @@ public class TemplateManagementDetailsService {
 		boolean result = false;
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
 		result = templateManagementDao.updateTemplateDB(tempID);
-		return result;
-	}
-
-	public boolean updateTemplateDBonEdit(String tempID, String previousVersion, String tempKey) throws SQLException {
-		boolean result = false;
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		result = templateManagementDao.updateTemplateDBEdit(tempID, previousVersion, tempKey);
 		return result;
 	}
 

@@ -16,7 +16,7 @@ public class AddNewFeatureTemplateMngmntPojo {
 	private String selectedFeature;
 	private String finalTemplate;
 	private List<CommandPojo> cmdList=new ArrayList<CommandPojo>();
-	
+	private String masterFeatureId;
 	
 	
 	public List<CommandPojo> getCmdList() {
@@ -79,7 +79,11 @@ public class AddNewFeatureTemplateMngmntPojo {
 	public void setCommandValue(String commandValue) {
 		this.commandValue = commandValue;
 	}
-	
-	
+	public String getMasterFeatureId() {
+		return masterFeatureId;
+	}
+	public void setMasterFeatureId(String masterFeatureId) {
+		this.masterFeatureId = masterFeatureId;
+	}
 	
 }

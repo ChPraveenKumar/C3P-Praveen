@@ -3,10 +3,12 @@ package com.techm.orion.mapper;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.techm.orion.entitybeans.MasterAttributes;
+import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.pojo.AttribCreateConfigJson;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CategoryDropDownPojo;
@@ -66,6 +68,32 @@ public class AttribCreateConfigResponceMapper {
 			}
 			jsonList.add(attribJson);
 
+		}
+
+		return jsonList;
+
+	}
+
+	public List<AttribCreateConfigJson> convertCharacteristicsAttribPojoToJson(
+			List<MasterCharacteristicsEntity> pojoList) {
+		List<AttribCreateConfigJson> jsonList = new ArrayList<AttribCreateConfigJson>();
+
+		for (MasterCharacteristicsEntity entity : pojoList) {
+			AttribCreateConfigJson attribJson = new AttribCreateConfigJson();
+			attribJson.setId(entity.getcRowid());
+			attribJson.setLabel(entity.getcName());
+			attribJson.setName("");
+			attribJson.setuIComponent(entity.getcUicomponent());
+			String validations = entity.getcValidations();
+			validations = StringUtils.substringAfter(validations, "[");
+			validations = StringUtils.substringBefore(validations, "]");
+			String[] validationArray = validations.split(",");
+			attribJson.setValidations(validationArray);
+			attribJson.setType(entity.getcType());
+			if (entity.getcCategory() != null) {
+				attribJson.setCategotyLabel(entity.getcCategory());
+			}
+			jsonList.add(attribJson);
 		}
 
 		return jsonList;

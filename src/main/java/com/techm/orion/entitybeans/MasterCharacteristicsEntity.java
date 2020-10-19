@@ -3,15 +3,11 @@ package com.techm.orion.entitybeans;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -51,6 +47,7 @@ public class MasterCharacteristicsEntity implements Serializable
 	@Column(name = "c_validations")
 	private String cValidations;
 
+
 	@Column(name = "c_created_by")
 	private String cCreatedBy;
 
@@ -72,6 +69,15 @@ public class MasterCharacteristicsEntity implements Serializable
 	@Column(name = "c_type")
 	private String cType;
 
+
+	public String getcValidations() {
+		return cValidations;
+	}
+
+	public void setcValidations(String cValidations) {
+		this.cValidations = cValidations;
+	}
+	
 	public String getcCategory() {
 		return cCategory;
 	}
@@ -138,19 +144,6 @@ public class MasterCharacteristicsEntity implements Serializable
 
 	public void setfFlag(String fFlag) {
 		this.fFlag = fFlag;
-	}
-
-	public String getcValidations() {
-		return cValidations;
-	}
-
-	public void setcValidations(String[] cValidations) {
-		StringBuffer sb = new StringBuffer();
-	      for(int i = 0; i < cValidations.length; i++) {
-	         sb.append(cValidations[i]);
-	      }
-	      String str = sb.toString();
-		this.cValidations = str;
 	}
 
 	public String getcCreatedBy() {

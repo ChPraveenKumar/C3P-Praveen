@@ -6,18 +6,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
@@ -31,7 +25,7 @@ public class TemplateManagementDB {
 	public int updateFeatureTablesForNewCommand(AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo) {
 		ResultSet rs = null;
 		int idToSetInCommandTable = 0;
-		String query = "Insert into c3p_template_master_feature_list(comand_display_feature,command_parent_feature,command_type,hasParent,is_Save,isMandate) values(?,?,?,?,?,?)";
+		String query = "Insert into c3p_template_master_feature_list(comand_display_feature,command_parent_feature,command_type,hasParent,is_Save,isMandate,master_f_id) values(?,?,?,?,?,?,?)";
 		String selQuery = "select * from c3p_template_master_feature_list";
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
@@ -45,6 +39,8 @@ public class TemplateManagementDB {
 			preparedStmt.setString(3, addNewFeatureTemplateMngmntPojo.getTemplateid());
 			preparedStmt.setInt(5, 0);
 			preparedStmt.setInt(6, 1);
+			preparedStmt.setString(7, addNewFeatureTemplateMngmntPojo.getMasterFeatureId());
+			
 			if (("Add New Feature").equalsIgnoreCase(addNewFeatureTemplateMngmntPojo.getParentName())) {
 				preparedStmt.setInt(4, 0);
 			} else {
@@ -76,7 +72,7 @@ public class TemplateManagementDB {
 
 	public List<CommandPojo> updateMasterCommandTableWithNewCommand(
 			AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo, int idToSetInCommandTable) {
-		String query1 = "Insert into c3p_template_master_command_list (command_id,command_value,command_sequence_id,command_type,no_form_command) values (?,?,?,?,?)";
+		String query1 = "Insert into c3p_template_master_command_list (command_id,command_value,command_sequence_id,command_type,no_form_command,checked) values (?,?,?,?,?,?)";
 		ResultSet rs = null;
 		int lastCount = 0;
 		List<CommandPojo> commandPojoList = new ArrayList<CommandPojo>();
@@ -101,10 +97,12 @@ public class TemplateManagementDB {
 					preparedStmt1.setInt(3, ++lastCount);
 					preparedStmt1.setString(4, addNewFeatureTemplateMngmntPojo.getTemplateid());
 					if (commandPojo.getNo_command_value() != null
-							|| commandPojo.getNo_command_value().equalsIgnoreCase("")) {
+							&& commandPojo.getNo_command_value().equalsIgnoreCase("")) {
 						preparedStmt1.setString(5, commandPojo.getNo_command_value());
-					}
-
+					}	else {
+						preparedStmt1.setString(5,null);
+					}				
+					preparedStmt1.setBoolean(6, commandPojo.isChecked());
 					preparedStmt1.executeUpdate();
 				} catch (SQLException exe) {
 					logger.error("SQL Exception in updateMasterCommandTableWithNewCommand insert method "
@@ -125,179 +123,6 @@ public class TemplateManagementDB {
 			DBUtil.close(rs);
 		}
 		return commandPojoList;
-	}
-
-	public List<GetTemplateMngmntActiveDataPojo> getDataForRightPanel(String templateId, boolean selectAll)
-			throws SQLException {
-		TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
-		String templateVersion, templateIdAndVersion = null;
-		JSONParser parser = new JSONParser();
-		JSONObject json = new JSONObject();
-		String tempserieskey = null;
-		String masterFeatureLisQuery1 = "select cmdlist.command_value,cmdlist.command_sequence_id,flist.check_default,flist.hasParent,flist.id from c3p_template_master_command_list cmdlist ,c3p_template_master_feature_list flist where cmdlist.command_id=flist.id and (flist.command_type = ? or flist.command_type=?) order by cmdlist.command_sequence_id";
-		String masterFeatureLisQuery2 = "select cmdlist.command_value,cmdlist.command_sequence_id,flist.check_default,flist.hasParent,flist.id from c3p_template_master_command_list cmdlist ,c3p_template_master_feature_list flist where cmdlist.command_id=flist.id and (flist.command_type = ?) order by cmdlist.command_sequence_id";
-		String query2 = "SELECT * FROM c3p_template_transaction_command_list where c3p_template_transaction_command_list.command_template_id = ?";
-
-		try {
-			json = (JSONObject) parser.parse(templateId);
-			if (json.containsKey("templateid")) {
-				if (json.get("templateid") != null && !json.get("templateid").equals("")) {
-					if (json.get("templateid").toString().contains("_V")) {
-						templateId = json.get("templateid").toString().substring(0,
-								json.get("templateid").toString().length() - 6);
-					} else {
-						templateId = json.get("templateid").toString();
-					}
-				}
-			}
-			if (json.containsKey("templateVersion")) {
-				if (json.get("templateVersion") != null && !json.get("templateVersion").equals("")) {
-					templateVersion = json.get("templateVersion").toString();
-					templateIdAndVersion = templateId + "_V" + templateVersion;
-				} else {
-					templateVersion = "1.0";
-					templateIdAndVersion = templateId + "_V" + templateVersion;
-				}
-			}
-			String vendor = null;
-			String deviceFamily = null;
-			String model = null;
-			if (json.containsKey("vendor")) {
-				if (json.get("vendor") != null) {
-					vendor = json.get("vendor").toString();
-				}
-				if (json.get("deviceFamily") != null) {
-					deviceFamily = json.get("deviceFamily").toString();
-				}
-				if (json.get("model") != null) {
-					model = json.get("model").toString();
-				}
-
-				if (vendor != null && deviceFamily != null && model != null) {
-					tempserieskey = vendor + deviceFamily + model.substring(0, 2);
-				}
-				/* if master configuration updated that time series is not null */
-				if (json.containsKey("series")) {
-					if (json.get("series") != null && !json.get("series").toString().equals("")) {
-						tempserieskey = json.get("series").toString();
-					}
-				else {
-					/*
-					 * Dhanshri Mane 14-1-2020 get the series according to template id
-					 */
-					tempserieskey = templatemanagementDao.getSeriesId(templateIdAndVersion, tempserieskey);
-					tempserieskey = StringUtils.substringAfter(tempserieskey, "Generic_");
-
-				}
-				}
-			}
-
-		} catch (ParseException exe) {
-			logger.error("Parse Exception in getDataForRightPanel method " + exe.getMessage());
-		}
-
-		GetTemplateMngmntActiveDataPojo getTemplateMngmntActiveDataPojo = null;
-		List<GetTemplateMngmntActiveDataPojo> dataList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
-		ResultSet rs1 = null, rs2 = null;
-		Map<String, Integer> positionMap = new HashMap<String, Integer>();
-		Map<String, Integer> commandSequenceIdforSelectedTemplete = new HashMap<String, Integer>();
-		try {
-
-			if (json.get("series") == null || json.get("series").toString().equals("")) {
-
-				try (Connection connection = ConnectionFactory.getConnection();
-						PreparedStatement preparedStmt = connection.prepareStatement(masterFeatureLisQuery1);
-						PreparedStatement preparedStmt2 = connection.prepareStatement(query2)) {
-					if (tempserieskey != null) {
-						preparedStmt.setString(1, "Generic_" + tempserieskey);
-					} else {
-						preparedStmt.setString(1, "Generic");
-					}
-					preparedStmt.setString(2, templateIdAndVersion);
-
-					preparedStmt2.setString(1, templateIdAndVersion);
-					rs2 = preparedStmt2.executeQuery();
-					rs1 = preparedStmt.executeQuery();
-					while (rs2.next()) {
-						getTemplateMngmntActiveDataPojo = new GetTemplateMngmntActiveDataPojo();
-						getTemplateMngmntActiveDataPojo.setCommandSequenceId(
-								rs2.getString("c3p_template_transaction_command_list.command_sequence_id"));
-
-						getTemplateMngmntActiveDataPojo.setActive(true);
-						getTemplateMngmntActiveDataPojo
-								.setId(rs2.getInt("c3p_template_transaction_command_list.command_id"));
-						getTemplateMngmntActiveDataPojo
-								.setPosition(rs2.getInt("c3p_template_transaction_command_list.command_position"));
-						if (rs2.getInt("c3p_template_transaction_command_list.is_save") == 1) {
-							commandSequenceIdforSelectedTemplete.put(
-									rs2.getString("c3p_template_transaction_command_list.command_sequence_id"),
-									rs2.getInt("c3p_template_transaction_command_list.command_position"));
-						}
-						positionMap.put(rs2.getString("c3p_template_transaction_command_list.command_sequence_id"),
-								rs2.getInt("c3p_template_transaction_command_list.command_position"));
-					}
-					dataList=getResultData(rs1,positionMap,commandSequenceIdforSelectedTemplete);
-
-				} catch (SQLException exe) {
-					logger.error("SQL Exception in updateTransactionCommandForNewTemplate insert method "
-							+ exe.getMessage());
-				}
-
-			} else {
-				try (Connection connection = ConnectionFactory.getConnection();
-						PreparedStatement preparedStmt = connection.prepareStatement(masterFeatureLisQuery2)) {
-					if (tempserieskey != null) {
-						preparedStmt.setString(1, "Generic_" + tempserieskey);
-					} else {
-						preparedStmt.setString(1, "Generic");
-					}
-					rs1 = preparedStmt.executeQuery();
-					dataList=getResultData(rs1,positionMap,commandSequenceIdforSelectedTemplete);
-
-				} catch (SQLException exe) {
-					logger.error("SQL Exception in updateTransactionCommandForNewTemplate insert method "
-							+ exe.getMessage());
-				}
-			
-			
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(rs1);
-			DBUtil.close(rs2);
-		}
-		dataList.sort((o1, o2) -> o1.getPosition() - o2.getPosition());
-		return dataList;
-	}
-
-	private List<GetTemplateMngmntActiveDataPojo> getResultData(ResultSet rs1, Map<String, Integer> positionMap, Map<String, Integer> commandSequenceIdforSelectedTemplete) throws NumberFormatException, SQLException {
-		List<GetTemplateMngmntActiveDataPojo> dataList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
-		
-		GetTemplateMngmntActiveDataPojo getTemplateMngmntActiveDataPojo = null;
-		while (rs1.next()) {
-			getTemplateMngmntActiveDataPojo = new GetTemplateMngmntActiveDataPojo();
-			getTemplateMngmntActiveDataPojo.setCommandValue(rs1.getString("cmdlist.command_value"));
-			getTemplateMngmntActiveDataPojo.setCommandSequenceId(rs1.getString("cmdlist.command_sequence_id"));
-			getTemplateMngmntActiveDataPojo.setActiveFlag(rs1.getInt("flist.check_default"));
-			if (getTemplateMngmntActiveDataPojo.getActiveFlag() == 1 || commandSequenceIdforSelectedTemplete
-					.containsKey(rs1.getString("cmdlist.command_sequence_id"))) {
-				getTemplateMngmntActiveDataPojo.setActive(true);
-			}
-			if (positionMap.isEmpty()) {
-				getTemplateMngmntActiveDataPojo
-						.setPosition(Integer.parseInt(getTemplateMngmntActiveDataPojo.getCommandSequenceId()));
-			} else {
-				getTemplateMngmntActiveDataPojo
-						.setPosition(positionMap.get(rs1.getString("cmdlist.command_sequence_id")));
-			}
-
-			getTemplateMngmntActiveDataPojo.setHasParent(rs1.getInt("flist.hasParent"));
-			getTemplateMngmntActiveDataPojo.setId(rs1.getInt("flist.id"));
-			dataList.add(getTemplateMngmntActiveDataPojo);
-		}
-		return dataList;
-		
 	}
 
 	public int updateTransactionCommandForNewTemplate(AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo) {

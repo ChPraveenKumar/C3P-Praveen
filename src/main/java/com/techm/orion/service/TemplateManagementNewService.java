@@ -20,17 +20,6 @@ public class TemplateManagementNewService {
 	@Autowired
 	private ErrorValidationRepository errorValidationRepository;
 
-	public List<GetTemplateMngmntActiveDataPojo> getDataForRightPanel(String templateId, boolean selectAll)
-			throws Exception {
-
-		TemplateManagementDB templateManagementDB = new TemplateManagementDB();
-
-		List<GetTemplateMngmntActiveDataPojo> templateactiveList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
-		templateactiveList = templateManagementDB.getDataForRightPanel(templateId, selectAll);
-
-		return templateactiveList;
-	}
-
 	public List<GetTemplateMngmntActiveDataPojo> getDataForRightPanelOnEditTemplate(String templateId,
 			boolean selectAll) throws Exception {
 
@@ -41,40 +30,34 @@ public class TemplateManagementNewService {
 
 		return templateactiveList;
 	}
-	
+
 	/*
-	 *  Create new addTemplate method for Template name to include 3 more characters
+	 * Create new addTemplate method for Template name to include 3 more characters
 	 */
 	public Map<String, String> addTemplate(String vendor, String family, String os, String osVersion, String region) {
 		Map<String, String> result = new HashMap<String, String>();
-		String tempNumber = null,finalTempId=null, tempId = null;
+		String tempNumber = null, finalTempId = null, tempId = null;
 		try {
-			if (vendor != null && family !=null && os!=null && osVersion !=null && region !=null) {
-				tempId = templateConfigBasicDetailsRepository.createTemplateBasicConfig(os, vendor,
-						family, osVersion, region);
+			if (vendor != null && family != null && os != null && osVersion != null && region != null) {
+				tempId = templateConfigBasicDetailsRepository.createTemplateBasicConfig(os, vendor, family, osVersion,
+						region);
 				if (tempId != null && !tempId.isEmpty()) {
-						tempNumber = tempId.substring(tempId.length() - 2);
-						tempNumber = String.format("%02d", Integer.parseInt(tempNumber) + 1);
-						if (Integer.parseInt(tempNumber) > 99)
-						{
-							tempNumber = "T" + tempNumber;
-							finalTempId = tempId.replace(
-									tempId.substring(tempId.length() - 3),
-									tempNumber);
-							throw new Exception(errorValidationRepository.findByErrorId("C3P_TM_001"));
-						}
-						else {
-							tempNumber = "T" + tempNumber;
-							finalTempId = tempId.replace(
-									tempId.substring(tempId.length() - 3),
-									tempNumber);
-							result.put("status", "success");
-							result.put("errorCode", null);
-							result.put("errorType", null);
-							result.put("errorDescription", null);
-							result.put("version", "1.0");
-							result.put("tempid", finalTempId);
-						}
+					tempNumber = tempId.substring(tempId.length() - 2);
+					tempNumber = String.format("%02d", Integer.parseInt(tempNumber) + 1);
+					if (Integer.parseInt(tempNumber) > 99) {
+						tempNumber = "T" + tempNumber;
+						finalTempId = tempId.replace(tempId.substring(tempId.length() - 3), tempNumber);
+						throw new Exception(errorValidationRepository.findByErrorId("C3P_TM_001"));
+					} else {
+						tempNumber = "T" + tempNumber;
+						finalTempId = tempId.replace(tempId.substring(tempId.length() - 3), tempNumber);
+						result.put("status", "success");
+						result.put("errorCode", null);
+						result.put("errorType", null);
+						result.put("errorDescription", null);
+						result.put("version", "1.0");
+						result.put("tempid", finalTempId);
+					}
 				} else {
 					tempNumber = "T01";
 					finalTempId = getTemplateID(vendor, family, os, osVersion, region, tempNumber);
@@ -85,7 +68,7 @@ public class TemplateManagementNewService {
 					result.put("version", "1.0");
 					result.put("tempid", finalTempId);
 				}
-			} 
+			}
 		} catch (Exception e) {
 			result.put("tempid", finalTempId);
 			result.put("status", "failure");
@@ -97,11 +80,12 @@ public class TemplateManagementNewService {
 		return result;
 	}
 
-	public String getTemplateID(String vendor, String family, String os, String osVersion, String region, String tempNumber) {
+	public String getTemplateID(String vendor, String family, String os, String osVersion, String region,
+			String tempNumber) {
 		String temp = null;
 		// will be modified once edit flow is enabled have to check version and
 		// accordingliy append the version
-		if(vendor!= null && family != null && os != null && osVersion != null && region != null && tempNumber != null)
+		if (vendor != null && family != null && os != null && osVersion != null && region != null && tempNumber != null)
 			temp = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase() + family.toUpperCase()
 					+ os.substring(0, 2).toUpperCase() + osVersion + tempNumber;
 		return temp;
