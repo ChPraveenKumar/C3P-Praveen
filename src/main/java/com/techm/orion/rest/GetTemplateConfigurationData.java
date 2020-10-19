@@ -34,9 +34,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.BasicConfiguration;
-import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
-import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
 import com.techm.orion.models.TemplateVersioningJSONModel;
 import com.techm.orion.pojo.CommandPojo;
@@ -45,9 +43,9 @@ import com.techm.orion.pojo.GetTemplateMngmntPojo;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.BasicConfigurationRepository;
-import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementDetailsService;
 
 @Controller
@@ -57,20 +55,15 @@ public class GetTemplateConfigurationData implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetTemplateConfigurationData.class);
 
 	@Autowired
-	private AttribCreateConfigResponceMapper mapper;
-
-	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
-
-	@Autowired
-	private MasterCharacteristicsRepository masterCharacteristicsRepository;
 
 	@Autowired
 	private MasterCommandsRepository masterCommandsRepo;
 
-
 	@Autowired
 	private BasicConfigurationRepository basicConfigRepo;
+	@Autowired()
+	private MasterFeatureService masterFeatureService;
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -1195,98 +1188,35 @@ public class GetTemplateConfigurationData implements Observer {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getDataForLeftPanel", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> getDataForLeftPanel(@RequestBody String templateFeatureRequest) {
 		JSONParser parser = new JSONParser();
-		List<TemplateLeftPanelJSONModel> leftPanelDataList = new ArrayList<>();
+		JSONObject obj = new JSONObject();
+		List<TemplateLeftPanelJSONModel> leftPanelDataList = null;
 		try {
-			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
-			DeviceDetailsPojo deviceInfo = new DeviceDetailsPojo();
-			String vendor = null;
-			if (json.get("vendor") != null) {
-				vendor = json.get("vendor").toString();
-				deviceInfo.setVendor(vendor);
+			JSONObject requestJson = (JSONObject) parser.parse(templateFeatureRequest);
+			DeviceDetailsPojo deviceDetails = masterFeatureService.fetchDeviceDetails(requestJson);
+			if(deviceDetails.getVendor() !=null && deviceDetails.getDeviceFamily() !=null && deviceDetails.getOs() !=null 
+				&& deviceDetails.getOsVersion() !=null && deviceDetails.getRegion() !=null && deviceDetails.getNetworkType() !=null) {
+				leftPanelDataList = masterFeatureService.getLeftPanelData(deviceDetails);
+				if(leftPanelDataList !=null && leftPanelDataList.size()>0) {
+					String finalJson = new Gson().toJson(leftPanelDataList);
+					obj.put("output", finalJson.toString());
+				}else {
+					obj.put("output", "No matching record find for exact match case and neareat match case");
+				}
+				String finalJson = new Gson().toJson(leftPanelDataList);
+				obj.put("output", finalJson.toString());
+			}else {
+				obj.put(new String("output"), "Missing mandatory data in the service Request");
 			}
-			String deviceFamily = null;
-			if (json.get("deviceFamily") != null) {
-				deviceFamily = json.get("deviceFamily").toString();
-				deviceInfo.setDeviceFamily(deviceFamily);
-			}
-			String os = null;
-			if (json.get("os") != null) {
-				os = json.get("os").toString();
-				deviceInfo.setOs(os);
-			}
-			String osVersion = null;
-			if (json.get("osVersion") != null) {
-				osVersion = json.get("osVersion").toString();
-				deviceInfo.setOsVersion(osVersion);
-			}
-			String region = null;
-			if (json.get("region") != null) {
-				region = json.get("region").toString();
-				deviceInfo.setRegion(region);
-			}
-			String networkFunction = null;
-			if (json.get("networkFunction") != null) {
-				networkFunction = json.get("networkFunction").toString();
-			}
-			masterFeatureRepository.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(vendor,
-					deviceFamily, os, osVersion, region, networkFunction).forEach(feature -> {
-						TemplateLeftPanelJSONModel templateData = setFeatureData(feature);
-						templateData.setDeviceDetails(deviceInfo);
-						leftPanelDataList.add(templateData);
-					});
-
 		} catch (Exception e) {
 			logger.info(e);
-		}
-		JSONObject obj = new JSONObject();
-		String s = new Gson().toJson(leftPanelDataList);
-		obj.put("output", s.toString());
+		}		
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
-	}
-
-	private TemplateLeftPanelJSONModel setFeatureData(MasterFeatureEntity feature) {
-		TemplateLeftPanelJSONModel parentJsonpojo = new TemplateLeftPanelJSONModel();
-		parentJsonpojo.setName(feature.getfName());
-		parentJsonpojo.setMasterFid(feature.getfId());
-		
-		parentJsonpojo.setRowId(feature.getfRowid());
-		parentJsonpojo.setChecked(false);
-		parentJsonpojo.setDisabled(false);
-		parentJsonpojo.setConfText("confText");
-		parentJsonpojo.setAttribAssigned(false);
-		List<CommandPojo> commandList = new ArrayList<>();
-		List<MasterCharacteristicsEntity> characticsAttribList = masterCharacteristicsRepository
-				.findAllByCFId(feature.getfId());
-		parentJsonpojo.setAttributeMapping(mapper.convertCharacteristicsAttribPojoToJson(characticsAttribList));
-
-		if ("Basic Configuration".equals(feature.getfCategory())) {
-			commandList = getCommandList(feature.getfId());
-		} else {
-			commandList = masterCommandsRepo.findBymasterFId(feature.getfId());
-		}
-		commandList.sort((CommandPojo c1, CommandPojo c2) -> c1.getCommandSequenceId() - c2.getCommandSequenceId());
-		parentJsonpojo.setCommands(commandList);
-
-		return parentJsonpojo;
-
-	}
-
-	private List<CommandPojo> getCommandList(String featureId) {
-		List<CommandPojo> commandList = new ArrayList<>();
-		basicConfigRepo.findByMFId(featureId).forEach(basicCommand -> {
-			CommandPojo command = new CommandPojo();
-			command.setCommand_sequence_id(basicCommand.getSequence_id());
-			command.setCommandValue(basicCommand.getConfiguration());
-			command.setMasterFId(basicCommand.getmFId());
-			commandList.add(command);
-		});
-
-		return commandList;
 	}
 
 }

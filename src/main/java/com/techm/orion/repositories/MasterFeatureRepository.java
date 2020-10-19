@@ -37,5 +37,12 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 
 	List<MasterFeatureEntity> findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(String vendor,
 			String family, String os, String osVersion, String region, String networkType);
+	
+	@Query(value = "select * from c3p_m_features where f_vendor = :vendor and (f_family = All or f_family =:deviceFamily)"
+			+ " and (f_os = All or f_os =:os) and (f_osversion = All or f_osversion =:osVersion) "
+			+ "and (f_region = All or f_region =:region) and (f_networkfun = All or f_networkfun =:networkType) ", nativeQuery = true)
+	List<MasterFeatureEntity> findNearestMatchEntities(@Param("vendor") String vendor,
+			@Param("deviceFamily") String deviceFamily, @Param("os") String os, @Param("osVersion") String osVersion,
+			@Param("region") String region, @Param("networkType") String networkType);
 
 }

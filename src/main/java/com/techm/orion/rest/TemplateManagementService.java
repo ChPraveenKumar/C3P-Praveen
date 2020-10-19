@@ -29,18 +29,17 @@ import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
-import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.models.TemplateCommandJSONModel;
 import com.techm.orion.pojo.AddNewFeatureTemplateMngmntPojo;
 import com.techm.orion.pojo.CommandPojo;
+import com.techm.orion.pojo.DeviceDetailsPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.MasterAttribPojo;
-import com.techm.orion.repositories.BasicConfigurationRepository;
 import com.techm.orion.repositories.MasterAttribRepository;
-import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
+import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementNewService;
 
 @Controller
@@ -56,12 +55,9 @@ public class TemplateManagementService implements Observer {
 
 	@Autowired
 	private TemplateFeatureRepo templatefeatureRepo;
-
-	@Autowired
-	private MasterFeatureRepository masterFeatureRepository;
-
-	@Autowired
-	private BasicConfigurationRepository basicConfigRepo;
+	
+	@Autowired()
+	private MasterFeatureService masterFeatureService;
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -202,65 +198,22 @@ public class TemplateManagementService implements Observer {
 	@POST
 	@RequestMapping(value = "/onNextToGetRightPanel", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public ResponseEntity<JSONObject>  onNextToGetRightPanel(@RequestBody String templateId) {
+	public ResponseEntity<JSONObject>  onNextToGetRightPanel(@RequestBody String templateFeatureRequest) {
 		JSONObject obj = new JSONObject();
 		JSONParser parser = new JSONParser();
-
-		List<GetTemplateMngmntActiveDataPojo> templateactiveList = new ArrayList<>();
 		try {
-			JSONObject json = (JSONObject) parser.parse(templateId);
-			String vendor = null;
-			if (json.get("vendor") != null) {
-				vendor = json.get("vendor").toString();
-
+			JSONObject requestJson = (JSONObject) parser.parse(templateFeatureRequest);
+			DeviceDetailsPojo deviceDetails = masterFeatureService.fetchDeviceDetails(requestJson);
+			if(deviceDetails.getVendor() !=null && deviceDetails.getDeviceFamily() !=null && deviceDetails.getOs() !=null 
+				&& deviceDetails.getOsVersion() !=null && deviceDetails.getRegion() !=null && deviceDetails.getNetworkType() !=null) {
+				List<GetTemplateMngmntActiveDataPojo> activeTemplates = masterFeatureService.getActiveTemplates(deviceDetails);
+				obj.put(new String("output"), activeTemplates !=null && activeTemplates.size()>0 ? activeTemplates : "No matching record find for exact match case and neareat match case");
+			}else {
+				obj.put(new String("output"), "Missing mandatory data in the service Request");
 			}
-			String deviceFamily = null;
-			if (json.get("deviceFamily") != null) {
-				deviceFamily = json.get("deviceFamily").toString();
-
-			}
-			String os = null;
-			if (json.get("os") != null) {
-				os = json.get("os").toString();
-
-			}
-			String osVersion = null;
-			if (json.get("osVersion") != null) {
-				osVersion = json.get("osVersion").toString();
-
-			}
-			String region = null;
-			if (json.get("region") != null) {
-				region = json.get("region").toString();
-
-			}
-			String networkFunction = null;
-			if (json.get("networkFunction") != null) {
-				networkFunction = json.get("networkFunction").toString();
-			}
-			masterFeatureRepository.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(vendor,
-					deviceFamily, os, osVersion, region, networkFunction).forEach(feature -> {
-						if ("Basic Configuration".equals(feature.getfCategory())) {
-							List<BasicConfiguration> comandList = basicConfigRepo.findByMFId(feature.getfId());
-							comandList.forEach(comand -> {
-								GetTemplateMngmntActiveDataPojo templatePojo = new GetTemplateMngmntActiveDataPojo();
-								templatePojo.setCommandValue(comand.getConfiguration());
-								templatePojo.setPosition(comand.getSequence_id());
-								templatePojo.setCommandSequenceId(String.valueOf(comand.getSequence_id()));
-								templatePojo.setHasParent(0);
-								templatePojo.setDisabled(false);
-								templatePojo.setActive(true);
-								templateactiveList.add(templatePojo);
-							});
-						}
-					});
-
-			templateactiveList.sort((GetTemplateMngmntActiveDataPojo c1,
-					GetTemplateMngmntActiveDataPojo c2) -> c1.getPosition() - c2.getPosition());
-
-			obj.put(new String("output"), templateactiveList);
-		} catch (Exception e) {
-			e.printStackTrace();
+			
+		} catch (Exception exe) {
+			exe.printStackTrace();
 		}
 
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);

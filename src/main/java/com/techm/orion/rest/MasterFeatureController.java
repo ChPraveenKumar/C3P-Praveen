@@ -13,8 +13,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -46,9 +44,7 @@ import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.SeriesRepository;
 import com.techm.orion.responseEntity.GetAttribResponseEntity;
-import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.AttribSevice;
-import com.techm.orion.service.CategoryDropDownService;
 import com.techm.orion.service.CategoryMasterService;
 
 @RestController
@@ -69,12 +65,6 @@ public class MasterFeatureController {
 	private CategoryMasterService categoryMasterService;
 
 	@Autowired
-	private CategoryDropDownService categoryDropDownservice;
-
-	@Autowired
-	private AttribCreateConfigService service;
-
-	@Autowired
 	private MasterCommandsRepository masterCommandsRepo;
 
 	@Autowired
@@ -88,8 +78,6 @@ public class MasterFeatureController {
 	@Produces("application/json")
 	@RequestMapping(value = "/getAttribData", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity getFeatureAttribData() {
-		JSONObject obj = new JSONObject();
-
 		List<GenericAtrribPojo> genericAttribList = new ArrayList<GenericAtrribPojo>();
 		List<PredefinedMappedAtrribPojo> predefinedGenericMappedAtrribList = new ArrayList<PredefinedMappedAtrribPojo>();
 		List<PredefinedAtrribPojo> predefinedGenericAtrribList = new ArrayList<PredefinedAtrribPojo>();
@@ -267,16 +255,7 @@ public class MasterFeatureController {
 		}
 
 		return new ResponseEntity(obj, HttpStatus.OK);
-	}
-
-	String getSeries(String vendor, String family) {
-		String str = null;
-
-		str = vendor.toUpperCase() + family.toUpperCase();
-
-		return str;
-
-	}
+	}	
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@POST
@@ -449,5 +428,9 @@ public class MasterFeatureController {
 		});
 		
 		return result;
+	}
+	
+	private String getSeries(String vendor, String family) {
+		return vendor.toUpperCase() + family.toUpperCase();
 	}
 }
