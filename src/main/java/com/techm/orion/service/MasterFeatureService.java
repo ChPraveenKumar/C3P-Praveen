@@ -9,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
@@ -23,6 +24,7 @@ import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 
+@Service
 public class MasterFeatureService {
 	private static final Logger logger = LogManager.getLogger(MasterFeatureService.class);
 	@Autowired
