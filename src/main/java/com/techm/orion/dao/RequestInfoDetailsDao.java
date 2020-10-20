@@ -489,7 +489,7 @@ public class RequestInfoDetailsDao {
 						Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
 				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
-						+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt", response);
+						+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt", response,null);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

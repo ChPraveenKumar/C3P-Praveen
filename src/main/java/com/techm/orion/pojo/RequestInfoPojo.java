@@ -100,10 +100,49 @@ public class RequestInfoPojo {
 	
 	private String batchId;
 
+	private String apiCallType;
 	// Extra fields for master Configuration
 	// Predefine attribute
 
+	private String fileName;
 
+
+	private String configurationGenerationMethods;
+	
+	private String selectedFileFeatures;
+	
+	public String getConfigurationGenerationMethods() {
+		return configurationGenerationMethods;
+	}
+
+	public void setConfigurationGenerationMethods(
+			String configurationGenerationMethods) {
+		this.configurationGenerationMethods = configurationGenerationMethods;
+	}
+
+	public String getSelectedFileFeatures() {
+		return selectedFileFeatures;
+	}
+
+	public void setSelectedFileFeatures(String selectedFileFeatures) {
+		this.selectedFileFeatures = selectedFileFeatures;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public String getApiCallType() {
+		return apiCallType;
+	}
+
+	public void setApiCallType(String apiCallType) {
+		this.apiCallType = apiCallType;
+	}
 
 	private String osVer;
 	private String hostNameConfig;

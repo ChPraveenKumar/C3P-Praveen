@@ -51,6 +51,11 @@ public class MasterAttributes implements Serializable {
 	@Column(name = "series_id")
 	private String seriesId;
 
+	@Column(name = "master_f_id")
+	private String masterFID;
+
+	@Column(name = "m_characteristic_id")
+	private String characteristicId;		
 	/*
 	 * @Column(name = "feature_id") private int featureId;
 	 */
@@ -145,6 +150,22 @@ public class MasterAttributes implements Serializable {
 
 	public void setTemplateFeature(TemplateFeatureEntity templateFeature) {
 		this.templateFeature = templateFeature;
+	}
+
+	public String getMasterFID() {
+		return masterFID;
+	}
+
+	public void setMasterFID(String masterFID) {
+		this.masterFID = masterFID;
+	}
+
+	public String getCharacteristicId() {
+		return characteristicId;
+	}
+
+	public void setCharacteristicId(String characteristicId) {
+		this.characteristicId = characteristicId;
 	}
 
 	/*

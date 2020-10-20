@@ -5913,7 +5913,7 @@ public class RequestInfoDao {
 				customer = null, siteName = null, family = null, siteId = null, vendor = null, deviceType = null;
 		String request_creator_name = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
-		String networktype = null;
+		String networktype = null, fileName=null, apiCallType=null;
 		double request_version = 0, request_parent_version = 0;
 		boolean startup = false;
 
@@ -6043,10 +6043,20 @@ public class RequestInfoDao {
 				 * requestInfoSO.getDownTimeRequired(); lastupgradedon =
 				 * requestInfoSO.getLastUpgradedOn();
 				 */}
+			
 			if (requestInfoSO.getNetworkType() != null || requestInfoSO.getNetworkType() != "") {
 				networktype = requestInfoSO.getNetworkType();
 			} else {
 				networktype = "Legacy";
+			}
+			
+			if(requestInfoSO.getFileName()!=null || requestInfoSO.getFileName() != "")
+			{
+				fileName=requestInfoSO.getFileName();
+			}
+			else
+			{
+				fileName="";
 			}
 			if (Os != "") {
 				requestEntity.setOs(Os);
@@ -6123,6 +6133,10 @@ public class RequestInfoDao {
 				requestEntity.setStartUp(false);
 			}
 
+			if(fileName!=null)
+			{
+				requestEntity.setrFileName(fileName);
+			}
 			requestEntity.setRequestElapsedTime("00:00:00");
 
 			if (scheduledTime != null && scheduledTime != "") {
@@ -6152,7 +6166,16 @@ public class RequestInfoDao {
 			requestEntity.setDateofProcessing(timestamp);
 			requestEntity.setNetworkType(networktype);
 			if (templateId != null) {
+				if(templateId.contains(","))
+				{
+					String[] array = templateId.replace("[", "").replace("]", "").replace("\"", "")
+							.split(",");
+					requestEntity.setTemplateUsed(array[0]);
+				}
+				else
+				{
 				requestEntity.setTemplateUsed(templateId);
+				}
 			}
 			RequestInfoEntity save = reository.save(requestEntity);
 			if (save.getInfoId() > 0) {
