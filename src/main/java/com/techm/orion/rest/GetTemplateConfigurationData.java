@@ -57,20 +57,12 @@ public class GetTemplateConfigurationData implements Observer {
 
 	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
-
 	@Autowired
 	private MasterCommandsRepository masterCommandsRepo;
-
 	@Autowired
 	private BasicConfigurationRepository basicConfigRepo;
 	@Autowired
 	private MasterFeatureService masterFeatureService;
-    @Autowired
-	private MasterCharacteristicsRepository masterCharacteristicsRepository;
-
-	@Autowired
-	private SeriesRepository masterSeriesRepo;
-	
 	@Autowired 
 	private TemplateManagementDetailsService templateManagmntService;
 
