@@ -819,13 +819,13 @@ public class GetTemplateConfigurationData implements Observer {
 												0,
 												json.get("templateid")
 														.toString()
-														.indexOf("V") - 1),
+														.indexOf("_V")),
 								json.get("templateid")
 										.toString()
 										.substring(
 												json.get("templateid")
 														.toString()
-														.indexOf("V") + 1,
+														.indexOf("_V") + 2,
 												json.get("templateid")
 														.toString().length()),
 								json.get("readFlag").toString());
@@ -842,14 +842,14 @@ public class GetTemplateConfigurationData implements Observer {
 												0,
 												json.get("templateid")
 														.toString()
-														.indexOf("V") - 1))) {
+														.indexOf("_V")))) {
 							if (listcomment.getVersion().equalsIgnoreCase(
 									json.get("templateid")
 											.toString()
 											.substring(
 													json.get("templateid")
 															.toString()
-															.indexOf("V") + 1,
+															.indexOf("_V") + 2,
 													json.get("templateid")
 															.toString()
 															.length()))) {

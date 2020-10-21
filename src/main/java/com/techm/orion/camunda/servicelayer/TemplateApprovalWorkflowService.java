@@ -18,7 +18,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -105,11 +104,9 @@ public class TemplateApprovalWorkflowService implements Observer {
 				String templateidForFeatureExtraction=templateId;
 				if (json.get("templateVersion") != null) {
 					templateVersion = (json.get("templateVersion").toString());
-
 				} else {
-					String arr[]=templateId.split("_");
-					templateVersion = arr[1].substring(arr[1].indexOf("V") + 1, arr[1].length());
-					templateId = arr[0];
+					templateVersion = templateId.substring(templateId.indexOf("_V")+2, templateId.length());
+					templateId = templateId.substring(0, templateId.indexOf("_V"));
 
 				}
 				status = json.get("status").toString();
