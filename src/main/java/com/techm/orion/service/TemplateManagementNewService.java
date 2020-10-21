@@ -6,11 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringUtils;
-import org.json.JSONException;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -96,14 +91,19 @@ public class TemplateManagementNewService {
 		return result;
 	}
 
-	public String getTemplateID(String vendor, String family, String os, String osVersion, String region,
-			String tempNumber) {
+	public String getTemplateID(String vendor, String deviceFamily, String os, String osVersion, String region, String tempNumber) {
 		String temp = null;
 		// will be modified once edit flow is enabled have to check version and
 		// accordingliy append the version
-		if (vendor != null && family != null && os != null && osVersion != null && region != null && tempNumber != null)
-			temp = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase() + family.toUpperCase()
-					+ os.substring(0, 2).toUpperCase() + osVersion + tempNumber;
+		if(vendor!= null && deviceFamily != null && os != null && osVersion != null && region != null && tempNumber != null)
+		{	
+			vendor = vendor.toUpperCase().substring(0, 3);
+			deviceFamily = ("All".equals(deviceFamily)) ? "$" : deviceFamily;
+			region = ("All".equals(region)) ? "$" : region.toUpperCase().substring(0, 2);
+			os = ("All".equals(os)) ? "$" : os.toUpperCase().substring(0, 2);
+			osVersion = ("All".equals(osVersion)) ? "$" : osVersion;
+			temp= vendor + deviceFamily + deviceFamily + os + osVersion +tempNumber;
+		}
 		return temp;
 	}
 

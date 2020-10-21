@@ -8,11 +8,11 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
@@ -53,7 +52,8 @@ import com.techm.orion.service.CategoryMasterService;
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/masterFeature")
 public class MasterFeatureController {
-
+	private static final Logger logger = LogManager
+			.getLogger(MasterFeatureController.class);
 	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
 
@@ -63,7 +63,7 @@ public class MasterFeatureController {
 	@Autowired
 	private AttribSevice attribSevice;
 
-	@Autowired()
+	@Autowired
 	private CategoryMasterService categoryMasterService;
 
 	@Autowired
@@ -118,12 +118,57 @@ public class MasterFeatureController {
 		JSONObject obj = new JSONObject();
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
-
+		Timestamp timestamp = null;
 		JSONObject json;
 		try {
 			json = (JSONObject) parser.parse(configRequest);
 			 masterFeature = setMasterFeatureData(json);
-			
+
+			if (json.containsKey("featureName")) {
+				masterFeature.setfName(json.get("featureName").toString());
+			}
+			if (json.containsKey("vendor")) {
+				masterFeature.setfVendor(json.get("vendor").toString());
+			}
+			if (json.containsKey("family")) {
+				masterFeature.setfFamily(json.get("family").toString());
+			}
+			if (json.containsKey("os")) {
+				masterFeature.setfOs(json.get("os").toString());
+			}
+			if (json.containsKey("osVersion")) {
+				masterFeature.setfOsversion(json.get("osVersion").toString());
+			}
+			if (json.containsKey("region")) {
+				masterFeature.setfRegion(json.get("region").toString());
+			}
+			if (json.containsKey("networkFunction")) {
+				masterFeature.setfNetworkfun(json.get("networkFunction")
+						.toString());
+			}
+			if (json.containsKey("isBasicConiguration")) {
+				if (Boolean.parseBoolean(json.get("isBasicConiguration")
+						.toString())) {
+					masterFeature.setfCategory("Basic Configuration");
+				}
+			}
+			if (json.containsKey("comments")) {
+				masterFeature.setfComments(json.get("comments").toString());
+			}
+			if (json.containsKey("isReplicated")) {
+				masterFeature.setfReplicationind(Boolean.parseBoolean(json.get(
+						"isReplicated").toString()));
+			}
+			masterFeature.setfVersion("1.0");
+			masterFeature.setfFlag("custom");
+			masterFeature.setfStatus("Pending");
+			masterFeature.setfOwner("suser");
+			// masterFeature.setfCreatedBy(Global.loggedInUser);
+			masterFeature.setfCreatedBy("admin");
+			timestamp = new Timestamp(new Date().getTime());
+			if (timestamp != null) {
+				masterFeature.setfCreatedDate(timestamp);
+			}
 			/* Logic to compute feature ID which is unique and alphanumeric */
 
 			/* Logic to save commands in master commands table */
@@ -500,4 +545,106 @@ public class MasterFeatureController {
 	
 	}
 
+	@SuppressWarnings("unchecked")
+	@GET
+	@RequestMapping(value = "/getFeaturesRPC", method = RequestMethod.GET, produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<JSONObject> getFeaturesForRPC() {
+		JSONObject objInterfaces = new JSONObject();
+		JSONArray outputArray = new JSONArray();
+		JSONObject childJson = null;
+		JSONObject masterJson = null;
+		JSONArray childList = null;
+		List<MasterFeatureEntity> featureEntinty = null;
+		try {
+			List<String> vendor = masterFeatureRepository.findVendor();
+			for (String vendorEntity : vendor) {
+				masterJson = new JSONObject();
+				childList = new JSONArray();
+				featureEntinty = masterFeatureRepository.findAllByFVendor(vendorEntity);
+				for (MasterFeatureEntity entity : featureEntinty) {
+					childJson = new JSONObject();
+					childJson.put("vendor", entity.getfVendor());
+					childJson.put("deviceFamily", entity.getfFamily());
+					childJson.put("feature", entity.getfName());
+					childJson.put("deviceOs", entity.getfOs());
+					childJson.put("osVersion", entity.getfOsversion());
+					childJson.put("version", entity.getfVersion());
+					childJson.put("createdDate", entity.getfCreatedDate().toString());
+					childJson.put("comment", entity.getfComments());
+					childJson.put("status", entity.getfStatus());
+					childJson.put("networkType", entity.getfNetworkfun());
+					childJson.put("createdBy", entity.getfCreatedBy());
+					childJson.put("featureId", entity.getfId());
+					childJson.put("isEditable", entity.getfIsenabled());
+					childList.add(childJson);
+				}
+				masterJson.put("childList", childList);
+				masterJson.put("vendor", vendorEntity);
+				outputArray.add(masterJson);
+			}
+		} catch (Exception exe) {
+			logger.error("SQL Exception in getFeaturesForRPC method " + exe.getMessage());
+		}
+		objInterfaces.put("entity", outputArray);
+		return new ResponseEntity<JSONObject>(objInterfaces, HttpStatus.OK);
+	}
+
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/searchFeaturesRPC", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<JSONObject> searchFeaturesForRPC(@RequestBody String configRequest) {
+		JSONObject objInterfaces = new JSONObject();
+		JSONArray outputArray = new JSONArray();
+		JSONObject masterJson = null;
+		JSONObject childJson = null;
+		JSONArray childList = null;
+		String vendor = null, deviceFamily = null, os = null, osVersion = null, region = null, networkFunction = null;
+		try {
+			masterJson = new JSONObject();
+			childList = new JSONArray();
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(configRequest);
+			if (json.containsKey("vendor"))
+				vendor = json.get("vendor").toString();
+			if (json.containsKey("deviceFamily"))
+				deviceFamily = json.get("deviceFamily").toString();
+			if (json.containsKey("os"))
+				os = json.get("os").toString();
+			if (json.containsKey("osVersion"))
+				osVersion = json.get("osVersion").toString();
+			if (json.containsKey("region"))
+				region = json.get("region").toString();
+			if (json.containsKey("networkFunction"))
+				networkFunction = json.get("networkFunction").toString();
+
+			List<MasterFeatureEntity> featureEntinty = masterFeatureRepository.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(vendor, deviceFamily, os,
+					osVersion, region, networkFunction);
+			for (MasterFeatureEntity entity : featureEntinty) {
+				childJson = new JSONObject();
+				childJson.put("vendor", entity.getfVendor());
+				childJson.put("deviceFamily", entity.getfFamily());
+				childJson.put("feature", entity.getfName());
+				childJson.put("deviceOs", entity.getfOs());
+				childJson.put("osVersion", entity.getfOsversion());
+				childJson.put("version", entity.getfVersion());
+				childJson.put("createdDate", entity.getfCreatedDate().toString());
+				childJson.put("comment", entity.getfComments());
+				childJson.put("status", entity.getfStatus());
+				childJson.put("networkFunction", entity.getfNetworkfun());
+				childJson.put("createdBy", entity.getfCreatedBy());
+				childJson.put("featureId", entity.getfId());
+				childJson.put("isEditable", entity.getfIsenabled());
+				childList.add(childJson);			
+			}
+			masterJson.put("childList", childList);
+			masterJson.put("vendor", vendor);
+			outputArray.add(masterJson);
+			objInterfaces.put("entity", outputArray);
+		} catch (Exception exe) {
+			logger.error("SQL Exception in searchFeaturesForRPC method " + exe.getMessage());
+		}
+		return new ResponseEntity<JSONObject>(objInterfaces, HttpStatus.OK);
+	}
 }

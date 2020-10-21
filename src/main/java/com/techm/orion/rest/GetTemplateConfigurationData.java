@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
@@ -62,8 +63,16 @@ public class GetTemplateConfigurationData implements Observer {
 
 	@Autowired
 	private BasicConfigurationRepository basicConfigRepo;
-	@Autowired()
+	@Autowired
 	private MasterFeatureService masterFeatureService;
+    @Autowired
+	private MasterCharacteristicsRepository masterCharacteristicsRepository;
+
+	@Autowired
+	private SeriesRepository masterSeriesRepo;
+	
+	@Autowired 
+	private TemplateManagementDetailsService templateManagmntService;
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -1212,4 +1221,16 @@ public class GetTemplateConfigurationData implements Observer {
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
 
+	@GET
+	@RequestMapping(value = "/checkAliasName", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<JSONObject> checkAliasName(String aliasName) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = templateManagmntService.checkAliasNamePresent(aliasName);
+		if (json != null) {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
 }

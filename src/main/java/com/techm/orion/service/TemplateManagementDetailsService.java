@@ -11,19 +11,31 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.techm.orion.dao.TemplateManagementDao;
+import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
 import com.techm.orion.models.TemplateVersioningJSONModel;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.GetTemplateMngmntPojo;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.repositories.TemplateConfigBasicDetailsRepository;
 import com.techm.orion.utility.TextReport;
 
+@Service
 public class TemplateManagementDetailsService {
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
+	
+	
+	@Autowired
+	private TemplateConfigBasicDetailsRepository templateConfigBasicDetailsRepository;
 
 	public boolean addNewFeature(String comand_display_feature, String command_to_add, String command_type,
 			String templateId, int parentid, int save, int topLineNum, int bottomLineNum, boolean dragged,
@@ -319,5 +331,18 @@ public class TemplateManagementDetailsService {
 			templateBscConfg.add(1, templateList.get(0));
 		}
 		return templateBscConfg;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public JSONObject checkAliasNamePresent(@RequestParam String aliasName) throws ParseException {
+		JSONObject jsonObject = new JSONObject();
+		TemplateConfigBasicDetailsEntity tempConfigBasicDetEntity = templateConfigBasicDetailsRepository
+				.findByTempAlias(aliasName);
+		if (tempConfigBasicDetEntity != null) {
+			jsonObject.put("isAliasPresent", true);
+		} else {
+			jsonObject.put("isAliasPresent", false);
+		}
+		return jsonObject;
 	}
 }

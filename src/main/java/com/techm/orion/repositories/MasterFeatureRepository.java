@@ -1,14 +1,12 @@
 package com.techm.orion.repositories;
 
 import java.util.List;
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-
 import com.techm.orion.entitybeans.MasterFeatureEntity;
 
 @Repository
@@ -22,10 +20,10 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 			@Param("region") String region, @Param("networkType") String networkType, @Param("family") String family);
 
 	@Query(value = "select count(f_id) from c3p_m_features where f_status like :status and f_owner like :owner", nativeQuery = true)
-	int getCountByFStatusAndUser(@Param("status") String status, @Param("owner") String owner);
+	public int getCountByFStatusAndUser(@Param("status") String status, @Param("owner") String owner);
 
 	@Query(value = "select * from c3p_m_features where f_owner like :owner and f_status like :status", nativeQuery = true)
-	List<MasterFeatureEntity> getListByOwner(@Param("status") String status, @Param("owner") String owner);
+	public List<MasterFeatureEntity> getListByOwner(@Param("status") String status, @Param("owner") String owner);
 
 	MasterFeatureEntity findByFId(String fId);
 
@@ -45,4 +43,9 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 			@Param("deviceFamily") String deviceFamily, @Param("os") String os, @Param("osVersion") String osVersion,
 			@Param("region") String region, @Param("networkType") String networkType);
 
+	
+	@Query(value = "SELECT distinct f_vendor FROM c3p_m_features", nativeQuery = true)
+	public List<String> findVendor();
+		
+	public List<MasterFeatureEntity> findAllByFVendor(String vendor);
 }

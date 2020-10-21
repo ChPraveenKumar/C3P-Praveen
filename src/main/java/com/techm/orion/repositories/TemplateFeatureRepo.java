@@ -28,5 +28,7 @@ public interface TemplateFeatureRepo extends
 	@Query("Select u from TemplateFeatureEntity u where command = :command ")
 	TemplateFeatureEntity findByCommandType(@Param("command") String command);
 
+	TemplateFeatureEntity findById(int id);
+
 }
 

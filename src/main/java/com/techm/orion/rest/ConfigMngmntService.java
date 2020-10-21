@@ -1530,6 +1530,8 @@ public class ConfigMngmntService implements Observer {
 		TemplateManagementDao dao = new TemplateManagementDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		Map<String, String> result = null;
+		List<RequestInfoPojo> configReqToSendToC3pCodeList = new ArrayList<RequestInfoPojo>();
+
 
 		try {
 
@@ -2573,8 +2575,10 @@ public class ConfigMngmntService implements Observer {
 						}
 					}
 				}
+				configReqToSendToC3pCodeList
+				.add(configReqToSendToC3pCode);
 
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList,featureList);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList,featureList);
 				logger.info("log");
 
 			} else {

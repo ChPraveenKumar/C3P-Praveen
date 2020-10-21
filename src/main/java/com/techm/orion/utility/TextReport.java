@@ -10,20 +10,48 @@ import org.apache.logging.log4j.Logger;
 public class TextReport {
 	private static final Logger logger = LogManager.getLogger(TextReport.class);
 
-	public static void writeFile(String responseDownloadPath, String filename, String content) {
-		logger.info("TextReport - writeFile - filename - "+filename);
-		/*Removed \\ from the code. This needs to be maintains at properties level to support different OS.*/
-		String FILENAME = responseDownloadPath + filename;
-		logger.info("TextReport - writeFile - filepath - "+FILENAME);
-		try (FileWriter fileWriter = new FileWriter(FILENAME);
-				BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);) {
+	public static void writeFile(String path, String fileName, String content) {
+		fileWriter(path, fileName, content, null);
+	}
+
+	public static void writeFile(String path, String fileName, String content, String type) {
+		fileWriter(path, fileName, content, type);
+	}
+
+	private static void fileWriter(String path, String fileName, String content, String type) {
+		FileWriter fileWriter = null;
+		try {
+			logger.info("TextReport - fileWriter - filename - " + fileName);
+			String filePath = path + fileName;
+			logger.info("TextReport - fileWriter - filePath - " + filePath);
+			if ("configurationGeneration".equals(type)) {
+				fileWriter = new FileWriter(filePath, true);
+			} else if ("headerGeneration".equals(type)) {
+				fileWriter = new FileWriter(filePath, false);
+			} else {
+				fileWriter = new FileWriter(filePath);
+			}
+			bufferedWriter(fileWriter, content);
+		} catch (IOException exe) {
+			logger.error("IOException while Writing the file - " + exe.getMessage());
+		} finally {
+			try {
+				if (fileWriter != null) {
+					fileWriter.close();
+				}
+			} catch (IOException exe) {
+				logger.error("IOException while closing the fileWriter - " + exe.getMessage());
+			}
+		}
+	}
+
+	private static void bufferedWriter(FileWriter fileWriter, String content) {
+		try (BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);) {
 			// content = "This is the content to write into file\n";
 			bufferedWriter.write(content);
-
 		} catch (IOException exe) {
 			logger.error("IOException while Writing the file - " + exe.getMessage());
 		}
-
 	}
 
 }

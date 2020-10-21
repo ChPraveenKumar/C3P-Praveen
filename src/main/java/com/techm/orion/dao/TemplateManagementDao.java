@@ -2273,7 +2273,7 @@ public class TemplateManagementDao {
 
 		connection = ConnectionFactory.getConnection();
 
-		String query1 = "select c3p_template_master_command_list.command_value,c3p_template_master_command_list.command_id,c3p_template_transaction_command_list.command_position,c3p_template_master_command_list.no_form_command  from c3p_template_master_command_list ,c3p_template_transaction_command_list where c3p_template_master_command_list.command_id=? and c3p_template_master_command_list.command_id =c3p_template_transaction_command_list.command_id and c3p_template_master_command_list.command_sequence_id =c3p_template_transaction_command_list.command_sequence_id and c3p_template_transaction_command_list.command_template_id=?;";
+		String query1 = "select c3p_template_master_command_list.command_value,c3p_template_master_command_list.command_id,c3p_template_transaction_command_list.command_position,c3p_template_master_command_list.no_form_command,c3p_template_master_command_list.command_type  from c3p_template_master_command_list ,c3p_template_transaction_command_list where c3p_template_master_command_list.command_id=? and c3p_template_master_command_list.command_id =c3p_template_transaction_command_list.command_id and c3p_template_master_command_list.command_sequence_id =c3p_template_transaction_command_list.command_sequence_id and c3p_template_transaction_command_list.command_template_id=?;";
 
 		PreparedStatement pst;
 		ResultSet res;
@@ -2292,6 +2292,7 @@ public class TemplateManagementDao {
 					cammand.setCommandValue(res.getString("c3p_template_master_command_list.command_value"));
 					cammand.setNo_command_value(res.getString("c3p_template_master_command_list.no_form_command"));
 					cammand.setPosition(res.getInt("c3p_template_transaction_command_list.command_position"));
+					cammand.setTempId(res.getString("c3p_template_master_command_list.command_type"));
 					cammandPojo.add(cammand);
 				}
 			}
