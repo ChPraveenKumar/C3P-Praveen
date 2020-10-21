@@ -14,6 +14,7 @@ import org.json.simple.JSONArray;
 
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
+import com.techm.orion.models.TemplateVersioningJSONModel;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.GetTemplateMngmntPojo;
 import com.techm.orion.pojo.Global;
@@ -319,5 +320,4 @@ public class TemplateManagementDetailsService {
 		}
 		return templateBscConfg;
 	}
-
 }

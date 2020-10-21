@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -30,7 +29,6 @@ import com.techm.orion.exception.DuplicateDataException;
 import com.techm.orion.models.TemplateCommandJSONModel;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
 import com.techm.orion.pojo.CommandPojo;
-import com.techm.orion.pojo.DeviceDetailsPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoSO;

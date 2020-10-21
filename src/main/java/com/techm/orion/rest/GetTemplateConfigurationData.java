@@ -330,15 +330,13 @@ public class GetTemplateConfigurationData implements Observer {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/saveConfigurationTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response saveConfigurationTemplate(@RequestBody String string, String templateId, String templateVersion) {
-
+	public ResponseEntity<JSONObject> saveConfigurationTemplate(@RequestBody String string, String templateId, String templateVersion) {
 		JSONObject obj = new JSONObject();
-		String jsonArray = "";
 		String jsonList = "";
-		String result = "";
 		boolean saveComplete = false;
 		Map<String, String> tempIDafterSaveBasicDetails = null;
 		TemplateManagementDao dao = new TemplateManagementDao();
@@ -436,10 +434,10 @@ public class GetTemplateConfigurationData implements Observer {
 				// camundaService.initiateApprovalFlow(tempIDafterSaveBasicDetails.get("tempid"),
 				// tempIDafterSaveBasicDetails.get("version"), "Admin");
 
-				boolean res = templateManagmntService.addNewFeature(null, null, null,
+				templateManagmntService.addNewFeature(null, null, null,
 						getTemplateMngmntPojo.getTemplateid(), 0, 1, 0, 0, false, 0, null, versionToSave, null);
 
-				result = templateManagmntService.saveFinaltemplate(getTemplateMngmntPojo.getTemplateid(),
+				 templateManagmntService.saveFinaltemplate(getTemplateMngmntPojo.getTemplateid(),
 						getTemplateMngmntPojo.getFinalTemplate(), versionToSave);
 
 				List<TemplateBasicConfigurationPojo> viewList = new ArrayList<TemplateBasicConfigurationPojo>();
@@ -485,7 +483,7 @@ public class GetTemplateConfigurationData implements Observer {
 						versioningModelObject.setChildList(versioningModelChildList);
 						versioningModel.add(versioningModelObject);
 					}
-					jsonArray = new Gson().toJson(result);
+					
 					jsonList = new Gson().toJson(versioningModel);
 
 					obj.put(new String("output"), "success");
@@ -505,11 +503,7 @@ public class GetTemplateConfigurationData implements Observer {
 			logger.error(e);
 		}
 
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 
 	}
 
@@ -578,7 +572,6 @@ public class GetTemplateConfigurationData implements Observer {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 
 		try {
-			JSONParser parser = new JSONParser();
 			List<TemplateVersioningJSONModel> versioningModel = new ArrayList<TemplateVersioningJSONModel>();
 			List<TemplateBasicConfigurationPojo> versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();
 			TemplateBasicConfigurationPojo objToAdd;

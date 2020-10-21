@@ -1,17 +1,31 @@
 package com.techm.orion.service;
 
+import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+import org.json.JSONException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.techm.orion.dao.TemplateManagementDB;
+import com.techm.orion.dao.TemplateManagementDao;
+import com.techm.orion.entitybeans.TemplateFeatureEntity;
+import com.techm.orion.pojo.AddNewFeatureTemplateMngmntPojo;
+import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.TemplateConfigBasicDetailsRepository;
+import com.techm.orion.repositories.TemplateFeatureRepo;
+import com.techm.orion.rest.CamundaServiceTemplateApproval;
+import com.techm.orion.rest.GetTemplateConfigurationData;
 
 @Service
 public class TemplateManagementNewService {
@@ -19,6 +33,8 @@ public class TemplateManagementNewService {
 	private TemplateConfigBasicDetailsRepository templateConfigBasicDetailsRepository;
 	@Autowired
 	private ErrorValidationRepository errorValidationRepository;
+	@Autowired
+	private TemplateFeatureRepo templatefeatureRepo;
 
 	public List<GetTemplateMngmntActiveDataPojo> getDataForRightPanelOnEditTemplate(String templateId,
 			boolean selectAll) throws Exception {
@@ -89,5 +105,124 @@ public class TemplateManagementNewService {
 			temp = region.toUpperCase().substring(0, 2) + vendor.substring(0, 2).toUpperCase() + family.toUpperCase()
 					+ os.substring(0, 2).toUpperCase() + osVersion + tempNumber;
 		return temp;
+	}
+
+	public ResponseEntity<JSONObject> setTemplateData(JSONObject json) {
+		TemplateManagementDB templateDao = new TemplateManagementDB();
+		String templateId = null, templateVersion = null;
+		DecimalFormat numberFormat = new DecimalFormat("#.#");
+		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
+		GetTemplateConfigurationData templateSaveFlowService = new GetTemplateConfigurationData();
+		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
+		String templateAndVesion = json.get("templateid").toString() + "_v" + json.get("templateVersion").toString();
+		boolean ifTemplateAlreadyPresent = templateDao.checkTemplateVersionAlredyexist(templateAndVesion);
+		if (ifTemplateAlreadyPresent) {
+			double value = Double.parseDouble(json.get("templateVersion").toString());
+			value = value + 0.1;
+			templateAndVesion = json.get("templateid").toString() + "_v" + numberFormat.format(value);
+			templateId = json.get("templateid").toString();
+			templateVersion = numberFormat.format(value);
+			addNewFeatureTemplateMngmntPojo.setTemplateid(templateAndVesion);
+		} else {
+			addNewFeatureTemplateMngmntPojo.setTemplateid(templateAndVesion);
+			templateId = json.get("templateid").toString();
+			templateVersion = json.get("templateVersion").toString();
+		}
+
+		saveLeftPanelData(json, addNewFeatureTemplateMngmntPojo.getTemplateid());
+
+		JSONArray cmdArray = (JSONArray) (json.get("list"));
+		addNewFeatureTemplateMngmntPojo.setCmdList(SetCommandData(cmdArray));
+		templateDao.updateTransactionCommandForNewTemplate(addNewFeatureTemplateMngmntPojo);
+		ResponseEntity<JSONObject> saveConfigurationTemplate = templateSaveFlowService
+				.saveConfigurationTemplate(json.toString(), templateId, templateVersion);
+		try {
+			camundaService.initiateApprovalFlow(templateAndVesion, templateVersion, "Admin");
+		} catch (JSONException | IOException e) {
+			e.printStackTrace();
+		}
+		return saveConfigurationTemplate;
+	}
+
+	@SuppressWarnings("unchecked")
+	public List<CommandPojo> SetCommandData(JSONArray cmdArray) {
+		List<CommandPojo> commandPojoList = new ArrayList<CommandPojo>();
+		cmdArray.forEach(cmd -> {
+			JSONObject obj1 = (JSONObject) cmd;
+			CommandPojo commandPojo = new CommandPojo();
+			if ("drop_".contains(obj1.get("id").toString()) && "dragN_".contains(obj1.get("id").toString())) {
+				String result = obj1.get("id").toString();
+				result = StringUtils.substringAfter(result, "drop_");
+				result = StringUtils.substringBefore(result, "dragN_");
+				commandPojo.setCommand_id(result);
+				commandPojo.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
+			} else {
+				commandPojo.setCommand_id(obj1.get("id").toString());
+				commandPojo.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
+			}
+			commandPojo.setPosition(Integer.parseInt(obj1.get("position").toString()));
+			commandPojo.setIs_save(1);
+			commandPojoList.add(commandPojo);
+		});
+		return commandPojoList;
+	}
+
+	public List<CommandPojo> saveLeftPanelData(JSONObject json, String templateId) {
+		TemplateManagementDB templateDao = new TemplateManagementDB();
+		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = null;
+		List<CommandPojo> commandPojoList1 = new ArrayList<CommandPojo>();
+		try {
+			addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
+			addNewFeatureTemplateMngmntPojo.setTemplateid(templateId);
+			JSONArray leftPanel = (JSONArray) (json.get("leftPanelData"));
+			CommandPojo commandPojoLeftPanel = null;
+			for (int i = 0; i < leftPanel.size(); i++) {
+				JSONObject obj1 = (JSONObject) leftPanel.get(i);
+				commandPojoLeftPanel = new CommandPojo();
+				commandPojoLeftPanel.setId(obj1.get("id").toString());
+				commandPojoList1.add(commandPojoLeftPanel);
+				JSONArray childArray = (JSONArray) obj1.get("childList");
+				if (childArray.size() > 0) {
+					for (int j = 0; j < childArray.size(); j++) {
+						JSONObject childElmnt = (JSONObject) childArray.get(j);
+						if (!childElmnt.get("parent").equals("Basic Configuration")) {
+							commandPojoLeftPanel = new CommandPojo();
+							commandPojoLeftPanel.setId(childElmnt.get("id").toString());
+							commandPojoList1.add(commandPojoLeftPanel);
+						}
+					}
+				}
+			}
+
+			addNewFeatureTemplateMngmntPojo.setCmdList(commandPojoList1);
+			templateDao.updateTransactionFeatureForNewTemplate(addNewFeatureTemplateMngmntPojo);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return commandPojoList1;
+
+	}
+
+	public String setCommandList(List<String> featureList, String finaltemplate) {
+		TemplateManagementDao dao = new TemplateManagementDao();
+		List<CommandPojo> cammands = new ArrayList<>();
+		for (String feature : featureList) {
+			TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
+					.findIdByComandDisplayFeatureAndCommandContains(feature, finaltemplate);
+			if (findIdByfeatureAndCammand != null) {
+				List<CommandPojo> cammandByTemplateAndfeatureId = dao
+						.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(), finaltemplate);
+				cammands.addAll(cammandByTemplateAndfeatureId);
+			}
+		}
+		cammands.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
+		String finalCammands = cammands.toString();
+		/*
+		 * for (CommandPojo cammand : cammands) { finalCammands = finalCammands +
+		 * cammand.getCommandValue(); }
+		 */
+		return finalCammands;
+
 	}
 }

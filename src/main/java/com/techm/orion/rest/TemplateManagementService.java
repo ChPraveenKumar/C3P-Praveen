@@ -1,8 +1,6 @@
 package com.techm.orion.rest;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -10,10 +8,8 @@ import java.util.Observer;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,19 +22,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.techm.orion.dao.TemplateManagementDB;
-import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
-import com.techm.orion.entitybeans.MasterAttributes;
-import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.models.TemplateCommandJSONModel;
-import com.techm.orion.pojo.AddNewFeatureTemplateMngmntPojo;
-import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.DeviceDetailsPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
-import com.techm.orion.pojo.MasterAttribPojo;
-import com.techm.orion.repositories.MasterAttribRepository;
-import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementNewService;
 
@@ -48,16 +35,13 @@ public class TemplateManagementService implements Observer {
 	private static final Logger logger = LogManager.getLogger(TemplateManagementService.class);
 
 	@Autowired
-	private MasterAttribRepository masterAttrribRepository;
-
-	@Autowired
 	private TemplateSuggestionDao templateSuggestionDao;
 
-	@Autowired
-	private TemplateFeatureRepo templatefeatureRepo;
-	
 	@Autowired()
 	private MasterFeatureService masterFeatureService;
+
+	@Autowired
+	private TemplateManagementNewService templateManagmentService;
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -66,152 +50,45 @@ public class TemplateManagementService implements Observer {
 	public ResponseEntity<JSONObject> addNewFeatureForTemplate(@RequestBody String newFeature) {
 		JSONParser parser = new JSONParser();
 		JSONObject obj = new JSONObject();
-		TemplateManagementDB templateDao = new TemplateManagementDB();
-		TemplateCommandJSONModel templateCommandJSONModel = new TemplateCommandJSONModel();
-		List<TemplateCommandJSONModel> templateCommandJSONModelList = new ArrayList<TemplateCommandJSONModel>();
+		List<TemplateCommandJSONModel> templateCommandJSONModel = new ArrayList<>();
 		String finalJsonArray = "";
 		try {
-
-			JSONObject json = (JSONObject) parser.parse(newFeature);
-			AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
-
-			JSONArray cmdArray = (JSONArray) (json.get("commands"));
-			List<CommandPojo> commandPojoList = extractCommands(cmdArray);
-			addNewFeatureTemplateMngmntPojo.setCmdList(commandPojoList);
-			int idToSetInCommandTable = 0;
-			TemplateFeatureEntity currentFeature = new TemplateFeatureEntity();
-			if (json.get("featureName") != null) {
-					if (json.get("templateId") != null) {
-						addNewFeatureTemplateMngmntPojo.setTemplateid(json.get("templateId").toString());
-					}
-					addNewFeatureTemplateMngmntPojo.setFeatureName(json.get("featureName").toString());
-					if (json.get("isAParent") != null) {
-						addNewFeatureTemplateMngmntPojo.setParentName(json.get("isAParent").toString());
-					}							
-				idToSetInCommandTable = templateDao
-						.updateFeatureTablesForNewCommand(addNewFeatureTemplateMngmntPojo);
-				currentFeature = templatefeatureRepo.findByCommandAndComandDisplayFeature(
-						addNewFeatureTemplateMngmntPojo.getTemplateid(),
-						addNewFeatureTemplateMngmntPojo.getFeatureName());
-				if (json.get("masterId") != null) {
-					addNewFeatureTemplateMngmntPojo.setMasterFeatureId(json.get("masterId").toString());
-					
-				}
+			JSONObject requestJson = (JSONObject) parser.parse(newFeature);
+			templateCommandJSONModel = masterFeatureService.addNewFeatureForTemplate(requestJson);
+			if (templateCommandJSONModel != null && !templateCommandJSONModel.isEmpty()) {
+				finalJsonArray = new Gson().toJson(templateCommandJSONModel);
+				obj.put(new String("output"), finalJsonArray);
+			} else {
+				obj.put(new String("output"), "Missing mandatory data in the service Request");
 			}
-			
-			commandPojoList = templateDao.updateMasterCommandTableWithNewCommand(addNewFeatureTemplateMngmntPojo,
-					idToSetInCommandTable);
-
-			JSONArray attribMapArray = (JSONArray) (json.get("attribMappings"));
-			setAttribMapping(attribMapArray,currentFeature);
-			templateCommandJSONModel.setActive(false);
-			templateCommandJSONModel.setCommand_id(idToSetInCommandTable);
-			templateCommandJSONModel.setList(commandPojoList);
-			templateCommandJSONModelList.add(templateCommandJSONModel);
-			finalJsonArray = new Gson().toJson(templateCommandJSONModel);
-			obj.put(new String("output"), finalJsonArray);
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.info(e);
 		}
-
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
-	}
-
-	private void setAttribMapping(JSONArray attribMapArray, TemplateFeatureEntity currentFeature) {
-		if (attribMapArray != null) {
-			List<MasterAttribPojo> templateAttribList = new ArrayList<MasterAttribPojo>();
-
-			for (int i = 0; i < attribMapArray.size(); i++) {
-
-				JSONObject jsonObj = (JSONObject) attribMapArray.get(i);
-				MasterAttribPojo templatePojo = new MasterAttribPojo();
-				if (jsonObj.get("attribLabel") != null) {
-					templatePojo.setAttribLabel(jsonObj.get("attribLabel").toString());
-				}
-				if (jsonObj.get("attribute") != null) {
-					templatePojo.setAttribute(jsonObj.get("attribute").toString());
-				}
-				if (jsonObj.containsKey("validations")) {
-					if (jsonObj.get("validations") != null) {
-						JSONArray jsonValidationArr = (JSONArray) jsonObj.get("validations");
-						String[] validationArr = new String[jsonValidationArr.size()];
-						for (int j = 0; j < jsonValidationArr.size(); j++) {
-							validationArr[j] = jsonValidationArr.get(j).toString();
-						}
-						templatePojo.setValidations(validationArr);
-					}
-				}
-				if (jsonObj.get("uiControl") != null) {
-					templatePojo.setUiControl(jsonObj.get("uiControl").toString());
-				}
-				if (jsonObj.containsKey("category")) {
-					if (jsonObj.get("category") != null) {
-						templatePojo.setCategory(jsonObj.get("category").toString());
-					}
-				}
-				templateAttribList.add(templatePojo);
-
-			}
-
-			/* save attrib config */
-			templateAttribList.stream().forEach(masterAttrib -> {
-				saveAttrib(masterAttrib,currentFeature);
-			});
-		}
-
-}
-
-	private void saveAttrib(MasterAttribPojo masterAttrib, TemplateFeatureEntity currentFeature) {
-		MasterAttributes master = new MasterAttributes();
-		master.setLabel(masterAttrib.getAttribLabel());
-		master.setName(masterAttrib.getAttribute());
-		master.setCategory(masterAttrib.getCategory());
-		master.setUiComponent(masterAttrib.getUiControl());
-		master.setSeriesId(null);	
-		master.setTemplateId(currentFeature.getCommand());
-		master.setAttribType("Template");
-		master.setValidations(Arrays.toString(masterAttrib.getValidations()));
-		master.setMasterFID(currentFeature.getMasterFId());
-		master.setTemplateFeature(currentFeature);
-		masterAttrribRepository.save(master);
-		
-	}
-
-	private List<CommandPojo> extractCommands(JSONArray cmdArray) {
-		List<CommandPojo> commandPojoList = new ArrayList<CommandPojo>();
-		for (int i = 0; i < cmdArray.size(); i++) {
-			JSONObject obj1 = (JSONObject) cmdArray.get(i);
-			CommandPojo commandPojo = new CommandPojo();
-			if (obj1.get("commandLine") != null) {
-				commandPojo.setCommand_value(obj1.get("commandLine").toString());
-			}
-			if (obj1.get("nocommandLine") != null) {
-				commandPojo.setNo_command_value(obj1.get("nocommandLine").toString());
-			}
-			commandPojoList.add(commandPojo);
-		}
-		return commandPojoList;
 	}
 
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/onNextToGetRightPanel", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public ResponseEntity<JSONObject>  onNextToGetRightPanel(@RequestBody String templateFeatureRequest) {
+	public ResponseEntity<JSONObject> onNextToGetRightPanel(@RequestBody String templateFeatureRequest) {
 		JSONObject obj = new JSONObject();
 		JSONParser parser = new JSONParser();
 		try {
 			JSONObject requestJson = (JSONObject) parser.parse(templateFeatureRequest);
 			DeviceDetailsPojo deviceDetails = masterFeatureService.fetchDeviceDetails(requestJson);
-			if(deviceDetails.getVendor() !=null && deviceDetails.getDeviceFamily() !=null && deviceDetails.getOs() !=null 
-				&& deviceDetails.getOsVersion() !=null && deviceDetails.getRegion() !=null && deviceDetails.getNetworkType() !=null) {
-				List<GetTemplateMngmntActiveDataPojo> activeTemplates = masterFeatureService.getActiveTemplates(deviceDetails);
-				obj.put(new String("output"), activeTemplates !=null && activeTemplates.size()>0 ? activeTemplates : "No matching record find for exact match case and neareat match case");
-			}else {
+			if (deviceDetails.getVendor() != null && deviceDetails.getDeviceFamily() != null
+					&& deviceDetails.getOs() != null && deviceDetails.getOsVersion() != null
+					&& deviceDetails.getRegion() != null && deviceDetails.getNetworkType() != null) {
+				List<GetTemplateMngmntActiveDataPojo> activeTemplates = masterFeatureService
+						.getActiveTemplates(deviceDetails);
+				obj.put(new String("output"), activeTemplates != null && activeTemplates.size() > 0 ? activeTemplates
+						: "No matching record find for exact match case and neareat match case");
+			} else {
 				obj.put(new String("output"), "Missing mandatory data in the service Request");
 			}
-			
+
 		} catch (Exception exe) {
 			exe.printStackTrace();
 		}
@@ -222,239 +99,16 @@ public class TemplateManagementService implements Observer {
 	@POST
 	@RequestMapping(value = "/saveFinalTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response saveFinalTemplate(@RequestBody String newFeature) {
-		
+	public ResponseEntity<JSONObject> saveFinalTemplate(@RequestBody String newFeature) {
 		JSONParser parser = new JSONParser();
-		TemplateManagementDB templateDao = new TemplateManagementDB();
-		GetTemplateConfigurationData templateSaveFlowService = new GetTemplateConfigurationData();
-		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
-
-		String templateId = null, templateVersion = null;
-		Response response = null;
-		DecimalFormat numberFormat = new DecimalFormat("#.#");
+		ResponseEntity<JSONObject> response = null;
 		try {
 			JSONObject json = (JSONObject) parser.parse(newFeature);
-
-			AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
-			String templateAndVesion = json.get("templateid").toString() + "_v"
-					+ json.get("templateVersion").toString();
-			boolean ifTemplateAlreadyPresent = templateDao.checkTemplateVersionAlredyexist(templateAndVesion);
-			if (ifTemplateAlreadyPresent) {
-				double value = Double.parseDouble(json.get("templateVersion").toString());
-				value = value + 0.1;
-				templateAndVesion = json.get("templateid").toString() + "_v" + numberFormat.format(value);
-				templateId = json.get("templateid").toString();
-				templateVersion = numberFormat.format(value);
-				addNewFeatureTemplateMngmntPojo.setTemplateid(templateAndVesion);
-			} else {
-				addNewFeatureTemplateMngmntPojo.setTemplateid(templateAndVesion);
-				templateId = json.get("templateid").toString();
-				templateVersion = json.get("templateVersion").toString();
-			}
-
-			List<CommandPojo> saveLeftPanelData = saveLeftPanelData(json,
-					addNewFeatureTemplateMngmntPojo.getTemplateid());
-			JSONArray cmdArray = (JSONArray) (json.get("list"));			
-			addNewFeatureTemplateMngmntPojo.setCmdList(SetCommandData(cmdArray,saveLeftPanelData));
-			templateDao.updateTransactionCommandForNewTemplate(addNewFeatureTemplateMngmntPojo);
-
-			response = templateSaveFlowService.saveConfigurationTemplate(newFeature, templateId, templateVersion);
-			camundaService.initiateApprovalFlow(templateAndVesion, templateVersion, "Admin");
-
+			response = templateManagmentService.setTemplateData(json);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 		return response;
-	}
-
-	@SuppressWarnings("unchecked")
-	private List<CommandPojo> SetCommandData(JSONArray cmdArray, List<CommandPojo> saveLeftPanelData) {
-		List<CommandPojo> commandPojoList = new ArrayList<CommandPojo>();
-		cmdArray.forEach(cmd->{
-			boolean flag = false;
-			JSONObject obj1 = (JSONObject) cmd;
-
-			CommandPojo commandPojo = new CommandPojo();
-			/* If feature is newly added */
-			if (obj1.get("id").toString().contains("drop_") && obj1.get("id").toString().contains("dragN_")) {
-				String modId = obj1.get("id").toString().substring(0, obj1.get("id").toString().length() - 1);
-				String result = modId.substring(0, modId.indexOf("dragN_"));
-				result = result.replace("drop_", "").replace("dragN_", "");
-				boolean temp = false;
-				if (saveLeftPanelData != null && !saveLeftPanelData.isEmpty()) {
-					for (CommandPojo pojo : saveLeftPanelData) {
-						if (pojo.getCommand_value().equals(obj1.get("commandValue"))) {
-							if (pojo.getTempId().equals(result)) {
-								commandPojo.setCommand_id(pojo.getId());
-								commandPojo.setCommand_sequence_id(pojo.getCommandSequenceId());
-								saveLeftPanelData.remove(pojo);
-								temp = true;
-								break;
-							}
-						}
-					}
-				} else {
-					commandPojo.setCommand_id(result);
-					commandPojo.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
-					temp = true;
-				}
-				if (!temp) {
-					commandPojo.setCommand_id(result);
-					commandPojo.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
-				}
-			} else {
-				if (saveLeftPanelData == null || saveLeftPanelData.isEmpty()) {
-					commandPojo.setCommand_id(obj1.get("id").toString());
-					commandPojo.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
-
-				} else {
-					for (CommandPojo pojo : saveLeftPanelData) {
-						if (pojo.getCommand_value().equals(obj1.get("commandValue"))
-								&& pojo.getTempId().equals(obj1.get("id").toString())) {
-							commandPojo.setCommand_id(pojo.getId());
-							commandPojo.setCommand_sequence_id(pojo.getCommandSequenceId());
-							saveLeftPanelData.remove(pojo);
-							flag = true;
-							break;
-						}
-						continue;
-					}
-					if (!flag) {
-						commandPojo.setCommand_id(obj1.get("id").toString());
-						commandPojo
-								.setCommand_sequence_id(Integer.parseInt(obj1.get("commandSequenceId").toString()));
-						flag = false;
-					}
-				}
-
-			}
-			commandPojo.setPosition(Integer.parseInt(obj1.get("position").toString()));
-			commandPojo.setIs_save(1);
-			commandPojoList.add(commandPojo);
-		});	
-		return commandPojoList;
-	}
-
-	public List<CommandPojo> saveLeftPanelData(JSONObject json, String templateId) {
-		TemplateManagementDB templateDao = new TemplateManagementDB();
-		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = null;
-
-		List<CommandPojo> commandPojoList2 = null;
-
-		try {
-
-			addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
-			/*
-			 * addNewFeatureTemplateMngmntPojo.setTemplateid(json
-			 * .get("templateid").toString());
-			 */
-
-			addNewFeatureTemplateMngmntPojo.setTemplateid(templateId);
-			JSONArray leftPanel = (JSONArray) (json.get("leftPanelData"));
-			CommandPojo commandPojoLeftPanel = null;
-			CommandPojo commandPojo = null;
-			List<CommandPojo> commandPojoList1 = new ArrayList<CommandPojo>();
-			commandPojoList2 = new ArrayList<CommandPojo>();
-			/*
-			 * Dhanshri Mane 14-1-2020 get data for left panel and convert if data is old
-			 * then convert it into addFeature service request and add as a new feature
-			 */
-			for (int i = 0; i < leftPanel.size(); i++) {
-
-				JSONObject obj1 = (JSONObject) leftPanel.get(i);
-				commandPojoLeftPanel = new CommandPojo();
-
-				if (!obj1.get("name").toString().equals("Basic Config1")
-						&& !obj1.get("name").toString().equals("Basic Configuration")) {
-					if (!obj1.containsKey("newFeature")) {
-						JSONObject obj = new JSONObject();
-						obj.put("templateId", templateId);
-						obj.put("featureName", obj1.get("name").toString());
-
-						obj.put("isAParent", "Add New Feature");
-						org.json.simple.JSONArray commandArr = (org.json.simple.JSONArray) obj1.get("commands");
-
-						JSONArray cmdArray = new JSONArray();
-						for (int j = 0; j < commandArr.size(); j++) {
-							JSONObject cmdObj = (JSONObject) commandArr.get(j);
-							JSONObject cmdObj1 = new JSONObject();
-							cmdObj1.put("commandLine", cmdObj.get("commandValue").toString());
-							if (cmdObj.get("no_command_value") != null) {
-								cmdObj1.put("nocommandLine", cmdObj.get("no_command_value").toString());
-							}
-							cmdArray.add(cmdObj1);
-						}
-						obj.put("commands", cmdArray);
-
-						JSONArray attribJson = (JSONArray) obj1.get("attributeMapping");
-						JSONArray attributeMapping = new JSONArray();
-						for (int j = 0; j < attribJson.size(); j++) {
-							JSONObject attriObj = (JSONObject) attribJson.get(j);
-							JSONObject attribObj2 = new JSONObject();
-							attribObj2.put("attribLabel", attriObj.get("label"));
-							attribObj2.put("attribute", attriObj.get("name"));
-							attribObj2.put("validations", attriObj.get("validations"));
-							attribObj2.put("uiControl", attriObj.get("uIComponent"));
-							if (attriObj.containsKey("category")) {
-								attribObj2.put("category", attriObj.get("categotyLabel"));
-							}
-							attributeMapping.add(attribObj2);
-						}
-						obj.put("attribMappings", attributeMapping);
-						/* addNewFeatureForTemplate service */
-						ResponseEntity<JSONObject> addNewFeatureForTemplate = addNewFeatureForTemplate(obj.toString());
-						JSONObject responceOutput = addNewFeatureForTemplate.getBody();
-						String featureOutput = (String) responceOutput.get("output");
-
-						JSONParser parserEntity = new JSONParser();
-						JSONObject entity = (JSONObject) parserEntity.parse(featureOutput);
-						JSONArray cmdlist = (JSONArray) entity.get("list");
-						for (int c = 0; c < cmdlist.size(); c++) {
-							commandPojo = new CommandPojo();
-							JSONObject childElmnt = (JSONObject) cmdlist.get(c);
-							commandPojo.setCommandSequenceId(
-									Integer.parseInt(childElmnt.get("commandSequenceId").toString()));
-							commandPojo.setCommand_value(childElmnt.get("commandValue").toString());
-							commandPojoLeftPanel.setId(entity.get("id").toString());
-							commandPojo.setId(entity.get("id").toString());
-							commandPojo.setTempId(obj1.get("id").toString());
-							commandPojoList2.add(commandPojo);
-
-						}
-						commandPojoLeftPanel.setId(entity.get("id").toString());
-						logger.info(obj);
-					} else {
-						commandPojoLeftPanel.setId(obj1.get("id").toString());
-					}
-				} else {
-					commandPojoLeftPanel.setId(obj1.get("id").toString());
-				}
-				commandPojoList1.add(commandPojoLeftPanel);
-
-				/* start pankaj code for sub-feature is not auto-checked */
-				JSONArray childArray = (JSONArray) obj1.get("childList");
-				if (childArray.size() > 0) {
-					for (int j = 0; j < childArray.size(); j++) {
-						JSONObject childElmnt = (JSONObject) childArray.get(j);
-						if (!childElmnt.get("parent").equals("Basic Configuration")) {
-							commandPojoLeftPanel = new CommandPojo();
-							commandPojoLeftPanel.setId(childElmnt.get("id").toString());
-							commandPojoList1.add(commandPojoLeftPanel);
-						}
-					}
-				}
-				/* end pankaj code for sub-feature is not auto-checked */
-			}
-
-			addNewFeatureTemplateMngmntPojo.setCmdList(commandPojoList1);
-			templateDao.updateTransactionFeatureForNewTemplate(addNewFeatureTemplateMngmntPojo);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return commandPojoList2;
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -485,57 +139,38 @@ public class TemplateManagementService implements Observer {
 	}
 
 	/* method added for view template Details */
+	@SuppressWarnings({ "unchecked", "null" })
 	@POST
 	@RequestMapping(value = "/viewTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response viewTemplate(@RequestBody String request) {
+	public ResponseEntity<JSONObject> viewTemplate(@RequestBody String request) {
 		JSONObject basicDeatilsOfTemplate = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
-			TemplateManagementDao dao = new TemplateManagementDao();
-
-			String template = json.get("templateId").toString();
-			String version = json.get("version").toString();
-
-			String finaltemplate = template + "_V" + version;
-			basicDeatilsOfTemplate = templateSuggestionDao.getBasicDeatilsOfTemplate(template, version);
-
-			String seriesId = dao.getSeriesId(finaltemplate, null);
-			seriesId = StringUtils.substringAfter(seriesId, "Generic_");
-			logger.info(seriesId);
-
-			List<CommandPojo> cammands = dao.getCammandsBySeriesId(seriesId, finaltemplate);
-			List<String> featureList = new ArrayList<>();
-			featureList.add("Basic Configuration");
-
-			featureList.addAll(templateSuggestionDao.getFeatureList(finaltemplate));
-			basicDeatilsOfTemplate.put("featureList", featureList);
-			for (String feature : featureList) {
-				if (!feature.contains("Basic")) {
-					TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
-							.findIdByComandDisplayFeatureAndCommandContains(feature, finaltemplate);
-					if (findIdByfeatureAndCammand != null) {
-						List<CommandPojo> cammandByTemplateAndfeatureId = dao
-								.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(), finaltemplate);
-						cammands.addAll(cammandByTemplateAndfeatureId);
-					}
-				}
+			String template = null;
+			String version = null;
+			if (json.get("templateId") != null) {
+				template = json.get("templateId").toString();
 			}
-			cammands.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
-			String finalCammands = "";
-			for (CommandPojo cammand : cammands) {
-				finalCammands = finalCammands + cammand.getCommandValue();
+			if (json.get("version") != null) {
+				version = json.get("version").toString();
 			}
-			basicDeatilsOfTemplate.put("commands", finalCammands);
+			if (template != null && version != null) {
+				String finaltemplate = template + "_V" + version;
+				basicDeatilsOfTemplate = templateSuggestionDao.getBasicDeatilsOfTemplate(template, version);
+				List<String> featureList = new ArrayList<>();
+				featureList.addAll(templateSuggestionDao.getFeatureList(finaltemplate));
+				basicDeatilsOfTemplate.put("featureList", featureList);
+				basicDeatilsOfTemplate.put("commands",
+						templateManagmentService.setCommandList(featureList, finaltemplate));
+			} else {
+				basicDeatilsOfTemplate.put(new String("output"), "Missing mandatory data in the service Request");
+			}
 		} catch (Exception e) {
 			logger.error(e);
 		}
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(basicDeatilsOfTemplate).build();
+		return new ResponseEntity<JSONObject>(basicDeatilsOfTemplate, HttpStatus.OK);
 	}
 
 	@Override

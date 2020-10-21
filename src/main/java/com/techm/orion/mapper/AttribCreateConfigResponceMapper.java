@@ -93,6 +93,9 @@ public class AttribCreateConfigResponceMapper {
 			if (entity.getcCategory() != null) {
 				attribJson.setCategotyLabel(entity.getcCategory());
 			}
+			if(entity.getcId()!=null) {
+			attribJson.setCharacteriscticsId(entity.getcId());
+			}
 			jsonList.add(attribJson);
 		}
 
