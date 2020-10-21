@@ -1,18 +1,98 @@
 package com.techm.orion.pojo;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+@Entity
+@Table(name = "c3p_template_master_command_list")
 public class CommandPojo implements Comparable {
 
-	int command_sequence_id;
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Id
+	@Column(name = "id")
+	private int rid;
+	
+	@Column(name = "command_value")
 	String command_value;
+
+	@Transient
 	String commandValue;
+
+	
+	@Column(name = "command_id")
+	int command_id;
+	
+	@Column(name = "command_type")
+	int command_type;
+
+
+	@Column(name = "command_sequence_id")
+	int command_sequence_id;
+
+	
+
+	@Transient
 	int commandSequenceId;
+
+	
+	@Column(name = "no_command_value")
 	String no_command_value;
+	
+	@Column(name = "command_replication_ind")
+	String command_replication_ind;
+	
+	@Column(name = "master_f_id")
+	String masterFId;
+	
+	@Transient
 	String id;
+	
+	@Transient
 	int position;
+	
+	@Transient
 	boolean isNew = false;
+	
+	@Transient
 	int is_save;
+	
+	@Transient
 	String tempId;
 
+	
+	public int getCommand_type() {
+		return command_type;
+	}
+
+	public void setCommand_type(int command_type) {
+		this.command_type = command_type;
+	}
+
+	public String getCommand_replication_ind() {
+		return command_replication_ind;
+	}
+
+	public void setCommand_replication_ind(String command_replication_ind) {
+		this.command_replication_ind = command_replication_ind;
+	}
+
+	public String getMaster_f_id() {
+		return masterFId;
+	}
+
+	public void setMaster_f_id(String master_f_id) {
+		this.masterFId = master_f_id;
+	}
+
+	public void setCommand_id(int command_id) {
+		this.command_id = command_id;
+	}
+	
 	public int getIs_save() {
 		return is_save;
 	}

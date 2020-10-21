@@ -18,6 +18,9 @@ public class TemplateBasicConfigurationPojo {
 
 	private String approver;
 	private String createdBy;
+	
+	private String alias;
+	
 	private boolean isEnabled=false;
 	
 	private String series;
@@ -136,6 +139,12 @@ public class TemplateBasicConfigurationPojo {
 	}
 	public void setNetworkType(String networkType) {
 		this.networkType = networkType;
+	}
+	public String getAlias() {
+		return alias;
+	}
+	public void setAlias(String alias) {
+		this.alias = alias;
 	}
 	
 }

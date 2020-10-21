@@ -1,5 +1,7 @@
 package com.techm.orion.repositories;
 
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,5 +19,12 @@ public interface TemplateFeatureRepo extends
 	public TemplateFeatureEntity findByCommandAndComandDisplayFeature(String command, String featureName);
 	
 	public TemplateFeatureEntity findIdByComandDisplayFeatureAndCommandContains(String featureName,String templateId);
+
+	int countMasterFIdByMasterFId(String featureid);
+	
+	public List<TemplateFeatureEntity> findMasterFIdByCommand(String templateid);
+	
+	TemplateFeatureEntity findById(int id);
+
 }
 

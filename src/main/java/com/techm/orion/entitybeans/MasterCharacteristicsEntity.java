@@ -34,7 +34,7 @@ public class MasterCharacteristicsEntity implements Serializable
 	private String cId;
 
 	@Column(name = "c_name")
-	private int cName;
+	private String cName;
 
 	@Column(name = "c_f_id")
 	private String cFId;
@@ -50,6 +50,7 @@ public class MasterCharacteristicsEntity implements Serializable
 
 	@Column(name = "c_validations")
 	private String cValidations;
+
 
 	@Column(name = "c_created_by")
 	private String cCreatedBy;
@@ -72,6 +73,27 @@ public class MasterCharacteristicsEntity implements Serializable
 	@Column(name = "c_type")
 	private String cType;
 
+
+	public String getcValidations() {
+		return cValidations;
+	}
+
+	public void setcValidations(String cValidations) {
+		this.cValidations = cValidations;
+	}
+	
+	public String getcCategory() {
+		return cCategory;
+	}
+
+	public void setcCategory(String cCategory) {
+		this.cCategory = cCategory;
+	}
+
+	@Column(name = "c_category")
+	private String cCategory;
+
+
 	public int getcRowid() {
 		return cRowid;
 	}
@@ -88,11 +110,11 @@ public class MasterCharacteristicsEntity implements Serializable
 		this.cId = cId;
 	}
 
-	public int getcName() {
+	public String getcName() {
 		return cName;
 	}
 
-	public void setcName(int cName) {
+	public void setcName(String cName) {
 		this.cName = cName;
 	}
 
@@ -126,14 +148,6 @@ public class MasterCharacteristicsEntity implements Serializable
 
 	public void setfFlag(String fFlag) {
 		this.fFlag = fFlag;
-	}
-
-	public String getcValidations() {
-		return cValidations;
-	}
-
-	public void setcValidations(String cValidations) {
-		this.cValidations = cValidations;
 	}
 
 	public String getcCreatedBy() {

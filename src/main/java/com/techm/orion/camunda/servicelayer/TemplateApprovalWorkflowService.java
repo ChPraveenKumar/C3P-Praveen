@@ -16,7 +16,9 @@ import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,8 +26,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDao;
+import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.rest.CamundaServiceTemplateApproval;
 import com.techm.orion.rest.GetTemplateConfigurationData;
 
@@ -34,6 +40,13 @@ import com.techm.orion.rest.GetTemplateConfigurationData;
 public class TemplateApprovalWorkflowService implements Observer {
 	private static final Logger logger = LogManager.getLogger(TemplateApprovalWorkflowService.class);
 
+	@Autowired
+	MasterFeatureRepository masterFeatureRepository;
+	
+	@Autowired
+	TemplateFeatureRepo templateFeatureRepo;
+
+	
 	@POST
 	@RequestMapping(value = "/saveTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -80,25 +93,68 @@ public class TemplateApprovalWorkflowService implements Observer {
 		TemplateManagementDao templateSaveFlowService = new TemplateManagementDao();
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONParser parser = new JSONParser();
-		String templateId = null, templateVersion = null, status = null, approverComment = null;
+		String templateId = null, templateVersion = null, status = null, approverComment = null,featureID=null, featureVersion=null;
 		String userTaskId = null;
+		DecimalFormat numberFormat = new DecimalFormat("#.0");
+
 		int response = 0;
 		try {
 			JSONObject json = (JSONObject) parser.parse(string);
-			templateId = json.get("templateid").toString().replace("-", "_");
-			if (json.get("templateVersion") != null) {
-				templateVersion = (json.get("templateVersion").toString());
+			if (Boolean.parseBoolean(json.get("isTemplate").toString())) {
+				templateId = json.get("templateid").toString().replace("-", "_");
+				String templateidForFeatureExtraction=templateId;
+				if (json.get("templateVersion") != null) {
+					templateVersion = (json.get("templateVersion").toString());
 
-			} else {
-				templateVersion = templateId.substring(templateId.indexOf("_V")+2, templateId.length());
-				templateId = templateId.substring(0, templateId.indexOf("_V"));
+				} else {
+					String arr[]=templateId.split("_");
+					templateVersion = arr[1].substring(arr[1].indexOf("V") + 1, arr[1].length());
+					templateId = arr[0];
+
+				}
+				status = json.get("status").toString();
+				approverComment = json.get("comment").toString();
+				
+				//get feature id based of command type
+				List<TemplateFeatureEntity>listFeatures=templateFeatureRepo.findMasterFIdByCommand(templateidForFeatureExtraction);
+				
+				listFeatures.forEach(feature -> {
+					masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(), feature.getMasterFId(), "1",json.get("comment").toString(),"Admin");
+
+				});
+				response = templateSaveFlowService.updateTemplateStatus(templateId, templateVersion, status,
+						approverComment);
+				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(templateId, templateVersion);
+				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
 			}
-			status = json.get("status").toString();
-			approverComment = json.get("comment").toString();
-			response = templateSaveFlowService.updateTemplateStatus(templateId, templateVersion, status,
-					approverComment);
-			userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(templateId, templateVersion);
-			camundaService.completeApprovalFlow(userTaskId, status, approverComment);
+			else
+			{
+				/*In case of feature*/
+				status = json.get("status").toString();
+				approverComment = json.get("comment").toString();
+				featureID=json.get("featureid").toString();
+				
+				MasterFeatureEntity entity=masterFeatureRepository.findByFId(featureID);
+				String comment=null;
+				String str=entity.getfComments();
+				if(str!=null)
+				{
+					comment=entity.getfComments().concat(approverComment);
+
+				}
+				else
+				{
+					comment=approverComment;
+				}
+				featureVersion = numberFormat.format(Double.parseDouble(json.get("featureversion").toString()));
+				
+				response=masterFeatureRepository.updateMasterFeatureStatus(status, featureID, featureVersion,comment,"Admin");
+				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(featureID, featureVersion);
+				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
+				
+			}
+			
+			// camundaService.initiateApprovalFlow(templateId, templateVersion, "Admin");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

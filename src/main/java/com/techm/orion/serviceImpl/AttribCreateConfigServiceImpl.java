@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.repositories.AttribCreateConfigRepo;
@@ -42,16 +43,25 @@ public class AttribCreateConfigServiceImpl implements AttribCreateConfigService 
 
 	@Override
 	public List<AttribCreateConfigPojo> getByFeatureId(int id) {
-		return new AttribCreateConfigResponceMapper()
+		return mapper
 				.getAllAttribTemplateSuggestionMapper(dao.findBytemplateFeatureId(id));
 
 	}
 
 	@Override
 	public List<AttribCreateConfigPojo> getByAttribTemplateAndFeatureName(String templateId, String featureName) {
-		return new AttribCreateConfigResponceMapper().getAllAttribTemplateSuggestionMapper(
+		return mapper.getAllAttribTemplateSuggestionMapper(
 				dao.findBytemplateFeatureComandDisplayFeatureAndTemplateId(featureName, templateId));
 
 	}
 
+	@Override
+	public List<AttribCreateConfigPojo> getByAttribTemplateFeatureEntityTemplateId(
+			TemplateFeatureEntity entity, String templateId) {
+		// TODO Auto-generated method stub
+		return mapper.getAllAttribTemplateSuggestionMapper(
+				dao.findByTemplateFeatureAndTemplateId(entity, templateId));
+	}
+
+	
 }

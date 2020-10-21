@@ -161,15 +161,6 @@ public class TemplateManagementDetailsService {
 		return templatecommandList;
 	}
 
-	public Map<String, String> addTemplate(String vendor, String model, String os, String osVersion,
-			String region, String templateId) {
-		Map<String, String> result = new HashMap<String, String>();
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		result = templateManagementDao.createTemplateBasicConfig(vendor, model, os, osVersion, region,
-				templateId);
-		return result;
-	}
-
 	public boolean updateTemplateDBonCreate(String tempID) throws SQLException {
 		boolean result = false;
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
