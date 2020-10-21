@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
@@ -22,6 +23,8 @@ import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -79,6 +82,11 @@ public class GetTemplateConfigurationData implements Observer {
 
 	@Autowired
 	BasicConfigurationRepository basicConfigRepo;
+	
+	
+	  @Autowired 
+	  private TemplateManagementDetailsService templateManagmntService;
+	 
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -2061,4 +2069,16 @@ public class GetTemplateConfigurationData implements Observer {
 
 	}
 
+	@GET
+	@RequestMapping(value = "/checkAliasName", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<JSONObject> checkAliasName(String aliasName) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = templateManagmntService.checkAliasNamePresent(aliasName);
+		if (json != null) {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
 }
