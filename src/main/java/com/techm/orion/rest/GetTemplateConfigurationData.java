@@ -812,6 +812,7 @@ public class GetTemplateConfigurationData implements Observer {
 		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
 		TemplateManagementDao dao = new TemplateManagementDao();
 		JSONObject jsonObj;
+		String templateId = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
@@ -826,13 +827,13 @@ public class GetTemplateConfigurationData implements Observer {
 												0,
 												json.get("templateid")
 														.toString()
-														.indexOf("V") - 1),
+														.indexOf("_V")),
 								json.get("templateid")
 										.toString()
 										.substring(
 												json.get("templateid")
 														.toString()
-														.indexOf("V") + 1,
+														.indexOf("_V") + 2,
 												json.get("templateid")
 														.toString().length()),
 								json.get("readFlag").toString());
@@ -849,14 +850,14 @@ public class GetTemplateConfigurationData implements Observer {
 												0,
 												json.get("templateid")
 														.toString()
-														.indexOf("V") - 1))) {
+														.indexOf("_V")))) {
 							if (listcomment.getVersion().equalsIgnoreCase(
 									json.get("templateid")
 											.toString()
 											.substring(
 													json.get("templateid")
 															.toString()
-															.indexOf("V") + 1,
+															.indexOf("_V") + 2,
 													json.get("templateid")
 															.toString()
 															.length()))) {
@@ -1873,13 +1874,9 @@ public class GetTemplateConfigurationData implements Observer {
 				templateIdToSaveInTransactionTable = json.get("templateid")
 						.toString() + "_V" + nextVersionS;
 			} else {
-				templateId = json
-						.get("templateid")
-						.toString()
-						.substring(
-								0,
-								json.get("templateid").toString().indexOf("V") - 1)
-						+ "_V" + "1.0";
+				templateId = json.get("templateid").toString();
+				templateId = templateId.replace("-", "_");
+				templateId = templateId.substring(0, templateId.indexOf("_V")) + "_V" + "1.0";
 				nextVersion = 1.1;
 				templateIdToSaveInTransactionTable = json.get("templateid")
 						.toString()

@@ -135,7 +135,7 @@ public class VNFHelper {
 	}
 
 	public boolean cmdPingCall(String managementIp, String routername, String region) throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe");
+		/*ProcessBuilder builder = new ProcessBuilder("cmd.exe");
 		Process p = null;
 		boolean flag = true;
 		try {
@@ -157,11 +157,30 @@ public class VNFHelper {
 
 		catch (IOException e) {
 			e.printStackTrace();
-		}
+		}*/
 
 		// Scanner s = new Scanner( p.getInputStream() );
+		StringBuilder commadBuilder = new StringBuilder();
+		Process process = null;
+		boolean flag = true;
+		try {
+			commadBuilder.append("ping ");
+			commadBuilder.append(managementIp);
+			//Pings timeout
+			if("Linux".equals(TSALabels.APP_OS.getValue())) {
+				commadBuilder.append(" -c ");
+			}else {
+				commadBuilder.append(" -n ");
+			}
+			//Number of pings
+			commadBuilder.append("5");
+			logger.info("commandToPing -"+commadBuilder);	
+			process = Runtime.getRuntime().exec(commadBuilder.toString());			
+		}catch(IOException exe) {
+			logger.error("Exception in pingResults - "+exe.getMessage());
+		}
 
-		InputStream input = p.getInputStream();
+		InputStream input = process.getInputStream();
 		flag = printResult(input, routername, region);
 
 		return flag;

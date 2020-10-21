@@ -11,12 +11,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 
 import javax.ws.rs.POST;
 
@@ -570,164 +568,6 @@ public class OthersCheckTestValidation extends Thread {
 
 			}
 			return ar;
-		} finally {
-			br.close();
-		}
-	}
-
-	private static void cmdCall(String requestId, String version, String managementIp) throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe");
-		Process p = null;
-		try {
-			p = builder.start();
-			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
-			String filepath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("analyserPath");
-			/*
-			 * for (int i=0; i<2; i++) { p_stdin.write("cd..");
-			 * 
-			 * p_stdin.newLine(); p_stdin.flush(); }
-			 */
-			p_stdin.write("cd " + filepath);
-			p_stdin.newLine();
-			p_stdin.flush();
-			p_stdin.write("ttcp -t nbufs 1 verbose host " + managementIp);
-			p_stdin.newLine();
-			p_stdin.flush();
-
-			try {
-				Thread.sleep(150000);
-			} catch (Exception ee) {
-			}
-			InputStream input = p.getInputStream();
-			printResult(input, requestId, version);
-			p_stdin.write("exit");
-			p_stdin.newLine();
-			p_stdin.flush();
-		}
-
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	private static void cmdPingCall(String requestId, String version, String managementIp) throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe");
-		Process p = null;
-		try {
-			p = builder.start();
-			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
-
-			String commandToPing = "ping " + managementIp + " -n 20";
-			p_stdin.write(commandToPing);
-			logger.info("command To Ping : " + commandToPing);
-			logger.info("Management IP : " + managementIp);
-
-			p_stdin.newLine();
-			p_stdin.flush();
-			try {
-				Thread.sleep(21000);
-			} catch (Exception ee) {
-			}
-			p_stdin.write("exit");
-			p_stdin.newLine();
-			p_stdin.flush();
-		}
-
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		Scanner s = new Scanner(p.getInputStream());
-
-		InputStream input = p.getInputStream();
-		printResult(input, requestId, version);
-
-		while (s.hasNext()) {
-			logger.info(s.nextLine());
-		}
-		s.close();
-	}
-
-	private static void printResult(InputStream input, String requestID, String version) throws Exception {
-		BufferedWriter bw = null;
-		FileWriter fw = null;
-		int SIZE = 1024;
-		byte[] tmp = new byte[SIZE];
-
-		while (input.available() > 0) {
-			int i = input.read(tmp, 0, SIZE);
-			if (i < 0)
-				break;
-			/* logger.info(new String(tmp, 0, i)); */
-			String s = new String(tmp, 0, i);
-			if (!(s.equals(""))) {
-				logger.info(s);
-				String filepath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath")
-						+ requestID + "V" + version + "_CustomTests.txt";
-				File file = new File(filepath);
-
-				// if file doesnt exists, then create it
-				if (!file.exists()) {
-					file.createNewFile();
-
-					fw = new FileWriter(file, true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				} else {
-					fw = new FileWriter(file.getAbsoluteFile(), true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				}
-			}
-
-		}
-		/*
-		 * if (channel.isClosed()) { logger.info("exit-status: " +
-		 * channel.getExitStatus());
-		 * 
-		 * }
-		 */
-
-	}
-
-	private static String readFile() throws IOException {
-		String responseDownloadPath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath");
-
-		BufferedReader br = new BufferedReader(new FileReader(responseDownloadPath + "CustomTests.txt"));
-
-		// BufferedReader br = new BufferedReader(new
-		// FileReader("D:/C3P/New folder/HealthcheckTestCommand.txt"));
-		try {
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
-
-			while (line != null) {
-				sb.append(line);
-				sb.append("\n");
-				line = br.readLine();
-			}
-			return sb.toString();
-		} finally {
-			br.close();
-		}
-	}
-
-	private static String readFile(String path) throws IOException {
-
-		BufferedReader br = new BufferedReader(new FileReader(path));
-		try {
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
-
-			while (line != null) {
-				sb.append(line);
-				sb.append("\n");
-				line = br.readLine();
-			}
-			return sb.toString();
 		} finally {
 			br.close();
 		}
