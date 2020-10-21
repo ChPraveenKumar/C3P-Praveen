@@ -360,7 +360,8 @@ public class RequestCreatorController {
 				logger.info("seriesId ->"+seriesId);
 				/* Get Series according to template id */
 				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
-				seriesId = templatemanagementDao.getSeriesId(createConfigRequest.getTemplateID(), seriesId);
+				/*Code not required*/
+				/*seriesId = templatemanagementDao.getSeriesId(createConfigRequest.getTemplateID(), seriesId);
 				seriesId = StringUtils.substringAfter(seriesId, "Generic_");
 				logger.info("seriesId ->"+seriesId);
 				List<AttribCreateConfigPojo> masterAttribute = new ArrayList<>();
@@ -375,7 +376,7 @@ public class RequestCreatorController {
 				} else {
 					cammandsBySeriesId = dao.getCammandsBySeriesId(seriesId, createConfigRequest.getTemplateID());
 				}
-				
+				*/
 				List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
 				List<CommandPojo> cammandByTemplate = new ArrayList<>();
 				for (String feature : featureList) {
@@ -403,7 +404,7 @@ public class RequestCreatorController {
 						 * Map data using attribType if type is masterAttribute then map data into
 						 * master configuration which is extracted using series ID
 						 */
-						for (AttribCreateConfigPojo attrib : masterAttribute) {
+						/*for (AttribCreateConfigPojo attrib : masterAttribute) {
 
 							if (attribLabel.contains(attrib.getAttribLabel())) {
 								String attribValue = attrib.getAttribName();
@@ -516,7 +517,7 @@ public class RequestCreatorController {
 									}
 								}
 							}
-						}
+						}*/
 						for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
 
 							if (attribLabel.contains(templateAttrib.getAttribLabel())) {
@@ -525,6 +526,7 @@ public class RequestCreatorController {
 									if (templateAttrib.getAttribType().equals("Template")) {
 										if (attribType.equals("Template")) {
 
+											
 											if (attribName.equals("LANInterfaceIP1")) {
 												createConfigRequest.setlANInterfaceIP1(attriValue);
 												break;
@@ -823,6 +825,107 @@ public class RequestCreatorController {
 												createConfigRequest.setAttrib50(attriValue);
 												break;
 											}
+											
+											if (attribName.equals("OsVer")) {
+												createConfigRequest.setOsVer(attriValue);
+												break;
+											}
+											if (attribName.equals("HostNameConfig")) {
+												createConfigRequest.setHostNameConfig(attriValue);
+												break;
+											}
+											if (attribName.equals("LoggingBuffer")) {
+												createConfigRequest.setLoggingBuffer(attriValue);
+												break;
+											}
+											if (attribName.equals("MemorySize")) {
+												createConfigRequest.setMemorySize(attriValue);
+												break;
+											}
+											if (attribName.equals("LoggingSourceInterface")) {
+												createConfigRequest.setLoggingSourceInterface(attriValue);
+												break;
+											}
+											if (attribName.equals("IPTFTPSourceInterface")) {
+												createConfigRequest.setiPTFTPSourceInterface(attriValue);
+												break;
+											}
+											if (attribName.equals("IPFTPSourceInterface")) {
+												createConfigRequest.setiPFTPSourceInterface(attriValue);
+												break;
+											}
+											if (attribName.equals("LineConPassword")) {
+												createConfigRequest.setLineConPassword(attriValue);
+												break;
+											}
+											if (attribName.equals("LineAuxPassword")) {
+												createConfigRequest.setLineAuxPassword(attriValue);
+												break;
+											}
+											if (attribName.equals("LineVTYPassword")) {
+												createConfigRequest.setLineVTYPassword(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib1")) {
+												createConfigRequest.setM_Attrib1(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib2")) {
+												createConfigRequest.setM_Attrib2(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib3")) {
+												createConfigRequest.setM_Attrib3(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib4")) {
+												createConfigRequest.setM_Attrib4(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib5")) {
+												createConfigRequest.setM_Attrib5(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib6")) {
+												createConfigRequest.setM_Attrib6(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib7")) {
+												createConfigRequest.setM_Attrib7(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib8")) {
+												createConfigRequest.setM_Attrib8(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib9")) {
+												createConfigRequest.setM_Attrib9(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib10")) {
+												createConfigRequest.setM_Attrib10(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib11")) {
+												createConfigRequest.setM_Attrib11(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib12")) {
+												createConfigRequest.setM_Attrib12(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib13")) {
+												createConfigRequest.setM_Attrib13(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib14")) {
+												createConfigRequest.setM_Attrib14(attriValue);
+												break;
+											}
+											if (attribName.equals("M_Attrib15")) {
+												createConfigRequest.setM_Attrib15(attriValue);
+												break;
+											}
 
 										}
 									}
@@ -848,7 +951,7 @@ public class RequestCreatorController {
 				}
 				logger.info("generateCreateRequestDetails - getTemplateID-  "+createConfigRequest.getTemplateID());
 				// Create new Template
-				invokeFtl.createFinalTemplate(cammandsBySeriesId, cammandByTemplate, masterAttribute, templateAttribute,
+				invokeFtl.createFinalTemplate(null, cammandByTemplate, null, templateAttribute,
 						createConfigRequest.getTemplateID());
 				data = getConfigurationTemplateService.generateTemplate(createConfigRequest);
 

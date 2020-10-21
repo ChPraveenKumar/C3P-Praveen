@@ -3,6 +3,7 @@ package com.techm.orion.rest;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -102,8 +103,7 @@ public class MasterFeatureController {
 		List<GetAttribResponseEntity> response = new ArrayList<GetAttribResponseEntity>();
 		response.add(getAttribResponseEntity);
 
-		obj.put(new String("output"), response);
-		return new ResponseEntity(obj, HttpStatus.OK);
+		return new ResponseEntity(response, HttpStatus.OK);
 
 	}
 
@@ -158,7 +158,7 @@ public class MasterFeatureController {
 				masterFeature.setfReplicationind(Boolean.parseBoolean(json.get(
 						"isReplicated").toString()));
 			}
-			masterFeature.setfVersion("1");
+			masterFeature.setfVersion("1.0");
 			masterFeature.setfFlag("custom");
 			masterFeature.setfStatus("Pending");
 			masterFeature.setfOwner("suser");
@@ -241,8 +241,8 @@ public class MasterFeatureController {
 
 				masterCommandsRepo.save(commandPojoList);
 				obj.put("output", "Feature Created");
-				// camundaService.initiateApprovalFlow(ent.getfId(), "1.0",
-				// "Admin");
+				 camundaService.initiateApprovalFlow(ent.getfId(), "1.0",
+				 "Admin");
 
 			}
 		} catch (ParseException e) {
@@ -418,7 +418,7 @@ public class MasterFeatureController {
 										.get(j).toString();
 							}
 							masterCharacteristic
-									.setcValidations(validationArr);
+									.setcValidations(Arrays.toString(validationArr));
 						}
 					}
 				}

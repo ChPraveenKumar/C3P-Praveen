@@ -23,6 +23,8 @@ public interface TemplateFeatureRepo extends
 	int countMasterFIdByMasterFId(String featureid);
 	
 	public List<TemplateFeatureEntity> findMasterFIdByCommand(String templateid);
+	
+	TemplateFeatureEntity findById(int id);
 
 }
 

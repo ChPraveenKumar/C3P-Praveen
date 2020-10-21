@@ -87,6 +87,7 @@ public class AttribServiceImpl implements AttribSevice {
 		genericCount = 0;
 		GetAttribResponseEntity getAttribResponseEntity = new GetAttribResponseEntity();
 
+		
 		/* to get mapped predefined attrib mapped list */
 		List<PredefinedMappedAtrribPojo> predefinedAtrribList = predefinedGenericAtrribList.stream()
 				.filter(predefined -> predefined.getType().equals("PREDEFINED")).collect(Collectors.toList());
@@ -115,7 +116,7 @@ public class AttribServiceImpl implements AttribSevice {
 		getAttribResponseEntity.setuIComponentList(attribUIComponentList);
 		getAttribResponseEntity.setValidationList(attribValidationList);
 		getAttribResponseEntity.setCategoryList(masterCategoryList);
-
+		
 		return getAttribResponseEntity;
 
 	}

@@ -933,8 +933,96 @@ public class InvokeFtl {
 				finalCammandsList = ListUtils.union(cammandsBySeriesId, cammandByTemplate);
 			}
 		}
+		else
+			finalCammandsList=cammandByTemplate;
+		
 		/* Arrange Commands with position */
 		finalCammandsList.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
+		String finalCammands = "";
+
+		for (CommandPojo cammands : finalCammandsList) {
+			finalCammands = finalCammands + cammands.getCommandValue();
+		}
+
+		logger.info("finalCammands - "+ finalCammands);
+		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);		
+
+	}
+	/* Ruchita Salvi */
+	public void createFinalTemplate(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate,
+			List<AttribCreateConfigPojo> masterAttribute, List<AttribCreateConfigPojo> templateAttribute,
+			String templateId, String apiCallType) {
+		logger.info("createFinalTemplate -templateId - "+templateId);
+		logger.info("createFinalTemplate -masterAttribute - "+masterAttribute);
+		logger.info("createFinalTemplate -templateAttribute - "+templateAttribute);
+		logger.info("createFinalTemplate -cammandsBySeriesId - "+cammandsBySeriesId);
+		logger.info("createFinalTemplate -cammandByTemplate - "+cammandByTemplate);
+		String s = ")!" + '"' + '"' + "}";
+		if (masterAttribute != null) {
+			if (cammandsBySeriesId != null) {
+				for (CommandPojo cammand : cammandsBySeriesId) {
+					for (AttribCreateConfigPojo attrib : masterAttribute) {
+						if (attrib.getAttribType().equals("Master")) {
+							if (cammand.getCommandValue().contains("[" + attrib.getAttribLabel())) {
+
+								String attribName = attrib.getAttribName();
+								String newAttribName = attribName.replace(" ", "");
+								attribName = newAttribName.substring(0, 1).toLowerCase() + newAttribName.substring(1);
+								cammand.setCommandValue(cammand.getCommandValue().replace("[" + attrib.getAttribLabel(),
+										"${(configRequest." + attribName));
+								cammand.setCommandValue(cammand.getCommandValue().replace("]", s));
+								continue;
+							}
+						}
+					}
+					cammand.setCommandValue(cammand.getCommandValue().replace("[", "${(configRequest."));
+					cammand.setCommandValue(cammand.getCommandValue().replace("]", s));
+				}
+			}
+		}
+		if (templateAttribute != null) {
+
+			if (cammandByTemplate != null) {
+				for (CommandPojo templateCammand : cammandByTemplate) {
+					for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
+						if (templateAttrib.getAttribType().equals("Template")) {
+							if (templateCammand.getCommandValue().contains("[" + templateAttrib.getAttribLabel()+"]")) {
+								int id = Integer.parseInt(templateCammand.getId());								
+								if (id == templateAttrib.getTemplateFeature().getId()) {
+									String Str = "[" + templateAttrib.getAttribLabel()+"]";										
+									String attribName = templateAttrib.getAttribName();
+									String newAttribName = attribName.replace(" ", "");
+									attribName = newAttribName.substring(0, 1).toLowerCase()
+											+ newAttribName.substring(1);
+									Str=Str.replace(Str, "${(configRequest." + attribName+s);
+									templateCammand.setCommandValue(templateCammand.getCommandValue().replace(
+											"[" + templateAttrib.getAttribLabel()+"]", Str));
+									continue;
+								}
+							}
+						}
+					}
+					templateCammand
+							.setCommandValue(templateCammand.getCommandValue().replace("[", "${(configRequest."));
+					templateCammand.setCommandValue(templateCammand.getCommandValue().replace("]", s));
+
+				}
+			}
+		}
+
+		List<CommandPojo> finalCammandsList = null;
+		if (cammandsBySeriesId != null) {
+			finalCammandsList = cammandsBySeriesId;
+			if (cammandByTemplate != null) {
+				finalCammandsList = ListUtils.union(cammandsBySeriesId, cammandByTemplate);
+			}
+		}
+		else
+		{
+			finalCammandsList=cammandByTemplate;
+		}
+		/* Arrange Commands with position */
+		/*finalCammandsList.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());*/
 		String finalCammands = "";
 
 		for (CommandPojo cammands : finalCammandsList) {
