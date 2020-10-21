@@ -68,11 +68,12 @@ public class DeviceDiscrepancyService {
 	private DiscoveryStatusEntityRepository discoveryStatusEntityRepository;
 
 	@SuppressWarnings("unchecked")
-	public JSONObject discripancyService(String discoveryName) {
+	public JSONObject discripancyService(String discoveryId) {
 		JSONObject finalObject = new JSONObject();
 
-		DiscoveryDashboardEntity discoveryDetails = dashboardRepo.findByDisName(discoveryName);
+		DiscoveryDashboardEntity discoveryDetails = dashboardRepo.findByDisDashId(discoveryId);
 		if (discoveryDetails != null) {
+			logger.info("discoveryDetails  - disDash Id-"+discoveryDetails.getDisDashId());
 			finalObject.put("discoveryDashboardId", discoveryDetails.getDisDashId());
 			finalObject.put("discoveryName", discoveryDetails.getDisName());
 			finalObject.put("discoveryStatus", discoveryDetails.getDisStatus());
@@ -88,6 +89,7 @@ public class DeviceDiscrepancyService {
 			finalObject.put("discoveryUpdatedDate", discoveryDetails.getDisUpdatedDate());
 			finalObject.put("discoveryImportId", discoveryDetails.getDisImportId());
 			List<DiscoveryStatusEntity> details = discoveryStatusEntityRepository.findByDiscoveryId(discoveryDetails);
+			logger.info("discoveryDetails  - details-"+details.size());
 			JSONArray discrepancyStatusArray = new JSONArray();
 			details.forEach(discoveryStatusEntity -> {
 				JSONObject discrepencyObject;
@@ -578,10 +580,11 @@ public class DeviceDiscrepancyService {
 		return discrepancyObject;
 	}
 
+	@SuppressWarnings("unchecked")
 	private JSONObject forkDiscrepancyValueData(ForkDiscoveryResultEntity deviceDiscrepancy, int deviceId,
 			String vendor, String networkType) {
 
-		logger.info(deviceDiscrepancy.getFdrOIDNo());
+		logger.info("forkDiscrepancyValueData - FdrOIDNo -"+deviceDiscrepancy.getFdrOIDNo());
 		String fidChildOIDNo = deviceDiscrepancy.getFdrChildOIDNo();
 		fidChildOIDNo = StringUtils.substringAfterLast(fidChildOIDNo, ".");
 		String oidName = masterOIDRepository.findInterFaceOidAndDisplayName(vendor, networkType);
@@ -598,8 +601,9 @@ public class DeviceDiscrepancyService {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	private JSONObject hostDiscrepancyValue(HostDiscoveryResultEntity deviceDiscrepancy, String vendor) {
-		logger.info(deviceDiscrepancy.getHdrOIDNo());
+		logger.info("hostDiscrepancyValue - HdrOIDNo -"+deviceDiscrepancy.getHdrOIDNo());
 		String displayName = masterOIDRepository.findOidNo(deviceDiscrepancy.getHdrOIDNo(), vendor);
 		JSONObject discrepancy = discrepancyStatusForLatestDiscover(deviceDiscrepancy.getHdrDiscrepancyFalg(),
 				displayName, deviceDiscrepancy.getHdrExistingValue(), deviceDiscrepancy.getHdrDiscoverValue(), false);

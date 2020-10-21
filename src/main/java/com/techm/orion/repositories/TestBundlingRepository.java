@@ -12,7 +12,7 @@ import com.techm.orion.entitybeans.TestBundling;
 @Repository
 public interface TestBundlingRepository extends JpaRepository<TestBundling, Long> {
 
-	String bundleName = "SELECT test_bundle FROM t_tststrategy_m_testbundling e WHERE e.id LIKE %?1%";
+	String bundleName = "SELECT test_bundle FROM t_tststrategy_m_testbundling e WHERE e.id=?";
 
 	@Query(value = bundleName, nativeQuery = true)
 	String findByBundleName(int bundleId);

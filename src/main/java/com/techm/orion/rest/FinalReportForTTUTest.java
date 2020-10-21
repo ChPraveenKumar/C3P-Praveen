@@ -1230,28 +1230,31 @@ public class FinalReportForTTUTest extends Thread {
 							if (reoprtFlags.getNetwork_test() == 2) {
 								requestinfo.setNetwork_test("Failed");
 							}
-							String response = "";
-							String resultType = csvWriteAndConnectPythonTemplateSuggestion
-									.ReadWriteAndAnalyseSuggestion(requestinfo.getSuggestion(), FailureIssueType);
-
-							try {
-								response = invokeFtl.generateCustomerReportFailure(requestinfo);
-								FinalReportForTTUTest.loadProperties();
-								String responseDownloadPath = FinalReportForTTUTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
-										response);
-								if (resultType.equalsIgnoreCase("Failure")) {
-									templateSuggestionDao.updateTemplateUsageData(requestinfo.getTemplateID(),
-											"Failure");
-								} else {
-									templateSuggestionDao.updateTemplateUsageData(requestinfo.getTemplateID(),
-											"Success");
+							//Added a temp fix to restrict the fix for SLGC.
+							if ("SLGC".equalsIgnoreCase(type)){
+								String response = "";
+								String resultType = csvWriteAndConnectPythonTemplateSuggestion
+										.ReadWriteAndAnalyseSuggestion(requestinfo.getSuggestion(), FailureIssueType);
+	
+								try {
+									response = invokeFtl.generateCustomerReportFailure(requestinfo);
+									FinalReportForTTUTest.loadProperties();
+									String responseDownloadPath = FinalReportForTTUTest.TSA_PROPERTIES
+											.getProperty("responseDownloadPath");
+									TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
+											response);
+									if (resultType.equalsIgnoreCase("Failure")) {
+										templateSuggestionDao.updateTemplateUsageData(requestinfo.getTemplateID(),
+												"Failure");
+									} else {
+										templateSuggestionDao.updateTemplateUsageData(requestinfo.getTemplateID(),
+												"Success");
+									}
+								} catch (Exception e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
 								}
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
 							}
 
 							// templateSuggestionDao.updateTemplateUsageData(createConfigRequest.getTemplateId(),"Failure");

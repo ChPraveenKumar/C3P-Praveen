@@ -47,7 +47,7 @@ public class GetConfigurationTemplateService {
 					String tempString = null;
 					for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 						tempString = listOfTemplatesAvailable.get(i).substring(0,
-								listOfTemplatesAvailable.get(i).indexOf("V") - 1);
+								listOfTemplatesAvailable.get(i).indexOf("_V"));
 						if (tempString.equalsIgnoreCase(templateID)) {
 							isTemplateAvailable = true;
 							break;
@@ -58,15 +58,15 @@ public class GetConfigurationTemplateService {
 					if (isTemplateAvailable) {
 						for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 							tempString = listOfTemplatesAvailable.get(i).substring(0,
-									listOfTemplatesAvailable.get(i).indexOf("V") - 1);
+									listOfTemplatesAvailable.get(i).indexOf("_V"));
 							if (tempString.equalsIgnoreCase(templateID)) {
 								if (highestVersion == 0) {
 									highestVersion = Float.parseFloat(listOfTemplatesAvailable.get(i).substring(
-											listOfTemplatesAvailable.get(i).indexOf("V") + 1,
+											listOfTemplatesAvailable.get(i).indexOf("_V") + 2,
 											listOfTemplatesAvailable.get(i).length()));
 								} else {
 									tempVersion = Float.parseFloat(listOfTemplatesAvailable.get(i).substring(
-											listOfTemplatesAvailable.get(i).indexOf("V") + 1,
+											listOfTemplatesAvailable.get(i).indexOf("_V") + 2,
 											listOfTemplatesAvailable.get(i).length()));
 									if (tempVersion > highestVersion) {
 										highestVersion = tempVersion;
@@ -184,7 +184,7 @@ public class GetConfigurationTemplateService {
 					String tempString = null;
 					for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 						tempString = listOfTemplatesAvailable.get(i).substring(0,
-								listOfTemplatesAvailable.get(i).indexOf("V") - 1);
+								listOfTemplatesAvailable.get(i).indexOf("_V"));
 						if (tempString.equalsIgnoreCase(templateID)) {
 							isTemplateAvailable = true;
 							break;
@@ -195,15 +195,15 @@ public class GetConfigurationTemplateService {
 					if (isTemplateAvailable) {
 						for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 							tempString = listOfTemplatesAvailable.get(i).substring(0,
-									listOfTemplatesAvailable.get(i).indexOf("V") - 1);
+									listOfTemplatesAvailable.get(i).indexOf("_V"));
 							if (tempString.equalsIgnoreCase(templateID)) {
 								if (highestVersion == 0) {
 									highestVersion = Float.parseFloat(listOfTemplatesAvailable.get(i).substring(
-											listOfTemplatesAvailable.get(i).indexOf("V") + 1,
+											listOfTemplatesAvailable.get(i).indexOf("_V") + 2,
 											listOfTemplatesAvailable.get(i).length()));
 								} else {
 									tempVersion = Float.parseFloat(listOfTemplatesAvailable.get(i).substring(
-											listOfTemplatesAvailable.get(i).indexOf("V") + 1,
+											listOfTemplatesAvailable.get(i).indexOf("_V") + 2,
 											listOfTemplatesAvailable.get(i).length()));
 									if (tempVersion > highestVersion) {
 										highestVersion = tempVersion;

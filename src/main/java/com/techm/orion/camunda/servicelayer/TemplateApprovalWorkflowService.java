@@ -61,13 +61,12 @@ public class TemplateApprovalWorkflowService implements Observer {
 		try {
 			JSONObject json = (JSONObject) parser.parse(string);
 			templateId = json.get("templateid").toString();
+			templateId = templateId.replace("-", "_");
 			if (json.get("templateVersion") != null) {
-
 				templateVersion = numberFormat.format(Double.parseDouble(json.get("templateVersion").toString()));
-
 			} else {
-				templateVersion = templateId.substring(templateId.indexOf("V") + 1, templateId.length());
-				templateId = templateId.substring(0, templateId.indexOf("V") - 1);
+				templateVersion = templateId.substring(templateId.indexOf("_V")+2, templateId.length());
+				templateId = templateId.substring(0, templateId.indexOf("_V"));
 			}
 			response = templateSaveFlowService.saveConfigurationTemplate(string, templateId, templateVersion);
 			camundaService.initiateApprovalFlow(templateId, templateVersion, "Admin");
@@ -84,6 +83,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 		return response;
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/updateTemplateStatus", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -105,11 +105,9 @@ public class TemplateApprovalWorkflowService implements Observer {
 				String templateidForFeatureExtraction=templateId;
 				if (json.get("templateVersion") != null) {
 					templateVersion = (json.get("templateVersion").toString());
-
 				} else {
-					String arr[]=templateId.split("_");
-					templateVersion = arr[1].substring(arr[1].indexOf("V") + 1, arr[1].length());
-					templateId = arr[0];
+					templateVersion = templateId.substring(templateId.indexOf("_V")+2, templateId.length());
+					templateId = templateId.substring(0, templateId.indexOf("_V"));
 
 				}
 				status = json.get("status").toString();
@@ -175,15 +173,14 @@ public class TemplateApprovalWorkflowService implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response search(@RequestBody String searchParameters) {
 
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
 		String jsonArray = "";
-		String jsonArrayReports = "";
 		String key = null, value = null;
 		TemplateManagementDao templateSaveFlowService = new TemplateManagementDao();
 

@@ -662,6 +662,7 @@ public class GetTemplateConfigurationData implements Observer {
 		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
 		TemplateManagementDao dao = new TemplateManagementDao();
 		JSONObject jsonObj;
+		String templateId = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
@@ -670,23 +671,45 @@ public class GetTemplateConfigurationData implements Observer {
 
 					if (json.get("readFlag") != null) {
 						dao.updateReadFlagForTemplate(
-								json.get("templateid").toString().substring(0,
-										json.get("templateid").toString().indexOf("V") - 1),
-								json.get("templateid").toString().substring(
-										json.get("templateid").toString().indexOf("V") + 1,
-										json.get("templateid").toString().length()),
+								json.get("templateid")
+										.toString()
+										.substring(
+												0,
+												json.get("templateid")
+														.toString()
+														.indexOf("_V")),
+								json.get("templateid")
+										.toString()
+										.substring(
+												json.get("templateid")
+														.toString()
+														.indexOf("_V") + 2,
+												json.get("templateid")
+														.toString().length()),
 								json.get("readFlag").toString());
 					}
 
 					List<TemplateBasicConfigurationPojo> templatelistforcomment = dao.getTemplateList();
 					for (TemplateBasicConfigurationPojo listcomment : templatelistforcomment) {
 
-						if (listcomment.getTemplateId().equalsIgnoreCase(json.get("templateid").toString().substring(0,
-								json.get("templateid").toString().indexOf("V") - 1))) {
-							if (listcomment.getVersion()
-									.equalsIgnoreCase(json.get("templateid").toString().substring(
-											json.get("templateid").toString().indexOf("V") + 1,
-											json.get("templateid").toString().length()))) {
+						if (listcomment.getTemplateId().equalsIgnoreCase(
+								json.get("templateid")
+										.toString()
+										.substring(
+												0,
+												json.get("templateid")
+														.toString()
+														.indexOf("_V")))) {
+							if (listcomment.getVersion().equalsIgnoreCase(
+									json.get("templateid")
+											.toString()
+											.substring(
+													json.get("templateid")
+															.toString()
+															.indexOf("_V") + 2,
+													json.get("templateid")
+															.toString()
+															.length()))) {
 								comment = listcomment.getComment();
 							}
 						}
