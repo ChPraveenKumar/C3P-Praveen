@@ -217,9 +217,9 @@ public class ConfigurationManagement {
 			// time so
 			// parent will be 1.
 			configReqToSendToC3pCode.setRequestParentVersion(1.0);
-			if(json.containsKey("fileName"))
-			{
-				configReqToSendToC3pCode.setFileName(json.get("fileName").toString());
+			if (json.containsKey("fileName")) {
+				configReqToSendToC3pCode.setFileName(json.get("fileName")
+						.toString());
 			}
 
 			if (requestType.equals("SLGB")) {
@@ -407,9 +407,10 @@ public class ConfigurationManagement {
 								.findById(Integer.parseInt(featureid));
 						featureList.add(featureid);
 						// Fetch commands only in case of external api
-						cammandByTemplate
-								.addAll(dao.getCammandByTemplateAndfeatureId(
-										Integer.parseInt(featureid), templateid));
+						List<CommandPojo> listToSent = dao
+								.getCammandByTemplateAndfeatureId(
+										Integer.parseInt(featureid), templateid);
+						cammandByTemplate.addAll(listToSent);
 					}
 
 				} else {
@@ -1147,564 +1148,585 @@ public class ConfigurationManagement {
 								// name in case of external api
 
 								MasterAttributes attribute = attribRepo
-										.findByCharacteristicId(attib);
+										.findByCharacteristicIdAndTemplateId(
+												attib, template);
 
-								attib = attribute.getName();
+								if (attribute != null) {
+									attib = attribute.getName();
 
-								String templateid = object.get("templateid")
-										.toString();
-								if (object.get("templateid").toString()
-										.equalsIgnoreCase(template)) {
+									String templateid = object
+											.get("templateid").toString();
+									if (object.get("templateid").toString()
+											.equalsIgnoreCase(template)) {
 
-									for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
-										if (templateAttrib
-												.getAttribTemplateId()
-												.equalsIgnoreCase(templateid)) {
-											if (attribLabel
-													.contains(templateAttrib
-															.getAttribLabel())) {
-												/*
-												 * Here we will get
-												 * charachteristic id need to
-												 * get attrib name from
-												 * t_m_attrib based on ch id
-												 */
+										for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
+											if (templateAttrib
+													.getAttribTemplateId()
+													.equalsIgnoreCase(
+															templateid)) {
+												if (attribLabel
+														.contains(templateAttrib
+																.getAttribLabel())) {
+													/*
+													 * Here we will get
+													 * charachteristic id need
+													 * to get attrib name from
+													 * t_m_attrib based on ch id
+													 */
 
-												String attribName = templateAttrib
-														.getAttribName();
-												if (templateAttrib
-														.getAttribType()
-														.equals("Template")) {
-													if (attribType
+													String attribName = templateAttrib
+															.getAttribName();
+													if (templateAttrib
+															.getAttribType()
 															.equals("Template")) {
+														if (attribType
+																.equals("Template")) {
 
-														if (attib
-																.equals(attribName)) {
-															CreateConfigPojo createConfigPojo = new CreateConfigPojo();
-															createConfigPojo
-																	.setMasterLabelId(templateAttrib
-																			.getId());
-															createConfigPojo
-																	.setMasterLabelValue(attriValue);
-															createConfigPojo
-																	.setTemplateId(templateid);
-															createConfigList
-																	.add(createConfigPojo);
-															if (attribName
-																	.equals("Os Ver")) {
-																request.setOsVer(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Host Name Config")) {
-																request.setHostNameConfig(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Logging Buffer")) {
-																request.setLoggingBuffer(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Memory Size")) {
-																request.setMemorySize(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Logging SourceInterface")) {
-																request.setLoggingSourceInterface(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("IP TFTP SourceInterface")) {
-																request.setiPTFTPSourceInterface(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("IP FTP SourceInterface")) {
-																request.setiPFTPSourceInterface(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Line Con Password")) {
-																request.setLineConPassword(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Line Aux Password")) {
-																request.setLineAuxPassword(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Line VTY Password")) {
-																request.setLineVTYPassword(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib1")) {
-																request.setM_Attrib1(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib2")) {
-																request.setM_Attrib2(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib3")) {
-																request.setM_Attrib3(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib4")) {
-																request.setM_Attrib4(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib5")) {
-																request.setM_Attrib5(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib6")) {
-																request.setM_Attrib6(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib7")) {
-																request.setM_Attrib7(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib8")) {
-																request.setM_Attrib8(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib9")) {
-																request.setM_Attrib9(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib10")) {
-																request.setM_Attrib10(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib11")) {
-																request.setM_Attrib11(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib12")) {
-																request.setM_Attrib12(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib13")) {
-																request.setM_Attrib13(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib14")) {
-																request.setM_Attrib14(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("M_Attrib15")) {
-																request.setM_Attrib15(attriValue);
-																break;
-															}
+															if (attib
+																	.equals(attribName)) {
+																CreateConfigPojo createConfigPojo = new CreateConfigPojo();
+																createConfigPojo
+																		.setMasterLabelId(templateAttrib
+																				.getId());
+																createConfigPojo
+																		.setMasterLabelValue(attriValue);
+																createConfigPojo
+																		.setTemplateId(templateid);
+																createConfigList
+																		.add(createConfigPojo);
+																if (attribName
+																		.equals("Os Ver")) {
+																	request.setOsVer(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Host Name Config")) {
+																	request.setHostNameConfig(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Logging Buffer")) {
+																	request.setLoggingBuffer(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Memory Size")) {
+																	request.setMemorySize(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Logging SourceInterface")) {
+																	request.setLoggingSourceInterface(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("IP TFTP SourceInterface")) {
+																	request.setiPTFTPSourceInterface(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("IP FTP SourceInterface")) {
+																	request.setiPFTPSourceInterface(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Line Con Password")) {
+																	request.setLineConPassword(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Line Aux Password")) {
+																	request.setLineAuxPassword(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Line VTY Password")) {
+																	request.setLineVTYPassword(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib1")) {
+																	request.setM_Attrib1(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib2")) {
+																	request.setM_Attrib2(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib3")) {
+																	request.setM_Attrib3(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib4")) {
+																	request.setM_Attrib4(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib5")) {
+																	request.setM_Attrib5(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib6")) {
+																	request.setM_Attrib6(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib7")) {
+																	request.setM_Attrib7(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib8")) {
+																	request.setM_Attrib8(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib9")) {
+																	request.setM_Attrib9(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib10")) {
+																	request.setM_Attrib10(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib11")) {
+																	request.setM_Attrib11(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib12")) {
+																	request.setM_Attrib12(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib13")) {
+																	request.setM_Attrib13(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib14")) {
+																	request.setM_Attrib14(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("M_Attrib15")) {
+																	request.setM_Attrib15(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("LANInterfaceIP1")) {
-																request.setlANInterfaceIP1(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("LANInterfaceMask1")) {
-																request.setlANInterfaceMask1(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("LANInterfaceIP2")) {
-																request.setlANInterfaceIP2(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("LANInterfaceMask2")) {
-																request.setlANInterfaceMask2(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("WANInterfaceIP1")) {
-																request.setwANInterfaceIP1(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("LANInterfaceIP1")) {
+																	request.setlANInterfaceIP1(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("LANInterfaceMask1")) {
+																	request.setlANInterfaceMask1(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("LANInterfaceIP2")) {
+																	request.setlANInterfaceIP2(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("LANInterfaceMask2")) {
+																	request.setlANInterfaceMask2(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("WANInterfaceIP1")) {
+																	request.setwANInterfaceIP1(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("WANInterfaceMask1")) {
-																request.setwANInterfaceMask1(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("WANInterfaceIP2")) {
-																request.setwANInterfaceIP2(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("WANInterfaceMask2")) {
-																request.setwANInterfaceMask2(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("ResInterfaceIP")) {
-																request.setResInterfaceIP(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("WANInterfaceMask1")) {
+																	request.setwANInterfaceMask1(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("WANInterfaceIP2")) {
+																	request.setwANInterfaceIP2(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("WANInterfaceMask2")) {
+																	request.setwANInterfaceMask2(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("ResInterfaceIP")) {
+																	request.setResInterfaceIP(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("ResInterfaceMask")) {
-																request.setResInterfaceMask(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("ResInterfaceMask")) {
+																	request.setResInterfaceMask(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("VRFName")) {
-																request.setvRFName(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("VRFName")) {
+																	request.setvRFName(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("BGPASNumber")) {
-																request.setbGPASNumber(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("BGPASNumber")) {
+																	request.setbGPASNumber(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("BGPRouterID")) {
-																request.setbGPRouterID(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("BGPRouterID")) {
+																	request.setbGPRouterID(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("BGPNeighborIP1")) {
-																request.setResInterfaceIP(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("BGPNeighborIP1")) {
+																	request.setResInterfaceIP(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("BGPRemoteAS1")) {
-																request.setbGPRemoteAS1(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("BGPRemoteAS1")) {
+																	request.setbGPRemoteAS1(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("BGPNeighborIP2")) {
-																request.setbGPNeighborIP1(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("BGPNeighborIP2")) {
+																	request.setbGPNeighborIP1(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("BGPRemoteAS2")) {
-																request.setbGPRemoteAS2(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("BGPRemoteAS2")) {
+																	request.setbGPRemoteAS2(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("BGPNetworkIP1")) {
-																request.setbGPNetworkIP1(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("BGPNetworkIP1")) {
+																	request.setbGPNetworkIP1(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("BGPNetworkWildcard1")) {
-																request.setbGPNetworkWildcard1(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("BGPNetworkWildcard1")) {
+																	request.setbGPNetworkWildcard1(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("BGPNetworkIP2")) {
-																request.setbGPNetworkIP2(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("BGPNetworkIP2")) {
+																	request.setbGPNetworkIP2(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("BGPNetworkWildcard2")) {
-																request.setbGPNetworkWildcard2(attriValue);
-																break;
-															}
+																if (attribName
+																		.equals("BGPNetworkWildcard2")) {
+																	request.setbGPNetworkWildcard2(attriValue);
+																	break;
+																}
 
-															if (attribName
-																	.equals("Attrib1")) {
-																request.setAttrib1(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib2")) {
-																request.setAttrib2(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib3")) {
-																request.setAttrib3(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib4")) {
-																request.setAttrib4(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib5")) {
-																request.setAttrib5(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib6")) {
-																request.setAttrib6(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib7")) {
-																request.setAttrib7(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib8")) {
-																request.setAttrib8(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib9")) {
-																request.setAttrib9(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib10")) {
-																request.setAttrib10(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib11")) {
-																request.setAttrib11(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib12")) {
-																request.setAttrib12(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib13")) {
-																request.setAttrib13(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib14")) {
-																request.setAttrib14(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib15")) {
-																request.setAttrib15(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib16")) {
-																request.setAttrib16(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib17")) {
-																request.setAttrib17(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib18")) {
-																request.setAttrib18(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib19")) {
-																request.setAttrib19(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib20")) {
-																request.setAttrib20(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib21")) {
-																request.setAttrib21(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib22")) {
-																request.setAttrib22(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib23")) {
-																request.setAttrib23(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib24")) {
-																request.setAttrib24(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib25")) {
-																request.setAttrib25(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib26")) {
-																request.setAttrib26(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib27")) {
-																request.setAttrib27(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib28")) {
-																request.setAttrib28(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib29")) {
-																request.setAttrib29(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib30")) {
-																request.setAttrib30(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib31")) {
-																request.setAttrib31(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib32")) {
-																request.setAttrib32(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib33")) {
-																request.setAttrib33(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib34")) {
-																request.setAttrib34(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib35")) {
-																request.setAttrib35(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib36")) {
-																request.setAttrib36(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib37")) {
-																request.setAttrib37(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib38")) {
-																request.setAttrib38(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib39")) {
-																request.setAttrib39(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib40")) {
-																request.setAttrib40(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib41")) {
-																request.setAttrib41(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib42")) {
-																request.setAttrib42(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib43")) {
-																request.setAttrib43(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib44")) {
-																request.setAttrib44(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib45")) {
-																request.setAttrib45(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib46")) {
-																request.setAttrib46(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib47")) {
-																request.setAttrib47(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib48")) {
-																request.setAttrib48(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib49")) {
-																request.setAttrib49(attriValue);
-																break;
-															}
-															if (attribName
-																	.equals("Attrib50")) {
-																request.setAttrib50(attriValue);
-																break;
+																if (attribName
+																		.equals("Attrib1")) {
+																	request.setAttrib1(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib2")) {
+																	request.setAttrib2(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib3")) {
+																	request.setAttrib3(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib4")) {
+																	request.setAttrib4(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib5")) {
+																	request.setAttrib5(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib6")) {
+																	request.setAttrib6(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib7")) {
+																	request.setAttrib7(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib8")) {
+																	request.setAttrib8(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib9")) {
+																	request.setAttrib9(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib10")) {
+																	request.setAttrib10(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib11")) {
+																	request.setAttrib11(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib12")) {
+																	request.setAttrib12(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib13")) {
+																	request.setAttrib13(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib14")) {
+																	request.setAttrib14(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib15")) {
+																	request.setAttrib15(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib16")) {
+																	request.setAttrib16(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib17")) {
+																	request.setAttrib17(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib18")) {
+																	request.setAttrib18(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib19")) {
+																	request.setAttrib19(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib20")) {
+																	request.setAttrib20(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib21")) {
+																	request.setAttrib21(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib22")) {
+																	request.setAttrib22(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib23")) {
+																	request.setAttrib23(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib24")) {
+																	request.setAttrib24(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib25")) {
+																	request.setAttrib25(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib26")) {
+																	request.setAttrib26(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib27")) {
+																	request.setAttrib27(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib28")) {
+																	request.setAttrib28(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib29")) {
+																	request.setAttrib29(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib30")) {
+																	request.setAttrib30(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib31")) {
+																	request.setAttrib31(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib32")) {
+																	request.setAttrib32(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib33")) {
+																	request.setAttrib33(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib34")) {
+																	request.setAttrib34(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib35")) {
+																	request.setAttrib35(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib36")) {
+																	request.setAttrib36(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib37")) {
+																	request.setAttrib37(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib38")) {
+																	request.setAttrib38(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib39")) {
+																	request.setAttrib39(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib40")) {
+																	request.setAttrib40(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib41")) {
+																	request.setAttrib41(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib42")) {
+																	request.setAttrib42(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib43")) {
+																	request.setAttrib43(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib44")) {
+																	request.setAttrib44(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib45")) {
+																	request.setAttrib45(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib46")) {
+																	request.setAttrib46(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib47")) {
+																	request.setAttrib47(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib48")) {
+																	request.setAttrib48(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib49")) {
+																	request.setAttrib49(attriValue);
+																	break;
+																}
+																if (attribName
+																		.equals("Attrib50")) {
+																	request.setAttrib50(attriValue);
+																	break;
+																}
+
 															}
 
 														}
-
 													}
 												}
 											}
+
 										}
 
 									}
-
 								}
 
 							}
 						}
 						configReqToSendToC3pCodeList.add(request);
+						List<CommandPojo> toSend = new ArrayList<CommandPojo>();
+						List<AttribCreateConfigPojo> attribToSend = new ArrayList<AttribCreateConfigPojo>();
 
-						invokeFtl.createFinalTemplate(null, cammandByTemplate,
-								null, templateAttribute, template);
+						for (CommandPojo cmd : cammandByTemplate) {
+							if (cmd.getTempId().equalsIgnoreCase(template)) {
+								toSend.add(cmd);
+							}
+						}
+						toSend.sort((CommandPojo c1, CommandPojo c2) -> c1
+								.getPosition() - c2.getPosition());
+
+						for (AttribCreateConfigPojo attrib : templateAttribute) {
+							if (attrib.getAttribTemplateId().equalsIgnoreCase(
+									template)) {
+								attribToSend.add(attrib);
+							}
+						}
+						invokeFtl.createFinalTemplate(null, toSend, null,
+								attribToSend, template);
 
 					}
+
 					configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 				}
 

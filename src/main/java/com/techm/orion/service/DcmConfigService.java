@@ -9,7 +9,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -49,7 +48,6 @@ import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.RequestFeatureTransactionRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.TemplateFeatureRepo;
-import com.techm.orion.rest.CamundaServiceCreateReq;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
@@ -102,7 +100,7 @@ public class DcmConfigService {
 		RequestInfoPojo requestInfoPojo = new RequestInfoPojo();
 
 		try {
-			Map<String, Object> variables = new HashMap<String, Object>();
+			//Map<String, Object> variables = new HashMap<String, Object>();
 
 			RequestInfoSO requestInfoSO = new RequestInfoSO();
 
@@ -268,10 +266,8 @@ public class DcmConfigService {
 
 			}
 			requestInfoSO.setTestsSelected(configRequest.getTestsSelected());
-			variables.put("createConfigRequest", requestInfoSO);
-			if (variables.containsKey("createConfigRequest")
-					&& !variables.isEmpty()
-					&& configRequest.getScheduledTime().equalsIgnoreCase("")) {
+			//variables.put("createConfigRequest", requestInfoSO);
+			if (configRequest.getScheduledTime().isEmpty()) {
 				requestInfoSO.setStatus("In Progress");
 				// validateMessage=validatorConfigManagement.validate(configRequest);
 
@@ -596,7 +592,7 @@ public class DcmConfigService {
 		Map<String, String> result = new HashMap<String, String>();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		try {
-			Map<String, Object> variables = new HashMap<String, Object>();
+			//Map<String, Object> variables = new HashMap<String, Object>();
 
 			RequestInfoSO requestInfoSO = new RequestInfoSO();
 			DeviceInterfaceSO deviceInterfaceSO = new DeviceInterfaceSO();
@@ -692,10 +688,8 @@ public class DcmConfigService {
 			requestInfoSO.setIsAutoProgress(true);
 			requestInfoSO.setStatus(configRequest.getStatus());
 
-			variables.put("createConfigRequest", requestInfoSO);
-			if (variables.containsKey("createConfigRequest")
-					&& !variables.isEmpty()
-					&& configRequest.getScheduledTime().equalsIgnoreCase("")) {
+			//variables.put("createConfigRequest", requestInfoSO);
+			if (configRequest.getScheduledTime().isEmpty()) {
 				validateMessage = validatorConfigManagement
 						.validate(configRequest);
 				requestInfoSO.setStatus("In Progress");
@@ -1485,7 +1479,7 @@ public class DcmConfigService {
 		final RequestInfoPojo requestInfoSO = requestInfoSOTemp;
 		try {
 
-			Map<String, Object> variables = new HashMap<String, Object>();
+			//Map<String, Object> variables = new HashMap<String, Object>();
 
 			/*
 			 * if
@@ -1500,10 +1494,8 @@ public class DcmConfigService {
 			 * }
 			 */
 			// requestInfoSO.setTestsSelected(configRequest.getTestsSelected());
-			variables.put("createConfigRequest", requestInfoSO);
-			if (variables.containsKey("createConfigRequest")
-					&& !variables.isEmpty()
-					&& requestInfoSO.getSceheduledTime().equalsIgnoreCase("")) {
+			//variables.put("createConfigRequest", requestInfoSO);
+			if (requestInfoSO.getSceheduledTime().isEmpty()) {
 				requestInfoSO.setStatus("In Progress");
 				// validateMessage=validatorConfigManagement.validate(configRequest);
 				result = dao.insertRequestInDB(requestInfoSO);
@@ -2102,10 +2094,10 @@ public class DcmConfigService {
 						if (isTemplateApproved) {
 							fileToUse = tempString + "_V" + highestVersion;
 							configRequest.setTemplateID(fileToUse);
-						} else {
+						} /*else {
 							fileToUse = null;
 
-						}
+						}*/
 
 					}
 				}
@@ -2168,13 +2160,11 @@ public class DcmConfigService {
 		Map<String, String> result = new HashMap<String, String>();
 
 		try {
-			Map<String, Object> variables = new HashMap<String, Object>();
+			//Map<String, Object> variables = new HashMap<String, Object>();
 
-			variables.put("createConfigRequest", requestInfoSO);
+			//variables.put("createConfigRequest", requestInfoSO);
 			requestType = requestInfoSO.getRequestType();
-			if (variables.containsKey("createConfigRequest")
-					&& !variables.isEmpty()
-					&& requestInfoSO.getSceheduledTime().equalsIgnoreCase("")) {
+			if (requestInfoSO.getSceheduledTime().equalsIgnoreCase("")) {
 				// requestInfoSO.setStatus("In Progress");
 
 				// if (requestType.equals("Config MACD")) {

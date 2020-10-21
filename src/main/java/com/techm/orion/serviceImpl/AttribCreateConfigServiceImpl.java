@@ -43,14 +43,14 @@ public class AttribCreateConfigServiceImpl implements AttribCreateConfigService 
 
 	@Override
 	public List<AttribCreateConfigPojo> getByFeatureId(int id) {
-		return new AttribCreateConfigResponceMapper()
+		return mapper
 				.getAllAttribTemplateSuggestionMapper(dao.findBytemplateFeatureId(id));
 
 	}
 
 	@Override
 	public List<AttribCreateConfigPojo> getByAttribTemplateAndFeatureName(String templateId, String featureName) {
-		return new AttribCreateConfigResponceMapper().getAllAttribTemplateSuggestionMapper(
+		return mapper.getAllAttribTemplateSuggestionMapper(
 				dao.findBytemplateFeatureComandDisplayFeatureAndTemplateId(featureName, templateId));
 
 	}
@@ -59,7 +59,7 @@ public class AttribCreateConfigServiceImpl implements AttribCreateConfigService 
 	public List<AttribCreateConfigPojo> getByAttribTemplateFeatureEntityTemplateId(
 			TemplateFeatureEntity entity, String templateId) {
 		// TODO Auto-generated method stub
-		return new AttribCreateConfigResponceMapper().getAllAttribTemplateSuggestionMapper(
+		return mapper.getAllAttribTemplateSuggestionMapper(
 				dao.findByTemplateFeatureAndTemplateId(entity, templateId));
 	}
 
