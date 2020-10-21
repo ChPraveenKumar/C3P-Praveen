@@ -85,21 +85,30 @@ public class AttribCreateConfigResponceMapper {
 			attribJson.setName("");
 			attribJson.setuIComponent(entity.getcUicomponent());
 			String validations = entity.getcValidations();
-			validations = StringUtils.substringAfter(validations, "[");
-			validations = StringUtils.substringBefore(validations, "]");
-			String[] validationArray = validations.split(",");
-			attribJson.setValidations(validationArray);
+			attribJson.setValidations(setValidation(validations));
 			attribJson.setType(entity.getcType());
 			if (entity.getcCategory() != null) {
 				attribJson.setCategotyLabel(entity.getcCategory());
 			}
-			if(entity.getcId()!=null) {
-			attribJson.setCharacteriscticsId(entity.getcId());
+			if (entity.getcId() != null) {
+				attribJson.setCharacteriscticsId(entity.getcId());
 			}
 			jsonList.add(attribJson);
 		}
-
 		return jsonList;
+	}
 
+	private String[] setValidation(String validations) {
+		validations = StringUtils.substringAfter(validations, "[");
+		validations = StringUtils.substringBefore(validations, "]");
+		String[] validationArray = validations.split(",");
+		if (validationArray.length > 0) {
+			String[] resulValidationArray = new String[validationArray.length];
+			for (int i = 0; i < validationArray.length; i++) {
+				resulValidationArray[i] = validationArray[i].trim();
+			}
+			validationArray = resulValidationArray;
+		}
+		return validationArray;
 	}
 }

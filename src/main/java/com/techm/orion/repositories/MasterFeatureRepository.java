@@ -38,7 +38,7 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	
 	@Query(value = "select * from c3p_m_features where f_vendor = :vendor and (f_family = 'All' or f_family =:deviceFamily)"
 			+ " and (f_os = 'All' or f_os =:os) and (f_osversion = 'All' or f_osversion =:osVersion) "
-			+ "and (f_region = 'All' or f_region =:region) and (f_networkfun = 'All' or f_networkfun =:networkType) ", nativeQuery = true)
+			+ "and (f_region = 'All' or f_region =:region) and (f_networkfun = 'All' or f_networkfun =:networkType) and f_status ='Approved';", nativeQuery = true)
 	List<MasterFeatureEntity> findNearestMatchEntities(@Param("vendor") String vendor,
 			@Param("deviceFamily") String deviceFamily, @Param("os") String os, @Param("osVersion") String osVersion,
 			@Param("region") String region, @Param("networkType") String networkType);
@@ -48,4 +48,12 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	public List<String> findVendor();
 		
 	public List<MasterFeatureEntity> findAllByFVendor(String vendor);
+	
+	@Query(value = "select * from c3p_m_features where f_vendor = :vendor and  f_family =:deviceFamily"
+			+ " and f_os =:os and  f_osversion =:osVersion "
+			+ "and f_region =:region and  f_networkfun =:networkType and f_status ='Approved';", nativeQuery = true)
+	List<MasterFeatureEntity> findApprovedFeatureEntity(@Param("vendor") String vendor,
+			@Param("deviceFamily") String deviceFamily, @Param("os") String os, @Param("osVersion") String osVersion,
+			@Param("region") String region, @Param("networkType") String networkType);
+
 }

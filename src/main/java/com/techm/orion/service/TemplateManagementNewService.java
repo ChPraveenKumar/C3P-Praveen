@@ -154,8 +154,8 @@ public class TemplateManagementNewService {
 		List<CommandPojo> commandPojoList = new ArrayList<CommandPojo>();
 		cmdArray.forEach(cmd -> {
 			JSONObject obj1 = (JSONObject) cmd;
-			CommandPojo commandPojo = new CommandPojo();
-			if ("drop_".contains(obj1.get("id").toString()) && "dragN_".contains(obj1.get("id").toString())) {
+			CommandPojo commandPojo = new CommandPojo();			
+			if (obj1.get("id").toString().contains("drop_") && (obj1.get("id").toString()).contains("dragN_")) {
 				String result = obj1.get("id").toString();
 				result = StringUtils.substringAfter(result, "drop_");
 				result = StringUtils.substringBefore(result, "dragN_");
@@ -222,11 +222,12 @@ public class TemplateManagementNewService {
 			}
 		}
 		cammands.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
-		String finalCammands = cammands.toString();
-		/*
-		 * for (CommandPojo cammand : cammands) { finalCammands = finalCammands +
-		 * cammand.getCommandValue(); }
-		 */
+		String finalCammands = "";
+		 for (CommandPojo cammand : cammands) {
+			 finalCammands = finalCammands +
+			 cammand.getCommandValue(); 
+			}
+
 		return finalCammands;
 
 	}
