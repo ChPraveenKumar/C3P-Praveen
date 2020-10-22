@@ -11,6 +11,8 @@ public class MasterAttribPojo {
 	String[] validations;
 	
 	String category;
+	
+	String cId;
 
 	public String getAttribLabel() {
 		return attribLabel;
@@ -50,6 +52,13 @@ public class MasterAttribPojo {
 
 	public void setCategory(String category) {
 		this.category = category;
-	} 
+	}
 
+	public String getcId() {
+		return cId;
+	}
+
+	public void setcId(String cId) {
+		this.cId = cId;
+	} 
 } 

@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.pojo.CommandPojo;
 
 @Repository
@@ -20,7 +19,5 @@ public interface MasterCommandsRepository extends
 	
 	List<CommandPojo>findBymasterFId(String featureid);
 	
-	
-
 	
 }

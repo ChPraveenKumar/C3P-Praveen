@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
+import com.techm.orion.models.TemplateVersioningJSONModel;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.GetTemplateMngmntPojo;
 import com.techm.orion.pojo.Global;
@@ -71,15 +72,6 @@ public class TemplateManagementDetailsService {
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();		
 		Map<String, String> templatecommandList = new HashMap<String, String>();
 		templatecommandList = templateManagementDao.getDataForRightPanel(templateId, selectAll);
-		return templatecommandList;
-	}
-
-	public List<GetTemplateMngmntActiveDataPojo> getDataForLeftPanel(String templateId, String tempKey,
-			String currentTemplateId, boolean flag) throws Exception {
-
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		List<GetTemplateMngmntActiveDataPojo> templatecommandList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
-		templatecommandList = templateManagementDao.getDataForLeftPanel(templateId, tempKey, currentTemplateId, flag);
 		return templatecommandList;
 	}
 
@@ -177,13 +169,6 @@ public class TemplateManagementDetailsService {
 		boolean result = false;
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
 		result = templateManagementDao.updateTemplateDB(tempID);
-		return result;
-	}
-
-	public boolean updateTemplateDBonEdit(String tempID, String previousVersion, String tempKey) throws SQLException {
-		boolean result = false;
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		result = templateManagementDao.updateTemplateDBEdit(tempID, previousVersion, tempKey);
 		return result;
 	}
 

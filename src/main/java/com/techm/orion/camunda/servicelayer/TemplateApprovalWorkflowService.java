@@ -17,6 +17,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -49,12 +50,12 @@ public class TemplateApprovalWorkflowService implements Observer {
 	@POST
 	@RequestMapping(value = "/saveTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response saveTemplate(@RequestBody String string) {
+	public ResponseEntity<JSONObject> saveTemplate(@RequestBody String string) {
 		GetTemplateConfigurationData templateSaveFlowService = new GetTemplateConfigurationData();
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONParser parser = new JSONParser();
 		String templateId = null, templateVersion = null;
-		Response response = null;
+		ResponseEntity<JSONObject> response = null;
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 
 		try {

@@ -8,8 +8,8 @@ import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 
 @Repository
 @Transactional
-public interface MasterCharacteristicsRepository extends
-		JpaRepository<MasterCharacteristicsEntity, Long> {
+public interface MasterCharacteristicsRepository extends JpaRepository<MasterCharacteristicsEntity, Long> {
 	
-	public List<MasterCharacteristicsEntity> findAllByCFId(String fid);
+	List<MasterCharacteristicsEntity> findAllByCFId(String fid);
+
 }
