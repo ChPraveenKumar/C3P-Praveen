@@ -92,6 +92,8 @@ public class AttribCreateConfigResponceMapper {
 			}
 			if (entity.getcId() != null) {
 				attribJson.setCharacteriscticsId(entity.getcId());
+			}else {
+				attribJson.setCharacteriscticsId("");
 			}
 			jsonList.add(attribJson);
 		}

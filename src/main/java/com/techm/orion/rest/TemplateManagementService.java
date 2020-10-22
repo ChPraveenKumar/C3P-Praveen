@@ -157,7 +157,7 @@ public class TemplateManagementService implements Observer {
 				version = json.get("version").toString();
 			}
 			if (template != null && version != null) {
-				String finaltemplate = template + "_v" + version;
+				String finaltemplate = template + "_V" + version;
 				basicDeatilsOfTemplate = templateSuggestionDao.getBasicDeatilsOfTemplate(template, version);
 				List<String> featureList = new ArrayList<>();
 				featureList.addAll(templateSuggestionDao.getFeatureList(finaltemplate));

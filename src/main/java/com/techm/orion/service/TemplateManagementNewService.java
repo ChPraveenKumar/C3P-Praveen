@@ -119,12 +119,12 @@ public class TemplateManagementNewService {
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		GetTemplateConfigurationData templateSaveFlowService = new GetTemplateConfigurationData();
 		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
-		String templateAndVesion = json.get("templateid").toString() + "_v" + json.get("templateVersion").toString();
+		String templateAndVesion = json.get("templateid").toString() + "_V" + json.get("templateVersion").toString();
 		boolean ifTemplateAlreadyPresent = templateDao.checkTemplateVersionAlredyexist(templateAndVesion);
 		if (ifTemplateAlreadyPresent) {
 			double value = Double.parseDouble(json.get("templateVersion").toString());
 			value = value + 0.1;
-			templateAndVesion = json.get("templateid").toString() + "_v" + numberFormat.format(value);
+			templateAndVesion = json.get("templateid").toString() + "_V" + numberFormat.format(value);
 			templateId = json.get("templateid").toString();
 			templateVersion = numberFormat.format(value);
 			addNewFeatureTemplateMngmntPojo.setTemplateid(templateAndVesion);

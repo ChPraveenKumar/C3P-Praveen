@@ -576,16 +576,20 @@ public class MasterFeatureService {
 						templatePojo.setCategory(jsonObj.get("category").toString());
 					}
 				}
+				if (jsonObj.containsKey("characteriscticsId")) {
+					if (jsonObj.get("characteriscticsId") != null && (!"".equals(jsonObj.get("characteriscticsId")))) {
+						templatePojo.setcId(jsonObj.get("characteriscticsId").toString());
+					}
+				}else {
+					templatePojo.setcId(null);
+				}					
 				templateAttribList.add(templatePojo);
-
 			}
-
 			/* save attrib config */
 			templateAttribList.stream().forEach(masterAttrib -> {
 				saveAttrib(masterAttrib, currentFeature);
 			});
 		}
-
 	}
 
 	private void saveAttrib(MasterAttribPojo masterAttrib, TemplateFeatureEntity currentFeature) {
@@ -600,8 +604,10 @@ public class MasterFeatureService {
 		master.setValidations(Arrays.toString(masterAttrib.getValidations()));
 		master.setMasterFID(currentFeature.getMasterFId());
 		master.setTemplateFeature(currentFeature);
+		if(masterAttrib.getcId()!=null) {
+		master.setCharacteristicId(masterAttrib.getcId());
+		}
 		masterAttrribRepository.save(master);
-
 	}
 
 	private List<CommandPojo> extractCommands(JSONArray cmdArray) {
