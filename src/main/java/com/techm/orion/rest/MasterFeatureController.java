@@ -2,12 +2,15 @@ package com.techm.orion.rest;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -437,6 +440,11 @@ public class MasterFeatureController {
 					masterCharacteristic.setcCreatedDate(timestamp);
 				}
 				// masterCharacteristic.setcCreatedBy(Global.loggedInUser);;
+				//Logic to create characteristic id CYYYYYMMDDXXXXXX
+				Date date = new Date();
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+				String yyyyMMdd = sdf.format(date);
+				masterCharacteristic.setcId("CH-"+yyyyMMdd+UUID.randomUUID().toString().toUpperCase().substring(0, 6));
 				masterCharacteristic.setcCreatedBy("admin");
 				masterCharacteristicList.add(masterCharacteristic);
 			}

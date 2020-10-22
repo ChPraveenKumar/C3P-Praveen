@@ -54,7 +54,7 @@ public class TpmgmtController {
 	public Response getSeriess(@RequestParam String vendor, String deviceFamily, String model) {
 		Set<Series> existingseries = new HashSet<>();
 		String tempserieskey = null;
-		if (vendor != null && deviceFamily != null && model != null) {
+		if (vendor != null && deviceFamily != null) {
 			tempserieskey = vendor.toUpperCase() + deviceFamily.toUpperCase();
 			existingseries = seriesRepository.findBySeries(tempserieskey);
 		}

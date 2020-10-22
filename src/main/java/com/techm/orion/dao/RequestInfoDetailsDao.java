@@ -30,6 +30,7 @@ import com.jcraft.jsch.Session;
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
 import com.techm.orion.entitybeans.RequestInfoEntity;
+import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.mapper.RequestInfoMappper;
 import com.techm.orion.pojo.Global;
@@ -37,9 +38,11 @@ import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.PythonServices;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
@@ -50,7 +53,9 @@ public class RequestInfoDetailsDao {
 	private RequestInfoDetailsRepositories reository;
 	@Autowired
 	private ServiceOrderRepo serviceOrderRepo;
-
+	@Autowired
+	private RfoDecomposedRepository rfoDecomposedRepo
+	;
 	@Transactional
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
@@ -132,6 +137,18 @@ public class RequestInfoDetailsDao {
 			if (ent != null) {
 				serviceOrderRepo.updateStatusAndRequestId(requestId, "Success", ent.getServiceOrder(), "admin", Timestamp.valueOf(LocalDateTime.now()));
 			}
+			
+			RfoDecomposedEntity rfoDecomposedEntity=rfoDecomposedRepo.findByOdRequestIdAndOdRequestVersion(requestId, Double.valueOf(version));
+			if(rfoDecomposedEntity != null)
+			{
+				//rfoDecomposedRepo.updateStatus("Success", Global.loggedInUser, Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
+
+				rfoDecomposedRepo.updateStatus("Success", "Admin", Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
+				//To uncomment when python services available
+				PythonServices pythonService=new PythonServices();
+				pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+			}
+			
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
@@ -159,6 +176,18 @@ public class RequestInfoDetailsDao {
 		
 			if (ent != null) 
 				serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder(), "admin", Timestamp.valueOf(LocalDateTime.now()));
+			
+			RfoDecomposedEntity rfoDecomposedEntity=rfoDecomposedRepo.findByOdRequestIdAndOdRequestVersion(requestId, Double.valueOf(version));
+			if(rfoDecomposedEntity != null)
+			{
+				//rfoDecomposedRepo.updateStatus("Failure", Global.loggedInUser, Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
+
+				rfoDecomposedRepo.updateStatus("Failure", "Admin", Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
+				//To uncomment when python services available
+				PythonServices pythonService=new PythonServices();
+				pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+			}
+		
 		} else {
 			try {
 				Double finalVersion = Double.valueOf(version);
