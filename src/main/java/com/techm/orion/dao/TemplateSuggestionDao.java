@@ -221,7 +221,7 @@ public class TemplateSuggestionDao {
                 templateData.setTemplateId(rs.getString("temp_id").concat("_V").concat(rs.getString("temp_version")));
                 templateData.setComment(rs.getString("temp_comment_section"));
                 templateData.setNetworkType(rs.getString("temp_network_type"));
-                templateData.setAlias(rs.getString("temp_alias"));
+                templateData.setAlias(rs.getString("temp_alias").concat("_V").concat(rs.getString("temp_version")));
                 getVersionListForTemplate.add(rs.getString("temp_version"));
 
                 listTemplate.add(templateData);

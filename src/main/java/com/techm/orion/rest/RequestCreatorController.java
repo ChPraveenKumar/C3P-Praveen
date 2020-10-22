@@ -262,7 +262,9 @@ public class RequestCreatorController {
 			createConfigRequest.setSiteName(json.get("siteName").toString().toUpperCase());
 			SiteInfoEntity siteId = siteRepo.findCSiteIdByCSiteName(createConfigRequest.getSiteName());
 			createConfigRequest.setSiteid(siteId.getcSiteId());
-			createConfigRequest.setDeviceType(json.get("deviceType").toString());
+			if(json.get("deviceType") !=null) {
+				createConfigRequest.setDeviceType(json.get("deviceType").toString());
+			}
 			createConfigRequest.setFamily(json.get("deviceFamily").toString());
 			createConfigRequest.setModel(json.get("model").toString());
 			createConfigRequest.setOs(json.get("os").toString());

@@ -2,20 +2,15 @@ package com.techm.orion.rest;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
@@ -32,11 +27,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.entitybeans.Series;
+import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
+import com.techm.orion.models.TemplateLeftPanelJSONModel;
 import com.techm.orion.pojo.AttribUIComponentPojo;
 import com.techm.orion.pojo.AttribValidationPojo;
 import com.techm.orion.pojo.CategoryMasterPojo;
@@ -49,16 +45,15 @@ import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.SeriesRepository;
 import com.techm.orion.responseEntity.GetAttribResponseEntity;
-import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.AttribSevice;
-import com.techm.orion.service.CategoryDropDownService;
 import com.techm.orion.service.CategoryMasterService;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/masterFeature")
 public class MasterFeatureController {
-
+	private static final Logger logger = LogManager
+			.getLogger(MasterFeatureController.class);
 	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
 
@@ -68,20 +63,16 @@ public class MasterFeatureController {
 	@Autowired
 	private AttribSevice attribSevice;
 
-	@Autowired()
+	@Autowired
 	private CategoryMasterService categoryMasterService;
-
-	@Autowired
-	private CategoryDropDownService categoryDropDownservice;
-
-	@Autowired
-	private AttribCreateConfigService service;
 
 	@Autowired
 	private MasterCommandsRepository masterCommandsRepo;
 
 	@Autowired
 	private SeriesRepository masterSeriesRepo;
+	@Autowired
+	private AttribCreateConfigResponceMapper attribCreateConfigResponceMapper;
 
 	/*
 	 * To get Validation, Category and UI component list.
@@ -91,8 +82,6 @@ public class MasterFeatureController {
 	@Produces("application/json")
 	@RequestMapping(value = "/getAttribData", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity getFeatureAttribData() {
-		JSONObject obj = new JSONObject();
-
 		List<GenericAtrribPojo> genericAttribList = new ArrayList<GenericAtrribPojo>();
 		List<PredefinedMappedAtrribPojo> predefinedGenericMappedAtrribList = new ArrayList<PredefinedMappedAtrribPojo>();
 		List<PredefinedAtrribPojo> predefinedGenericAtrribList = new ArrayList<PredefinedAtrribPojo>();
@@ -125,16 +114,15 @@ public class MasterFeatureController {
 	@RequestMapping(value = "/addFeature", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity saveFeature(@RequestBody String configRequest) {
-
 		JSONParser parser = new JSONParser();
 		JSONObject obj = new JSONObject();
-		Timestamp timestamp = null;
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
-
+		Timestamp timestamp = null;
 		JSONObject json;
 		try {
 			json = (JSONObject) parser.parse(configRequest);
+			 masterFeature = setMasterFeatureData(json);
 
 			if (json.containsKey("featureName")) {
 				masterFeature.setfName(json.get("featureName").toString());
@@ -203,56 +191,22 @@ public class MasterFeatureController {
 							"Basic configuration for this series already exist");
 
 				} else {
-					// Save features in master feature
-					
-
-					MasterFeatureEntity ent = masterFeatureRepository
-							.save(masterFeature);
-					ent.setfId("F" + ent.getfRowid());
-					masterFeatureRepository.save(ent);
-					saveMasterCharacteistics(json, masterFeature,ent.getfId());
-					// Save basic coniguration
-					Boolean isBasicConfigurationSaved = saveBasicConfiguration(
-							series, cmdArray, ent.getfId());
-					camundaService.initiateApprovalFlow(ent.getfId(), "1.0",
+					String ent = saveconfiguartionData(json, masterFeature, series);
+					camundaService.initiateApprovalFlow(ent, "1.0", "Admin");
+					obj.put("output", "Feature Created");
+					camundaService.initiateApprovalFlow(ent, "1.0",
 							"Admin");
-
 					obj.put("output", "Feature Created");
 				}
 
 			} else {
-
 				// Save features in master feature
 				MasterFeatureEntity ent = masterFeatureRepository
 						.save(masterFeature);
 				ent.setfId("F" + ent.getfRowid());
-				masterFeatureRepository.save(ent);
-				
-				saveMasterCharacteistics(json, masterFeature,ent.getfId());
-				
-				//To save commands
-				CommandPojo commandPojo = null;
-				Integer sequenceId = masterCommandsRepo.getMaxSequenceId();
-
-				List<CommandPojo> commandPojoList = new ArrayList<CommandPojo>();
-				for (int i = 0; i < cmdArray.size(); i++) {
-					JSONObject obj1 = (JSONObject) cmdArray.get(i);
-
-					commandPojo = new CommandPojo();
-					if (obj1.get("commandLine") != null) {
-						commandPojo.setCommand_value(obj1.get("commandLine")
-								.toString());
-					}
-					if (obj1.get("nocommandLine") != null) {
-						commandPojo.setNo_command_value(obj1.get(
-								"nocommandLine").toString());
-					}
-					commandPojo.setMaster_f_id(ent.getfId());
-					commandPojo.setCommand_sequence_id(sequenceId++);
-					commandPojoList.add(commandPojo);
-				}
-
-				masterCommandsRepo.save(commandPojoList);
+				masterFeatureRepository.save(ent);				
+				saveMasterCharacteistics(json, masterFeature,ent.getfId());				
+				saveComands(cmdArray,ent.getfId());				
 				obj.put("output", "Feature Created");
 				 camundaService.initiateApprovalFlow(ent.getfId(), "1.0",
 				 "Admin");
@@ -270,15 +224,31 @@ public class MasterFeatureController {
 		}
 
 		return new ResponseEntity(obj, HttpStatus.OK);
-	}
+	}	
 
-	String getSeries(String vendor, String family) {
-		String str = null;
+	private List<CommandPojo> saveComands(JSONArray cmdArray, String ent) {
+		//To save commands
+		CommandPojo commandPojo = null;
+		Integer sequenceId = masterCommandsRepo.getMaxSequenceId();
+		List<CommandPojo> commandPojoList = new ArrayList<CommandPojo>();
+		for (int i = 0; i < cmdArray.size(); i++) {
+			JSONObject obj1 = (JSONObject) cmdArray.get(i);
 
-		str = vendor.toUpperCase() + family.toUpperCase();
-
-		return str;
-
+			commandPojo = new CommandPojo();
+			if (obj1.get("commandLine") != null) {
+				commandPojo.setCommand_value(obj1.get("commandLine")
+						.toString());
+			}
+			if (obj1.get("nocommandLine") != null) {
+				commandPojo.setNo_command_value(obj1.get(
+						"nocommandLine").toString());
+			}
+			commandPojo.setMaster_f_id(ent);
+			commandPojo.setCommand_sequence_id(sequenceId++);
+			commandPojoList.add(commandPojo);
+		}	
+		List<CommandPojo> commandList = masterCommandsRepo.save(commandPojoList);
+		return commandList;
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
@@ -418,8 +388,8 @@ public class MasterFeatureController {
 
 				}
 				masterCharacteristic.setcFId(fId);
-				if (jsonObject.get("validations") != null) {
-					if (jsonObject.containsKey("validations")) {
+				
+				if (jsonObject.get("validations") != null) {					
 						if (jsonObject.get("validations") != null) {
 							JSONArray jsonValidationArr = (JSONArray) jsonObject
 									.get("validations");
@@ -433,18 +403,13 @@ public class MasterFeatureController {
 							masterCharacteristic
 									.setcValidations(Arrays.toString(validationArr));
 						}
-					}
+					
 				}
 				timestamp = new Timestamp(new Date().getTime());
 				if (timestamp != null) {
 					masterCharacteristic.setcCreatedDate(timestamp);
 				}
 				// masterCharacteristic.setcCreatedBy(Global.loggedInUser);;
-				//Logic to create characteristic id CYYYYYMMDDXXXXXX
-				Date date = new Date();
-				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
-				String yyyyMMdd = sdf.format(date);
-				masterCharacteristic.setcId("CH-"+yyyyMMdd+UUID.randomUUID().toString().toUpperCase().substring(0, 6));
 				masterCharacteristic.setcCreatedBy("admin");
 				masterCharacteristicList.add(masterCharacteristic);
 			}
@@ -454,8 +419,232 @@ public class MasterFeatureController {
 		/* save attrib config */
 		masterCharacteristicList.stream().forEach(masterAttrib -> {
 			masterCharacteristicsRepository.save(masterAttrib);
-		});
-		
+		});		
 		return result;
+	}
+	
+	private String getSeries(String vendor, String family) {
+		return vendor.toUpperCase() + family.toUpperCase();
+	}
+	
+	private MasterFeatureEntity setMasterFeatureData(JSONObject json) {
+		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
+
+		if (json.containsKey("featureName")) {
+			masterFeature.setfName(json.get("featureName").toString());
+		}
+		if (json.containsKey("vendor")) {
+			masterFeature.setfVendor(json.get("vendor").toString());
+		}
+		if (json.containsKey("family")) {
+			masterFeature.setfFamily(json.get("family").toString());
+		}
+		if (json.containsKey("os")) {
+			masterFeature.setfOs(json.get("os").toString());
+		}
+		if (json.containsKey("osVersion")) {
+			masterFeature.setfOsversion(json.get("osVersion").toString());
+		}
+		if (json.containsKey("region")) {
+			masterFeature.setfRegion(json.get("region").toString());
+		}
+		if (json.containsKey("networkFunction")) {
+			masterFeature.setfNetworkfun(json.get("networkFunction").toString());
+		}
+		if (json.containsKey("isBasicConiguration")) {
+			if (Boolean.parseBoolean(json.get("isBasicConiguration").toString())) {
+				masterFeature.setfCategory("Basic Configuration");
+			}
+		}
+		if (json.containsKey("comments")) {
+			masterFeature.setfComments(json.get("comments").toString());
+		}
+		if (json.containsKey("isReplicated")) {
+			masterFeature.setfReplicationind(Boolean.parseBoolean(json.get("isReplicated").toString()));
+		}
+		masterFeature.setfVersion("1.0");
+		masterFeature.setfFlag("custom");
+		masterFeature.setfStatus("Pending");
+		masterFeature.setfOwner("suser");
+		// masterFeature.setfCreatedBy(Global.loggedInUser);
+		masterFeature.setfCreatedBy("admin");
+		Timestamp timestamp = new Timestamp(new Date().getTime());
+		if (timestamp != null) {
+			masterFeature.setfCreatedDate(timestamp);
+		}
+		return masterFeature;
+	}
+	
+
+	private String saveconfiguartionData(JSONObject json, MasterFeatureEntity masterFeature, String series) {
+		// Save features in master feature
+		JSONArray cmdArray = (JSONArray) (json.get("commands"));
+		MasterFeatureEntity ent = masterFeatureRepository.save(masterFeature);
+		ent.setfId("F" + ent.getfRowid());
+		masterFeatureRepository.save(ent);
+		saveMasterCharacteistics(json, masterFeature, ent.getfId());
+		// Save basic coniguration
+		saveBasicConfiguration(series, cmdArray, ent.getfId());
+		return ent.getfId();
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@POST
+	@RequestMapping(value = "/addFeatureForTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity saveFeatureForTemplate(@RequestBody String configRequest) {
+		TemplateLeftPanelJSONModel templateCommandJSONModel = new TemplateLeftPanelJSONModel();
+		
+		JSONParser parser = new JSONParser();
+		JSONObject obj = new JSONObject();
+		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
+		JSONObject json;
+		try {
+			json = (JSONObject) parser.parse(configRequest);
+			 masterFeature = setMasterFeatureData(json);
+			JSONArray cmdArray = (JSONArray) (json.get("commands"));
+			List<CommandPojo> commandPojoList= new ArrayList<>();
+			if (Boolean
+					.parseBoolean(json.get("isBasicConiguration").toString()))
+
+			{
+				String series = getSeries(masterFeature.getfVendor(),
+						masterFeature.getfFamily());
+				Set<Series> seriesSet = masterSeriesRepo.findBySeries(series);
+				if (null != seriesSet && !seriesSet.isEmpty()) {
+					obj.put("output",
+							"Basic configuration for this series already exist");
+
+				} else {
+					saveconfiguartionData(json, masterFeature, series);
+					obj.put("output", "Feature Created");
+				}
+
+			} else {				
+				MasterFeatureEntity ent = masterFeatureRepository
+						.save(masterFeature);
+				ent.setfId("F" + ent.getfRowid());
+				masterFeatureRepository.save(ent);				
+				saveMasterCharacteistics(json, masterFeature,ent.getfId());				
+				commandPojoList = saveComands(cmdArray,ent.getfId());
+				List<MasterCharacteristicsEntity> attribData = masterCharacteristicsRepository.findAllByCFId(ent.getfId());
+				templateCommandJSONModel.setAttributeMapping(attribCreateConfigResponceMapper.convertCharacteristicsAttribPojoToJson(attribData));
+				templateCommandJSONModel.setMasterFid(ent.getfId());
+				templateCommandJSONModel.setRowId(ent.getfRowid());
+				templateCommandJSONModel.setName(ent.getfName());
+				templateCommandJSONModel.setAttribAssigned(false);			
+				templateCommandJSONModel.setChecked(false);			
+				templateCommandJSONModel.setCommands(commandPojoList);
+				obj.put("output", templateCommandJSONModel);	
+			}			
+			
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} 
+		return new ResponseEntity(obj, HttpStatus.OK);
+	
+	}
+
+	@SuppressWarnings("unchecked")
+	@GET
+	@RequestMapping(value = "/getFeaturesRPC", method = RequestMethod.GET, produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<JSONObject> getFeaturesForRPC() {
+		JSONObject objInterfaces = new JSONObject();
+		JSONArray outputArray = new JSONArray();
+		JSONObject childJson = null;
+		JSONObject masterJson = null;
+		JSONArray childList = null;
+		List<MasterFeatureEntity> featureEntinty = null;
+		try {
+			List<String> vendor = masterFeatureRepository.findVendor();
+			for (String vendorEntity : vendor) {
+				masterJson = new JSONObject();
+				childList = new JSONArray();
+				featureEntinty = masterFeatureRepository.findAllByFVendor(vendorEntity);
+				for (MasterFeatureEntity entity : featureEntinty) {
+					childJson = new JSONObject();
+					childJson.put("vendor", entity.getfVendor());
+					childJson.put("deviceFamily", entity.getfFamily());
+					childJson.put("feature", entity.getfName());
+					childJson.put("deviceOs", entity.getfOs());
+					childJson.put("osVersion", entity.getfOsversion());
+					childJson.put("version", entity.getfVersion());
+					childJson.put("createdDate", entity.getfCreatedDate().toString());
+					childJson.put("comment", entity.getfComments());
+					childJson.put("status", entity.getfStatus());
+					childJson.put("networkType", entity.getfNetworkfun());
+					childJson.put("createdBy", entity.getfCreatedBy());
+					childJson.put("featureId", entity.getfId());
+					childJson.put("isEditable", entity.getfIsenabled());
+					childList.add(childJson);
+				}
+				masterJson.put("childList", childList);
+				masterJson.put("vendor", vendorEntity);
+				outputArray.add(masterJson);
+			}
+		} catch (Exception exe) {
+			logger.error("SQL Exception in getFeaturesForRPC method " + exe.getMessage());
+		}
+		objInterfaces.put("entity", outputArray);
+		return new ResponseEntity<JSONObject>(objInterfaces, HttpStatus.OK);
+	}
+
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/searchFeaturesRPC", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<JSONObject> searchFeaturesForRPC(@RequestBody String configRequest) {
+		JSONObject objInterfaces = new JSONObject();
+		JSONArray outputArray = new JSONArray();
+		JSONObject masterJson = null;
+		JSONObject childJson = null;
+		JSONArray childList = null;
+		String vendor = null, deviceFamily = null, os = null, osVersion = null, region = null, networkFunction = null;
+		try {
+			masterJson = new JSONObject();
+			childList = new JSONArray();
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(configRequest);
+			if (json.containsKey("vendor"))
+				vendor = json.get("vendor").toString();
+			if (json.containsKey("deviceFamily"))
+				deviceFamily = json.get("deviceFamily").toString();
+			if (json.containsKey("os"))
+				os = json.get("os").toString();
+			if (json.containsKey("osVersion"))
+				osVersion = json.get("osVersion").toString();
+			if (json.containsKey("region"))
+				region = json.get("region").toString();
+			if (json.containsKey("networkFunction"))
+				networkFunction = json.get("networkFunction").toString();
+
+			List<MasterFeatureEntity> featureEntinty = masterFeatureRepository.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(vendor, deviceFamily, os,
+					osVersion, region, networkFunction);
+			for (MasterFeatureEntity entity : featureEntinty) {
+				childJson = new JSONObject();
+				childJson.put("vendor", entity.getfVendor());
+				childJson.put("deviceFamily", entity.getfFamily());
+				childJson.put("feature", entity.getfName());
+				childJson.put("deviceOs", entity.getfOs());
+				childJson.put("osVersion", entity.getfOsversion());
+				childJson.put("version", entity.getfVersion());
+				childJson.put("createdDate", entity.getfCreatedDate().toString());
+				childJson.put("comment", entity.getfComments());
+				childJson.put("status", entity.getfStatus());
+				childJson.put("networkFunction", entity.getfNetworkfun());
+				childJson.put("createdBy", entity.getfCreatedBy());
+				childJson.put("featureId", entity.getfId());
+				childJson.put("isEditable", entity.getfIsenabled());
+				childList.add(childJson);			
+			}
+			masterJson.put("childList", childList);
+			masterJson.put("vendor", vendor);
+			outputArray.add(masterJson);
+			objInterfaces.put("entity", outputArray);
+		} catch (Exception exe) {
+			logger.error("SQL Exception in searchFeaturesForRPC method " + exe.getMessage());
+		}
+		return new ResponseEntity<JSONObject>(objInterfaces, HttpStatus.OK);
 	}
 }

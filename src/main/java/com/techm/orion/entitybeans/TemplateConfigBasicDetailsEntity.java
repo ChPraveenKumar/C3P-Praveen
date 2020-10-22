@@ -68,7 +68,7 @@ public class TemplateConfigBasicDetailsEntity implements Serializable
 	@Column(name = "temp_read_status_approver", length = 11)
 	private int tempReadStatusApprover;
 
-	@Column(name = "temp_created_by")
+	@Column(name = "temp_created_by", length = 50)
 	private String tempCreatedBy;
 
 	@Column(name = "temp_network_type", length = 5)

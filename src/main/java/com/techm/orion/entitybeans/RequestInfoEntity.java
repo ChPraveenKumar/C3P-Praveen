@@ -121,7 +121,7 @@ public class RequestInfoEntity implements Serializable {
 	@Column(name = "r_ScheduledTime", length = 25)
 	private Timestamp sceheduledTime;
 
-	@Column(name = "r_TemplateIdUsed", length = 25)
+	@Column(name = "r_TemplateIdUsed", length = 100)
 	private String templateUsed;
 
 	@Column(name = "r_read_fe")

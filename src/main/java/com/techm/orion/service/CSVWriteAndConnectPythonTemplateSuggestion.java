@@ -36,7 +36,6 @@ public class CSVWriteAndConnectPythonTemplateSuggestion {
 		pw.write(sb.toString());
 		pw.flush();
 		pw.close();
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe");
 		Process p = null;
 
 		String line = "";
@@ -44,6 +43,7 @@ public class CSVWriteAndConnectPythonTemplateSuggestion {
 		String result = "";
 
 		try {
+			ProcessBuilder builder = new ProcessBuilder("cmd.exe");
 			p = builder.start();
 			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
 			p_stdin.write("d:");

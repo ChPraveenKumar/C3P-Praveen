@@ -3,26 +3,18 @@ package com.techm.orion.entitybeans;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
 @Table(name = "c3p_m_features")
 public class MasterFeatureEntity implements Serializable
-
 {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -1329252947828402748L;
 
 	@Id
