@@ -88,6 +88,10 @@ public class PythonServices {
 			if(input !=null && input.trim().length()>0) {
 				JSONObject json = (JSONObject) parser.parse(input);
 				output = json.get("output").toString();
+				if(output == null || output.isEmpty())
+				{
+					output="Error";
+				}
 			}
 		} catch (ParseException exe) {
 			logger.error("Json Parse Exception ->" + exe.getMessage());
