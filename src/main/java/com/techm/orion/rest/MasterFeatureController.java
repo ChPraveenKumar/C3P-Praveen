@@ -2,15 +2,19 @@ package com.techm.orion.rest;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
@@ -27,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
@@ -410,6 +415,11 @@ public class MasterFeatureController {
 					masterCharacteristic.setcCreatedDate(timestamp);
 				}
 				// masterCharacteristic.setcCreatedBy(Global.loggedInUser);;
+				//Logic to create characteristic id CYYYYYMMDDXXXXXX
+				Date date = new Date();
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+				String yyyyMMdd = sdf.format(date);
+				masterCharacteristic.setcId("CH-"+yyyyMMdd+UUID.randomUUID().toString().toUpperCase().substring(0, 6));
 				masterCharacteristic.setcCreatedBy("admin");
 				masterCharacteristicList.add(masterCharacteristic);
 			}
