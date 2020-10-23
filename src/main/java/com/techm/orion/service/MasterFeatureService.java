@@ -56,19 +56,7 @@ public class MasterFeatureService {
 
 	public List<GetTemplateMngmntActiveDataPojo> getActiveTemplates(DeviceDetailsPojo deviceDetails) {
 		List<GetTemplateMngmntActiveDataPojo> templateactiveList = new ArrayList<>();
-		List<MasterFeatureEntity> findMasterFeatureEntities = masterFeatureRepository
-				.findApprovedFeatureEntity(deviceDetails.getVendor(),
-						deviceDetails.getDeviceFamily(), deviceDetails.getOs(), deviceDetails.getOsVersion(),
-						deviceDetails.getRegion(), deviceDetails.getNetworkType());
-		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
-			// Find the exact match entities in master features table
-			logger.info("getActiveTemplates - findMasterFeatureEntities for exact match case and size ->"
-					+ findMasterFeatureEntities.size());
-		} else {
-			// Find the nearest master features entities
-			findMasterFeatureEntities = findNearestMatchEntities(deviceDetails);
-		}
-
+		List<MasterFeatureEntity> findMasterFeatureEntities =setNearestMatchData(deviceDetails);
 		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
 			findMasterFeatureEntities.forEach(feature -> {
 				if ("Basic Configuration".equals(feature.getfCategory())) {
@@ -97,19 +85,8 @@ public class MasterFeatureService {
 
 	public List<TemplateLeftPanelJSONModel> getLeftPanelData(DeviceDetailsPojo deviceDetails) {
 		List<TemplateLeftPanelJSONModel> leftPanelDataList = new ArrayList<>();
-		List<MasterFeatureEntity> findMasterFeatureEntities = masterFeatureRepository
-				.findApprovedFeatureEntity(deviceDetails.getVendor(),
-						deviceDetails.getDeviceFamily(), deviceDetails.getOs(), deviceDetails.getOsVersion(),
-						deviceDetails.getRegion(), deviceDetails.getNetworkType());
-		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
-			// Find the exact match entities in master features table
-			logger.info("getLeftPanelData - findMasterFeatureEntities for exact match case and size ->"
-					+ findMasterFeatureEntities.size());
-		} else {
-			// Find the nearest master features entities
-			findMasterFeatureEntities = findNearestMatchEntities(deviceDetails);
-		}
-
+		List<MasterFeatureEntity> findMasterFeatureEntities  = setNearestMatchData(deviceDetails);
+		
 		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
 			findMasterFeatureEntities.forEach(feature -> {
 				TemplateLeftPanelJSONModel templateData = setFeatureData(feature);
@@ -121,6 +98,38 @@ public class MasterFeatureService {
 		}
 
 		return leftPanelDataList;
+	}
+
+	private List<MasterFeatureEntity> setNearestMatchData(DeviceDetailsPojo deviceDetails) {
+		List<MasterFeatureEntity> findMasterFeatureEntities  = new ArrayList<>();
+		findMasterFeatureEntities.addAll(masterFeatureRepository
+				.findApprovedFeatureEntity(deviceDetails.getVendor(),
+						deviceDetails.getDeviceFamily(), deviceDetails.getOs(), deviceDetails.getOsVersion(),
+						deviceDetails.getRegion(), deviceDetails.getNetworkType()));
+		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
+			// Find the exact match entities in master features table
+			logger.info("getLeftPanelData - findMasterFeatureEntities for exact match case and size ->"
+					+ findMasterFeatureEntities.size());
+		} else {
+			// Find the nearest master features entities
+			List<MasterFeatureEntity> findNearestMatchEntities = findNearestMatchEntities(deviceDetails);
+			if (findNearestMatchEntities != null && findNearestMatchEntities.size() > 0) {
+				findMasterFeatureEntities.addAll(findNearestMatchEntities);
+			}			
+		}
+		boolean flag=false;
+		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
+		for(MasterFeatureEntity featureEntity : findMasterFeatureEntities) {
+			if(featureEntity.getfName().equals("Basic Configuration")) {
+				flag=true;
+				break;
+			}
+		 }
+		}
+		if(!flag) {
+			findMasterFeatureEntities.add(masterFeatureRepository.findAllByFVendorAndFFamilyAndFNameAndFStatus(deviceDetails.getVendor(), deviceDetails.getDeviceFamily(),"Basic Configuration","Approved"));
+		}
+		return findMasterFeatureEntities;
 	}
 
 	public DeviceDetailsPojo fetchDeviceDetails(JSONObject requestJson) {

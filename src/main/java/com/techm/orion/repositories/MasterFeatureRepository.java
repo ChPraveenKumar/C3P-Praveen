@@ -55,5 +55,8 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	List<MasterFeatureEntity> findApprovedFeatureEntity(@Param("vendor") String vendor,
 			@Param("deviceFamily") String deviceFamily, @Param("os") String os, @Param("osVersion") String osVersion,
 			@Param("region") String region, @Param("networkType") String networkType);
+	
+	MasterFeatureEntity findAllByFVendorAndFFamilyAndFNameAndFStatus(String vendor,
+			String family,String featureName,String status);
 
 }
