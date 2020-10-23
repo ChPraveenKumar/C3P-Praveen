@@ -5,6 +5,8 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +47,7 @@ import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.GenericAtrribPojo;
 import com.techm.orion.pojo.PredefinedAtrribPojo;
 import com.techm.orion.pojo.PredefinedMappedAtrribPojo;
+import com.techm.orion.repositories.BasicConfigurationRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
@@ -78,7 +81,9 @@ public class MasterFeatureController {
 	private SeriesRepository masterSeriesRepo;
 	@Autowired
 	private AttribCreateConfigResponceMapper attribCreateConfigResponceMapper;
-
+	@Autowired
+	private BasicConfigurationRepository basicConfigRepo;
+	
 	/*
 	 * To get Validation, Category and UI component list.
 	 */
@@ -624,5 +629,107 @@ public class MasterFeatureController {
 					+ exe.getMessage());
 		}
 		return new ResponseEntity<JSONObject>(objInterfaces, HttpStatus.OK);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/viewFeatureRPC", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<JSONObject> viewFeatureRPCDetails(@RequestBody String request) {
+
+		JSONObject obj = new JSONObject();
+		List<String> versionList = new ArrayList<>();
+		JSONArray childList = null;
+		JSONObject json = null, jsonObj = null, attrJsonObj = null;
+		JSONParser parser = new JSONParser();
+		String featureid = null, version = null;
+		try {
+			json = (JSONObject) parser.parse(request);
+			if (json.get("featureid") != null)
+				featureid = json.get("featureid").toString();
+			if (json.get("version") != null)
+				version = json.get("version").toString();
+			childList = new JSONArray();
+			if (featureid != null && version != null) {
+				MasterFeatureEntity featureList = masterFeatureRepository.findByFIdAndFVersion(featureid, version);
+				if (featureList != null) {
+					jsonObj = new JSONObject();
+					jsonObj.put("featureId", featureList.getfId());
+					jsonObj.put("featureName", featureList.getfName());
+					jsonObj.put("vendor", featureList.getfVendor());
+					jsonObj.put("family", featureList.getfFamily());
+					jsonObj.put("os", featureList.getfOs());
+					jsonObj.put("osVersion", featureList.getfOsversion());
+					jsonObj.put("region", featureList.getfRegion());
+					jsonObj.put("networkType", featureList.getfNetworkfun());
+					jsonObj.put("category", featureList.getfCategory());
+					jsonObj.put("createdDate", featureList.getfCreatedDate().toString());
+					jsonObj.put("raisedBy", featureList.getfCreatedBy());
+					versionList.add(featureList.getfVersion());
+					jsonObj.put("featureVersionsList", versionList);
+					jsonObj.put("isEditable", featureList.getfIsenabled());
+					jsonObj.put("comments", featureList.getfComments());
+					List<MasterCharacteristicsEntity> masterCharEntity = masterCharacteristicsRepository
+							.findAllByCFId(featureList.getfId());
+					for (MasterCharacteristicsEntity entity : masterCharEntity) {
+						attrJsonObj = new JSONObject();
+						attrJsonObj.put("attribLabel", entity.getcName());
+						attrJsonObj.put("attribute", "");
+						attrJsonObj.put("uiControl", entity.getcUicomponent());
+						attrJsonObj.put("validations", entity.getcValidations());
+						attrJsonObj.put("category", entity.getcCategory());
+					}
+					childList.add(attrJsonObj);
+					jsonObj.put("attribMappings", childList);
+					/* It is a feature get the commands of a feature */
+					if ("Basic Configuration".equalsIgnoreCase(featureList.getfCategory())) {
+						List<CommandPojo> listShow = new ArrayList<CommandPojo>();
+
+						List<BasicConfiguration> basicConfigList = new ArrayList<BasicConfiguration>();
+						basicConfigList = basicConfigRepo.findByMFId(json.get("featureid").toString());
+						maintainOrder(basicConfigList);
+						for (BasicConfiguration bConfig : basicConfigList) {
+
+							CommandPojo commandPojo = new CommandPojo();
+							commandPojo.setCommand_value(bConfig.getConfiguration());
+							listShow.add(commandPojo);
+						}
+						String finalCammands = "";
+						for (CommandPojo cammand : listShow) {
+							if (!finalCammands.equals(""))
+								finalCammands = finalCammands + "\n" + cammand.getCommand_value();
+							else
+								finalCammands = finalCammands + cammand.getCommand_value();
+						}
+						jsonObj.put("commands", finalCammands);
+						obj.put(new String("entity"), jsonObj);
+					} else {
+						// fetch commands from master command list based on feature id
+						List<CommandPojo> listShow = new ArrayList<CommandPojo>();
+						listShow = masterCommandsRepo.findBymasterFId(json.get("featureid").toString());
+						listShow.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
+						String finalCammands = "";
+						for (CommandPojo cammand : listShow) {
+							finalCammands = finalCammands + cammand.getCommand_value();
+						}
+						jsonObj.put("commands", finalCammands);
+						obj.put(new String("entity"), jsonObj);
+					}
+				}
+			}
+		} catch (Exception exe) {
+			logger.error("Exception in viewFeatureRPCDetails method " + exe.getMessage());
+		}
+		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
+	}
+
+	private void maintainOrder(List<BasicConfiguration> basicConfigList) {
+		Collections.sort(basicConfigList, new Comparator<BasicConfiguration>() {
+
+			@Override
+			public int compare(BasicConfiguration o1, BasicConfiguration o2) {
+				return Integer.valueOf(o1.getSequence_id()).compareTo(Integer.valueOf(o2.getSequence_id()));
+			}
+		});
 	}
 }

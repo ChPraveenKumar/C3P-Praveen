@@ -3,6 +3,8 @@ package com.techm.orion.repositories;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.techm.orion.entitybeans.MasterAttributes;
@@ -24,8 +26,9 @@ public interface AttribCreateConfigRepo extends JpaRepository<MasterAttributes, 
 	
 	List<MasterAttributes> findBytemplateFeatureComandDisplayFeatureAndTemplateId(String featureName,String templateId);
 	
-	
-	
-
+	@Query("select new com.techm.orion.entitybeans.MasterAttributes( att.label, att.masterFID, att.characteristicId,"
+			+ " info.masterLabelValue as labelValue) from MasterAttributes att,"
+			+" CreateConfigEntity info where info.masterLabelId=att.id and info.requestId=:requestId") 
+	List<MasterAttributes> findfeatureCharIdAndLabel(@Param("requestId") String requestId);
 }
 

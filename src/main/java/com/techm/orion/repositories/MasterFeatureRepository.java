@@ -62,4 +62,5 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	MasterFeatureEntity findAllByFVendorAndFFamilyAndFNameAndFStatus(String vendor,
 			String family,String featureName,String status);
 
+	MasterFeatureEntity findByFIdAndFVersion(String fId, String Version);
 }

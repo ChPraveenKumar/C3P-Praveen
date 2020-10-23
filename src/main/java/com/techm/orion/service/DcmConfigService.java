@@ -20,6 +20,7 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -29,8 +30,11 @@ import com.techm.orion.dao.RequestSchedulerDao;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.entitybeans.CreateConfigEntity;
+import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.RequestFeatureTransactionEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
+import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
+import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.mapper.CreateConfigRequestMapper;
 import com.techm.orion.mapper.CreateConfigResponceMapper;
@@ -44,9 +48,13 @@ import com.techm.orion.pojo.InternetLcVrfSO;
 import com.techm.orion.pojo.MisArPeSO;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
+import com.techm.orion.repositories.AttribCreateConfigRepo;
 import com.techm.orion.repositories.CreateConfigRepo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestFeatureTransactionRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
+import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
@@ -72,7 +80,19 @@ public class DcmConfigService {
 
 	@Autowired
 	RequestFeatureTransactionRepository requestFeatureRepo;
+	
+	@Autowired
+	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo; 
+	
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 
+	@Autowired
+	private AttribCreateConfigRepo attribCreateConfigRepo;
+	
+	@Autowired
+	private RfoDecomposedRepository rfoDecomposedRepository;
+	
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -1529,11 +1549,28 @@ public class DcmConfigService {
 					// Save the Data in t_create_config_m_attrib_info Table
 					else {
 						for (CreateConfigPojo pojo : pojoList) {
-							pojo.setRequestId(requestInfoSO
-									.getAlphanumericReqId());
-							pojo.setRequestVersion(requestInfoSO
-									.getRequestVersion());
+							pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
+							pojo.setRequestVersion(requestInfoSO.getRequestVersion());
 							saveDynamicAttribValue(pojo);
+							int did = deviceDiscoveryRepository.findDid(requestInfoSO.getHostname());
+							String rfoId = rfoDecomposedRepository.findrfoId(requestInfoSO.getAlphanumericReqId());
+							List<MasterAttributes> featureIdAndmCharIdAndLabel = attribCreateConfigRepo
+									.findfeatureCharIdAndLabel(requestInfoSO.getAlphanumericReqId());
+							ResourceCharacteristicsHistoryEntity history = new ResourceCharacteristicsHistoryEntity();
+							for (MasterAttributes attributes : featureIdAndmCharIdAndLabel) {
+								history.setRcFeatureId(attributes.getMasterFID());
+								history.setRcCharacteristicId(attributes.getCharacteristicId());
+								history.setRcName(attributes.getLabel());
+								history.setRcName(attributes.getLabelValue());
+								history.setDeviceId(did);
+								history.setRcRequestStatus("InProgress");
+								history.setRcDeviceHostname(requestInfoSO.getHostname());
+								history.setSoRequestId(requestInfoSO.getAlphanumericReqId());
+								history.setRfoId(rfoId);
+								history.setRcActionPerformed("ADD");
+								history.setRcValue(pojo.getMasterLabelValue());
+								resourceCharHistoryRepo.save(history);
+							}
 						}
 					}
 				}
