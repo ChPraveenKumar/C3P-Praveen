@@ -24,12 +24,40 @@ public class TemplateManagementDB {
 	private static final Logger logger = LogManager.getLogger(TemplateManagementDB.class);
 	public int updateFeatureTablesForNewCommand(AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo) {
 		ResultSet rs = null;
+		ResultSet resultSet = null;
 		int idToSetInCommandTable = 0;
 		String query = "Insert into c3p_template_master_feature_list(comand_display_feature,command_parent_feature,command_type,hasParent,is_Save,isMandate,master_f_id) values(?,?,?,?,?,?,?)";
 		String selQuery = "select * from c3p_template_master_feature_list";
+		String checkFeature ="select * from c3p_template_master_feature_list where comand_display_feature =? and command_type =? and is_Save = 0;";
 		try (Connection connection = ConnectionFactory.getConnection();
-				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
-
+			PreparedStatement preparedStmt = connection.prepareStatement(query);PreparedStatement checkPrepareStatement = connection.prepareStatement(checkFeature);) {			
+			checkPrepareStatement.setString(1, addNewFeatureTemplateMngmntPojo.getFeatureName());
+			checkPrepareStatement.setString(2, addNewFeatureTemplateMngmntPojo.getTemplateid());
+			resultSet = checkPrepareStatement.executeQuery();
+			while (resultSet.next()) {	
+				String deletefeature ="delete from c3p_template_master_feature_list where comand_display_feature =? and command_type =? and is_Save = 0;";
+				String deleteAttrib = "delete from t_attrib_m_attribute where template_id =? and feature_id = ?;";
+				try (PreparedStatement deleteAttribPreparedStmt = connection.prepareStatement(deleteAttrib);) {
+					deleteAttribPreparedStmt.setString(1, addNewFeatureTemplateMngmntPojo.getTemplateid());
+					deleteAttribPreparedStmt.setString(2, resultSet.getString("id"));					
+					deleteAttribPreparedStmt.execute("SET SQL_SAFE_UPDATES = 0");
+					int executeUpdate = deleteAttribPreparedStmt.executeUpdate();
+					deleteAttribPreparedStmt.execute("SET SQL_SAFE_UPDATES = 1");	
+					if(executeUpdate>0) {
+						try (PreparedStatement deleteSmt = connection.prepareStatement(deletefeature);) {
+							deleteSmt.setString(1, addNewFeatureTemplateMngmntPojo.getFeatureName());
+							deleteSmt.setString(2, addNewFeatureTemplateMngmntPojo.getTemplateid());
+							deleteSmt.execute("SET SQL_SAFE_UPDATES = 0");
+							deleteSmt.executeUpdate();
+							deleteSmt.execute("SET SQL_SAFE_UPDATES = 1");															
+						} catch (SQLException exe) {
+							logger.error("SQL Exception in updateFeatureTablesForNewCommand select method " + exe.getMessage());
+						} 					
+					}					
+				} catch (SQLException exe) {
+					logger.error("SQL Exception in updateFeatureTablesForNewCommand select method " + exe.getMessage());
+				} 
+			}		
 			preparedStmt.setString(1, addNewFeatureTemplateMngmntPojo.getFeatureName());
 			if (("Add New Feature").equalsIgnoreCase(addNewFeatureTemplateMngmntPojo.getParentName())) {
 				preparedStmt.setString(2, addNewFeatureTemplateMngmntPojo.getFeatureName());
@@ -62,6 +90,7 @@ public class TemplateManagementDB {
 					logger.error("SQL Exception in updateFeatureTablesForNewCommand select method " + exe.getMessage());
 				} finally {
 					DBUtil.close(rs);
+					DBUtil.close(resultSet);
 				}
 			}
 		} catch (SQLException exe) {
