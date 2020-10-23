@@ -56,4 +56,5 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 			@Param("deviceFamily") String deviceFamily, @Param("os") String os, @Param("osVersion") String osVersion,
 			@Param("region") String region, @Param("networkType") String networkType);
 
+	MasterFeatureEntity findByFIdAndFVersion(String fId, String Version);
 }

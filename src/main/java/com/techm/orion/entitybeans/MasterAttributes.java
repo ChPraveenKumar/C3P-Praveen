@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -56,14 +57,13 @@ public class MasterAttributes implements Serializable {
 
 	@Column(name = "m_characteristic_id")
 	private String characteristicId;		
-	/*
-	 * @Column(name = "feature_id") private int featureId;
-	 */
 
-	/* Pankaj */
 	@ManyToOne
 	@JoinColumn(name = "feature_id")
 	private TemplateFeatureEntity templateFeature;
+	
+	@Transient
+	private String labelValue;
 
 	public int getId() {
 		return id;
@@ -96,13 +96,6 @@ public class MasterAttributes implements Serializable {
 	public void setUiComponent(String uiComponent) {
 		this.uiComponent = uiComponent;
 	}
-
-	/*
-	 * public String[] getValidations() { return validations; }
-	 * 
-	 * public void setValidations(String[] validations) { this.validations =
-	 * validations; }
-	 */
 
 	public String getValidations() {
 		return validations;
@@ -167,11 +160,24 @@ public class MasterAttributes implements Serializable {
 	public void setCharacteristicId(String characteristicId) {
 		this.characteristicId = characteristicId;
 	}
+	
+	public String getLabelValue() {
+		return labelValue;
+	}
 
-	/*
-	 * public int getFeatureId() { return featureId; }
-	 * 
-	 * public void setFeatureId(int featureId) { this.featureId = featureId; }
-	 */
+	public void setLabelValue(String labelValue) {
+		this.labelValue = labelValue;
+	}
 
+	public MasterAttributes(String label, String masterFID, String characteristicId, String labelValue) {
+		super();
+		this.label = label;
+		this.masterFID = masterFID;
+		this.characteristicId = characteristicId;
+		this.labelValue = labelValue;
+	}
+
+	public MasterAttributes() {
+		super();
+	}
 }
