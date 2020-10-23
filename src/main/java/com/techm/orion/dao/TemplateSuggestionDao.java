@@ -56,12 +56,12 @@ public class TemplateSuggestionDao {
 		List<Integer> featuresChecked = new ArrayList<Integer>();
 		try {
 
-			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(temp_id, '_V', temp_version) from templateconfig_basic_details where temp_status='Approved' and temp_id= ?)";
-			String query2 = "SELECT * FROM templateconfig_basic_details WHERE temp_id=?";
+			query = "Select distinct id from c3p_template_transaction_feature_list where command_feature_template_id in(select CONCAT(temp_id, '_V', temp_version) from templateconfig_basic_details where temp_status='Approved' and temp_id like ?)";
+			String query2 = "SELECT * FROM templateconfig_basic_details WHERE temp_id like ?";
 
 
 			preparedStmt = connection.prepareStatement(query2);
-			preparedStmt.setString(1, tempId);
+			preparedStmt.setString(1, tempId+"%");
 
 			rs = preparedStmt.executeQuery();
 			Set<String> networkTypeList = new HashSet<>();
@@ -73,7 +73,7 @@ public class TemplateSuggestionDao {
 				for (String data : networkTypeList) {
 					if (data.equals(networkType)) {
 						preparedStmt = connection.prepareStatement(query);
-						preparedStmt.setString(1, tempId);
+						preparedStmt.setString(1, tempId+"%");
 
 						rs = preparedStmt.executeQuery();
 						while (rs.next()) {

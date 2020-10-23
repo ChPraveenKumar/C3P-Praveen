@@ -107,7 +107,7 @@ public class TemplateManagementNewService {
 			region = ("All".equals(region)) ? "$" : region.toUpperCase().substring(0, 2);
 			os = ("All".equals(os)) ? "$" : os.toUpperCase().substring(0, 2);
 			osVersion = ("All".equals(osVersion)) ? "$" : osVersion;
-			temp= vendor + deviceFamily + deviceFamily + os + osVersion +tempNumber;
+			temp= vendor + deviceFamily + os + osVersion +tempNumber;
 		}
 		return temp;
 	}

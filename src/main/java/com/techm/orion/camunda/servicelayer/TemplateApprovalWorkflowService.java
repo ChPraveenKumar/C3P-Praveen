@@ -1,7 +1,9 @@
 package com.techm.orion.camunda.servicelayer;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -117,7 +119,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 				List<TemplateFeatureEntity>listFeatures=templateFeatureRepo.findMasterFIdByCommand(templateidForFeatureExtraction);
 				
 				listFeatures.forEach(feature -> {
-					masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(), feature.getMasterFId(), "1",json.get("comment").toString(),"Admin");
+					masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(), feature.getMasterFId(), "1",json.get("comment").toString(),"Admin","Suser",Timestamp.valueOf(LocalDateTime.now()));
 
 				});
 				response = templateSaveFlowService.updateTemplateStatus(templateId, templateVersion, status,
@@ -146,7 +148,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 				}
 				featureVersion = numberFormat.format(Double.parseDouble(json.get("featureversion").toString()));
 				
-				response=masterFeatureRepository.updateMasterFeatureStatus(status, featureID, featureVersion,comment,"Admin");
+				response=masterFeatureRepository.updateMasterFeatureStatus(status, featureID, featureVersion,comment,"Admin","Suser",Timestamp.valueOf(LocalDateTime.now()));
 				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(featureID, featureVersion);
 				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
 				
