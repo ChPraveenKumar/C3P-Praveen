@@ -1,12 +1,15 @@
 package com.techm.orion.repositories;
 
+import java.sql.Timestamp;
 import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+
 import com.techm.orion.entitybeans.MasterFeatureEntity;
 
 @Repository
@@ -29,9 +32,9 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 
 	@Transactional
 	@Modifying
-	@Query(value = "UPDATE c3p_m_features SET f_status = :status, f_comments = :comment, f_owner = :owner WHERE f_id = :infoId and f_version = :version", nativeQuery = true)
+	@Query(value = "UPDATE c3p_m_features SET f_status = :status, f_comments = :comment, f_owner = :owner , f_updated_by = :updater, f_updated_date = :date WHERE f_id = :infoId and f_version = :version", nativeQuery = true)
 	int updateMasterFeatureStatus(@Param("status") String status, @Param("infoId") String infoId,
-			@Param("version") String version, @Param("comment") String comment, @Param("owner") String owner);
+			@Param("version") String version, @Param("comment") String comment, @Param("owner") String owner, @Param("updater") String updater, @Param("date") Timestamp date);
 
 	List<MasterFeatureEntity> findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(String vendor,
 			String family, String os, String osVersion, String region, String networkType);

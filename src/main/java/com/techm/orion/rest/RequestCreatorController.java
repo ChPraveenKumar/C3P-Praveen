@@ -294,13 +294,13 @@ public class RequestCreatorController {
 			List<String> featureList = new ArrayList<String>();
 			if (featureListJson != null && !featureListJson.isEmpty()) {
 				for (int i = 0; i < featureListJson.size(); i++) {
-					if (featureListJson.get(i).toString().contains("Basic Con")) {
+					/*if (featureListJson.get(i).toString().contains("Basic Con")) {
 
-					} else {
+					} else {*/
 						featureList.add((String) featureListJson.get(i));
-					}
+					//}
 
-				}
+			}
 			}
 			// Extract dynamicAttribs Json Value and map it to MasteAtrribute
 			// List

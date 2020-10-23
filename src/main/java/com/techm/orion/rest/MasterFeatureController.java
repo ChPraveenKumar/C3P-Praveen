@@ -436,6 +436,7 @@ public class MasterFeatureController {
 		Timestamp timestamp = new Timestamp(new Date().getTime());
 		if (timestamp != null) {
 			masterFeature.setfCreatedDate(timestamp);
+			masterFeature.setfUpdatedDate(timestamp);
 		}
 		return masterFeature;
 	}

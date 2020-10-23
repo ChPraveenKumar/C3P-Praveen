@@ -1095,14 +1095,27 @@ public class DcmConfigService {
 		return list;
 	}
 
-	public String getTemplateName(String region, String vendor, String model,
-			String os, String osVersion) {
-		String templateid = null;
+	public String getTemplateName(String region, String vendor,
+			String os, String osVersion,String deviceFamily) {
+		/*String templateid = null;
 		templateid = region.toUpperCase().substring(0, 2)
 				+ vendor.substring(0, 2).toUpperCase() + model.toUpperCase()
 				+ os.substring(0, 2).toUpperCase() + osVersion;
 
-		return templateid;
+		return templateid;*/
+		String temp = null;
+		// will be modified once edit flow is enabled have to check version and
+		// accordingliy append the version
+		if(vendor!= null && deviceFamily != null && os != null && osVersion != null && region != null)
+		{	
+			vendor = vendor.toUpperCase().substring(0, 3);
+			deviceFamily = ("All".equals(deviceFamily)) ? "$" : deviceFamily;
+			region = ("All".equals(region)) ? "$" : region.toUpperCase().substring(0, 2);
+			os = ("All".equals(os)) ? "$" : os.toUpperCase().substring(0, 2);
+			osVersion = ("All".equals(osVersion)) ? "$" : osVersion;
+			temp= vendor + deviceFamily+ region + os + osVersion; 
+		}
+		return temp;
 	}
 
 	public String getTemplateName(String region, String vendor, String model) {
