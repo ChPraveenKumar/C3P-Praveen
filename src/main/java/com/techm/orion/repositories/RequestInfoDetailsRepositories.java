@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 
 @Repository
+@Transactional
+// for update editRequestforReportWebserviceInfo method in RequestInfoDetailsDao.java @Transactional annotation used 
 public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInfoEntity, Long> {
 
 	public List<RequestInfoEntity> findAllByHostName(String HostName);

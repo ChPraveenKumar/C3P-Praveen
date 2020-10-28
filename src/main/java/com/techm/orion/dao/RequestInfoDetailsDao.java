@@ -71,7 +71,6 @@ public class RequestInfoDetailsDao {
 	@Autowired
 	private AttribCreateConfigRepo attribCreateConfigRepo;
 	
-	@Transactional
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
 		String query = null;
@@ -163,17 +162,25 @@ public class RequestInfoDetailsDao {
 				PythonServices pythonService=new PythonServices();
 				pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
 			}
-			// update the request status column to success after Configuration Request gets Completed Successfully.
-			ResourceCharacteristicsHistoryEntity charHistoryEnity = resourceCharHistoryRepo
+			// update the request status column to success after Configuration Request gets
+			// Completed Successfully.
+			List<ResourceCharacteristicsHistoryEntity> charHistoryEnity = resourceCharHistoryRepo
 					.findBySoRequestId(requestId);
-			charHistoryEnity.setRcRequestStatus("Success");
-			resourceCharHistoryRepo.save(charHistoryEnity);
-			// INSERT OR update table after Configuration Request gets Completed Successfully
+			charHistoryEnity.forEach(entity -> {
+				entity.setRcRequestStatus("Success");
+				resourceCharHistoryRepo.save(entity);
+			});
+			// INSERT OR update table after Configuration Request gets Completed
+			// Successfully
 			int did = deviceDiscoveryRepository.findDid(request.getHostName());
 			List<MasterAttributes> featureIdAndmCharIdAndLabel = attribCreateConfigRepo
 					.findfeatureCharIdAndLabel(requestId);
-			ResourceCharacteristicsEntity resourceCharEntity = new ResourceCharacteristicsEntity();
 			for (MasterAttributes attributes : featureIdAndmCharIdAndLabel) {
+				ResourceCharacteristicsEntity resourceCharEntity = resourceCharRepo
+						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(did, attributes.getMasterFID(),
+								attributes.getCharacteristicId());
+				if (resourceCharEntity == null)
+					resourceCharEntity = new ResourceCharacteristicsEntity();
 				resourceCharEntity.setRcFeatureId(attributes.getMasterFID());
 				resourceCharEntity.setRcCharacteristicId(attributes.getCharacteristicId());
 				resourceCharEntity.setRcCharacteristicName(attributes.getLabel());
@@ -220,17 +227,24 @@ public class RequestInfoDetailsDao {
 				PythonServices pythonService=new PythonServices();
 				pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
 			}
-			// update the request status column to Failure after Configuration Request gets Failed.
-			ResourceCharacteristicsHistoryEntity charHistoryEnity = resourceCharHistoryRepo
+			// update the request status column to Failure after Configuration Request gets
+			// Failed.
+			List<ResourceCharacteristicsHistoryEntity> charHistoryEnity = resourceCharHistoryRepo
 					.findBySoRequestId(requestId);
-			charHistoryEnity.setRcRequestStatus("Failure");
-			resourceCharHistoryRepo.save(charHistoryEnity);
+			charHistoryEnity.forEach(entity -> {
+				entity.setRcRequestStatus("Failure");
+				resourceCharHistoryRepo.save(entity);
+			});
 			// INSERT OR update table after Configuration Request gets Failed
 			int did = deviceDiscoveryRepository.findDid(request.getHostName());
 			List<MasterAttributes> featureIdAndmCharIdAndLabel = attribCreateConfigRepo
 					.findfeatureCharIdAndLabel(requestId);
-			ResourceCharacteristicsEntity resourceCharEntity = new ResourceCharacteristicsEntity();
 			for (MasterAttributes attributes : featureIdAndmCharIdAndLabel) {
+				ResourceCharacteristicsEntity resourceCharEntity = resourceCharRepo
+						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(did, attributes.getMasterFID(),
+								attributes.getCharacteristicId());
+				if (resourceCharEntity == null)
+					resourceCharEntity = new ResourceCharacteristicsEntity();
 				resourceCharEntity.setRcFeatureId(attributes.getMasterFID());
 				resourceCharEntity.setRcCharacteristicId(attributes.getCharacteristicId());
 				resourceCharEntity.setRcCharacteristicName(attributes.getLabel());
