@@ -43,10 +43,10 @@ public class TemplateApprovalWorkflowService implements Observer {
 	private static final Logger logger = LogManager.getLogger(TemplateApprovalWorkflowService.class);
 
 	@Autowired
-	MasterFeatureRepository masterFeatureRepository;
+	private MasterFeatureRepository masterFeatureRepository;
 	
 	@Autowired
-	TemplateFeatureRepo templateFeatureRepo;
+	private TemplateFeatureRepo templateFeatureRepo;
 
 	
 	@POST
@@ -119,12 +119,12 @@ public class TemplateApprovalWorkflowService implements Observer {
 				List<TemplateFeatureEntity>listFeatures=templateFeatureRepo.findMasterFIdByCommand(templateidForFeatureExtraction);
 				
 				listFeatures.forEach(feature -> {
-					masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(), feature.getMasterFId(), "1",json.get("comment").toString(),"Admin","Suser",Timestamp.valueOf(LocalDateTime.now()));
+					masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(), json.get("comment").toString() , "Admin", "Suser",Timestamp.valueOf(LocalDateTime.now()), feature.getMasterFId(), "1");
 
 				});
 				response = templateSaveFlowService.updateTemplateStatus(templateId, templateVersion, status,
 						approverComment);
-				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(templateId, templateVersion);
+				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(json.get("templateid").toString().replace("-", "_"), templateVersion);
 				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
 			}
 			else
@@ -148,8 +148,11 @@ public class TemplateApprovalWorkflowService implements Observer {
 				}
 				featureVersion = numberFormat.format(Double.parseDouble(json.get("featureversion").toString()));
 				
-				response=masterFeatureRepository.updateMasterFeatureStatus(status, featureID, featureVersion,comment,"Admin","Suser",Timestamp.valueOf(LocalDateTime.now()));
+				response=masterFeatureRepository.updateMasterFeatureStatus(status, comment , "Admin", "Suser",Timestamp.valueOf(LocalDateTime.now()), featureID, featureVersion);
+				
 				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(featureID, featureVersion);
+				
+				
 				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
 				
 			}
