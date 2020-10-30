@@ -100,7 +100,7 @@ public class AttribCreateConfigResponceMapper {
 		return jsonList;
 	}
 
-	private String[] setValidation(String validations) {
+	public String[] setValidation(String validations) {
 		validations = StringUtils.substringAfter(validations, "[");
 		validations = StringUtils.substringBefore(validations, "]");
 		String[] validationArray = validations.split(",");

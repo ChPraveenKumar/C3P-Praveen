@@ -7,4 +7,7 @@ import com.techm.orion.entitybeans.ResourceCharacteristicsEntity;
 @Repository
 public interface ResourceCharacteristicsRepository extends
 JpaRepository<ResourceCharacteristicsEntity, Long> {
+	
+	ResourceCharacteristicsEntity findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(int deviceId, 
+			String rcFeatureId, String rcCharacteristicId);
 }

@@ -676,10 +676,10 @@ public class MasterFeatureController {
 						attrJsonObj.put("attribLabel", entity.getcName());
 						attrJsonObj.put("attribute", "");
 						attrJsonObj.put("uiControl", entity.getcUicomponent());
-						attrJsonObj.put("validations", entity.getcValidations());
+						attrJsonObj.put("validations", attribCreateConfigResponceMapper.setValidation(entity.getcValidations()));
 						attrJsonObj.put("category", entity.getcCategory());
-					}
-					childList.add(attrJsonObj);
+						childList.add(attrJsonObj);
+					}		
 					jsonObj.put("attribMappings", childList);
 					/* It is a feature get the commands of a feature */
 					if ("Basic Configuration".equalsIgnoreCase(featureList.getfCategory())) {
