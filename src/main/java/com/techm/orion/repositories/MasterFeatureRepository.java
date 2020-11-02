@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
 
 @Repository
-@Transactional
 public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEntity, Long> {
 
 	@Query(value = "select count(f_id) from c3p_m_features where f_vendor like :vendor and f_name like :featureName"
