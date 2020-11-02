@@ -33,8 +33,8 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	@Transactional
 	@Modifying
 	@Query(value = "UPDATE c3p_m_features SET f_status = :status, f_comments = :comment, f_owner = :owner , f_updated_by = :updater, f_updated_date = :date WHERE f_id = :infoId and f_version = :version", nativeQuery = true)
-	int updateMasterFeatureStatus(@Param("status") String status, @Param("infoId") String infoId,
-			@Param("version") String version, @Param("comment") String comment, @Param("owner") String owner, @Param("updater") String updater, @Param("date") Timestamp date);
+	int updateMasterFeatureStatus(@Param("status") String status, @Param("comment") String comment,@Param("owner") String owner, @Param("updater") String updater, @Param("date") Timestamp date, @Param("infoId") String infoId,
+			@Param("version") String version);
 
 	List<MasterFeatureEntity> findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(String vendor,
 			String family, String os, String osVersion, String region, String networkType);

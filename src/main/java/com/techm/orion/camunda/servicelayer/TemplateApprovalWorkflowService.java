@@ -102,6 +102,22 @@ public class TemplateApprovalWorkflowService implements Observer {
 		int response = 0;
 		try {
 			JSONObject json = (JSONObject) parser.parse(string);
+			if(json.containsKey("status") && !json.get("status").toString().isEmpty())
+			{
+				status = json.get("status").toString();
+			}
+			else
+			{
+				status="";
+			}
+			if(json.containsKey("comment") && !json.get("comment").toString().isEmpty())
+			{
+				approverComment = json.get("comment").toString();
+			}
+			else
+			{
+				approverComment="";
+			}
 			if (Boolean.parseBoolean(json.get("isTemplate").toString())) {
 				templateId = json.get("templateid").toString().replace("-", "_");
 				String templateidForFeatureExtraction=templateId;
@@ -112,8 +128,6 @@ public class TemplateApprovalWorkflowService implements Observer {
 					templateId = templateId.substring(0, templateId.indexOf("_V"));
 
 				}
-				status = json.get("status").toString();
-				approverComment = json.get("comment").toString();
 				
 				//get feature id based of command type
 				List<TemplateFeatureEntity>listFeatures=templateFeatureRepo.findMasterFIdByCommand(templateidForFeatureExtraction);
@@ -130,8 +144,6 @@ public class TemplateApprovalWorkflowService implements Observer {
 			else
 			{
 				/*In case of feature*/
-				status = json.get("status").toString();
-				approverComment = json.get("comment").toString();
 				featureID=json.get("featureid").toString();
 				
 				MasterFeatureEntity entity=masterFeatureRepository.findByFId(featureID);
