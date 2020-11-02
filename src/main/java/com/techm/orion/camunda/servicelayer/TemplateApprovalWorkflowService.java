@@ -133,7 +133,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 				List<TemplateFeatureEntity>listFeatures=templateFeatureRepo.findMasterFIdByCommand(templateidForFeatureExtraction);
 				
 				listFeatures.forEach(feature -> {
-					masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(), json.get("comment").toString() , "Admin", "Suser",Timestamp.valueOf(LocalDateTime.now()), feature.getMasterFId(), "1");
+					masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(), json.get("comment").toString() , "Admin", "Suser",Timestamp.valueOf(LocalDateTime.now()), feature.getMasterFId(), "1.0");
 
 				});
 				response = templateSaveFlowService.updateTemplateStatus(templateId, templateVersion, status,
