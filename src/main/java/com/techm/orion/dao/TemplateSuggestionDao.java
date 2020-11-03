@@ -69,7 +69,7 @@ public class TemplateSuggestionDao {
 				networkTypeList.add(rs.getString("temp_network_type"));
 			}
 			preparedStmt.close();
-			if (networkTypeList.size() == 1) {
+			if (networkTypeList.size() >= 1) {
 				for (String data : networkTypeList) {
 					if (data.equals(networkType)) {
 						preparedStmt = connection.prepareStatement(query);
