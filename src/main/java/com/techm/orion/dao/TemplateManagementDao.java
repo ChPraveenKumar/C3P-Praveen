@@ -1769,7 +1769,7 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		String query = null;
 		if (key.equalsIgnoreCase("Template ID")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE temp_id LIKE ? and temp_version LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_id =?";
 		} else if (key.equalsIgnoreCase("Device Family")) {
 			query = "SELECT * FROM templateconfig_basic_details WHERE temp_device_family LIKE ?";
 
@@ -1801,18 +1801,7 @@ public class TemplateManagementDao {
 			pst = connection.prepareStatement(query);
 
 			if (key.equalsIgnoreCase("Template ID")) {
-				if (value.length() == 14) {
-					pst.setString(1, "%" + value.substring(0, 14) + "%");
-					pst.setString(2, "%");
-				} else if (value.length() < 14) {
-					pst.setString(1, "%" + value + "%");
-					pst.setString(2, "%");
-
-				} else if (value.length() > 16) {
-					pst.setString(1, "%" + value.substring(0, 14) + "%");
-					pst.setString(2, value.substring(16, 19) + "%");
-				}
-
+				pst.setString(1, value);
 			} else {
 				pst.setString(1, value + "%");
 
