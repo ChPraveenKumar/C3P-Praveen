@@ -9,7 +9,6 @@ import com.techm.orion.pojo.DeviceDetailsPojo;
 
 public class TemplateLeftPanelJSONModel {
 
-	
 	private List<TemplateLeftPanelJSONModel> childList = new ArrayList<TemplateLeftPanelJSONModel>();
 	private int idToCheck;
 	private String name;
@@ -20,13 +19,15 @@ public class TemplateLeftPanelJSONModel {
 	private String id;
 	private boolean disabled;
 	private String confText;
-	private int childid=0;
+	private int childid = 0;
+	private int rowId;
+	private boolean isAttribAssigned;
+	private String masterFid;
 	
-	private List<AttribCreateConfigJson> attributeMapping= new ArrayList<AttribCreateConfigJson>();	
-	private List<CommandPojo> commands= new ArrayList<CommandPojo>();
-	
-	private DeviceDetailsPojo deviceDetails;
+	private List<AttribCreateConfigJson> attributeMapping = new ArrayList<AttribCreateConfigJson>();
+	private List<CommandPojo> commands = new ArrayList<CommandPojo>();
 
+	private DeviceDetailsPojo deviceDetails;
 
 	public int getChildid() {
 		return childid;
@@ -98,7 +99,8 @@ public class TemplateLeftPanelJSONModel {
 
 	public void setChildList(List<TemplateLeftPanelJSONModel> childList) {
 		this.childList = childList;
-	}	
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -138,7 +140,29 @@ public class TemplateLeftPanelJSONModel {
 	public void setDeviceDetails(DeviceDetailsPojo deviceDetails) {
 		this.deviceDetails = deviceDetails;
 	}
-	
-	
+
+	public int getRowId() {
+		return rowId;
+	}
+
+	public void setRowId(int rowId) {
+		this.rowId = rowId;
+	}
+
+	public boolean isAttribAssigned() {
+		return isAttribAssigned;
+	}
+
+	public void setAttribAssigned(boolean isAttribAssigned) {
+		this.isAttribAssigned = isAttribAssigned;
+	}
+
+	public String getMasterFid() {
+		return masterFid;
+	}
+
+	public void setMasterFid(String masterFid) {
+		this.masterFid = masterFid;
+	}
 
 }

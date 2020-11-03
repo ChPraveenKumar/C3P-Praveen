@@ -2,6 +2,7 @@ package com.techm.orion.service;
 
 import java.util.List;
 
+import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 
 public interface AttribCreateConfigService {
@@ -15,5 +16,7 @@ public interface AttribCreateConfigService {
 	
 	List<AttribCreateConfigPojo> getByAttribTemplateAndFeatureName(String templateId,String featureName);
 	List<AttribCreateConfigPojo> getByFeatureId(int id);
+	List<AttribCreateConfigPojo> getByAttribTemplateFeatureEntityTemplateId(TemplateFeatureEntity entity ,String templateId);
+
 	
 }

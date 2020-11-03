@@ -1,7 +1,9 @@
 package com.techm.orion.camunda.servicelayer;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -16,6 +18,8 @@ import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,8 +28,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDao;
+import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.rest.CamundaServiceTemplateApproval;
 import com.techm.orion.rest.GetTemplateConfigurationData;
 
@@ -34,27 +42,33 @@ import com.techm.orion.rest.GetTemplateConfigurationData;
 public class TemplateApprovalWorkflowService implements Observer {
 	private static final Logger logger = LogManager.getLogger(TemplateApprovalWorkflowService.class);
 
+	@Autowired
+	private MasterFeatureRepository masterFeatureRepository;
+	
+	@Autowired
+	private TemplateFeatureRepo templateFeatureRepo;
+
+	
 	@POST
 	@RequestMapping(value = "/saveTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response saveTemplate(@RequestBody String string) {
+	public ResponseEntity<JSONObject> saveTemplate(@RequestBody String string) {
 		GetTemplateConfigurationData templateSaveFlowService = new GetTemplateConfigurationData();
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONParser parser = new JSONParser();
 		String templateId = null, templateVersion = null;
-		Response response = null;
+		ResponseEntity<JSONObject> response = null;
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 
 		try {
 			JSONObject json = (JSONObject) parser.parse(string);
 			templateId = json.get("templateid").toString();
+			templateId = templateId.replace("-", "_");
 			if (json.get("templateVersion") != null) {
-
 				templateVersion = numberFormat.format(Double.parseDouble(json.get("templateVersion").toString()));
-
 			} else {
-				templateVersion = templateId.substring(templateId.indexOf("V") + 1, templateId.length());
-				templateId = templateId.substring(0, templateId.indexOf("V") - 1);
+				templateVersion = templateId.substring(templateId.indexOf("_V")+2, templateId.length());
+				templateId = templateId.substring(0, templateId.indexOf("_V"));
 			}
 			response = templateSaveFlowService.saveConfigurationTemplate(string, templateId, templateVersion);
 			camundaService.initiateApprovalFlow(templateId, templateVersion, "Admin");
@@ -71,6 +85,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 		return response;
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/updateTemplateStatus", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -80,26 +95,80 @@ public class TemplateApprovalWorkflowService implements Observer {
 		TemplateManagementDao templateSaveFlowService = new TemplateManagementDao();
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONParser parser = new JSONParser();
-		String templateId = null, templateVersion = null, status = null, approverComment = null;
+		String templateId = null, templateVersion = null, status = null, approverComment = null,featureID=null, featureVersion=null;
 		String userTaskId = null;
+		DecimalFormat numberFormat = new DecimalFormat("#.0");
+
 		int response = 0;
 		try {
 			JSONObject json = (JSONObject) parser.parse(string);
-			templateId = json.get("templateid").toString().replace("-", "_");
-			if (json.get("templateVersion") != null) {
-				templateVersion = (json.get("templateVersion").toString());
-
-			} else {
-				templateVersion = templateId.substring(templateId.indexOf("V") + 1, templateId.length());
-				templateId = templateId.substring(0, templateId.indexOf("V") - 1);
-
+			if(json.containsKey("status") && !json.get("status").toString().isEmpty())
+			{
+				status = json.get("status").toString();
 			}
-			status = json.get("status").toString();
-			approverComment = json.get("comment").toString();
-			response = templateSaveFlowService.updateTemplateStatus(templateId, templateVersion, status,
-					approverComment);
-			userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(templateId, templateVersion);
-			camundaService.completeApprovalFlow(userTaskId, status, approverComment);
+			else
+			{
+				status="";
+			}
+			if(json.containsKey("comment") && !json.get("comment").toString().isEmpty())
+			{
+				approverComment = json.get("comment").toString();
+			}
+			else
+			{
+				approverComment="";
+			}
+			if (Boolean.parseBoolean(json.get("isTemplate").toString())) {
+				templateId = json.get("templateid").toString().replace("-", "_");
+				String templateidForFeatureExtraction=templateId;
+				if (json.get("templateVersion") != null) {
+					templateVersion = (json.get("templateVersion").toString());
+				} else {
+					templateVersion = templateId.substring(templateId.indexOf("_V")+2, templateId.length());
+					templateId = templateId.substring(0, templateId.indexOf("_V"));
+
+				}
+				
+				//get feature id based of command type
+				List<TemplateFeatureEntity>listFeatures=templateFeatureRepo.findMasterFIdByCommand(templateidForFeatureExtraction);
+				
+				listFeatures.forEach(feature -> {
+					masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(), json.get("comment").toString() , "Admin", "Suser",Timestamp.valueOf(LocalDateTime.now()), feature.getMasterFId(), "1.0");
+
+				});
+				response = templateSaveFlowService.updateTemplateStatus(templateId, templateVersion, status,
+						approverComment);
+				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(json.get("templateid").toString().replace("-", "_"), templateVersion);
+				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
+			}
+			else
+			{
+				/*In case of feature*/
+				featureID=json.get("featureid").toString();
+				
+				MasterFeatureEntity entity=masterFeatureRepository.findByFId(featureID);
+				String comment=null;
+				String str=entity.getfComments();
+				if(str!=null)
+				{
+					comment=entity.getfComments().concat(approverComment);
+
+				}
+				else
+				{
+					comment=approverComment;
+				}
+				featureVersion = numberFormat.format(Double.parseDouble(json.get("featureversion").toString()));
+				
+				response=masterFeatureRepository.updateMasterFeatureStatus(status, comment , "Admin", "Suser",Timestamp.valueOf(LocalDateTime.now()), featureID, featureVersion);
+				
+				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(featureID, featureVersion);
+				
+				
+				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
+				
+			}
+			
 			// camundaService.initiateApprovalFlow(templateId, templateVersion, "Admin");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -121,15 +190,14 @@ public class TemplateApprovalWorkflowService implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response search(@RequestBody String searchParameters) {
 
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
 		String jsonArray = "";
-		String jsonArrayReports = "";
 		String key = null, value = null;
 		TemplateManagementDao templateSaveFlowService = new TemplateManagementDao();
 

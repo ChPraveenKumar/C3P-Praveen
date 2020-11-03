@@ -42,7 +42,6 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.TestDetail;
-import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
@@ -50,6 +49,7 @@ import com.techm.orion.service.CSVWriteAndConnectPython;
 import com.techm.orion.service.RegexTestHealthCheck;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.VNFHelper;
@@ -168,13 +168,14 @@ public class HealthCheckTestValidation extends Thread {
 
 							if (requestinfo.getCertificationSelectionBit().substring(5, 6).equalsIgnoreCase("1")
 									|| requestinfo.getCertificationSelectionBit().substring(6).equalsIgnoreCase("1")) {
+								
 								cmdPingCall(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()),
 										requestinfo.getManagementIp());
 								printResult(input, requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()));
-								printResult(input, requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()));
+										Double.toString(requestinfo.getRequestVersion()));														
+							
+								
 								hmapResult = regexTestHealthCheck.PreValidationForHealthCheckPing(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()));
@@ -732,7 +733,7 @@ public class HealthCheckTestValidation extends Thread {
 	}
 
 	private static void cmdPingCall(String requestId, String version, String managementIp) throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe");
+		/*ProcessBuilder builder = new ProcessBuilder("cmd.exe");
 		Process p = null;
 		try {
 			p = builder.start();
@@ -756,11 +757,30 @@ public class HealthCheckTestValidation extends Thread {
 
 		catch (IOException e) {
 			e.printStackTrace();
+		}*/
+		
+		StringBuilder commadBuilder = new StringBuilder();
+		Process process = null;
+		try {
+			commadBuilder.append("ping ");
+			commadBuilder.append(managementIp);
+			//Pings timeout
+			if("Linux".equals(TSALabels.APP_OS.getValue())) {
+				commadBuilder.append(" -c ");
+			}else {
+				commadBuilder.append(" -n ");
+			}
+			//Number of pings
+			commadBuilder.append("5");
+			logger.info("commandToPing -"+commadBuilder);	
+			process = Runtime.getRuntime().exec(commadBuilder.toString());			
+		}catch(IOException exe) {
+			logger.error("Exception in pingResults - "+exe.getMessage());
 		}
 
-		Scanner s = new Scanner(p.getInputStream());
+		Scanner s = new Scanner(process.getInputStream());
 
-		InputStream input = p.getInputStream();
+		InputStream input = process.getInputStream();
 		printResult(input, requestId, version);
 
 		while (s.hasNext()) {

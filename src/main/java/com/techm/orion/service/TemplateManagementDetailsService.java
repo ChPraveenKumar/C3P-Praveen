@@ -11,18 +11,31 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.techm.orion.dao.TemplateManagementDao;
+import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
+import com.techm.orion.models.TemplateVersioningJSONModel;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.GetTemplateMngmntPojo;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.repositories.TemplateConfigBasicDetailsRepository;
 import com.techm.orion.utility.TextReport;
 
+@Service
 public class TemplateManagementDetailsService {
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
+	
+	
+	@Autowired
+	private TemplateConfigBasicDetailsRepository templateConfigBasicDetailsRepository;
 
 	public boolean addNewFeature(String comand_display_feature, String command_to_add, String command_type,
 			String templateId, int parentid, int save, int topLineNum, int bottomLineNum, boolean dragged,
@@ -59,15 +72,6 @@ public class TemplateManagementDetailsService {
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();		
 		Map<String, String> templatecommandList = new HashMap<String, String>();
 		templatecommandList = templateManagementDao.getDataForRightPanel(templateId, selectAll);
-		return templatecommandList;
-	}
-
-	public List<GetTemplateMngmntActiveDataPojo> getDataForLeftPanel(String templateId, String tempKey,
-			String currentTemplateId, boolean flag) throws Exception {
-
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		List<GetTemplateMngmntActiveDataPojo> templatecommandList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
-		templatecommandList = templateManagementDao.getDataForLeftPanel(templateId, tempKey, currentTemplateId, flag);
 		return templatecommandList;
 	}
 
@@ -161,26 +165,10 @@ public class TemplateManagementDetailsService {
 		return templatecommandList;
 	}
 
-	public Map<String, String> addTemplate(String vendor, String model, String os, String osVersion,
-			String region, String templateId) {
-		Map<String, String> result = new HashMap<String, String>();
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		result = templateManagementDao.createTemplateBasicConfig(vendor, model, os, osVersion, region,
-				templateId);
-		return result;
-	}
-
 	public boolean updateTemplateDBonCreate(String tempID) throws SQLException {
 		boolean result = false;
 		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
 		result = templateManagementDao.updateTemplateDB(tempID);
-		return result;
-	}
-
-	public boolean updateTemplateDBonEdit(String tempID, String previousVersion, String tempKey) throws SQLException {
-		boolean result = false;
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-		result = templateManagementDao.updateTemplateDBEdit(tempID, previousVersion, tempKey);
 		return result;
 	}
 
@@ -344,5 +332,17 @@ public class TemplateManagementDetailsService {
 		}
 		return templateBscConfg;
 	}
-
+	
+	@SuppressWarnings("unchecked")
+	public JSONObject checkAliasNamePresent(@RequestParam String aliasName) throws ParseException {
+		JSONObject jsonObject = new JSONObject();
+		TemplateConfigBasicDetailsEntity tempConfigBasicDetEntity = templateConfigBasicDetailsRepository
+				.findByTempAlias(aliasName);
+		if (tempConfigBasicDetEntity != null) {
+			jsonObject.put("isAliasPresent", true);
+		} else {
+			jsonObject.put("isAliasPresent", false);
+		}
+		return jsonObject;
+	}
 }

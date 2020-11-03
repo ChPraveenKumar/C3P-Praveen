@@ -121,7 +121,7 @@ public class RequestInfoEntity implements Serializable {
 	@Column(name = "r_ScheduledTime", length = 25)
 	private Timestamp sceheduledTime;
 
-	@Column(name = "r_TemplateIdUsed", length = 25)
+	@Column(name = "r_TemplateIdUsed", length = 100)
 	private String templateUsed;
 
 	@Column(name = "r_read_fe")
@@ -172,6 +172,23 @@ public class RequestInfoEntity implements Serializable {
 
 	@Column(name = "r_start_up")
 	private Boolean StartUp;
+
+	@Column(name = "r_file_name", length = 50, nullable = false)
+	private String rFileName;
+	
+	@Column(name = "r_config_generation_method", length = 20, nullable = false)
+	private String rConfigGenerationMethod;
+	
+	@Column(name = "r_selected_file_features", nullable = false)
+	private String rSelectedFileFeatures;
+	
+	public String getrFileName() {
+		return rFileName;
+	}
+
+	public void setrFileName(String rFileName) {
+		this.rFileName = rFileName;
+	}
 
 	@Transient
 	private String backUpScheduleTime;

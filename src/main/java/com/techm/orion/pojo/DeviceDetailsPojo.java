@@ -2,12 +2,13 @@ package com.techm.orion.pojo;
 
 public class DeviceDetailsPojo {
 
-	String vendor;
-	String deviceFamily;
-	String model;
-	String region;
-	String os;
-	String osVersion;
+	private String vendor;
+	private String deviceFamily;
+	private String model;
+	private String region;
+	private String os;
+	private String osVersion;
+	private String networkType;
 
 	public String getVendor() {
 		return vendor;
@@ -55,6 +56,14 @@ public class DeviceDetailsPojo {
 
 	public void setOsVersion(String osVersion) {
 		this.osVersion = osVersion;
+	}
+
+	public String getNetworkType() {
+		return networkType;
+	}
+
+	public void setNetworkType(String networkType) {
+		this.networkType = networkType;
 	}
 
 }

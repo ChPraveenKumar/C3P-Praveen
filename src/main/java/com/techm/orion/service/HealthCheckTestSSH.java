@@ -24,6 +24,7 @@ import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.utility.TSALabels;
 
 public class HealthCheckTestSSH {
 	private static final Logger logger = LogManager.getLogger(HealthCheckTestSSH.class);
@@ -307,7 +308,7 @@ public class HealthCheckTestSSH {
 	}
 
 	private static void cmdPingCall(String requestId, String version, String managementIp) throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe");
+		/*ProcessBuilder builder = new ProcessBuilder("cmd.exe");
 		Process p = null;
 		try {
 			p = builder.start();
@@ -321,7 +322,7 @@ public class HealthCheckTestSSH {
 			p_stdin.newLine();
 			p_stdin.flush();
 			try {
-				Thread.sleep(5000);
+				Thread.sleep(21000);
 			} catch (Exception ee) {
 			}
 			p_stdin.write("exit");
@@ -331,11 +332,30 @@ public class HealthCheckTestSSH {
 
 		catch (IOException e) {
 			e.printStackTrace();
+		}*/
+		
+		StringBuilder commadBuilder = new StringBuilder();
+		Process process = null;
+		try {
+			commadBuilder.append("ping ");
+			commadBuilder.append(managementIp);
+			//Pings timeout
+			if("Linux".equals(TSALabels.APP_OS.getValue())) {
+				commadBuilder.append(" -c ");
+			}else {
+				commadBuilder.append(" -n ");
+			}
+			//Number of pings
+			commadBuilder.append("5");
+			logger.info("commandToPing -"+commadBuilder);	
+			process = Runtime.getRuntime().exec(commadBuilder.toString());			
+		}catch(IOException exe) {
+			logger.error("Exception in pingResults - "+exe.getMessage());
 		}
 
-		Scanner s = new Scanner(p.getInputStream());
+		Scanner s = new Scanner(process.getInputStream());
 
-		InputStream input = p.getInputStream();
+		InputStream input = process.getInputStream();
 		printResult(input, requestId, version);
 
 		while (s.hasNext()) {

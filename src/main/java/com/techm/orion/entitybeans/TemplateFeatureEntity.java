@@ -46,6 +46,17 @@ public class TemplateFeatureEntity implements Serializable {
 
 	@Column(name = "check_default")
 	private String check_default;
+	
+	@Column(name = "master_f_id")
+	private String masterFId;
+
+	public String getMasterFId() {
+		return masterFId;
+	}
+
+	public void setMasterFId(String masterFId) {
+		this.masterFId = masterFId;
+	}
 
 	public int getId() {
 		return id;

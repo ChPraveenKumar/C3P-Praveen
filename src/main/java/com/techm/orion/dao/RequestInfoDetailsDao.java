@@ -29,17 +29,27 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
+import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.RequestInfoEntity;
+import com.techm.orion.entitybeans.ResourceCharacteristicsEntity;
+import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
+import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.mapper.RequestInfoMappper;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.AttribCreateConfigRepo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
+import com.techm.orion.repositories.ResourceCharacteristicsRepository;
+import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.PythonServices;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
@@ -50,8 +60,17 @@ public class RequestInfoDetailsDao {
 	private RequestInfoDetailsRepositories reository;
 	@Autowired
 	private ServiceOrderRepo serviceOrderRepo;
-
-	@Transactional
+	@Autowired
+	private RfoDecomposedRepository rfoDecomposedRepo;
+	@Autowired
+	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo; 
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	@Autowired
+	private ResourceCharacteristicsRepository resourceCharRepo; 
+	@Autowired
+	private AttribCreateConfigRepo attribCreateConfigRepo;
+	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
 		String query = null;
@@ -132,6 +151,44 @@ public class RequestInfoDetailsDao {
 			if (ent != null) {
 				serviceOrderRepo.updateStatusAndRequestId(requestId, "Success", ent.getServiceOrder(), "admin", Timestamp.valueOf(LocalDateTime.now()));
 			}
+			
+			RfoDecomposedEntity rfoDecomposedEntity=rfoDecomposedRepo.findByOdRequestIdAndOdRequestVersion(requestId, Double.valueOf(version));
+			if(rfoDecomposedEntity != null)
+			{
+				//rfoDecomposedRepo.updateStatus("Success", Global.loggedInUser, Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
+
+				rfoDecomposedRepo.updateStatus("Success", "Admin", Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
+				//To uncomment when python services available
+				PythonServices pythonService=new PythonServices();
+				pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+			}
+			// update the request status column to success after Configuration Request gets
+			// Completed Successfully.
+			List<ResourceCharacteristicsHistoryEntity> charHistoryEnity = resourceCharHistoryRepo
+					.findBySoRequestId(requestId);
+			charHistoryEnity.forEach(entity -> {
+				entity.setRcRequestStatus("Success");
+				resourceCharHistoryRepo.save(entity);
+			});
+			// INSERT OR update table after Configuration Request gets Completed
+			// Successfully
+			int did = deviceDiscoveryRepository.findDid(request.getHostName());
+			List<MasterAttributes> featureIdAndmCharIdAndLabel = attribCreateConfigRepo
+					.findfeatureCharIdAndLabel(requestId);
+			for (MasterAttributes attributes : featureIdAndmCharIdAndLabel) {
+				ResourceCharacteristicsEntity resourceCharEntity = resourceCharRepo
+						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(did, attributes.getMasterFID(),
+								attributes.getCharacteristicId());
+				if (resourceCharEntity == null)
+					resourceCharEntity = new ResourceCharacteristicsEntity();
+				resourceCharEntity.setRcFeatureId(attributes.getMasterFID());
+				resourceCharEntity.setRcCharacteristicId(attributes.getCharacteristicId());
+				resourceCharEntity.setRcCharacteristicName(attributes.getLabel());
+				resourceCharEntity.setRcCharacteristicValue(attributes.getLabelValue());
+				resourceCharEntity.setDeviceId(did);
+				resourceCharEntity.setRcDeviceHostname(request.getHostName());
+				resourceCharRepo.save(resourceCharEntity);
+			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
@@ -159,6 +216,43 @@ public class RequestInfoDetailsDao {
 		
 			if (ent != null) 
 				serviceOrderRepo.updateStatusAndRequestId(requestId, "Failure", ent.getServiceOrder(), "admin", Timestamp.valueOf(LocalDateTime.now()));
+			
+			RfoDecomposedEntity rfoDecomposedEntity=rfoDecomposedRepo.findByOdRequestIdAndOdRequestVersion(requestId, Double.valueOf(version));
+			if(rfoDecomposedEntity != null)
+			{
+				//rfoDecomposedRepo.updateStatus("Failure", Global.loggedInUser, Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
+
+				rfoDecomposedRepo.updateStatus("Failure", "Admin", Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
+				//To uncomment when python services available
+				PythonServices pythonService=new PythonServices();
+				pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+			}
+			// update the request status column to Failure after Configuration Request gets
+			// Failed.
+			List<ResourceCharacteristicsHistoryEntity> charHistoryEnity = resourceCharHistoryRepo
+					.findBySoRequestId(requestId);
+			charHistoryEnity.forEach(entity -> {
+				entity.setRcRequestStatus("Failure");
+				resourceCharHistoryRepo.save(entity);
+			});
+			// INSERT OR update table after Configuration Request gets Failed
+			int did = deviceDiscoveryRepository.findDid(request.getHostName());
+			List<MasterAttributes> featureIdAndmCharIdAndLabel = attribCreateConfigRepo
+					.findfeatureCharIdAndLabel(requestId);
+			for (MasterAttributes attributes : featureIdAndmCharIdAndLabel) {
+				ResourceCharacteristicsEntity resourceCharEntity = resourceCharRepo
+						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(did, attributes.getMasterFID(),
+								attributes.getCharacteristicId());
+				if (resourceCharEntity == null)
+					resourceCharEntity = new ResourceCharacteristicsEntity();
+				resourceCharEntity.setRcFeatureId(attributes.getMasterFID());
+				resourceCharEntity.setRcCharacteristicId(attributes.getCharacteristicId());
+				resourceCharEntity.setRcCharacteristicName(attributes.getLabel());
+				resourceCharEntity.setRcCharacteristicValue(attributes.getLabelValue());
+				resourceCharEntity.setDeviceId(did);
+				resourceCharEntity.setRcDeviceHostname(request.getHostName());
+				resourceCharRepo.save(resourceCharEntity);
+			}
 		} else {
 			try {
 				Double finalVersion = Double.valueOf(version);
@@ -489,7 +583,7 @@ public class RequestInfoDetailsDao {
 						Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
 				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
-						+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt", response);
+						+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt", response,null);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -33,6 +33,10 @@ public class AttribCreateConfigJson {
 	@JsonInclude(Include.NON_NULL)
 	private String attribValue;
 
+	@JsonInclude(Include.NON_NULL)
+	private String characteriscticsId;
+
+	
 	public int getId() {
 		return id;
 	}
@@ -119,6 +123,14 @@ public class AttribCreateConfigJson {
 
 	public void setAttribValue(String attribValue) {
 		this.attribValue = attribValue;
+	}
+
+	public String getCharacteriscticsId() {
+		return characteriscticsId;
+	}
+
+	public void setCharacteriscticsId(String characteriscticsId) {
+		this.characteriscticsId = characteriscticsId;
 	}
 
 }

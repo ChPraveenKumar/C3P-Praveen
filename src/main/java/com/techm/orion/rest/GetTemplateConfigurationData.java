@@ -5,22 +5,25 @@ import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,17 +34,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDao;
-import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
+import com.techm.orion.entitybeans.BasicConfiguration;
+import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
 import com.techm.orion.models.TemplateVersioningJSONModel;
 import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.DeviceDetailsPojo;
-import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.GetTemplateMngmntPojo;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
-import com.techm.orion.repositories.SeriesRepository;
-import com.techm.orion.service.AttribCreateConfigService;
+import com.techm.orion.repositories.BasicConfigurationRepository;
+import com.techm.orion.repositories.MasterCommandsRepository;
+import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementDetailsService;
 
 @Controller
@@ -49,13 +54,17 @@ import com.techm.orion.service.TemplateManagementDetailsService;
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class GetTemplateConfigurationData implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetTemplateConfigurationData.class);
-	@Autowired
-	AttribCreateConfigService attribService;
 
 	@Autowired
-	public SeriesRepository seriesRepository;
+	private MasterFeatureRepository masterFeatureRepository;
 	@Autowired
-	AttribCreateConfigResponceMapper mapper;
+	private MasterCommandsRepository masterCommandsRepo;
+	@Autowired
+	private BasicConfigurationRepository basicConfigRepo;
+	@Autowired
+	private MasterFeatureService masterFeatureService;
+	@Autowired 
+	private TemplateManagementDetailsService templateManagmntService;
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -322,15 +331,13 @@ public class GetTemplateConfigurationData implements Observer {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/saveConfigurationTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response saveConfigurationTemplate(@RequestBody String string, String templateId, String templateVersion) {
-
+	public ResponseEntity<JSONObject> saveConfigurationTemplate(@RequestBody String string, String templateId, String templateVersion) {
 		JSONObject obj = new JSONObject();
-		String jsonArray = "";
 		String jsonList = "";
-		String result = "";
 		boolean saveComplete = false;
 		Map<String, String> tempIDafterSaveBasicDetails = null;
 		TemplateManagementDao dao = new TemplateManagementDao();
@@ -356,7 +363,7 @@ public class GetTemplateConfigurationData implements Observer {
 			temp = temp.replace("]", s);
 			getTemplateMngmntPojo.setFinalTemplate(temp);
 			String vendor = null, deviceFamily = null, model = null, deviceOs = null, osVersion = null, region = null,
-					comment = "", networkType = null;
+					comment = "", networkType = null, aliasName = null;
 			if (json.get("vendor") != null) {
 				vendor = json.get("vendor").toString();
 			} else {
@@ -400,12 +407,15 @@ public class GetTemplateConfigurationData implements Observer {
 			} else {
 				comment = "";
 			}
+			if (json.get("aliasName") != null) {
+				aliasName = json.get("aliasName").toString();
+			}
 			if (json.get("templateVersion") != null) {
 				tempIDafterSaveBasicDetails = dao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, templateVersion, comment, networkType);
+						templateId, templateVersion, comment, networkType, aliasName);
 			} else {
 				tempIDafterSaveBasicDetails = dao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, "1.0", comment, networkType);
+						templateId, "1.0", comment, networkType, aliasName);
 				getTemplateMngmntPojo.getTemplateid().substring(getTemplateMngmntPojo.getTemplateid().length() - 3);
 			}
 
@@ -425,10 +435,10 @@ public class GetTemplateConfigurationData implements Observer {
 				// camundaService.initiateApprovalFlow(tempIDafterSaveBasicDetails.get("tempid"),
 				// tempIDafterSaveBasicDetails.get("version"), "Admin");
 
-				boolean res = templateManagmntService.addNewFeature(null, null, null,
+				templateManagmntService.addNewFeature(null, null, null,
 						getTemplateMngmntPojo.getTemplateid(), 0, 1, 0, 0, false, 0, null, versionToSave, null);
 
-				result = templateManagmntService.saveFinaltemplate(getTemplateMngmntPojo.getTemplateid(),
+				 templateManagmntService.saveFinaltemplate(getTemplateMngmntPojo.getTemplateid(),
 						getTemplateMngmntPojo.getFinalTemplate(), versionToSave);
 
 				List<TemplateBasicConfigurationPojo> viewList = new ArrayList<TemplateBasicConfigurationPojo>();
@@ -439,22 +449,21 @@ public class GetTemplateConfigurationData implements Observer {
 				TemplateVersioningJSONModel versioningModelObject = null;
 				viewList = templateManagmntService.getTemplateListData();
 				// create treeview json
-				for (int i = 0; i < viewList.size(); i++) {
-
+				for (TemplateBasicConfigurationPojo view : viewList) {
 					boolean objectPrsent = false;
 					if (versioningModel.size() > 0) {
-						for (int j = 0; j < versioningModel.size(); j++) {
-							if (versioningModel.get(j).getTemplateId()
-									.equalsIgnoreCase(viewList.get(i).getTemplateId())) {
+						for (TemplateVersioningJSONModel versioningmodel : versioningModel) {
+							if (versioningmodel.getTemplateId().equalsIgnoreCase(view.getTemplateId())) {
 								objectPrsent = true;
 								break;
 							}
 						}
+
 					}
 					if (objectPrsent == false) {
 						versioningModelObject = new TemplateVersioningJSONModel();
 						objToAdd = new TemplateBasicConfigurationPojo();
-						objToAdd = viewList.get(i);
+						objToAdd = view;
 						versioningModelObject.setTemplateId(objToAdd.getTemplateId());
 						versioningModelObject.setVendor(objToAdd.getVendor());
 						versioningModelObject.setRegion(objToAdd.getRegion());
@@ -466,16 +475,16 @@ public class GetTemplateConfigurationData implements Observer {
 						versioningModelObject.setStatus(objToAdd.getStatus());
 						versioningModelObject.setCreatedBy(objToAdd.getCreatedBy());
 						versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();
-						for (int k = 0; k < viewList.size(); k++) {
-							if (viewList.get(k).getTemplateId()
-									.equalsIgnoreCase(versioningModelObject.getTemplateId())) {
-								versioningModelChildList.add(viewList.get(k));
+
+						for (TemplateBasicConfigurationPojo view1 : viewList) {
+							if (view1.getTemplateId().equalsIgnoreCase(versioningModelObject.getTemplateId())) {
+								versioningModelChildList.add(view);
 							}
 						}
 						versioningModelObject.setChildList(versioningModelChildList);
 						versioningModel.add(versioningModelObject);
 					}
-					jsonArray = new Gson().toJson(result);
+					
 					jsonList = new Gson().toJson(versioningModel);
 
 					obj.put(new String("output"), "success");
@@ -495,11 +504,7 @@ public class GetTemplateConfigurationData implements Observer {
 			logger.error(e);
 		}
 
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 
 	}
 
@@ -568,7 +573,6 @@ public class GetTemplateConfigurationData implements Observer {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 
 		try {
-			JSONParser parser = new JSONParser();
 			List<TemplateVersioningJSONModel> versioningModel = new ArrayList<TemplateVersioningJSONModel>();
 			List<TemplateBasicConfigurationPojo> versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();
 			TemplateBasicConfigurationPojo objToAdd;
@@ -658,66 +662,171 @@ public class GetTemplateConfigurationData implements Observer {
 		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
 		TemplateManagementDao dao = new TemplateManagementDao();
 		JSONObject jsonObj;
+		String templateId = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
-			if (json.containsKey("readFlag")) {
+			if (Boolean.parseBoolean(json.get("isTemplate").toString())) {
+				if (json.containsKey("readFlag")) {
 
-				if (json.get("readFlag") != null) {
-					dao.updateReadFlagForTemplate(
-							json.get("templateid").toString().substring(0,
-									json.get("templateid").toString().indexOf("V") - 1),
-							json.get("templateid").toString().substring(
-									json.get("templateid").toString().indexOf("V") + 1,
-									json.get("templateid").toString().length()),
-							json.get("readFlag").toString());
-				}
+					if (json.get("readFlag") != null) {
+						dao.updateReadFlagForTemplate(
+								json.get("templateid")
+										.toString()
+										.substring(
+												0,
+												json.get("templateid")
+														.toString()
+														.indexOf("-V")),
+								json.get("templateid")
+										.toString()
+										.substring(
+												json.get("templateid")
+														.toString()
+														.indexOf("-V") + 2,
+												json.get("templateid")
+														.toString().length()),
+								json.get("readFlag").toString());
+					}
 
-				List<TemplateBasicConfigurationPojo> templatelistforcomment = dao.getTemplateList();
-				for (int i = 0; i < templatelistforcomment.size(); i++) {
-					if (templatelistforcomment.get(i).getTemplateId().equalsIgnoreCase(json.get("templateid").toString()
-							.substring(0, json.get("templateid").toString().indexOf("V") - 1))) {
-						if (templatelistforcomment.get(i).getVersion()
-								.equalsIgnoreCase(json.get("templateid").toString().substring(
-										json.get("templateid").toString().indexOf("V") + 1,
-										json.get("templateid").toString().length()))) {
-							comment = templatelistforcomment.get(i).getComment();
+					List<TemplateBasicConfigurationPojo> templatelistforcomment = dao.getTemplateList();
+					for (TemplateBasicConfigurationPojo listcomment : templatelistforcomment) {
+
+						if (listcomment.getTemplateId().equalsIgnoreCase(
+								json.get("templateid")
+										.toString()
+										.substring(
+												0,
+												json.get("templateid")
+														.toString()
+														.indexOf("-V")))) {
+							if (listcomment.getVersion().equalsIgnoreCase(
+									json.get("templateid")
+											.toString()
+											.substring(
+													json.get("templateid")
+															.toString()
+															.indexOf("-V") + 2,
+													json.get("templateid")
+															.toString()
+															.length()))) {
+								comment = listcomment.getComment();
+							}
 						}
+
 					}
 				}
+				GetTemplateMngmntPojo getTemplateMngmntPojo = new GetTemplateMngmntPojo();
+				List<GetTemplateMngmntPojo> list = new ArrayList<GetTemplateMngmntPojo>();
+				getTemplateMngmntPojo.setTemplateid(json.get("templateid").toString().replace("-", "_"));
+				TemplateManagementDetailsService.loadProperties();
+				String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
+						.getProperty("templateCreationPath");
+
+				List<String> lines = Files.readAllLines(
+						Paths.get(responseDownloadPath + json.get("templateid").toString().replace("-", "_")));
+				List<CommandPojo> listShow = new ArrayList<CommandPojo>();
+
+				for (int i = 0; i < lines.size(); i++) {
+					CommandPojo mod = new CommandPojo();
+					mod.setCommand_value(lines.get(i));
+					listShow.add(mod);
+				}
+				list = templateManagmntService
+						.getCommandForActivefeatures(getTemplateMngmntPojo.getTemplateid().replace("-", "_"));
+
+				for (int i = 0; i < list.size(); i++) {
+					jsonObj = new JSONObject();
+					jsonObj.put("id", list.get(i).getConfName());
+					jsonObj.put("confText", list.get(i).getConfText().replaceAll("\\\\n", "\n"));
+					jsonObj.put("checked", list.get(i).getShowConfig());
+					array.put(jsonObj);
+				}
+
+				jsonArray = array.toString();
+				String s = new Gson().toJson(listShow);
+				obj.put(new String("output"), s);
+				obj.put(new String("comment"), comment);
+			} else {
+				/* It is a feature get the commands of a feature */
+				MasterFeatureEntity featureList = masterFeatureRepository.findByFId(json.get("featureid").toString());
+				if (featureList != null) {
+					MasterFeatureEntity feature = featureList;
+
+					if (feature.getfCategory() != null) {
+						if (feature.getfCategory().equalsIgnoreCase("Basic Configuration")) {
+							// fetch commands from basic config master
+
+							// get commands based on master feature id
+							List<CommandPojo> listShow = new ArrayList<CommandPojo>();
+
+							List<BasicConfiguration> basicConfigList = new ArrayList<BasicConfiguration>();
+							basicConfigList = basicConfigRepo.findByMFId(json.get("featureid").toString());
+							Collections.sort(basicConfigList, new Comparator<BasicConfiguration>() {
+
+								@Override
+								public int compare(BasicConfiguration o1, BasicConfiguration o2) {
+									// TODO Auto-generated method stub
+									return Integer.valueOf(o1.getSequence_id())
+											.compareTo(Integer.valueOf(o2.getSequence_id()));
+								}
+							});
+
+							for (BasicConfiguration bConfig : basicConfigList) {
+
+								CommandPojo commandPojo = new CommandPojo();
+								commandPojo.setCommand_value(bConfig.getConfiguration());
+								listShow.add(commandPojo);
+							}
+							jsonArray = array.toString();
+							String s = new Gson().toJson(listShow);
+							obj.put(new String("output"), s);
+							obj.put(new String("comment"), comment);
+						} else {
+							// fetch commands from master command list based on
+							// feature id
+							List<CommandPojo> listShow = new ArrayList<CommandPojo>();
+							listShow = masterCommandsRepo.findBymasterFId(json.get("featureid").toString());
+
+							Collections.sort(listShow, new Comparator<CommandPojo>() {
+
+								@Override
+								public int compare(CommandPojo o1, CommandPojo o2) {
+									// TODO Auto-generated method stub
+									return Integer.valueOf(o1.getCommand_sequence_id())
+											.compareTo(Integer.valueOf(o2.getCommand_sequence_id()));
+								}
+							});
+
+							jsonArray = array.toString();
+							String s = new Gson().toJson(listShow);
+							obj.put(new String("output"), s);
+							obj.put(new String("comment"), comment);
+						}
+					} else {
+						// fetch commands from master command list based on
+						// feature id
+						List<CommandPojo> listShow = new ArrayList<CommandPojo>();
+						listShow = masterCommandsRepo.findBymasterFId(json.get("featureid").toString());
+
+						Collections.sort(listShow, new Comparator<CommandPojo>() {
+
+							@Override
+							public int compare(CommandPojo o1, CommandPojo o2) {
+								// TODO Auto-generated method stub
+								return Integer.valueOf(o1.getCommand_sequence_id())
+										.compareTo(Integer.valueOf(o2.getCommand_sequence_id()));
+							}
+						});
+
+						jsonArray = array.toString();
+						String s = new Gson().toJson(listShow);
+						obj.put(new String("output"), s);
+						obj.put(new String("comment"), comment);
+					}
+				}
+
 			}
-			GetTemplateMngmntPojo getTemplateMngmntPojo = new GetTemplateMngmntPojo();
-			List<GetTemplateMngmntPojo> list = new ArrayList<GetTemplateMngmntPojo>();
-			getTemplateMngmntPojo.setTemplateid(json.get("templateid").toString().replace("-", "_"));
-			TemplateManagementDetailsService.loadProperties();
-			String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
-					.getProperty("templateCreationPath");
-
-			List<String> lines = Files.readAllLines(
-					Paths.get(responseDownloadPath + json.get("templateid").toString().replace("-", "_")));
-			List<CommandPojo> listShow = new ArrayList<CommandPojo>();
-
-			for (int i = 0; i < lines.size(); i++) {
-				CommandPojo mod = new CommandPojo();
-				mod.setCommand_value(lines.get(i));
-				listShow.add(mod);
-			}
-			list = templateManagmntService
-					.getCommandForActivefeatures(getTemplateMngmntPojo.getTemplateid().replace("-", "_"));
-
-			for (int i = 0; i < list.size(); i++) {
-				jsonObj = new JSONObject();
-				jsonObj.put("id", list.get(i).getConfName());
-				jsonObj.put("confText", list.get(i).getConfText().replaceAll("\\\\n", "\n"));
-				jsonObj.put("checked", list.get(i).getShowConfig());
-				array.put(jsonObj);
-			}
-
-			jsonArray = array.toString();
-			String s = new Gson().toJson(listShow);
-			obj.put(new String("output"), s);
-			obj.put(new String("comment"), comment);
-
 		} catch (Exception e) {
 			logger.error(e);
 		}
@@ -798,291 +907,6 @@ public class GetTemplateConfigurationData implements Observer {
 				obj.put(new String("output"), templateDetails.get("output"));
 				obj.put(new String("templateId"), templateDetails.get("tempID"));
 			}
-
-		} catch (Exception e) {
-			logger.error(e);
-		}
-
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-
-	}
-
-	@SuppressWarnings("unchecked")
-	@POST
-	@RequestMapping(value = "/getDataForLeftPanel", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public Response getDataForLeftPanel(@RequestBody String templateFeatureRequest) {
-
-		JSONObject obj = new JSONObject();
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
-		TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
-		try {
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
-
-			GetTemplateMngmntPojo getTemplateMngmntPojo = new GetTemplateMngmntPojo();
-			List<GetTemplateMngmntActiveDataPojo> list = new ArrayList<GetTemplateMngmntActiveDataPojo>();
-			if (json.get("templateVersion") != null && !json.get("templateVersion").equals("")) {
-				getTemplateMngmntPojo.setTemplateid(
-						json.get("templateid").toString() + "_V" + json.get("templateVersion").toString());
-			} else {
-				getTemplateMngmntPojo.setTemplateid(json.get("templateid").toString() + "_V" + "1.0");
-			}
-
-			// parse vendor device type model to fetch corresponding master config
-			String vendor = null;
-			if (json.get("vendor") != null) {
-				vendor = json.get("vendor").toString();
-			}
-			String deviceFamily = null;
-			if (json.get("deviceFamily") != null) {
-				deviceFamily = json.get("deviceFamily").toString();
-			}
-			String model = null;
-			if (json.get("model") != null) {
-				model = json.get("model").toString();
-			}
-			String tempserieskey=null;
-			if (vendor != null && model != null && deviceFamily != null) {
-				tempserieskey = vendor + deviceFamily + model.substring(0, 2);
-			}
-
-			/*
-			 * Dhanshri Mane 14-1-2020 Basic configuration updated the series is not null
-			 */
-			if (json.containsKey("series")) {
-				if (json.get("series") != null && !json.get("series").toString().equals("")) {
-					tempserieskey = json.get("series").toString();
-				} else {
-					/*
-					 * Dhanshri Mane 14-1-2020 get SeriesId according to Template Id
-					 */
-					tempserieskey = templatemanagementDao.getSeriesId(getTemplateMngmntPojo.getTemplateid(),
-							tempserieskey);
-					tempserieskey = StringUtils.substringAfter(tempserieskey, "Generic_");
-				}
-			}
-
-			String currentTemplateId = null;
-			/*
-			 * get Current version of template to find newly added feature after basic
-			 * configuration updated
-			 */
-			if (json.get("templateUpdatedVersion") != null && !json.get("templateUpdatedVersion").equals("")) {
-				currentTemplateId = json.get("templateid").toString() + "_V"
-						+ json.get("templateUpdatedVersion").toString();
-			}
-			Boolean editable = false;
-			/* Check basic configuration updated or not */
-			if (json.containsKey("editBasicConfig")) {
-				if (json.get("editBasicConfig") != null) {
-					editable = (Boolean) json.get("editBasicConfig");
-				}
-			}
-			list = templateManagmntService.getDataForLeftPanel(getTemplateMngmntPojo.getTemplateid(), tempserieskey,
-					currentTemplateId, editable);
-
-			TemplateLeftPanelJSONModel parentJsonpojo, childJsonPojo;
-			List<TemplateLeftPanelJSONModel> jsonModel = new ArrayList<TemplateLeftPanelJSONModel>();
-			// List<TemplateLeftPanelJSONModel> childJsonModel = new
-			// ArrayList<TemplateLeftPanelJSONModel>();
-
-			/*
-			 * Dhanshri Mane 14-1-2020 Bind Device details,attribute mapping and commnads
-			 * related features
-			 */
-			TemplateManagementDao dao = new TemplateManagementDao();
-			DeviceDetailsPojo deviceDetails = dao.getDeviceDetails(json.get("templateid").toString());
-
-			for (int i = 0; i < list.size(); i++) {
-
-				if (list.get(i).getHasParent() == 1) {
-					if (jsonModel.size() == 0) {
-						parentJsonpojo = new TemplateLeftPanelJSONModel();
-						parentJsonpojo.setName(list.get(i).getParentKeyValue());
-						parentJsonpojo.setDisabled(list.get(i).isDisabled());
-						parentJsonpojo.setParent(list.get(i).getParentKeyValue());
-						parentJsonpojo.setId(Integer.toString(list.get(i).getId()));
-						parentJsonpojo.setChecked(list.get(i).getActive());
-						parentJsonpojo.setHasParent(list.get(i).getHasParent());
-						parentJsonpojo.setConfText("confText");
-						if (parentJsonpojo.getName() != null && parentJsonpojo.getName().contains("Basic Config")) {
-							parentJsonpojo.setAttributeMapping(
-									mapper.convertAttribPojoToJson(attribService.getByAttribSeriesId(tempserieskey)));
-							parentJsonpojo.setCommands(templatemanagementDao.getCammandsBySeriesId(tempserieskey,
-									getTemplateMngmntPojo.getTemplateid()));
-						} else {
-							/*
-							 * parentJsonpojo.setAttributeMapping(
-							 * mapper.convertAttribPojoToJson(attribService.
-							 * getByAttribTemplateAndFeatureName( getTemplateMngmntPojo.getTemplateid(),
-							 * parentJsonpojo.getName())));
-							 */
-							parentJsonpojo.setCommands(templatemanagementDao.getCammandByTemplateAndfeatureId(
-									list.get(i).getId(), getTemplateMngmntPojo.getTemplateid()));
-						}
-
-						childJsonPojo = new TemplateLeftPanelJSONModel();
-						childJsonPojo.setName(list.get(i).getDisplayKeyValue());
-						childJsonPojo.setParent(list.get(i).getParentKeyValue());
-						childJsonPojo.setDisabled(list.get(i).isDisabled());
-						childJsonPojo.setHasParent(list.get(i).getHasParent());
-						childJsonPojo.setChecked(list.get(i).getActive());
-						childJsonPojo.setId(Integer.toString(list.get(i).getId()));
-						childJsonPojo.setConfText("confText");
-
-						if (childJsonPojo.getName() != null && childJsonPojo.getName().contains("Basic Config")) {
-							childJsonPojo.setAttributeMapping(
-									mapper.convertAttribPojoToJson(attribService.getByAttribSeriesId(tempserieskey)));
-							childJsonPojo.setCommands(templatemanagementDao.getCammandsBySeriesId(tempserieskey,
-									getTemplateMngmntPojo.getTemplateid()));
-						} else {
-							/*
-							 * childJsonPojo.setAttributeMapping(
-							 * mapper.convertAttribPojoToJson(attribService.
-							 * getByAttribTemplateAndFeatureName( getTemplateMngmntPojo.getTemplateid(),
-							 * childJsonPojo.getName())));
-							 */
-							childJsonPojo.setAttributeMapping(
-									mapper.convertAttribPojoToJson(attribService.getByFeatureId(list.get(i).getId())));
-							childJsonPojo.setCommands(templatemanagementDao.getCammandByTemplateAndfeatureId(
-									list.get(i).getId(), getTemplateMngmntPojo.getTemplateid()));
-						}
-						childJsonPojo.setDeviceDetails(deviceDetails);
-						List<TemplateLeftPanelJSONModel> childlist = new ArrayList<TemplateLeftPanelJSONModel>();
-						childlist.add(childJsonPojo);
-						parentJsonpojo.setChildList(childlist);
-						parentJsonpojo.setDeviceDetails(deviceDetails);
-						jsonModel.add(parentJsonpojo);
-					} else {
-						boolean isPresent = false;
-						for (int j = 0; j < jsonModel.size(); j++) {
-							if (jsonModel.get(j).getName().equalsIgnoreCase(list.get(i).getParentKeyValue())) {
-								isPresent = true;
-								break;
-							}
-
-						}
-						if (!isPresent) {
-							parentJsonpojo = new TemplateLeftPanelJSONModel();
-							parentJsonpojo.setName(list.get(i).getParentKeyValue());
-							parentJsonpojo.setDisabled(list.get(i).isDisabled());
-							parentJsonpojo.setParent(list.get(i).getParentKeyValue());
-							parentJsonpojo.setId(Integer.toString(list.get(i).getId()));
-							parentJsonpojo.setChecked(list.get(i).getActive());
-							parentJsonpojo.setHasParent(list.get(i).getHasParent());
-							parentJsonpojo.setConfText("confText");
-							if (parentJsonpojo.getName() != null && parentJsonpojo.getName().contains("Basic Config")) {
-								parentJsonpojo.setAttributeMapping(mapper
-										.convertAttribPojoToJson(attribService.getByAttribSeriesId(tempserieskey)));
-								parentJsonpojo.setCommands(templatemanagementDao.getCammandsBySeriesId(tempserieskey,
-										getTemplateMngmntPojo.getTemplateid()));
-							} else {
-								parentJsonpojo.setAttributeMapping(mapper
-										.convertAttribPojoToJson(attribService.getByFeatureId(list.get(i).getId())));
-								parentJsonpojo.setCommands(templatemanagementDao.getCammandByTemplateAndfeatureId(
-										list.get(i).getId(), getTemplateMngmntPojo.getTemplateid()));
-							}
-
-							childJsonPojo = new TemplateLeftPanelJSONModel();
-							childJsonPojo.setName(list.get(i).getDisplayKeyValue());
-							childJsonPojo.setParent(list.get(i).getParentKeyValue());
-							childJsonPojo.setId(Integer.toString(list.get(i).getId()));
-							childJsonPojo.setDisabled(list.get(i).isDisabled());
-							childJsonPojo.setChecked(list.get(i).getActive());
-							childJsonPojo.setHasParent(list.get(i).getHasParent());
-							childJsonPojo.setConfText("confText");
-
-							if (childJsonPojo.getName() != null && childJsonPojo.getName().contains("Basic Config")) {
-								childJsonPojo.setAttributeMapping(mapper
-										.convertAttribPojoToJson(attribService.getByAttribSeriesId(tempserieskey)));
-								childJsonPojo.setCommands(templatemanagementDao.getCammandsBySeriesId(tempserieskey,
-										getTemplateMngmntPojo.getTemplateid()));
-							} else {
-								childJsonPojo.setAttributeMapping(mapper
-										.convertAttribPojoToJson(attribService.getByFeatureId(list.get(i).getId())));
-								childJsonPojo.setCommands(templatemanagementDao.getCammandByTemplateAndfeatureId(
-										list.get(i).getId(), getTemplateMngmntPojo.getTemplateid()));
-							}
-
-							List<TemplateLeftPanelJSONModel> childlist = new ArrayList<TemplateLeftPanelJSONModel>();
-							childlist.add(childJsonPojo);
-							childJsonPojo.setDeviceDetails(deviceDetails);
-							parentJsonpojo.setDeviceDetails(deviceDetails);
-							parentJsonpojo.setChildList(childlist);
-							jsonModel.add(parentJsonpojo);
-						} else {
-							for (int k = 0; k < jsonModel.size(); k++) {
-								if (jsonModel.get(k).getName().equalsIgnoreCase(list.get(i).getParentKeyValue())) {
-									List<TemplateLeftPanelJSONModel> childlist1 = new ArrayList<TemplateLeftPanelJSONModel>();
-									childlist1 = jsonModel.get(k).getChildList();
-
-									childJsonPojo = new TemplateLeftPanelJSONModel();
-									childJsonPojo.setName(list.get(i).getDisplayKeyValue());
-									childJsonPojo.setParent(list.get(i).getParentKeyValue());
-									childJsonPojo.setConfText("confText");
-									childJsonPojo.setId(Integer.toString(list.get(i).getId()));
-									childJsonPojo.setDisabled(list.get(i).isDisabled());
-									childJsonPojo.setChecked(list.get(i).getActive());
-									childJsonPojo.setHasParent(list.get(i).getHasParent());
-
-									if (childJsonPojo.getName() != null
-											&& childJsonPojo.getName().contains("Basic Config")) {
-										childJsonPojo.setAttributeMapping(mapper.convertAttribPojoToJson(
-												attribService.getByAttribSeriesId(tempserieskey)));
-										childJsonPojo.setCommands(templatemanagementDao.getCammandsBySeriesId(
-												tempserieskey, getTemplateMngmntPojo.getTemplateid()));
-									} else {
-										childJsonPojo.setAttributeMapping(mapper.convertAttribPojoToJson(
-												attribService.getByFeatureId(list.get(i).getId())));
-										childJsonPojo
-												.setCommands(templatemanagementDao.getCammandByTemplateAndfeatureId(
-														list.get(i).getId(), getTemplateMngmntPojo.getTemplateid()));
-									}
-									childJsonPojo.setDeviceDetails(deviceDetails);
-									childlist1.add(childJsonPojo);
-
-									jsonModel.get(k).setChildList(childlist1);
-								}
-							}
-						}
-
-					}
-				} else {
-					parentJsonpojo = new TemplateLeftPanelJSONModel();
-					parentJsonpojo.setName(list.get(i).getParentKeyValue());
-					parentJsonpojo.setDisabled(list.get(i).isDisabled());
-					parentJsonpojo.setId(Integer.toString(list.get(i).getId()));
-					parentJsonpojo.setConfText("confText");
-					parentJsonpojo.setChecked(list.get(i).getActive());
-					if (parentJsonpojo.getName() != null && parentJsonpojo.getName().contains("Basic Config")) {
-						parentJsonpojo.setAttributeMapping(
-								mapper.convertAttribPojoToJson(attribService.getByAttribSeriesId(tempserieskey)));
-						parentJsonpojo.setCommands(templatemanagementDao.getCammandsBySeriesId(tempserieskey,
-								getTemplateMngmntPojo.getTemplateid()));
-					} else {
-						parentJsonpojo.setAttributeMapping(
-								mapper.convertAttribPojoToJson(attribService.getByFeatureId(list.get(i).getId())));
-						parentJsonpojo.setCommands(templatemanagementDao.getCammandByTemplateAndfeatureId(
-								list.get(i).getId(), getTemplateMngmntPojo.getTemplateid()));
-					}
-					parentJsonpojo.setDeviceDetails(deviceDetails);
-					jsonModel.add(parentJsonpojo);
-				}
-
-			}
-
-			if (Global.globalSessionLeftPanel.size() > 0) {
-				Global.globalSessionLeftPanel.clear();
-			}
-			Global.globalSessionLeftPanel = jsonModel;
-			// jsonArray=array.toString();
-			String s = new Gson().toJson(jsonModel);
-			obj.put(new String("output"), s.toString());
 
 		} catch (Exception e) {
 			logger.error(e);
@@ -1383,175 +1207,45 @@ public class GetTemplateConfigurationData implements Observer {
 
 	@SuppressWarnings("unchecked")
 	@POST
-	@RequestMapping(value = "/getDataOnEdit", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@RequestMapping(value = "/getDataForLeftPanel", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response getDataOnEdit(@RequestBody String request) {
-
+	public ResponseEntity<JSONObject> getDataForLeftPanel(@RequestBody String templateFeatureRequest) {
+		JSONParser parser = new JSONParser();
 		JSONObject obj = new JSONObject();
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
-		double nextVersion = 0;
-		String templateId = null;
-		String templateIdToSaveInTransactionTable;
-		DecimalFormat f = new DecimalFormat("##.0");
+		List<TemplateLeftPanelJSONModel> leftPanelDataList = null;
 		try {
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(request);
-
-			if (json.get("templateVersion") != null) {
-				templateId = json.get("templateid").toString() + "_V" + json.get("templateVersion").toString();
-				String currVer = f.format(Double.parseDouble(json.get("templateVersion").toString()));
-				Double curr = Double.parseDouble(currVer);
-				nextVersion = curr + 0.1;
-				String nextVersionS = f.format(nextVersion);
-				templateIdToSaveInTransactionTable = json.get("templateid").toString() + "_V" + nextVersionS;
-			} else {
-				templateId = json.get("templateid").toString().substring(0,
-						json.get("templateid").toString().indexOf("V") - 1) + "_V" + "1.0";
-				nextVersion = 1.1;
-				templateIdToSaveInTransactionTable = json.get("templateid").toString() + "_V"
-						+ f.format(Double.toString(nextVersion));
-
-			}
-			String tempserieskey = null;
-			if (json.containsKey("vendor")) {
-				String vendor = json.get("vendor").toString();
-				String devicetype = json.get("deviceType").toString();
-				String model = json.get("model").toString();
-				tempserieskey = vendor + devicetype + model.substring(0, 2);
-			}
-
-			Global.templateid = templateIdToSaveInTransactionTable;
-			Map<String, String> list = new HashMap<String, String>();
-			List<GetTemplateMngmntActiveDataPojo> list1 = new ArrayList<GetTemplateMngmntActiveDataPojo>();
-			String templateV = f.format(Double.parseDouble(json.get("templateVersion").toString()));
-			boolean isDBupdatedSuccessfuly = templateManagmntService
-					.updateTemplateDBonEdit(templateIdToSaveInTransactionTable, templateV, tempserieskey);
-			if (isDBupdatedSuccessfuly) {
-
-				list = templateManagmntService.getDataForRightPanel(templateIdToSaveInTransactionTable, false);
-
-				list1 = templateManagmntService.getDataForLeftPanel(templateIdToSaveInTransactionTable, tempserieskey,
-						null, false);
-			}
-			TemplateLeftPanelJSONModel parentJsonpojo, childJsonPojo;
-			List<TemplateLeftPanelJSONModel> jsonModel = new ArrayList<TemplateLeftPanelJSONModel>();
-			List<TemplateLeftPanelJSONModel> childJsonModel = new ArrayList<TemplateLeftPanelJSONModel>();
-			for (int i = 0; i < list1.size(); i++) {
-
-				if (list1.get(i).getHasParent() == 1) {
-					if (jsonModel.size() == 0) {
-						parentJsonpojo = new TemplateLeftPanelJSONModel();
-						parentJsonpojo.setName(list1.get(i).getParentKeyValue());
-						parentJsonpojo.setDisabled(list1.get(i).isDisabled());
-						parentJsonpojo.setParent(list1.get(i).getParentKeyValue());
-						parentJsonpojo.setId(Integer.toString(list1.get(i).getId()));
-						parentJsonpojo.setChecked(list1.get(i).getActive());
-						parentJsonpojo.setHasParent(list1.get(i).getHasParent());
-						parentJsonpojo.setConfText("confText");
-
-						childJsonPojo = new TemplateLeftPanelJSONModel();
-						childJsonPojo.setName(list1.get(i).getDisplayKeyValue());
-						childJsonPojo.setParent(list1.get(i).getParentKeyValue());
-						childJsonPojo.setDisabled(list1.get(i).isDisabled());
-						childJsonPojo.setHasParent(list1.get(i).getHasParent());
-
-						childJsonPojo.setChecked(list1.get(i).getActive());
-
-						childJsonPojo.setId(Integer.toString(list1.get(i).getId()));
-						childJsonPojo.setConfText("confText");
-
-						List<TemplateLeftPanelJSONModel> childlist = new ArrayList<TemplateLeftPanelJSONModel>();
-						childlist.add(childJsonPojo);
-						parentJsonpojo.setChildList(childlist);
-						jsonModel.add(parentJsonpojo);
-					} else {
-						boolean isPresent = false;
-						for (int j = 0; j < jsonModel.size(); j++) {
-							if (jsonModel.get(j).getName().equalsIgnoreCase(list1.get(i).getParentKeyValue())) {
-								isPresent = true;
-								break;
-							}
-
-						}
-						if (!isPresent) {
-							parentJsonpojo = new TemplateLeftPanelJSONModel();
-							parentJsonpojo.setName(list1.get(i).getParentKeyValue());
-							parentJsonpojo.setDisabled(list1.get(i).isDisabled());
-							parentJsonpojo.setParent(list1.get(i).getParentKeyValue());
-							parentJsonpojo.setId(Integer.toString(list1.get(i).getId()));
-							parentJsonpojo.setChecked(list1.get(i).getActive());
-							parentJsonpojo.setHasParent(list1.get(i).getHasParent());
-							parentJsonpojo.setConfText("confText");
-
-							childJsonPojo = new TemplateLeftPanelJSONModel();
-							childJsonPojo.setName(list1.get(i).getDisplayKeyValue());
-							childJsonPojo.setParent(list1.get(i).getParentKeyValue());
-							childJsonPojo.setId(Integer.toString(list1.get(i).getId()));
-							childJsonPojo.setDisabled(list1.get(i).isDisabled());
-							childJsonPojo.setChecked(list1.get(i).getActive());
-							childJsonPojo.setHasParent(list1.get(i).getHasParent());
-							childJsonPojo.setConfText("confText");
-
-							List<TemplateLeftPanelJSONModel> childlist = new ArrayList<TemplateLeftPanelJSONModel>();
-							childlist.add(childJsonPojo);
-							parentJsonpojo.setChildList(childlist);
-							jsonModel.add(parentJsonpojo);
-						} else {
-							for (int k = 0; k < jsonModel.size(); k++) {
-								if (jsonModel.get(k).getName().equalsIgnoreCase(list1.get(i).getParentKeyValue())) {
-									List<TemplateLeftPanelJSONModel> childlist1 = new ArrayList<TemplateLeftPanelJSONModel>();
-									childlist1 = jsonModel.get(k).getChildList();
-
-									childJsonPojo = new TemplateLeftPanelJSONModel();
-									childJsonPojo.setName(list1.get(i).getDisplayKeyValue());
-									childJsonPojo.setParent(list1.get(i).getParentKeyValue());
-									childJsonPojo.setConfText("confText");
-									childJsonPojo.setId(Integer.toString(list1.get(i).getId()));
-									childJsonPojo.setDisabled(list1.get(i).isDisabled());
-									childJsonPojo.setChecked(list1.get(i).getActive());
-									childJsonPojo.setHasParent(list1.get(i).getHasParent());
-
-									childlist1.add(childJsonPojo);
-
-									jsonModel.get(k).setChildList(childlist1);
-								}
-							}
-						}
-
-					}
-				} else {
-					parentJsonpojo = new TemplateLeftPanelJSONModel();
-					parentJsonpojo.setName(list1.get(i).getParentKeyValue());
-					parentJsonpojo.setDisabled(list1.get(i).isDisabled());
-					parentJsonpojo.setId(Integer.toString(list1.get(i).getId()));
-					parentJsonpojo.setConfText("confText");
-					parentJsonpojo.setChecked(list1.get(i).getActive());
-
-					jsonModel.add(parentJsonpojo);
+			JSONObject requestJson = (JSONObject) parser.parse(templateFeatureRequest);
+			DeviceDetailsPojo deviceDetails = masterFeatureService.fetchDeviceDetails(requestJson);
+			if(deviceDetails.getVendor() !=null && deviceDetails.getDeviceFamily() !=null && deviceDetails.getOs() !=null 
+				&& deviceDetails.getOsVersion() !=null && deviceDetails.getRegion() !=null && deviceDetails.getNetworkType() !=null) {
+				leftPanelDataList = masterFeatureService.getLeftPanelData(deviceDetails);
+				if(leftPanelDataList !=null && leftPanelDataList.size()>0) {
+					String finalJson = new Gson().toJson(leftPanelDataList);
+					obj.put("output", finalJson.toString());
+				}else {
+					obj.put("output", "No matching record find for exact match case and neareat match case");
 				}
-
+				String finalJson = new Gson().toJson(leftPanelDataList);
+				obj.put("output", finalJson.toString());
+			}else {
+				obj.put(new String("output"), "Missing mandatory data in the service Request");
 			}
-			if (Global.globalSessionLeftPanel.size() > 0) {
-				Global.globalSessionLeftPanel.clear();
-			}
-			Global.globalSessionLeftPanel = jsonModel;
-
-			String s = new Gson().toJson(Global.globalSessionLeftPanel);
-			String s1 = new Gson().toJson(list.get("sequence"));
-			obj.put(new String("right"), list.get("sequence"));
-			obj.put(new String("left"), s);
-			obj.put(new String("version"), nextVersion);
-
 		} catch (Exception e) {
-			logger.error(e);
-		}
-
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-
+			logger.info(e);
+		}		
+		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
 
+	@GET
+	@RequestMapping(value = "/checkAliasName", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<JSONObject> checkAliasName(String aliasName) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = templateManagmntService.checkAliasNamePresent(aliasName);
+		if (json != null) {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
 }

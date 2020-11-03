@@ -3,10 +3,12 @@ package com.techm.orion.mapper;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.techm.orion.entitybeans.MasterAttributes;
+import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.pojo.AttribCreateConfigJson;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CategoryDropDownPojo;
@@ -70,5 +72,45 @@ public class AttribCreateConfigResponceMapper {
 
 		return jsonList;
 
+	}
+
+	public List<AttribCreateConfigJson> convertCharacteristicsAttribPojoToJson(
+			List<MasterCharacteristicsEntity> pojoList) {
+		List<AttribCreateConfigJson> jsonList = new ArrayList<AttribCreateConfigJson>();
+
+		for (MasterCharacteristicsEntity entity : pojoList) {
+			AttribCreateConfigJson attribJson = new AttribCreateConfigJson();
+			attribJson.setId(entity.getcRowid());
+			attribJson.setLabel(entity.getcName());
+			attribJson.setName("");
+			attribJson.setuIComponent(entity.getcUicomponent());
+			String validations = entity.getcValidations();
+			attribJson.setValidations(setValidation(validations));
+			attribJson.setType(entity.getcType());
+			if (entity.getcCategory() != null) {
+				attribJson.setCategotyLabel(entity.getcCategory());
+			}
+			if (entity.getcId() != null) {
+				attribJson.setCharacteriscticsId(entity.getcId());
+			}else {
+				attribJson.setCharacteriscticsId("");
+			}
+			jsonList.add(attribJson);
+		}
+		return jsonList;
+	}
+
+	public String[] setValidation(String validations) {
+		validations = StringUtils.substringAfter(validations, "[");
+		validations = StringUtils.substringBefore(validations, "]");
+		String[] validationArray = validations.split(",");
+		if (validationArray.length > 0) {
+			String[] resulValidationArray = new String[validationArray.length];
+			for (int i = 0; i < validationArray.length; i++) {
+				resulValidationArray[i] = validationArray[i].trim();
+			}
+			validationArray = resulValidationArray;
+		}
+		return validationArray;
 	}
 }

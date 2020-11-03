@@ -38,6 +38,17 @@ public class BasicConfiguration implements Serializable
 	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	@JoinColumn(name = "series_id")
 	private Series series;
+	
+	@Column(name = "m_f_id")
+	private String mFId;
+
+	public String getmFId() {
+		return mFId;
+	}
+
+	public void setmFId(String mFId) {
+		this.mFId = mFId;
+	}
 
 	public int getId() {
 		return id;
