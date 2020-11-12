@@ -6,24 +6,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Properties;
 
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 
-import com.techm.orion.pojo.Global;
+import com.techm.orion.utility.TSALabels;
 
-public class CamundaServiceDecomposeWorkflow {
+public class ServiceOrderDecomposeWorkflow {
 	
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-
 	@SuppressWarnings("unchecked")
 	public void uploadToServer(String rfoid, String version) throws IOException, JSONException {
 
-		CamundaServiceDecomposeWorkflow.loadProperties();
-		String serverPath = CamundaServiceDecomposeWorkflow.TSA_PROPERTIES.getProperty("serverPath");
-		
+		String serverPath= TSALabels.WEB_SERVICE_URI.getValue();
 		String query = serverPath + "/engine-rest/process-definition/key/decompWorkflow/start";
 
 		JSONObject obj = new JSONObject();
@@ -59,18 +53,5 @@ public class CamundaServiceDecomposeWorkflow {
 		in.close();
 		conn.disconnect();
 
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 }

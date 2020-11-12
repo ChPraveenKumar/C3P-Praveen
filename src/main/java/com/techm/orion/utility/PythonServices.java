@@ -17,8 +17,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import com.techm.orion.service.DecomposeWorkflowThread;
-import com.techm.orion.service.TelnetCommunicationSSH;
+import com.techm.orion.service.DecomposeWorkflow;
 
 
 public class PythonServices {
@@ -37,7 +36,7 @@ public class PythonServices {
 
 	public void runDecomposeWorkflow(String rfoid)
 	{
-		DecomposeWorkflowThread decompose=new DecomposeWorkflowThread(rfoid);
+		DecomposeWorkflow decompose=new DecomposeWorkflow(rfoid);
 		decompose.setDaemon(true);
 		decompose.start();
 	}

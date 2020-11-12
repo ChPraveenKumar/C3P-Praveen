@@ -20,7 +20,6 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
-import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -34,7 +33,6 @@ import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.RequestFeatureTransactionEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
-import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.mapper.CreateConfigRequestMapper;
 import com.techm.orion.mapper.CreateConfigResponceMapper;
@@ -1297,71 +1295,8 @@ public class DcmConfigService {
 				listOfTemplatesAvailable = listFilesForFolder(folder);
 				String tempString = null;
 				if (listOfTemplatesAvailable.size() > 0) {
-					for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
-						tempString = listOfTemplatesAvailable.get(i).substring(
-								0,
-								listOfTemplatesAvailable.get(i).indexOf("_V"));
-						if (tempString.equalsIgnoreCase(templateID)) {
-							isTemplateAvailable = true;
-							break;
-						}
-					}
-					if (isTemplateAvailable) {
-						float highestVersion = 0, tempVersion = 0;
-						for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
-							tempString = listOfTemplatesAvailable.get(i)
-									.substring(
-											0,
-											listOfTemplatesAvailable.get(i)
-													.indexOf("_V"));
-							if (tempString.equalsIgnoreCase(templateID)) {
-								if (highestVersion == 0) {
-									highestVersion = Float
-											.parseFloat(listOfTemplatesAvailable
-													.get(i)
-													.substring(
-															listOfTemplatesAvailable
-																	.get(i)
-																	.indexOf(
-																			"_V") + 2,
-															listOfTemplatesAvailable
-																	.get(i)
-																	.length()));
-
-								} else {
-									tempVersion = Float
-											.parseFloat(listOfTemplatesAvailable
-													.get(i)
-													.substring(
-															listOfTemplatesAvailable
-																	.get(i)
-																	.indexOf(
-																			"_V") + 2,
-															listOfTemplatesAvailable
-																	.get(i)
-																	.length()));
-									if (tempVersion > highestVersion) {
-										highestVersion = tempVersion;
-									}
-								}
-
-								// break;
-
-							}
-
-						}
-						isTemplateApproved = templateDao.getTemplateStatus(
-								tempString, Float.toString(highestVersion));
-						if (isTemplateApproved) {
-							fileToUse = tempString + "_V" + highestVersion;
-							configRequest.setTemplateID(fileToUse);
-						} else {
-							fileToUse = null;
-
-						}
-
-					}
-				}
+				fileToUse=getAvailableHighestVersion(listOfTemplatesAvailable,configRequest,templateID);
+				configRequest.setTemplateID(fileToUse);}
 			} else {
 				fileToUse = configRequest.getTemplateID();
 				configRequest.setTemplateID(fileToUse);
@@ -1564,7 +1499,7 @@ public class DcmConfigService {
 						requestInfoSO.getRequestType(),
 						requestInfoSO.getRequestVersion());
 				// int testStrategyResultsDB=requestInfoDao.
-				if (requestInfoSO.getTestsSelected() != null) {
+				/*if (requestInfoSO.getTestsSelected() != null) {
 					JSONArray array = new JSONArray(
 							requestInfoSO.getTestsSelected());
 					for (int i = 0; i < array.length(); i++) {
@@ -1574,7 +1509,7 @@ public class DcmConfigService {
 						// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
 						// "", "",obj.getString("testName"));
 					}
-				}
+				}*/
 				if (testStrategyDBUpdate > 0) {
 					output = "true";
 				} else {
@@ -1681,44 +1616,7 @@ public class DcmConfigService {
 					validateMessage = "Success";
 					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 						for (RequestInfoPojo request : requestInfoSOList) {
-							if (request.getHostname() != null) {
-								if (request.getConfigurationGenerationMethods() != null) {
-									if (request.getConfigurationGenerationMethods()
-											.contains("File")) {
-										String content = TextReport
-												.readFile(TSALabels.RESPONSE_DOWNLOAD_PATH
-														.getValue()
-														+ request.getFileName());
-										TextReport.writeFile(
-												TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-												request.getAlphanumericReqId() + "V"
-														+ request.getRequestVersion()
-														+ "_Configuration", content,
-												"configurationGeneration");
-									} else {
-
-										if (requestInfoSOList.size() == 1) {
-											createHeader(request);
-											createTemplate(request);
-
-										} else {
-											createHeader(request);
-
-										}
-									}
-								} else {
-									if (requestInfoSOList.size() == 1) {
-										createHeader(request);
-										createTemplate(request);
-
-									} else {
-										createHeader(request);
-
-									}
-								}
-							} else {
-								createTemplate(request);
-							}
+							createTemplateAndHeader(request,requestInfoSOList);
 						}
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								requestInfoSO);
@@ -1861,44 +1759,7 @@ public class DcmConfigService {
 						}
 					}
 					for (RequestInfoPojo request : requestInfoSOList) {
-						if (request.getHostname() != null) {
-							if (request.getConfigurationGenerationMethods() != null) {
-								if (request.getConfigurationGenerationMethods()
-										.contains("File")) {
-									String content = TextReport
-											.readFile(TSALabels.RESPONSE_DOWNLOAD_PATH
-													.getValue()
-													+ request.getFileName());
-									TextReport.writeFile(
-											TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-											request.getAlphanumericReqId() + "V"
-													+ request.getRequestVersion()
-													+ "_Configuration", content,
-											"configurationGeneration");
-								} else {
-
-									if (requestInfoSOList.size() == 1) {
-										createHeader(request);
-										createTemplate(request);
-
-									} else {
-										createHeader(request);
-
-									}
-								}
-							} else {
-								if (requestInfoSOList.size() == 1) {
-									createHeader(request);
-									createTemplate(request);
-
-								} else {
-									createHeader(request);
-
-								}
-							}
-						} else {
-							createTemplate(request);
-						}
+						createTemplateAndHeader(request,requestInfoSOList);
 					}
 					// update the scheduler history
 					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
@@ -2131,73 +1992,10 @@ public class DcmConfigService {
 				// open folder for template and read all available templatenames
 				final File folder = new File(getTemplateCreationPathForFolder());
 				listOfTemplatesAvailable = listFilesForFolder(folder);
-				String tempString = null;
 				if (listOfTemplatesAvailable.size() > 0) {
-					for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
-						tempString = listOfTemplatesAvailable.get(i).substring(
-								0,
-								listOfTemplatesAvailable.get(i).indexOf("_V"));
-						if (tempString.equalsIgnoreCase(templateID)) {
-							isTemplateAvailable = true;
-							break;
-						}
-					}
-					if (isTemplateAvailable) {
-						float highestVersion = 0, tempVersion = 0;
-						for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
-							tempString = listOfTemplatesAvailable.get(i)
-									.substring(
-											0,
-											listOfTemplatesAvailable.get(i)
-													.indexOf("_V"));
-							if (tempString.equalsIgnoreCase(templateID)) {
-								if (highestVersion == 0) {
-									highestVersion = Float
-											.parseFloat(listOfTemplatesAvailable
-													.get(i)
-													.substring(
-															listOfTemplatesAvailable
-																	.get(i)
-																	.indexOf(
-																			"_V") + 2,
-															listOfTemplatesAvailable
-																	.get(i)
-																	.length()));
+					fileToUse=getAvailableHighestVersion(listOfTemplatesAvailable,configRequest,templateID);
+					configRequest.setTemplateID(fileToUse);
 
-								} else {
-									tempVersion = Float
-											.parseFloat(listOfTemplatesAvailable
-													.get(i)
-													.substring(
-															listOfTemplatesAvailable
-																	.get(i)
-																	.indexOf(
-																			"_V") + 2,
-															listOfTemplatesAvailable
-																	.get(i)
-																	.length()));
-									if (tempVersion > highestVersion) {
-										highestVersion = tempVersion;
-									}
-								}
-
-								// break;
-
-							}
-
-						}
-						isTemplateApproved = templateDao.getTemplateStatus(
-								tempString, Float.toString(highestVersion));
-						if (isTemplateApproved) {
-							fileToUse = tempString + "_V" + highestVersion;
-							configRequest.setTemplateID(fileToUse);
-						} /*
-						 * else { fileToUse = null;
-						 * 
-						 * }
-						 */
-
-					}
 				}
 			} else {
 				fileToUse = configRequest.getTemplateID();
@@ -2496,5 +2294,185 @@ public class DcmConfigService {
 
 		return templateid;
 	}
+	
+	private void createTemplateAndHeader(RequestInfoPojo request, List<RequestInfoPojo>requestInfoSOList)
+	{
+		if (request.getHostname() != null) {
+			if (request.getConfigurationGenerationMethods() != null) {
+				if (request.getConfigurationGenerationMethods()
+						.contains("File")) {
+					String content = TextReport
+							.readFile(TSALabels.RESPONSE_DOWNLOAD_PATH
+									.getValue()
+									+ request.getFileName());
+					TextReport.writeFile(
+							TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							request.getAlphanumericReqId() + "V"
+									+ request.getRequestVersion()
+									+ "_Configuration", content,
+							"configurationGeneration");
+				} else {
 
+					if (requestInfoSOList.size() == 1) {
+						createHeader(request);
+						createTemplate(request);
+
+					} else {
+						createHeader(request);
+
+					}
+				}
+			} else {
+				if (requestInfoSOList.size() == 1) {
+					createHeader(request);
+					createTemplate(request);
+
+				} else {
+					createHeader(request);
+
+				}
+			}
+		} else {
+			createTemplate(request);
+		}
+	}
+	
+	private String getAvailableHighestVersion(List<String>listOfTemplatesAvailable ,RequestInfoPojo configRequest,String templateID)
+	{
+		TemplateManagementDao templateDao = new TemplateManagementDao();
+		float highestversion=0;
+		String tempString = null,fileToUse=null;
+		float highestVersion = 0, tempVersion = 0;
+		boolean isTemplateAvailable=false,isTemplateApproved=false;
+		for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
+			tempString = listOfTemplatesAvailable.get(i).substring(
+					0,
+					listOfTemplatesAvailable.get(i).indexOf("_V"));
+			if (tempString.equalsIgnoreCase(templateID)) {
+				isTemplateAvailable = true;
+				break;
+			}
+		}
+		if (isTemplateAvailable) {
+			for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
+				tempString = listOfTemplatesAvailable.get(i)
+						.substring(
+								0,
+								listOfTemplatesAvailable.get(i)
+										.indexOf("_V"));
+				if (tempString.equalsIgnoreCase(templateID)) {
+					if (highestVersion == 0) {
+						highestVersion = Float
+								.parseFloat(listOfTemplatesAvailable
+										.get(i)
+										.substring(
+												listOfTemplatesAvailable
+														.get(i)
+														.indexOf(
+																"_V") + 2,
+												listOfTemplatesAvailable
+														.get(i)
+														.length()));
+
+					} else {
+						tempVersion = Float
+								.parseFloat(listOfTemplatesAvailable
+										.get(i)
+										.substring(
+												listOfTemplatesAvailable
+														.get(i)
+														.indexOf(
+																"_V") + 2,
+												listOfTemplatesAvailable
+														.get(i)
+														.length()));
+						if (tempVersion > highestVersion) {
+							highestVersion = tempVersion;
+						}
+					}
+
+					// break;
+
+				}
+
+			}
+			isTemplateApproved = templateDao.getTemplateStatus(
+					tempString, Float.toString(highestVersion));
+			if (isTemplateApproved) {
+				fileToUse = tempString + "_V" + highestVersion;
+				configRequest.setTemplateID(fileToUse);
+			}
+		
+	}
+		return fileToUse;
+	}
+	private String getAvailableHighestVersion(List<String>listOfTemplatesAvailable ,CreateConfigRequestDCM configRequest,String templateID)
+	{
+		TemplateManagementDao templateDao = new TemplateManagementDao();
+		float highestversion=0;
+		String tempString = null,fileToUse=null;
+		float highestVersion = 0, tempVersion = 0;
+		boolean isTemplateAvailable=false,isTemplateApproved=false;
+		for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
+			tempString = listOfTemplatesAvailable.get(i).substring(
+					0,
+					listOfTemplatesAvailable.get(i).indexOf("_V"));
+			if (tempString.equalsIgnoreCase(templateID)) {
+				isTemplateAvailable = true;
+				break;
+			}
+		}
+		if (isTemplateAvailable) {
+			for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
+				tempString = listOfTemplatesAvailable.get(i)
+						.substring(
+								0,
+								listOfTemplatesAvailable.get(i)
+										.indexOf("_V"));
+				if (tempString.equalsIgnoreCase(templateID)) {
+					if (highestVersion == 0) {
+						highestVersion = Float
+								.parseFloat(listOfTemplatesAvailable
+										.get(i)
+										.substring(
+												listOfTemplatesAvailable
+														.get(i)
+														.indexOf(
+																"_V") + 2,
+												listOfTemplatesAvailable
+														.get(i)
+														.length()));
+
+					} else {
+						tempVersion = Float
+								.parseFloat(listOfTemplatesAvailable
+										.get(i)
+										.substring(
+												listOfTemplatesAvailable
+														.get(i)
+														.indexOf(
+																"_V") + 2,
+												listOfTemplatesAvailable
+														.get(i)
+														.length()));
+						if (tempVersion > highestVersion) {
+							highestVersion = tempVersion;
+						}
+					}
+
+					// break;
+
+				}
+
+			}
+			isTemplateApproved = templateDao.getTemplateStatus(
+					tempString, Float.toString(highestVersion));
+			if (isTemplateApproved) {
+				fileToUse = tempString + "_V" + highestVersion;
+				configRequest.setTemplateID(fileToUse);
+			}
+		
+	}
+		return fileToUse;
+	}
 }
