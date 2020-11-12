@@ -136,12 +136,10 @@ public class MasterFeatureController {
 			// t_tpmgmt_m_basic_configuration else to
 			// c3p_template_master_command_list
 			JSONArray cmdArray = (JSONArray) (json.get("commands"));
-			if (Boolean
+			/*if (Boolean
 					.parseBoolean(json.get("isBasicConiguration").toString()))
 
 			{
-				// This is a Basic Configuration
-				// Compute sries id
 				String series = getSeries(masterFeature.getfVendor(),
 						masterFeature.getfFamily());
 				Set<Series> seriesSet = masterSeriesRepo.findBySeries(series);
@@ -158,7 +156,7 @@ public class MasterFeatureController {
 					obj.put("output", "Feature Created");
 				}
 
-			} else {
+			}else {*/
 				// Save features in master feature
 				MasterFeatureEntity ent = masterFeatureRepository
 						.save(masterFeature);
@@ -170,7 +168,7 @@ public class MasterFeatureController {
 				camundaService.initiateApprovalFlow(ent.getfId(), "1.0",
 						"Admin");
 
-			}
+			//}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
