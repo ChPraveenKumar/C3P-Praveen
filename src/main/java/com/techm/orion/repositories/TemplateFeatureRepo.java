@@ -29,6 +29,7 @@ public interface TemplateFeatureRepo extends
 	TemplateFeatureEntity findByCommandType(@Param("command") String command);
 
 	TemplateFeatureEntity findById(int id);
-
+	
+	TemplateFeatureEntity findByCommandAndComandDisplayFeatureAndMasterFId(String command, String featureName,String masterFid);
 }
 

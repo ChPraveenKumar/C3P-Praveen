@@ -3,6 +3,8 @@ package com.techm.orion.utility;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,6 +54,18 @@ public class TextReport {
 		} catch (IOException exe) {
 			logger.error("IOException while Writing the file - " + exe.getMessage());
 		}
+	}
+	
+	public static String readFile(String path)
+	{
+		String content=null;
+		try {
+			content=new String(Files.readAllBytes(Paths.get(path)));
+		} catch (IOException e) {
+			logger.info(e);
+			e.printStackTrace();
+		}
+		return content;
 	}
 
 }
