@@ -18,6 +18,7 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
+import com.techm.orion.pojo.AttribCreateConfigJson;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.RequestInfoPojo;
@@ -84,10 +85,6 @@ public class ConfigurationManagmentService {
 			attribJson = (org.json.simple.JSONArray) json.get("dynamicAttribs");
 		}
 
-		JSONArray replicationArray = null;
-		if (json.containsKey("replication")) {
-			replicationArray = (JSONArray) json.get("replication");
-		}
 		if (json.get("networkType").toString().equals("VNF")) {
 			JSONObject vnfFinalObject = new JSONObject();
 			JSONArray fianlJson = new JSONArray();
@@ -128,81 +125,138 @@ public class ConfigurationManagmentService {
 			Object object = entity.get("data");
 			obj.put(new String("output"), new String(object.toString()));
 		} else {
-			List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
-			List<CommandPojo> cammandByTemplate = new ArrayList<>();
-			if (requestInfoData.getTemplateID() != null && !requestInfoData.getTemplateID().equals("")) {
-				for (TemplateFeaturePojo feature : features) {
-					String templateId = requestInfoData.getTemplateID();
-					TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
-							.findIdByComandDisplayFeatureAndCommandContains(feature.getfName(), templateId);
-					List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = service
-							.getByAttribTemplateAndFeatureName(templateId, feature.getfName());
-					if (byAttribTemplateAndFeatureName != null && !byAttribTemplateAndFeatureName.isEmpty()) {
-						templateAttribute.addAll(byAttribTemplateAndFeatureName);
+			//commented code is to check duplicate label values.
+			/*List<AttribCreateConfigJson> attribList = new ArrayList<>();
+			if (attribJson != null) {
+				attribList.addAll(addAttribDataintoList(attribJson));
+			}*/
+			JSONArray replicationArray = null;
+			if (json.containsKey("replication")) {
+				replicationArray = (JSONArray) json.get("replication");
+				/*if (replicationArray != null && !replicationArray.isEmpty()) {
+					for (int i = 0; i < replicationArray.size(); i++) {
+						JSONObject featureDetails = (JSONObject) replicationArray.get(i);
+						JSONArray featureAttribArray = (JSONArray) featureDetails.get("featureAttribDetails");
+						if (featureAttribArray != null) {
+							attribList.addAll(addAttribDataintoList(featureAttribArray));
+						}
 					}
-					cammandByTemplate.addAll(dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(),
-							requestInfoData.getTemplateID()));
-				}
-				// Extract Json and map to CreateConfigPojo fields
-				if (attribJson != null) {
-					requestInfoData = setAttributeData(requestInfoData, attribJson, templateAttribute);
-				}
-				logger.info("generateCreateRequestDetails - getTemplateID-  " + requestInfoData.getTemplateID());
-				if (replicationArray != null && !replicationArray.isEmpty()) {
-					// TemplateId with feature Replication
-					if (json.get("replication") != null) {
-						createReplicationFinalTemplate(cammandByTemplate, templateAttribute,
-								requestInfoData.getTemplateID(), (JSONArray) json.get("replication"));
-					}
-				} else {
-					// TemplateId without feature Replication
-					invokeFtl.createFinalTemplate(null, cammandByTemplate, null, templateAttribute,
-							requestInfoData.getTemplateID());
-				}
-			} else {
-				String templateName = "";
-				templateName = dcmConfigService.getTemplateName(requestInfoData.getRegion(),
-						requestInfoData.getVendor(), requestInfoData.getModel(), requestInfoData.getOs(),
-						requestInfoData.getOsVersion());
-				templateName = "Feature_" + templateName;
-				requestInfoData.setTemplateID(templateName);
-				if (replicationArray != null && !replicationArray.isEmpty()) {
-					// Without TemplateId only Feature Replication		
-					//add config t and exit command with cisco vendor
-					//master Table not yet design
-					cammandByTemplate =	getFeaturecommandData(requestInfoData.getVendor(),features,attribJson);
-					cammandByTemplate = setReplicationFeatureData(cammandByTemplate,
-							(JSONArray) json.get("replication"),requestInfoData.getVendor());
-
-				} else {
-					//add config t and exit command with cisco vendor
-					//master Table not yet design
-					cammandByTemplate = getFeaturecommandData(requestInfoData.getVendor(),features,attribJson);
-				}
-
-				logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
-				TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateName,
-						invokeFtl.setCommandPosition(null, cammandByTemplate));
+				}*/
 			}
-			obj.put(new String("output"),
-					new String(getConfigurationTemplateService.generateTemplate(requestInfoData)));
-		}
+			/*boolean flag = false;
+			
+			if (!attribList.isEmpty()) {	
+				for(int i=0;i<attribList.size();i++) {
+					for(int j=i+1;j<attribList.size();j++) {
+						if (attribList.get(i).getLabel().equals(attribList.get(j).getLabel())) {
+							if (attribList.get(i).getAttribValue().equals(attribList.get(j).getAttribValue())) {
+								flag = true;
+								break;
+							}
+						}			
+					}
+				}
+			}
+
+			if (flag) {
+				obj.put("Failuer", "Duplicate Data found");
+			} else {*/
+				List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
+				List<CommandPojo> cammandByTemplate = new ArrayList<>();
+				if (requestInfoData.getTemplateID() != null && !requestInfoData.getTemplateID().equals("")) {
+					for (TemplateFeaturePojo feature : features) {
+						String templateId = requestInfoData.getTemplateID();
+						TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
+								.findIdByComandDisplayFeatureAndCommandContains(feature.getfName(), templateId);
+						List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = service
+								.getByAttribTemplateAndFeatureName(templateId, feature.getfName());
+						if (byAttribTemplateAndFeatureName != null && !byAttribTemplateAndFeatureName.isEmpty()) {
+							templateAttribute.addAll(byAttribTemplateAndFeatureName);
+						}
+						cammandByTemplate.addAll(dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(),
+								requestInfoData.getTemplateID()));
+					}
+					// Extract Json and map to CreateConfigPojo fields
+					if (attribJson != null) {
+						requestInfoData = setAttributeData(requestInfoData, attribJson, templateAttribute);
+					}
+					logger.info("generateCreateRequestDetails - getTemplateID-  " + requestInfoData.getTemplateID());
+					if (replicationArray != null && !replicationArray.isEmpty()) {
+						// TemplateId with feature Replication
+						if (json.get("replication") != null) {
+							createReplicationFinalTemplate(cammandByTemplate, templateAttribute,
+									requestInfoData.getTemplateID(), (JSONArray) json.get("replication"));
+						}
+					} else {
+						// TemplateId without feature Replication
+						invokeFtl.createFinalTemplate(null, cammandByTemplate, null, templateAttribute,
+								requestInfoData.getTemplateID());
+					}
+				} else {
+					String templateName = "";
+					templateName = dcmConfigService.getTemplateName(requestInfoData.getRegion(),
+							requestInfoData.getVendor(), requestInfoData.getModel(), requestInfoData.getOs(),
+							requestInfoData.getOsVersion());
+					templateName = "Feature_" + templateName;
+					requestInfoData.setTemplateID(templateName);
+					if (replicationArray != null && !replicationArray.isEmpty()) {
+						// Without TemplateId only Feature Replication
+						// set Config t and exit command
+						if ("Cisco".equalsIgnoreCase(requestInfoData.getVendor())) {
+							cammandByTemplate.add(setConfigComamnd("config t\n"));
+						}
+						for (TemplateFeaturePojo feature : features) {
+							cammandByTemplate.addAll(commandsRepo.findBymasterFId(feature.getfMasterId()));
+						}
+						if ("Cisco".equalsIgnoreCase(requestInfoData.getVendor())) {
+							cammandByTemplate.add(setConfigComamnd("exit\n"));
+						}
+						cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
+						cammandByTemplate = setReplicationFeatureData(cammandByTemplate,
+								(JSONArray) json.get("replication"), requestInfoData.getVendor());
+
+					} else {
+						// No TemplateId and No Feature Replication
+						if ("Cisco".equalsIgnoreCase(requestInfoData.getVendor())) {
+							cammandByTemplate.add(setConfigComamnd("config t\n"));
+						}
+						for (TemplateFeaturePojo feature : features) {
+							cammandByTemplate.addAll(commandsRepo.findBymasterFId(feature.getfMasterId()));
+						}
+						if ("Cisco".equalsIgnoreCase(requestInfoData.getVendor())) {
+							cammandByTemplate.add(setConfigComamnd("exit\n"));
+						}
+						cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
+					}
+
+					logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
+					TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateName,
+							invokeFtl.setCommandPosition(null, cammandByTemplate));
+				}
+				obj.put(new String("output"),
+						new String(getConfigurationTemplateService.generateTemplate(requestInfoData)));
+			}
+//		}
 		return obj;
 	}
 
-	private List<CommandPojo> getFeaturecommandData(String vendor, List<TemplateFeaturePojo> features, JSONArray attribJson) {
-		List<CommandPojo> cammandByTemplate = new ArrayList<>();
-		if ("Cisco".equalsIgnoreCase(vendor)) {
-			cammandByTemplate.add(configuraComandMethod("config t"));
+	private List<AttribCreateConfigJson> addAttribDataintoList(JSONArray attribJson) {
+		List<AttribCreateConfigJson> atttribDataList = new ArrayList<>();
+		for (int i = 0; i < attribJson.size(); i++) {
+			AttribCreateConfigJson attribPojo = new AttribCreateConfigJson();
+			JSONObject object = (JSONObject) attribJson.get(i);
+			attribPojo.setLabel((object.get("label").toString()));
+			attribPojo.setAttribValue(object.get("value").toString());
+			atttribDataList.add(attribPojo);
 		}
-		for (TemplateFeaturePojo feature : features) {
-			cammandByTemplate.addAll(commandsRepo.findBymasterFId(feature.getfMasterId()));
-		}
-		if ("Cisco".equalsIgnoreCase(vendor)) {
-			cammandByTemplate.add(configuraComandMethod("exit"));
-		}
-		cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);	
-		return cammandByTemplate;
+		return atttribDataList;
+	}
+
+	// Master Table not created for vendor specific config value
+	private CommandPojo setConfigComamnd(String command) {
+		CommandPojo commandPojo = new CommandPojo();
+		commandPojo.setCommandValue(command);
+		return commandPojo;
 	}
 
 	public RequestInfoPojo setRequestInfoData(JSONObject json) {
@@ -266,6 +320,7 @@ public class ConfigurationManagmentService {
 			}
 		}
 		return requestInfoData;
+
 	}
 
 	public RequestInfoPojo setAttribValue(String attribName, RequestInfoPojo configReqToSendToC3pCode,
@@ -529,8 +584,8 @@ public class ConfigurationManagmentService {
 
 	public TemplateFeaturePojo setTemplateFeatureData(JSONObject featureJson) {
 		TemplateFeaturePojo featurePojo = new TemplateFeaturePojo();
-		featurePojo.setfMasterId(featureJson.get("id").toString());
-		featurePojo.setfName(featureJson.get("featureName").toString());
+		featurePojo.setfMasterId(featureJson.get("fId").toString());
+		featurePojo.setfName(featureJson.get("fName").toString());
 		return featurePojo;
 	}
 
@@ -538,7 +593,7 @@ public class ConfigurationManagmentService {
 			List<AttribCreateConfigPojo> templateAttribute, String templateID, JSONArray featureReplactionArray) {
 
 		TemplateManagementDao dao = new TemplateManagementDao();
-
+		// set Template attribute and sort with position
 		String s = ")!" + '"' + '"' + "}";
 		if (templateAttribute != null) {
 			if (cammandByTemplate != null) {
@@ -558,8 +613,11 @@ public class ConfigurationManagmentService {
 					List<CommandPojo> commandsByFeatureData = dao.getCammandByTemplateAndfeatureId(featureData.getId(),
 							templateID);
 					JSONArray featureAttribArray = (JSONArray) featureDetails.get("featureAttribDetails");
+					// set command label with user value
 					commandsByFeatureData = setFeatureData(commandsByFeatureData, featureAttribArray);
+					// get last command position to featureId
 					position = getFeatureMaxPosition(cammandByTemplate, featureData);
+					// set replication commands inside template with position
 					cammandByTemplate = setFinalCommands(cammandByTemplate, position, commandsByFeatureData);
 				}
 			}
@@ -582,6 +640,7 @@ public class ConfigurationManagmentService {
 		return position;
 	}
 
+	// set command label with value
 	private List<CommandPojo> setFeatureData(List<CommandPojo> commandsByFeatureData, JSONArray featureAttribArray) {
 		if (commandsByFeatureData != null) {
 			commandsByFeatureData.forEach(commands -> {
@@ -590,12 +649,9 @@ public class ConfigurationManagmentService {
 						JSONObject featureObject = (JSONObject) featureAttribArray.get(j);
 						if (commands.getCommandValue() == null && commands.getCommand_value() != null) {
 							commands.setCommandValue(commands.getCommand_value());
-							commands.setCommand_value(commands.getCommand_value());
 						}
 						if (commands.getCommandValue().contains("[" + featureObject.get("label").toString() + "]")) {
 							commands.setCommandValue(commands.getCommandValue().replace(
-									"[" + featureObject.get("label") + "]", featureObject.get("value").toString()));
-							commands.setCommand_value(commands.getCommandValue().replace(
 									"[" + featureObject.get("label") + "]", featureObject.get("value").toString()));
 						}
 					}
@@ -606,44 +662,29 @@ public class ConfigurationManagmentService {
 		return commandsByFeatureData;
 	}
 
+	// set Replicate Feature
 	private List<CommandPojo> setReplicationFeatureData(List<CommandPojo> cammandByTemplate,
 			JSONArray featureReplactionArray, String vendor) {
-		// cammandByTemplate.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() -
-		// c2.getPosition());
+		cammandByTemplate.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
 		int position = 0;
+		List<CommandPojo> commandsByFeatureData = new ArrayList<>();
 		if (featureReplactionArray != null && !featureReplactionArray.isEmpty()) {
 			for (int i = 0; i < featureReplactionArray.size(); i++) {
 				JSONObject featureDetails = (JSONObject) featureReplactionArray.get(i);
 				String featureMasterId = featureDetails.get("featureId").toString();
-				List<CommandPojo> commandsByFeatureData = new ArrayList<>();
 				if ("Cisco".equalsIgnoreCase(vendor)) {
-					//commandsByFeatureData.add(configuraComandMethod("config t"));
+					commandsByFeatureData.add(setConfigComamnd("config t\n"));
 				}
-				List<CommandPojo> findBymasterFId = commandsRepo.findBymasterFId(featureMasterId);				
-				commandsByFeatureData.addAll(findBymasterFId);
-				/*for(CommandPojo command:findBymasterFId) {
-					commandsByFeatureData.add(command);
-				}*/
+				commandsByFeatureData.addAll(setcomandValue(commandsRepo.findByMasterCommandValue(featureMasterId)));
 				if ("Cisco".equalsIgnoreCase(vendor)) {
-					commandsByFeatureData.add(configuraComandMethod("exit"));
-				}			
+					commandsByFeatureData.add(setConfigComamnd("exit\n"));
+				}
 				JSONArray featureAttribArray = (JSONArray) featureDetails.get("featureAttribDetails");
 				commandsByFeatureData = setFeatureData(commandsByFeatureData, featureAttribArray);
 				position = cammandByTemplate.size();
-				cammandByTemplate = setFeatureFinalCommands(cammandByTemplate, position, commandsByFeatureData);
-			}
-		}
-		return cammandByTemplate;
-	}
+				cammandByTemplate = setFinalCommands(cammandByTemplate, position, commandsByFeatureData);
 
-	private List<CommandPojo> setFeatureFinalCommands(List<CommandPojo> cammandByTemplate, int position,
-			List<CommandPojo> commandsByFeatureData) {
-		CommandPojo commandSet = null;
-		int assignPosition =cammandByTemplate.size()+1;
-		for (CommandPojo featureCommand : commandsByFeatureData) {
-			commandSet = setCommandPosition(featureCommand, assignPosition);
-			assignPosition++;
-			cammandByTemplate.add(commandSet);
+			}
 		}
 		return cammandByTemplate;
 	}
@@ -677,11 +718,14 @@ public class ConfigurationManagmentService {
 		pojoData.setMasterFId(command.getMasterFId());
 		return pojoData;
 	}
-	
-	private CommandPojo configuraComandMethod(String string) {
-		CommandPojo configPojo = new CommandPojo();
-		configPojo.setCommandValue(string);
-		configPojo.setCommand_value(string);
-		return configPojo;
+
+	private List<CommandPojo> setcomandValue(List<String> findByMasterCommandValue) {
+		List<CommandPojo> commandsByFeatureData = new ArrayList<>();
+		findByMasterCommandValue.forEach(comandValue -> {
+			CommandPojo pojoData = new CommandPojo();
+			pojoData.setCommandValue(comandValue);
+			commandsByFeatureData.add(pojoData);
+		});
+		return commandsByFeatureData;
 	}
 }

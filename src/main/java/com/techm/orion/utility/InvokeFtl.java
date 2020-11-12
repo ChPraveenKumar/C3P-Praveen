@@ -922,9 +922,9 @@ public class InvokeFtl {
 			if (cammandByTemplate != null) {
 				finalCammandsList = ListUtils.union(cammandsBySeriesId, cammandByTemplate);
 			}
-		} else
+		} else {
 			finalCammandsList = cammandByTemplate;
-
+		}
 		/* Arrange Commands with position */
 		finalCammandsList.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
 		String finalCammands = "";
