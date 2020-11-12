@@ -63,5 +63,9 @@ public class AttribCreateConfigServiceImpl implements AttribCreateConfigService 
 				dao.findByTemplateFeatureAndTemplateId(entity, templateId));
 	}
 
-	
+	@Override
+	public List<AttribCreateConfigPojo> getByFId(String masterFID, String templateId) {
+		return mapper.getAllAttribTemplateSuggestionMapper(dao.findByMasterFIDAndTemplateId(masterFID, templateId));
+
+	}
 }

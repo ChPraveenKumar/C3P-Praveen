@@ -7,28 +7,43 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
+import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
+import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
+import com.techm.orion.entitybeans.TemplateFeatureEntity;
+import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
 import com.techm.orion.pojo.AttribCreateConfigJson;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CategoryDropDownPojo;
 import com.techm.orion.pojo.TemplateAttribPojo;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.repositories.MasterCharacteristicsRepository;
+import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.TemplateConfigBasicDetailsRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.CategoryDropDownService;
+import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.utility.UtilityMethods;
 
 @Component
 public class TemplateSuggestionDao {
@@ -40,7 +55,19 @@ public class TemplateSuggestionDao {
 	TemplateFeatureRepo templatefeatureRepo;
 
 	@Autowired
-	CategoryDropDownService categoryDropDownservice;
+	private MasterCharacteristicsRepository masterCharacteristicsRepository;
+	
+	@Autowired
+	private MasterFeatureRepository masterFeatureRepository;
+
+	@Autowired
+	private CategoryDropDownService categoryDropDownservice;
+	
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	
+	@Autowired
+	private TemplateConfigBasicDetailsRepository templateConfigBasicDetailsRepository;
 
 	private Connection connection;
 	Statement statement;
@@ -750,6 +777,247 @@ public class TemplateSuggestionDao {
 			DBUtil.close(connection);
 		}
 		return featureList;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public JSONObject getFeaturesForDevice(String request) throws ParseException {
+		String deviceFamily = null, os = null, osVersion = null, networkType = null, region = null, vendor = null;
+		JSONObject json = new JSONObject();
+		JSONParser parser = new JSONParser();
+		json = (JSONObject) parser.parse(request);
+		if (json.containsKey("deviceFamily")) {
+			deviceFamily = json.get("deviceFamily").toString();
+		}
+		if (json.containsKey("vendor")) {
+			vendor = json.get("vendor").toString();
+		}
+		if (json.containsKey("os")) {
+			os = json.get("os").toString();
+		}
+		if (json.containsKey("osVersion")) {
+			osVersion = json.get("osVersion").toString();
+		}
+		if (json.containsKey("region")) {
+			region = json.get("region").toString();
+		}
+		if (json.containsKey("networkType")) {
+			networkType = json.get("networkType").toString();
+		}
+		if ("All".equals(region)) {
+			region = "%";
+		} else {
+			region = "%" + region + "%";
+		}
+		if ("All".equals(osVersion)) {
+			osVersion = "%";
+		} else {
+			osVersion = "%" + osVersion + "%";
+		}
+		if ("All".equals(os)) {
+			os = "%";
+		} else {
+			os = "%" + os + "%";
+		}
+		if ("All".equals(deviceFamily)) {
+			deviceFamily = "%";
+		} else {
+			deviceFamily = "%" + deviceFamily + "%";
+		}
+		if ("All".equals(networkType)) {
+			networkType = "%";
+		} else {
+			networkType = "%" + networkType + "%";
+		}
+		JSONObject features = new JSONObject();
+		JSONArray outputArray = new JSONArray();
+		List<MasterFeatureEntity> masterList = masterFeatureRepository.getData(deviceFamily, os, region, osVersion,
+				vendor, networkType);
+		masterList.forEach(list -> {
+			JSONObject object = new JSONObject();
+			JSONObject featureDetails = new JSONObject();
+			featureDetails.put("fId", list.getfId());
+			featureDetails.put("fName", list.getfName());
+			featureDetails.put("fReplicationFlag", list.getfReplicationind());
+			object.put("featureDetails", featureDetails);
+			object.put("vendor", list.getfVendor());
+			object.put("deviceFamily", list.getfFamily());
+			object.put("os", list.getfOs());
+			object.put("osVersion", list.getfOsversion());
+			object.put("region", list.getfRegion());
+			object.put("networkType", list.getfNetworkfun());
+			outputArray.add(object);
+		});
+		features.put("output", outputArray);
+		return features;
+	}
+
+	@SuppressWarnings({ "unchecked", "unchecked" })
+	public JSONObject getTemplateDetailsForSelectedFeatures(String request) throws ParseException {
+		String region = null, vendor = null, deviceFamily = null, os = null, osVersion = null;
+		JSONObject json = new JSONObject();
+		JSONParser parser = new JSONParser();
+		JSONObject templatelist = new JSONObject();
+		json = (JSONObject) parser.parse(request);
+		region = json.get("region").toString();
+		vendor = json.get("vendor").toString();
+		deviceFamily = json.get("deviceFamily").toString();
+		os = json.get("os").toString();
+		osVersion = json.get("osVersion").toString();
+		JSONArray jsonArray = null;
+		jsonArray = (JSONArray) json.get("features");
+		MasterFeatureEntity masterFeatureEntity = new MasterFeatureEntity();
+		TemplateFeatureEntity templateFeatureEntity = new TemplateFeatureEntity();
+		String templateId = "";
+		String commands = "";
+		List<TemplateFeatureEntity> commandTypes = new ArrayList<>();
+		List<TemplateConfigBasicDetailsEntity> tempConfigBasic = new ArrayList<>();
+		templateId = dcmConfigService.getTemplateName(region, vendor, os, osVersion, deviceFamily);
+		commandTypes.addAll(templatefeatureRepo.findByCommandId(templateId));
+		List<String> featureList = new ArrayList<>();
+		for (int i = 0; i < jsonArray.size(); i++) {
+			JSONObject obj1 = (JSONObject) jsonArray.get(i);
+			if (obj1.get("fId") != null) {
+				templateFeatureEntity.setMasterFId(obj1.get("fId").toString());
+				featureList.add(obj1.get("fId").toString());
+			}
+			if (obj1.get("fName") != null) {
+				masterFeatureEntity.setfName(obj1.get("fName").toString());
+			}
+			if (obj1.get("fReplicationFlag") != null) {
+				masterFeatureEntity.setfReplicationind((boolean) obj1.get("fReplicationFlag"));
+			}
+		}
+		List<TemplateFeatureEntity> TemplateList = new ArrayList<>();
+		commandTypes = commandTypes.stream().filter(UtilityMethods.distinctByKeys(TemplateFeatureEntity::getCommand))
+				.collect(Collectors.toList());
+		commandTypes.forEach(template -> {
+			List<String> featureIds = templatefeatureRepo.findByMasterfeatureIdByTemplateId(template.getCommand());
+			Collections.sort(featureList);
+			Collections.sort(featureIds);
+			boolean flag = false;
+			if (featureList.size() < featureIds.size()) {
+				flag = featureIds.containsAll(featureList);
+			} else if (featureIds.size() == featureList.size()) {
+				flag = featureList.equals(featureIds);
+			}
+			if (flag) {
+				TemplateList.add(template);
+			}
+		});
+		JSONObject obj = new JSONObject();
+		JSONArray arr = new JSONArray();
+		for (TemplateFeatureEntity featureEntity : TemplateList) {
+			commands = featureEntity.getCommand();
+			String temp = StringUtils.substringBefore(commands, "_");
+			tempConfigBasic.addAll(templateConfigBasicDetailsRepository.tempIdList(temp));
+		}
+		// Check unique Template with Id and Version
+
+		List<TemplateConfigBasicDetailsEntity> templateList = tempConfigBasic.stream()
+				.filter(UtilityMethods.distinctByKeys(TemplateConfigBasicDetailsEntity::getTempAlias,
+						TemplateConfigBasicDetailsEntity::getTempId, TemplateConfigBasicDetailsEntity::getTempVersion))
+				.collect(Collectors.toList());
+		templateList.forEach(list -> {
+			JSONObject templateDetails = new JSONObject();
+			templateDetails.put("templateId", list.getTempId() + "_V" + list.getTempVersion());
+			templateDetails.put("alias", list.getTempAlias());
+			arr.add(templateDetails);
+		});
+		obj.put("templateDetails", arr);
+		if (!arr.isEmpty()) {
+			obj.put("Message", "Success");
+		} else {
+			obj.put("Message", "Templates are not available");
+		}
+		templatelist.put("entity", obj);
+		return templatelist;
+	}
+
+	public List<TemplateAttribPojo> getDynamicAttribData(String request) throws ParseException {
+		List<TemplateAttribPojo> templateWithAttrib = new ArrayList<>();
+		String templateId = null;
+		JSONParser parser = new JSONParser();
+		JSONObject json = new JSONObject();
+		JSONArray jsonArray = new JSONArray();
+		json = (JSONObject) parser.parse(request);
+		jsonArray = (JSONArray) json.get("features");
+		templateId = json.get("templateId").toString();
+		try {
+			if (!templateId.isEmpty()) {
+				for (int i = 0; i < jsonArray.size(); i++) {
+					List<AttribCreateConfigJson> attribConfigJson = new ArrayList<AttribCreateConfigJson>();
+					TemplateAttribPojo templateattrib = new TemplateAttribPojo();
+					JSONObject obj1 = (JSONObject) jsonArray.get(i);
+					if (obj1.get("fId") != null) {
+						templateattrib.setfId(obj1.get("fId").toString());
+					}
+					if (obj1.get("fName") != null) {
+						templateattrib.setfName(obj1.get("fName").toString());
+					}
+					if (obj1.get("fReplicationFlag") != null) {
+						templateattrib.setfReplicationFlag((boolean) obj1.get("fReplicationFlag"));
+					}
+					List<AttribCreateConfigPojo> AttribData = service.getByFId(templateattrib.getfId(), templateId);
+
+					/* map byAttribSeriesId List to jsonValue List to return Response */
+					for (AttribCreateConfigPojo attribInfo : AttribData) {
+						AttribCreateConfigJson attribJson = new AttribCreateConfigJson();
+						attribJson.setId(attribInfo.getId());
+						attribJson.setName(attribInfo.getAttribName());
+						attribJson.setLabel(attribInfo.getAttribLabel());
+						attribJson.setuIComponent(attribInfo.getAttribUIComponent());
+						attribJson.setValidations(attribInfo.getAttribValidations());
+						attribJson.setType(attribInfo.getAttribType());
+						attribJson.setSeriesId(attribInfo.getAttribSeriesId());
+						attribJson.setTemplateId(attribInfo.getAttribTemplateId());
+						attribJson.setCategotyLabel(attribInfo.getAttribCategoty());
+						/* using Category Name find all category Value */
+						if (attribInfo.getAttribCategoty() != null) {
+							List<CategoryDropDownPojo> allByCategoryName = categoryDropDownservice
+									.getAllByCategoryName(attribInfo.getAttribCategoty());
+							attribJson.setCategotyLabel(attribInfo.getAttribCategoty());
+							attribJson.setCategory(allByCategoryName);
+						}
+						attribConfigJson.add(attribJson);
+					}
+					templateattrib.setAttribConfig(attribConfigJson);
+					templateWithAttrib.add(templateattrib);
+				}
+			} else {
+				for (int i = 0; i < jsonArray.size(); i++) {
+					MasterFeatureEntity entity = new MasterFeatureEntity();
+					JSONObject obj1 = (JSONObject) jsonArray.get(i);
+					if (obj1.get("fId") != null) {
+						entity.setfId(obj1.get("fId").toString());
+					}
+					if (obj1.get("fName") != null) {
+						entity.setfName(obj1.get("fName").toString());
+					}
+					if (obj1.get("fReplicationFlag") != null) {
+						entity.setfReplicationind((Boolean) obj1.get("fReplicationFlag"));
+					}
+					AttribCreateConfigResponceMapper attribCreateConfigResponceMapper = new AttribCreateConfigResponceMapper();
+					TemplateAttribPojo templateAttrib = new TemplateAttribPojo();
+					List<AttribCreateConfigJson> attribCreateConfigJson = new ArrayList<AttribCreateConfigJson>();
+					List<MasterFeatureEntity> masterfeature = masterFeatureRepository.findByFeatureId(entity.getfId());
+					masterfeature.forEach(list -> {
+						templateAttrib.setfId(list.getfId());
+						templateAttrib.setfName(list.getfName());
+						templateAttrib.setfReplicationFlag(list.getfReplicationind());
+					});
+					List<MasterCharacteristicsEntity> masterChar = masterCharacteristicsRepository
+							.findAllByCFId(templateAttrib.getfId());
+					attribCreateConfigJson = attribCreateConfigResponceMapper
+							.convertCharacteristicsAttribPojoToJson(masterChar);
+					templateAttrib.setAttribConfig(attribCreateConfigJson);
+					templateWithAttrib.add(templateAttrib);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+		}
+		return templateWithAttrib;
 	}
 
 }
