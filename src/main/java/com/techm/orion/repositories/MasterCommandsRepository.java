@@ -18,9 +18,9 @@ public interface MasterCommandsRepository extends
 	@Query(value = "select IFNULL(MAX(command_sequence_id), 0)  from c3p_template_master_command_list", nativeQuery = true)
 	int getMaxSequenceId();
 	
-	List<CommandPojo> findBymasterFId(String featureid);
+	List<CommandPojo> findBymasterFId(String featureId);
 	
 	@Query(value = "select command_value from c3p_template_master_command_list where master_f_id = :featureid ", nativeQuery = true)
-	List<String> findByMasterCommandValue(@Param("featureid") String featureid);
+	List<String> findByMasterTemplateId(@Param("featureid") String featureId);
 	
 }

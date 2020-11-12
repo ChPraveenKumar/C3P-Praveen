@@ -60,7 +60,8 @@ public class ConfigurationManagement {
 	private DeviceDiscoveryRepository deviceRepo;
 
 	@Autowired
-	MasterAttribRepository attribRepo;
+	private MasterAttribRepository attribRepo;
+	
 	private static DecimalFormat df2 = new DecimalFormat("#.##");
 
 	@Autowired
@@ -105,8 +106,7 @@ public class ConfigurationManagement {
 
 			if (json.get("networkType") != null && !json.get("networkType").toString().isEmpty()) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
-				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
-
+				if (configReqToSendToC3pCode.getNetworkType().equals("VNF")) {
 					if (!requestType.equalsIgnoreCase("Test")) {
 						DeviceDiscoveryEntity device = deviceRepo
 								.findByDHostName(json.get("hostname").toString().toUpperCase());
@@ -117,9 +117,12 @@ public class ConfigurationManagement {
 				} else {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
-			} else {
-				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
-				if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
+			} 
+			/*else {
+				if(json.get("networkType")!=null) {
+					configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
+				}
+				if (configReqToSendToC3pCode.getNetworkType().equals("VNF")) {
 					if (!requestType.equalsIgnoreCase("Test")) {
 						DeviceDiscoveryEntity device = deviceRepo
 								.findByDHostName(json.get("hostname").toString().toUpperCase());
@@ -129,7 +132,7 @@ public class ConfigurationManagement {
 				} else {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
-			}
+			}*/
 			if (!requestType.equals("Test") && !requestType.equals("Audit")) {
 				// template suggestion
 				String template = json.get("templateId").toString();
@@ -305,10 +308,9 @@ public class ConfigurationManagement {
 			logger.info("createConfigurationDcm - configReqToSendToC3pCode -NetworkType- "
 					+ configReqToSendToC3pCode.getNetworkType());
 			Map<String, String> result = null;
-			if (configReqToSendToC3pCode.getRequestType().contains("Config")
-					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("PNF")
-					|| configReqToSendToC3pCode.getRequestType().contains("MACD")
-							&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("PNF")) {
+			if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("PNF") && 
+					(configReqToSendToC3pCode.getRequestType().contains("Config")|| configReqToSendToC3pCode.getRequestType().contains("MACD"))) {
+				
 				/*
 				 * Extract dynamicAttribs Json Value and map it to MasteAtrribute List
 				 */
@@ -334,9 +336,7 @@ public class ConfigurationManagement {
 						.getConfigurationGenerationMethods().contains(
 								"Template")) {
 					String selectedFeatures = json.get("selectedFeatures").toString();
-					String[] arrayFeatures = selectedFeatures.replace("[", "").replace("]", "").split(",");
-					List<String> selectedFeatureAndTemplateId = Arrays.asList(arrayFeatures);
-					System.out.println("");
+					List<String> selectedFeatureAndTemplateId = Arrays.asList(splitStringArray(selectedFeatures));
 					for (String tempAndFeatureId : selectedFeatureAndTemplateId) {
 						String[] arr = tempAndFeatureId.replaceAll("\"", "").split(":::");
 						String templateid = arr[0];
@@ -400,8 +400,8 @@ public class ConfigurationManagement {
 					/* Extract Json and map to CreateConfigPojo fields */
 					/* Iterate over major list */
 					if (configReqToSendToC3pCode.getTemplateID() != null
-							&& !configReqToSendToC3pCode.getTemplateID().equals("")) {
-						if (attribJson != null) {
+							&& !configReqToSendToC3pCode.getTemplateID().equals("") && attribJson != null) {
+						
 							for (int i = 0; i < attribJson.size(); i++) {
 								/*
 								 * Here we need to object.get("templateid") == major.get(i).getTemlateId
@@ -434,10 +434,9 @@ public class ConfigurationManagement {
 												}
 											}
 										}
-									}
+									}								
 								}
 							}
-						}
 					} else {
 						String templateName = "";
 						templateName = dcmConfigService.getTemplateName(configReqToSendToC3pCode.getRegion(),
@@ -450,10 +449,8 @@ public class ConfigurationManagement {
 				} else if(configReqToSendToC3pCode.getApiCallType()
 						.equalsIgnoreCase("external")){
 					String configMethod=configReqToSendToC3pCode.getConfigurationGenerationMethods();
-					String[] arrayMethods = configMethod.replace("[", "")
-							.replace("]", "").replace("\"","").split(",");
 					List<String> methods = Arrays
-							.asList(arrayMethods);
+							.asList(splitStringArray(configMethod));
 					for (String type : methods) 
 					{
 						switch (type) {
@@ -572,7 +569,7 @@ public class ConfigurationManagement {
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList);
 
 			} else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("NETCONF")
-					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")
+					&& configReqToSendToC3pCode.getNetworkType().equals("VNF")
 					|| configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("RESTCONF")
 							&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
 
@@ -697,22 +694,10 @@ public class ConfigurationManagement {
 		createConfigPojo.setTemplateId(templateId);
 		return createConfigPojo;
 	}
-
-	/*
-	 * method overloading for UIRevamp If Template Id in null or Empty only push
-	 * Basic COnfiguration private void createTemplateId(RequestInfoPojo
-	 * configReqToSendToC3pCode, String seriesId, List<AttribCreateConfigPojo>
-	 * masterAttribute) { String templateName = ""; templateName =
-	 * dcmConfigService.getTemplateName(configReqToSendToC3pCode.getRegion(),
-	 * configReqToSendToC3pCode.getVendor(), configReqToSendToC3pCode.getModel(),
-	 * configReqToSendToC3pCode.getOs(), configReqToSendToC3pCode.getOsVersion());
-	 * templateName = templateName + "_V1.0";
-	 * configReqToSendToC3pCode.setTemplateID(templateName);
-	 * 
-	 * InvokeFtl invokeFtl = new InvokeFtl(); TemplateManagementDao dao = new
-	 * TemplateManagementDao(); // Getting Commands Using Series Id
-	 * List<CommandPojo> cammandsBySeriesId = dao.getCammandsBySeriesId(seriesId,
-	 * null); invokeFtl.createFinalTemplate(cammandsBySeriesId, null,
-	 * masterAttribute, null, configReqToSendToC3pCode.getTemplateID()); }
-	 */
+	String [] splitStringArray(String templateid)
+	{
+		String [] array=templateid.replace("[", "").replace("]", "")
+				.replace("\"", "").split(",");
+		return array;
+	}
 }

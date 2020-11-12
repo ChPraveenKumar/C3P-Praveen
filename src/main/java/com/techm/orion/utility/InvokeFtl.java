@@ -892,16 +892,17 @@ public class InvokeFtl {
 		for (CommandPojo templateCammand : cammandByTemplate) {
 			for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
 				if (templateAttrib.getAttribType().equals("Template")) {
-					if (templateCammand.getCommandValue().contains("[" + templateAttrib.getAttribLabel() + "]")) {
+					 String attribLabel = templateAttrib.getAttribLabel();
+					if (templateCammand.getCommandValue().contains("[" +attribLabel+ "]")) {
 						int id = Integer.parseInt(templateCammand.getId());
 						if (id == templateAttrib.getTemplateFeature().getId()) {
-							String Str = "[" + templateAttrib.getAttribLabel() + "]";
+							String Str = "[" + attribLabel + "]";
 							String attribName = templateAttrib.getAttribName();
 							String newAttribName = attribName.replace(" ", "");
 							attribName = newAttribName.substring(0, 1).toLowerCase() + newAttribName.substring(1);
 							Str = Str.replace(Str, "${(configRequest." + attribName + s);
 							templateCammand.setCommandValue(templateCammand.getCommandValue()
-									.replace("[" + templateAttrib.getAttribLabel() + "]", Str));
+									.replace("[" + attribLabel + "]", Str));
 							continue;
 						}
 					}
@@ -996,18 +997,19 @@ public class InvokeFtl {
 				for (CommandPojo templateCammand : cammandByTemplate) {
 					for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
 						if (templateAttrib.getAttribType().equals("Template")) {
+							 String attribLabel = templateAttrib.getAttribLabel();
 							if (templateCammand.getCommandValue()
-									.contains("[" + templateAttrib.getAttribLabel() + "]")) {
+									.contains("[" + attribLabel + "]")) {
 								int id = Integer.parseInt(templateCammand.getId());
 								if (id == templateAttrib.getTemplateFeature().getId()) {
-									String Str = "[" + templateAttrib.getAttribLabel() + "]";
+									String Str = "[" + attribLabel + "]";
 									String attribName = templateAttrib.getAttribName();
 									String newAttribName = attribName.replace(" ", "");
 									attribName = newAttribName.substring(0, 1).toLowerCase()
 											+ newAttribName.substring(1);
 									Str = Str.replace(Str, "${(configRequest." + attribName + s);
 									templateCammand.setCommandValue(templateCammand.getCommandValue()
-											.replace("[" + templateAttrib.getAttribLabel() + "]", Str));
+											.replace("[" + attribLabel + "]", Str));
 									continue;
 								}
 							}

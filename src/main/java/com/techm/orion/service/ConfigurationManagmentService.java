@@ -37,13 +37,13 @@ public class ConfigurationManagmentService {
 	private static final Logger logger = LogManager.getLogger(ConfigurationManagmentService.class);
 
 	@Autowired
-	private DeviceDiscoveryRepository deviceRepo;
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 
 	@Autowired
-	private SiteInfoRepository siteRepo;
+	private SiteInfoRepository siteInfoRepository;
 
 	@Autowired
-	private AttribCreateConfigService service;
+	private AttribCreateConfigService attribCreateConfigService;
 
 	@Autowired
 	private DcmConfigService dcmConfigService;
@@ -52,22 +52,25 @@ public class ConfigurationManagmentService {
 	private TemplateFeatureRepo templatefeatureRepo;
 
 	@Autowired
-	private MasterCommandsRepository commandsRepo;
+	private MasterCommandsRepository masterCommandsRepository;
 
 	InvokeFtl invokeFtl = new InvokeFtl();
+	
+	GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
+	
+	TemplateManagementDao dao = new TemplateManagementDao();
 
 	@SuppressWarnings("unchecked")
-	public JSONObject verifyConfigurationService(JSONObject json) {
+	public JSONObject verifyConfiguration(JSONObject requestJson) {
 		JSONObject obj = new JSONObject();
-		RequestInfoPojo requestInfoData = new RequestInfoPojo();
-		GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
+		RequestInfoPojo requestInfoData = new RequestInfoPojo();		
 		TemplateManagementDao dao = new TemplateManagementDao();
-		requestInfoData = setRequestInfoData(json);
+		requestInfoData = setRequestInfoData(requestJson);
 
 		/* Get Cammands and Template attribute selected Features */
 		org.json.simple.JSONArray featureListJson = null;
-		if (json.containsKey("selectedFeatures")) {
-			featureListJson = (org.json.simple.JSONArray) json.get("selectedFeatures");
+		if (requestJson.containsKey("selectedFeatures")) {
+			featureListJson = (org.json.simple.JSONArray) requestJson.get("selectedFeatures");
 		}
 		List<TemplateFeaturePojo> features = null;
 
@@ -81,44 +84,15 @@ public class ConfigurationManagmentService {
 		// Extract dynamicAttribs Json Value and map it to MaasteAtrribute
 		// List
 		org.json.simple.JSONArray attribJson = null;
-		if (json.containsKey("dynamicAttribs")) {
-			attribJson = (org.json.simple.JSONArray) json.get("dynamicAttribs");
+		if (requestJson.containsKey("dynamicAttribs")) {
+			attribJson = (org.json.simple.JSONArray) requestJson.get("dynamicAttribs");
 		}
 
-		if (json.get("networkType").toString().equals("VNF")) {
+		if (requestJson.get("networkType").toString().equals("VNF")) {
 			JSONObject vnfFinalObject = new JSONObject();
-			JSONArray fianlJson = new JSONArray();
-
-			for (TemplateFeaturePojo feature : features) {
-				JSONArray vnfattribJson = new JSONArray();
-				String templateId = requestInfoData.getTemplateID();
-				List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = service
-						.getByAttribTemplateAndFeatureName(templateId, feature.getfName());
-				JSONObject vnfObject = new JSONObject();
-
-				for (AttribCreateConfigPojo attr : byAttribTemplateAndFeatureName) {
-					AA: for (int i = 0; i < attribJson.size(); i++) {
-						JSONObject object = (JSONObject) attribJson.get(i);
-						String attribLabel = object.get("label").toString();
-						String attribName = object.get("name").toString();
-						if (attribName.equals(attr.getAttribName()) && attribLabel.equals(attr.getAttribLabel())) {
-							vnfattribJson.add(object);
-							break AA;
-
-						}
-
-					}
-
-				}
-
-				vnfObject.put("featureName", feature);
-				vnfObject.put("featureAttributes", vnfattribJson);
-				fianlJson.add(vnfObject);
-				logger.info(fianlJson.toString());
-
-			}
+			String templateId = requestInfoData.getTemplateID();
+			JSONArray fianlJson = vnfFeatureData(features,templateId,attribJson);
 			vnfFinalObject.put("dynamicAttribs", fianlJson);
-
 			VnfConfigService vnfService = new VnfConfigService();
 			Response generateConfiguration = vnfService.generateConfiguration(vnfFinalObject.toString());
 			JSONObject entity = (JSONObject) generateConfiguration.getEntity();
@@ -131,8 +105,8 @@ public class ConfigurationManagmentService {
 				attribList.addAll(addAttribDataintoList(attribJson));
 			}*/
 			JSONArray replicationArray = null;
-			if (json.containsKey("replication")) {
-				replicationArray = (JSONArray) json.get("replication");
+			if (requestJson.containsKey("replication")) {
+				replicationArray = (JSONArray) requestJson.get("replication");
 				/*if (replicationArray != null && !replicationArray.isEmpty()) {
 					for (int i = 0; i < replicationArray.size(); i++) {
 						JSONObject featureDetails = (JSONObject) replicationArray.get(i);
@@ -163,12 +137,12 @@ public class ConfigurationManagmentService {
 			} else {*/
 				List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
 				List<CommandPojo> cammandByTemplate = new ArrayList<>();
-				if (requestInfoData.getTemplateID() != null && !requestInfoData.getTemplateID().equals("")) {
+				if (requestInfoData.getTemplateID() != null && !requestInfoData.getTemplateID().isEmpty()) {
 					for (TemplateFeaturePojo feature : features) {
 						String templateId = requestInfoData.getTemplateID();
 						TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
 								.findIdByComandDisplayFeatureAndCommandContains(feature.getfName(), templateId);
-						List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = service
+						List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = attribCreateConfigService
 								.getByAttribTemplateAndFeatureName(templateId, feature.getfName());
 						if (byAttribTemplateAndFeatureName != null && !byAttribTemplateAndFeatureName.isEmpty()) {
 							templateAttribute.addAll(byAttribTemplateAndFeatureName);
@@ -183,9 +157,9 @@ public class ConfigurationManagmentService {
 					logger.info("generateCreateRequestDetails - getTemplateID-  " + requestInfoData.getTemplateID());
 					if (replicationArray != null && !replicationArray.isEmpty()) {
 						// TemplateId with feature Replication
-						if (json.get("replication") != null) {
+						if (requestJson.get("replication") != null) {
 							createReplicationFinalTemplate(cammandByTemplate, templateAttribute,
-									requestInfoData.getTemplateID(), (JSONArray) json.get("replication"));
+									requestInfoData.getTemplateID(), (JSONArray) requestJson.get("replication"));
 						}
 					} else {
 						// TemplateId without feature Replication
@@ -193,39 +167,21 @@ public class ConfigurationManagmentService {
 								requestInfoData.getTemplateID());
 					}
 				} else {
-					String templateName = "";
-					templateName = dcmConfigService.getTemplateName(requestInfoData.getRegion(),
+					 String templateName = dcmConfigService.getTemplateName(requestInfoData.getRegion(),
 							requestInfoData.getVendor(), requestInfoData.getModel(), requestInfoData.getOs(),
 							requestInfoData.getOsVersion());
 					templateName = "Feature_" + templateName;
 					requestInfoData.setTemplateID(templateName);
 					if (replicationArray != null && !replicationArray.isEmpty()) {
 						// Without TemplateId only Feature Replication
-						// set Config t and exit command
-						if ("Cisco".equalsIgnoreCase(requestInfoData.getVendor())) {
-							cammandByTemplate.add(setConfigComamnd("config t\n"));
-						}
-						for (TemplateFeaturePojo feature : features) {
-							cammandByTemplate.addAll(commandsRepo.findBymasterFId(feature.getfMasterId()));
-						}
-						if ("Cisco".equalsIgnoreCase(requestInfoData.getVendor())) {
-							cammandByTemplate.add(setConfigComamnd("exit\n"));
-						}
+						cammandByTemplate = getCommandsByMasterFeature(requestInfoData.getVendor(),features);
 						cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
 						cammandByTemplate = setReplicationFeatureData(cammandByTemplate,
-								(JSONArray) json.get("replication"), requestInfoData.getVendor());
+								(JSONArray) requestJson.get("replication"), requestInfoData.getVendor());
 
 					} else {
 						// No TemplateId and No Feature Replication
-						if ("Cisco".equalsIgnoreCase(requestInfoData.getVendor())) {
-							cammandByTemplate.add(setConfigComamnd("config t\n"));
-						}
-						for (TemplateFeaturePojo feature : features) {
-							cammandByTemplate.addAll(commandsRepo.findBymasterFId(feature.getfMasterId()));
-						}
-						if ("Cisco".equalsIgnoreCase(requestInfoData.getVendor())) {
-							cammandByTemplate.add(setConfigComamnd("exit\n"));
-						}
+						cammandByTemplate = getCommandsByMasterFeature(requestInfoData.getVendor(),features);
 						cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
 					}
 
@@ -240,6 +196,54 @@ public class ConfigurationManagmentService {
 		return obj;
 	}
 
+	private List<CommandPojo> getCommandsByMasterFeature(String vendor, List<TemplateFeaturePojo> features) {
+		List<CommandPojo> commandList = new ArrayList<>();
+		// set Config t and exit command
+		if ("Cisco".equalsIgnoreCase(vendor)) {
+			commandList.add(setConfigComamnd("config t\n"));
+		}
+		for (TemplateFeaturePojo feature : features) {
+			commandList.addAll(masterCommandsRepository.findBymasterFId(feature.getfMasterId()));
+		}
+		if ("Cisco".equalsIgnoreCase(vendor)) {
+			commandList.add(setConfigComamnd("exit\n"));
+		}
+		return commandList;	
+	}
+
+	@SuppressWarnings("unchecked")
+	private JSONArray vnfFeatureData(List<TemplateFeaturePojo> features, String templateId, JSONArray attribJson) {
+		JSONArray fianlJson = new JSONArray();
+		for (TemplateFeaturePojo feature : features) {
+			JSONArray vnfattribJson = new JSONArray();			
+			List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = attribCreateConfigService
+					.getByAttribTemplateAndFeatureName(templateId, feature.getfName());
+			JSONObject vnfObject = new JSONObject();
+			for (AttribCreateConfigPojo attr : byAttribTemplateAndFeatureName) {
+				attribLabel: 
+					for (int i = 0; i < attribJson.size(); i++) {
+					JSONObject object = (JSONObject) attribJson.get(i);
+					String attribLabel = object.get("label").toString();
+					String attribName = object.get("name").toString();
+					if (attribName.equals(attr.getAttribName()) && attribLabel.equals(attr.getAttribLabel())) {
+						vnfattribJson.add(object);
+						break attribLabel;
+
+					}
+
+				}
+
+			}
+
+			vnfObject.put("featureName", feature);
+			vnfObject.put("featureAttributes", vnfattribJson);
+			fianlJson.add(vnfObject);
+			logger.info(fianlJson.toString());
+		}
+		return fianlJson;
+	}
+
+	//method added to check duplicate value
 	private List<AttribCreateConfigJson> addAttribDataintoList(JSONArray attribJson) {
 		List<AttribCreateConfigJson> atttribDataList = new ArrayList<>();
 		for (int i = 0; i < attribJson.size(); i++) {
@@ -259,7 +263,7 @@ public class ConfigurationManagmentService {
 		return commandPojo;
 	}
 
-	public RequestInfoPojo setRequestInfoData(JSONObject json) {
+	private RequestInfoPojo setRequestInfoData(JSONObject json) {
 		RequestInfoPojo createConfigRequest = new RequestInfoPojo();
 		// template suggestion
 		if (json.containsKey("templateId") && json.get("templateId") != null
@@ -268,7 +272,7 @@ public class ConfigurationManagmentService {
 		}
 		createConfigRequest.setCustomer(json.get("customer").toString());
 		createConfigRequest.setSiteName(json.get("siteName").toString().toUpperCase());
-		SiteInfoEntity siteId = siteRepo.findCSiteIdByCSiteName(createConfigRequest.getSiteName());
+		SiteInfoEntity siteId = siteInfoRepository.findCSiteIdByCSiteName(createConfigRequest.getSiteName());
 		createConfigRequest.setSiteid(siteId.getcSiteId());
 		if (json.get("deviceType") != null) {
 			createConfigRequest.setDeviceType(json.get("deviceType").toString());
@@ -286,10 +290,12 @@ public class ConfigurationManagmentService {
 		LocalDateTime nowDate = LocalDateTime.now();
 		Timestamp timestamp = Timestamp.valueOf(nowDate);
 		createConfigRequest.setRequestCreatedOn(timestamp.toString());
-		if (!json.get("networkType").toString().equals("") && json.get("networkType").toString() != null) {
+		
+		if (json.get("networkType") != null && json.get("networkType").toString().isEmpty()) {
 			createConfigRequest.setNetworkType(json.get("networkType").toString());
-		} else {
-			DeviceDiscoveryEntity networkfunctio = deviceRepo
+		} 
+		else {
+			DeviceDiscoveryEntity networkfunctio = deviceDiscoveryRepository
 					.findDVNFSupportByDHostName(createConfigRequest.getHostname());
 			createConfigRequest.setNetworkType(networkfunctio.getdVNFSupport());
 		}
@@ -307,13 +313,8 @@ public class ConfigurationManagmentService {
 			for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
 				if (attribLabel.contains(templateAttrib.getAttribLabel())) {
 					String attribValue = templateAttrib.getAttribName();
-					if (attribValue.contains(attribName)) {
-						if (templateAttrib.getAttribType().equals("Template")) {
-							if (attribType.equals("Template")) {
-								requestInfoData = setAttribValue(attribName, requestInfoData, attriValue);
-
-							}
-						}
+					if (attribValue.contains(attribName) && templateAttrib.getAttribType().equals("Template") && attribType.equals("Template") ) {						
+								requestInfoData = setAttribValue(attribName, requestInfoData, attriValue);				
 					}
 				}
 
@@ -323,262 +324,262 @@ public class ConfigurationManagmentService {
 
 	}
 
-	public RequestInfoPojo setAttribValue(String attribName, RequestInfoPojo configReqToSendToC3pCode,
+	public RequestInfoPojo setAttribValue(String attribName, RequestInfoPojo requestInfoData,
 			String attriValue) {
 		if (attribName.equals("Os Ver")) {
-			configReqToSendToC3pCode.setOsVer(attriValue);
+			requestInfoData.setOsVer(attriValue);
 		} else if (attribName.equals("Host Name Config")) {
-			configReqToSendToC3pCode.setHostNameConfig(attriValue);
+			requestInfoData.setHostNameConfig(attriValue);
 
 		} else if (attribName.equals("Logging Buffer")) {
-			configReqToSendToC3pCode.setLoggingBuffer(attriValue);
+			requestInfoData.setLoggingBuffer(attriValue);
 
 		} else if (attribName.equals("Memory Size")) {
-			configReqToSendToC3pCode.setMemorySize(attriValue);
+			requestInfoData.setMemorySize(attriValue);
 
 		} else if (attribName.equals("Logging SourceInterface")) {
-			configReqToSendToC3pCode.setLoggingSourceInterface(attriValue);
+			requestInfoData.setLoggingSourceInterface(attriValue);
 
 		} else if (attribName.equals("IP TFTP SourceInterface")) {
-			configReqToSendToC3pCode.setiPTFTPSourceInterface(attriValue);
+			requestInfoData.setiPTFTPSourceInterface(attriValue);
 
 		} else if (attribName.equals("IP FTP SourceInterface")) {
-			configReqToSendToC3pCode.setiPFTPSourceInterface(attriValue);
+			requestInfoData.setiPFTPSourceInterface(attriValue);
 
 		} else if (attribName.equals("Line Con Password")) {
-			configReqToSendToC3pCode.setLineConPassword(attriValue);
+			requestInfoData.setLineConPassword(attriValue);
 
 		} else if (attribName.equals("Line Aux Password")) {
-			configReqToSendToC3pCode.setLineAuxPassword(attriValue);
+			requestInfoData.setLineAuxPassword(attriValue);
 		} else if (attribName.equals("Line VTY Password")) {
-			configReqToSendToC3pCode.setLineVTYPassword(attriValue);
+			requestInfoData.setLineVTYPassword(attriValue);
 
 		} else if (attribName.equals("M_Attrib1")) {
-			configReqToSendToC3pCode.setM_Attrib1(attriValue);
+			requestInfoData.setM_Attrib1(attriValue);
 		} else if (attribName.equals("M_Attrib2")) {
-			configReqToSendToC3pCode.setM_Attrib2(attriValue);
+			requestInfoData.setM_Attrib2(attriValue);
 		} else if (attribName.equals("M_Attrib3")) {
-			configReqToSendToC3pCode.setM_Attrib3(attriValue);
+			requestInfoData.setM_Attrib3(attriValue);
 		} else if (attribName.equals("M_Attrib4")) {
-			configReqToSendToC3pCode.setM_Attrib4(attriValue);
+			requestInfoData.setM_Attrib4(attriValue);
 		} else if (attribName.equals("M_Attrib5")) {
-			configReqToSendToC3pCode.setM_Attrib5(attriValue);
+			requestInfoData.setM_Attrib5(attriValue);
 		} else if (attribName.equals("M_Attrib6")) {
-			configReqToSendToC3pCode.setM_Attrib6(attriValue);
+			requestInfoData.setM_Attrib6(attriValue);
 		} else if (attribName.equals("M_Attrib7")) {
-			configReqToSendToC3pCode.setM_Attrib7(attriValue);
+			requestInfoData.setM_Attrib7(attriValue);
 
 		} else if (attribName.equals("M_Attrib8")) {
-			configReqToSendToC3pCode.setM_Attrib8(attriValue);
+			requestInfoData.setM_Attrib8(attriValue);
 		} else if (attribName.equals("M_Attrib9")) {
-			configReqToSendToC3pCode.setM_Attrib9(attriValue);
+			requestInfoData.setM_Attrib9(attriValue);
 		} else if (attribName.equals("M_Attrib10")) {
-			configReqToSendToC3pCode.setM_Attrib10(attriValue);
+			requestInfoData.setM_Attrib10(attriValue);
 		} else if (attribName.equals("M_Attrib11")) {
-			configReqToSendToC3pCode.setM_Attrib11(attriValue);
+			requestInfoData.setM_Attrib11(attriValue);
 		} else if (attribName.equals("M_Attrib12")) {
-			configReqToSendToC3pCode.setM_Attrib12(attriValue);
+			requestInfoData.setM_Attrib12(attriValue);
 		} else if (attribName.equals("M_Attrib13")) {
-			configReqToSendToC3pCode.setM_Attrib13(attriValue);
+			requestInfoData.setM_Attrib13(attriValue);
 		} else if (attribName.equals("M_Attrib14")) {
-			configReqToSendToC3pCode.setM_Attrib14(attriValue);
+			requestInfoData.setM_Attrib14(attriValue);
 		} else if (attribName.equals("M_Attrib15")) {
-			configReqToSendToC3pCode.setM_Attrib15(attriValue);
+			requestInfoData.setM_Attrib15(attriValue);
 		} else if (attribName.equals("LANInterfaceIP1")) {
-			configReqToSendToC3pCode.setlANInterfaceIP1(attriValue);
+			requestInfoData.setlANInterfaceIP1(attriValue);
 		} else if (attribName.equals("LANInterfaceMask1")) {
-			configReqToSendToC3pCode.setlANInterfaceMask1(attriValue);
+			requestInfoData.setlANInterfaceMask1(attriValue);
 
 		} else if (attribName.equals("LANInterfaceIP2")) {
-			configReqToSendToC3pCode.setlANInterfaceIP2(attriValue);
+			requestInfoData.setlANInterfaceIP2(attriValue);
 
 		} else if (attribName.equals("LANInterfaceMask2")) {
-			configReqToSendToC3pCode.setlANInterfaceMask2(attriValue);
+			requestInfoData.setlANInterfaceMask2(attriValue);
 
 		} else if (attribName.equals("WANInterfaceIP1")) {
-			configReqToSendToC3pCode.setwANInterfaceIP1(attriValue);
+			requestInfoData.setwANInterfaceIP1(attriValue);
 
 		} else if (attribName.equals("WANInterfaceMask1")) {
-			configReqToSendToC3pCode.setwANInterfaceMask1(attriValue);
+			requestInfoData.setwANInterfaceMask1(attriValue);
 
 		} else if (attribName.equals("WANInterfaceIP2")) {
-			configReqToSendToC3pCode.setwANInterfaceIP2(attriValue);
+			requestInfoData.setwANInterfaceIP2(attriValue);
 
 		} else if (attribName.equals("WANInterfaceMask2")) {
-			configReqToSendToC3pCode.setwANInterfaceMask2(attriValue);
+			requestInfoData.setwANInterfaceMask2(attriValue);
 
 		} else if (attribName.equals("ResInterfaceIP")) {
-			configReqToSendToC3pCode.setResInterfaceIP(attriValue);
+			requestInfoData.setResInterfaceIP(attriValue);
 
 		} else if (attribName.equals("ResInterfaceMask")) {
-			configReqToSendToC3pCode.setResInterfaceMask(attriValue);
+			requestInfoData.setResInterfaceMask(attriValue);
 
 		} else if (attribName.equals("VRFName")) {
-			configReqToSendToC3pCode.setvRFName(attriValue);
+			requestInfoData.setvRFName(attriValue);
 		} else if (attribName.equals("BGPASNumber")) {
-			configReqToSendToC3pCode.setbGPASNumber(attriValue);
+			requestInfoData.setbGPASNumber(attriValue);
 
 		} else if (attribName.equals("BGPRouterID")) {
-			configReqToSendToC3pCode.setbGPRouterID(attriValue);
+			requestInfoData.setbGPRouterID(attriValue);
 
 		} else if (attribName.equals("BGPNeighborIP1")) {
-			configReqToSendToC3pCode.setResInterfaceIP(attriValue);
+			requestInfoData.setResInterfaceIP(attriValue);
 
 		} else if (attribName.equals("BGPRemoteAS1")) {
-			configReqToSendToC3pCode.setbGPRemoteAS1(attriValue);
+			requestInfoData.setbGPRemoteAS1(attriValue);
 
 		} else if (attribName.equals("BGPNeighborIP2")) {
-			configReqToSendToC3pCode.setbGPNeighborIP1(attriValue);
+			requestInfoData.setbGPNeighborIP1(attriValue);
 
 		} else if (attribName.equals("BGPRemoteAS2")) {
-			configReqToSendToC3pCode.setbGPRemoteAS2(attriValue);
+			requestInfoData.setbGPRemoteAS2(attriValue);
 		} else if (attribName.equals("BGPNetworkIP1")) {
-			configReqToSendToC3pCode.setbGPNetworkIP1(attriValue);
+			requestInfoData.setbGPNetworkIP1(attriValue);
 
 		} else if (attribName.equals("BGPNetworkWildcard1")) {
-			configReqToSendToC3pCode.setbGPNetworkWildcard1(attriValue);
+			requestInfoData.setbGPNetworkWildcard1(attriValue);
 
 		} else if (attribName.equals("BGPNetworkIP2")) {
-			configReqToSendToC3pCode.setbGPNetworkIP2(attriValue);
+			requestInfoData.setbGPNetworkIP2(attriValue);
 
 		} else if (attribName.equals("BGPNetworkWildcard2")) {
-			configReqToSendToC3pCode.setbGPNetworkWildcard2(attriValue);
+			requestInfoData.setbGPNetworkWildcard2(attriValue);
 
 		} else if (attribName.equals("Attrib1")) {
-			configReqToSendToC3pCode.setAttrib1(attriValue);
+			requestInfoData.setAttrib1(attriValue);
 
 		} else if (attribName.equals("Attrib2")) {
-			configReqToSendToC3pCode.setAttrib2(attriValue);
+			requestInfoData.setAttrib2(attriValue);
 
 		} else if (attribName.equals("Attrib3")) {
-			configReqToSendToC3pCode.setAttrib3(attriValue);
+			requestInfoData.setAttrib3(attriValue);
 
 		} else if (attribName.equals("Attrib4")) {
-			configReqToSendToC3pCode.setAttrib4(attriValue);
+			requestInfoData.setAttrib4(attriValue);
 
 		} else if (attribName.equals("Attrib5")) {
-			configReqToSendToC3pCode.setAttrib5(attriValue);
+			requestInfoData.setAttrib5(attriValue);
 
 		} else if (attribName.equals("Attrib6")) {
-			configReqToSendToC3pCode.setAttrib6(attriValue);
+			requestInfoData.setAttrib6(attriValue);
 
 		} else if (attribName.equals("Attrib7")) {
-			configReqToSendToC3pCode.setAttrib7(attriValue);
+			requestInfoData.setAttrib7(attriValue);
 
 		} else if (attribName.equals("Attrib8")) {
-			configReqToSendToC3pCode.setAttrib8(attriValue);
+			requestInfoData.setAttrib8(attriValue);
 
 		} else if (attribName.equals("Attrib9")) {
-			configReqToSendToC3pCode.setAttrib9(attriValue);
+			requestInfoData.setAttrib9(attriValue);
 
 		} else if (attribName.equals("Attrib10")) {
-			configReqToSendToC3pCode.setAttrib10(attriValue);
+			requestInfoData.setAttrib10(attriValue);
 
 		} else if (attribName.equals("Attrib11")) {
-			configReqToSendToC3pCode.setAttrib11(attriValue);
+			requestInfoData.setAttrib11(attriValue);
 
 		} else if (attribName.equals("Attrib12")) {
-			configReqToSendToC3pCode.setAttrib12(attriValue);
+			requestInfoData.setAttrib12(attriValue);
 
 		} else if (attribName.equals("Attrib13")) {
-			configReqToSendToC3pCode.setAttrib13(attriValue);
+			requestInfoData.setAttrib13(attriValue);
 
 		} else if (attribName.equals("Attrib14")) {
-			configReqToSendToC3pCode.setAttrib14(attriValue);
+			requestInfoData.setAttrib14(attriValue);
 
 		} else if (attribName.equals("Attrib15")) {
-			configReqToSendToC3pCode.setAttrib15(attriValue);
+			requestInfoData.setAttrib15(attriValue);
 
 		} else if (attribName.equals("Attrib16")) {
-			configReqToSendToC3pCode.setAttrib16(attriValue);
+			requestInfoData.setAttrib16(attriValue);
 
 		} else if (attribName.equals("Attrib17")) {
-			configReqToSendToC3pCode.setAttrib17(attriValue);
+			requestInfoData.setAttrib17(attriValue);
 		} else if (attribName.equals("Attrib18")) {
-			configReqToSendToC3pCode.setAttrib18(attriValue);
+			requestInfoData.setAttrib18(attriValue);
 		} else if (attribName.equals("Attrib19")) {
-			configReqToSendToC3pCode.setAttrib19(attriValue);
+			requestInfoData.setAttrib19(attriValue);
 		} else if (attribName.equals("Attrib20")) {
-			configReqToSendToC3pCode.setAttrib20(attriValue);
+			requestInfoData.setAttrib20(attriValue);
 		} else if (attribName.equals("Attrib21")) {
-			configReqToSendToC3pCode.setAttrib21(attriValue);
+			requestInfoData.setAttrib21(attriValue);
 		} else if (attribName.equals("Attrib22")) {
-			configReqToSendToC3pCode.setAttrib22(attriValue);
+			requestInfoData.setAttrib22(attriValue);
 		} else if (attribName.equals("Attrib23")) {
-			configReqToSendToC3pCode.setAttrib23(attriValue);
+			requestInfoData.setAttrib23(attriValue);
 		} else if (attribName.equals("Attrib24")) {
-			configReqToSendToC3pCode.setAttrib24(attriValue);
+			requestInfoData.setAttrib24(attriValue);
 		} else if (attribName.equals("Attrib25")) {
-			configReqToSendToC3pCode.setAttrib25(attriValue);
+			requestInfoData.setAttrib25(attriValue);
 		} else if (attribName.equals("Attrib26")) {
-			configReqToSendToC3pCode.setAttrib26(attriValue);
+			requestInfoData.setAttrib26(attriValue);
 		} else if (attribName.equals("Attrib27")) {
-			configReqToSendToC3pCode.setAttrib27(attriValue);
+			requestInfoData.setAttrib27(attriValue);
 		} else if (attribName.equals("Attrib28")) {
-			configReqToSendToC3pCode.setAttrib28(attriValue);
+			requestInfoData.setAttrib28(attriValue);
 		} else if (attribName.equals("Attrib29")) {
-			configReqToSendToC3pCode.setAttrib29(attriValue);
+			requestInfoData.setAttrib29(attriValue);
 		} else if (attribName.equals("Attrib30")) {
-			configReqToSendToC3pCode.setAttrib30(attriValue);
+			requestInfoData.setAttrib30(attriValue);
 
 		} else if (attribName.equals("Attrib31")) {
-			configReqToSendToC3pCode.setAttrib31(attriValue);
+			requestInfoData.setAttrib31(attriValue);
 
 		} else if (attribName.equals("Attrib32")) {
-			configReqToSendToC3pCode.setAttrib32(attriValue);
+			requestInfoData.setAttrib32(attriValue);
 
 		} else if (attribName.equals("Attrib33")) {
-			configReqToSendToC3pCode.setAttrib33(attriValue);
+			requestInfoData.setAttrib33(attriValue);
 
 		} else if (attribName.equals("Attrib34")) {
-			configReqToSendToC3pCode.setAttrib34(attriValue);
+			requestInfoData.setAttrib34(attriValue);
 
 		} else if (attribName.equals("Attrib35")) {
-			configReqToSendToC3pCode.setAttrib35(attriValue);
+			requestInfoData.setAttrib35(attriValue);
 
 		} else if (attribName.equals("Attrib36")) {
-			configReqToSendToC3pCode.setAttrib36(attriValue);
+			requestInfoData.setAttrib36(attriValue);
 
 		} else if (attribName.equals("Attrib37")) {
-			configReqToSendToC3pCode.setAttrib37(attriValue);
+			requestInfoData.setAttrib37(attriValue);
 
 		} else if (attribName.equals("Attrib38")) {
-			configReqToSendToC3pCode.setAttrib38(attriValue);
+			requestInfoData.setAttrib38(attriValue);
 
 		} else if (attribName.equals("Attrib39")) {
-			configReqToSendToC3pCode.setAttrib39(attriValue);
+			requestInfoData.setAttrib39(attriValue);
 
 		} else if (attribName.equals("Attrib40")) {
-			configReqToSendToC3pCode.setAttrib40(attriValue);
+			requestInfoData.setAttrib40(attriValue);
 
 		} else if (attribName.equals("Attrib41")) {
-			configReqToSendToC3pCode.setAttrib41(attriValue);
+			requestInfoData.setAttrib41(attriValue);
 
 		} else if (attribName.equals("Attrib42")) {
-			configReqToSendToC3pCode.setAttrib42(attriValue);
+			requestInfoData.setAttrib42(attriValue);
 
 		} else if (attribName.equals("Attrib43")) {
-			configReqToSendToC3pCode.setAttrib43(attriValue);
+			requestInfoData.setAttrib43(attriValue);
 		} else if (attribName.equals("Attrib44")) {
-			configReqToSendToC3pCode.setAttrib44(attriValue);
+			requestInfoData.setAttrib44(attriValue);
 
 		} else if (attribName.equals("Attrib45")) {
-			configReqToSendToC3pCode.setAttrib45(attriValue);
+			requestInfoData.setAttrib45(attriValue);
 		} else if (attribName.equals("Attrib46")) {
-			configReqToSendToC3pCode.setAttrib46(attriValue);
+			requestInfoData.setAttrib46(attriValue);
 		} else if (attribName.equals("Attrib47")) {
-			configReqToSendToC3pCode.setAttrib47(attriValue);
+			requestInfoData.setAttrib47(attriValue);
 		} else if (attribName.equals("Attrib48")) {
-			configReqToSendToC3pCode.setAttrib48(attriValue);
+			requestInfoData.setAttrib48(attriValue);
 
 		} else if (attribName.equals("Attrib49")) {
-			configReqToSendToC3pCode.setAttrib49(attriValue);
+			requestInfoData.setAttrib49(attriValue);
 
 		} else if (attribName.equals("Attrib50")) {
-			configReqToSendToC3pCode.setAttrib50(attriValue);
+			requestInfoData.setAttrib50(attriValue);
 
 		}
-		return configReqToSendToC3pCode;
+		return requestInfoData;
 
 	}
 
@@ -591,8 +592,6 @@ public class ConfigurationManagmentService {
 
 	private void createReplicationFinalTemplate(List<CommandPojo> cammandByTemplate,
 			List<AttribCreateConfigPojo> templateAttribute, String templateID, JSONArray featureReplactionArray) {
-
-		TemplateManagementDao dao = new TemplateManagementDao();
 		// set Template attribute and sort with position
 		String s = ")!" + '"' + '"' + "}";
 		if (templateAttribute != null) {
@@ -675,7 +674,7 @@ public class ConfigurationManagmentService {
 				if ("Cisco".equalsIgnoreCase(vendor)) {
 					commandsByFeatureData.add(setConfigComamnd("config t\n"));
 				}
-				commandsByFeatureData.addAll(setcomandValue(commandsRepo.findByMasterCommandValue(featureMasterId)));
+				commandsByFeatureData.addAll(setcomandValue(masterCommandsRepository.findByMasterTemplateId(featureMasterId)));
 				if ("Cisco".equalsIgnoreCase(vendor)) {
 					commandsByFeatureData.add(setConfigComamnd("exit\n"));
 				}

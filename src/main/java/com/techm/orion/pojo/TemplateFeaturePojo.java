@@ -3,6 +3,7 @@ package com.techm.orion.pojo;
 public class TemplateFeaturePojo {
 
 	private String fMasterId;
+
 	private String fName;
 
 	public String getfMasterId() {

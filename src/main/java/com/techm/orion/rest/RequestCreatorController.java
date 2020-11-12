@@ -194,8 +194,8 @@ public class RequestCreatorController {
 		try {
 
 			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(configRequest);			
-			obj=createConfigurationService.verifyConfigurationService(json);
+			JSONObject requestJson = (JSONObject) parser.parse(configRequest);			
+			obj=createConfigurationService.verifyConfiguration(requestJson);
 
 		} catch (Exception exe) {
 			logger.error("Exception occurred in generateCreateRequestDetails method - "+exe.getMessage());
