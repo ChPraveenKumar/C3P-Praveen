@@ -160,7 +160,8 @@ public class RequestInfoDetailsDao {
 				rfoDecomposedRepo.updateStatus("Success", "Admin", Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
 				//To uncomment when python services available
 				PythonServices pythonService=new PythonServices();
-				pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+				//pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+				pythonService.runDecomposeWorkflow(rfoDecomposedEntity.getOdRfoId());
 			}
 			// update the request status column to success after Configuration Request gets
 			// Completed Successfully.
@@ -225,7 +226,9 @@ public class RequestInfoDetailsDao {
 				rfoDecomposedRepo.updateStatus("Failure", "Admin", Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
 				//To uncomment when python services available
 				PythonServices pythonService=new PythonServices();
-				pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+				//pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+				pythonService.runDecomposeWorkflow(rfoDecomposedEntity.getOdRfoId());
+
 			}
 			// update the request status column to Failure after Configuration Request gets
 			// Failed.

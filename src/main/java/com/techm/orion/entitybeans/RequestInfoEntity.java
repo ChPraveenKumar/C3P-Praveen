@@ -182,13 +182,7 @@ public class RequestInfoEntity implements Serializable {
 	@Column(name = "r_selected_file_features", nullable = false)
 	private String rSelectedFileFeatures;
 	
-	public String getrFileName() {
-		return rFileName;
-	}
 
-	public void setrFileName(String rFileName) {
-		this.rFileName = rFileName;
-	}
 
 	@Transient
 	private String backUpScheduleTime;
@@ -633,4 +627,27 @@ public class RequestInfoEntity implements Serializable {
 		this.commissionFlag = commissionFlag;
 	}
 
+	public String getrConfigGenerationMethod() {
+		return rConfigGenerationMethod;
+	}
+
+	public void setrConfigGenerationMethod(String rConfigGenerationMethod) {
+		this.rConfigGenerationMethod = rConfigGenerationMethod;
+	}
+
+	public String getrSelectedFileFeatures() {
+		return rSelectedFileFeatures;
+	}
+
+	public void setrSelectedFileFeatures(String rSelectedFileFeatures) {
+		this.rSelectedFileFeatures = rSelectedFileFeatures;
+	}
+
+	public String getrFileName() {
+		return rFileName;
+	}
+
+	public void setrFileName(String rFileName) {
+		this.rFileName = rFileName;
+	}
 }
