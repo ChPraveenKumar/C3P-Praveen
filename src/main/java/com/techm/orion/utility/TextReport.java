@@ -62,7 +62,7 @@ public class TextReport {
 		try {
 			content=new String(Files.readAllBytes(Paths.get(path)));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.info(e);
 			e.printStackTrace();
 		}
 		return content;
