@@ -1,6 +1,7 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
+
 import java.sql.Timestamp;
 
 import javax.persistence.Column;
@@ -9,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import org.springframework.data.annotation.Transient;
 
 @Entity
 @Table(name = "c3p_m_features")
@@ -85,11 +87,22 @@ public class MasterFeatureEntity implements Serializable
 	@Column(name = "f_schemalocation")
 	private String fSchemalocation;
 
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+
 	@Column(name = "f_comments")
 	private String fComments;
 	
 	@Column(name = "f_status")
 	private String fStatus;
+	
+	@Transient
+	private String displayName;
 	
 
 	@Column(name = "f_owner")
