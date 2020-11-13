@@ -65,8 +65,8 @@ public class GetDataOnRefresh implements Observer {
 		String jsonFeRequestList = "";
 
 		List<TemplateBasicConfigurationPojo> templateNames = new ArrayList<TemplateBasicConfigurationPojo>();
-		//String user = Global.loggedInUser;
-		String user="suser";
+		String user = Global.loggedInUser;
+		//String user="suser";
 		switch (user) {
 		case "feuser":
 			requestList = requestInfoDao.getOwnerAssignedRequestList("feuser");
