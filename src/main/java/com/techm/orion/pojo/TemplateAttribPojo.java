@@ -9,6 +9,36 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class TemplateAttribPojo {
 
 	private String name;
+	
+	private String fId;
+
+	private String fName;
+
+	private boolean fReplicationFlag;
+
+	public String getfId() {
+		return fId;
+	}
+
+	public void setfId(String fId) {
+		this.fId = fId;
+	}
+
+	public String getfName() {
+		return fName;
+	}
+
+	public void setfName(String fName) {
+		this.fName = fName;
+	}
+
+	public boolean isfReplicationFlag() {
+		return fReplicationFlag;
+	}
+
+	public void setfReplicationFlag(boolean fReplicationFlag) {
+		this.fReplicationFlag = fReplicationFlag;
+	}
 
 	private List<AttribCreateConfigJson> attribConfig;
 

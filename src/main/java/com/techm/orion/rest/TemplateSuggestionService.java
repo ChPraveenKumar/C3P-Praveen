@@ -17,6 +17,8 @@ import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +36,7 @@ import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.service.TemplateManagementNewService;
 
 @Controller
 @RequestMapping("/TemplateSuggestionService")
@@ -42,6 +45,9 @@ public class TemplateSuggestionService implements Observer {
 			.getLogger(TemplateSuggestionService.class);
 	@Autowired
 	TemplateSuggestionDao templateSuggestionDao;
+	
+	@Autowired
+	TemplateManagementNewService templateManagementNewService;
 
 	@Autowired
 	AttribCreateConfigService service;
@@ -51,87 +57,16 @@ public class TemplateSuggestionService implements Observer {
 
 	@POST
 	@RequestMapping(value = "/getFeaturesForDeviceDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public Response getFeaturesForDeviceDetail(@RequestBody String configRequest) {
-		DcmConfigService dcmConfigService = new DcmConfigService();
-		// TemplateSuggestionDao templateSuggestionDao=new
-		// TemplateSuggestionDao();
-		JSONObject obj = new JSONObject();
-		String jsonArray = "";
-
-		JSONArray array = new JSONArray();
-
-		JSONObject jsonObj;
-		try {
-
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(configRequest);
-
-			CreateConfigRequestDCM createConfigRequestDCM = new CreateConfigRequestDCM();
-
-			createConfigRequestDCM.setModel(json.get("model").toString());
-			createConfigRequestDCM.setOs(json.get("os").toString());
-			createConfigRequestDCM.setOsVersion(json.get("osVersion")
-					.toString());
-
-			createConfigRequestDCM.setRegion(json.get("region").toString()
-					.toUpperCase());
-
-			createConfigRequestDCM.setVendor(json.get("vendor").toString()
-					.toUpperCase());
-
-			createConfigRequestDCM.setFamily(json.get("deviceFamily")
-					.toString().toUpperCase());
-			String templateId = dcmConfigService.getTemplateName(
-					createConfigRequestDCM.getRegion(),
-					createConfigRequestDCM.getVendor(),
-					createConfigRequestDCM.getOs(),
-					createConfigRequestDCM.getOsVersion(),createConfigRequestDCM.getFamily());
-
-			String networkType = json.get("networkType").toString();
-
-			List<String> getFfeatureList = templateSuggestionDao
-					.getListOfFeaturesForDeviceDetail(templateId, networkType);
-			Set<String> uniqueFeatureList = new HashSet<>(getFfeatureList);
-			// uniqueFeatureList.addAll(getFfeatureList);
-			List<String> featureList = new ArrayList<>(uniqueFeatureList);
-			// featureList.addAll(uniqueFeatureList);
-
-			if (featureList.size() > 0) {
-				for (int i = 0; i < featureList.size(); i++) {
-					jsonObj = new JSONObject();
-					jsonObj.put("value", featureList.get(i));
-
-					array.put(jsonObj);
-				}
-				jsonArray = array.toString();
-				obj.put(new String("Result"), "Success");
-				obj.put(new String("Message"), "Success");
-				obj.put(new String("featureList"), jsonArray);
-				obj.put(new String("templateId"), templateId);
-			} else {
-				obj.put(new String("Result"), "Failure");
-				obj.put(new String("Message"),
-						"No features Present.Create the template first");
-				obj.put(new String("featureList"), null);
-			}
-
-		} catch (Exception e) {
-			logger.error(e);
+	public ResponseEntity<JSONObject> getFeaturesForDeviceDetail(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = templateManagementNewService.getFeaturesForDevice(request);
+		if (json != null) {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
 		}
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
-
+		return responseEntity;
 	}
-
 	@POST
 	@RequestMapping(value = "/getFeaturesForSelectedTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -201,133 +136,43 @@ public class TemplateSuggestionService implements Observer {
 
 	@POST
 	@RequestMapping(value = "/getTemplateDetailsForSelectedFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public Response getTemplateDetailsForSelectedFeatures(
-			@RequestBody String featuresList) {
-
-		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
-		JSONObject obj = new JSONObject();
-		String jsonArray = "";
-		String jsonList = "";
-		JSONArray array = new JSONArray();
-
-		JSONObject jsonObj;
-		try {
-
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(featuresList);
-			org.json.simple.JSONArray jsonArr = (org.json.simple.JSONArray) json
-					.get("featureList");
-
-			List<String> list = new ArrayList<String>();
-			for (int i = 0; i < jsonArr.size(); i++) {
-				JSONObject arrObj = (JSONObject) jsonArr.get(i);
-				list.add(arrObj.get("value").toString());
-			}
-			if (!list.isEmpty() && list != null) {
-				String[] features = list.toArray(new String[list.size()]);
-				String templateId = json.get("templateId").toString();
-				List<TemplateBasicConfigurationPojo> templateBasicConfigurationPojo = templateSuggestionDao
-						.getDataGrid(features, templateId);
-				jsonList = new Gson().toJson(templateBasicConfigurationPojo);
-			}
-
-			if (jsonList != "") {
-				obj.put(new String("TemplateDetailList"), jsonList);
-				obj.put(new String("Result"), "Success");
-				obj.put(new String("Message"), "Success");
-			}
-
-			else {
-				obj.put(new String("Result"), "Failure");
-				obj.put(new String("Message"),
-						"No Data.Create the template first");
-				obj.put(new String("TemplateDetailList"), null);
-			}
-
-		} catch (Exception e) {
-			logger.error(e);
+	public ResponseEntity<JSONObject> getTemplateDetailsForSelectedFeatures(@RequestBody String request)
+			throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = templateManagementNewService.getTemplateDetailsForSelectedFeatures(request);
+		if (json != null) {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
 		}
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
-
+		return responseEntity;
 	}
 
-	/* Dhanshri Mane */
-	/* Get Attribute Related Features and template Id */
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getDynamicAttribForSelectedFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response getDynamicAttribForSelectedFeatures(
-			@RequestBody String featuresList) {
-
-		// TemplateSuggestionDao templateSuggestionDao=new
-		// TemplateSuggestionDao();
+	public ResponseEntity<JSONObject> getDynamicAttribForSelectedFeatures(@RequestBody String request)
+			throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
 		JSONObject obj = new JSONObject();
-		String jsonArray = "";
 		String jsonAttrib = "";
-
-		try {
-
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(featuresList);
-			org.json.simple.JSONArray jsonArr = (org.json.simple.JSONArray) json
-					.get("featureList");
-
-			List<String> list = new ArrayList<String>();
-			TemplateManagementDao dao = new TemplateManagementDao();
-			String templateId = json.get("templateId").toString();
-			String seriesName = dao.getSeriesId(templateId, null);
-			if (seriesName != null) {
-				list.add(seriesName);
-			}
-			for (int i = 0; i < jsonArr.size(); i++) {
-				JSONObject arrObj = (JSONObject) jsonArr.get(i);
-				list.add(arrObj.get("value").toString());
-			}
-			String[] features = list.toArray(new String[list.size()]);
-
-			List<TemplateAttribPojo> templateAttrib = templateSuggestionDao
-					.getDynamicAttribDataGrid(features, templateId);
-
-			jsonAttrib = new Gson().toJson(templateAttrib);
-			if (!jsonAttrib.isEmpty() && templateAttrib != null) {
-				obj.put(new String("features"), templateAttrib);
-				obj.put(new String("Result"), "Success");
-				obj.put(new String("Message"), "Success");
-			}
-
-			else {
-				obj.put(new String("Result"), "Failure");
-				obj.put(new String("Message"),
-						"No Data.Create the template first");
-				obj.put(new String("TemplateDetailList"), null);
-			}
-
-		} catch (Exception e) {
-			logger.error(e);
+		List<TemplateAttribPojo> templateAttrib = templateManagementNewService.getDynamicAttribData(request);
+		jsonAttrib = new Gson().toJson(templateAttrib);
+		if (!jsonAttrib.isEmpty() && templateAttrib != null) {
+			obj.put(new String("features"), templateAttrib);
+			obj.put(new String("Result"), "Success");
+			obj.put(new String("Message"), "Success");
+			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
+		} else {
+			obj.put(new String("Result"), "Failure");
+			obj.put(new String("Message"), "No Data.Create the template first");
+			obj.put(new String("TemplateDetailList"), null);
+			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.BAD_REQUEST);
 		}
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
-
+		return responseEntity;
 	}
-
+	
 	@Override
 	public void update(Observable arg0, Object arg1) {
 		// TODO Auto-generated method stub
