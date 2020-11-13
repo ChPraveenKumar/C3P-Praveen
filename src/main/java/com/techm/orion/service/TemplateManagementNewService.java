@@ -174,10 +174,14 @@ public class TemplateManagementNewService {
 			templateId = json.get("templateid").toString();
 			templateVersion = json.get("templateVersion").toString();
 		}
+		saveLeftPanelData(json, addNewFeatureTemplateMngmntPojo.getTemplateid());
+		JSONArray cmdArray = (JSONArray) (json.get("list"));
+		addNewFeatureTemplateMngmntPojo.setCmdList(SetCommandData(cmdArray));
+		templateDao.updateTransactionCommandForNewTemplate(addNewFeatureTemplateMngmntPojo);
+		
 		JSONArray leftPanelData = (JSONArray) (json.get("leftPanelData"));
 		CommandPojo commandPojoLeftPanel = null;
-		String featureName = null, tempVersion = null, version = null, fId = null;
-		long id = 0;
+		String featureName = null, tempVersion = null, version = null;
 		int featureId = 0;
 		TemplateFeatureEntity saveTempFeatureEntity = null, featureList = null;
 		version = json.get("templateVersion").toString();
@@ -187,7 +191,7 @@ public class TemplateManagementNewService {
 			for (int i = 0; i < leftPanelData.size(); i++) {
 				jsonList.add((JSONObject) leftPanelData.get(i));
 			}
-			sortId(jsonList);
+			//sortId(jsonList);
 			for (int i = 0; i < leftPanelData.size(); i++) {
 				JSONObject obj = (JSONObject) jsonList.get(i);
 				featureName = obj.get("name").toString();
@@ -226,11 +230,6 @@ public class TemplateManagementNewService {
 				}
 			}
 		}
-		saveLeftPanelData(json, addNewFeatureTemplateMngmntPojo.getTemplateid());
-
-		JSONArray cmdArray = (JSONArray) (json.get("list"));
-		addNewFeatureTemplateMngmntPojo.setCmdList(SetCommandData(cmdArray));
-		templateDao.updateTransactionCommandForNewTemplate(addNewFeatureTemplateMngmntPojo);
 		ResponseEntity<JSONObject> saveConfigurationTemplate = templateSaveFlowService
 				.saveConfigurationTemplate(json.toString(), templateId, templateVersion);
 		try {
@@ -562,17 +561,13 @@ public class TemplateManagementNewService {
 		return templateWithAttrib;
 	}
 	
-	private void sortId(List<JSONObject> jsonList) {
-		Collections.sort(jsonList, new Comparator<JSONObject>() {
-			public int compare(JSONObject sourceId, JSONObject targetId) {
-				String sourceValue = new String();
-				String targetValue = new String();
-				if (sourceId.get("id") != null && targetId.get("id") instanceof String) {
-					sourceValue = (String) sourceId.get("id");
-					targetValue = (String) targetId.get("id");
-				}
-				return sourceValue.compareTo(targetValue);
-			}
-		});
-	}
+	/*
+	 * private void sortId(List<JSONObject> jsonList) { Collections.sort(jsonList,
+	 * new Comparator<JSONObject>() { public int compare(JSONObject sourceId,
+	 * JSONObject targetId) { String sourceValue = new String(); String targetValue
+	 * = new String(); if (sourceId.get("id") != null && targetId.get("id")
+	 * instanceof String) { sourceValue = (String) sourceId.get("id"); targetValue =
+	 * (String) targetId.get("id"); } return sourceValue.compareTo(targetValue); }
+	 * }); }
+	 */
 }
