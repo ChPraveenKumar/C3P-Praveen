@@ -135,7 +135,10 @@ public class ConfigurationManagement {
 			}*/
 			if (!requestType.equals("Test") && !requestType.equals("Audit")) {
 				// template suggestion
-				String template = json.get("templateId").toString();
+				String template="";
+				if(json.get("templateId")!=null && !json.get("templateId").toString().isEmpty()) {
+					template = json.get("templateId").toString();
+				}
 
 				if (configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase(
 						"external")) {
@@ -145,20 +148,16 @@ public class ConfigurationManagement {
 					String[] array = template.replace("[", "").replace("]", "")
 							.replace("\"", "").split(",");
 					templateList = Arrays.asList(array);
-					configReqToSendToC3pCode.setTemplateID(json.get(
-							"templateId").toString());
+					configReqToSendToC3pCode.setTemplateID(template);
 					}
 					else{
-						configReqToSendToC3pCode.setTemplateID(json.get(
-								"templateId").toString());
+						configReqToSendToC3pCode.setTemplateID(template);
 					}
 				} else {
 					if (json.get("requestType").equals("SLGB")) {
-						configReqToSendToC3pCode.setTemplateID(json.get(
-								"templateID").toString());
+						configReqToSendToC3pCode.setTemplateID(template);
 					} else {
-						configReqToSendToC3pCode.setTemplateID(json.get(
-								"templateId").toString());
+						configReqToSendToC3pCode.setTemplateID(template);
 					}
 				}
 			}

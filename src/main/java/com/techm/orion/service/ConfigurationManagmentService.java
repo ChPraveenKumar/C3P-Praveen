@@ -666,9 +666,9 @@ public class ConfigurationManagmentService {
 			JSONArray featureReplactionArray, String vendor) {
 		cammandByTemplate.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
 		int position = 0;
-		List<CommandPojo> commandsByFeatureData = new ArrayList<>();
 		if (featureReplactionArray != null && !featureReplactionArray.isEmpty()) {
 			for (int i = 0; i < featureReplactionArray.size(); i++) {
+				List<CommandPojo> commandsByFeatureData = new ArrayList<>();
 				JSONObject featureDetails = (JSONObject) featureReplactionArray.get(i);
 				String featureMasterId = featureDetails.get("featureId").toString();
 				if ("Cisco".equalsIgnoreCase(vendor)) {
@@ -681,11 +681,31 @@ public class ConfigurationManagmentService {
 				JSONArray featureAttribArray = (JSONArray) featureDetails.get("featureAttribDetails");
 				commandsByFeatureData = setFeatureData(commandsByFeatureData, featureAttribArray);
 				position = cammandByTemplate.size();
-				cammandByTemplate = setFinalCommands(cammandByTemplate, position, commandsByFeatureData);
-
+				cammandByTemplate = setFeatureFinalCommands(cammandByTemplate, position, commandsByFeatureData);
 			}
 		}
 		return cammandByTemplate;
+	}
+	
+	private List<CommandPojo> setFeatureFinalCommands(List<CommandPojo> cammandByTemplate, int position,
+			List<CommandPojo> commandsByFeatureData) {
+		int assignPosition = 1;
+		List<CommandPojo> finalCommandList = new ArrayList<>();
+		for (CommandPojo command : cammandByTemplate) {
+			CommandPojo commandSet = null;
+			if (assignPosition == position) {
+				for (CommandPojo featureCommand : commandsByFeatureData) {
+					commandSet = setCommandPosition(featureCommand, assignPosition);
+					assignPosition++;
+					finalCommandList.add(commandSet);
+				}
+			} else {
+				commandSet = setCommandPosition(command, assignPosition);
+				assignPosition++;
+				finalCommandList.add(commandSet);
+			}
+		}
+		return finalCommandList;
 	}
 
 	private List<CommandPojo> setFinalCommands(List<CommandPojo> cammandByTemplate, int position,
@@ -708,6 +728,8 @@ public class ConfigurationManagmentService {
 		}
 		return finalCommandList;
 	}
+	
+	
 
 	private CommandPojo setCommandPosition(CommandPojo command, int assignPosition) {
 		CommandPojo pojoData = new CommandPojo();

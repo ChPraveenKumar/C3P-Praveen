@@ -462,7 +462,7 @@ public class TemplateManagementNewService {
 		templateList.forEach(tempConfBasicDetail -> {
 			JSONObject templateDetails = new JSONObject();
 			templateDetails.put("templateId", tempConfBasicDetail.getTempId() + "_V" + tempConfBasicDetail.getTempVersion());
-			templateDetails.put("alias", tempConfBasicDetail.getTempAlias());
+			templateDetails.put("alias", tempConfBasicDetail.getTempAlias() + "_V" + tempConfBasicDetail.getTempVersion());
 			array.add(templateDetails);
 		});
 		obj.put("templateDetails", array);
