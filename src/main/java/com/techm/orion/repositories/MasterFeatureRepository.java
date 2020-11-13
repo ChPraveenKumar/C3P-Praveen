@@ -64,10 +64,10 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	MasterFeatureEntity findByFIdAndFVersion(String fId, String Version);
 	
 	@Query(value = "select * from c3p_m_features where (f_region like :region or f_region like '%All') and (f_os like :os or f_os like '%All') and (f_osversion like :osVersion or f_osversion like '%All') and (f_family like :devicefamily or f_family like '%All') and (f_networkfun like :networkType or f_networkfun like '%All') and f_vendor = :vendor", nativeQuery = true)
-	List<MasterFeatureEntity> getData(@Param("devicefamily") String devicefamily, @Param("os") String os,
+	List<MasterFeatureEntity>  getMasterFeatureData(@Param("devicefamily") String devicefamily, @Param("os") String os,
 	@Param("region") String region, @Param("osVersion") String osVersion, @Param("vendor") String vendor,
 	@Param("networkType") String networkType);
 	
 	@Query(value = "select * from c3p_m_features where f_id =:fId", nativeQuery = true)
-	public List<MasterFeatureEntity> findByFeatureId(@Param("fId") String fId);
+	List<MasterFeatureEntity> findByFeatureId(@Param("fId") String fId);
 }

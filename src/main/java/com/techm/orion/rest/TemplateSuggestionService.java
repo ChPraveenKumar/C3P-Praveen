@@ -1,7 +1,6 @@
 package com.techm.orion.rest;
 
 import java.util.ArrayList;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
@@ -37,6 +36,7 @@ import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.service.TemplateManagementNewService;
 
 @Controller
 @RequestMapping("/TemplateSuggestionService")
@@ -45,6 +45,9 @@ public class TemplateSuggestionService implements Observer {
 			.getLogger(TemplateSuggestionService.class);
 	@Autowired
 	TemplateSuggestionDao templateSuggestionDao;
+	
+	@Autowired
+	TemplateManagementNewService templateManagementNewService;
 
 	@Autowired
 	AttribCreateConfigService service;
@@ -56,7 +59,7 @@ public class TemplateSuggestionService implements Observer {
 	@RequestMapping(value = "/getFeaturesForDeviceDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getFeaturesForDeviceDetail(@RequestBody String request) throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject json = templateSuggestionDao.getFeaturesForDevice(request);
+		JSONObject json = templateManagementNewService.getFeaturesForDevice(request);
 		if (json != null) {
 			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
 		} else {
@@ -136,7 +139,7 @@ public class TemplateSuggestionService implements Observer {
 	public ResponseEntity<JSONObject> getTemplateDetailsForSelectedFeatures(@RequestBody String request)
 			throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject json = templateSuggestionDao.getTemplateDetailsForSelectedFeatures(request);
+		JSONObject json = templateManagementNewService.getTemplateDetailsForSelectedFeatures(request);
 		if (json != null) {
 			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
 		} else {
@@ -145,6 +148,7 @@ public class TemplateSuggestionService implements Observer {
 		return responseEntity;
 	}
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getDynamicAttribForSelectedFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -152,9 +156,8 @@ public class TemplateSuggestionService implements Observer {
 			throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
 		JSONObject obj = new JSONObject();
-		String jsonArray = "";
 		String jsonAttrib = "";
-		List<TemplateAttribPojo> templateAttrib = templateSuggestionDao.getDynamicAttribData(request);
+		List<TemplateAttribPojo> templateAttrib = templateManagementNewService.getDynamicAttribData(request);
 		jsonAttrib = new Gson().toJson(templateAttrib);
 		if (!jsonAttrib.isEmpty() && templateAttrib != null) {
 			obj.put(new String("features"), templateAttrib);

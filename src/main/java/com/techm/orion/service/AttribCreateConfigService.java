@@ -18,7 +18,7 @@ public interface AttribCreateConfigService {
 	List<AttribCreateConfigPojo> getByFeatureId(int id);
 	List<AttribCreateConfigPojo> getByAttribTemplateFeatureEntityTemplateId(TemplateFeatureEntity entity ,String templateId);
 	
-	List<AttribCreateConfigPojo> getByFId(String featureId, String templateId);
+	List<AttribCreateConfigPojo> getByFIdAndTemplateId(String featureId, String templateId);
 
 	
 }
