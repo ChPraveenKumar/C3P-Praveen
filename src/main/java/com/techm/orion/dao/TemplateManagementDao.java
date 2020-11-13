@@ -1569,12 +1569,12 @@ public class TemplateManagementDao {
 
 				PreparedStatement ps1 = connection.prepareStatement(query1);
 				ps1.setString(1, tempid.toUpperCase());
-				ps1.setString(2, vendor.toUpperCase());
+				ps1.setString(2, vendor);
 				ps1.setString(3, deviceFamily);
-				ps1.setString(4, model.toUpperCase());
-				ps1.setString(5, os.toUpperCase());
-				ps1.setString(6, osVersion.toUpperCase());
-				ps1.setString(7, region.toUpperCase());
+				ps1.setString(4, model);
+				ps1.setString(5, os);
+				ps1.setString(6, osVersion);
+				ps1.setString(7, region);
 				ps1.setString(8, childversion);
 				ps1.setString(9, parentversion);
 				ps1.setString(10, comment);
