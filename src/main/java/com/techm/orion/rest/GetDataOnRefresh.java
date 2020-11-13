@@ -65,8 +65,8 @@ public class GetDataOnRefresh implements Observer {
 		String jsonFeRequestList = "";
 
 		List<TemplateBasicConfigurationPojo> templateNames = new ArrayList<TemplateBasicConfigurationPojo>();
-		String user = Global.loggedInUser;
-		// String user="suser";
+		//String user = Global.loggedInUser;
+		String user="suser";
 		switch (user) {
 		case "feuser":
 			requestList = requestInfoDao.getOwnerAssignedRequestList("feuser");
@@ -161,7 +161,7 @@ public class GetDataOnRefresh implements Observer {
 			int count1=templateFeatureRepo.countMasterFIdByMasterFId("F100043");
 			//Loop to check if the feature is already associated to template if it is then it will not go for approval seperately
 			featureDetailList.forEach(feature -> {
-
+				feature.setDisplayName(feature.getfId().concat("_").concat(feature.getfName()));
 				if (templateFeatureRepo.countMasterFIdByMasterFId(feature
 						.getfId()) == 0) {
 					featureDetailListCopy.add(feature);
