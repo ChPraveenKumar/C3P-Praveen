@@ -680,7 +680,7 @@ public class MasterFeatureController {
 					}		
 					jsonObj.put("attribMappings", childList);
 					/* It is a feature get the commands of a feature */
-					if ("Basic Configuration".equalsIgnoreCase(featureList.getfCategory())) {
+					/*if ("Basic Configuration".equalsIgnoreCase(featureList.getfCategory())) {
 						List<CommandPojo> listShow = new ArrayList<CommandPojo>();
 
 						List<BasicConfiguration> basicConfigList = new ArrayList<BasicConfiguration>();
@@ -701,7 +701,7 @@ public class MasterFeatureController {
 						}
 						jsonObj.put("commands", finalCammands);
 						obj.put(new String("entity"), jsonObj);
-					} else {
+					} else {*/
 						// fetch commands from master command list based on feature id
 						List<CommandPojo> listShow = new ArrayList<CommandPojo>();
 						listShow = masterCommandsRepo.findBymasterFId(json.get("featureid").toString());
@@ -712,7 +712,7 @@ public class MasterFeatureController {
 						}
 						jsonObj.put("commands", finalCammands);
 						obj.put(new String("entity"), jsonObj);
-					}
+					//}
 				}
 			}
 		} catch (Exception exe) {

@@ -37,5 +37,11 @@ public interface TemplateFeatureRepo extends
 	List<TemplateFeatureEntity> findByCommandId(@Param("command") String command);
 	
 	TemplateFeatureEntity findByCommandAndComandDisplayFeatureAndMasterFId(String command, String featureName,String masterFid);
+	
+	@Query("Select templateFeauteData from TemplateFeatureEntity templateFeauteData where command_type =:templateId and is_Save='1' ")
+	List<TemplateFeatureEntity> findTemplateFeatureDeatails(@Param("templateId") String templateId);
+	
+	@Query("Select templateFeauteData from TemplateFeatureEntity templateFeauteData where id =:id and parent=:featureName and is_Save='1' ")
+	TemplateFeatureEntity findFeatureDetails(@Param("id") int id, @Param("featureName") String featureName);
 }
 

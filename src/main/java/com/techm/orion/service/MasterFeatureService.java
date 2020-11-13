@@ -2,17 +2,14 @@ package com.techm.orion.service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.MasterAttributes;
@@ -54,18 +51,21 @@ public class MasterFeatureService {
 
 	private static final String ALL_OPTION = "All";
 
-	public List<GetTemplateMngmntActiveDataPojo> getActiveTemplates(DeviceDetailsPojo deviceDetails) {
+	public List<GetTemplateMngmntActiveDataPojo> getActiveTemplates(DeviceDetailsPojo deviceDetails, String templateId,
+			 String templateVersion) {
 		List<GetTemplateMngmntActiveDataPojo> templateactiveList = new ArrayList<>();
 		List<MasterFeatureEntity> findMasterFeatureEntities =setNearestMatchData(deviceDetails);
-		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
+		List<TemplateFeatureEntity> findTemplateFeatureEntities = setTemplateMatchData(templateId, templateVersion);
+		String finaltemplate = templateId + "_V" + templateVersion;
+		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0 && findTemplateFeatureEntities.isEmpty()) {
 			findMasterFeatureEntities.forEach(feature -> {
 				if ("Basic Configuration".equals(feature.getfCategory())) {
-					List<BasicConfiguration> comandList = basicConfigurationRepository.findByMFId(feature.getfId());
+					List<CommandPojo> comandList = masterCommandsRepository.findBymasterFId(feature.getfId());
 					comandList.forEach(comand -> {
 						GetTemplateMngmntActiveDataPojo templatePojo = new GetTemplateMngmntActiveDataPojo();
-						templatePojo.setCommandValue(comand.getConfiguration());
-						templatePojo.setPosition(comand.getSequence_id());
-						templatePojo.setCommandSequenceId(String.valueOf(comand.getSequence_id()));
+						templatePojo.setCommandValue(comand.getCommand_value());
+						templatePojo.setPosition(comand.getCommand_sequence_id());
+						templatePojo.setCommandSequenceId(String.valueOf(comand.getCommand_sequence_id()));
 						templatePojo.setHasParent(0);
 						templatePojo.setDisabled(false);
 						templatePojo.setActive(true);
@@ -73,7 +73,33 @@ public class MasterFeatureService {
 					});
 				}
 			});
-
+			templateactiveList.sort((GetTemplateMngmntActiveDataPojo getTmptMngmnt,
+					GetTemplateMngmntActiveDataPojo getTmptMngmntAct) -> getTmptMngmnt.getPosition()
+							- getTmptMngmntAct.getPosition());
+		}
+		if (findTemplateFeatureEntities != null && findTemplateFeatureEntities.size() > 0) {
+			findTemplateFeatureEntities.forEach(feature -> {
+				List<CommandPojo> cammands = new ArrayList<>();
+				TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
+						.findIdByComandDisplayFeatureAndCommandContains(feature.getComandDisplayFeature(),
+								finaltemplate);
+				if (findIdByfeatureAndCammand != null) {
+					List<CommandPojo> cammandByTemplateAndfeatureId = masterCommandsRepository
+							.getCommandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(), finaltemplate);
+					cammands.addAll(cammandByTemplateAndfeatureId);
+					cammandByTemplateAndfeatureId.forEach(comand -> {
+						GetTemplateMngmntActiveDataPojo templatePojo = new GetTemplateMngmntActiveDataPojo();
+						templatePojo.setCommandValue(comand.getCommand_value());
+						templatePojo.setPosition(comand.getPosition());
+						templatePojo.setId(comand.getCommand_sequence_id());
+						templatePojo.setCommandSequenceId(Integer.toString(comand.getCommandSequenceId()));
+						templatePojo.setHasParent(0);
+						templatePojo.setDisabled(false);
+						templatePojo.setActive(true);
+						templateactiveList.add(templatePojo);
+					});
+				}
+			});
 			templateactiveList.sort((GetTemplateMngmntActiveDataPojo getTmptMngmnt,
 					GetTemplateMngmntActiveDataPojo getTmptMngmntAct) -> getTmptMngmnt.getPosition()
 							- getTmptMngmntAct.getPosition());
@@ -83,10 +109,26 @@ public class MasterFeatureService {
 		return templateactiveList;
 	}
 
-	public List<TemplateLeftPanelJSONModel> getLeftPanelData(DeviceDetailsPojo deviceDetails) {
+	public List<TemplateLeftPanelJSONModel> getLeftPanelData(DeviceDetailsPojo deviceDetails, String templateId,
+			String templateVersion) {
 		List<TemplateLeftPanelJSONModel> leftPanelDataList = new ArrayList<>();
-		List<MasterFeatureEntity> findMasterFeatureEntities  = setNearestMatchData(deviceDetails);
-		
+		List<MasterFeatureEntity> findMasterFeatureEntities = setNearestMatchData(deviceDetails);
+		List<TemplateFeatureEntity> findTemplateFeatureEntities = setTemplateMatchData(templateId, templateVersion);
+		if (findTemplateFeatureEntities != null && findTemplateFeatureEntities.size() > 0) {
+			for (TemplateFeatureEntity templateFeature : findTemplateFeatureEntities) {
+				for (Iterator<MasterFeatureEntity> masterFeature = findMasterFeatureEntities.iterator(); masterFeature
+						.hasNext();) {
+					MasterFeatureEntity emp = masterFeature.next();
+					if (templateFeature.getComandDisplayFeature().equals(emp.getfName())) {
+						masterFeature.remove();
+					}
+				}
+			}
+			findTemplateFeatureEntities.forEach(feature -> {
+				TemplateLeftPanelJSONModel templateData = setTemplateFeatureData(feature);
+				leftPanelDataList.add(templateData);
+			});
+		}
 		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
 			findMasterFeatureEntities.forEach(feature -> {
 				TemplateLeftPanelJSONModel templateData = setFeatureData(feature);
@@ -106,29 +148,26 @@ public class MasterFeatureService {
 				.findApprovedFeatureEntity(deviceDetails.getVendor(),
 						deviceDetails.getDeviceFamily(), deviceDetails.getOs(), deviceDetails.getOsVersion(),
 						deviceDetails.getRegion(), deviceDetails.getNetworkType()));
-		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
-			// Find the exact match entities in master features table
-			logger.info("getLeftPanelData - findMasterFeatureEntities for exact match case and size ->"
-					+ findMasterFeatureEntities.size());
-		} else {
-			// Find the nearest master features entities
-			List<MasterFeatureEntity> findNearestMatchEntities = findNearestMatchEntities(deviceDetails);
-			if (findNearestMatchEntities != null && findNearestMatchEntities.size() > 0) {
-				findMasterFeatureEntities.addAll(findNearestMatchEntities);
-			}			
-		}
-		boolean flag=false;
-		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
-		for(MasterFeatureEntity featureEntity : findMasterFeatureEntities) {
-			if(featureEntity.getfName().equals("Basic Configuration")) {
-				flag=true;
-				break;
-			}
-		 }
-		}
-		if(!flag) {
-			findMasterFeatureEntities.add(masterFeatureRepository.findAllByFVendorAndFFamilyAndFNameAndFStatus(deviceDetails.getVendor(), deviceDetails.getDeviceFamily(),"Basic Configuration","Approved"));
-		}
+		
+		//Comment below code for temporarily once it set then remove 
+		/*
+		 * if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() >
+		 * 0) { // Find the exact match entities in master features table logger.
+		 * info("getLeftPanelData - findMasterFeatureEntities for exact match case and size ->"
+		 * + findMasterFeatureEntities.size()); } else { // Find the nearest master
+		 * features entities List<MasterFeatureEntity> findNearestMatchEntities =
+		 * findNearestMatchEntities(deviceDetails); if (findNearestMatchEntities != null
+		 * && findNearestMatchEntities.size() > 0) {
+		 * findMasterFeatureEntities.addAll(findNearestMatchEntities); } } boolean
+		 * flag=false; if (findMasterFeatureEntities != null &&
+		 * findMasterFeatureEntities.size() > 0) { for(MasterFeatureEntity featureEntity
+		 * : findMasterFeatureEntities) {
+		 * if(featureEntity.getfName().equals("Basic Configuration")) { flag=true;
+		 * break; } } } if(!flag) {
+		 * findMasterFeatureEntities.add(masterFeatureRepository.
+		 * findAllByFVendorAndFFamilyAndFNameAndFStatus(deviceDetails.getVendor(),
+		 * deviceDetails.getDeviceFamily(),"Basic Configuration","Approved")); }
+		 */
 		return findMasterFeatureEntities;
 	}
 
@@ -155,321 +194,380 @@ public class MasterFeatureService {
 		return deviceDetails;
 	}
 
-	private List<MasterFeatureEntity> findNearestMatchEntities(DeviceDetailsPojo deviceDetails) {
-		long startTime = System.currentTimeMillis();
-
-		List<MasterFeatureEntity> findMatchingEntities = null;
-		// Fetch the all possible nearest match entities.
-		List<MasterFeatureEntity> findMasterFeatureEntities = masterFeatureRepository.findNearestMatchEntities(
-				deviceDetails.getVendor(), deviceDetails.getDeviceFamily(), deviceDetails.getOs(),
-				deviceDetails.getOsVersion(), deviceDetails.getRegion(), deviceDetails.getNetworkType());
-		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
-			// Case 1: Match Vendor, Device Family, OS and All OS Version & Region and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateAllOSVersionCase = entity -> (deviceDetails.getVendor()
-					.equals(entity.getfVendor()) && deviceDetails.getDeviceFamily().equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-			// Case 2: Match Vendor, Device Family, All (OS and OS Version) & Region and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateAllOSAndOsVCase = entity -> (deviceDetails.getVendor()
-					.equals(entity.getfVendor()) && deviceDetails.getDeviceFamily().equals(entity.getfFamily())
-					&& ALL_OPTION.equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-			// Case 3: Match Vendor and All (Device Family, OS and OS Version) & Region and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateAllDFAndOSAndOsVCase = entity -> (deviceDetails.getVendor()
-					.equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& ALL_OPTION.equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-			// Case 4: Match Vendor and All (Device Family, OS, OS Version and Region) and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateAllDFAndOSAndOsVCaseAndRg = entity -> (deviceDetails.getVendor()
-					.equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& ALL_OPTION.equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-			// Case 5: Match Vendor and All (Device Family, OS, OS Version, Region and
-			// NetworkType)
-			Predicate<MasterFeatureEntity> predicateAllDFAndOSAndOsVCaseAndRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& ALL_OPTION.equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion()) && ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 6: Match Vendor and Device Family, All (OS), OS Version, Region and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateDFAnAlldOSAndOsVCaseAndRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
-					&& deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 7: Match Vendor and All(Device Family), OS, OS Version, Region and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateAllDeviceFAndOSAndOsVCaseAndRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs())
-					&& deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 8: Match Vendor and All(Device Family), All (OS), OS Version, Region and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateAllDeviceFAndAllOSAndOsVCaseAndRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& ALL_OPTION.equals(entity.getfOs()) && deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 9: Match Vendor and All(Device Family), OS, All (OS Version), Region and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateAllDeviceFAndOSAndAllOsVCaseAndRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 10: Match Vendor and Device Family, All(OS), OS Version, Region and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateDeviceFAndAllOSAndOsVCaseAndRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
-					&& deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 11: Match Vendor and Device Family, All(OS), OS Version,All( Region) and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateDeviceFAndAllOSAndOsVCaseAndAllRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
-					&& deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 12: Match Vendor and All(Device Family), OS, OS Version,All( Region) and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateAllDFAndOSAndOsVCaseAndAllRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs())
-					&& deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 13: Match Vendor and All(Device Family, OS), OS Version,All( Region) and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateAllDFAndAllOSAndOsVCaseAndAllRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& ALL_OPTION.equals(entity.getfOs()) && deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 14: Match Vendor and All(Device Family), OS, All(OS Version),All(
-			// Region) and
-			// NetworkType
-			Predicate<MasterFeatureEntity> predicateAllDFAndOSAndAllOsVCaseAndAllRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 15: Match Vendor and Device Family, All (OS), OS Version, Region and
-			// All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateDFAnAlldOSAndOsVCaseAndRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
-					&& deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 16: Match Vendor and All(Device Family), OS, OS Version, Region and
-			// All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateAllDeviceFAndOSAndOsVCaseAndRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs())
-					&& deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 17: Match Vendor and All(Device Family), All (OS), OS Version, Region
-			// and
-			// All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateAllDeviceFAndAllOSAndOsVCaseAndRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& ALL_OPTION.equals(entity.getfOs()) && deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 18: Match Vendor and All(Device Family), OS, All (OS Version), Region
-			// and
-			// All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateAllDeviceFAndOSAndAllOsVCaseAndRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 19: Match Vendor and Device Family, All (OS), OS Version, All(Region)
-			// and
-			// All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateDFAnAlldOSAndOsVCaseAndAllRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
-					&& deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion()) && ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 20: Match Vendor and All(Device Family), OS, OS Version, All(Region) and
-			// All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateAllDeviceFAndOSAndOsVCaseAndAllRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs())
-					&& deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion()) && ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 21: Match Vendor and All(Device Family), All (OS), OS Version,
-			// All(Region) and
-			// All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateAllDeviceFAndAllOSAndOsVCaseAndAllRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& ALL_OPTION.equals(entity.getfOs()) && deviceDetails.getOsVersion().equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion()) && ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 22: Match Vendor and All(Device Family), OS, All (OS Version),
-			// All(Region) and
-			// All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateAllDeviceFAndOSAndAllOsVCaseAndAllRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor()) && ALL_OPTION.equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion()) && ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 23: Match Vendor and (Device Family), OS, All (OS Version),
-			// All(Region) and NetworkType
-			Predicate<MasterFeatureEntity> predicateDeviceFAndOSAndAllOsVCaseAndAllRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 24: Match Vendor and Device Family, OS, All (OS Version),
-			// Region and All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateDeviceFAndOSAndAllOsVCaseAndRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 25: Match Vendor and Device Family, OS, All (OS Version),
-			// All(Region) and All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateDeviceFAndOSAndAllOsVCaseAndAllRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily())
-					&& deviceDetails.getOs().equals(entity.getfOs()) && ALL_OPTION.equals(entity.getfOsversion())
-					&& ALL_OPTION.equals(entity.getfRegion()) && ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 26: Match Vendor and (Device Family), All (OS), All (OS Version),
-			// All(Region) and NetworkType
-			Predicate<MasterFeatureEntity> predicateDeviceFAndAllOSAndAllOsVCaseAndAllRgAndNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
-					&& ALL_OPTION.equals(entity.getfOsversion()) && ALL_OPTION.equals(entity.getfRegion())
-					&& deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
-
-			// Case 27: Match Vendor and Device Family, All(OS), All (OS Version),
-			// Region and All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateDeviceFAndAllOSAndAllOsVCaseAndRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
-					&& ALL_OPTION.equals(entity.getfOsversion())
-					&& deviceDetails.getRegion().equals(entity.getfRegion())
-					&& ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			// Case 28: Match Vendor and Device Family, All(OS), All (OS Version),
-			// All(Region) and All(NetworkType)
-			Predicate<MasterFeatureEntity> predicateDeviceFAndAllOSAndAllOsVCaseAndAllRgAndAllNT = entity -> (deviceDetails
-					.getVendor().equals(entity.getfVendor())
-					&& deviceDetails.getDeviceFamily().equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
-					&& ALL_OPTION.equals(entity.getfOsversion()) && ALL_OPTION.equals(entity.getfRegion())
-					&& ALL_OPTION.equals(entity.getfNetworkfun()));
-
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllOSVersionCase);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllOSAndOsVCase);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDFAndOSAndOsVCase);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDFAndOSAndOsVCaseAndRg);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDFAndOSAndOsVCaseAndRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDFAnAlldOSAndOsVCaseAndRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDeviceFAndOSAndOsVCaseAndRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDeviceFAndAllOSAndOsVCaseAndRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDeviceFAndOSAndAllOsVCaseAndRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDeviceFAndAllOSAndOsVCaseAndRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDeviceFAndAllOSAndOsVCaseAndAllRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDFAndOSAndOsVCaseAndAllRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDFAndAllOSAndOsVCaseAndAllRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDFAndOSAndAllOsVCaseAndAllRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDFAnAlldOSAndOsVCaseAndRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDeviceFAndOSAndOsVCaseAndRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDeviceFAndAllOSAndOsVCaseAndRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDeviceFAndOSAndAllOsVCaseAndRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDFAnAlldOSAndOsVCaseAndAllRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDeviceFAndOSAndOsVCaseAndAllRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDeviceFAndAllOSAndOsVCaseAndAllRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateAllDeviceFAndOSAndAllOsVCaseAndAllRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDeviceFAndOSAndAllOsVCaseAndAllRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDeviceFAndOSAndAllOsVCaseAndRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDeviceFAndOSAndAllOsVCaseAndAllRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDeviceFAndAllOSAndAllOsVCaseAndAllRgAndNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDeviceFAndAllOSAndAllOsVCaseAndRgAndAllNT);
-			findMatchingEntities = findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities, findMatchingEntities,
-					predicateDeviceFAndAllOSAndAllOsVCaseAndAllRgAndAllNT);
-			
-		}
-		logger.info(
-				"Total Time to execute Method findNearestMatchEntities.." + (System.currentTimeMillis() - startTime));
-
-		return findMatchingEntities;
-	}
-
-	private List<MasterFeatureEntity> findMatchEntitiesBasedOnPredicate(
-			List<MasterFeatureEntity> findMasterFeatureEntities, List<MasterFeatureEntity> findMatchingEntities,
-			Predicate<MasterFeatureEntity> predicate) {
-		if (findMatchingEntities == null || (findMatchingEntities != null && findMatchingEntities.size() == 0)) {
-			logger.info("Case is not matched. Checking for next case");
-			findMatchingEntities = findMasterFeatureEntities.stream().filter(predicate).collect(Collectors.toList());
-		}
-		return findMatchingEntities;
-	}
+	//Comment below code for temporarily once it set then remove 
+	/*
+	 * private List<MasterFeatureEntity> findNearestMatchEntities(DeviceDetailsPojo
+	 * deviceDetails) { long startTime = System.currentTimeMillis();
+	 * 
+	 * List<MasterFeatureEntity> findMatchingEntities = null; // Fetch the all
+	 * possible nearest match entities. List<MasterFeatureEntity>
+	 * findMasterFeatureEntities = masterFeatureRepository.findNearestMatchEntities(
+	 * deviceDetails.getVendor(), deviceDetails.getDeviceFamily(),
+	 * deviceDetails.getOs(), deviceDetails.getOsVersion(),
+	 * deviceDetails.getRegion(), deviceDetails.getNetworkType()); if
+	 * (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0) {
+	 * // Case 1: Match Vendor, Device Family, OS and All OS Version & Region and //
+	 * NetworkType Predicate<MasterFeatureEntity> predicateAllOSVersionCase = entity
+	 * -> (deviceDetails.getVendor() .equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun())); // Case 2:
+	 * Match Vendor, Device Family, All (OS and OS Version) & Region and //
+	 * NetworkType Predicate<MasterFeatureEntity> predicateAllOSAndOsVCase = entity
+	 * -> (deviceDetails.getVendor() .equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * ALL_OPTION.equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun())); // Case 3:
+	 * Match Vendor and All (Device Family, OS and OS Version) & Region and //
+	 * NetworkType Predicate<MasterFeatureEntity> predicateAllDFAndOSAndOsVCase =
+	 * entity -> (deviceDetails.getVendor() .equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
+	 * && ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun())); // Case 4:
+	 * Match Vendor and All (Device Family, OS, OS Version and Region) and //
+	 * NetworkType Predicate<MasterFeatureEntity> predicateAllDFAndOSAndOsVCaseAndRg
+	 * = entity -> (deviceDetails.getVendor() .equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
+	 * && ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun())); // Case 5:
+	 * Match Vendor and All (Device Family, OS, OS Version, Region and //
+	 * NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateAllDFAndOSAndOsVCaseAndRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
+	 * && ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 6: Match Vendor and Device Family, All (OS), OS Version, Region and
+	 * // NetworkType Predicate<MasterFeatureEntity>
+	 * predicateDFAnAlldOSAndOsVCaseAndRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * ALL_OPTION.equals(entity.getfOs()) &&
+	 * deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 7: Match Vendor and All(Device Family), OS, OS Version, Region and //
+	 * NetworkType Predicate<MasterFeatureEntity>
+	 * predicateAllDeviceFAndOSAndOsVCaseAndRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 8: Match Vendor and All(Device Family), All (OS), OS Version, Region
+	 * and // NetworkType Predicate<MasterFeatureEntity>
+	 * predicateAllDeviceFAndAllOSAndOsVCaseAndRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
+	 * && deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 9: Match Vendor and All(Device Family), OS, All (OS Version), Region
+	 * and // NetworkType Predicate<MasterFeatureEntity>
+	 * predicateAllDeviceFAndOSAndAllOsVCaseAndRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 10: Match Vendor and Device Family, All(OS), OS Version, Region and
+	 * // NetworkType Predicate<MasterFeatureEntity>
+	 * predicateDeviceFAndAllOSAndOsVCaseAndRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * ALL_OPTION.equals(entity.getfOs()) &&
+	 * deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 11: Match Vendor and Device Family, All(OS), OS Version,All( Region)
+	 * and // NetworkType Predicate<MasterFeatureEntity>
+	 * predicateDeviceFAndAllOSAndOsVCaseAndAllRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * ALL_OPTION.equals(entity.getfOs()) &&
+	 * deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 12: Match Vendor and All(Device Family), OS, OS Version,All( Region)
+	 * and // NetworkType Predicate<MasterFeatureEntity>
+	 * predicateAllDFAndOSAndOsVCaseAndAllRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 13: Match Vendor and All(Device Family, OS), OS Version,All( Region)
+	 * and // NetworkType Predicate<MasterFeatureEntity>
+	 * predicateAllDFAndAllOSAndOsVCaseAndAllRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
+	 * && deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 14: Match Vendor and All(Device Family), OS, All(OS Version),All( //
+	 * Region) and // NetworkType Predicate<MasterFeatureEntity>
+	 * predicateAllDFAndOSAndAllOsVCaseAndAllRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 15: Match Vendor and Device Family, All (OS), OS Version, Region and
+	 * // All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateDFAnAlldOSAndOsVCaseAndRgAndAllNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * ALL_OPTION.equals(entity.getfOs()) &&
+	 * deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 16: Match Vendor and All(Device Family), OS, OS Version, Region and
+	 * // All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateAllDeviceFAndOSAndOsVCaseAndRgAndAllNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 17: Match Vendor and All(Device Family), All (OS), OS Version, Region
+	 * // and // All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateAllDeviceFAndAllOSAndOsVCaseAndRgAndAllNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
+	 * && deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 18: Match Vendor and All(Device Family), OS, All (OS Version), Region
+	 * // and // All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateAllDeviceFAndOSAndAllOsVCaseAndRgAndAllNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 19: Match Vendor and Device Family, All (OS), OS Version, All(Region)
+	 * // and // All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateDFAnAlldOSAndOsVCaseAndAllRgAndAllNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * ALL_OPTION.equals(entity.getfOs()) &&
+	 * deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 20: Match Vendor and All(Device Family), OS, OS Version, All(Region)
+	 * and // All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateAllDeviceFAndOSAndOsVCaseAndAllRgAndAllNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 21: Match Vendor and All(Device Family), All (OS), OS Version, //
+	 * All(Region) and // All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateAllDeviceFAndAllOSAndOsVCaseAndAllRgAndAllNT = entity ->
+	 * (deviceDetails .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) && ALL_OPTION.equals(entity.getfOs())
+	 * && deviceDetails.getOsVersion().equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 22: Match Vendor and All(Device Family), OS, All (OS Version), //
+	 * All(Region) and // All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateAllDeviceFAndOSAndAllOsVCaseAndAllRgAndAllNT = entity ->
+	 * (deviceDetails .getVendor().equals(entity.getfVendor()) &&
+	 * ALL_OPTION.equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 23: Match Vendor and (Device Family), OS, All (OS Version), //
+	 * All(Region) and NetworkType Predicate<MasterFeatureEntity>
+	 * predicateDeviceFAndOSAndAllOsVCaseAndAllRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 24: Match Vendor and Device Family, OS, All (OS Version), // Region
+	 * and All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateDeviceFAndOSAndAllOsVCaseAndRgAndAllNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 25: Match Vendor and Device Family, OS, All (OS Version), //
+	 * All(Region) and All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateDeviceFAndOSAndAllOsVCaseAndAllRgAndAllNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * deviceDetails.getOs().equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 26: Match Vendor and (Device Family), All (OS), All (OS Version), //
+	 * All(Region) and NetworkType Predicate<MasterFeatureEntity>
+	 * predicateDeviceFAndAllOSAndAllOsVCaseAndAllRgAndNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * ALL_OPTION.equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * deviceDetails.getNetworkType().equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 27: Match Vendor and Device Family, All(OS), All (OS Version), //
+	 * Region and All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateDeviceFAndAllOSAndAllOsVCaseAndRgAndAllNT = entity -> (deviceDetails
+	 * .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * ALL_OPTION.equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * deviceDetails.getRegion().equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * // Case 28: Match Vendor and Device Family, All(OS), All (OS Version), //
+	 * All(Region) and All(NetworkType) Predicate<MasterFeatureEntity>
+	 * predicateDeviceFAndAllOSAndAllOsVCaseAndAllRgAndAllNT = entity ->
+	 * (deviceDetails .getVendor().equals(entity.getfVendor()) &&
+	 * deviceDetails.getDeviceFamily().equals(entity.getfFamily()) &&
+	 * ALL_OPTION.equals(entity.getfOs()) &&
+	 * ALL_OPTION.equals(entity.getfOsversion()) &&
+	 * ALL_OPTION.equals(entity.getfRegion()) &&
+	 * ALL_OPTION.equals(entity.getfNetworkfun()));
+	 * 
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllOSVersionCase); findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllOSAndOsVCase); findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDFAndOSAndOsVCase); findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDFAndOSAndOsVCaseAndRg);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDFAndOSAndOsVCaseAndRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDFAnAlldOSAndOsVCaseAndRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDeviceFAndOSAndOsVCaseAndRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDeviceFAndAllOSAndOsVCaseAndRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDeviceFAndOSAndAllOsVCaseAndRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDeviceFAndAllOSAndOsVCaseAndRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDeviceFAndAllOSAndOsVCaseAndAllRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDFAndOSAndOsVCaseAndAllRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDFAndAllOSAndOsVCaseAndAllRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDFAndOSAndAllOsVCaseAndAllRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDFAnAlldOSAndOsVCaseAndRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDeviceFAndOSAndOsVCaseAndRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDeviceFAndAllOSAndOsVCaseAndRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDeviceFAndOSAndAllOsVCaseAndRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDFAnAlldOSAndOsVCaseAndAllRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDeviceFAndOSAndOsVCaseAndAllRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDeviceFAndAllOSAndOsVCaseAndAllRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateAllDeviceFAndOSAndAllOsVCaseAndAllRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDeviceFAndOSAndAllOsVCaseAndAllRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDeviceFAndOSAndAllOsVCaseAndRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDeviceFAndOSAndAllOsVCaseAndAllRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDeviceFAndAllOSAndAllOsVCaseAndAllRgAndNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDeviceFAndAllOSAndAllOsVCaseAndRgAndAllNT);
+	 * findMatchingEntities =
+	 * findMatchEntitiesBasedOnPredicate(findMasterFeatureEntities,
+	 * findMatchingEntities, predicateDeviceFAndAllOSAndAllOsVCaseAndAllRgAndAllNT);
+	 * 
+	 * } logger.info( "Total Time to execute Method findNearestMatchEntities.." +
+	 * (System.currentTimeMillis() - startTime));
+	 * 
+	 * return findMatchingEntities; }
+	 * 
+	 * private List<MasterFeatureEntity> findMatchEntitiesBasedOnPredicate(
+	 * List<MasterFeatureEntity> findMasterFeatureEntities,
+	 * List<MasterFeatureEntity> findMatchingEntities,
+	 * Predicate<MasterFeatureEntity> predicate) { if (findMatchingEntities == null
+	 * || (findMatchingEntities != null && findMatchingEntities.size() == 0)) {
+	 * logger.info("Case is not matched. Checking for next case");
+	 * findMatchingEntities =
+	 * findMasterFeatureEntities.stream().filter(predicate).collect(Collectors.
+	 * toList()); } return findMatchingEntities; }
+	 */
 
 	private TemplateLeftPanelJSONModel setFeatureData(MasterFeatureEntity feature) {
 		TemplateLeftPanelJSONModel parentJsonpojo = new TemplateLeftPanelJSONModel();
@@ -487,11 +585,12 @@ public class MasterFeatureService {
 		parentJsonpojo.setAttributeMapping(
 				attribCreateConfigResponceMapper.convertCharacteristicsAttribPojoToJson(characticsAttribList));
 
-		if ("Basic Configuration".equals(feature.getfCategory())) {
-			commandList = getCommandList(feature.getfId());
-		} else {
+		/*
+		 * if ("Basic Configuration".equals(feature.getfCategory())) { commandList =
+		 * getCommandList(feature.getfId()); } else {
+		 */
 			commandList = masterCommandsRepository.findBymasterFId(feature.getfId());
-		}
+		//}
 
 		commandList.sort((CommandPojo c1, CommandPojo c2) -> c1.getCommand_sequence_id() - c2.getCommand_sequence_id());
 
@@ -633,5 +732,44 @@ public class MasterFeatureService {
 			commandPojoList.add(commandPojo);
 		}
 		return commandPojoList;
+	}
+	
+	private List<TemplateFeatureEntity> setTemplateMatchData(String templateId, String templateVersion) {
+		List<TemplateFeatureEntity> findTemplateFeatureEntities = new ArrayList<>();
+		if (templateId != null && templateVersion != null) {
+			String finaltemplate = templateId + "_V" + templateVersion;
+			List<TemplateFeatureEntity> featureList = new ArrayList<>();
+			featureList.addAll(templatefeatureRepo.findTemplateFeatureDeatails(finaltemplate));
+			findTemplateFeatureEntities.addAll(featureList);
+		}
+		return findTemplateFeatureEntities;
+	}
+
+	private TemplateLeftPanelJSONModel setTemplateFeatureData(TemplateFeatureEntity feature) {
+		TemplateLeftPanelJSONModel parentJsonpojo = new TemplateLeftPanelJSONModel();
+		parentJsonpojo.setName(feature.getComandDisplayFeature());
+		parentJsonpojo.setMasterFid(feature.getMasterFId());
+
+		parentJsonpojo.setId(Integer.toString(feature.getId()));
+		parentJsonpojo.setChecked(true);
+		parentJsonpojo.setDisabled(false);
+		parentJsonpojo.setConfText("confText");
+		parentJsonpojo.setAttribAssigned(true);
+		List<MasterCharacteristicsEntity> characticsAttribList = masterCharacteristicsRepository
+				.findAllByCFId(feature.getMasterFId());
+		parentJsonpojo.setAttributeMapping(
+				attribCreateConfigResponceMapper.convertCharacteristicsAttribPojoToJson(characticsAttribList));
+		List<CommandPojo> cammandByTemplateAndfeatureId = masterCommandsRepository
+				.getCommandByTemplateAndfeatureId(feature.getId(), feature.getCommand());
+
+		cammandByTemplateAndfeatureId.forEach(comand -> {
+			comand.setId(Integer.toString(comand.getCommand_sequence_id()));
+		});
+		cammandByTemplateAndfeatureId
+				.sort((CommandPojo c1, CommandPojo c2) -> c1.getCommand_sequence_id() - c2.getCommand_sequence_id());
+
+		parentJsonpojo.setCommands(cammandByTemplateAndfeatureId);
+
+		return parentJsonpojo;
 	}
 }
