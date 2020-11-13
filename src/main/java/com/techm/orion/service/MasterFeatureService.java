@@ -60,12 +60,12 @@ public class MasterFeatureService {
 		if (findMasterFeatureEntities != null && findMasterFeatureEntities.size() > 0 && findTemplateFeatureEntities.isEmpty()) {
 			findMasterFeatureEntities.forEach(feature -> {
 				if ("Basic Configuration".equals(feature.getfCategory())) {
-					List<BasicConfiguration> comandList = basicConfigurationRepository.findByMFId(feature.getfId());
+					List<CommandPojo> comandList = masterCommandsRepository.findBymasterFId(feature.getfId());
 					comandList.forEach(comand -> {
 						GetTemplateMngmntActiveDataPojo templatePojo = new GetTemplateMngmntActiveDataPojo();
-						templatePojo.setCommandValue(comand.getConfiguration());
-						templatePojo.setPosition(comand.getSequence_id());
-						templatePojo.setCommandSequenceId(String.valueOf(comand.getSequence_id()));
+						templatePojo.setCommandValue(comand.getCommand_value());
+						templatePojo.setPosition(comand.getCommand_sequence_id());
+						templatePojo.setCommandSequenceId(String.valueOf(comand.getCommand_sequence_id()));
 						templatePojo.setHasParent(0);
 						templatePojo.setDisabled(false);
 						templatePojo.setActive(true);
@@ -585,11 +585,12 @@ public class MasterFeatureService {
 		parentJsonpojo.setAttributeMapping(
 				attribCreateConfigResponceMapper.convertCharacteristicsAttribPojoToJson(characticsAttribList));
 
-		if ("Basic Configuration".equals(feature.getfCategory())) {
-			commandList = getCommandList(feature.getfId());
-		} else {
+		/*
+		 * if ("Basic Configuration".equals(feature.getfCategory())) { commandList =
+		 * getCommandList(feature.getfId()); } else {
+		 */
 			commandList = masterCommandsRepository.findBymasterFId(feature.getfId());
-		}
+		//}
 
 		commandList.sort((CommandPojo c1, CommandPojo c2) -> c1.getCommand_sequence_id() - c2.getCommand_sequence_id());
 
