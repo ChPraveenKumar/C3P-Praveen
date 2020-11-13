@@ -620,6 +620,7 @@ public class TemplateSuggestionDao {
 				basicDetails.put("creationDate", rs.getString("temp_created_date"));
 				basicDetails.put("raisedBy", rs.getString("temp_created_by"));
 				basicDetails.put("networkType", rs.getString("temp_network_type"));
+				basicDetails.put("alias", rs.getString("temp_alias"));
 				String comment = rs.getString("temp_comment_section");
 				basicDetails.put("comment", comment);
 				status = rs.getString("temp_status");

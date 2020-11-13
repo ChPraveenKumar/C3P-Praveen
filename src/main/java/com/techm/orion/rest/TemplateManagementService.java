@@ -78,11 +78,15 @@ public class TemplateManagementService implements Observer {
 		try {
 			JSONObject requestJson = (JSONObject) parser.parse(templateFeatureRequest);
 			DeviceDetailsPojo deviceDetails = masterFeatureService.fetchDeviceDetails(requestJson);
+			String templateId = null, templateVersion = null;
 			if (deviceDetails.getVendor() != null && deviceDetails.getDeviceFamily() != null
 					&& deviceDetails.getOs() != null && deviceDetails.getOsVersion() != null
-					&& deviceDetails.getRegion() != null && deviceDetails.getNetworkType() != null) {
+					&& deviceDetails.getRegion() != null && deviceDetails.getNetworkType() != null 
+					&& requestJson.get("templateid") != null && requestJson.get("templateVersion") != null) {
+				templateId = requestJson.get("templateid").toString();
+				templateVersion = requestJson.get("templateVersion").toString();
 				List<GetTemplateMngmntActiveDataPojo> activeTemplates = masterFeatureService
-						.getActiveTemplates(deviceDetails);
+						.getActiveTemplates(deviceDetails, templateId, templateVersion);
 				obj.put(new String("output"), activeTemplates != null && activeTemplates.size() > 0 ? activeTemplates
 						: "No matching record find for exact match case and neareat match case");
 			} else {
@@ -160,8 +164,16 @@ public class TemplateManagementService implements Observer {
 				String finaltemplate = template + "_V" + version;
 				basicDeatilsOfTemplate = templateSuggestionDao.getBasicDeatilsOfTemplate(template, version);
 				List<String> featureList = new ArrayList<>();
-				featureList.addAll(templateSuggestionDao.getFeatureList(finaltemplate));
-				basicDeatilsOfTemplate.put("featureList", featureList);
+				List<String> sortedFeatureList = new ArrayList<>();
+				featureList = templateSuggestionDao.getFeatureList(finaltemplate);
+				for(String sortFeature : featureList )
+				{
+					if(sortFeature.equals("Basic Configuration"))
+						sortedFeatureList.add(0, sortFeature);
+					else
+						sortedFeatureList.add(sortFeature);
+				}
+				basicDeatilsOfTemplate.put("featureList", sortedFeatureList);
 				basicDeatilsOfTemplate.put("commands",
 						templateManagmentService.setCommandList(featureList, finaltemplate));
 			} else {

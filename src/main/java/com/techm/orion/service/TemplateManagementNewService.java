@@ -3,6 +3,8 @@ package com.techm.orion.service;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +24,8 @@ import com.techm.orion.pojo.AddNewFeatureTemplateMngmntPojo;
 import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.repositories.ErrorValidationRepository;
+import com.techm.orion.repositories.MasterCommandsRepository;
+import com.techm.orion.repositories.TemplateCommandsRepository;
 import com.techm.orion.repositories.TemplateConfigBasicDetailsRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.rest.CamundaServiceTemplateApproval;
@@ -35,6 +39,10 @@ public class TemplateManagementNewService {
 	private ErrorValidationRepository errorValidationRepository;
 	@Autowired
 	private TemplateFeatureRepo templatefeatureRepo;
+	@Autowired
+	private TemplateCommandsRepository templateCommandsRepository;
+	@Autowired
+	private MasterCommandsRepository masterCommandsRepository;
 
 	public List<GetTemplateMngmntActiveDataPojo> getDataForRightPanelOnEditTemplate(String templateId,
 			boolean selectAll) throws Exception {
@@ -133,7 +141,58 @@ public class TemplateManagementNewService {
 			templateId = json.get("templateid").toString();
 			templateVersion = json.get("templateVersion").toString();
 		}
-
+		JSONArray leftPanelData = (JSONArray) (json.get("leftPanelData"));
+		CommandPojo commandPojoLeftPanel = null;
+		String featureName = null, tempVersion = null, version = null, fId = null;
+		long id = 0;
+		int featureId = 0;
+		TemplateFeatureEntity saveTempFeatureEntity = null, featureList = null;
+		version = json.get("templateVersion").toString();
+		tempVersion = templateId + "_V" + version;
+		List<JSONObject> jsonList = new ArrayList<JSONObject>();
+		if (!version.equalsIgnoreCase("1.0")) {
+			for (int i = 0; i < leftPanelData.size(); i++) {
+				jsonList.add((JSONObject) leftPanelData.get(i));
+			}
+			sortId(jsonList);
+			for (int i = 0; i < leftPanelData.size(); i++) {
+				JSONObject obj = (JSONObject) jsonList.get(i);
+				featureName = obj.get("name").toString();
+				if (obj.get("id") != null && obj.get("id") instanceof Long) {
+					id = (long) obj.get("id");
+					featureId = (int) id;
+				} else {
+					fId = (String) obj.get("id");
+					featureId = Integer.parseInt(fId);
+				}
+				featureList = templatefeatureRepo.findFeatureDetails(featureId, featureName);
+				if (featureList != null && !tempVersion.equalsIgnoreCase(featureList.getCommand())) {
+					saveTempFeatureEntity = new TemplateFeatureEntity();
+					saveTempFeatureEntity.setCommand(templateAndVesion);
+					saveTempFeatureEntity.setComandDisplayFeature(featureList.getComandDisplayFeature());
+					saveTempFeatureEntity.setComandDisplayFeature(featureList.getComandDisplayFeature());
+					saveTempFeatureEntity.setIs_Save(featureList.getIs_Save());
+					saveTempFeatureEntity.setParent(featureList.getParent());
+					saveTempFeatureEntity.setCheck_default(featureList.getCheck_default());
+					saveTempFeatureEntity.setMasterFId(featureList.getMasterFId());
+					TemplateFeatureEntity finalEntity = templatefeatureRepo.save(saveTempFeatureEntity);
+					templateCommandsRepository.updateCommandId(String.valueOf(finalEntity.getId()),
+							String.valueOf(featureId), templateAndVesion);
+					List<CommandPojo> masterCmds = masterCommandsRepository.findByCommandId(featureId);
+					for (CommandPojo pojo : masterCmds) {
+						commandPojoLeftPanel = new CommandPojo();
+						commandPojoLeftPanel.setCommand_id(finalEntity.getId());
+						commandPojoLeftPanel.setCommand_value(pojo.getCommand_value());
+						commandPojoLeftPanel.setCommand_sequence_id(pojo.getCommand_sequence_id());
+						commandPojoLeftPanel.setCommand_type(templateAndVesion);
+						commandPojoLeftPanel.setMasterFId(pojo.getMasterFId());
+						commandPojoLeftPanel.setNo_command_value(pojo.getNo_command_value());
+						commandPojoLeftPanel.setCommand_replication_ind(pojo.getCommand_replication_ind());
+						masterCommandsRepository.save(commandPojoLeftPanel);
+					}
+				}
+			}
+		}
 		saveLeftPanelData(json, addNewFeatureTemplateMngmntPojo.getTemplateid());
 
 		JSONArray cmdArray = (JSONArray) (json.get("list"));
@@ -230,5 +289,19 @@ public class TemplateManagementNewService {
 
 		return finalCammands;
 
+	}
+	
+	private void sortId(List<JSONObject> jsonList) {
+		Collections.sort(jsonList, new Comparator<JSONObject>() {
+			public int compare(JSONObject id1, JSONObject id2) {
+				String idValue1 = new String();
+				String idValue2 = new String();
+				if (id1.get("id") != null && id1.get("id") instanceof String) {
+					idValue1 = (String) id1.get("id");
+					idValue2 = (String) id2.get("id");
+				}
+				return idValue1.compareTo(idValue2);
+			}
+		});
 	}
 }

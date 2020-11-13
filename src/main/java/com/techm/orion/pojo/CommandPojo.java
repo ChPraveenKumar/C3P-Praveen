@@ -205,4 +205,16 @@ public class CommandPojo implements Comparable<CommandPojo> {
 	public String toString() {
 		return command_value + "\n";
 	}
+	
+	public CommandPojo(String command_value, int commandSequenceId, int command_sequence_id, int position) {
+		super();
+		this.command_value = command_value;
+		this.commandSequenceId = commandSequenceId;
+		this.command_sequence_id = command_sequence_id;
+		this.position = position;
+	}
+	
+	public CommandPojo() {
+		super();
+	}
 }

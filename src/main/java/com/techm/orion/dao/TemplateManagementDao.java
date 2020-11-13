@@ -1523,12 +1523,12 @@ public class TemplateManagementDao {
 				PreparedStatement ps = connection.prepareStatement(query1);
 
 				ps.setString(1, tempid.toUpperCase());
-				ps.setString(2, vendor.toUpperCase());
+				ps.setString(2, vendor);
 				ps.setString(3, deviceFamily);
-				ps.setString(4, model.toUpperCase());
-				ps.setString(5, os.toUpperCase());
-				ps.setString(6, osVersion.toUpperCase());
-				ps.setString(7, region.toUpperCase());
+				ps.setString(4, model);
+				ps.setString(5, os);
+				ps.setString(6, osVersion);
+				ps.setString(7, region);
 				ps.setString(8, "1.0");
 				ps.setString(9, "1.0");
 				ps.setString(10, comment);
@@ -1669,6 +1669,7 @@ public class TemplateManagementDao {
 				} else {
 					pojo.setEditable(true);
 				}
+				pojo.setAlias(rs1.getString("temp_alias"));
 				list.add(pojo);
 			}
 		} catch (SQLException e) {

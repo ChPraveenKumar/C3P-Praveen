@@ -612,6 +612,7 @@ public class GetTemplateConfigurationData implements Observer {
 					versioningModelObject.setStatus(objToAdd.getStatus());
 					versioningModelObject.setCreatedBy(objToAdd.getCreatedBy());
 					versioningModelObject.setEditable(objToAdd.isEditable());
+					versioningModelObject.setAlias(objToAdd.getAlias());
 					versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();
 					for (int k = 0; k < list.size(); k++) {
 						if (list.get(k).getTemplateId().equalsIgnoreCase(versioningModelObject.getTemplateId())) {
@@ -1212,27 +1213,34 @@ public class GetTemplateConfigurationData implements Observer {
 	public ResponseEntity<JSONObject> getDataForLeftPanel(@RequestBody String templateFeatureRequest) {
 		JSONParser parser = new JSONParser();
 		JSONObject obj = new JSONObject();
+		String templateId = null, templateVersion = null;
 		List<TemplateLeftPanelJSONModel> leftPanelDataList = null;
 		try {
 			JSONObject requestJson = (JSONObject) parser.parse(templateFeatureRequest);
+			if (requestJson.get("templateid") != null && requestJson.get("templateVersion") != null
+					&& requestJson.get("templateVersion") != null) {
+				templateId = requestJson.get("templateid").toString();
+				templateVersion = requestJson.get("templateVersion").toString();
+			}
 			DeviceDetailsPojo deviceDetails = masterFeatureService.fetchDeviceDetails(requestJson);
-			if(deviceDetails.getVendor() !=null && deviceDetails.getDeviceFamily() !=null && deviceDetails.getOs() !=null 
-				&& deviceDetails.getOsVersion() !=null && deviceDetails.getRegion() !=null && deviceDetails.getNetworkType() !=null) {
-				leftPanelDataList = masterFeatureService.getLeftPanelData(deviceDetails);
-				if(leftPanelDataList !=null && leftPanelDataList.size()>0) {
+			if (deviceDetails.getVendor() != null && deviceDetails.getDeviceFamily() != null
+					&& deviceDetails.getOs() != null && deviceDetails.getOsVersion() != null
+					&& deviceDetails.getRegion() != null && deviceDetails.getNetworkType() != null) {
+				leftPanelDataList = masterFeatureService.getLeftPanelData(deviceDetails, templateId, templateVersion);
+				if (leftPanelDataList != null && leftPanelDataList.size() > 0) {
 					String finalJson = new Gson().toJson(leftPanelDataList);
 					obj.put("output", finalJson.toString());
-				}else {
+				} else {
 					obj.put("output", "No matching record find for exact match case and neareat match case");
 				}
 				String finalJson = new Gson().toJson(leftPanelDataList);
 				obj.put("output", finalJson.toString());
-			}else {
+			} else {
 				obj.put(new String("output"), "Missing mandatory data in the service Request");
 			}
 		} catch (Exception e) {
 			logger.info(e);
-		}		
+		}
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
 
