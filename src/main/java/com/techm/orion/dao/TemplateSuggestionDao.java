@@ -40,8 +40,8 @@ public class TemplateSuggestionDao {
 	TemplateFeatureRepo templatefeatureRepo;
 
 	@Autowired
-	CategoryDropDownService categoryDropDownservice;
-
+	private CategoryDropDownService categoryDropDownservice;
+	
 	private Connection connection;
 	Statement statement;
 
@@ -752,5 +752,6 @@ public class TemplateSuggestionDao {
 		}
 		return featureList;
 	}
-
+	
+	
 }

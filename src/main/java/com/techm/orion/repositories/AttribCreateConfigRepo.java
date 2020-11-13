@@ -30,5 +30,9 @@ public interface AttribCreateConfigRepo extends JpaRepository<MasterAttributes, 
 			+ " info.masterLabelValue as labelValue) from MasterAttributes att,"
 			+" CreateConfigEntity info where info.masterLabelId=att.id and info.requestId=:requestId") 
 	List<MasterAttributes> findfeatureCharIdAndLabel(@Param("requestId") String requestId);
+	
+	List<MasterAttributes> findByMasterFIDAndTemplateId(String masterFID, String templateId);
+	
+	List<MasterAttributes> findByMasterFID(String masterFID);
 }
 
