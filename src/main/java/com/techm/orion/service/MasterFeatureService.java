@@ -4,16 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.MasterAttributes;
@@ -758,7 +754,6 @@ public class MasterFeatureService {
 		parentJsonpojo.setDisabled(false);
 		parentJsonpojo.setConfText("confText");
 		parentJsonpojo.setAttribAssigned(true);
-		List<CommandPojo> commandList = new ArrayList<>();
 		List<MasterCharacteristicsEntity> characticsAttribList = masterCharacteristicsRepository
 				.findAllByCFId(feature.getMasterFId());
 		parentJsonpojo.setAttributeMapping(
@@ -769,7 +764,6 @@ public class MasterFeatureService {
 		cammandByTemplateAndfeatureId.forEach(comand -> {
 			comand.setId(Integer.toString(comand.getCommand_sequence_id()));
 		});
-
 		cammandByTemplateAndfeatureId
 				.sort((CommandPojo c1, CommandPojo c2) -> c1.getCommand_sequence_id() - c2.getCommand_sequence_id());
 

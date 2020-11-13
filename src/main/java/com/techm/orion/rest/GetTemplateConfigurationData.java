@@ -755,7 +755,7 @@ public class GetTemplateConfigurationData implements Observer {
 					MasterFeatureEntity feature = featureList;
 
 					if (feature.getfCategory() != null) {
-						if (feature.getfCategory().equalsIgnoreCase("Basic Configuration")) {
+						/*if (feature.getfCategory().equalsIgnoreCase("Basic Configuration")) {
 							// fetch commands from basic config master
 
 							// get commands based on master feature id
@@ -783,7 +783,7 @@ public class GetTemplateConfigurationData implements Observer {
 							String s = new Gson().toJson(listShow);
 							obj.put(new String("output"), s);
 							obj.put(new String("comment"), comment);
-						} else {
+						} else {*/
 							// fetch commands from master command list based on
 							// feature id
 							List<CommandPojo> listShow = new ArrayList<CommandPojo>();
@@ -803,7 +803,7 @@ public class GetTemplateConfigurationData implements Observer {
 							String s = new Gson().toJson(listShow);
 							obj.put(new String("output"), s);
 							obj.put(new String("comment"), comment);
-						}
+						//}
 					} else {
 						// fetch commands from master command list based on
 						// feature id

@@ -163,19 +163,19 @@ public class TemplateManagementService implements Observer {
 			if (template != null && version != null) {
 				String finaltemplate = template + "_V" + version;
 				basicDeatilsOfTemplate = templateSuggestionDao.getBasicDeatilsOfTemplate(template, version);
-				List<String> featureList = new ArrayList<>();
-				List<String> sortedFeatureList = new ArrayList<>();
-				featureList = templateSuggestionDao.getFeatureList(finaltemplate);
-				for(String sortFeature : featureList )
+				List<String> consolidatedFeatures  = new ArrayList<>();
+				List<String> commandChangeFeatureList = new ArrayList<>();
+				consolidatedFeatures  = templateSuggestionDao.getFeatureList(finaltemplate);
+				for(String commandChangeFeature : consolidatedFeatures  )
 				{
-					if(sortFeature.equals("Basic Configuration"))
-						sortedFeatureList.add(0, sortFeature);
+					if("Basic Configuration".equalsIgnoreCase(commandChangeFeature))
+						commandChangeFeatureList.add(0, commandChangeFeature);
 					else
-						sortedFeatureList.add(sortFeature);
+						commandChangeFeatureList.add(commandChangeFeature);
 				}
-				basicDeatilsOfTemplate.put("featureList", sortedFeatureList);
+				basicDeatilsOfTemplate.put("featureList", commandChangeFeatureList);
 				basicDeatilsOfTemplate.put("commands",
-						templateManagmentService.setCommandList(featureList, finaltemplate));
+						templateManagmentService.setCommandList(consolidatedFeatures, finaltemplate));
 			} else {
 				basicDeatilsOfTemplate.put(new String("output"), "Missing mandatory data in the service Request");
 			}
