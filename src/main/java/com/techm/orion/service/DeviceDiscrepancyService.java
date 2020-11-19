@@ -96,6 +96,11 @@ public class DeviceDiscrepancyService {
 						.findAllByMgmtId(discoveryStatusEntity.getDsIpAddr());
 				JSONArray discreapancyObjectValue = new JSONArray();
 				if (deviceDetails != null) {
+					if (deviceDetails.getdNewDevice() == 0) {
+						discrepencyObject.put("newOrExisting", "New");
+					} else {
+						discrepencyObject.put("newOrExisting", "Existing");
+					}
 					List<HostDiscoveryResultEntity> discrepancyDetails = hostDiscoveryResultRepository
 							.findHostDeviceDiscoveryValue(String.valueOf(deviceDetails.getdId()),
 									discoveryDetails.getDisId());
