@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
@@ -17,6 +18,9 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -110,5 +114,23 @@ public class GenerateReport {
 			build = Response.status(404).entity(e.getMessage()).build();
 		}
 		return build;
+	}
+	
+	@GET
+	@RequestMapping(value = "/downloadCOBTemplate", method = RequestMethod.GET, produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<FileSystemResource> downloadTemplateCOB() {
+		String customerOnBoardingFileFolder = TSALabels.COBTemplate.getValue() + "CustomerOnboardTemplate.csv";
+		File templateFile = null;
+		try {
+			templateFile = new File(customerOnBoardingFileFolder);
+
+		} catch (Exception e) {
+			logger.error("Error occurred while downloading file {}", e);
+		}
+		return ResponseEntity.ok()
+				.header("Content-Disposition", "attachment; filename=" + templateFile.getName() + ".csv")
+				.contentLength(templateFile.length()).contentType(MediaType.parseMediaType("text/csv"))
+				.body(new FileSystemResource(templateFile));
 	}
 }
