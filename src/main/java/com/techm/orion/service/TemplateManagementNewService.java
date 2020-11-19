@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -411,7 +410,6 @@ public class TemplateManagementNewService {
 		MasterFeatureEntity masterFeatureEntity = new MasterFeatureEntity();
 		TemplateFeatureEntity templateFeatureEntity = new TemplateFeatureEntity();
 		String templateId = "";
-		String commands = "";
 		List<TemplateFeatureEntity> commandTypes = new ArrayList<>();
 		List<TemplateConfigBasicDetailsEntity> tempConfigBasic = new ArrayList<>();
 		templateId = dcmConfigService.getTemplateName(region, vendor, os, osVersion, deviceFamily);
@@ -450,9 +448,10 @@ public class TemplateManagementNewService {
 		JSONObject obj = new JSONObject();
 		JSONArray array = new JSONArray();
 		for (TemplateFeatureEntity featureEntity : tempFeatureDetails) {
-			commands = featureEntity.getCommand();
-			String commandType = StringUtils.substringBefore(commands, "_");
-			tempConfigBasic.addAll(templateConfigBasicDetailsRepository.getTemplateConfigBasicDetails(commandType));
+			String tempIdWithVersion= featureEntity.getCommand();
+			String tempId = StringUtils.substringBefore(tempIdWithVersion, "_V");
+			String tempVersion = StringUtils.substringAfter(tempIdWithVersion, "_V");
+			tempConfigBasic.addAll(templateConfigBasicDetailsRepository.getTemplateConfigBasicDetails(tempId,tempVersion));
 		}
 		// Check unique Template with Id and Version
 		List<TemplateConfigBasicDetailsEntity> templateList = tempConfigBasic.stream()

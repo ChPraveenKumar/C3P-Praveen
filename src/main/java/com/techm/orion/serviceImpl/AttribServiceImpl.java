@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -124,8 +125,8 @@ public class AttribServiceImpl implements AttribSevice {
 	@Override
 	public List<PredefinedMappedAtrribPojo> getAllTemplatePredefinedGenericAtrribData(String templateId) {
 		List<PredefinedGenericTemplateAttribEntity> predefinedGenericTemplateAtrribList = predefinedGenericTemplateAtrribDao
-				.findAll();
-		templateId = templateId.substring(0, templateId.length() - 5);
+				.findAll();		
+		templateId = StringUtils.substringBefore(templateId, "_V");
 		List<MasterAttributes> oldAttribList = masterAttribRepo.findByTemplateIdContains(templateId);
 		if (!oldAttribList.isEmpty()) {
 			predefinedGenericTemplateAtrribList = getRemainingAttrib(oldAttribList,

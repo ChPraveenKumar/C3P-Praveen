@@ -22,6 +22,6 @@ public interface TemplateConfigBasicDetailsRepository extends JpaRepository<Temp
 
 	TemplateConfigBasicDetailsEntity findByTempAlias(String aliasName);
 	
-	@Query(value ="select * from templateconfig_basic_details where temp_id like :tempId%", nativeQuery = true)
-	  List<TemplateConfigBasicDetailsEntity> getTemplateConfigBasicDetails(@Param("tempId") String commands);
+	@Query(value ="select * from templateconfig_basic_details where temp_id like :tempId% and temp_version = :tempVersion and temp_status ='Approved' ", nativeQuery = true)
+	  List<TemplateConfigBasicDetailsEntity> getTemplateConfigBasicDetails(@Param("tempId") String commands,@Param("tempVersion") String tempVersion);
 }
