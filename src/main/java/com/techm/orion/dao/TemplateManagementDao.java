@@ -1523,12 +1523,12 @@ public class TemplateManagementDao {
 				PreparedStatement ps = connection.prepareStatement(query1);
 
 				ps.setString(1, tempid.toUpperCase());
-				ps.setString(2, vendor.toUpperCase());
+				ps.setString(2, vendor);
 				ps.setString(3, deviceFamily);
-				ps.setString(4, model.toUpperCase());
-				ps.setString(5, os.toUpperCase());
-				ps.setString(6, osVersion.toUpperCase());
-				ps.setString(7, region.toUpperCase());
+				ps.setString(4, model);
+				ps.setString(5, os);
+				ps.setString(6, osVersion);
+				ps.setString(7, region);
 				ps.setString(8, "1.0");
 				ps.setString(9, "1.0");
 				ps.setString(10, comment);
@@ -1569,12 +1569,12 @@ public class TemplateManagementDao {
 
 				PreparedStatement ps1 = connection.prepareStatement(query1);
 				ps1.setString(1, tempid.toUpperCase());
-				ps1.setString(2, vendor.toUpperCase());
+				ps1.setString(2, vendor);
 				ps1.setString(3, deviceFamily);
-				ps1.setString(4, model.toUpperCase());
-				ps1.setString(5, os.toUpperCase());
-				ps1.setString(6, osVersion.toUpperCase());
-				ps1.setString(7, region.toUpperCase());
+				ps1.setString(4, model);
+				ps1.setString(5, os);
+				ps1.setString(6, osVersion);
+				ps1.setString(7, region);
 				ps1.setString(8, childversion);
 				ps1.setString(9, parentversion);
 				ps1.setString(10, comment);
@@ -1669,6 +1669,7 @@ public class TemplateManagementDao {
 				} else {
 					pojo.setEditable(true);
 				}
+				pojo.setAlias(rs1.getString("temp_alias"));
 				list.add(pojo);
 			}
 		} catch (SQLException e) {
@@ -1769,7 +1770,7 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		String query = null;
 		if (key.equalsIgnoreCase("Template ID")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE temp_id =?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_id LIKE ?";
 		} else if (key.equalsIgnoreCase("Device Family")) {
 			query = "SELECT * FROM templateconfig_basic_details WHERE temp_device_family LIKE ?";
 
@@ -1799,13 +1800,7 @@ public class TemplateManagementDao {
 		try {
 
 			pst = connection.prepareStatement(query);
-
-			if (key.equalsIgnoreCase("Template ID")) {
-				pst.setString(1, value);
-			} else {
-				pst.setString(1, value + "%");
-
-			}
+			pst.setString(1, value + "%");
 			rs = pst.executeQuery();
 			templateList = new ArrayList<TemplateBasicConfigurationPojo>();
 			while (rs.next()) {

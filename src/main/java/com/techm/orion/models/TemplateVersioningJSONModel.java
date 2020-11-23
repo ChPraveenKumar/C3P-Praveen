@@ -24,6 +24,7 @@ public class TemplateVersioningJSONModel {
 	private String createdBy;
 	private boolean isEditable;
 	private String networkType;
+	private String alias;
 	public boolean isEditable() {
 		return isEditable;
 	}
@@ -127,5 +128,10 @@ public class TemplateVersioningJSONModel {
 	public void setNetworkType(String networkType) {
 		this.networkType = networkType;
 	}
-	
+	public String getAlias() {
+		return alias;
+	}
+	public void setAlias(String alias) {
+		this.alias = alias;
+	}
 }

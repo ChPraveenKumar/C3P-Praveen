@@ -43,7 +43,7 @@ import freemarker.template.Template;
 
 public class InvokeFtl {
 	private static final Logger logger = LogManager.getLogger(InvokeFtl.class);
-	
+
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -183,7 +183,6 @@ public class InvokeFtl {
 		}
 		return res;
 	}
-
 
 	public String generateDileveryConfigFile(RequestInfoPojo configRequest) throws Exception {
 		String res = null;
@@ -476,7 +475,6 @@ public class InvokeFtl {
 		}
 		return res;
 	}
-	
 	public String generateNetworkTestResultFileFailure(RequestInfoPojo configRequest) throws Exception {
 		String res = null;
 		try {
@@ -863,79 +861,71 @@ public class InvokeFtl {
 		}
 		return false;
 	}
-
-	/* Dhanshri Mane */
 	public void createFinalTemplate(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate,
 			List<AttribCreateConfigPojo> masterAttribute, List<AttribCreateConfigPojo> templateAttribute,
 			String templateId) {
-		logger.info("createFinalTemplate -templateId - "+templateId);
-		logger.info("createFinalTemplate -masterAttribute - "+masterAttribute);
-		logger.info("createFinalTemplate -templateAttribute - "+templateAttribute);
-		logger.info("createFinalTemplate -cammandsBySeriesId - "+cammandsBySeriesId);
-		logger.info("createFinalTemplate -cammandByTemplate - "+cammandByTemplate);
+		logger.info("createFinalTemplate -templateId - " + templateId);
+		logger.info("createFinalTemplate -masterAttribute - " + masterAttribute);
+		logger.info("createFinalTemplate -templateAttribute - " + templateAttribute);
+		logger.info("createFinalTemplate -cammandsBySeriesId - " + cammandsBySeriesId);
+		logger.info("createFinalTemplate -cammandByTemplate - " + cammandByTemplate);
 		String s = ")!" + '"' + '"' + "}";
 		if (masterAttribute != null) {
 			if (cammandsBySeriesId != null) {
-				for (CommandPojo cammand : cammandsBySeriesId) {
-					for (AttribCreateConfigPojo attrib : masterAttribute) {
-						if (attrib.getAttribType().equals("Master")) {
-							if (cammand.getCommandValue().contains("[" + attrib.getAttribLabel())) {
-
-								String attribName = attrib.getAttribName();
-								String newAttribName = attribName.replace(" ", "");
-								attribName = newAttribName.substring(0, 1).toLowerCase() + newAttribName.substring(1);
-								cammand.setCommandValue(cammand.getCommandValue().replace("[" + attrib.getAttribLabel(),
-										"${(configRequest." + attribName));
-								cammand.setCommandValue(cammand.getCommandValue().replace("]", s));
-								continue;
-							}
-						}
-					}
-					cammand.setCommandValue(cammand.getCommandValue().replace("[", "${(configRequest."));
-					cammand.setCommandValue(cammand.getCommandValue().replace("]", s));
-				}
+				setMasterCommands(cammandsBySeriesId, masterAttribute, s);
 			}
 		}
 		if (templateAttribute != null) {
-
 			if (cammandByTemplate != null) {
-				for (CommandPojo templateCammand : cammandByTemplate) {
-					for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
-						if (templateAttrib.getAttribType().equals("Template")) {
-							if (templateCammand.getCommandValue().contains("[" + templateAttrib.getAttribLabel()+"]")) {
-								int id = Integer.parseInt(templateCammand.getId());								
-								if (id == templateAttrib.getTemplateFeature().getId()) {
-									String Str = "[" + templateAttrib.getAttribLabel()+"]";										
-									String attribName = templateAttrib.getAttribName();
-									String newAttribName = attribName.replace(" ", "");
-									attribName = newAttribName.substring(0, 1).toLowerCase()
-											+ newAttribName.substring(1);
-									Str=Str.replace(Str, "${(configRequest." + attribName+s);
-									templateCammand.setCommandValue(templateCammand.getCommandValue().replace(
-											"[" + templateAttrib.getAttribLabel()+"]", Str));
-									continue;
-								}
-							}
-						}
-					}
-					templateCammand
-							.setCommandValue(templateCammand.getCommandValue().replace("[", "${(configRequest."));
-					templateCammand.setCommandValue(templateCammand.getCommandValue().replace("]", s));
-
-				}
+				cammandByTemplate = setFeatureCommands(cammandByTemplate, templateAttribute, s);
 			}
 		}
 
+		logger.info("finalCammands - " + setCommandPosition(cammandsBySeriesId, cammandByTemplate));
+		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId,
+				setCommandPosition(cammandsBySeriesId, cammandByTemplate));
+
+	}
+
+	public List<CommandPojo> setFeatureCommands(List<CommandPojo> cammandByTemplate,
+			List<AttribCreateConfigPojo> templateAttribute, String s) {
+		for (CommandPojo templateCammand : cammandByTemplate) {
+			for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
+				if (templateAttrib.getAttribType().equals("Template")) {
+					 String attribLabel = templateAttrib.getAttribLabel();
+					if (templateCammand.getCommandValue().contains("[" +attribLabel+ "]")) {
+						int id = Integer.parseInt(templateCammand.getId());
+						if (id == templateAttrib.getTemplateFeature().getId()) {
+							String Str = "[" + attribLabel + "]";
+							String attribName = templateAttrib.getAttribName();
+							String newAttribName = attribName.replace(" ", "");
+							attribName = newAttribName.substring(0, 1).toLowerCase() + newAttribName.substring(1);
+							Str = Str.replace(Str, "${(configRequest." + attribName + s);
+							templateCammand.setCommandValue(templateCammand.getCommandValue()
+									.replace("[" + attribLabel + "]", Str));
+							continue;
+						}
+					}
+				}
+			}
+			templateCammand.setCommandValue(templateCammand.getCommandValue().replace("[", "${(configRequest."));
+			templateCammand.setCommandValue(templateCammand.getCommandValue().replace("]", s));
+
+		}
+		return cammandByTemplate;
+	}
+
+	@SuppressWarnings("unchecked")
+	public String setCommandPosition(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate) {
 		List<CommandPojo> finalCammandsList = null;
 		if (cammandsBySeriesId != null) {
 			finalCammandsList = cammandsBySeriesId;
 			if (cammandByTemplate != null) {
 				finalCammandsList = ListUtils.union(cammandsBySeriesId, cammandByTemplate);
 			}
+		} else {
+			finalCammandsList = cammandByTemplate;
 		}
-		else
-			finalCammandsList=cammandByTemplate;
-		
 		/* Arrange Commands with position */
 		finalCammandsList.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
 		String finalCammands = "";
@@ -943,20 +933,41 @@ public class InvokeFtl {
 		for (CommandPojo cammands : finalCammandsList) {
 			finalCammands = finalCammands + cammands.getCommandValue();
 		}
-
-		logger.info("finalCammands - "+ finalCammands);
-		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);		
-
+		return finalCammands;
 	}
+
+	private List<CommandPojo> setMasterCommands(List<CommandPojo> cammandsBySeriesId,
+			List<AttribCreateConfigPojo> masterAttribute, String s) {
+		for (CommandPojo cammand : cammandsBySeriesId) {
+			for (AttribCreateConfigPojo attrib : masterAttribute) {
+				if (attrib.getAttribType().equals("Master")) {
+					if (cammand.getCommandValue().contains("[" + attrib.getAttribLabel())) {
+
+						String attribName = attrib.getAttribName();
+						String newAttribName = attribName.replace(" ", "");
+						attribName = newAttribName.substring(0, 1).toLowerCase() + newAttribName.substring(1);
+						cammand.setCommandValue(cammand.getCommandValue().replace("[" + attrib.getAttribLabel(),
+								"${(configRequest." + attribName));
+						cammand.setCommandValue(cammand.getCommandValue().replace("]", s));
+						continue;
+					}
+				}
+			}
+			cammand.setCommandValue(cammand.getCommandValue().replace("[", "${(configRequest."));
+			cammand.setCommandValue(cammand.getCommandValue().replace("]", s));
+		}
+		return cammandsBySeriesId;
+	}
+
 	/* Ruchita Salvi */
 	public void createFinalTemplate(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate,
 			List<AttribCreateConfigPojo> masterAttribute, List<AttribCreateConfigPojo> templateAttribute,
 			String templateId, String apiCallType) {
-		logger.info("createFinalTemplate -templateId - "+templateId);
-		logger.info("createFinalTemplate -masterAttribute - "+masterAttribute);
-		logger.info("createFinalTemplate -templateAttribute - "+templateAttribute);
-		logger.info("createFinalTemplate -cammandsBySeriesId - "+cammandsBySeriesId);
-		logger.info("createFinalTemplate -cammandByTemplate - "+cammandByTemplate);
+		logger.info("createFinalTemplate -templateId - " + templateId);
+		logger.info("createFinalTemplate -masterAttribute - " + masterAttribute);
+		logger.info("createFinalTemplate -templateAttribute - " + templateAttribute);
+		logger.info("createFinalTemplate -cammandsBySeriesId - " + cammandsBySeriesId);
+		logger.info("createFinalTemplate -cammandByTemplate - " + cammandByTemplate);
 		String s = ")!" + '"' + '"' + "}";
 		if (masterAttribute != null) {
 			if (cammandsBySeriesId != null) {
@@ -986,17 +997,19 @@ public class InvokeFtl {
 				for (CommandPojo templateCammand : cammandByTemplate) {
 					for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
 						if (templateAttrib.getAttribType().equals("Template")) {
-							if (templateCammand.getCommandValue().contains("[" + templateAttrib.getAttribLabel()+"]")) {
-								int id = Integer.parseInt(templateCammand.getId());								
+							 String attribLabel = templateAttrib.getAttribLabel();
+							if (templateCammand.getCommandValue()
+									.contains("[" + attribLabel + "]")) {
+								int id = Integer.parseInt(templateCammand.getId());
 								if (id == templateAttrib.getTemplateFeature().getId()) {
-									String Str = "[" + templateAttrib.getAttribLabel()+"]";										
+									String Str = "[" + attribLabel + "]";
 									String attribName = templateAttrib.getAttribName();
 									String newAttribName = attribName.replace(" ", "");
 									attribName = newAttribName.substring(0, 1).toLowerCase()
 											+ newAttribName.substring(1);
-									Str=Str.replace(Str, "${(configRequest." + attribName+s);
-									templateCammand.setCommandValue(templateCammand.getCommandValue().replace(
-											"[" + templateAttrib.getAttribLabel()+"]", Str));
+									Str = Str.replace(Str, "${(configRequest." + attribName + s);
+									templateCammand.setCommandValue(templateCammand.getCommandValue()
+											.replace("[" + attribLabel + "]", Str));
 									continue;
 								}
 							}
@@ -1016,21 +1029,22 @@ public class InvokeFtl {
 			if (cammandByTemplate != null) {
 				finalCammandsList = ListUtils.union(cammandsBySeriesId, cammandByTemplate);
 			}
-		}
-		else
-		{
-			finalCammandsList=cammandByTemplate;
+		} else {
+			finalCammandsList = cammandByTemplate;
 		}
 		/* Arrange Commands with position */
-		/*finalCammandsList.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());*/
+		/*
+		 * finalCammandsList.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() -
+		 * c2.getPosition());
+		 */
 		String finalCammands = "";
 
 		for (CommandPojo cammands : finalCammandsList) {
 			finalCammands = finalCammands + cammands.getCommandValue();
 		}
 
-		logger.info("finalCammands - "+ finalCammands);
-		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);		
+		logger.info("finalCammands - " + finalCammands);
+		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);
 
 	}
 
@@ -1329,14 +1343,14 @@ public class InvokeFtl {
 							if (templateCammand.getCommandValue().contains("[" + templateAttrib.getAttribLabel())) {
 								int id = Integer.parseInt(templateCammand.getId());
 								if (id == templateAttrib.getTemplateFeature().getId()) {
-									String Str = "[" + templateAttrib.getAttribLabel()+"]";										
+									String Str = "[" + templateAttrib.getAttribLabel() + "]";
 									String attribName = templateAttrib.getAttribName();
 									String newAttribName = attribName.replace(" ", "");
 									attribName = newAttribName.substring(0, 1).toLowerCase()
 											+ newAttribName.substring(1);
-									Str=Str.replace(Str, "${(configRequest." + attribName+s);
-									templateCammand.setCommandValue(templateCammand.getCommandValue().replace(
-											"[" + templateAttrib.getAttribLabel()+"]", Str));
+									Str = Str.replace(Str, "${(configRequest." + attribName + s);
+									templateCammand.setCommandValue(templateCammand.getCommandValue()
+											.replace("[" + templateAttrib.getAttribLabel() + "]", Str));
 									continue;
 								}
 							}
@@ -1364,15 +1378,15 @@ public class InvokeFtl {
 			finalCammands = finalCammands + cammands.getCommandValue();
 		}
 
-		logger.info("finalCammands - "+finalCammands);
+		logger.info("finalCammands - " + finalCammands);
 		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);
 		try {
 			// new Template is Save in NewTemplate Folder
 			TemplateManagementDetailsService.loadProperties();
 			String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
 					.getProperty("newtemplateCreationPath");
-			logger.info("responseDownloadPath - "+responseDownloadPath);
-			//TextReport.writeFile(responseDownloadPath, templateId, finalCammands);
+			logger.info("responseDownloadPath - " + responseDownloadPath);
+			// TextReport.writeFile(responseDownloadPath, templateId, finalCammands);
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

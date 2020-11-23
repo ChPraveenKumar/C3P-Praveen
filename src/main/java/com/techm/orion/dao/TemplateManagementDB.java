@@ -41,8 +41,10 @@ public class TemplateManagementDB {
 					deleteAttribPreparedStmt.setString(1, addNewFeatureTemplateMngmntPojo.getTemplateid());
 					deleteAttribPreparedStmt.setString(2, resultSet.getString("id"));					
 					deleteAttribPreparedStmt.execute("SET SQL_SAFE_UPDATES = 0");
+					deleteAttribPreparedStmt.execute("SET FOREIGN_KEY_CHECKS= 0");
 					int executeUpdate = deleteAttribPreparedStmt.executeUpdate();
 					deleteAttribPreparedStmt.execute("SET SQL_SAFE_UPDATES = 1");	
+					deleteAttribPreparedStmt.execute("SET FOREIGN_KEY_CHECKS= 1");
 					if(executeUpdate>0) {
 						try (PreparedStatement deleteSmt = connection.prepareStatement(deletefeature);) {
 							deleteSmt.setString(1, addNewFeatureTemplateMngmntPojo.getFeatureName());

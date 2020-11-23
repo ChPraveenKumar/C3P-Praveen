@@ -6348,7 +6348,7 @@ public class RequestInfoDao {
 	/* Method Overloading for UIRevamp */
 	public Map<String, String> insertRequestInDB(RequestInfoPojo requestInfoSO) {
 		Map<String, String> hmap = new HashMap<String, String>();
-		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id, customer = null, siteName = null, family = null, siteId = null, vendor = null, deviceType = null;
+		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id, customer = null, siteName = null, family = null, siteId = null, vendor = null, deviceType = null, selectedFileFeatures=null, configGenerationMethods=null;
 		String request_creator_name = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
 		String networktype = null, fileName = null, apiCallType = null;
@@ -6538,6 +6538,20 @@ public class RequestInfoDao {
 			} else {
 				fileName = "";
 			}
+
+			if (requestInfoSO.getSelectedFileFeatures() != null
+					&& !requestInfoSO.getSelectedFileFeatures().isEmpty()) {
+				selectedFileFeatures = requestInfoSO.getSelectedFileFeatures();
+			} else {
+				selectedFileFeatures = "";
+			}
+			
+			if (requestInfoSO.getConfigurationGenerationMethods() != null
+					&& !requestInfoSO.getConfigurationGenerationMethods().isEmpty()) {
+				configGenerationMethods = requestInfoSO.getConfigurationGenerationMethods();
+			} else {
+				configGenerationMethods = "";
+			}
 			if (Os != "") {
 				requestEntity.setOs(Os);
 			}
@@ -6616,6 +6630,8 @@ public class RequestInfoDao {
 
 			requestEntity.setrFileName(fileName);
 
+			requestEntity.setrSelectedFileFeatures(selectedFileFeatures);
+			requestEntity.setrConfigGenerationMethod(configGenerationMethods);
 			requestEntity.setRequestElapsedTime("00:00:00");
 
 			if (scheduledTime != null && scheduledTime != "") {

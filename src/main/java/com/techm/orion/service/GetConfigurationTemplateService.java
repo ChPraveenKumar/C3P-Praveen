@@ -227,7 +227,7 @@ public class GetConfigurationTemplateService {
 			//Owner: Ruchita Salvi Comment: This if{} needs to be removed once master table is implemented for vendors
 			if(configRequest.getVendor().equalsIgnoreCase("cisco"))
 			{
-				response = invokeFtl.generateConfigurationToPush(configRequest, fileToUse).replace("config", "");
+				response = invokeFtl.generateConfigurationToPush(configRequest, fileToUse).replace("config t", "");
 			}
 			else
 			{

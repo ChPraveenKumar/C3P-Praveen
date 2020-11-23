@@ -17,6 +17,8 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
+import com.techm.orion.service.DecomposeWorkflow;
+
 
 public class PythonServices {
 	private static String endpointUrl = TSALabels.PYTHON_SERVICES.getValue();
@@ -30,7 +32,14 @@ public class PythonServices {
 		logger.info("Inside run next request");
 		return execute(RUNNEXTREQUEST, rfoid);
 	}
+	
 
+	public void runDecomposeWorkflow(String rfoid)
+	{
+		DecomposeWorkflow decompose=new DecomposeWorkflow(rfoid);
+		decompose.setDaemon(true);
+		decompose.start();
+	}
 	private HttpURLConnection openHttpConnection(String endpointUrl) {
 		HttpURLConnection httpConnection = null;
 		try {
