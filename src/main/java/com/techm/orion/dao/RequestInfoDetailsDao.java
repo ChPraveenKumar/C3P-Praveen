@@ -29,7 +29,6 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
-import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
@@ -173,21 +172,18 @@ public class RequestInfoDetailsDao {
 			});
 			// INSERT OR update table after Configuration Request gets Completed
 			// Successfully
-			int did = deviceDiscoveryRepository.findDid(request.getHostName());
-			List<MasterAttributes> featureIdAndmCharIdAndLabel = attribCreateConfigRepo
-					.findfeatureCharIdAndLabel(requestId);
-			for (MasterAttributes attributes : featureIdAndmCharIdAndLabel) {
+			for (ResourceCharacteristicsHistoryEntity attributes : charHistoryEnity) {
 				ResourceCharacteristicsEntity resourceCharEntity = resourceCharRepo
-						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(did, attributes.getMasterFID(),
-								attributes.getCharacteristicId());
+						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(attributes.getDeviceId(), attributes.getRcFeatureId(),
+								attributes.getRcCharacteristicId());
 				if (resourceCharEntity == null)
 					resourceCharEntity = new ResourceCharacteristicsEntity();
-				resourceCharEntity.setRcFeatureId(attributes.getMasterFID());
-				resourceCharEntity.setRcCharacteristicId(attributes.getCharacteristicId());
-				resourceCharEntity.setRcCharacteristicName(attributes.getLabel());
-				resourceCharEntity.setRcCharacteristicValue(attributes.getLabelValue());
-				resourceCharEntity.setDeviceId(did);
-				resourceCharEntity.setRcDeviceHostname(request.getHostName());
+				resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());
+				resourceCharEntity.setRcCharacteristicId(attributes.getRcCharacteristicId());
+				resourceCharEntity.setRcCharacteristicName(attributes.getRcName());
+				resourceCharEntity.setRcCharacteristicValue(attributes.getRcValue());
+				resourceCharEntity.setDeviceId(attributes.getDeviceId());
+				resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
 				resourceCharRepo.save(resourceCharEntity);
 			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
@@ -239,21 +235,18 @@ public class RequestInfoDetailsDao {
 				resourceCharHistoryRepo.save(entity);
 			});
 			// INSERT OR update table after Configuration Request gets Failed
-			int did = deviceDiscoveryRepository.findDid(request.getHostName());
-			List<MasterAttributes> featureIdAndmCharIdAndLabel = attribCreateConfigRepo
-					.findfeatureCharIdAndLabel(requestId);
-			for (MasterAttributes attributes : featureIdAndmCharIdAndLabel) {
+			for (ResourceCharacteristicsHistoryEntity attributes : charHistoryEnity) {
 				ResourceCharacteristicsEntity resourceCharEntity = resourceCharRepo
-						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(did, attributes.getMasterFID(),
-								attributes.getCharacteristicId());
+						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(attributes.getDeviceId(), attributes.getRcFeatureId(),
+								attributes.getRcCharacteristicId());
 				if (resourceCharEntity == null)
 					resourceCharEntity = new ResourceCharacteristicsEntity();
-				resourceCharEntity.setRcFeatureId(attributes.getMasterFID());
-				resourceCharEntity.setRcCharacteristicId(attributes.getCharacteristicId());
-				resourceCharEntity.setRcCharacteristicName(attributes.getLabel());
-				resourceCharEntity.setRcCharacteristicValue(attributes.getLabelValue());
-				resourceCharEntity.setDeviceId(did);
-				resourceCharEntity.setRcDeviceHostname(request.getHostName());
+				resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());
+				resourceCharEntity.setRcCharacteristicId(attributes.getRcCharacteristicId());
+				resourceCharEntity.setRcCharacteristicName(attributes.getRcName());
+				resourceCharEntity.setRcCharacteristicValue(attributes.getRcValue());
+				resourceCharEntity.setDeviceId(attributes.getDeviceId());
+				resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
 				resourceCharRepo.save(resourceCharEntity);
 			}
 		} else {
