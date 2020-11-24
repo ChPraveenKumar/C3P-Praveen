@@ -34,6 +34,7 @@ import com.techm.orion.entitybeans.RequestFeatureTransactionEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
+import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.mapper.CreateConfigRequestMapper;
 import com.techm.orion.mapper.CreateConfigResponceMapper;
 import com.techm.orion.pojo.AlertInformationPojo;
@@ -54,6 +55,7 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
+import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
@@ -90,6 +92,9 @@ public class DcmConfigService {
 
 	@Autowired
 	private RfoDecomposedRepository rfoDecomposedRepository;
+	
+	@Autowired
+	private UserManagementRepository userManagementRepository;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -907,8 +912,11 @@ public class DcmConfigService {
 	}
 
 	public String getLogedInUserName() {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		return requestInfoDao.getLogedInUserDetail();
+		String userName= null;
+		UserManagementEntity loggedInUserDetails = userManagementRepository.findByUserStatus();
+		if(loggedInUserDetails !=null)
+			userName = loggedInUserDetails.getUserName();
+		return userName;
 	}
 
 	public int getTotalRequests() {

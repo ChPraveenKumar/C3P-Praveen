@@ -14,6 +14,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,8 +28,9 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.pojo.UserManagementResulltDetailPojo;
 import com.techm.orion.pojo.UserPojo;
-import com.techm.orion.pojo.UserValidationResultDetailPojo;
+import com.techm.orion.service.UserManagementInterface;
 
 @Controller
 @RequestMapping("/LoginService")
@@ -37,6 +39,8 @@ public class LoginService implements Observer {
 	private static final Logger logger = LogManager.getLogger(LoginService.class);
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 	TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+	@Autowired
+	private UserManagementInterface userCreateInterface;
 
 	@SuppressWarnings({ "unchecked", "null" })
 	@POST
@@ -45,17 +49,11 @@ public class LoginService implements Observer {
 	public Response login(@RequestBody String searchParameters) {
 
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
-		String jsonArray = "";
-		UserValidationResultDetailPojo ip = null;
-		int loginStatus;
 		String username = null, password = null;
 		int notificationCount = 0, ajaxCallInterval = 0;
 		InputStream inputStream;
-
 		Properties prop = new Properties();
 		String propFileName = "TSA.properties";
-
 		int totalCount = 0;
 		try {
 			Gson gson = new Gson();
@@ -75,9 +73,11 @@ public class LoginService implements Observer {
 					 * 
 					 * if(loginStatus==0) {
 					 */
-					ip = requestInfoDao.checkUsersDB(username, password);
+					UserManagementResulltDetailPojo userDetails = userCreateInterface
+							.checkUserNamePassword(username, password);
 
-					if (ip.getMessage().equalsIgnoreCase("Success")) {
+					if (userDetails !=null && "Success".equalsIgnoreCase(userDetails.getMessage())) {
+						username =userDetails.getRole();
 						Global.loggedInUser = username;
 
 						// logic to get ajax call duration set statically in
@@ -106,7 +106,6 @@ public class LoginService implements Observer {
 							numberOfNotificationsForFE = feRequestListNum.size();
 
 							totalCount = notificationCount + numberOfNotificationsForFE;
-							jsonArray = new Gson().toJson(ip);
 							jsonList = new Gson().toJson(list);
 							String jsonFeRequestList = new Gson().toJson(feRequestList);
 							templateNameList = new Gson().toJson(templateNames);
@@ -122,10 +121,9 @@ public class LoginService implements Observer {
 							obj.put(new String("TemplateDetailedList"), "");
 
 							obj.put(new String("FERequestDetailedList"), jsonFeRequestList);
-							obj.put(new String("Message"), ip.getMessage());
-							obj.put(new String("Result"), ip.isResult());
-							obj.put(new String("PrivilegeLeve"), ip.getPrivilegeLevel());
-
+							obj.put(new String("Message"), userDetails.getMessage());
+							obj.put(new String("Result"), userDetails.isResult());
+							obj.put("userDetails", userDetails);
 						} else if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
 							RequestInfoDao requestInfoDao = new RequestInfoDao();
 							List<RequestInfoSO> seRequestList = new ArrayList<RequestInfoSO>();
@@ -140,7 +138,6 @@ public class LoginService implements Observer {
 							numberOfNotificationsForSE = seRequestListNum.size();
 
 							totalCount = notificationCount + numberOfNotificationsForSE;
-							jsonArray = new Gson().toJson(ip);
 							jsonList = new Gson().toJson(list);
 							String jsonFeRequestList = new Gson().toJson(seRequestList);
 
@@ -157,9 +154,9 @@ public class LoginService implements Observer {
 
 							obj.put(new String("SENotificationCount"), numberOfNotificationsForSE);
 							obj.put(new String("SERequestDetailedList"), jsonFeRequestList);
-							obj.put(new String("Message"), ip.getMessage());
-							obj.put(new String("Result"), ip.isResult());
-							obj.put(new String("PrivilegeLeve"), ip.getPrivilegeLevel());
+							obj.put(new String("Message"), userDetails.getMessage());
+							obj.put(new String("Result"), userDetails.isResult());
+							obj.put("userDetails", userDetails);
 
 						} else {
 							notificationCount = templateManagementDao
@@ -177,8 +174,6 @@ public class LoginService implements Observer {
 								templateNames.add(pojo);
 
 							}
-
-							jsonArray = new Gson().toJson(ip);
 							jsonList = new Gson().toJson(list);
 							String jsonFeRequestList = "undefined";
 							totalCount = notificationCount;
@@ -196,13 +191,12 @@ public class LoginService implements Observer {
 							obj.put(new String("SENotificationCount"), 0);
 							obj.put(new String("SERequestDetailedList"), "");
 
-							obj.put(new String("Message"), ip.getMessage());
-							obj.put(new String("Result"), ip.isResult());
-							obj.put(new String("PrivilegeLeve"), ip.getPrivilegeLevel());
+							obj.put(new String("Message"), userDetails.getMessage());
+							obj.put(new String("Result"), userDetails.isResult());
+							obj.put("userDetails", userDetails);
 
 						}
 					} else {
-						jsonArray = "undefined";
 						jsonList = "undefined";
 						String jsonFeRequestList = "undefined";
 						templateNameList = "";
@@ -214,9 +208,9 @@ public class LoginService implements Observer {
 						obj.put(new String("NotificationCount"), 0);
 
 						obj.put(new String("FERequestDetailedList"), jsonFeRequestList);
-						obj.put(new String("Message"), ip.getMessage());
-						obj.put(new String("Result"), ip.isResult());
-						obj.put(new String("PrivilegeLeve"), ip.getPrivilegeLevel());
+						obj.put(new String("Message"), userDetails.getMessage());
+						obj.put(new String("Result"), userDetails.isResult());
+						obj.put("userDetails", userDetails);
 					}
 
 					/*

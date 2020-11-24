@@ -2,8 +2,6 @@ package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.TimeZone;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -116,6 +114,9 @@ public class UserManagementEntity implements Serializable {
 
 	@Column(name = "base_location")
 	private String baseLocation;
+	
+	@Column(name = "user_status")
+	private String userStatus;
 
 	public long getId() {
 		return id;
@@ -406,5 +407,13 @@ public class UserManagementEntity implements Serializable {
 	public void preUpdate() {
 		Date now = new Date();
 		this.updatedDate = now;
+	}
+
+	public String getUserStatus() {
+		return userStatus;
+	}
+
+	public void setUserStatus(String userStatus) {
+		this.userStatus = userStatus;
 	}
 }
