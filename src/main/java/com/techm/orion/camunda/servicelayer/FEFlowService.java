@@ -6,13 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.lang3.StringUtils;
 import org.json.JSONException;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -26,22 +25,19 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
-import com.techm.orion.dao.TemplateManagementDao;
-import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.RequestInfoEntity;
-import com.techm.orion.entitybeans.Series;
-import com.techm.orion.pojo.AttribCreateConfigPojo;
+import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.Global;
-import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.BasicConfigurationRepository;
+import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.SeriesRepository;
+import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.rest.CamundaServiceCreateReq;
 import com.techm.orion.rest.CamundaServiceFEWorkflow;
 import com.techm.orion.rest.DeviceReachabilityAndPreValidationTest;
 import com.techm.orion.service.AttribCreateConfigService;
-import com.techm.orion.service.GetConfigurationTemplateService;
 import com.techm.orion.utility.InvokeFtl;
 
 @Controller
@@ -58,9 +54,14 @@ public class FEFlowService implements Observer {
 	@Autowired
 	BasicConfigurationRepository basicConfigRepo;
 	
-
 	@Autowired
 	AttribCreateConfigService service;
+	
+	@Autowired
+	private TemplateFeatureRepo templateFeatureRepo;
+	
+	@Autowired
+	private MasterCommandsRepository masterCommandsRepository;
 
 	@POST
 	@RequestMapping(value = "/startPreValidateTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -197,23 +198,17 @@ public class FEFlowService implements Observer {
 	@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 	@ResponseBody
 	public Response getGeneratedConfiguration(@RequestBody String request) {
-		Response response = null;
-		InvokeFtl invokeFtl = new InvokeFtl();
 		JSONObject obj = new JSONObject();
 		RequestInfoDao dao = new RequestInfoDao();
-		List<String> data = new ArrayList<String>();
-		String data1=null;
-		List<CommandPojo> cmdList = new ArrayList<CommandPojo>();
+		JSONArray jsonArray = new JSONArray();
+		JSONObject jsonObject = new JSONObject();
 		try {
-
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
-
 			if (!json.isEmpty()) {
 				String RequestId = json.get("requestId").toString();
 				String version = json.get("version").toString();
 				String readFlag = json.get("readFlag").toString();
-
 				Float v = Float.parseFloat(version);
 				DecimalFormat df = new DecimalFormat("0.0");
 				df.setMaximumFractionDigits(1);
@@ -222,63 +217,29 @@ public class FEFlowService implements Observer {
 				
 				//data = invokeFtl.getGeneratedBasicConfigFile(RequestId, version);
 				
-				
 				RequestInfoEntity req = reository.findByAlphanumericReqIdAndRequestVersion(RequestId, Double.valueOf(version));
-
-				//get series
-				String series=getSeries(req.getVendor(), req.getFamily(),req.getModel());
-				
-				Set<Series>setSeries=seriesrepo.findBySeries(series);
-				 List<Series> listSeries = new ArrayList<>(setSeries);
-				 Set<BasicConfiguration>setBasicConfig=basicConfigRepo.findBySeriesId(listSeries.get(0).getId());
-				 List<BasicConfiguration> listConf = new ArrayList<>(setBasicConfig);
-
-				//get master config from DB
-				CommandPojo pojo;
-				for (int i = 0; i < listConf.size(); i++) {
-					pojo = new CommandPojo();
-					pojo.setCommand_id(String.valueOf(listConf.get(i).getSequence_id()));
-					pojo.setCommand_value(listConf.get(i).getConfiguration());
-					pojo.setCommandValue(listConf.get(i).getConfiguration());
-					cmdList.add(pojo);
-				}
-				
-				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
-				String seriesId = templatemanagementDao.getSeriesId(req.getTemplateUsed(), series);
-				seriesId = StringUtils.substringAfter(seriesId, "Generic_");
-				
-				List<AttribCreateConfigPojo> masterAttribute = new ArrayList<>();
-				List<AttribCreateConfigPojo> byAttribSeriesId = service.getByAttribSeriesId(seriesId);
-				if (byAttribSeriesId != null && !byAttribSeriesId.isEmpty()) {
-					masterAttribute.addAll(byAttribSeriesId);
-				}
-				
-				List<CommandPojo> cammandsBySeriesId = null;
-				cammandsBySeriesId = templatemanagementDao.getCammandsBySeriesId(seriesId, null);
-				
-				RequestInfoPojo createConfigRequest = new RequestInfoPojo();
-				GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
-				createConfigRequest.setOsVersion(req.getOsVersion());
-				createConfigRequest.setHostname(req.getHostName());
-				createConfigRequest.setOs(req.getOs());
-				createConfigRequest.setModel(req.getModel());
-				createConfigRequest.setManagementIp(req.getManagmentIP());
-				createConfigRequest.setVendor(req.getVendor());
-				createConfigRequest.setRegion(req.getRegion());
-			    invokeFtl.createFinalTemplate(cmdList, null, null, null,
-			    		req.getTemplateUsed());
-			    data1 = getConfigurationTemplateService.generateTemplate(createConfigRequest);
+				List<TemplateFeatureEntity> templateFeatureEntity = templateFeatureRepo
+						.findByCommandType(req.getTemplateUsed());
+				List<CommandPojo> commandValue = new ArrayList<>();
+				templateFeatureEntity.forEach(templateFeature -> {
+					if (templateFeature.getComandDisplayFeature().contains("Basic Configuration")) {
+						commandValue.addAll(masterCommandsRepository.findByCommandId(templateFeature.getId()));
+					}
+				});
+				commandValue.forEach(commands -> {
+					CommandPojo commandpojo = new CommandPojo();
+					commandpojo.setCommand_value(commands.getCommand_value());
+					commandpojo.setCommand_sequence_id(commands.getCommand_sequence_id());
+					jsonArray.add(commandpojo);
+				});
+				jsonObject.put("output", jsonArray);
 				
 				//Global.loggedInUser="feuser";
 				if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
 					dao.setReadFlagFESE(RequestId, version, 1, "FE");
-
-
 				} else if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
 					dao.setReadFlagFESE(RequestId, version, 1, "SE");
-
 				}
-
 			}
 		}
 		// camundaService.initiateApprovalFlow(templateId, templateVersion,
@@ -293,14 +254,11 @@ public class FEFlowService implements Observer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String jsonList = new Gson().toJson(cmdList);
-		obj.put(new String("output"), jsonList);
-
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+				.header("Access-Control-Max-Age", "1209600").entity(jsonObject).build();
 	}
 
 	@POST

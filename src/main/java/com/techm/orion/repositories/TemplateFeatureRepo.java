@@ -25,9 +25,9 @@ public interface TemplateFeatureRepo extends
 	
 	public List<TemplateFeatureEntity> findMasterFIdByCommand(String templateid);
 	
-	@Query("Select u from TemplateFeatureEntity u where command = :command ")
-	TemplateFeatureEntity findByCommandType(@Param("command") String command);
-
+	@Query(value = " Select * from c3p_template_master_feature_list where command_type =:command", nativeQuery = true)
+	List<TemplateFeatureEntity> findByCommandType(@Param("command") String command);
+	
 	TemplateFeatureEntity findById(int id);
 	
 	@Query(value = " Select master_f_id from c3p_template_master_feature_list where command_type = :command ", nativeQuery = true)
@@ -43,5 +43,6 @@ public interface TemplateFeatureRepo extends
 	
 	@Query("Select templateFeauteData from TemplateFeatureEntity templateFeauteData where id =:id and parent=:featureName and is_Save='1' ")
 	TemplateFeatureEntity findFeatureDetails(@Param("id") int id, @Param("featureName") String featureName);
+	
 }
 
