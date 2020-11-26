@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
@@ -38,7 +37,6 @@ import com.techm.orion.rest.CamundaServiceCreateReq;
 import com.techm.orion.rest.CamundaServiceFEWorkflow;
 import com.techm.orion.rest.DeviceReachabilityAndPreValidationTest;
 import com.techm.orion.service.AttribCreateConfigService;
-import com.techm.orion.utility.InvokeFtl;
 
 @Controller
 @RequestMapping("/configuration")
@@ -46,16 +44,16 @@ import com.techm.orion.utility.InvokeFtl;
 public class FEFlowService implements Observer {
 	
 	@Autowired
-	RequestInfoDetailsRepositories reository;
+	private RequestInfoDetailsRepositories reository;
 
 	@Autowired
-	SeriesRepository seriesrepo;
+	private SeriesRepository seriesrepo;
 	
 	@Autowired
-	BasicConfigurationRepository basicConfigRepo;
+	private BasicConfigurationRepository basicConfigRepo;
 	
 	@Autowired
-	AttribCreateConfigService service;
+	private AttribCreateConfigService service;
 	
 	@Autowired
 	private TemplateFeatureRepo templateFeatureRepo;
