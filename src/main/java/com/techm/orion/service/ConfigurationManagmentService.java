@@ -18,6 +18,7 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
+import com.techm.orion.entitybeans.VendorCommandEntity;
 import com.techm.orion.pojo.AttribCreateConfigJson;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CommandPojo;
@@ -27,6 +28,7 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
+import com.techm.orion.repositories.VendorCommandRepository;
 import com.techm.orion.rest.VnfConfigService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
@@ -54,16 +56,19 @@ public class ConfigurationManagmentService {
 	@Autowired
 	private MasterCommandsRepository masterCommandsRepository;
 
+	@Autowired
+	private VendorCommandRepository vendorCommandRepository;
+
 	InvokeFtl invokeFtl = new InvokeFtl();
-	
+
 	GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
-	
+
 	TemplateManagementDao dao = new TemplateManagementDao();
 
 	@SuppressWarnings("unchecked")
 	public JSONObject verifyConfiguration(JSONObject requestJson) {
 		JSONObject obj = new JSONObject();
-		RequestInfoPojo requestInfoData = new RequestInfoPojo();		
+		RequestInfoPojo requestInfoData = new RequestInfoPojo();
 		TemplateManagementDao dao = new TemplateManagementDao();
 		requestInfoData = setRequestInfoData(requestJson);
 
@@ -91,7 +96,7 @@ public class ConfigurationManagmentService {
 		if (requestJson.get("networkType").toString().equals("VNF")) {
 			JSONObject vnfFinalObject = new JSONObject();
 			String templateId = requestInfoData.getTemplateID();
-			JSONArray fianlJson = vnfFeatureData(features,templateId,attribJson);
+			JSONArray fianlJson = vnfFeatureData(features, templateId, attribJson);
 			vnfFinalObject.put("dynamicAttribs", fianlJson);
 			VnfConfigService vnfService = new VnfConfigService();
 			Response generateConfiguration = vnfService.generateConfiguration(vnfFinalObject.toString());
@@ -99,129 +104,131 @@ public class ConfigurationManagmentService {
 			Object object = entity.get("data");
 			obj.put(new String("output"), new String(object.toString()));
 		} else {
-			//commented code is to check duplicate label values.
-			/*List<AttribCreateConfigJson> attribList = new ArrayList<>();
-			if (attribJson != null) {
-				attribList.addAll(addAttribDataintoList(attribJson));
-			}*/
+			// commented code is to check duplicate label values.
+			/*
+			 * List<AttribCreateConfigJson> attribList = new ArrayList<>(); if (attribJson
+			 * != null) { attribList.addAll(addAttribDataintoList(attribJson)); }
+			 */
 			JSONArray replicationArray = null;
 			if (requestJson.containsKey("replication")) {
 				replicationArray = (JSONArray) requestJson.get("replication");
-				/*if (replicationArray != null && !replicationArray.isEmpty()) {
-					for (int i = 0; i < replicationArray.size(); i++) {
-						JSONObject featureDetails = (JSONObject) replicationArray.get(i);
-						JSONArray featureAttribArray = (JSONArray) featureDetails.get("featureAttribDetails");
-						if (featureAttribArray != null) {
-							attribList.addAll(addAttribDataintoList(featureAttribArray));
-						}
-					}
-				}*/
+				/*
+				 * if (replicationArray != null && !replicationArray.isEmpty()) { for (int i =
+				 * 0; i < replicationArray.size(); i++) { JSONObject featureDetails =
+				 * (JSONObject) replicationArray.get(i); JSONArray featureAttribArray =
+				 * (JSONArray) featureDetails.get("featureAttribDetails"); if
+				 * (featureAttribArray != null) {
+				 * attribList.addAll(addAttribDataintoList(featureAttribArray)); } } }
+				 */
 			}
-			/*boolean flag = false;
-			
-			if (!attribList.isEmpty()) {	
-				for(int i=0;i<attribList.size();i++) {
-					for(int j=i+1;j<attribList.size();j++) {
-						if (attribList.get(i).getLabel().equals(attribList.get(j).getLabel())) {
-							if (attribList.get(i).getAttribValue().equals(attribList.get(j).getAttribValue())) {
-								flag = true;
-								break;
-							}
-						}			
+			/*
+			 * boolean flag = false;
+			 * 
+			 * if (!attribList.isEmpty()) { for(int i=0;i<attribList.size();i++) { for(int
+			 * j=i+1;j<attribList.size();j++) { if
+			 * (attribList.get(i).getLabel().equals(attribList.get(j).getLabel())) { if
+			 * (attribList.get(i).getAttribValue().equals(attribList.get(j).getAttribValue()
+			 * )) { flag = true; break; } } } } }
+			 * 
+			 * if (flag) { obj.put("Failuer", "Duplicate Data found"); } else {
+			 */
+			List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
+			List<CommandPojo> cammandByTemplate = new ArrayList<>();
+			if (requestInfoData.getTemplateID() != null && !requestInfoData.getTemplateID().isEmpty()) {
+				for (TemplateFeaturePojo feature : features) {
+					String templateId = requestInfoData.getTemplateID();
+					TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
+							.findIdByComandDisplayFeatureAndCommandContains(feature.getfName(), templateId);
+					List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = attribCreateConfigService
+							.getByAttribTemplateAndFeatureName(templateId, feature.getfName());
+					if (byAttribTemplateAndFeatureName != null && !byAttribTemplateAndFeatureName.isEmpty()) {
+						templateAttribute.addAll(byAttribTemplateAndFeatureName);
 					}
+					cammandByTemplate.addAll(dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(),
+							requestInfoData.getTemplateID()));
 				}
-			}
-
-			if (flag) {
-				obj.put("Failuer", "Duplicate Data found");
-			} else {*/
-				List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
-				List<CommandPojo> cammandByTemplate = new ArrayList<>();
-				if (requestInfoData.getTemplateID() != null && !requestInfoData.getTemplateID().isEmpty()) {
-					for (TemplateFeaturePojo feature : features) {
-						String templateId = requestInfoData.getTemplateID();
-						TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
-								.findIdByComandDisplayFeatureAndCommandContains(feature.getfName(), templateId);
-						List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = attribCreateConfigService
-								.getByAttribTemplateAndFeatureName(templateId, feature.getfName());
-						if (byAttribTemplateAndFeatureName != null && !byAttribTemplateAndFeatureName.isEmpty()) {
-							templateAttribute.addAll(byAttribTemplateAndFeatureName);
-						}
-						cammandByTemplate.addAll(dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(),
-								requestInfoData.getTemplateID()));
-					}
-					// Extract Json and map to CreateConfigPojo fields
-					if (attribJson != null) {
-						requestInfoData = setAttributeData(requestInfoData, attribJson, templateAttribute);
-					}
-					logger.info("generateCreateRequestDetails - getTemplateID-  " + requestInfoData.getTemplateID());
-					if (replicationArray != null && !replicationArray.isEmpty()) {
-						// TemplateId with feature Replication
-						if (requestJson.get("replication") != null) {
-							createReplicationFinalTemplate(cammandByTemplate, templateAttribute,
-									requestInfoData.getTemplateID(), (JSONArray) requestJson.get("replication"));
-						}
-					} else {
-						// TemplateId without feature Replication
-						invokeFtl.createFinalTemplate(null, cammandByTemplate, null, templateAttribute,
-								requestInfoData.getTemplateID());
+				// Extract Json and map to CreateConfigPojo fields
+				if (attribJson != null) {
+					requestInfoData = setAttributeData(requestInfoData, attribJson, templateAttribute);
+				}
+				logger.info("generateCreateRequestDetails - getTemplateID-  " + requestInfoData.getTemplateID());
+				if (replicationArray != null && !replicationArray.isEmpty()) {
+					// TemplateId with feature Replication
+					if (requestJson.get("replication") != null) {
+						createReplicationFinalTemplate(cammandByTemplate, templateAttribute,
+								requestInfoData.getTemplateID(), (JSONArray) requestJson.get("replication"),
+								requestInfoData.getVendor());
 					}
 				} else {
-					 String templateName = dcmConfigService.getTemplateName(requestInfoData.getRegion(),
-							requestInfoData.getVendor(), requestInfoData.getModel(), requestInfoData.getOs(),
-							requestInfoData.getOsVersion());
-					templateName = "Feature_" + templateName;
-					requestInfoData.setTemplateID(templateName);
-					if (replicationArray != null && !replicationArray.isEmpty()) {
-						// Without TemplateId only Feature Replication
-						cammandByTemplate = getCommandsByMasterFeature(requestInfoData.getVendor(),features);
-						cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
-						cammandByTemplate = setReplicationFeatureData(cammandByTemplate,
-								(JSONArray) requestJson.get("replication"), requestInfoData.getVendor());
-
-					} else {
-						// No TemplateId and No Feature Replication
-						cammandByTemplate = getCommandsByMasterFeature(requestInfoData.getVendor(),features);
-						cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
-					}
-
-					logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
-					TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateName,
-							invokeFtl.setCommandPosition(null, cammandByTemplate));
+					// TemplateId without feature Replication
+					cammandByTemplate = setcammandByTemplate(cammandByTemplate, requestInfoData.getVendor());
+					invokeFtl.createFinalTemplate(null, cammandByTemplate, null, templateAttribute,
+							requestInfoData.getTemplateID());
 				}
-				obj.put(new String("output"),
-						new String(getConfigurationTemplateService.generateTemplate(requestInfoData)));
+			} else {
+				String templateName = dcmConfigService.getTemplateName(requestInfoData.getRegion(),
+						requestInfoData.getVendor(), requestInfoData.getModel(), requestInfoData.getOs(),
+						requestInfoData.getOsVersion());
+				templateName = "Feature_" + templateName;
+				requestInfoData.setTemplateID(templateName);
+				if (replicationArray != null && !replicationArray.isEmpty()) {
+					// Without TemplateId only Feature Replication
+					cammandByTemplate = getCommandsByMasterFeature(requestInfoData.getVendor(), features);
+					cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
+					cammandByTemplate = setReplicationFeatureData(cammandByTemplate,
+							(JSONArray) requestJson.get("replication"), requestInfoData.getVendor());
+
+				} else {
+					// No TemplateId and No Feature Replication
+					cammandByTemplate = getCommandsByMasterFeature(requestInfoData.getVendor(), features);
+					cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
+					List<VendorCommandEntity> vendorComandList = vendorCommandRepository
+							.findAllByVcVendorName(requestInfoData.getVendor());
+					if (!vendorComandList.isEmpty()) {
+						vendorComandList.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId()
+								- c1.getVcParentId());
+						String previous = null;
+						for (VendorCommandEntity vendorComand : vendorComandList) {
+							if (vendorComand.getVcRepetition() != null) {
+								previous = vendorComand.getVcEnd();
+							}
+							cammandByTemplate = setSpecifcComandForFeature(vendorComand, cammandByTemplate, previous,
+									1);
+						}
+					}
+				}
+
+				logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
+
+				TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateName,
+						invokeFtl.setCommandPosition(null, cammandByTemplate));
 			}
-//		}
+			obj.put(new String("output"),
+					new String(getConfigurationTemplateService.generateTemplate(requestInfoData)));
+		}
+		// }
 		return obj;
 	}
 
-	private List<CommandPojo> getCommandsByMasterFeature(String vendor, List<TemplateFeaturePojo> features) {
+	public List<CommandPojo> getCommandsByMasterFeature(String vendor, List<TemplateFeaturePojo> features) {
 		List<CommandPojo> commandList = new ArrayList<>();
-		// set Config t and exit command
-		if ("Cisco".equalsIgnoreCase(vendor)) {
-			commandList.add(setConfigComamnd("config t\n"));
-		}
 		for (TemplateFeaturePojo feature : features) {
 			commandList.addAll(masterCommandsRepository.findBymasterFId(feature.getfMasterId()));
 		}
-		if ("Cisco".equalsIgnoreCase(vendor)) {
-			commandList.add(setConfigComamnd("exit\n"));
-		}
-		return commandList;	
+
+		return commandList;
 	}
 
 	@SuppressWarnings("unchecked")
 	private JSONArray vnfFeatureData(List<TemplateFeaturePojo> features, String templateId, JSONArray attribJson) {
 		JSONArray fianlJson = new JSONArray();
 		for (TemplateFeaturePojo feature : features) {
-			JSONArray vnfattribJson = new JSONArray();			
+			JSONArray vnfattribJson = new JSONArray();
 			List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = attribCreateConfigService
 					.getByAttribTemplateAndFeatureName(templateId, feature.getfName());
 			JSONObject vnfObject = new JSONObject();
 			for (AttribCreateConfigPojo attr : byAttribTemplateAndFeatureName) {
-				attribLabel: 
-					for (int i = 0; i < attribJson.size(); i++) {
+				attribLabel: for (int i = 0; i < attribJson.size(); i++) {
 					JSONObject object = (JSONObject) attribJson.get(i);
 					String attribLabel = object.get("label").toString();
 					String attribName = object.get("name").toString();
@@ -243,7 +250,7 @@ public class ConfigurationManagmentService {
 		return fianlJson;
 	}
 
-	//method added to check duplicate value
+	// method added to check duplicate value
 	private List<AttribCreateConfigJson> addAttribDataintoList(JSONArray attribJson) {
 		List<AttribCreateConfigJson> atttribDataList = new ArrayList<>();
 		for (int i = 0; i < attribJson.size(); i++) {
@@ -256,7 +263,6 @@ public class ConfigurationManagmentService {
 		return atttribDataList;
 	}
 
-	// Master Table not created for vendor specific config value
 	private CommandPojo setConfigComamnd(String command) {
 		CommandPojo commandPojo = new CommandPojo();
 		commandPojo.setCommandValue(command);
@@ -290,11 +296,10 @@ public class ConfigurationManagmentService {
 		LocalDateTime nowDate = LocalDateTime.now();
 		Timestamp timestamp = Timestamp.valueOf(nowDate);
 		createConfigRequest.setRequestCreatedOn(timestamp.toString());
-		
+
 		if (json.get("networkType") != null && json.get("networkType").toString().isEmpty()) {
 			createConfigRequest.setNetworkType(json.get("networkType").toString());
-		} 
-		else {
+		} else {
 			DeviceDiscoveryEntity networkfunctio = deviceDiscoveryRepository
 					.findDVNFSupportByDHostName(createConfigRequest.getHostname());
 			createConfigRequest.setNetworkType(networkfunctio.getdVNFSupport());
@@ -313,8 +318,9 @@ public class ConfigurationManagmentService {
 			for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
 				if (attribLabel.contains(templateAttrib.getAttribLabel())) {
 					String attribValue = templateAttrib.getAttribName();
-					if (attribValue.contains(attribName) && templateAttrib.getAttribType().equals("Template") && attribType.equals("Template") ) {						
-								requestInfoData = setAttribValue(attribName, requestInfoData, attriValue);				
+					if (attribValue.contains(attribName) && templateAttrib.getAttribType().equals("Template")
+							&& attribType.equals("Template")) {
+						requestInfoData = setAttribValue(attribName, requestInfoData, attriValue);
 					}
 				}
 
@@ -324,8 +330,7 @@ public class ConfigurationManagmentService {
 
 	}
 
-	public RequestInfoPojo setAttribValue(String attribName, RequestInfoPojo requestInfoData,
-			String attriValue) {
+	public RequestInfoPojo setAttribValue(String attribName, RequestInfoPojo requestInfoData, String attriValue) {
 		if (attribName.equals("Os Ver")) {
 			requestInfoData.setOsVer(attriValue);
 		} else if (attribName.equals("Host Name Config")) {
@@ -591,7 +596,8 @@ public class ConfigurationManagmentService {
 	}
 
 	private void createReplicationFinalTemplate(List<CommandPojo> cammandByTemplate,
-			List<AttribCreateConfigPojo> templateAttribute, String templateID, JSONArray featureReplactionArray) {
+			List<AttribCreateConfigPojo> templateAttribute, String templateID, JSONArray featureReplactionArray,
+			String vendor) {
 		// set Template attribute and sort with position
 		String s = ")!" + '"' + '"' + "}";
 		if (templateAttribute != null) {
@@ -621,6 +627,7 @@ public class ConfigurationManagmentService {
 				}
 			}
 		}
+		cammandByTemplate = setcammandByTemplate(cammandByTemplate, vendor);
 		logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
 		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateID,
 				invokeFtl.setCommandPosition(null, cammandByTemplate));
@@ -640,7 +647,7 @@ public class ConfigurationManagmentService {
 	}
 
 	// set command label with value
-	private List<CommandPojo> setFeatureData(List<CommandPojo> commandsByFeatureData, JSONArray featureAttribArray) {
+	public List<CommandPojo> setFeatureData(List<CommandPojo> commandsByFeatureData, JSONArray featureAttribArray) {
 		if (commandsByFeatureData != null) {
 			commandsByFeatureData.forEach(commands -> {
 				if (featureAttribArray != null && !featureAttribArray.isEmpty()) {
@@ -662,31 +669,87 @@ public class ConfigurationManagmentService {
 	}
 
 	// set Replicate Feature
-	private List<CommandPojo> setReplicationFeatureData(List<CommandPojo> cammandByTemplate,
+	public List<CommandPojo> setReplicationFeatureData(List<CommandPojo> cammandByTemplate,
 			JSONArray featureReplactionArray, String vendor) {
-		cammandByTemplate.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
+
 		int position = 0;
+		int tempCount = 1;
+		String preValue = null;
+		List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorName(vendor);
+		if (!vendorComandList.isEmpty()) {
+			vendorComandList
+					.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId() - c1.getVcParentId());
+		}
 		if (featureReplactionArray != null && !featureReplactionArray.isEmpty()) {
 			for (int i = 0; i < featureReplactionArray.size(); i++) {
+				cammandByTemplate.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
 				List<CommandPojo> commandsByFeatureData = new ArrayList<>();
 				JSONObject featureDetails = (JSONObject) featureReplactionArray.get(i);
 				String featureMasterId = featureDetails.get("featureId").toString();
-				if ("Cisco".equalsIgnoreCase(vendor)) {
-					commandsByFeatureData.add(setConfigComamnd("config t\n"));
-				}
-				commandsByFeatureData.addAll(setcomandValue(masterCommandsRepository.findByMasterTemplateId(featureMasterId)));
-				if ("Cisco".equalsIgnoreCase(vendor)) {
-					commandsByFeatureData.add(setConfigComamnd("exit\n"));
+				commandsByFeatureData
+						.addAll(setcomandValue(masterCommandsRepository.findByMasterTemplateId(featureMasterId)));
+				for (VendorCommandEntity vendorComand : vendorComandList) {
+					int checkStart = 1;
+					if (vendorComand.getVcRepetition() != null) {
+						preValue = vendorComand.getVcEnd();
+					}
+					if (vendorComand.getVcRepetition() != null && "REAF".equals(vendorComand.getVcRepetition())) {
+						checkStart++;
+					}
+					if (vendorComandList.size() == 1) {
+						commandsByFeatureData = setSpecifcComandForFeature(vendorComand, commandsByFeatureData,
+								preValue, 1);
+						if (tempCount == 1) {
+							cammandByTemplate = setSpecifcComandForFeature(vendorComand, cammandByTemplate, preValue,
+									1);
+							tempCount++;
+						}
+					} else {
+						if (vendorComand.getVcRepetition() != null) {
+							commandsByFeatureData = setSpecifcComandForFeature(vendorComand, commandsByFeatureData,
+									preValue, checkStart);
+							commandsByFeatureData.forEach(item -> {
+								System.out.println(item.getCommandValue());
+							});
+							if (tempCount <= 2) {
+								if (tempCount == 1) {
+									cammandByTemplate = setSpecifcComandForFeature(vendorComand, cammandByTemplate,
+											preValue, checkStart);
+									tempCount++;
+								}
+								if ("RBEF".equals(vendorComand.getVcRepetition())) {
+									cammandByTemplate = setSpecifcComandForFeature(vendorComand, cammandByTemplate,
+											preValue, checkStart);
+									tempCount++;
+								}
+							}
+						}
+					}
+
 				}
 				JSONArray featureAttribArray = (JSONArray) featureDetails.get("featureAttribDetails");
 				commandsByFeatureData = setFeatureData(commandsByFeatureData, featureAttribArray);
 				position = cammandByTemplate.size();
 				cammandByTemplate = setFeatureFinalCommands(cammandByTemplate, position, commandsByFeatureData);
 			}
+			for (VendorCommandEntity vendorComand : vendorComandList) {
+				if (vendorComandList.size() > 1) {
+					if (vendorComand.getVcRepetition() != null) {
+						preValue = vendorComand.getVcEnd();
+					}
+					if (vendorComand.getVcRepetition() != null && !"RBEF".equals(vendorComand.getVcRepetition())
+							&& vendorComand.getVcStart() != null) {
+						cammandByTemplate = setSpecifcComandForFeature(vendorComand, cammandByTemplate, preValue, 1);
+					} else if (vendorComand.getVcRepetition() == null) {
+						cammandByTemplate = setSpecifcComandForFeature(vendorComand, cammandByTemplate, preValue, 1);
+					}
+				}
+			}
+
 		}
 		return cammandByTemplate;
 	}
-	
+
 	private List<CommandPojo> setFeatureFinalCommands(List<CommandPojo> cammandByTemplate, int position,
 			List<CommandPojo> commandsByFeatureData) {
 		int assignPosition = 1;
@@ -694,6 +757,9 @@ public class ConfigurationManagmentService {
 		for (CommandPojo command : cammandByTemplate) {
 			CommandPojo commandSet = null;
 			if (assignPosition == position) {
+				commandSet = setCommandPosition(command, assignPosition);
+				assignPosition++;
+				finalCommandList.add(commandSet);
 				for (CommandPojo featureCommand : commandsByFeatureData) {
 					commandSet = setCommandPosition(featureCommand, assignPosition);
 					assignPosition++;
@@ -728,14 +794,16 @@ public class ConfigurationManagmentService {
 		}
 		return finalCommandList;
 	}
-	
-	
 
 	private CommandPojo setCommandPosition(CommandPojo command, int assignPosition) {
 		CommandPojo pojoData = new CommandPojo();
 		pojoData.setCommand_id(command.getCommand_id());
 		pojoData.setPosition(assignPosition);
-		pojoData.setCommandValue(command.getCommandValue());
+		if (command.getCommandValue() != null) {
+			pojoData.setCommandValue(command.getCommandValue());
+		} else {
+			pojoData.setCommandValue(command.getCommand_value());
+		}
 		pojoData.setMasterFId(command.getMasterFId());
 		return pojoData;
 	}
@@ -748,5 +816,84 @@ public class ConfigurationManagmentService {
 			commandsByFeatureData.add(pojoData);
 		});
 		return commandsByFeatureData;
+	}
+
+	private List<CommandPojo> setcammandByTemplate(List<CommandPojo> cammandByTemplate, String vendor) {
+		List<CommandPojo> finalCommandList = new ArrayList<>();
+		cammandByTemplate.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
+		List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorName(vendor);
+		if (!vendorComandList.isEmpty()) {
+			int count = 1;
+			vendorComandList
+					.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId() - c1.getVcParentId());
+			for (VendorCommandEntity vendorComand : vendorComandList) {
+				if (vendorComandList.size() == 1) {
+					finalCommandList.addAll(setSpecifcComandForTemplate(vendorComand, cammandByTemplate));
+				} else {
+					if (count == 1) {
+						cammandByTemplate = setSpecifcComandForTemplate(vendorComand, cammandByTemplate);
+						count++;
+					} else {
+						finalCommandList.addAll(setSpecifcComandForTemplate(vendorComand, cammandByTemplate));
+						count++;
+					}
+				}
+			}
+
+		} else {
+			finalCommandList = cammandByTemplate;
+		}
+		return finalCommandList;
+	}
+
+	private List<CommandPojo> setSpecifcComandForTemplate(VendorCommandEntity vendorComand,
+			List<CommandPojo> cammandByTemplate) {
+		List<CommandPojo> finalCommandList = new ArrayList<>();
+		int position = 1;
+		if (vendorComand.getVcStart() != null) {
+			finalCommandList.add(setCommandPosition(setConfigComamnd(vendorComand.getVcStart() + "\n"), position));
+		}
+		position++;
+		for (CommandPojo comand : cammandByTemplate) {
+			finalCommandList.add(setCommandPosition(comand, position));
+			position++;
+		}
+		if (vendorComand.getVcEnd() != null) {
+			finalCommandList.add(setCommandPosition(setConfigComamnd(vendorComand.getVcEnd() + "\n"), position));
+		}
+		return finalCommandList;
+	}
+
+	public List<CommandPojo> setSpecifcComandForFeature(VendorCommandEntity vendorComand,
+			List<CommandPojo> cammandByTemplate, String preValue, int checkStart) {
+		List<CommandPojo> finalCommandList = new ArrayList<>();
+		int position = 1;
+		if (checkStart < 2) {
+			if (vendorComand.getVcStart() != null) {
+				finalCommandList.add(setCommandPosition(setConfigComamnd(vendorComand.getVcStart() + "\n"), position));
+				position++;
+			}
+		}
+
+		for (CommandPojo comand : cammandByTemplate) {
+			if (vendorComand.getVcAppend() != null) {
+				if (comand.getCommandValue()==null && comand.getCommand_value() != null) {
+					comand.setCommandValue(vendorComand.getVcAppend() + " " + comand.getCommand_value());
+				} else {
+					if (preValue != null && !(preValue + "\n").equals(comand.getCommandValue())) {
+						comand.setCommandValue(vendorComand.getVcAppend() + " " + comand.getCommandValue());
+					} else if (preValue == null) {
+						comand.setCommandValue(vendorComand.getVcAppend() + " " + comand.getCommandValue());
+					}
+				}
+
+			}
+			finalCommandList.add(setCommandPosition(comand, position));
+			position++;
+		}
+		if (vendorComand.getVcEnd() != null) {
+			finalCommandList.add(setCommandPosition(setConfigComamnd(vendorComand.getVcEnd() + "\n"), position));
+		}
+		return finalCommandList;
 	}
 }

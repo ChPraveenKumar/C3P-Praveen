@@ -207,7 +207,9 @@ public class RequestInfoEntity implements Serializable {
 	private Object batchSize;
 
 
-
+	@Transient
+	private Object replicationAttrib;
+	
 	public Object getBatchSize() {
 		return batchSize;
 	}
@@ -650,4 +652,13 @@ public class RequestInfoEntity implements Serializable {
 	public void setrFileName(String rFileName) {
 		this.rFileName = rFileName;
 	}
+
+	public Object getReplicationAttrib() {
+		return replicationAttrib;
+	}
+
+	public void setReplicationAttrib(Object replicationAttrib) {
+		this.replicationAttrib = replicationAttrib;
+	}
+	
 }

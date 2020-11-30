@@ -48,9 +48,9 @@ import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.ErrorCodeValidationDeliveryTest;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.VNFHelper;
-import com.techm.orion.utility.TSALabels;
 
 @Controller
 @RequestMapping("/DeliverConfigurationAndBackupTest")
@@ -484,7 +484,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							commandToPush = readFileNoCmd(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()));
 							if (!(commandToPush.get(0).contains("null"))) {
-								ps.println("config t");
+//								ps.println("config t");
 								for (String arr : commandToPush) {
 
 									ps.println(arr);
@@ -493,7 +493,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 											Double.toString(requestinfo.getRequestVersion()));
 
 								}
-								ps.println("exit");
+//								ps.println("exit");
 								try {
 									Thread.sleep(4000);
 								} catch (Exception ee) {
@@ -507,7 +507,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								Double.toString(requestinfo.getRequestVersion()));
 
 						if (!(commandToPush.get(0).contains("null"))) {
-							ps.println("config t");
+							//ps.println("config t");
 							for (String arr : commandToPush) {
 
 								ps.println(arr);
