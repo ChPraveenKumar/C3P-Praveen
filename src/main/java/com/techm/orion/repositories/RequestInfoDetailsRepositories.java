@@ -211,17 +211,17 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	int  getRequestCountIndividual(@Param("creatorName") String creatorName, @Param("customer") String customer,
 			@Param("region") String region, @Param("site") String site, @Param("vendor") String vendor);
 
-	@Query(value = "SELECT distinct(DATE_FORMAT(r_date_of_processing,'%Y-%m-%d')) FROM `c3p_t_request_info` where `r_date_of_processing` BETWEEN CURDATE()-4 AND CURDATE()+1 and r_request_creator_name like :creatorName"
+	@Query(value = "SELECT distinct(DATE_FORMAT(r_date_of_processing,'%Y-%m-%d')) FROM `c3p_t_request_info` where `r_date_of_processing`>=(CURDATE()-interval 4 day) and r_request_creator_name like :creatorName"
 			+ " and r_customer like :customer and r_region like :region and r_siten_ame like :site and r_vendor like :vendor and r_batch_id IS NULL", nativeQuery = true)
 	List<String>  getRequestDateWithIndividual(@Param("creatorName") String creatorName, @Param("customer") String customer,
 			@Param("region") String region, @Param("site") String site, @Param("vendor") String vendor);
 
-	@Query(value = "SELECT distinct(DATE_FORMAT(r_date_of_processing,'%Y-%m-%d')) FROM `c3p_t_request_info` where `r_date_of_processing` BETWEEN CURDATE()-4 AND CURDATE()+1 and r_request_creator_name like :creatorName"
+	@Query(value = "SELECT distinct(DATE_FORMAT(r_date_of_processing,'%Y-%m-%d')) FROM `c3p_t_request_info` where `r_date_of_processing`>=(CURDATE()-interval 4 day) and r_request_creator_name like :creatorName"
 			+ " and r_customer like :customer and r_region like :region and r_siten_ame like :site and r_vendor like :vendor and r_batch_id IS NOT NULL", nativeQuery = true)
 	List<String>  getRequestDateWithBatchId(@Param("creatorName") String creatorName, @Param("customer") String customer,
 			@Param("region") String region, @Param("site") String site, @Param("vendor") String vendor);
 
-	@Query(value = "SELECT distinct(DATE_FORMAT(r_date_of_processing,'%Y-%m-%d')) FROM `c3p_t_request_info` where `r_date_of_processing` BETWEEN CURDATE()-4 AND CURDATE()+1 and r_request_creator_name like :creatorName"
+	@Query(value = "SELECT distinct(DATE_FORMAT(r_date_of_processing,'%Y-%m-%d')) FROM `c3p_t_request_info` where `r_date_of_processing`>=(CURDATE()-interval 4 day) and r_request_creator_name like :creatorName"
 			+ " and r_customer like :customer and r_region like :region and r_siten_ame like :site and r_vendor like :vendor", nativeQuery = true)
 	List<String>  getRequestDate(@Param("creatorName") String creatorName, @Param("customer") String customer,
 			@Param("region") String region, @Param("site") String site, @Param("vendor") String vendor);
