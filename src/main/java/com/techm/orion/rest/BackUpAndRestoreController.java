@@ -118,10 +118,10 @@ public class BackUpAndRestoreController {
 
 	@Autowired
 	public SiteInfoRepository siteInfoRepository;
-	
+
 	@Autowired
 	FirmUpgradeSingleDeviceRepository firmUpgradeSingleDeviceRepository;
-	
+
 	@Autowired
 	DeviceDiscoveryRepository deviceInforepo;
 
@@ -399,7 +399,7 @@ public class BackUpAndRestoreController {
 				requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
 
 				requestInfoEntity.setRequestVersion(1.0);
-				
+
 				requestInfoEntity.setFamily(requestDetail.get(i).getdDeviceFamily());
 
 				requestInfoEntity.setSiteName(requestDetail.get(i).getCustSiteId().getcSiteName());
@@ -695,7 +695,7 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setVendor(requestDetail.get(i).getdVendor());
 
 					requestInfoEntity.setNetworkType(requestDetail.get(i).getdVNFSupport());
-					
+
 					requestInfoEntity.setFamily(requestDetail.get(i).getdDeviceFamily());
 
 					requestInfoEntity.setRequestVersion(request_version);
@@ -848,7 +848,7 @@ public class BackUpAndRestoreController {
 				templateId = null, requestType = "Config MACD", requestId = null;
 
 		HashMap<String, String> map = new HashMap<String, String>();
-		ArrayList<String> tempRequest = new ArrayList<String>();
+		ArrayList<Integer> tempRequest = new ArrayList<Integer>();
 		ArrayList<String> tempRequest1 = new ArrayList<String>();
 
 		JSONParser parser = new JSONParser();
@@ -857,13 +857,12 @@ public class BackUpAndRestoreController {
 		JsonObject jsonObject = new JsonParser().parse(configRequest).getAsJsonObject();
 
 		attribJson = jsonObject.getAsJsonArray("requests");
-
+		int requestCount = 1;
 		for (int n = 0; n < attribJson.size(); n++) {
 			tempHostName = attribJson.get(n).getAsJsonObject().get("hostname").getAsString();
 			tempManagementIp = attribJson.get(n).getAsJsonObject().get("managementIp").getAsString();
-			templateId = attribJson.get(n).getAsJsonObject().get("templateId").getAsString();
 			map.put(tempHostName, tempManagementIp);
-			tempRequest.add(templateId);
+			tempRequest.add(requestCount);			
 		}
 
 		List<DeviceDiscoveryEntity> requestDetail = null;
@@ -901,7 +900,7 @@ public class BackUpAndRestoreController {
 						RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
 
 						requestInfoEntity.setRequestType(requestType);
-						
+
 						alphaneumeric_req_id = "SLGM-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
 						requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
 						if (j == 0) {
@@ -913,10 +912,14 @@ public class BackUpAndRestoreController {
 						LocalDateTime nowDate = LocalDateTime.now();
 						timestamp = Timestamp.valueOf(nowDate);
 						requestInfoEntity.setDateofProcessing(timestamp);
-						requestInfoEntity.setTemplateUsed(templateId);
+
+						
 						requestInfoEntity.setSelectedFeatures(json.get("selectedFeatures"));
 
 						requestInfoEntity.setDynamicAttribs(json.get("dynamicAttribs"));
+						if (json.containsKey("replication")) {
+							requestInfoEntity.setReplicationAttrib(json.get("replication"));
+						}
 
 						requestInfoEntity.setBatchId(batchId);
 						requestInfoEntity.setBatchSize(map.size());
@@ -953,6 +956,13 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setRequestParentVersion(1.0);
 						requestInfoEntity.setRequestTypeFlag("M");
 
+						String templateName = dcmConfigService.getTemplateName(requestInfoEntity.getRegion(),
+								requestInfoEntity.getVendor(), requestInfoEntity.getModel(), requestInfoEntity.getOs(),
+								requestInfoEntity.getOsVersion());
+						templateId = "MACD_Feature" + templateName;
+				
+						requestInfoEntity.setTemplateUsed(templateId);
+						
 						requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
 
 						if (!(scheduledTime.isEmpty())) {
@@ -964,20 +974,26 @@ public class BackUpAndRestoreController {
 						String jsonString = mapper.writeValueAsString(requestInfoEntity);
 
 						requestId = myObj.getTemplateId(jsonString);
+						if(requestId!=null && !requestId.isEmpty()) {
 						k++;
+						}
 					}
 					break;
 				}
 			}
+			
 			if (k == 1) {
 				obj.put("output", "Request created successfully");
 				obj.put(new String("requestId"), new String(requestId));
 				obj.put(new String("version"), "1.0");
-			} else {
-
+			} else if(k>1){
 				obj.put("batchId", batchId);
 				obj.put("output", "Batch Request created successfully");
 
+			}else {
+				obj.put("output", "Request not created successfully");
+				obj.put(new String("requestId"), new String(requestId));
+				
 			}
 		}
 
@@ -1144,7 +1160,7 @@ public class BackUpAndRestoreController {
 		return obj;
 
 	}
-	
+
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/batchOsUpgrade", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -1155,7 +1171,7 @@ public class BackUpAndRestoreController {
 
 		JsonArray attribJson = null;
 		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
-				templateId = null, requestType = null, requestId=null;
+				templateId = null, requestType = null, requestId = null;
 
 		HashMap<String, String> map = new HashMap<String, String>();
 
@@ -1272,22 +1288,21 @@ public class BackUpAndRestoreController {
 					}
 					if (map.size() > 1) {
 						requestInfoEntity.setBatchId(batchId);
-						batchIdEntity.setBatchStatus("In Progress");	
+						batchIdEntity.setBatchStatus("In Progress");
 						batchIdEntity.setBatchId(batchId);
 						batchIdEntity.setRequestInfoEntity(requestInfoEntity);
 						requestInfoDetailsRepositories.save(requestInfoEntity);
-						
+
 						dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
 						dao.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
-						dao.addRequestID_to_Os_Upgrade_dilevary_flags(alphaneumeric_req_id, Double.toString(request_version));
+						dao.addRequestID_to_Os_Upgrade_dilevary_flags(alphaneumeric_req_id,
+								Double.toString(request_version));
 						batchInfoRepo.save(batchIdEntity);
-					}
-					else
-					{
+					} else {
 						requestInfoEntity.setTemplateUsed(templateId);
 						String jsonString = mapper.writeValueAsString(requestInfoEntity);
-						if(attribJson.size()==1)
-						requestId = myObj.getTemplateId(jsonString);
+						if (attribJson.size() == 1)
+							requestId = myObj.getTemplateId(jsonString);
 					}
 					j++;
 				}
@@ -1310,6 +1325,7 @@ public class BackUpAndRestoreController {
 		return obj;
 
 	}
+
 	@POST
 	@RequestMapping(value = "/getAllDeviceFamily", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -1360,7 +1376,7 @@ public class BackUpAndRestoreController {
 	public ResponseEntity searchOsUpgrade(@RequestBody String searchParameters) {
 
 		JSONObject obj = new JSONObject();
-		String name=null;
+		String name = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(searchParameters);
@@ -1380,91 +1396,67 @@ public class BackUpAndRestoreController {
 			}
 
 			getAllDevice = deviceInforepo.findAllDevices(vendor, deviceFamily, osVersion);
-		
+
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {
-				name=getAllDevice.get(i).getdHostName();
+				name = getAllDevice.get(i).getdHostName();
 				System.out.println();
 				object = new JSONObject();
 				object.put("hostName", getAllDevice.get(i).getdHostName());
-				if(getAllDevice.get(i).getdMgmtIp()!=null)
-				{
-				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
-				}
-				else
-				{
+				if (getAllDevice.get(i).getdMgmtIp() != null) {
+					object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
+				} else {
 					object.put("managementIp", "");
 
 				}
 				object.put("DeviceFamily", getAllDevice.get(i).getdDeviceFamily());
-				if( getAllDevice.get(i).getdDeviceFamily()!=null)
-				{
-				object.put("DeviceFamily", getAllDevice.get(i).getdDeviceFamily());
-				}
-				else
-				{
+				if (getAllDevice.get(i).getdDeviceFamily() != null) {
+					object.put("DeviceFamily", getAllDevice.get(i).getdDeviceFamily());
+				} else {
 					object.put("DeviceFamily", "");
 
 				}
-				if(getAllDevice.get(i).getdModel()!=null)
-				{
-				object.put("model", getAllDevice.get(i).getdModel());
-				}
-				else
-				{
+				if (getAllDevice.get(i).getdModel() != null) {
+					object.put("model", getAllDevice.get(i).getdModel());
+				} else {
 					object.put("model", "");
-	
+
 				}
-				if(getAllDevice.get(i).getdOs()!=null)
-				{
-				object.put("os", getAllDevice.get(i).getdOs());
+				if (getAllDevice.get(i).getdOs() != null) {
+					object.put("os", getAllDevice.get(i).getdOs());
+				} else {
+					object.put("os", "");
+
 				}
-				else
-				{
-					object.put("os","");
-	
-				}
-				if(getAllDevice.get(i).getdOsVersion()!=null)
-				{
-				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
-				}
-				else
-				{
+				if (getAllDevice.get(i).getdOsVersion() != null) {
+					object.put("osVersion", getAllDevice.get(i).getdOsVersion());
+				} else {
 					object.put("osVersion", "");
 
 				}
-				if( getAllDevice.get(i).getdVendor()!=null)
-				{
-				object.put("vendor", getAllDevice.get(i).getdVendor());
-				}
-				else
-				{
+				if (getAllDevice.get(i).getdVendor() != null) {
+					object.put("vendor", getAllDevice.get(i).getdVendor());
+				} else {
 					object.put("vendor", "");
 
 				}
-				
+
 				object.put("status", "Available");
-				if( getAllDevice.get(i).getCustSiteId()!=null)
-				{
-				object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
-				}
-				else
-				{
+				if (getAllDevice.get(i).getCustSiteId() != null) {
+					object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
+				} else {
 					object.put("customer", "");
 
 				}
 				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
 				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
-				if(getAllDevice.get(i).getCustSiteId()!=null)
-				{
-				SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
-				object.put("site", site.getcSiteName());
-				object.put("region", site.getcSiteRegion());
-				}
-				else
-				{
+				if (getAllDevice.get(i).getCustSiteId() != null) {
+					SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
+					object.put("site", site.getcSiteName());
+					object.put("region", site.getcSiteRegion());
+				} else {
 					object.put("site", "");
-					object.put("region", "");	
+					object.put("region", "");
 				}
 
 				outputArray.add(object);
@@ -1477,7 +1469,7 @@ public class BackUpAndRestoreController {
 		}
 		return new ResponseEntity(obj, HttpStatus.OK);
 	}
-	
+
 	@POST
 	@RequestMapping(value = "/filterOsUpgradeDashboard", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -1489,7 +1481,8 @@ public class BackUpAndRestoreController {
 			JSONObject json = (JSONObject) parser.parse(searchParameters);
 			JSONObject object = new JSONObject();
 
-			String customer = null, region = null, vendor = null, osVersion = null, site = null, deviceFamily = null, modeltosearch = null;
+			String customer = null, region = null, vendor = null, osVersion = null, site = null, deviceFamily = null,
+					modeltosearch = null;
 			List<DeviceDiscoveryEntity> getAllDevice = new ArrayList<DeviceDiscoveryEntity>();
 
 			if (json.containsKey("customer")) {
@@ -1510,7 +1503,6 @@ public class BackUpAndRestoreController {
 			if (json.containsKey("deviceFamily")) {
 				deviceFamily = json.get("deviceFamily").toString();
 			}
-			
 
 			// Implementation of search logic based on fields received from UI
 			String nonMandatoryfiltersbits = "000";
@@ -1524,7 +1516,7 @@ public class BackUpAndRestoreController {
 			if (osVersion != null) {
 				nonMandatoryfiltersbits = "111";
 			}
-		
+
 			if (!(customer.equals(""))) {
 				nonMandatoryfiltersbits = "211";
 			}
@@ -1534,41 +1526,33 @@ public class BackUpAndRestoreController {
 			if (!(site.equals(""))) {
 				nonMandatoryfiltersbits = "222";
 			}
-		
-		
-		
+
 			if (nonMandatoryfiltersbits.equalsIgnoreCase("111")) {
-			getAllDevice = deviceInforepo.findAllDevices(vendor, deviceFamily, osVersion);
+				getAllDevice = deviceInforepo.findAllDevices(vendor, deviceFamily, osVersion);
 			}
 			if (nonMandatoryfiltersbits.equalsIgnoreCase("211")) {
 				// find with vendor and deviceFamily and osVersion and Customer
-				getAllDevice = deviceInforepo
-						.findByVendorFamilyVersionCustomer(
-								vendor, deviceFamily, osVersion,
-								customer);
+				getAllDevice = deviceInforepo.findByVendorFamilyVersionCustomer(vendor, deviceFamily, osVersion,
+						customer);
 
 			}
 			if (nonMandatoryfiltersbits.equalsIgnoreCase("221")) {
 				// find with vendor and deviceFamily and osVersion and Customer and Region
-				getAllDevice = deviceInforepo
-						.findByVendorFamilyVersionCustomerRegion(
-								vendor, deviceFamily, osVersion,
-								customer,region);
+				getAllDevice = deviceInforepo.findByVendorFamilyVersionCustomerRegion(vendor, deviceFamily, osVersion,
+						customer, region);
 
 			}
 			if (nonMandatoryfiltersbits.equalsIgnoreCase("222")) {
-				// find with vendor and deviceFamily and osVersion and Customer and Region and Site
-				getAllDevice = deviceInforepo
-						.findByVendorFamilyVersionCustomerRegionSite(
-								vendor, deviceFamily, osVersion,
-								customer,region,site);
+				// find with vendor and deviceFamily and osVersion and Customer and Region and
+				// Site
+				getAllDevice = deviceInforepo.findByVendorFamilyVersionCustomerRegionSite(vendor, deviceFamily,
+						osVersion, customer, region, site);
 
 			}
-		
 
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {
-			
+
 				object = new JSONObject();
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
@@ -1579,15 +1563,12 @@ public class BackUpAndRestoreController {
 				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
 				object.put("vendor", getAllDevice.get(i).getdVendor());
 				object.put("status", "Available");
-				object.put("customer", getAllDevice.get(i).getCustSiteId()
-						.getcCustName());
+				object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
 				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
 				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
 				SiteInfoEntity site1 = getAllDevice.get(i).getCustSiteId();
 				object.put("site", site1.getcSiteName());
 				object.put("region", site1.getcSiteRegion());
-
-			
 
 				outputArray.add(object);
 			}

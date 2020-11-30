@@ -83,9 +83,12 @@ public class InvokeFtl {
 				withHeader = content1;
 			} else {
 				filePath = responseDownloadPath + requestID + "V" + version + "_Header";
+				try {
 				content1 = new String(Files.readAllBytes(Paths.get(filePath)));
+				}catch (IOException e) {
+				}
 				withHeader = content1 + "\r\n" + "<font color=\"red\">" + contentNoCmd + "</font>" + "\r\n" + content;
-				withHeader = withHeader.replace("config t", "");
+//				withHeader = withHeader.replace("config t", "");
 			}
 
 		} catch (IOException e) {

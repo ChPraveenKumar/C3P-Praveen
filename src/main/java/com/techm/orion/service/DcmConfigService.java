@@ -2012,6 +2012,13 @@ public class DcmConfigService {
 			}
 			try {
 				// responseHeader = invokeFtl.generateheader(configRequest);
+				/*responseHeader = invokeFtl.generateheader(configRequest);
+				TextReport.writeFile(
+						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+						configRequest.getAlphanumericReqId() + "V"
+								+ configRequest.getRequestVersion() + "_Header",
+						responseHeader, "headerGeneration");*/
+				
 				response = invokeFtl.generateConfigurationToPush(configRequest,
 						fileToUse);
 				TextReport.writeFile(

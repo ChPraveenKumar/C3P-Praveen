@@ -225,15 +225,16 @@ public class GetConfigurationTemplateService {
 			}
 			String responseHeader = invokeFtl.generateheader(configRequest);
 			//Owner: Ruchita Salvi Comment: This if{} needs to be removed once master table is implemented for vendors
-			if(configRequest.getVendor().equalsIgnoreCase("cisco"))
+			/*if(configRequest.getVendor().equalsIgnoreCase("cisco"))
 			{
 				response = invokeFtl.generateConfigurationToPush(configRequest, fileToUse).replace("config t", "");
 			}
 			else
-			{
+			{*/
 				response = invokeFtl.generateConfigurationToPush(configRequest, fileToUse);
+				
 
-			}
+//			}
 			response = responseHeader.concat("\r\n").concat(response);
 			if (response == null) {
 				response = "Configuration not generated";
