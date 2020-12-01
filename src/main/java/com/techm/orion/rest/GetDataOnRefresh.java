@@ -23,6 +23,7 @@ import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.MasterCommandsRepository;
@@ -64,8 +65,8 @@ public class GetDataOnRefresh implements Observer {
 		String jsonFeRequestList = "";
 
 		List<TemplateBasicConfigurationPojo> templateNames = new ArrayList<TemplateBasicConfigurationPojo>();
-		//String user = Global.loggedInUser;
-		String user="feuser";
+		String user = Global.loggedInUser;
+		//String user="feuser";
 		switch (user) {
 		case "feuser":
 			requestList = requestInfoDao.getOwnerAssignedRequestList("feuser");

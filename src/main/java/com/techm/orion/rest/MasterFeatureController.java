@@ -424,7 +424,7 @@ public class MasterFeatureController {
 			}
 		}
 		if (json.containsKey("comments")) {
-			masterFeature.setfComments(json.get("comments").toString());
+			masterFeature.setfComments(json.get("comments").toString().concat("\n"));
 		}
 		if (json.containsKey("isReplicated")) {
 			masterFeature.setfReplicationind(Boolean.parseBoolean(json.get(
