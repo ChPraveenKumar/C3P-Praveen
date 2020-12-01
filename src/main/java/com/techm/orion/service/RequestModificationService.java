@@ -70,7 +70,7 @@ public class RequestModificationService {
 						attribFeature.setCategotyLabel(attrib.getCategory());
 						attribFeature.setCategory(allByCategoryName);
 					}
-					attribFeature.setAttribValue(configRepo.findAttribValuByRequestId(attrib.getId(), requestId,requestVer));
+					//attribFeature.setAttribValue(configRepo.findAttribValuByRequestId(attrib.getId(), requestId,requestVer));
 					masterAttrib.add(attribFeature);
 				});
 				
