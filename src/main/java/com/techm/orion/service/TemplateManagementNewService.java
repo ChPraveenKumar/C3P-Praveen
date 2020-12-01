@@ -21,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
@@ -585,6 +584,74 @@ public class TemplateManagementNewService {
 			finalObject.put("commands", finalCammands);
 		}
 		return finalObject;
+	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject getFeaturesForMACDRequest(String request) {
+
+		String deviceFamily = null, os = null, osVersion = null, networkType = null, region = null, vendor = null;
+		JSONObject json = new JSONObject();
+		JSONParser parser = new JSONParser();
+		
+		JSONObject features = new JSONObject();
+		try {
+			json = (JSONObject) parser.parse(request);
+		
+		if (json.containsKey("deviceFamily")) {
+			deviceFamily = json.get("deviceFamily").toString();
+		}
+		if (json.containsKey("vendor")) {
+			vendor = json.get("vendor").toString();
+		}
+		if (json.containsKey("os")) {
+			os = json.get("os").toString();
+		}
+		if (json.containsKey("osVersion")) {
+			osVersion = json.get("osVersion").toString();
+		}
+		if (json.containsKey("region")) {
+			region = json.get("region").toString();
+		}
+		if (json.containsKey("networkType")) {
+			networkType = json.get("networkType").toString();
+		}
+		JSONArray outputArray = new JSONArray();
+		List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findApprovedFeatureEntity(vendor,deviceFamily, os,
+				 osVersion,region, networkType);
+		masterFeatures.forEach(masterFeature -> {
+			JSONObject deviceDetailsObject = new JSONObject();	
+			deviceDetailsObject.put("featureDetails", setFeatureData(masterFeature));
+			deviceDetailsObject = setDeviceDetails(deviceDetailsObject,masterFeature);
+			outputArray.add(deviceDetailsObject);
+		});
+		features.put("output", outputArray);
+		} catch (ParseException e) {
+			
+			e.printStackTrace();
+		}
+		
+		return features;
+	
+	}
+
+	@SuppressWarnings("unchecked")
+	private JSONObject setDeviceDetails(JSONObject deviceDetailsObject, MasterFeatureEntity masterFeature) {	
+		deviceDetailsObject.put("vendor", masterFeature.getfVendor());
+		deviceDetailsObject.put("deviceFamily", masterFeature.getfFamily());
+		deviceDetailsObject.put("os", masterFeature.getfOs());
+		deviceDetailsObject.put("osVersion", masterFeature.getfOsversion());
+		deviceDetailsObject.put("region", masterFeature.getfRegion());
+		deviceDetailsObject.put("networkType", masterFeature.getfNetworkfun());
+		return deviceDetailsObject;
+	}
+
+	@SuppressWarnings("unchecked")
+	private JSONObject setFeatureData(MasterFeatureEntity masterFeature) {
+		JSONObject featureDetails = new JSONObject();
+		featureDetails.put("fId", masterFeature.getfId());
+		featureDetails.put("fName", masterFeature.getfName());
+		featureDetails.put("fReplicationFlag", masterFeature.getfReplicationind());
+		return featureDetails;	
 	}
 
 }
