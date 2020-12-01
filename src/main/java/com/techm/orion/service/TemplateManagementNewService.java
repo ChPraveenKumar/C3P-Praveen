@@ -407,6 +407,9 @@ public class TemplateManagementNewService {
 		osVersion = json.get("osVersion").toString();
 		JSONArray jsonArray = null;
 		jsonArray = (JSONArray) json.get("features");
+		JSONObject obj = new JSONObject();
+		JSONArray array = new JSONArray();
+		if(jsonArray !=null && !jsonArray.isEmpty()) {
 		MasterFeatureEntity masterFeatureEntity = new MasterFeatureEntity();
 		TemplateFeatureEntity templateFeatureEntity = new TemplateFeatureEntity();
 		String templateId = "";
@@ -445,8 +448,6 @@ public class TemplateManagementNewService {
 				tempFeatureDetails.add(template);
 			}
 		});
-		JSONObject obj = new JSONObject();
-		JSONArray array = new JSONArray();
 		for (TemplateFeatureEntity featureEntity : tempFeatureDetails) {
 			String tempIdWithVersion = featureEntity.getCommand();
 			String tempId = StringUtils.substringBefore(tempIdWithVersion, "_V");
@@ -467,7 +468,9 @@ public class TemplateManagementNewService {
 					tempConfBasicDetail.getTempAlias() + "_V" + tempConfBasicDetail.getTempVersion());
 			array.add(templateDetails);
 		});
+		
 		obj.put("templateDetails", array);
+		}
 		if (!array.isEmpty()) {
 			obj.put("Message", "Success");
 		} else {
@@ -619,10 +622,12 @@ public class TemplateManagementNewService {
 		List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findApprovedFeatureEntity(vendor,deviceFamily, os,
 				 osVersion,region, networkType);
 		masterFeatures.forEach(masterFeature -> {
+			if(!"Basic Configuration".contains(masterFeature.getfName())) {
 			JSONObject deviceDetailsObject = new JSONObject();	
 			deviceDetailsObject.put("featureDetails", setFeatureData(masterFeature));
 			deviceDetailsObject = setDeviceDetails(deviceDetailsObject,masterFeature);
 			outputArray.add(deviceDetailsObject);
+			}
 		});
 		features.put("output", outputArray);
 		} catch (ParseException e) {
