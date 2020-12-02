@@ -132,11 +132,14 @@ public class ShowMemoryTest {
 					// this is printing all columns, you can
 					// access each column from row using the array
 					// indexes, example row[0], row[1], row[2]...
+					if(!Arrays.toString(row).contains("Head, Total(b)"))
+					{
 					logger.info(Arrays.toString(row));
 					logger.info(row[0]);// first column (ID)
 					total = row[2];
 					used = row[3];
 					break;
+					}
 				}
 
 				logger.info("Total" + total + " " + "Used " + used);
@@ -236,10 +239,14 @@ public class ShowMemoryTest {
 				// access each column from row using the array
 				// indexes, example row[0], row[1], row[2]...
 				logger.info(Arrays.toString(row));
+
+				if(!Arrays.toString(row).contains("Head, Total(b)"))
+				{
 				logger.info(row[0]);// first column (ID)
 				total = row[2];
 				used = row[3];
 				break;
+				}
 			}
 
 			logger.info("Total" + total + " " + "Used " + used);
