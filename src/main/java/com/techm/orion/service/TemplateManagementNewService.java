@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.dao.TemplateManagementDao;
+import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
@@ -35,6 +36,7 @@ import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.TemplateAttribPojo;
 import com.techm.orion.repositories.ErrorValidationRepository;
+import com.techm.orion.repositories.MasterAttribRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
@@ -72,6 +74,9 @@ public class TemplateManagementNewService {
 
 	@Autowired
 	private MasterCommandsRepository masterCommandsRepository;
+	
+	@Autowired
+	private MasterAttribRepository masterAttribRepository;
 
 	@Autowired
 	private AttribCreateConfigResponceMapper attribCreateConfigResponceMapper;
@@ -162,6 +167,8 @@ public class TemplateManagementNewService {
 		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
 		String templateAndVesion = json.get("templateid").toString() + "_V" + json.get("templateVersion").toString();
 		boolean ifTemplateAlreadyPresent = templateDao.checkTemplateVersionAlredyexist(templateAndVesion);
+		List<MasterAttributes> attributeList = new ArrayList<>();
+		String oldTemplate = "";
 		if (ifTemplateAlreadyPresent) {
 			double value = Double.parseDouble(json.get("templateVersion").toString());
 			value = value + 0.1;
@@ -204,6 +211,7 @@ public class TemplateManagementNewService {
 				}
 				featureList = templatefeatureRepo.findFeatureDetails(featureId, featureName);
 				if (featureList != null && !tempVersion.equalsIgnoreCase(featureList.getCommand())) {
+					oldTemplate = featureList.getCommand();
 					saveTempFeatureEntity = new TemplateFeatureEntity();
 					saveTempFeatureEntity.setCommand(templateAndVesion);
 					saveTempFeatureEntity.setComandDisplayFeature(featureList.getComandDisplayFeature());
@@ -226,6 +234,29 @@ public class TemplateManagementNewService {
 						commandPojoLeftPanel.setNo_command_value(pojo.getNo_command_value());
 						commandPojoLeftPanel.setCommand_replication_ind(pojo.getCommand_replication_ind());
 						masterCommandsRepository.save(commandPojoLeftPanel);
+					}
+				}
+			}
+			
+			if (oldTemplate != null && !oldTemplate.isEmpty()) {
+				attributeList.addAll(masterAttribRepository.findByTemplateIdContains(oldTemplate));
+				for (MasterAttributes masterAttribute : attributeList) {
+					MasterAttributes saveAttribute = new MasterAttributes();
+					saveAttribute.setAttribType(masterAttribute.getAttribType());
+					saveAttribute.setLabel(masterAttribute.getLabel());
+					saveAttribute.setName(masterAttribute.getName());
+					saveAttribute.setTemplateId(templateAndVesion);
+					saveAttribute.setUiComponent(masterAttribute.getUiComponent());
+					saveAttribute.setValidations(masterAttribute.getValidations());
+					saveAttribute.setMasterFID(masterAttribute.getMasterFID());
+					saveAttribute.setCharacteristicId(masterAttribute.getCharacteristicId());
+					TemplateFeatureEntity templateFeature = masterAttribute.getTemplateFeature();
+					TemplateFeatureEntity finalFeatureId = templatefeatureRepo
+							.findIdByComandDisplayFeatureAndCommandContains(templateFeature.getComandDisplayFeature(),
+									templateAndVesion);
+					if (finalFeatureId != null) {
+						saveAttribute.setTemplateFeature(finalFeatureId);
+						masterAttribRepository.save(saveAttribute);
 					}
 				}
 			}
