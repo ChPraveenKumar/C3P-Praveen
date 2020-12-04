@@ -1,5 +1,9 @@
 package com.techm.orion.service;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -10,6 +14,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.techm.orion.connection.ConnectionFactory;
+import com.techm.orion.connection.DBUtil;
 import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.MasterAttributes;
@@ -110,10 +117,46 @@ public class MasterFeatureService {
 	}
 
 	public List<TemplateLeftPanelJSONModel> getLeftPanelData(DeviceDetailsPojo deviceDetails, String templateId,
-			String templateVersion) {
+			String templateVersion)  {
 		List<TemplateLeftPanelJSONModel> leftPanelDataList = new ArrayList<>();
 		List<MasterFeatureEntity> findMasterFeatureEntities = setNearestMatchData(deviceDetails);
 		List<TemplateFeatureEntity> findTemplateFeatureEntities = setTemplateMatchData(templateId, templateVersion);
+		ResultSet resultSet = null;
+		String templaetIdWithVersion = templateId+"_V"+templateVersion;
+		String checkFeature ="select * from c3p_template_master_feature_list where command_type =? and is_Save = 0;";
+		try (Connection connection = ConnectionFactory.getConnection();PreparedStatement checkPrepareStatement = connection.prepareStatement(checkFeature);) {				
+			checkPrepareStatement.setString(1,templaetIdWithVersion);
+			resultSet = checkPrepareStatement.executeQuery();
+			while (resultSet.next()) {	
+				String deletefeature ="delete from c3p_template_master_feature_list where command_type =? and is_Save = 0;";
+				String deleteAttrib = "delete from t_attrib_m_attribute where template_id =? and feature_id = ?;";
+				try (PreparedStatement deleteAttribPreparedStmt = connection.prepareStatement(deleteAttrib);) {
+					deleteAttribPreparedStmt.setString(1, templaetIdWithVersion);
+					deleteAttribPreparedStmt.setString(2, resultSet.getString("id"));					
+					deleteAttribPreparedStmt.execute("SET SQL_SAFE_UPDATES = 0");
+					deleteAttribPreparedStmt.execute("SET FOREIGN_KEY_CHECKS= 0");
+					int executeUpdate = deleteAttribPreparedStmt.executeUpdate();
+//					if(executeUpdate>0) {
+						try (PreparedStatement deleteSmt = connection.prepareStatement(deletefeature);) {
+							deleteSmt.setString(1, templaetIdWithVersion);
+							deleteSmt.execute("SET SQL_SAFE_UPDATES = 0");
+							deleteSmt.execute("SET FOREIGN_KEY_CHECKS= 0");
+							deleteSmt.executeUpdate();
+			
+						} catch (SQLException exe) {
+							logger.error("SQL Exception in updateFeatureTablesForNewCommand select method " + exe.getMessage());
+						} 					
+//					}					
+				} catch (SQLException exe) {
+					logger.error("SQL Exception in updateFeatureTablesForNewCommand select method " + exe.getMessage());
+				} 
+			}
+		}catch (SQLException exe) {
+			logger.error("SQL Exception in updateFeatureTablesForNewCommand select method " + exe.getMessage());
+		} finally {
+			DBUtil.close(resultSet);
+			DBUtil.close(resultSet);
+		}
 		if (findTemplateFeatureEntities != null && findTemplateFeatureEntities.size() > 0) {
 			for (TemplateFeatureEntity templateFeature : findTemplateFeatureEntities) {
 				for (Iterator<MasterFeatureEntity> masterFeature = findMasterFeatureEntities.iterator(); masterFeature
