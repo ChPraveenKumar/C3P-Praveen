@@ -22,41 +22,20 @@ import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 public class TemplateManagementDB {
 
 	private static final Logger logger = LogManager.getLogger(TemplateManagementDB.class);
+
 	public int updateFeatureTablesForNewCommand(AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo) {
 		ResultSet rs = null;
 		ResultSet resultSet = null;
 		int idToSetInCommandTable = 0;
 		String query = "Insert into c3p_template_master_feature_list(comand_display_feature,command_parent_feature,command_type,hasParent,is_Save,isMandate,master_f_id) values(?,?,?,?,?,?,?)";
 		String selQuery = "select * from c3p_template_master_feature_list";
-		String checkFeature ="select * from c3p_template_master_feature_list where command_type =? and is_Save = 0;";
+		String checkFeature = "select * from c3p_template_master_feature_list where command_type =? and is_Save = 0;";
 		try (Connection connection = ConnectionFactory.getConnection();
-			PreparedStatement preparedStmt = connection.prepareStatement(query);PreparedStatement checkPrepareStatement = connection.prepareStatement(checkFeature);) {			
+				PreparedStatement preparedStmt = connection.prepareStatement(query);
+				PreparedStatement checkPrepareStatement = connection.prepareStatement(checkFeature);) {
 			checkPrepareStatement.setString(1, addNewFeatureTemplateMngmntPojo.getTemplateid());
 			resultSet = checkPrepareStatement.executeQuery();
-			while (resultSet.next()) {	
-				String deletefeature ="delete from c3p_template_master_feature_list where command_type =? and is_Save = 0;";
-				String deleteAttrib = "delete from t_attrib_m_attribute where template_id =? and feature_id = ?;";
-				try (PreparedStatement deleteAttribPreparedStmt = connection.prepareStatement(deleteAttrib);) {
-					deleteAttribPreparedStmt.setString(1, addNewFeatureTemplateMngmntPojo.getTemplateid());
-					deleteAttribPreparedStmt.setString(2, resultSet.getString("id"));					
-					deleteAttribPreparedStmt.execute("SET SQL_SAFE_UPDATES = 0");
-					deleteAttribPreparedStmt.execute("SET FOREIGN_KEY_CHECKS= 0");
-					int executeUpdate = deleteAttribPreparedStmt.executeUpdate();
-//					if(executeUpdate>0) {
-						try (PreparedStatement deleteSmt = connection.prepareStatement(deletefeature);) {
-							deleteSmt.setString(1, addNewFeatureTemplateMngmntPojo.getTemplateid());
-							deleteSmt.execute("SET SQL_SAFE_UPDATES = 0");
-							deleteSmt.execute("SET FOREIGN_KEY_CHECKS= 0");
-							deleteSmt.executeUpdate();
 			
-						} catch (SQLException exe) {
-							logger.error("SQL Exception in updateFeatureTablesForNewCommand select method " + exe.getMessage());
-						} 					
-//					}					
-				} catch (SQLException exe) {
-					logger.error("SQL Exception in updateFeatureTablesForNewCommand select method " + exe.getMessage());
-				} 
-			}		
 			preparedStmt.setString(1, addNewFeatureTemplateMngmntPojo.getFeatureName());
 			if (("Add New Feature").equalsIgnoreCase(addNewFeatureTemplateMngmntPojo.getParentName())) {
 				preparedStmt.setString(2, addNewFeatureTemplateMngmntPojo.getFeatureName());
@@ -67,7 +46,7 @@ public class TemplateManagementDB {
 			preparedStmt.setInt(5, 0);
 			preparedStmt.setInt(6, 1);
 			preparedStmt.setString(7, addNewFeatureTemplateMngmntPojo.getMasterFeatureId());
-			
+
 			if (("Add New Feature").equalsIgnoreCase(addNewFeatureTemplateMngmntPojo.getParentName())) {
 				preparedStmt.setInt(4, 0);
 			} else {
@@ -117,8 +96,8 @@ public class TemplateManagementDB {
 					while (rs.next()) {
 						lastCount = rs.getInt("max(command_sequence_id)");
 					}
-				}				
-				
+				}
+
 				try (PreparedStatement preparedStmt1 = connection.prepareStatement(query1);) {
 					preparedStmt1.setString(1, Integer.toString(idToSetInCommandTable));
 					preparedStmt1.setString(2, commandPojo.getCommand_value());
@@ -127,9 +106,9 @@ public class TemplateManagementDB {
 					if (commandPojo.getNo_command_value() != null
 							&& commandPojo.getNo_command_value().equalsIgnoreCase("")) {
 						preparedStmt1.setString(5, commandPojo.getNo_command_value());
-					}	else {
-						preparedStmt1.setString(5,null);
-					}				
+					} else {
+						preparedStmt1.setString(5, null);
+					}
 					preparedStmt1.setBoolean(6, commandPojo.isChecked());
 					preparedStmt1.executeUpdate();
 				} catch (SQLException exe) {

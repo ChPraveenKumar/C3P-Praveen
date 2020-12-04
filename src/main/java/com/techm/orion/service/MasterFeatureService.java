@@ -123,22 +123,23 @@ public class MasterFeatureService {
 		List<TemplateFeatureEntity> findTemplateFeatureEntities = setTemplateMatchData(templateId, templateVersion);
 		ResultSet resultSet = null;
 		String templaetIdWithVersion = templateId+"_V"+templateVersion;
-		String checkFeature ="select * from c3p_template_master_feature_list where command_type =? and is_Save = 0;";
+		String checkFeature ="select * from c3p_template_master_feature_list where command_type like ? and is_Save = 0;";
 		try (Connection connection = ConnectionFactory.getConnection();PreparedStatement checkPrepareStatement = connection.prepareStatement(checkFeature);) {				
-			checkPrepareStatement.setString(1,templaetIdWithVersion);
+			//checkPrepareStatement.setString(1,templaetIdWithVersion);
+			checkPrepareStatement.setString(1,templateId+'%');
 			resultSet = checkPrepareStatement.executeQuery();
 			while (resultSet.next()) {	
 				String deletefeature ="delete from c3p_template_master_feature_list where command_type =? and is_Save = 0;";
 				String deleteAttrib = "delete from t_attrib_m_attribute where template_id =? and feature_id = ?;";
 				try (PreparedStatement deleteAttribPreparedStmt = connection.prepareStatement(deleteAttrib);) {
-					deleteAttribPreparedStmt.setString(1, templaetIdWithVersion);
+					deleteAttribPreparedStmt.setString(1, resultSet.getString("command_type"));
 					deleteAttribPreparedStmt.setString(2, resultSet.getString("id"));					
 					deleteAttribPreparedStmt.execute("SET SQL_SAFE_UPDATES = 0");
 					deleteAttribPreparedStmt.execute("SET FOREIGN_KEY_CHECKS= 0");
 					int executeUpdate = deleteAttribPreparedStmt.executeUpdate();
 //					if(executeUpdate>0) {
 						try (PreparedStatement deleteSmt = connection.prepareStatement(deletefeature);) {
-							deleteSmt.setString(1, templaetIdWithVersion);
+							deleteSmt.setString(1, resultSet.getString("command_type"));
 							deleteSmt.execute("SET SQL_SAFE_UPDATES = 0");
 							deleteSmt.execute("SET FOREIGN_KEY_CHECKS= 0");
 							deleteSmt.executeUpdate();
