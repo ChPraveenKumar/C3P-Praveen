@@ -26,7 +26,10 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 
 	@Query(value = "select * from c3p_m_features where f_owner like :owner and f_status like :status", nativeQuery = true)
 	public List<MasterFeatureEntity> getListByOwner(@Param("status") String status, @Param("owner") String owner);
-
+	
+	@Query(value = "SELECT * FROM c3p_m_features where f_vendor = :vendor and (f_status = 'Approved' or f_status = 'Rejected') ", nativeQuery = true)
+	List<MasterFeatureEntity> findByVendorAndStatus(@Param("vendor") String vendor);
+	
 	MasterFeatureEntity findByFId(String fId);
 
 	@Transactional
