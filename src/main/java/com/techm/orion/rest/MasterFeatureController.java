@@ -535,7 +535,7 @@ public class MasterFeatureController {
 				masterJson = new JSONObject();
 				childList = new JSONArray();
 				featureEntinty = masterFeatureRepository
-						.findAllByFVendor(vendorEntity);
+						.findByVendorAndStatus(vendorEntity);
 				for (MasterFeatureEntity entity : featureEntinty) {
 					childJson = new JSONObject();
 					childJson.put("vendor", entity.getfVendor());
