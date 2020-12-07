@@ -1089,7 +1089,7 @@ public class GetReportData implements Observer {
 
 				healthCheckArray.put(mem);
 
-				JSONObject pow = new JSONObject();
+				/*JSONObject pow = new JSONObject();
 				pow.put("healthcheck", "Power Information");
 				pow.put("preUpgradeValue", createConfigRequest.getPre_power_info());
 				pow.put("postUpgradeValue", createConfigRequest.getPost_power_info());
@@ -1100,7 +1100,7 @@ public class GetReportData implements Observer {
 					pow.put("outcome", "Passed");
 
 				}
-				healthCheckArray.put(pow);
+				healthCheckArray.put(pow);*/
 
 				// obj.put("osUpgradeStatus", "1");
 				obj.put("preVersionInfo", "12.4");

@@ -323,6 +323,25 @@ public class ConfigurationManagement {
 				{
 				if (json.containsKey("dynamicAttribs")) {
 					attribJson = (org.json.simple.JSONArray) json.get("dynamicAttribs");
+					
+					if(json.containsKey("replication"))
+					{
+						org.json.simple.JSONArray replication = (org.json.simple.JSONArray) json.get("replication");
+
+						for(int i=0; i<replication.size();i++)
+						{
+							JSONObject replicationObject=(JSONObject) replication.get(i);
+							if(replicationObject.containsKey("featureAttribDetails"))
+							{
+								org.json.simple.JSONArray replicationArray = (org.json.simple.JSONArray) replicationObject.get("featureAttribDetails");
+								for(int replicationArrayPointer=0;replicationArrayPointer<replicationArray.size();replicationArrayPointer++)
+								{
+									attribJson.add(replicationArray.get(replicationArrayPointer));
+								}
+								
+							}
+						}
+					}
 				}
 				}
 				

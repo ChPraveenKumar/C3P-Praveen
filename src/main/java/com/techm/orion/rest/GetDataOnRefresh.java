@@ -66,16 +66,16 @@ public class GetDataOnRefresh implements Observer {
 
 		List<TemplateBasicConfigurationPojo> templateNames = new ArrayList<TemplateBasicConfigurationPojo>();
 		String user = Global.loggedInUser;
-		//String user="suser";
+		//String user="feuser";
 		switch (user) {
 		case "feuser":
 			requestList = requestInfoDao.getOwnerAssignedRequestList("feuser");
 			int numberOfNotificationsForFE = 0;
 			List<RequestInfoCreateConfig> feRequestListNum = new ArrayList<RequestInfoCreateConfig>();
 			requestList.forEach(request -> {
-				if (request.getReadFE() == false) {
+				//if (request.getReadFE() == false) {
 					feRequestListNum.add(request);
-				}
+				//}
 			});
 
 			numberOfNotificationsForFE = feRequestListNum.size();

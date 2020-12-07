@@ -415,6 +415,7 @@ public class RequestDetailsServiceWithVersion {
 			Double requestVersion = Double.valueOf(json.get("version").toString());
 			RequestDetails dao = new RequestDetails();
 			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId, requestVersion);
+			if(testAndDiagnosis!=null && !testAndDiagnosis.isEmpty()) {
 			JSONArray testNameArray = (JSONArray) parser.parse(testAndDiagnosis);
 			Set<String> setOfTest = new HashSet<>();
 			if (testNameArray != null && !testNameArray.equals("")) {
@@ -437,6 +438,7 @@ public class RequestDetailsServiceWithVersion {
 					selectedTest.add(tests);
 
 				});
+			}
 			}
 		} catch (Exception e) {
 			logger.error(e);

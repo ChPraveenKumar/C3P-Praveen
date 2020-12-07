@@ -553,7 +553,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				String pingResults = pingHelper.pingResults(requestinfo.getManagementIp());
 				if (pingResults != null) {
 					if (pingResults.contains("Error") || pingResults.contains("Destination host unreachable")
-							|| pingResults.contains("Request timed out.")) {
+							|| pingResults.contains("Request timed out.") || pingResults.contains("100% packet loss")) {
 						logger.info("pingResults - " + pingResults);
 					} else {
 						reachabilityTest = true;

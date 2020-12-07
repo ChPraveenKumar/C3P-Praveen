@@ -28,11 +28,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
-import com.techm.orion.entitybeans.TemplateFeatureEntity;
-import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.TemplateAttribPojo;
-import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.DcmConfigService;
@@ -263,113 +260,26 @@ public class TemplateSuggestionService implements Observer {
 
 	}
 
-	/* Dhanshri Mane */
-	/* Get Attribute Related MACD Features and template Id */
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getAttribForMACD", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response getAttribForMACD(@RequestBody String featuresList) {
-		DcmConfigService dcmConfigService = new DcmConfigService();
-		// TemplateSuggestionDao templateSuggestionDao=new
-		// TemplateSuggestionDao();
-		JSONObject obj = new JSONObject();
-
-		try {
-
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(featuresList);
-			org.json.simple.JSONArray jsonArr = (org.json.simple.JSONArray) json
-					.get("featureList");
-
-			List<String> list = new ArrayList<String>();
-			TemplateManagementDao dao = new TemplateManagementDao();
-			// String templateId = json.get("templateId").toString();
-
-			for (int i = 0; i < jsonArr.size(); i++) {
-				JSONObject arrObj = (JSONObject) jsonArr.get(i);
-				list.add(arrObj.get("value").toString());
-			}
-			String region = json.get("region").toString();
-			String vendor = json.get("vendor").toString();
-			String networkFunction = json.get("networkFunction").toString();
-			String deviceFamily = json.get("deviceFamily").toString();
-			String model = json.get("model").toString();
-			String requestType = json.get("requestType").toString();
-
-			String templateId = dcmConfigService.getTemplateName(region,
-					vendor, model);
-
-			String templateIdValue = null;
-			if (!list.isEmpty() && list != null) {
-				String[] features = list.toArray(new String[list.size()]);
-				List<TemplateBasicConfigurationPojo> templateBasicConfigurationPojo = templateSuggestionDao
-						.getDataGrid(features, templateId);
-				for (int i = 0; i < templateBasicConfigurationPojo.size(); i++) {
-					if (networkFunction.equals(templateBasicConfigurationPojo
-							.get(i).getNetworkType())) {
-						templateIdValue = templateBasicConfigurationPojo.get(i)
-								.getTemplateId();
-					}
-				}
-			}
-			List<TemplateAttribPojo> templateAttrib = new ArrayList<>();
-			String finalCommands = null;
-			if (templateIdValue != null) {
-				String[] features = list.toArray(new String[list.size()]);
-				templateAttrib = templateSuggestionDao
-						.getDynamicAttribDataGrid(features, templateIdValue);
-
-				List<CommandPojo> cammandByTemplate = new ArrayList<>();
-				for (String feature : features) {
-
-					TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
-							.findIdByComandDisplayFeatureAndCommandContains(
-									feature, templateIdValue);
-					cammandByTemplate.addAll(dao
-							.getCammandByTemplateAndfeatureId(
-									findIdByfeatureAndCammand.getId(),
-									templateIdValue));
-				}
-				finalCommands = "";
-				for (CommandPojo command : cammandByTemplate) {
-					finalCommands = finalCommands + command.getCommandValue();
-				}
-			}
-			if (!templateAttrib.isEmpty() && templateAttrib != null) {
-				obj.put(new String("features"), templateAttrib);
-				obj.put(new String("commands"), finalCommands);
-				obj.put(new String("templateId"), templateIdValue);
-				obj.put(new String("Result"), "Success");
-				obj.put(new String("Message"), "Success");
-			} else if (templateAttrib.isEmpty() && templateAttrib == null
-					|| templateIdValue != null) {
-				obj.put(new String("commands"), finalCommands);
-				obj.put(new String("templateId"), templateIdValue);
-				obj.put(new String("Result"), "Success");
-				obj.put(new String("Message"), "Success");
-			} else {
-				obj.put(new String("Result"), "Failure");
-				obj.put(new String("Message"),
-						"No Data.Create the template first");
-				obj.put(new String("TemplateDetailList"), null);
-			}
-
-		} catch (Exception e) {
-			logger.error(e);
+	public ResponseEntity<JSONObject> getAttribForMACD(@RequestBody String request)
+			throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject obj = new JSONObject();		
+		JSONObject jsonAttrib = templateManagementNewService.getMACDAttribAndCommadData(request);
+		if (!jsonAttrib.isEmpty() && jsonAttrib != null) {
+			jsonAttrib.put(new String("Message"), "Success");			
+			responseEntity = new ResponseEntity<JSONObject>(jsonAttrib, HttpStatus.OK);
+		} else {
+			obj.put(new String("Result"), "Failure");
+			obj.put(new String("Message"), "No Data.Create the template first");
+			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.BAD_REQUEST);
 		}
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
-
+		return responseEntity;
 	}
-
+	
 	@POST
 	@RequestMapping(value = "/getFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -568,6 +478,19 @@ public class TemplateSuggestionService implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj)
 				.build();
 
+	}
+	
+	@POST
+	@RequestMapping(value = "/getFeaturesForMACDRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JSONObject> getFeaturesForMACDRequest(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = templateManagementNewService.getFeaturesForMACDRequest(request);
+		if (json != null) {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
 	}
 
 }

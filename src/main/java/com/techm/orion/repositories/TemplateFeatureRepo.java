@@ -25,8 +25,8 @@ public interface TemplateFeatureRepo extends
 	
 	public List<TemplateFeatureEntity> findMasterFIdByCommand(String templateid);
 	
-	@Query("Select u from TemplateFeatureEntity u where command = :command ")
-	TemplateFeatureEntity findByCommandType(@Param("command") String command);
+	@Query(value = " Select * from c3p_template_master_feature_list where command_type =:command", nativeQuery = true)
+	List<TemplateFeatureEntity> findByCommandType(@Param("command") String command);
 
 	TemplateFeatureEntity findById(int id);
 	

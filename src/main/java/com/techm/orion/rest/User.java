@@ -25,6 +25,7 @@ import com.techm.orion.entitybeans.PasswordPolicy;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.exception.GenericResponse;
+import com.techm.orion.pojo.UserManagementResulltDetailPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.service.ModuleInterface;
 import com.techm.orion.service.UserManagementInterface;
@@ -465,19 +466,26 @@ public class User {
 		GenericResponse res = new GenericResponse();
 		JSONObject obj = new JSONObject();
 		JSONObject resObj = new JSONObject();
-		JSONParser parser = new JSONParser();
-		JSONObject json = new JSONObject();
-		String name = null;
+		List<UserManagementEntity>  activeUserList = new ArrayList<>();
+		List<UserManagementEntity>  inActiveUserList = new ArrayList<>();
 		try {
 			List<UserManagementEntity>  viewResult = userCreateInterface.getAllUserView();
-			// String message = (String) res.get("responseResult");
 			if (viewResult.isEmpty()) {
 				obj.put("error",
 						"No record found, Please contact your Administrator");
 				obj.put("data", "");
 			} else {
+				for(UserManagementEntity activeUser: viewResult)
+				{
+					if("active".equals(activeUser.getStatus()))
+						activeUserList.add(activeUser);
+					else
+						inActiveUserList.add(activeUser);	
+				}
 				obj.put("error", "");
-				obj.put("data", viewResult);
+				obj.put("allUser", viewResult);
+				obj.put("activeUser", activeUserList);
+				obj.put("inActiveUser", inActiveUserList);
 			}
 		} catch (Exception e) {
 			logger.error("\n" + "exception in all user details in viewAllUser Service" + e.getMessage());
@@ -511,10 +519,10 @@ public class User {
 			UserPojo dto = gson.fromJson(searchParameters, UserPojo.class);
 			username = dto.getUsername();
 			password = dto.getPassword();
-			GenericResponse viewResult = userCreateInterface
+			UserManagementResulltDetailPojo viewResult = userCreateInterface
 					.checkUserNamePassword(username, password);
 
-			if (viewResult.isEmpty()) {
+			if (viewResult !=null) {
 				obj.put("error",
 						"No record found, Please contact your Administrator");
 				obj.put("data", "");

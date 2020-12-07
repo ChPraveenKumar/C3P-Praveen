@@ -3,6 +3,7 @@ package com.techm.orion.serviceImpl;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -10,11 +11,13 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import com.techm.orion.entitybeans.PasswordPolicy;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.entitybeans.UserRole;
 import com.techm.orion.exception.GenericResponse;
+import com.techm.orion.pojo.UserManagementResulltDetailPojo;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.UserManagementInterface;
@@ -219,6 +222,7 @@ public class UserManagementImpl implements UserManagementInterface {
 	/*
 	 * Create service for view user specific details for user management
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public GenericResponse getUserView(String userName) throws Exception {
 		GenericResponse response = new GenericResponse();
@@ -235,9 +239,10 @@ public class UserManagementImpl implements UserManagementInterface {
 		if (moduleDetails != null)
 			jsonModule = (JSONObject) parser.parse(moduleDetails);
 		if (customerAndSitesDetails != null)
+		{
 			obj =  parser.parse(customerAndSitesDetails);
-		
-		jsonCustAndSites.add(obj);
+			jsonCustAndSites.add(obj);
+		}	
 		String managerId = userManagementRepository.findOneByManagerName(userName);
 		String managerName = userManagementRepository.findManagerName(managerId);
 		response.put("userDetails", userDetails);
@@ -508,11 +513,13 @@ public class UserManagementImpl implements UserManagementInterface {
 	}
 
 	@Override
-	public GenericResponse checkUserNamePassword(String userName, String currentPassword) throws Exception {
+	public UserManagementResulltDetailPojo checkUserNamePassword(String userName, String currentPassword) throws Exception {
 		String encryptedPass = passEncrypt.getMd5(currentPassword);
 		String userPass = userManagementRepository.findByUserNameCurrentPassword(userName, encryptedPass);
-		GenericResponse responseData = new GenericResponse();
 		UserManagementEntity userDetails = getUserAttempts(userName);
+		UserManagementResulltDetailPojo userManagementResulltDetailPojo = new UserManagementResulltDetailPojo();
+		JSONObject jsonModule = null;
+		JSONParser parser = new JSONParser();
 		String user = null;
 		String pass = null;
 		if (userPass != null) {
@@ -523,22 +530,55 @@ public class UserManagementImpl implements UserManagementInterface {
 		if (userName != null && !userName.isEmpty() && currentPassword != null && !currentPassword.isEmpty()) {
 
 			if (userName.equalsIgnoreCase(user) && encryptedPass.equalsIgnoreCase(pass)) {
-				if (userDetails.getAttempts() >= MAX_ATTEMPTS)
-					throw new Exception("User account is locked!");
-				logger.info("\n" + "correct password");
-				responseData.put("msg", "correct password");
-				userManagementRepository.resetFailAttempts(userName);
+				logger.info("correct password");
+				boolean didLogin = setUserLoginFlag(userName,encryptedPass, userDetails.getStatus());
+				if (didLogin) {
+					userManagementResulltDetailPojo.setMessage("Success");
+					userManagementResulltDetailPojo.setResult(true);
+					userManagementResulltDetailPojo.setRole(userDetails.getRole());
+					userManagementResulltDetailPojo.setFirstName(userDetails.getFirstName());
+					userManagementResulltDetailPojo.setLastName(userDetails.getLastName());
+					userManagementResulltDetailPojo.setWorkGroup(userDetails.getWorkGroup());
+					userManagementResulltDetailPojo.setUserName(userDetails.getUserName());
+					userManagementResulltDetailPojo.setBaseLocation(userDetails.getBaseLocation());
+					jsonModule = (JSONObject) parser.parse(userDetails.getModuleInfo());
+					userManagementResulltDetailPojo.setModuleInfo(jsonModule);
+					if(userDetails.getSubOrdinate() !=null)
+						userManagementResulltDetailPojo.setSuperUser(true);
+					else
+						userManagementResulltDetailPojo.setSuperUser(false);
+					userManagementRepository.resetFailAttempts(userName);
+				}
+				else
+				{
+					userManagementResulltDetailPojo.setMessage("Your account is inactive, Please contact your Administrator ");
+					userManagementResulltDetailPojo.setResult(false);
+				}
 			} else {
 
-				logger.info("\n" + "wrong password");
-				responseData.put("msg", "wrong password");
+				logger.info("wrong password");
+				userManagementResulltDetailPojo.setMessage("Failure");
+				userManagementResulltDetailPojo.setResult(false);
+				userManagementResulltDetailPojo.setRole(userDetails.getRole());
+				userManagementResulltDetailPojo.setFirstName(userDetails.getFirstName());
+				userManagementResulltDetailPojo.setLastName(userDetails.getLastName());
+				userManagementResulltDetailPojo.setWorkGroup(userDetails.getWorkGroup());
+				userManagementResulltDetailPojo.setUserName(userDetails.getUserName());
+				userManagementResulltDetailPojo.setBaseLocation(userDetails.getBaseLocation());
+				jsonModule = (JSONObject) parser.parse(userDetails.getModuleInfo());
+				userManagementResulltDetailPojo.setModuleInfo(jsonModule);
+				if(userDetails.getSubOrdinate() !=null)
+					userManagementResulltDetailPojo.setSuperUser(true);
+				else
+					userManagementResulltDetailPojo.setSuperUser(false);
+				
 				if (userDetails.getAttempts() >= MAX_ATTEMPTS)
-					throw new Exception("User account is locked!");
+					userManagementResulltDetailPojo.setMessage("User account is locked!");
 				updateFailAttempts(userName);
-				throw new Exception("Invalid username or password");
+				userManagementResulltDetailPojo.setMessage("Invalid username or password");
 			}
 		}
-		return responseData;
+		return userManagementResulltDetailPojo;
 	}
 
 	public void updateFailAttempts(String userName) {
@@ -682,5 +722,33 @@ public class UserManagementImpl implements UserManagementInterface {
 			}
 		}
 		return success;
+	}
+
+	@Override
+	public boolean resetUsersDB(String userName) {
+		boolean result = false;
+		int resetStatus = userManagementRepository.resetUsersDB(userName);
+		try {
+			if (resetStatus > 0) 
+				result = true;
+		} catch (Exception exe) {
+			logger.error("Exception in resetUsersDB method " + exe.getMessage());
+		}
+		return result;
+	}
+
+	@Override
+	public boolean setUserLoginFlag(String userName, String password, String status) {
+		boolean result = false;
+		int updateStatus =0;
+		if("active".equalsIgnoreCase(status))
+				updateStatus = userManagementRepository.setUserLoginFlag(userName, password);
+		try {
+			if (updateStatus > 0)
+				result = true;
+		} catch (Exception exe) {
+			logger.error("Exception in checkUsersDB method " + exe.getMessage());
+		}
+		return result;
 	}
 }

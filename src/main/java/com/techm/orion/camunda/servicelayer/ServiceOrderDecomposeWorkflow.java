@@ -18,7 +18,7 @@ public class ServiceOrderDecomposeWorkflow {
 	public void uploadToServer(String rfoid, String version) throws IOException, JSONException {
 
 		String serverPath= TSALabels.WEB_SERVICE_URI.getValue();
-		String query = serverPath + "/engine-rest/process-definition/key/decompWorkflow/start";
+		String query = serverPath + "/engine-rest/process-definition/key/C3P_SO_NextRun_Workflow/start";
 
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();

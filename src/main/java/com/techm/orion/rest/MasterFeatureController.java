@@ -424,7 +424,7 @@ public class MasterFeatureController {
 			}
 		}
 		if (json.containsKey("comments")) {
-			masterFeature.setfComments(json.get("comments").toString());
+			masterFeature.setfComments(json.get("comments").toString().concat("\n"));
 		}
 		if (json.containsKey("isReplicated")) {
 			masterFeature.setfReplicationind(Boolean.parseBoolean(json.get(
@@ -535,7 +535,7 @@ public class MasterFeatureController {
 				masterJson = new JSONObject();
 				childList = new JSONArray();
 				featureEntinty = masterFeatureRepository
-						.findAllByFVendor(vendorEntity);
+						.findByVendorAndStatus(vendorEntity);
 				for (MasterFeatureEntity entity : featureEntinty) {
 					childJson = new JSONObject();
 					childJson.put("vendor", entity.getfVendor());

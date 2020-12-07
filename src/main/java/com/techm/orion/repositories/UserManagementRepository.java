@@ -113,6 +113,20 @@ public interface UserManagementRepository extends JpaRepository<UserManagementEn
 	
 	@Transactional
 	@Modifying(clearAutomatically = true)
-	@Query("UPDATE  UserManagementEntity SET subOrdinate = :subOrdinate where userName = :userName")
+	@Query("UPDATE UserManagementEntity SET subOrdinate = :subOrdinate where userName = :userName")
 	int managerSubordinate(@Param("subOrdinate") String subOrdinate ,@Param("userName") String userName);
+	
+	@Transactional
+	@Modifying(clearAutomatically = true)
+	@Query("UPDATE UserManagementEntity SET userStatus = 0 where userName = :userName")
+	int resetUsersDB(@Param("userName") String userName); 
+	
+
+	@Transactional
+	@Modifying(clearAutomatically = true)
+	@Query("UPDATE UserManagementEntity SET userStatus = 1 where userName = :userName AND currentPassword=:currentPassword")
+	int setUserLoginFlag(@Param("userName") String userName , @Param("currentPassword") String currentPassword );
+	
+	@Query("select userDetails from UserManagementEntity userDetails where userStatus = 1")
+	UserManagementEntity findByUserStatus();
 }
