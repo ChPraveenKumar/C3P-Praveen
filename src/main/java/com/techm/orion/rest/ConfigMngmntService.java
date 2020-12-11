@@ -76,6 +76,7 @@ public class ConfigMngmntService implements Observer {
 	@Autowired
 	private VendorCommandRepository vendorCommandRepository;
 
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/createConfigurationDcm", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -1524,14 +1525,13 @@ public class ConfigMngmntService implements Observer {
 		}
 
 	}
-
+	
 	public String getTemplateId(@RequestBody String configRequest) {
 		String requestIdForConfig = "";
 		String res = "false";
 		String data = "Failure";		
 
 		GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
-		TemplateManagementDao dao = new TemplateManagementDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		Map<String, String> result = null;
 		List<RequestInfoPojo> configReqToSendToC3pCodeList = new ArrayList<RequestInfoPojo>();
@@ -1696,7 +1696,7 @@ public class ConfigMngmntService implements Observer {
 		return requestIdForConfig;
 
 	}
-
+	@SuppressWarnings("unchecked")
 	private RequestInfoPojo setRequestInfoData(RequestInfoPojo requestInfoPojo, JSONObject json) {
 		String requestType = "";
 		String request_creator_name = "";
@@ -1797,12 +1797,16 @@ public class ConfigMngmntService implements Observer {
 		}
 
 		if (requestType.equals("Test") || requestType.equals("Audit")) {
+			JSONObject certificationTestFlag = null;
 
-			JSONObject certificationTestFlag = (JSONObject) json.get("certificationTests");
-
+			if (json.containsKey("certificationTests")) {
+				if (json.get("certificationTests") != null) {
+					certificationTestFlag = (JSONObject) json.get("certificationTests");
+				}
+			}
 			if (!(requestType.equals("SLGB"))) {
 
-				if (certificationTestFlag.containsKey("default")) {
+				if (certificationTestFlag != null && certificationTestFlag.containsKey("default")) {
 					// flag test selection
 					JSONObject defaultObj = (JSONObject) certificationTestFlag.get("default");
 
@@ -1814,12 +1818,16 @@ public class ConfigMngmntService implements Observer {
 					logger.info(bit);
 					requestInfoPojo.setCertificationSelectionBit(bit);
 
+				} else {
+					String bit = "0" + "0" + "0" + "0" + "0" + "0" + "0";
+					logger.info(bit);
+					requestInfoPojo.setCertificationSelectionBit(bit);
 				}
 			}
 
 			if (!(requestType.equals("SLGB"))) {
 
-				if (certificationTestFlag.containsKey("dynamic")) {
+				if (certificationTestFlag != null && certificationTestFlag.containsKey("dynamic")) {
 					JSONArray dynamicArray = (JSONArray) certificationTestFlag.get("dynamic");
 					JSONArray toSaveArray = new JSONArray();
 
@@ -1834,17 +1842,15 @@ public class ConfigMngmntService implements Observer {
 							auditFlag = category.contains("Network Audit");
 						}
 						if ((auditFlag && "Audit".equals(requestType)) || (testOnly && "Test".equals(requestType))
-								|| (!auditFlag && !testOnly && ("config".equals(requestType)))) {
+								|| (!auditFlag && !testOnly && ("Config".equals(requestType)))) {
 							long isSelected = (long) arrayObj.get("selected");
 							if (isSelected == 1) {
 								toSaveArray.add(arrayObj);
 							}
 						}
 					}
-
 					String testsSelected = toSaveArray.toString();
 					requestInfoPojo.setTestsSelected(testsSelected);
-
 				}
 			}
 		} else {
