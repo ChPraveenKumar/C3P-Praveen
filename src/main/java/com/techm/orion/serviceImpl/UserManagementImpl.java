@@ -727,9 +727,9 @@ public class UserManagementImpl implements UserManagementInterface {
 	@Override
 	public boolean resetUsersDB(String userName) {
 		boolean result = false;
-		int resetStatus = userManagementRepository.resetUsersDB(userName);
+		List<UserManagementEntity> resetStatus = userManagementRepository.findByUserName(userName);
 		try {
-			if (resetStatus > 0) 
+			if (!resetStatus.isEmpty()) 
 				result = true;
 		} catch (Exception exe) {
 			logger.error("Exception in resetUsersDB method " + exe.getMessage());
@@ -740,11 +740,11 @@ public class UserManagementImpl implements UserManagementInterface {
 	@Override
 	public boolean setUserLoginFlag(String userName, String password, String status) {
 		boolean result = false;
-		int updateStatus =0;
+		UserManagementEntity updateStatus = null;
 		if("active".equalsIgnoreCase(status))
-				updateStatus = userManagementRepository.setUserLoginFlag(userName, password);
+				updateStatus = userManagementRepository.findByUserNameAndCurrentPassword(userName, password);
 		try {
-			if (updateStatus > 0)
+			if (updateStatus != null)
 				result = true;
 		} catch (Exception exe) {
 			logger.error("Exception in checkUsersDB method " + exe.getMessage());

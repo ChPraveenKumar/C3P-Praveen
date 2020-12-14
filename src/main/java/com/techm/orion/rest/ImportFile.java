@@ -150,9 +150,9 @@ public class ImportFile {
 	@POST
 	@RequestMapping(value = "/fileupload", method = RequestMethod.POST)
 	@ResponseBody
-	public Response uploadFile(@ModelAttribute RequestDetailsEntity entity) {
+	public Response uploadFile(@ModelAttribute RequestDetailsEntity entity, String userName) {
 
-		boolean isFlag = excelReader.saveDataFromUploadFile(entity.getFile());
+		boolean isFlag = excelReader.saveDataFromUploadFile(entity.getFile(), userName);
 
 		return null;
 

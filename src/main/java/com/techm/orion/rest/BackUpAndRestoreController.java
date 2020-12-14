@@ -359,7 +359,7 @@ public class BackUpAndRestoreController {
 			@RequestBody String configRequest) {
 
 		JSONObject obj = new JSONObject();
-		String hostName = "", managementIp = "", scheduledTime = "", alphaneumeric_req_id = "";
+		String hostName = "", managementIp = "", scheduledTime = "", alphaneumeric_req_id = "", userName = null;
 		Boolean startup;
 
 		List<DeviceDiscoveryEntity> requestDetail = null;
@@ -378,7 +378,7 @@ public class BackUpAndRestoreController {
 
 			hostName = json.get("hostname").toString();
 			managementIp = json.get("managementIp").toString();
-
+			userName = json.get("userName").toString();
 			scheduledTime = json.get("scheduleDate").toString();
 
 			requestDetail = deviceDiscoveryRepository
@@ -446,7 +446,7 @@ public class BackUpAndRestoreController {
 				requestInfoEntity.setRequestParentVersion(1.0);
 				requestInfoEntity.setRequestTypeFlag("M");
 
-				requestInfoEntity.setRequestCreatorName(Global.loggedInUser);
+				requestInfoEntity.setRequestCreatorName(userName);
 
 				if (!(scheduledTime.isEmpty())) {
 					requestInfoEntity.setBackUpScheduleTime(scheduledTime);
@@ -676,6 +676,8 @@ public class BackUpAndRestoreController {
 
 		JSONObject obj = new JSONObject();
 		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "";
+		JSONArray jsonArray = null;
+		String userName =null;
 
 		Map<String, String> result = new HashMap<String, String>();
 
@@ -697,9 +699,14 @@ public class BackUpAndRestoreController {
 		try {
 
 			Gson gson = new Gson();
-
-			BatchPojo[] userArray = gson.fromJson(configRequest,
-					BatchPojo[].class);
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(configRequest);
+			if(json.get("data") != null && json.get("userName") != null)
+			{
+				 jsonArray = (JSONArray) json.get("data");
+				 userName = json.get("userName").toString();
+			}			
+			BatchPojo[] userArray = gson.fromJson(jsonArray.toJSONString(), BatchPojo[].class);
 
 			for (int j = 0; j < userArray.length; j++) {
 
@@ -794,9 +801,7 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setCertificationSelectionBit("1010011");
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
-
-					requestInfoEntity
-							.setRequestCreatorName(Global.loggedInUser);
+					requestInfoEntity.setRequestCreatorName(userName);
 
 					requestInfoEntity.setStartUp(tempStartUp);
 
@@ -956,7 +961,8 @@ public class BackUpAndRestoreController {
 		JSONObject obj = new JSONObject();
 
 		JsonArray attribJson = null;
-		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null, templateId = null, requestType = "Config MACD", requestId = null;
+		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
+				templateId = null, requestType = "Config MACD", requestId = null, userName =null;
 
 		HashMap<String, String> map = new HashMap<String, String>();
 		ArrayList<Integer> tempRequest = new ArrayList<Integer>();
@@ -965,9 +971,8 @@ public class BackUpAndRestoreController {
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(configRequest);
 
-		JsonObject jsonObject = new JsonParser().parse(configRequest)
-				.getAsJsonObject();
-
+		JsonObject jsonObject = new JsonParser().parse(configRequest).getAsJsonObject();
+		userName = json.get("userName").toString();
 		attribJson = jsonObject.getAsJsonArray("requests");
 		int requestCount = 1;
 		for (int n = 0; n < attribJson.size(); n++) {
@@ -1101,9 +1106,8 @@ public class BackUpAndRestoreController {
 						templateId = "MACD_Feature" + templateName;
 
 						requestInfoEntity.setTemplateUsed(templateId);
-
-						requestInfoEntity
-								.setRequestCreatorName(Global.loggedInUser);
+						
+						requestInfoEntity.setRequestCreatorName(userName);
 
 						if (!(scheduledTime.isEmpty())) {
 
@@ -1155,7 +1159,8 @@ public class BackUpAndRestoreController {
 		JSONObject obj = new JSONObject();
 
 		JsonArray attribJson = null;
-		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null, templateId = null, requestType = null, requestId = null;
+		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
+				templateId = null, requestType = null, requestId = null, userName =null;
 
 		HashMap<String, String> map = new HashMap<String, String>();
 
@@ -1165,9 +1170,8 @@ public class BackUpAndRestoreController {
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(configRequest);
 
-		JsonObject jsonObject = new JsonParser().parse(configRequest)
-				.getAsJsonObject();
-
+		JsonObject jsonObject = new JsonParser().parse(configRequest).getAsJsonObject();
+		userName = json.get("userName").toString();
 		attribJson = jsonObject.getAsJsonArray("requests");
 
 		for (int n = 0; n < attribJson.size(); n++) {
@@ -1292,8 +1296,7 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
 
-					requestInfoEntity
-							.setRequestCreatorName(Global.loggedInUser);
+					requestInfoEntity.setRequestCreatorName(userName);
 
 					if (!(scheduledTime.isEmpty())) {
 
@@ -1338,7 +1341,8 @@ public class BackUpAndRestoreController {
 		JSONObject obj = new JSONObject();
 
 		JsonArray attribJson = null;
-		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null, templateId = null, requestType = null, requestId = null;
+		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
+				templateId = null, requestType = null, requestId = null, userName = null;
 
 		HashMap<String, String> map = new HashMap<String, String>();
 
@@ -1349,9 +1353,8 @@ public class BackUpAndRestoreController {
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(configRequest);
 
-		JsonObject jsonObject = new JsonParser().parse(configRequest)
-				.getAsJsonObject();
-
+		JsonObject jsonObject = new JsonParser().parse(configRequest).getAsJsonObject();
+		userName = json.get("userName").toString();
 		attribJson = jsonObject.getAsJsonArray("requests");
 
 		for (int n = 0; n < attribJson.size(); n++) {
@@ -1471,8 +1474,7 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
 
-					requestInfoEntity
-							.setRequestCreatorName(Global.loggedInUser);
+					requestInfoEntity.setRequestCreatorName(userName);
 
 					if (!(scheduledTime.isEmpty())) {
 

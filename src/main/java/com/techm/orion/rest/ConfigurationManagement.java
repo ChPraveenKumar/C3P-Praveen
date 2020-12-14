@@ -86,7 +86,7 @@ public class ConfigurationManagement {
 		String requestIdForConfig = "";
 		String res = "false";
 		String data = "Failure";
-		String request_creator_name = null;
+		String request_creator_name = null, userName = null, userRole = null;
 		List<String> templateList = null;
 		TemplateManagementDao dao = new TemplateManagementDao();
 		List<RequestInfoPojo> configReqToSendToC3pCodeList = new ArrayList<RequestInfoPojo>();
@@ -99,6 +99,11 @@ public class ConfigurationManagement {
 
 			RequestInfoPojo configReqToSendToC3pCode = new RequestInfoPojo();
 
+			if (json.containsKey("userName")) 
+				userName = json.get("userRole").toString();
+			
+			if (json.containsKey("userRole")) 
+				userRole = json.get("userRole").toString();
 			
 			if (json.containsKey("apiCallType")) {
 				configReqToSendToC3pCode.setApiCallType(json.get("apiCallType").toString());
@@ -238,7 +243,7 @@ public class ConfigurationManagement {
 				request_creator_name = json.get("request_creator_name").toString();
 			} else {
 
-				request_creator_name = dcmConfigService.getLogedInUserName();
+				request_creator_name = userRole;
 			}
 			// String request_creator_name="seuser";
 			if (request_creator_name.isEmpty()) {
@@ -680,7 +685,7 @@ public class ConfigurationManagement {
 				logger.info("createConfigurationDcm - before calling updateAlldetails - " + createConfigList);
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList,features);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList, userName,features);
 
 			} else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("NETCONF")
 					&& configReqToSendToC3pCode.getNetworkType().equals("VNF")
@@ -775,12 +780,12 @@ public class ConfigurationManagement {
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList,null);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList, userName,null);
 
 			} else {
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, null, null,null);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, null, null, userName,null);
 			}
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {

@@ -30,7 +30,7 @@ public class RequestDashboardGraphService {
 	private DiscoveryDashboardRepository discoveryDashboardRepository;
 
 	public JSONObject getTotals(String customer, String region, String site, String vendor, String type,
-			String dashboardType) {
+			String dashboardType, String userName) {
 		String loggedUser = null;
 
 		if (customer == null || customer.equalsIgnoreCase("All")) {
@@ -46,7 +46,7 @@ public class RequestDashboardGraphService {
 			vendor = "%";
 		}
 		if (type.equals("my")) {
-			loggedUser = dcmConfigService.getLogedInUserName();
+			loggedUser = userName;
 		} else {
 			loggedUser = "%";
 		}
@@ -321,10 +321,10 @@ public class RequestDashboardGraphService {
 		return day;
 	}
 
-	public JSONObject getDataCount(String type) {
+	public JSONObject getDataCount(String type, String userName) {
 		String loggedUser = null;
 		if (type.equals("my")) {
-			loggedUser = dcmConfigService.getLogedInUserName();
+			loggedUser = userName;
 		} else {
 			loggedUser = "%";
 		}
@@ -335,11 +335,11 @@ public class RequestDashboardGraphService {
 		return finalJson;
 	}
 
-	public JSONObject getDeviceDiscoverStatus(String type) {
+	public JSONObject getDeviceDiscoverStatus(String type, String userName) {
 		JSONObject deviceCountObjet = new JSONObject();
 		String loggedUser = null;
 		if (type.equals("my")) {
-			loggedUser = dcmConfigService.getLogedInUserName();
+			loggedUser = userName;
 		} else {
 			loggedUser = "%";
 		}

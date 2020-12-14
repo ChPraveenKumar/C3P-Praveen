@@ -341,7 +341,7 @@ public class GetTemplateConfigurationData implements Observer {
 		boolean saveComplete = false;
 		Map<String, String> tempIDafterSaveBasicDetails = null;
 		TemplateManagementDao dao = new TemplateManagementDao();
-		String versionToSave = null;
+		String versionToSave = null, userName = null;
 		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
 		try {
 			tempIDafterSaveBasicDetails = new HashMap<String, String>();
@@ -354,6 +354,8 @@ public class GetTemplateConfigurationData implements Observer {
 
 			getTemplateMngmntPojo.setTemplateid(templateAndVesion);
 
+			if (json.get("userName") != null) 
+				userName = json.get("userName").toString();
 			String finalTemplate = json.get("templateData").toString();
 			String s = ")!" + '"' + '"' + "}";
 			finalTemplate = finalTemplate.replace("\\n", "\n");
@@ -412,10 +414,10 @@ public class GetTemplateConfigurationData implements Observer {
 			}
 			if (json.get("templateVersion") != null) {
 				tempIDafterSaveBasicDetails = dao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, templateVersion, comment, networkType, aliasName);
+						templateId, templateVersion, comment, networkType, aliasName, userName);
 			} else {
 				tempIDafterSaveBasicDetails = dao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, "1.0", comment, networkType, aliasName);
+						templateId, "1.0", comment, networkType, aliasName, userName);
 				getTemplateMngmntPojo.getTemplateid().substring(getTemplateMngmntPojo.getTemplateid().length() - 3);
 			}
 
@@ -663,10 +665,14 @@ public class GetTemplateConfigurationData implements Observer {
 		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
 		TemplateManagementDao dao = new TemplateManagementDao();
 		JSONObject jsonObj;
-		String templateId = null;
+		String templateId = null, userRole = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
+			
+			if (json.get("userRole") != null) 
+				userRole = json.get("userRole").toString();
+			
 			if (Boolean.parseBoolean(json.get("isTemplate").toString())) {
 				if (json.containsKey("readFlag")) {
 
@@ -687,7 +693,7 @@ public class GetTemplateConfigurationData implements Observer {
 														.indexOf("-V") + 2,
 												json.get("templateid")
 														.toString().length()),
-								json.get("readFlag").toString());
+								json.get("readFlag").toString(), userRole);
 					}
 
 					List<TemplateBasicConfigurationPojo> templatelistforcomment = dao.getTemplateList();
@@ -724,8 +730,7 @@ public class GetTemplateConfigurationData implements Observer {
 				String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
 						.getProperty("templateCreationPath");
 
-				List<String> lines = Files.readAllLines(
-						Paths.get(responseDownloadPath + json.get("templateid").toString().replace("-", "_")));
+				List<String> lines = Files.readAllLines(Paths.get(responseDownloadPath + json.get("templateid").toString().replace("-", "_")));
 				List<CommandPojo> listShow = new ArrayList<CommandPojo>();
 
 				for (int i = 0; i < lines.size(); i++) {

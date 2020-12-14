@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
@@ -54,7 +55,7 @@ public class GetDataOnRefresh implements Observer {
 	@GET
 	@RequestMapping(value = "/get", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
-	public Response getAll() {
+	public Response getAll(@RequestParam String userName, @RequestParam String userRole) {
 		logger.info("in Refresh");
 		JSONObject obj = new JSONObject();
 		int notificationCount = 0;
@@ -65,8 +66,8 @@ public class GetDataOnRefresh implements Observer {
 		String jsonFeRequestList = "";
 
 		List<TemplateBasicConfigurationPojo> templateNames = new ArrayList<TemplateBasicConfigurationPojo>();
-		String user = Global.loggedInUser;
-		//String user="feuser";
+		//String user = Global.loggedInUser;
+		String user= userRole;
 		switch (user) {
 		case "feuser":
 			requestList = requestInfoDao.getOwnerAssignedRequestList("feuser");

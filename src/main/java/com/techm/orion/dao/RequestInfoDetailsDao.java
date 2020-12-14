@@ -451,10 +451,9 @@ public class RequestInfoDetailsDao {
 		return requestInfoList;
 	}
 
-	public List<RequestInfoCreateConfig> getAllResquestsFromDB() throws IOException {
+	public List<RequestInfoCreateConfig> getAllResquestsFromDB(String userRole) throws IOException {
 		List<RequestInfoCreateConfig> requestInfoList1 = new ArrayList<>();
-		Global.loggedInUser = "admin";
-		String user = Global.loggedInUser;
+		String user = userRole;
 		List<RequestInfoEntity> entity = new ArrayList<>();
 		switch (user) {
 		case "feuser":
@@ -482,19 +481,19 @@ public class RequestInfoDetailsDao {
 
 	}
 
-	public List<RequestInfoCreateConfig> getRequestWithVersion(String key, String requestId, String version)
+	public List<RequestInfoCreateConfig> getRequestWithVersion(String key, String requestId, String version, String userName, String userRole)
 			throws IOException {
 		List<RequestInfoEntity> requestEntity = null;
-		Global.loggedInUser = "admin";
+		//Global.loggedInUser = "admin";
 		Double finalVersion = Double.valueOf(version);
-		if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
+		if (!userRole.equalsIgnoreCase("admin")) {
 			if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
 				requestEntity = reository.findAllByAlphanumericReqIdAndRequestVersionAndRequestCreatorName(requestId,
-						finalVersion, Global.loggedInUser);
+						finalVersion, userName);
 				return setEntityDate(requestEntity);
 			}
 			if (key.equalsIgnoreCase("Region")) {
-				requestEntity = reository.findAllByRegionContainingAndRequestCreatorName(key, Global.loggedInUser);
+				requestEntity = reository.findAllByRegionContainingAndRequestCreatorName(key, userName);
 				return setEntityDate(requestEntity);
 			}
 		}

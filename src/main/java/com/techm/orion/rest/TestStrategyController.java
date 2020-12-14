@@ -412,7 +412,10 @@ public class TestStrategyController {
 			}
 			String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
 			testDetail.setCreatedOn(timeStamp);
-			testDetail.setCreatedBy("admin");
+			
+			if (json.containsKey("userName"))
+				testDetail.setCreatedBy(json.get("userName").toString());
+			
 			if (json.containsKey("Comment")) {
 				testDetail.setComment(json.get("Comment").toString());
 			}
@@ -1670,7 +1673,7 @@ public class TestStrategyController {
 	@SuppressWarnings({ "null", "unchecked", "unused" })
 	@POST
 	@RequestMapping(value = "/testListForBatch", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response getTestsForBatch(@RequestBody String request) {
+	public Response getTestsForBatch(@RequestBody String request) throws Exception {
 
 		List<TestDetail> testDetailsList = new ArrayList<TestDetail>();
 		List<TestDetail> testDetailsListLatestVersion = new ArrayList<TestDetail>();
@@ -1682,13 +1685,21 @@ public class TestStrategyController {
 		String response = null;
 
 		String deviceModel = null, vendor = null, deviceFamily = null, version = null, region = null, testName = null,
-				networkType = null, requestType = null;
+				networkType = null, requestType = null, userName = null;
 
 		List<String> featuresFromUI = new ArrayList<String>();
 		HashMap<String, String> uiInput = new HashMap<>();
 		Gson gson = new Gson();
+		JSONArray jsonArray = null;
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(request);
+		if(json.get("data") != null && json.get("userName") != null)
+		{
+			 jsonArray = (JSONArray) json.get("data");
+			 userName = json.get("userName").toString();
+		}
 
-		BatchPojo[] userArray = gson.fromJson(request, BatchPojo[].class);
+		BatchPojo[] userArray = gson.fromJson(jsonArray.toJSONString(), BatchPojo[].class);
 
 		for (int j = 0; j < userArray.length; j++) {
 
