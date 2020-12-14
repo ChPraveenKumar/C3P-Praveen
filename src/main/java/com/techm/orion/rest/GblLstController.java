@@ -29,6 +29,7 @@ import com.techm.orion.entitybeans.OS;
 import com.techm.orion.entitybeans.OSversion;
 import com.techm.orion.entitybeans.Regions;
 import com.techm.orion.entitybeans.Services;
+import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
 import com.techm.orion.entitybeans.Vendors;
 import com.techm.orion.repositories.DeviceFamilyRepository;
 import com.techm.orion.repositories.ModelsRepository;
@@ -413,36 +414,75 @@ public class GblLstController {
 	@RequestMapping(value = "/os", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response setOS(@RequestBody OS os) {
 		DeviceFamily deviceFamily = os.getDeviceFamily();
-		Set<DeviceFamily> familyList = deviceFamilyRepository.findByDeviceFamily(deviceFamily.getDeviceFamily());
-		if (familyList != null && familyList.size() > 0) {
-			DeviceFamily family = familyList.iterator().next();
-			logger.info("family-" + family.getDeviceFamily());
-			logger.info("family id-" + family.getId());
-			List<OS> osByDFamily = osRepository.findByDeviceFamily(family);
-
-			logger.info("osByDFamily -" + osByDFamily);
-			if (osByDFamily != null && osByDFamily.size() > 0) {
-				return Response.status(422)
-						.entity("More than one OS & Device Family is not allowed for existing device family").build();
-			} else {
-				try {
+		logger.info("deviceFamily -" + deviceFamily);
+		boolean isAdd = false;
+		String resstr = null;
+			Set<DeviceFamily> existingFamilyFromDB = deviceFamilyRepository.findByDeviceFamily(deviceFamily.getDeviceFamily());
+			DeviceFamily existingDeviceFamily = existingFamilyFromDB.iterator().next();
+			
+			Set<DeviceFamily> devicefamvendor = deviceFamilyRepository.findVendor(existingDeviceFamily.getDeviceFamily());
+			DeviceFamily familydev = devicefamvendor.iterator().next();
+			
+			Set<DeviceFamily> device = new HashSet<DeviceFamily>();
+			DeviceFamily existingFamily = new DeviceFamily();
+			
+			 Set<OS> osfam = osRepository.findByOs(os.getOs());
+			//if(osfam.size()>0) {
+			//for(int i=0; i<osfam.size(); i++) {
+			//if(osfam.get(i).getOs().contains(os.getOs())) {
+			 if(osfam != null && !osfam.isEmpty()) {
+				device = deviceFamilyRepository.findDeviceFamily(existingDeviceFamily.getDeviceFamily());
+				existingFamily = device.iterator().next();
+			}else {
+				Set<OS> osByDFamily = osRepository.findByOsAndDeviceFamily(os.getOs(), existingDeviceFamily);
+				logger.info("osByDFamily -" + osByDFamily);
+				if(osByDFamily.isEmpty()) {
 					OS newOS = new OS();
 					newOS.setOs(os.getOs());
-					newOS.setDeviceFamily(family);
+					newOS.setDeviceFamily(existingDeviceFamily);
 					osRepository.save(newOS);
-				} catch (DataIntegrityViolationException e) {
-					return Response.status(422).entity("Could not save OS Due to Data Integrity").build();
-				} catch (Exception e) {
-					return Response.status(422).entity("Could not save OS").build();
-				}
+					isAdd = true;
 			}
-		} else {
-			return Response.status(200).entity("Selected Device Family is not preset").build();
-		}
+				DeviceFamily family =null;
+			if(existingFamily != null) {
+			Set<DeviceFamily> dfamily = deviceFamilyRepository.findVendor(existingFamily.getDeviceFamily());
+			family = dfamily.iterator().next();
+			}
+			boolean isEqual =false;
+			if(familydev!=null && family!=null) {
+				isEqual = familydev.getVendor().getVendor().equals(family.getVendor().getVendor());
+			}
+			//boolean isEqual = devicefamvendor.equals(dfamily);
+			if(isEqual) {
+				return Response.status(409).entity("OS is duplicate").build();
+			}else {
+				Set<OS> osByDFam = osRepository.findByOsAndDeviceFamily(os.getOs(), existingDeviceFamily);
+				logger.info("osByDFam -" + osByDFam);
+				if(osByDFam.isEmpty()) {
+					OS newOS = new OS();
+					newOS.setOs(os.getOs());
+					newOS.setDeviceFamily(existingDeviceFamily);
+					osRepository.save(newOS);
+					isAdd = true;
+			}
+			}
+			}
+			
+				
+				if (isAdd) {
+					resstr = "added";
+				} else {
+					return Response.status(409).entity("OS is duplicate").build();
+				}
+		//}
+		
+			
+			//}
+			return Response.status(200).entity("OS " + resstr + " succesfully").build();
+			}
+			
 
-		return Response.status(200).entity("OS added successfully").build();
 
-	}
 
 	@GET
 	@RequestMapping(value = "/models", method = RequestMethod.GET, produces = "application/json")
@@ -516,7 +556,7 @@ public class GblLstController {
 		for (Models model : modelsreq) {
 			existingmodels = modelsRepository.findByModel(model.getModel());
 			if (null != existingmodels && !existingmodels.isEmpty()) {
-				return Response.status(422).entity("Model is existing and associated to other vendor.").build();
+				return Response.status(422).entity("Model is duplicate").build();
 			} else {
 				modelstobesaved.add(model);
 				existingdeviceTypesset = deviceFamilyRepository
@@ -668,16 +708,22 @@ public class GblLstController {
 	@DELETE
 	@RequestMapping(value = "/deviceFamily", method = RequestMethod.DELETE, produces = "application/json")
 	public Response delDevicetype(@RequestParam String devicefamily) {
+	
 		DeviceFamily existingdevicetype = new DeviceFamily();
-		try {
-			existingdevicetype = deviceFamilyRepository.findByDeviceFamily(devicefamily).iterator().next();
-			if (existingdevicetype != null) {
+		Set<DeviceFamily> existingDeviceFamily = new HashSet<DeviceFamily>();
+		
+		existingDeviceFamily = deviceFamilyRepository.findByDeviceFamily(devicefamily);
+			
+			if (null != existingDeviceFamily && !existingDeviceFamily.isEmpty()) {
+				existingdevicetype = existingDeviceFamily.iterator().next();
+			try {
 				deviceFamilyRepository.delete(existingdevicetype);
+			} catch (NoSuchElementException e) {
+				return Response.status(200).entity("deviceFamily does not exist so cannot Delete").build();
 			}
-		} catch (NoSuchElementException e) {
-			return Response.status(200).entity("Device Family does not exist so cannot delete").build();
 		}
-		return Response.status(200).entity("Device Family deleted successfully").build();
+		return Response.status(200).entity("deviceFamily deleted successfully").build();
+
 	}
 
 	@GET
