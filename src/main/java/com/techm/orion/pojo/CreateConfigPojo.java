@@ -13,6 +13,26 @@ public class CreateConfigPojo {
 	private String templateId;
 
 	private double requestVersion;
+	
+	private String masterFeatureId;
+	
+	private String masterCharachteristicId;
+
+	public String getMasterCharachteristicId() {
+		return masterCharachteristicId;
+	}
+
+	public void setMasterCharachteristicId(String masterCharachteristicId) {
+		this.masterCharachteristicId = masterCharachteristicId;
+	}
+
+	public String getMasterFeatureId() {
+		return masterFeatureId;
+	}
+
+	public void setMasterFeatureId(String masterFeatureId) {
+		this.masterFeatureId = masterFeatureId;
+	}
 
 	public int getId() {
 		return id;

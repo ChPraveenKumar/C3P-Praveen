@@ -40,8 +40,12 @@ import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.AttribCreateConfigRepo;
 import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.MasterCharacteristicsRepository;
+import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.RequestFeatureTransactionRepository;
 import com.techm.orion.utility.ReportMileStones;
+import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 
 @RestController
 @RequestMapping("/requestDetails")
@@ -65,6 +69,12 @@ public class RequestDetailsServiceWithVersion {
 	@Autowired
 	private ReportMileStones reportMileStones;
 
+	@Autowired
+	private MasterFeatureRepository masterFeatureRepository;
+	
+	@Autowired
+	private MasterCharacteristicsRepository masterCharachteristicsRepository;
+	
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -384,23 +394,54 @@ public class RequestDetailsServiceWithVersion {
 					.findByTRequestIdAndTRequestVersion(requestId, version);
 			JSONArray featureAndAttrib = new JSONArray();
 			featureList.forEach(feature -> {
+				if(feature.gettFeatureId()!=null)	
+				{
 				JSONObject attribJson = new JSONObject();
 				List<MasterAttributes> masterAttribute = attribConfigRepo
 						.findBytemplateFeatureId(feature.gettFeatureId().getId());
 				attribJson.put("featureName", feature.gettFeatureId().getComandDisplayFeature());
+				attribJson.put("noOfFields", masterAttribute.size());
+
 				JSONArray masterAttrib = new JSONArray();
 				if (masterAttribute != null) {
 					masterAttribute.forEach(attrib -> {
-						JSONObject masterAttribObject = new JSONObject();
-						masterAttribObject.put("name", attrib.getLabel());
-						masterAttribObject.put("value",
-								configRepo.findAttribValuByRequestId(attrib.getId(), requestId, version));
-						masterAttrib.add(masterAttribObject);
+						List<String>values=configRepo.findAttribValuByRequestId(attrib.getId(), requestId, version);
+						values.forEach(value ->{
+							JSONObject masterAttribObject = new JSONObject();
+							masterAttribObject.put("name", attrib.getLabel());
+							masterAttribObject.put("value", value);
+							masterAttrib.add(masterAttribObject);
+						});
+						
 					});
-
 				}
 				attribJson.put("featureValue", masterAttrib);
 				featureAndAttrib.add(attribJson);
+				}
+				else
+				{
+					JSONObject attribJson = new JSONObject();
+				//	List<MasterFeatureEntity> masterAttribute = masterFeatureRepository.findByFeatureId(feature.gettMasterFeatureId().getfId());
+					List<MasterCharacteristicsEntity>masterAttribute=masterCharachteristicsRepository.findAllByCFId(feature.gettMasterFeatureId().getfId());
+					attribJson.put("featureName", feature.gettMasterFeatureId().getfName());
+					attribJson.put("noOfFields", masterAttribute.size());
+
+					JSONArray masterAttrib = new JSONArray();
+					if (masterAttribute != null) {
+						masterAttribute.forEach(attrib -> {
+							List<String>values=configRepo.findAttribValuByRequestIdAndMasterFeatureIdandCharachteristicId(attrib.getcFId(), requestId, version,attrib.getcId());
+							values.forEach(value ->{
+								JSONObject masterAttribObject = new JSONObject();
+								masterAttribObject.put("name", attrib.getcName());
+								masterAttribObject.put("value", value);
+								masterAttrib.add(masterAttribObject);
+							});
+							
+						});
+					}
+					attribJson.put("featureValue", masterAttrib);
+					featureAndAttrib.add(attribJson);
+				}
 			});
 
 			return Response.status(200).entity(featureAndAttrib).build();

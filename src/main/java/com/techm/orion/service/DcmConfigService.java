@@ -9,6 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.entitybeans.CreateConfigEntity;
 import com.techm.orion.entitybeans.MasterAttributes;
+import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.entitybeans.RequestFeatureTransactionEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
@@ -47,9 +49,11 @@ import com.techm.orion.pojo.InternetLcVrfSO;
 import com.techm.orion.pojo.MisArPeSO;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
+import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.AttribCreateConfigRepo;
 import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.RequestFeatureTransactionRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
@@ -92,9 +96,12 @@ public class DcmConfigService {
 
 	@Autowired
 	private RfoDecomposedRepository rfoDecomposedRepository;
-	
+
 	@Autowired
 	private UserManagementRepository userManagementRepository;
+
+	@Autowired
+	private MasterFeatureRepository masterFeatureRepository;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -915,9 +922,10 @@ public class DcmConfigService {
 	}
 
 	public String getLogedInUserName() {
-		String userName= null;
-		UserManagementEntity loggedInUserDetails = userManagementRepository.findByUserStatus();
-		if(loggedInUserDetails !=null)
+		String userName = null;
+		UserManagementEntity loggedInUserDetails = userManagementRepository
+				.findByUserStatus();
+		if (loggedInUserDetails != null)
 			userName = loggedInUserDetails.getUserName();
 		return userName;
 	}
@@ -1306,8 +1314,10 @@ public class DcmConfigService {
 				listOfTemplatesAvailable = listFilesForFolder(folder);
 				String tempString = null;
 				if (listOfTemplatesAvailable.size() > 0) {
-				fileToUse=getAvailableHighestVersion(listOfTemplatesAvailable,configRequest,templateID);
-				configRequest.setTemplateID(fileToUse);}
+					fileToUse = getAvailableHighestVersion(
+							listOfTemplatesAvailable, configRequest, templateID);
+					configRequest.setTemplateID(fileToUse);
+				}
 			} else {
 				fileToUse = configRequest.getTemplateID();
 				configRequest.setTemplateID(fileToUse);
@@ -1441,7 +1451,7 @@ public class DcmConfigService {
 	/* method overloadig for UIRevamp */
 	public Map<String, String> updateAlldetails(
 			List<RequestInfoPojo> requestInfoSOList,
-			List<CreateConfigPojo> pojoList, List<String> featureList) {
+			List<CreateConfigPojo> pojoList, List<String> featureList,List<TemplateFeaturePojo>features) {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		// RequestInfoDao requestInfoDao = new RequestInfoDao();
 		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
@@ -1453,6 +1463,7 @@ public class DcmConfigService {
 		Map<String, String> result = new HashMap<String, String>();
 		RequestInfoPojo requestInfoSOTemp = new RequestInfoPojo();
 		String alphanumericRequestId = null, version = null;
+		List<String>configGenMtds=new ArrayList<String>();
 		if (requestInfoSOList.size() == 1) {
 			requestInfoSOTemp = requestInfoSOList.get(0);
 		} else {
@@ -1518,17 +1529,17 @@ public class DcmConfigService {
 						requestInfoSO.getRequestType(),
 						requestInfoSO.getRequestVersion());
 				// int testStrategyResultsDB=requestInfoDao.
-				/*if (requestInfoSO.getTestsSelected() != null) {
-					JSONArray array = new JSONArray(
-							requestInfoSO.getTestsSelected());
-					for (int i = 0; i < array.length(); i++) {
-						org.json.JSONObject obj = array.getJSONObject(i);
-						String testname = obj.getString("testName");
-						String reqid = requestInfoSO.getAlphanumericReqId();
-						// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
-						// "", "",obj.getString("testName"));
-					}
-				}*/
+				/*
+				 * if (requestInfoSO.getTestsSelected() != null) { JSONArray
+				 * array = new JSONArray( requestInfoSO.getTestsSelected()); for
+				 * (int i = 0; i < array.length(); i++) { org.json.JSONObject
+				 * obj = array.getJSONObject(i); String testname =
+				 * obj.getString("testName"); String reqid =
+				 * requestInfoSO.getAlphanumericReqId(); //
+				 * requestInfoDao.insertIntoTestStrategeyConfigResultsTable
+				 * (configRequest.getRequestId(),obj.getString("testCategory"),
+				 * // "", "",obj.getString("testName")); } }
+				 */
 				if (testStrategyDBUpdate > 0) {
 					output = "true";
 				} else {
@@ -1576,7 +1587,11 @@ public class DcmConfigService {
 					}
 				}
 
-				if (requestInfoSO.getApiCallType().equalsIgnoreCase("external")) {
+				if(requestInfoSO.getApiCallType().equalsIgnoreCase("external"))
+				{
+					configGenMtds=setConfigGenMtds(requestInfoSO.getConfigurationGenerationMethods());
+				}
+				if (requestInfoSO.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains("Template")) {
 
 					if (featureList != null && !featureList.isEmpty()) {
 						featureList
@@ -1602,7 +1617,31 @@ public class DcmConfigService {
 								});
 
 					}
-				} else {
+				} 
+				else if(requestInfoSO.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains("Non-Template"))
+				{
+					
+					features.forEach(feature -> {
+						RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+						MasterFeatureEntity masterFeatureId = masterFeatureRepository
+								.findByFIdAndFVersion(
+										feature.getfMasterId(), "1.0");
+
+						requestFeatureEntity
+								.settMasterFeatureId(masterFeatureId);
+						;
+						requestFeatureEntity.settRequestId(requestInfoSO
+								.getAlphanumericReqId());
+						requestFeatureEntity.settHostName(requestInfoSO
+								.getHostname());
+						requestFeatureEntity
+								.settRequestVersion(requestInfoSO
+										.getRequestVersion());
+						requestFeatureRepo.save(requestFeatureEntity);
+					});
+					
+				}
+				else if(requestInfoSO.getApiCallType().equalsIgnoreCase("c3p-ui")) {
 					if (featureList != null && !featureList.isEmpty()) {
 						featureList
 								.forEach(feature -> {
@@ -1635,7 +1674,7 @@ public class DcmConfigService {
 					validateMessage = "Success";
 					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 						for (RequestInfoPojo request : requestInfoSOList) {
-							createTemplateAndHeader(request,requestInfoSOList);
+							createTemplateAndHeader(request, requestInfoSOList);
 						}
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								requestInfoSO);
@@ -1778,7 +1817,7 @@ public class DcmConfigService {
 						}
 					}
 					for (RequestInfoPojo request : requestInfoSOList) {
-						createTemplateAndHeader(request,requestInfoSOList);
+						createTemplateAndHeader(request, requestInfoSOList);
 					}
 					// update the scheduler history
 					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
@@ -2012,7 +2051,8 @@ public class DcmConfigService {
 				final File folder = new File(getTemplateCreationPathForFolder());
 				listOfTemplatesAvailable = listFilesForFolder(folder);
 				if (listOfTemplatesAvailable.size() > 0) {
-					fileToUse=getAvailableHighestVersion(listOfTemplatesAvailable,configRequest,templateID);
+					fileToUse = getAvailableHighestVersion(
+							listOfTemplatesAvailable, configRequest, templateID);
 					configRequest.setTemplateID(fileToUse);
 
 				}
@@ -2023,13 +2063,15 @@ public class DcmConfigService {
 			}
 			try {
 				// responseHeader = invokeFtl.generateheader(configRequest);
-				/*responseHeader = invokeFtl.generateheader(configRequest);
-				TextReport.writeFile(
-						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-						configRequest.getAlphanumericReqId() + "V"
-								+ configRequest.getRequestVersion() + "_Header",
-						responseHeader, "headerGeneration");*/
-				
+				/*
+				 * responseHeader = invokeFtl.generateheader(configRequest);
+				 * TextReport.writeFile(
+				 * TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+				 * configRequest.getAlphanumericReqId() + "V" +
+				 * configRequest.getRequestVersion() + "_Header",
+				 * responseHeader, "headerGeneration");
+				 */
+
 				response = invokeFtl.generateConfigurationToPush(configRequest,
 						fileToUse);
 				TextReport.writeFile(
@@ -2071,7 +2113,7 @@ public class DcmConfigService {
 	}
 
 	public Map<String, String> updateBatchConfig(RequestInfoPojo requestInfoSO,
-			List<CreateConfigPojo> pojoList, List<String> featureList, String userName) {
+			List<CreateConfigPojo> pojoList, List<String> featureList, String userName, List<TemplateFeaturePojo> features) {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 
 		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
@@ -2169,32 +2211,56 @@ public class DcmConfigService {
 							}
 						}
 					}
-					if (featureList != null && !featureList.isEmpty()) {
-						featureList
-								.forEach(feature -> {
-									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
-									TemplateFeatureEntity featureId = featureRepo
-											.findByCommandAndComandDisplayFeature(
-													requestInfoSO
-															.getTemplateID(),
-													feature);
-									if (featureId != null) {
-										requestFeatureEntity
-												.settFeatureId(featureId);
-										requestFeatureEntity.settRequestId(requestInfoSO
-												.getAlphanumericReqId());
-										requestFeatureEntity
-												.settHostName(requestInfoSO
-														.getHostname());
-										requestFeatureEntity
-												.settRequestVersion(requestInfoSO
-														.getRequestVersion());
-										requestFeatureRepo
-												.save(requestFeatureEntity);
-									}
-								});
-					}
+					if (!requestInfoSO.getAlphanumericReqId().contains("SLGM")) {
+						if (featureList != null && !featureList.isEmpty()) {
+							featureList
+									.forEach(feature -> {
 
+										RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+										TemplateFeatureEntity featureId = featureRepo
+												.findByCommandAndComandDisplayFeature(
+														requestInfoSO
+																.getTemplateID(),
+														feature);
+										if (featureId != null) {
+											requestFeatureEntity
+													.settFeatureId(featureId);
+											requestFeatureEntity
+													.settRequestId(requestInfoSO
+															.getAlphanumericReqId());
+											requestFeatureEntity
+													.settHostName(requestInfoSO
+															.getHostname());
+											requestFeatureEntity
+													.settRequestVersion(requestInfoSO
+															.getRequestVersion());
+											requestFeatureRepo
+													.save(requestFeatureEntity);
+
+										}
+									});
+
+						}
+					} else {
+						features.forEach(feature -> {
+							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+							MasterFeatureEntity masterFeatureId = masterFeatureRepository
+									.findByFIdAndFVersion(
+											feature.getfMasterId(), "1.0");
+
+							requestFeatureEntity
+									.settMasterFeatureId(masterFeatureId);
+							;
+							requestFeatureEntity.settRequestId(requestInfoSO
+									.getAlphanumericReqId());
+							requestFeatureEntity.settHostName(requestInfoSO
+									.getHostname());
+							requestFeatureEntity
+									.settRequestVersion(requestInfoSO
+											.getRequestVersion());
+							requestFeatureRepo.save(requestFeatureEntity);
+						});
+					}
 					if (!(requestType.equals("Test"))) {
 						createTemplate(requestInfoSO);
 					}
@@ -2264,30 +2330,55 @@ public class DcmConfigService {
 							}
 						}
 					}
-					if (featureList != null && !featureList.isEmpty()) {
-						featureList
-								.forEach(feature -> {
-									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
-									TemplateFeatureEntity featureId = featureRepo
-											.findByCommandAndComandDisplayFeature(
-													requestInfoSO
-															.getTemplateID(),
-													feature);
-									if (featureId != null) {
-										requestFeatureEntity
-												.settFeatureId(featureId);
-										requestFeatureEntity.settRequestId(requestInfoSO
-												.getAlphanumericReqId());
-										requestFeatureEntity
-												.settHostName(requestInfoSO
-														.getHostname());
-										requestFeatureEntity
-												.settRequestVersion(requestInfoSO
-														.getRequestVersion());
-										requestFeatureRepo
-												.save(requestFeatureEntity);
-									}
-								});
+					if (!requestInfoSO.getAlphanumericReqId().contains("SLGM")) {
+						if (featureList != null && !featureList.isEmpty()) {
+							featureList
+									.forEach(feature -> {
+
+										RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+										TemplateFeatureEntity featureId = featureRepo
+												.findByCommandAndComandDisplayFeature(
+														requestInfoSO
+																.getTemplateID(),
+														feature);
+										if (featureId != null) {
+											requestFeatureEntity
+													.settFeatureId(featureId);
+											requestFeatureEntity
+													.settRequestId(requestInfoSO
+															.getAlphanumericReqId());
+											requestFeatureEntity
+													.settHostName(requestInfoSO
+															.getHostname());
+											requestFeatureEntity
+													.settRequestVersion(requestInfoSO
+															.getRequestVersion());
+											requestFeatureRepo
+													.save(requestFeatureEntity);
+
+										}
+									});
+
+						}
+					}else {
+						features.forEach(feature -> {
+							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+							MasterFeatureEntity masterFeatureId = masterFeatureRepository
+									.findByFIdAndFVersion(
+											feature.getfMasterId(), "1.0");
+
+							requestFeatureEntity
+									.settMasterFeatureId(masterFeatureId);
+							;
+							requestFeatureEntity.settRequestId(requestInfoSO
+									.getAlphanumericReqId());
+							requestFeatureEntity.settHostName(requestInfoSO
+									.getHostname());
+							requestFeatureEntity
+									.settRequestVersion(requestInfoSO
+											.getRequestVersion());
+							requestFeatureRepo.save(requestFeatureEntity);
+						});
 					}
 					if (!(requestType.equals("Test"))) {
 						createTemplate(requestInfoSO);
@@ -2320,17 +2411,16 @@ public class DcmConfigService {
 
 		return templateid;
 	}
-	
-	private void createTemplateAndHeader(RequestInfoPojo request, List<RequestInfoPojo>requestInfoSOList)
-	{
+
+	private void createTemplateAndHeader(RequestInfoPojo request,
+			List<RequestInfoPojo> requestInfoSOList) {
 		if (request.getHostname() != null) {
 			if (request.getConfigurationGenerationMethods() != null) {
 				if (request.getConfigurationGenerationMethods()
 						.contains("File")) {
 					String content = TextReport
 							.readFile(TSALabels.RESPONSE_DOWNLOAD_PATH
-									.getValue()
-									+ request.getFileName());
+									.getValue() + request.getFileName());
 					TextReport.writeFile(
 							TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 							request.getAlphanumericReqId() + "V"
@@ -2362,17 +2452,17 @@ public class DcmConfigService {
 			createTemplate(request);
 		}
 	}
-	
-	private String getAvailableHighestVersion(List<String>listOfTemplatesAvailable ,RequestInfoPojo configRequest,String templateID)
-	{
+
+	private String getAvailableHighestVersion(
+			List<String> listOfTemplatesAvailable,
+			RequestInfoPojo configRequest, String templateID) {
 		TemplateManagementDao templateDao = new TemplateManagementDao();
-		float highestversion=0;
-		String tempString = null,fileToUse=null;
+		float highestversion = 0;
+		String tempString = null, fileToUse = null;
 		float highestVersion = 0, tempVersion = 0;
-		boolean isTemplateAvailable=false,isTemplateApproved=false;
+		boolean isTemplateAvailable = false, isTemplateApproved = false;
 		for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
-			tempString = listOfTemplatesAvailable.get(i).substring(
-					0,
+			tempString = listOfTemplatesAvailable.get(i).substring(0,
 					listOfTemplatesAvailable.get(i).indexOf("_V"));
 			if (tempString.equalsIgnoreCase(templateID)) {
 				isTemplateAvailable = true;
@@ -2381,37 +2471,25 @@ public class DcmConfigService {
 		}
 		if (isTemplateAvailable) {
 			for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
-				tempString = listOfTemplatesAvailable.get(i)
-						.substring(
-								0,
-								listOfTemplatesAvailable.get(i)
-										.indexOf("_V"));
+				tempString = listOfTemplatesAvailable.get(i).substring(0,
+						listOfTemplatesAvailable.get(i).indexOf("_V"));
 				if (tempString.equalsIgnoreCase(templateID)) {
 					if (highestVersion == 0) {
 						highestVersion = Float
-								.parseFloat(listOfTemplatesAvailable
-										.get(i)
+								.parseFloat(listOfTemplatesAvailable.get(i)
 										.substring(
-												listOfTemplatesAvailable
-														.get(i)
-														.indexOf(
-																"_V") + 2,
-												listOfTemplatesAvailable
-														.get(i)
+												listOfTemplatesAvailable.get(i)
+														.indexOf("_V") + 2,
+												listOfTemplatesAvailable.get(i)
 														.length()));
 
 					} else {
-						tempVersion = Float
-								.parseFloat(listOfTemplatesAvailable
-										.get(i)
-										.substring(
-												listOfTemplatesAvailable
-														.get(i)
-														.indexOf(
-																"_V") + 2,
-												listOfTemplatesAvailable
-														.get(i)
-														.length()));
+						tempVersion = Float.parseFloat(listOfTemplatesAvailable
+								.get(i).substring(
+										listOfTemplatesAvailable.get(i)
+												.indexOf("_V") + 2,
+										listOfTemplatesAvailable.get(i)
+												.length()));
 						if (tempVersion > highestVersion) {
 							highestVersion = tempVersion;
 						}
@@ -2422,26 +2500,27 @@ public class DcmConfigService {
 				}
 
 			}
-			isTemplateApproved = templateDao.getTemplateStatus(
-					tempString, Float.toString(highestVersion));
+			isTemplateApproved = templateDao.getTemplateStatus(tempString,
+					Float.toString(highestVersion));
 			if (isTemplateApproved) {
 				fileToUse = tempString + "_V" + highestVersion;
 				configRequest.setTemplateID(fileToUse);
 			}
-		
-	}
+
+		}
 		return fileToUse;
 	}
-	private String getAvailableHighestVersion(List<String>listOfTemplatesAvailable ,CreateConfigRequestDCM configRequest,String templateID)
-	{
+
+	private String getAvailableHighestVersion(
+			List<String> listOfTemplatesAvailable,
+			CreateConfigRequestDCM configRequest, String templateID) {
 		TemplateManagementDao templateDao = new TemplateManagementDao();
-		float highestversion=0;
-		String tempString = null,fileToUse=null;
+		float highestversion = 0;
+		String tempString = null, fileToUse = null;
 		float highestVersion = 0, tempVersion = 0;
-		boolean isTemplateAvailable=false,isTemplateApproved=false;
+		boolean isTemplateAvailable = false, isTemplateApproved = false;
 		for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
-			tempString = listOfTemplatesAvailable.get(i).substring(
-					0,
+			tempString = listOfTemplatesAvailable.get(i).substring(0,
 					listOfTemplatesAvailable.get(i).indexOf("_V"));
 			if (tempString.equalsIgnoreCase(templateID)) {
 				isTemplateAvailable = true;
@@ -2450,37 +2529,25 @@ public class DcmConfigService {
 		}
 		if (isTemplateAvailable) {
 			for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
-				tempString = listOfTemplatesAvailable.get(i)
-						.substring(
-								0,
-								listOfTemplatesAvailable.get(i)
-										.indexOf("_V"));
+				tempString = listOfTemplatesAvailable.get(i).substring(0,
+						listOfTemplatesAvailable.get(i).indexOf("_V"));
 				if (tempString.equalsIgnoreCase(templateID)) {
 					if (highestVersion == 0) {
 						highestVersion = Float
-								.parseFloat(listOfTemplatesAvailable
-										.get(i)
+								.parseFloat(listOfTemplatesAvailable.get(i)
 										.substring(
-												listOfTemplatesAvailable
-														.get(i)
-														.indexOf(
-																"_V") + 2,
-												listOfTemplatesAvailable
-														.get(i)
+												listOfTemplatesAvailable.get(i)
+														.indexOf("_V") + 2,
+												listOfTemplatesAvailable.get(i)
 														.length()));
 
 					} else {
-						tempVersion = Float
-								.parseFloat(listOfTemplatesAvailable
-										.get(i)
-										.substring(
-												listOfTemplatesAvailable
-														.get(i)
-														.indexOf(
-																"_V") + 2,
-												listOfTemplatesAvailable
-														.get(i)
-														.length()));
+						tempVersion = Float.parseFloat(listOfTemplatesAvailable
+								.get(i).substring(
+										listOfTemplatesAvailable.get(i)
+												.indexOf("_V") + 2,
+										listOfTemplatesAvailable.get(i)
+												.length()));
 						if (tempVersion > highestVersion) {
 							highestVersion = tempVersion;
 						}
@@ -2491,15 +2558,23 @@ public class DcmConfigService {
 				}
 
 			}
-			isTemplateApproved = templateDao.getTemplateStatus(
-					tempString, Float.toString(highestVersion));
+			isTemplateApproved = templateDao.getTemplateStatus(tempString,
+					Float.toString(highestVersion));
 			if (isTemplateApproved) {
 				fileToUse = tempString + "_V" + highestVersion;
 				configRequest.setTemplateID(fileToUse);
 			}
-		
-	}
+
+		}
 		return fileToUse;
+	}
+	private List<String>setConfigGenMtds(String configGenMethods)
+	{
+		List<String>list=new ArrayList<String>();
+		String [] array=configGenMethods.replace("[", "").replace("]", "")
+				.replace("\"", "").split(",");
+		list=Arrays.asList(array);
+		return list;
 	}
 	
 	/*
@@ -2917,8 +2992,9 @@ public class DcmConfigService {
 	/* method overloadig for UIRevamp for passing user information*/
 	public Map<String, String> updateAlldetails(
 			List<RequestInfoPojo> requestInfoSOList,
-			List<CreateConfigPojo> pojoList, List<String> featureList, String userName) {
-	
+			List<CreateConfigPojo> pojoList, List<String> featureList, String userName, List<TemplateFeaturePojo>features) {
+		List<String>configGenMtds=new ArrayList<String>();
+
 	RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 	// RequestInfoDao requestInfoDao = new RequestInfoDao();
 	TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
@@ -3053,7 +3129,11 @@ public class DcmConfigService {
 				}
 			}
 
-			if (requestInfoSO.getApiCallType().equalsIgnoreCase("external")) {
+			if(requestInfoSO.getApiCallType().equalsIgnoreCase("external"))
+			{
+				configGenMtds=setConfigGenMtds(requestInfoSO.getConfigurationGenerationMethods());
+			}
+			if (requestInfoSO.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains("Template")) {
 
 				if (featureList != null && !featureList.isEmpty()) {
 					featureList
@@ -3079,7 +3159,31 @@ public class DcmConfigService {
 							});
 
 				}
-			} else {
+			} 
+			else if(requestInfoSO.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains("Non-Template"))
+			{
+				
+				features.forEach(feature -> {
+					RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+					MasterFeatureEntity masterFeatureId = masterFeatureRepository
+							.findByFIdAndFVersion(
+									feature.getfMasterId(), "1.0");
+
+					requestFeatureEntity
+							.settMasterFeatureId(masterFeatureId);
+					;
+					requestFeatureEntity.settRequestId(requestInfoSO
+							.getAlphanumericReqId());
+					requestFeatureEntity.settHostName(requestInfoSO
+							.getHostname());
+					requestFeatureEntity
+							.settRequestVersion(requestInfoSO
+									.getRequestVersion());
+					requestFeatureRepo.save(requestFeatureEntity);
+				});
+				
+			}
+			else if(requestInfoSO.getApiCallType().equalsIgnoreCase("c3p-ui")) {
 				if (featureList != null && !featureList.isEmpty()) {
 					featureList
 							.forEach(feature -> {
