@@ -70,8 +70,5 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	List<MasterFeatureEntity>  getMasterFeatureData(@Param("devicefamily") String devicefamily, @Param("os") String os,
 	@Param("region") String region, @Param("osVersion") String osVersion, @Param("vendor") String vendor,
 	@Param("networkType") String networkType);
-	
-	@Query(value = "select * from c3p_m_features where f_id =:fId", nativeQuery = true)
-	List<MasterFeatureEntity> findByFeatureId(@Param("fId") String fId);
-	
+
 }

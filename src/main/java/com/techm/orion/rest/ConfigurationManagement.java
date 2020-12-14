@@ -334,7 +334,7 @@ public class ConfigurationManagement {
 				/*
 				 * Extract dynamicAttribs Json Value and map it to MasteAtrribute List
 				 */
-				org.json.simple.JSONArray attribJson = null;
+				JSONArray attribJson = null;
 				/*if (configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase(
 						"external")
 						&& configReqToSendToC3pCode
@@ -343,22 +343,22 @@ public class ConfigurationManagement {
 												"c3p-ui") ) */
 				//{
 				JSONArray replicationArray = null;
-				org.json.simple.JSONArray replication=null;
+				JSONArray replication=null;
 				if (json.containsKey("dynamicAttribs")) {
-					attribJson = (org.json.simple.JSONArray) json.get("dynamicAttribs");
+					attribJson = (JSONArray) json.get("dynamicAttribs");
 					
 					if(json.containsKey("replication"))
 					{
 						/*replicationArray = (JSONArray) json
 								.get("replication");*/
-						replication = (org.json.simple.JSONArray) json.get("replication");
+						replication = (JSONArray) json.get("replication");
 
 						for(int i=0; i<replication.size();i++)
 						{
 							JSONObject replicationObject=(JSONObject) replication.get(i);
 							if(replicationObject.containsKey("featureAttribDetails"))
 							{
-								replicationArray = (org.json.simple.JSONArray) replicationObject.get("featureAttribDetails");
+								replicationArray = (JSONArray) replicationObject.get("featureAttribDetails");
 								for(int replicationArrayPointer=0;replicationArrayPointer<replicationArray.size();replicationArrayPointer++)
 								{
 									attribJson.add(replicationArray.get(replicationArrayPointer));
@@ -402,9 +402,9 @@ public class ConfigurationManagement {
 
 				} else if(configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase(
 						"c3p-ui")){
-					org.json.simple.JSONArray featureListJson = null;
+					JSONArray featureListJson = null;
 					if (json.containsKey("selectedFeatures")) {
-						featureListJson = (org.json.simple.JSONArray) json.get("selectedFeatures");
+						featureListJson = (JSONArray) json.get("selectedFeatures");
 					}
 					if (featureListJson != null && !featureListJson.isEmpty()) {
 						features = new ArrayList<TemplateFeaturePojo>();
@@ -428,9 +428,9 @@ public class ConfigurationManagement {
 				else if(configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains(
 								"Non-Template"))
 				{
-					org.json.simple.JSONArray featureListJson = null;
+					JSONArray featureListJson = null;
 					if (json.containsKey("selectedFeatures")) {
-						featureListJson = (org.json.simple.JSONArray) json.get("selectedFeatures");
+						featureListJson = (JSONArray) json.get("selectedFeatures");
 					}
 					if (featureListJson != null && !featureListJson.isEmpty()) {
 						features = new ArrayList<TemplateFeaturePojo>();
@@ -719,13 +719,13 @@ public class ConfigurationManagement {
 				// * /* Extract dynamicAttribs Json Value and map it to
 				// MasteAtrribute List
 				// */
-				org.json.simple.JSONArray attribJson = null;
+				JSONArray attribJson = null;
 				if (json.containsKey("dynamicAttribs")) {
-					attribJson = (org.json.simple.JSONArray) json.get("dynamicAttribs");
+					attribJson = (JSONArray) json.get("dynamicAttribs");
 				}
-				org.json.simple.JSONArray featureListJson = null;
+				JSONArray featureListJson = null;
 				if (json.containsKey("selectedFeatures")) {
-					featureListJson = (org.json.simple.JSONArray) json.get("selectedFeatures");
+					featureListJson = (JSONArray) json.get("selectedFeatures");
 				}
 				List<String> featureList = new ArrayList<String>();
 				if (featureListJson != null && !featureListJson.isEmpty()) {
