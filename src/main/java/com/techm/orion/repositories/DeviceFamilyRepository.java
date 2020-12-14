@@ -26,7 +26,7 @@ public interface DeviceFamilyRepository extends JpaRepository<DeviceFamily, Long
 
 
 	@Query(value = "select * from c3p_t_glblist_m_device_family where device_family =:deviceFamily", nativeQuery = true)
-	Set<DeviceFamily>findVendor(@Param("deviceFamily") String deviceFamily);
+	DeviceFamily findVendor(@Param("deviceFamily") String deviceFamily);
 	
 	//Set<DeviceFamily> findDeviceFamily(DeviceFamily deviceFamily);
 	@Query(value = "select * from c3p_t_glblist_m_device_family where device_family =:deviceFamily", nativeQuery = true)

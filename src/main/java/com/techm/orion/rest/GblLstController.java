@@ -416,73 +416,64 @@ public class GblLstController {
 		DeviceFamily deviceFamily = os.getDeviceFamily();
 		logger.info("deviceFamily -" + deviceFamily);
 		boolean isAdd = false;
-		String resstr = null;
-			Set<DeviceFamily> existingFamilyFromDB = deviceFamilyRepository.findByDeviceFamily(deviceFamily.getDeviceFamily());
-			DeviceFamily existingDeviceFamily = existingFamilyFromDB.iterator().next();
-			
-			Set<DeviceFamily> devicefamvendor = deviceFamilyRepository.findVendor(existingDeviceFamily.getDeviceFamily());
-			DeviceFamily familydev = devicefamvendor.iterator().next();
-			
+		String msg ="";		
+		DeviceFamily devicefamvendor = deviceFamilyRepository.findVendor(deviceFamily.getDeviceFamily());
+		DeviceFamily familydev = devicefamvendor;		
+		OS osfamily = osRepository.findByOsAndDeviceFamily(os.getOs(), devicefamvendor);
+		Set<OS> findByOs = osRepository.findByOs(os.getOs());		
+		boolean isEqual = false;
+		if(findByOs!=null && !findByOs.isEmpty()) {
+		for(OS osValue : findByOs) {			
 			Set<DeviceFamily> device = new HashSet<DeviceFamily>();
 			DeviceFamily existingFamily = new DeviceFamily();
-			
-			 Set<OS> osfam = osRepository.findByOs(os.getOs());
-			//if(osfam.size()>0) {
-			//for(int i=0; i<osfam.size(); i++) {
-			//if(osfam.get(i).getOs().contains(os.getOs())) {
-			 if(osfam != null && !osfam.isEmpty()) {
-				device = deviceFamilyRepository.findDeviceFamily(existingDeviceFamily.getDeviceFamily());
-				existingFamily = device.iterator().next();
-			}else {
-				Set<OS> osByDFamily = osRepository.findByOsAndDeviceFamily(os.getOs(), existingDeviceFamily);
-				logger.info("osByDFamily -" + osByDFamily);
-				if(osByDFamily.isEmpty()) {
-					OS newOS = new OS();
-					newOS.setOs(os.getOs());
-					newOS.setDeviceFamily(existingDeviceFamily);
-					osRepository.save(newOS);
-					isAdd = true;
-			}
-				DeviceFamily family =null;
-			if(existingFamily != null) {
-			Set<DeviceFamily> dfamily = deviceFamilyRepository.findVendor(existingFamily.getDeviceFamily());
-			family = dfamily.iterator().next();
-			}
-			boolean isEqual =false;
-			if(familydev!=null && family!=null) {
+			device = deviceFamilyRepository.findDeviceFamily(osValue.getDeviceFamily().getDeviceFamily());
+			DeviceFamily family = null;
+			existingFamily = device.iterator().next();			
+			if (existingFamily != null) {
+				DeviceFamily dfamily = deviceFamilyRepository.findVendor(existingFamily.getDeviceFamily());
+				family = dfamily;
+			}			
+			if (familydev != null && family != null) {
 				isEqual = familydev.getVendor().getVendor().equals(family.getVendor().getVendor());
 			}
-			//boolean isEqual = devicefamvendor.equals(dfamily);
-			if(isEqual) {
-				return Response.status(409).entity("OS is duplicate").build();
-			}else {
-				Set<OS> osByDFam = osRepository.findByOsAndDeviceFamily(os.getOs(), existingDeviceFamily);
-				logger.info("osByDFam -" + osByDFam);
-				if(osByDFam.isEmpty()) {
-					OS newOS = new OS();
-					newOS.setOs(os.getOs());
-					newOS.setDeviceFamily(existingDeviceFamily);
-					osRepository.save(newOS);
-					isAdd = true;
-			}
-			}
-			}
-			
-				
-				if (isAdd) {
-					resstr = "added";
+			if (isEqual) {
+				if (!family.getDeviceFamily().equals(existingFamily.getDeviceFamily())) {
+					OS osByDFam = osRepository.findByOsAndDeviceFamily(os.getOs(), devicefamvendor);
+					logger.info("osByDFam -" + osByDFam);
+					if (osByDFam != null) {
+						OS newOS = new OS();
+						newOS.setOs(os.getOs());
+						newOS.setDeviceFamily(devicefamvendor);
+						osRepository.save(newOS);
+						isAdd = true;
+					}
 				} else {
-					return Response.status(409).entity("OS is duplicate").build();
+					if (osfamily == null) {
+						OS newOS = new OS();
+						newOS.setOs(os.getOs());
+						newOS.setDeviceFamily(devicefamvendor);
+						osRepository.save(newOS);
+						isAdd = true;
+					} else {
+						msg ="OS is present for same device family";
+					}
 				}
-		//}
-		
-			
-			//}
-			return Response.status(200).entity("OS " + resstr + " succesfully").build();
+			} else {
+				msg="OS is present for another vendor";
 			}
-			
-
-
+		}	
+		}else {
+			OS newOS = new OS();
+			newOS.setOs(os.getOs());
+			newOS.setDeviceFamily(devicefamvendor);
+			osRepository.save(newOS);
+			isAdd = true;
+		}		
+		if (isAdd) {
+			msg = "Os added successfully";
+		} 		
+		return Response.status(200).entity(msg).build();
+	}
 
 	@GET
 	@RequestMapping(value = "/models", method = RequestMethod.GET, produces = "application/json")
@@ -708,14 +699,14 @@ public class GblLstController {
 	@DELETE
 	@RequestMapping(value = "/deviceFamily", method = RequestMethod.DELETE, produces = "application/json")
 	public Response delDevicetype(@RequestParam String devicefamily) {
-	
+
 		DeviceFamily existingdevicetype = new DeviceFamily();
 		Set<DeviceFamily> existingDeviceFamily = new HashSet<DeviceFamily>();
-		
+
 		existingDeviceFamily = deviceFamilyRepository.findByDeviceFamily(devicefamily);
-			
-			if (null != existingDeviceFamily && !existingDeviceFamily.isEmpty()) {
-				existingdevicetype = existingDeviceFamily.iterator().next();
+
+		if (null != existingDeviceFamily && !existingDeviceFamily.isEmpty()) {
+			existingdevicetype = existingDeviceFamily.iterator().next();
 			try {
 				deviceFamilyRepository.delete(existingdevicetype);
 			} catch (NoSuchElementException e) {
@@ -853,11 +844,11 @@ public class GblLstController {
 
 		return Response.status(200).entity(osversionlst).build();
 	}
-	
+
 	@POST
 	@RequestMapping(value = "/modifyModel", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response modifyModel(@RequestBody GlobalLstReq globalLstReq) {
-		List<Models> models = globalLstReq.getModels();		
+		List<Models> models = globalLstReq.getModels();
 		Models model = null;
 		Vendors vendor = null;
 		DeviceFamily modDeviceFamily = null;
@@ -866,41 +857,42 @@ public class GblLstController {
 		StringBuilder message = new StringBuilder();
 
 		for (Models modelObj : models) {
-			logger.info(" vendor details:"+modelObj.getVendor().getVendor());
-			logger.info(" DF details:"+modelObj.getDeviceFamily().getDeviceFamily());
-			
-			if(modelObj.isValue() && modelObj.getVendor() !=null && vendor == null) {
+			logger.info(" vendor details:" + modelObj.getVendor().getVendor());
+			logger.info(" DF details:" + modelObj.getDeviceFamily().getDeviceFamily());
+
+			if (modelObj.isValue() && modelObj.getVendor() != null && vendor == null) {
 				Set<Vendors> vendors = vendorRepository.findByVendor(modelObj.getVendor().getVendor());
-				if (vendors !=null) {
+				if (vendors != null) {
 					vendor = vendors.iterator().next();
 				}
 			}
 			if (modelObj.getDeviceFamily() != null) {
-				Set<DeviceFamily> devFamilies = deviceFamilyRepository.findByDeviceFamily(modelObj.getDeviceFamily().getDeviceFamily());
-				if (devFamilies !=null) {
+				Set<DeviceFamily> devFamilies = deviceFamilyRepository
+						.findByDeviceFamily(modelObj.getDeviceFamily().getDeviceFamily());
+				if (devFamilies != null) {
 					if (modelObj.isValue()) {
-						modDeviceFamily = devFamilies.iterator().next();						
+						modDeviceFamily = devFamilies.iterator().next();
 					} else {
 						extDeviceFamily = devFamilies.iterator().next();
 					}
 				}
 			}
-			logger.info(" model details:"+modelObj.getModel());
-			logger.info(" model details 000:"+model);
+			logger.info(" model details:" + modelObj.getModel());
+			logger.info(" model details 000:" + model);
 			if (model == null) {
 				Set<Models> dbModels = modelsRepository.findByModel(modelObj.getModel());
-				logger.info(" dbModels details:"+dbModels);
+				logger.info(" dbModels details:" + dbModels);
 				if (dbModels != null) {
 					model = dbModels.iterator().next();
-					logger.info(" model details:"+model);
+					logger.info(" model details:" + model);
 				}
 			}
 		}
 
 		if (model != null) {
-			logger.info("DB model details:"+model.getModel());
-			if(vendor !=null) {
-				logger.info("DB vendor details:"+vendor.getVendor());
+			logger.info("DB model details:" + model.getModel());
+			if (vendor != null) {
+				logger.info("DB vendor details:" + vendor.getVendor());
 				if (modDeviceFamily != null && extDeviceFamily != null) {
 					if (model.getDeviceFamily().getId() == modDeviceFamily.getId()) {
 						resStatus = 409;
@@ -919,10 +911,10 @@ public class GblLstController {
 					resStatus = 409;
 					message.append("Missing Device Family in DB for modify/existing Device Family details");
 				}
-			}else {
+			} else {
 				resStatus = 409;
 				message.append("Missing Vendor in DB for the input Vendor");
-			}			
+			}
 		} else {
 			resStatus = 409;
 			message.append("Missing Model in DB for the input Model name");

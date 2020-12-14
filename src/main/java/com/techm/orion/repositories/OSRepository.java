@@ -29,7 +29,7 @@ public interface OSRepository extends JpaRepository<OS, Integer> {
 	
 	List<OS>findByDeviceFamily(DeviceFamily family);
 	
-	Set<OS> findByOsAndDeviceFamily(String os, DeviceFamily family);
+	OS findByOsAndDeviceFamily(String os, DeviceFamily family);
 	
 	@Query(value = "select vendor_id from c3p_t_glblist_m_os as u inner join c3p_t_glblist_m_device_family as c on u.device_family=c.device_family and \n" + 
 			"        c.vendor_id != (select vendor_id from c3p_t_glblist_m_device_family where device_family =:deviceFamily)" , nativeQuery = true)
@@ -42,6 +42,8 @@ public interface OSRepository extends JpaRepository<OS, Integer> {
 	Set<OS> findFamily();
 	
 	//TemplateConfigBasicDetailsEntity findByTempAlias(String aliasName);
+	@Query(value = "select * from c3p_t_glblist_m_os where os =:os", nativeQuery = true)
+	OS findos(@Param("os") String os);
 	
 	
 
