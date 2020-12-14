@@ -882,10 +882,13 @@ public class DcmConfigService {
 		detailsList = requestInfoDao.getAllResquestsFromDB();
 		return detailsList;
 	}
-
-	public List<EIPAMPojo> getAllIPAMData() {
+	
+	// Overload method for passing user information
+	public List<RequestInfoSO> getAllDetails(String userRole) {
+		List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		return requestInfoDao.getALLIPAMDatafromDB();
+		detailsList = requestInfoDao.getAllResquestsFromDB(userRole);
+		return detailsList;
 	}
 
 	public List<EIPAMPojo> searchAllIPAMData(String site, String customer,
@@ -1416,14 +1419,22 @@ public class DcmConfigService {
 		num = requestInfoDao.getRequestTpyeData(requestType);
 		return num;
 	}
+	
+	/* Overloaded method for user information and Get Request using Request Type */
+	public int getRequestTypeData(String requestType, String userRole) {
+		int num = 0;
+		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		num = requestInfoDao.getRequestTpyeData(requestType, userRole);
+		return num;
+	}
 
 	/* Get Request using Request Type and Request Status */
 	public int getStatusForSpecificRequestType(String requestType,
-			String requestStatus) {
+			String requestStatus, String userRole) {
 		int num = 0;
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getStatusForSpecificRequestType(requestType,
-				requestStatus);
+				requestStatus, userRole);
 		return num;
 	}
 
@@ -2060,7 +2071,7 @@ public class DcmConfigService {
 	}
 
 	public Map<String, String> updateBatchConfig(RequestInfoPojo requestInfoSO,
-			List<CreateConfigPojo> pojoList, List<String> featureList) {
+			List<CreateConfigPojo> pojoList, List<String> featureList, String userName) {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 
 		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
@@ -2188,7 +2199,7 @@ public class DcmConfigService {
 						createTemplate(requestInfoSO);
 					}
 					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-							requestInfoSO);
+							requestInfoSO, userName);
 					telnetCommunicationSSH.setDaemon(true);
 					telnetCommunicationSSH.start();
 				} else {
@@ -2490,4 +2501,947 @@ public class DcmConfigService {
 	}
 		return fileToUse;
 	}
+	
+	/*
+	 * Overloaded method for passing user information
+	 */
+	public Map<String, String> updateAlldetails(CreateConfigRequestDCM configRequest, List<CreateConfigPojo> pojoList,
+			String userName) throws IOException {
+
+		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
+		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		// CamundaServiceCreateReq camundaServiceCreateReq = new
+		// CamundaServiceCreateReq();
+		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+		String validateMessage = "", requestType = "";
+		// TelnetCommunicationSSH telnetCommunicationSSH=new
+		// TelnetCommunicationSSH();
+		String requestIdForConfig = "", alphaneumeric_req_id;
+		String res = "", output = "";
+		Map<String, String> result = new HashMap<String, String>();
+		// RequestInfoEntity entity = new RequestInfoEntity();
+		String hostName = "", managementIp = "";
+		int testStrategyDBUpdate = 0;
+
+		List<RequestInfoEntity> requestDetail = null;
+		List<RequestInfoEntity> requestDetail1 = null;
+		RequestInfoPojo requestInfoPojo = new RequestInfoPojo();
+
+		try {
+			// Map<String, Object> variables = new HashMap<String, Object>();
+
+			RequestInfoSO requestInfoSO = new RequestInfoSO();
+
+			DeviceInterfaceSO deviceInterfaceSO = new DeviceInterfaceSO();
+			InternetLcVrfSO internetLcVrf = new InternetLcVrfSO();
+			MisArPeSO misArPeSO = new MisArPeSO();
+			if (!(configRequest.getRequestType().equals("SLGB"))) {
+				requestInfoSO.setRequest_type(configRequest.getRequestType());
+				requestInfoSO.setCustomer(configRequest.getCustomer());
+				requestInfoSO.setSiteid(configRequest.getSiteid());
+				requestInfoSO.setDeviceType(configRequest.getDeviceType());
+				requestInfoSO.setModel(configRequest.getModel());
+				requestInfoSO.setOs(configRequest.getOs());
+				requestInfoSO.setOsVersion(configRequest.getOsVersion());
+				requestInfoSO.setVrfName(configRequest.getVrfName());
+				requestInfoSO.setManagementIp(configRequest.getManagementIp());
+				requestInfoSO.setEnablePassword(configRequest.getEnablePassword());
+				requestInfoSO.setBanner(configRequest.getBanner());
+				requestInfoSO.setRegion(configRequest.getRegion());
+				requestInfoSO.setService(configRequest.getService());
+				requestInfoSO.setHostname(configRequest.getHostname());
+				requestInfoSO.setVpn(configRequest.getVpn());
+				requestInfoSO.setVendor(configRequest.getVendor());
+				requestInfoSO.setNetworkType(configRequest.getNetworkType());
+				// newly added parameter for request versioning flow
+				requestInfoSO.setRequest_version(configRequest.getRequest_version());
+				requestInfoSO.setRequest_parent_version(configRequest.getRequest_parent_version());
+
+				requestInfoSO.setProcessID(configRequest.getProcessID());
+				// added new to database
+				// new added parameter for request created by field
+				requestInfoSO.setRequest_creator_name(configRequest.getRequest_creator_name());
+				// get templateId to save it
+				requestInfoSO.setTemplateId(configRequest.getTemplateID());
+				requestInfoSO.setSnmpString(configRequest.getSnmpString());
+				requestInfoSO.setSnmpHostAddress(configRequest.getSnmpHostAddress());
+				requestInfoSO.setLoopBackType(configRequest.getLoopBackType());
+				requestInfoSO.setLoopbackIPaddress(configRequest.getLoopbackIPaddress());
+				requestInfoSO.setLoopbackSubnetMask(configRequest.getLoopbackSubnetMask());
+				requestInfoSO.setLanInterface(configRequest.getLanInterface());
+				requestInfoSO.setLanIp(configRequest.getLanIp());
+				requestInfoSO.setLanMaskAddress(configRequest.getLanMaskAddress());
+				requestInfoSO.setLanDescription(configRequest.getLanDescription());
+				requestInfoSO.setScheduledTime(configRequest.getScheduledTime());
+				deviceInterfaceSO.setDescription(configRequest.getDescription());
+				deviceInterfaceSO.setEncapsulation(configRequest.getEncapsulation());
+				deviceInterfaceSO.setIp(configRequest.getIp());
+				deviceInterfaceSO.setMask(configRequest.getMask());
+				deviceInterfaceSO.setName(configRequest.getName());
+				if (configRequest.getSpeed() != null && !configRequest.getSpeed().isEmpty()) {
+					deviceInterfaceSO.setSpeed(configRequest.getSpeed());
+				} else {
+					deviceInterfaceSO.setBandwidth(configRequest.getBandwidth());
+				}
+				requestInfoSO.setDeviceInterfaceSO(deviceInterfaceSO);
+				requestInfoSO.setCertificationSelectionBit(configRequest.getCertificationSelectionBit());
+				internetLcVrf.setNeighbor1(configRequest.getNeighbor1());
+				internetLcVrf.setNeighbor2(configRequest.getNeighbor2());
+				internetLcVrf.setNeighbor1_remoteAS(configRequest.getNeighbor1_remoteAS());
+				internetLcVrf.setNeighbor2_remoteAS(configRequest.getNeighbor2_remoteAS());
+				if (configRequest.getBgpASNumber() != null && !configRequest.getBgpASNumber().isEmpty()) {
+					internetLcVrf.setBgpASNumber(configRequest.getBgpASNumber());
+				} else {
+					// added to support vrf when routing protocol is not
+					// selected
+					internetLcVrf.setBgpASNumber("65000");
+					configRequest.setBgpASNumber("65000");
+
+				}
+				internetLcVrf.setNetworkIp(configRequest.getNetworkIp());
+				internetLcVrf.setNetworkIp_subnetMask(configRequest.getNetworkIp_subnetMask());
+				internetLcVrf.setRoutingProtocol(configRequest.getRoutingProtocol());
+				requestInfoSO.setInternetLcVrf(internetLcVrf);
+
+				misArPeSO.setFastEthernetIp(configRequest.getFastEthernetIp());
+				misArPeSO.setRouterVrfVpnDGateway(configRequest.getRouterVrfVpnDGateway());
+				misArPeSO.setRouterVrfVpnDIp(configRequest.getRouterVrfVpnDIp());
+				requestInfoSO.setMisArPeSO(misArPeSO);
+				requestInfoSO.setIsAutoProgress(true);
+
+				if (configRequest.getRequestType().equalsIgnoreCase("IOSUPGRADE")) {
+					requestInfoSO.setZipcode(configRequest.getZipcode());
+					requestInfoSO.setManaged(configRequest.getManaged());
+					requestInfoSO.setDownTimeRequired(configRequest.getDownTimeRequired());
+					requestInfoSO.setLastUpgradedOn(configRequest.getLastUpgradedOn());
+
+				}
+			} else {
+				alphaneumeric_req_id = "SLGB-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+				requestInfoPojo.setRequestType(configRequest.getRequestType());
+				requestInfoPojo.setAlphanumericReqId(alphaneumeric_req_id);
+
+				LocalDateTime nowDate = LocalDateTime.now();
+				Timestamp timestamp = Timestamp.valueOf(nowDate);
+				requestInfoPojo.setRequestCreatedOn(timestamp.toString());
+
+				requestInfoPojo.setSceheduledTime(configRequest.getScheduledTime());
+
+				requestInfoPojo.setCustomer(configRequest.getCustomer());
+				requestInfoPojo.setSiteid(configRequest.getSiteid());
+				requestInfoPojo.setDeviceType(configRequest.getDeviceType());
+				requestInfoPojo.setModel(configRequest.getModel());
+				requestInfoPojo.setOs(configRequest.getOs());
+				requestInfoPojo.setOsVersion(configRequest.getOsVersion());
+				requestInfoPojo.setManagementIp(configRequest.getManagementIp());
+				requestInfoPojo.setRegion(configRequest.getRegion());
+				requestInfoPojo.setService(configRequest.getService());
+				requestInfoPojo.setHostname(configRequest.getHostname());
+				requestInfoPojo.setVendor(configRequest.getVendor());
+				requestInfoPojo.setNetworkType(configRequest.getNetworkType());
+				requestInfoPojo.setRequestTypeFlag(configRequest.getRequestType_Flag());
+				requestInfoPojo.setRequestVersion(configRequest.getRequest_version());
+				requestInfoPojo.setRequestParentVersion(configRequest.getRequest_parent_version());
+				requestInfoPojo.setFamily(configRequest.getFamily());
+				requestInfoPojo.setSiteName(configRequest.getSiteName());
+				requestInfoPojo.setRequestCreatorName(configRequest.getRequest_creator_name());
+
+				requestInfoPojo.setStartUp(configRequest.getIsStartUp());
+
+				// added new to database
+				// new added parameter for request created by field
+				requestInfoPojo.setRequestCreatorName(configRequest.getRequest_creator_name());
+				// get templateId to save it
+				requestInfoPojo.setTemplateID(configRequest.getTemplateID());
+
+				requestInfoPojo.setCertificationSelectionBit(configRequest.getCertificationSelectionBit());
+
+			}
+			requestInfoSO.setTestsSelected(configRequest.getTestsSelected());
+			// variables.put("createConfigRequest", requestInfoSO);
+			if (configRequest.getScheduledTime().isEmpty()) {
+				requestInfoSO.setStatus("In Progress");
+				// validateMessage=validatorConfigManagement.validate(configRequest);
+
+				// update template
+
+				requestType = configRequest.getRequestType();
+				if (requestType.equals("TS")) {
+					requestType = "SLGT";
+				} else if (requestType.equals("SR") || requestType.equals("configDelivery")) {
+					requestType = "SLGC";
+				}
+
+				if ((requestType.equals("SLGT")) || (requestType.equals("SLGC"))) {
+
+					result = requestInfoDao.insertRequestInDB(requestInfoSO);
+
+					if (!(requestType.equals("SLGT"))) {
+						if (!requestInfoSO.getTemplateId().isEmpty())
+							templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateId());
+					}
+					// validateMessage=requestInfoSO.getProcessID();
+
+					for (Map.Entry<String, String> entry : result.entrySet()) {
+						if (entry.getKey() == "requestID") {
+
+							requestIdForConfig = entry.getValue();
+							configRequest.setRequestId(requestIdForConfig);
+						}
+						if (entry.getKey() == "result") {
+							res = entry.getValue();
+						}
+
+					}
+					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(configRequest.getRequestId(),
+							configRequest.getTestsSelected(), requestType, configRequest.getRequest_version());
+
+					JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
+					if (array.length() != 0) {
+						for (int i = 0; i < array.length(); i++) {
+							org.json.JSONObject obj = array.getJSONObject(i);
+							String testname = obj.getString("testName");
+							String reqid = configRequest.getRequestId();
+
+						}
+					}
+					if (testStrategyDBUpdate > 0) {
+						output = "true";
+					} else {
+						output = "false";
+					}
+					if (pojoList != null) {
+						if (pojoList.isEmpty()) {
+						}
+						// Save the Data in t_create_config_m_attrib_info Table
+						else {
+							for (CreateConfigPojo pojo : pojoList) {
+								pojo.setRequestId(configRequest.getRequestId());
+								pojo.setRequestVersion(configRequest.getRequest_version());
+								saveDynamicAttribValue(pojo);
+							}
+						}
+					}
+					if (output.equalsIgnoreCase("true")) {
+
+						validateMessage = "Success";
+						if (configRequest.getNetworkType().equalsIgnoreCase("Legacy")) {
+							createTemplate(configRequest);
+
+							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest, userName);
+							telnetCommunicationSSH.setDaemon(true);
+							telnetCommunicationSSH.start();
+							// telnetCommunicationSSH.connectToRouter(configRequest);
+						} else if (configRequest.getNetworkType().equalsIgnoreCase(
+								"VNF")) {/*
+											 * VNFHelper helper = new VNFHelper(); if (configRequest .getVnfConfig() !=
+											 * null) { String filepath = helper.saveXML( configRequest .getVnfConfig(),
+											 * requestIdForConfig , configRequest); if (filepath != null) {
+											 * 
+											 * TelnetCommunicationSSH telnetCommunicationSSH = new
+											 * TelnetCommunicationSSH ( configRequest); telnetCommunicationSSH
+											 * .setDaemon(true); telnetCommunicationSSH .start();
+											 * 
+											 * } else { validateMessage = "Failure due to invalid input" ;
+											 * 
+											 * } }
+											 */
+						}
+					} else {
+
+						validateMessage = "Failure";
+
+					}
+				} else {
+
+					requestInfoPojo.setStatus("In Progress");
+
+					result = dao.insertRequestInDB(requestInfoPojo);
+
+					hostName = configRequest.getHostname();
+					managementIp = configRequest.getManagementIp();
+
+					requestDetail1 = requestInfoDetailsRepositories.findByHostNameAndManagmentIP(hostName,
+							managementIp);
+
+					int requestinfoid = 0;
+
+					for (int i = 0; i < requestDetail1.size(); i++) {
+
+						requestinfoid = requestDetail1.get(i).getInfoId();
+
+					}
+
+					requestDetail = requestInfoDetailsRepositories.findByInfoId(requestinfoid);
+
+					String requestId = null;
+
+					for (int i = 0; i < requestDetail.size(); i++) {
+
+						requestId = requestDetail.get(i).getAlphanumericReqId();
+					}
+
+					configRequest.setRequestId(requestId);
+					createTemplate(configRequest);
+
+					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest, userName);
+					telnetCommunicationSSH.setDaemon(true);
+					telnetCommunicationSSH.start();
+				}
+			} else {
+				requestInfoSO.setStatus("Scheduled");
+
+				requestType = configRequest.getRequestType();
+				if (requestType.equals("TS")) {
+					requestType = "SLGT";
+				} else if (requestType.equals("SR") || requestType.equals("configDelivery")) {
+					requestType = "SLGC";
+				}
+
+				if ((requestType.equals("SLGT")) || (requestType.equals("SLGC"))) {
+					result = requestInfoDao.insertRequestInDB(requestInfoSO);
+
+					if (!(requestType.equals("SLGT"))) {
+						if (!requestInfoSO.getTemplateId().isEmpty())
+							templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateId());
+					}
+
+					for (Map.Entry<String, String> entry : result.entrySet()) {
+						if (entry.getKey() == "requestID") {
+
+							requestIdForConfig = entry.getValue();
+							configRequest.setRequestId(requestIdForConfig);
+						}
+						if (entry.getKey() == "result") {
+							res = entry.getValue();
+						}
+
+					}
+
+					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(configRequest.getRequestId(),
+							configRequest.getTestsSelected(), requestType, configRequest.getRequest_version());
+
+					JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
+					if (array.length() != 0) {
+						for (int i = 0; i < array.length(); i++) {
+							org.json.JSONObject obj = array.getJSONObject(i);
+							String testname = obj.getString("testName");
+							String reqid = configRequest.getRequestId();
+							// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
+							// "", "",obj.getString("testName"));
+						}
+					}
+					if (testStrategyDBUpdate > 0) {
+						output = "true";
+					} else {
+						output = "false";
+					}
+					if (pojoList != null) {
+						if (pojoList.isEmpty()) {
+						}
+						// Save the Data in t_create_config_m_attrib_info Table
+						else {
+							for (CreateConfigPojo pojo : pojoList) {
+								pojo.setRequestId(configRequest.getRequestId());
+								pojo.setRequestVersion(configRequest.getRequest_version());
+								saveDynamicAttribValue(pojo);
+							}
+						}
+					}
+					if (configRequest.getNetworkType().equalsIgnoreCase("Legacy")) {
+						createTemplate(configRequest);
+
+						// update the scheduler history
+						requestSchedulerDao.updateScheduledRequest(configRequest);
+						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest, userName);
+						telnetCommunicationSSH.setDaemon(true);
+						telnetCommunicationSSH.start();
+					} else if (configRequest.getNetworkType().equalsIgnoreCase(
+							"VNF")) {/*
+										 * VNFHelper helper = new VNFHelper(); if (configRequest.getVnfConfig() != null)
+										 * { String filepath = helper.saveXML( configRequest.getVnfConfig(),
+										 * requestIdForConfig, configRequest); if (filepath != null) {
+										 * 
+										 * TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+										 * configRequest); telnetCommunicationSSH.setDaemon(true);
+										 * telnetCommunicationSSH.start();
+										 * 
+										 * } }
+										 */
+					}
+
+				} else {
+
+					requestInfoPojo.setStatus("Scheduled");
+
+					result = dao.insertRequestInDB(requestInfoPojo);
+
+					hostName = configRequest.getHostname();
+					managementIp = configRequest.getManagementIp();
+
+					requestDetail1 = requestInfoDetailsRepositories.findByHostNameAndManagmentIP(hostName,
+							managementIp);
+
+					int requestinfoid = 0;
+
+					for (int i = 0; i < requestDetail1.size(); i++) {
+
+						requestinfoid = requestDetail1.get(i).getInfoId();
+
+					}
+
+					requestDetail = requestInfoDetailsRepositories.findByInfoId(requestinfoid);
+
+					String requestId = null;
+
+					for (int i = 0; i < requestDetail.size(); i++) {
+
+						requestId = requestDetail.get(i).getAlphanumericReqId();
+					}
+
+					configRequest.setRequestId(requestId);
+					createTemplate(configRequest);
+
+					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest, userName);
+					telnetCommunicationSSH.setDaemon(true);
+					telnetCommunicationSSH.start();
+				}
+			}
+		}
+		catch (Exception e) {
+			logger.error(e);
+		}
+		return result;
+	}
+	
+	/* method overloadig for UIRevamp for passing user information*/
+	public Map<String, String> updateAlldetails(
+			List<RequestInfoPojo> requestInfoSOList,
+			List<CreateConfigPojo> pojoList, List<String> featureList, String userName) {
+	
+	RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
+	// RequestInfoDao requestInfoDao = new RequestInfoDao();
+	TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+	String validateMessage = "";
+	// TelnetCommunicationSSH telnetCommunicationSSH=new
+	// TelnetCommunicationSSH();
+	String requestIdForConfig = "", requestType = "";
+	String res = "", output = "";
+	Map<String, String> result = new HashMap<String, String>();
+	RequestInfoPojo requestInfoSOTemp = new RequestInfoPojo();
+	String alphanumericRequestId = null, version = null;
+	if (requestInfoSOList.size() == 1) {
+		requestInfoSOTemp = requestInfoSOList.get(0);
+	} else {
+		for (RequestInfoPojo request : requestInfoSOList) {
+			if (request.getHostname() != null) {
+				requestInfoSOTemp = request;
+			}
+		}
+	}
+	final RequestInfoPojo requestInfoSO = requestInfoSOTemp;
+	try {
+
+		// Map<String, Object> variables = new HashMap<String, Object>();
+
+		/*
+		 * if
+		 * (configRequest.getRequestType().equalsIgnoreCase("IOSUPGRADE")) {
+		 * requestInfoSO.setZipcode(configRequest.getZipcode());
+		 * requestInfoSO.setManaged(configRequest.getManaged());
+		 * requestInfoSO
+		 * .setDownTimeRequired(configRequest.getDownTimeRequired());
+		 * requestInfoSO
+		 * .setLastUpgradedOn(configRequest.getLastUpgradedOn());
+		 * 
+		 * }
+		 */
+		// requestInfoSO.setTestsSelected(configRequest.getTestsSelected());
+		// variables.put("createConfigRequest", requestInfoSO);
+		if (requestInfoSO.getSceheduledTime().isEmpty()) {
+			requestInfoSO.setStatus("In Progress");
+			// validateMessage=validatorConfigManagement.validate(configRequest);
+			result = dao.insertRequestInDB(requestInfoSO);
+			// update template
+
+			requestType = requestInfoSO.getRequestType();
+			if (!(requestType.equals("Test"))
+					&& !(requestType.equals("Audit"))) {
+				if (!requestInfoSO.getTemplateID().isEmpty())
+					templateSuggestionDao
+							.insertTemplateUsageData(requestInfoSO
+									.getTemplateID());
+			}
+
+			for (Map.Entry<String, String> entry : result.entrySet()) {
+				if (entry.getKey() == "requestID") {
+
+					requestIdForConfig = entry.getValue();
+					requestInfoSO.setAlphanumericReqId(requestIdForConfig);
+					for (RequestInfoPojo request : requestInfoSOList) {
+						request.setAlphanumericReqId(requestIdForConfig);
+						request.setRequestVersion(requestInfoSO
+								.getRequestVersion());
+					}
+				}
+				if (entry.getKey() == "result") {
+					res = entry.getValue();
+				}
+
+			}
+			int testStrategyDBUpdate = dao.insertTestRecordInDB(
+					requestInfoSO.getAlphanumericReqId(),
+					requestInfoSO.getTestsSelected(),
+					requestInfoSO.getRequestType(),
+					requestInfoSO.getRequestVersion());
+			// int testStrategyResultsDB=requestInfoDao.
+			/*if (requestInfoSO.getTestsSelected() != null) {
+				JSONArray array = new JSONArray(
+						requestInfoSO.getTestsSelected());
+				for (int i = 0; i < array.length(); i++) {
+					org.json.JSONObject obj = array.getJSONObject(i);
+					String testname = obj.getString("testName");
+					String reqid = requestInfoSO.getAlphanumericReqId();
+					// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
+					// "", "",obj.getString("testName"));
+				}
+			}*/
+			if (testStrategyDBUpdate > 0) {
+				output = "true";
+			} else {
+				output = "false";
+			}
+			if (pojoList != null) {
+				if (pojoList.isEmpty()) {
+				}
+				// Save the Data in t_create_config_m_attrib_info Table
+				else {
+					for (CreateConfigPojo pojo : pojoList) {
+						pojo.setRequestId(requestInfoSO
+								.getAlphanumericReqId());
+						pojo.setRequestVersion(requestInfoSO
+								.getRequestVersion());
+						saveDynamicAttribValue(pojo);
+						int did = deviceDiscoveryRepository
+								.findDid(requestInfoSO.getHostname());
+						String rfoId = rfoDecomposedRepository
+								.findrfoId(requestInfoSO
+										.getAlphanumericReqId());
+						List<MasterAttributes> featureIdAndmCharIdAndLabel = attribCreateConfigRepo
+								.findfeatureCharIdAndLabel(requestInfoSO
+										.getAlphanumericReqId());
+						ResourceCharacteristicsHistoryEntity history = new ResourceCharacteristicsHistoryEntity();
+						for (MasterAttributes attributes : featureIdAndmCharIdAndLabel) {
+							history.setRcFeatureId(attributes
+									.getMasterFID());
+							history.setRcCharacteristicId(attributes
+									.getCharacteristicId());
+							history.setRcName(attributes.getLabel());
+							history.setRcName(attributes.getLabelValue());
+							history.setDeviceId(did);
+							history.setRcRequestStatus("InProgress");
+							history.setRcDeviceHostname(requestInfoSO
+									.getHostname());
+							history.setSoRequestId(requestInfoSO
+									.getAlphanumericReqId());
+							history.setRfoId(rfoId);
+							history.setRcActionPerformed("ADD");
+							history.setRcValue(pojo.getMasterLabelValue());
+							resourceCharHistoryRepo.save(history);
+						}
+					}
+				}
+			}
+
+			if (requestInfoSO.getApiCallType().equalsIgnoreCase("external")) {
+
+				if (featureList != null && !featureList.isEmpty()) {
+					featureList
+							.forEach(feature -> {
+
+								TemplateFeatureEntity featureid = featureRepo
+										.findById(Integer.parseInt(feature));
+
+								RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+								requestFeatureEntity
+										.settFeatureId(featureid);
+								requestFeatureEntity
+										.settRequestId(requestInfoSO
+												.getAlphanumericReqId());
+								requestFeatureEntity
+										.settHostName(requestInfoSO
+												.getHostname());
+								requestFeatureEntity
+										.settRequestVersion(requestInfoSO
+												.getRequestVersion());
+								requestFeatureRepo
+										.save(requestFeatureEntity);
+							});
+
+				}
+			} else {
+				if (featureList != null && !featureList.isEmpty()) {
+					featureList
+							.forEach(feature -> {
+								TemplateFeatureEntity featureId = featureRepo
+										.findByCommandAndComandDisplayFeature(
+												requestInfoSO
+														.getTemplateID(),
+												feature);
+								if (featureId != null) {
+
+									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+									requestFeatureEntity
+											.settFeatureId(featureId);
+									requestFeatureEntity.settRequestId(requestInfoSO
+											.getAlphanumericReqId());
+									requestFeatureEntity
+											.settHostName(requestInfoSO
+													.getHostname());
+									requestFeatureEntity
+											.settRequestVersion(requestInfoSO
+													.getRequestVersion());
+									requestFeatureRepo
+											.save(requestFeatureEntity);
+								}
+							});
+				}
+			}
+
+			if (output.equalsIgnoreCase("true")) {
+				validateMessage = "Success";
+				if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+					for (RequestInfoPojo request : requestInfoSOList) {
+						createTemplateAndHeader(request,requestInfoSOList);
+					}
+					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+							requestInfoSO, userName);
+					telnetCommunicationSSH.setDaemon(true);
+					telnetCommunicationSSH.start();
+					// telnetCommunicationSSH.connectToRouter(configRequest);
+				} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
+						"VNF")) {
+					VNFHelper helper = new VNFHelper();
+					if (requestInfoSO.getVnfConfig() != null) {
+						if (!requestInfoSO.getRequestType()
+								.equalsIgnoreCase("Test")) {
+							String filepath = helper.saveXML(
+									requestInfoSO.getVnfConfig(),
+									requestIdForConfig, requestInfoSO);
+							if (filepath != null) {
+
+								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+										requestInfoSO, userName);
+								telnetCommunicationSSH.setDaemon(true);
+								telnetCommunicationSSH.start();
+
+							} else {
+								validateMessage = "Failure due to invalid input";
+
+							}
+						} else {
+							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+									requestInfoSO, userName);
+							telnetCommunicationSSH.setDaemon(true);
+							telnetCommunicationSSH.start();
+						}
+					} else {
+						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+								requestInfoSO, userName);
+						telnetCommunicationSSH.setDaemon(true);
+						telnetCommunicationSSH.start();
+					}
+
+				}
+
+				/*
+				 * validateMessage = "Success";
+				 * createTemplate(requestInfoSO);
+				 * 
+				 * TelnetCommunicationSSH telnetCommunicationSSH = new
+				 * TelnetCommunicationSSH( requestInfoSO);
+				 * telnetCommunicationSSH.setDaemon(true);
+				 * telnetCommunicationSSH.start(); } else { validateMessage
+				 * = "Failure";
+				 * 
+				 * }
+				 */
+
+			} else {
+				requestInfoSO.setStatus("Scheduled");
+				result = dao.insertRequestInDB(requestInfoSO);
+
+				for (Map.Entry<String, String> entry : result.entrySet()) {
+					if (entry.getKey() == "requestID") {
+
+						requestIdForConfig = entry.getValue();
+						requestInfoSO
+								.setAlphanumericReqId(requestIdForConfig);
+					}
+					if (entry.getKey() == "result") {
+						res = entry.getValue();
+					}
+
+				}
+				if (pojoList != null) {
+					if (pojoList.isEmpty()) {
+					}
+					// Save the Data in t_create_config_m_attrib_info Table
+					else {
+						for (CreateConfigPojo pojo : pojoList) {
+							pojo.setRequestId(requestInfoSO
+									.getAlphanumericReqId());
+							pojo.setRequestVersion(requestInfoSO
+									.getRequestVersion());
+							saveDynamicAttribValue(pojo);
+						}
+					}
+				}
+
+				if (requestInfoSO.getApiCallType().equalsIgnoreCase(
+						"external")) {
+
+					if (featureList != null && !featureList.isEmpty()) {
+						featureList
+								.forEach(feature -> {
+
+									TemplateFeatureEntity featureid = featureRepo
+											.findById(Integer
+													.parseInt(feature));
+
+									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+									requestFeatureEntity
+											.settFeatureId(featureid);
+									requestFeatureEntity.settRequestId(requestInfoSO
+											.getAlphanumericReqId());
+									requestFeatureEntity
+											.settHostName(requestInfoSO
+													.getHostname());
+									requestFeatureEntity
+											.settRequestVersion(requestInfoSO
+													.getRequestVersion());
+									requestFeatureRepo
+											.save(requestFeatureEntity);
+								});
+
+					}
+				} else {
+					if (featureList != null && !featureList.isEmpty()) {
+						featureList
+								.forEach(feature -> {
+									TemplateFeatureEntity featureId = featureRepo
+											.findByCommandAndComandDisplayFeature(
+													requestInfoSO
+															.getTemplateID(),
+													feature);
+									if (featureId != null) {
+
+										RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+										requestFeatureEntity
+												.settFeatureId(featureId);
+										requestFeatureEntity
+												.settRequestId(requestInfoSO
+														.getAlphanumericReqId());
+										requestFeatureEntity
+												.settHostName(requestInfoSO
+														.getHostname());
+										requestFeatureEntity
+												.settRequestVersion(requestInfoSO
+														.getRequestVersion());
+										requestFeatureRepo
+												.save(requestFeatureEntity);
+									}
+								});
+					}
+				}
+				for (RequestInfoPojo request : requestInfoSOList) {
+					createTemplateAndHeader(request,requestInfoSOList);
+				}
+				// update the scheduler history
+				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+				if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+					// createTemplate(requestInfoSO);
+
+					// update the scheduler history
+					requestSchedulerDao
+							.updateScheduledRequest(requestInfoSO);
+					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+							requestInfoSO, userName);
+					telnetCommunicationSSH.setDaemon(true);
+					telnetCommunicationSSH.start();
+				} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
+						"VNF")) {
+					/*
+					 * VNFHelper helper = new VNFHelper(); if
+					 * (requestInfoSO.getVnfConfig() != null) { String
+					 * filepath =
+					 * helper.saveXML(requestInfoSO.getVnfConfig(),
+					 * requestIdForConfig, requestInfoSO); if (filepath !=
+					 * null) {
+					 * 
+					 * TelnetCommunicationSSH telnetCommunicationSSH = new
+					 * TelnetCommunicationSSH( requestInfoSO);
+					 * telnetCommunicationSSH.setDaemon(true);
+					 * telnetCommunicationSSH.start();
+					 * 
+					 * } }
+					 */}
+			}
+		} else {
+
+			requestInfoSO.setStatus("Scheduled");
+			result = dao.insertRequestInDB(requestInfoSO);
+
+			requestType = requestInfoSO.getRequestType();
+			if (!(requestType.equals("Test"))
+					&& !(requestType.equals("Audit"))) {
+				if (!requestInfoSO.getTemplateID().isEmpty())
+					templateSuggestionDao
+							.insertTemplateUsageData(requestInfoSO
+									.getTemplateID());
+			}
+
+			for (Map.Entry<String, String> entry : result.entrySet()) {
+				if (entry.getKey() == "requestID") {
+
+					requestIdForConfig = entry.getValue();
+					requestInfoSO.setAlphanumericReqId(requestIdForConfig);
+					for (RequestInfoPojo request : requestInfoSOList) {
+						request.setAlphanumericReqId(requestIdForConfig);
+						request.setRequestVersion(requestInfoSO
+								.getRequestVersion());
+					}
+				}
+				if (entry.getKey() == "result") {
+					res = entry.getValue();
+				}
+
+			}
+			int testStrategyDBUpdate = dao.insertTestRecordInDB(
+					requestInfoSO.getAlphanumericReqId(),
+					requestInfoSO.getTestsSelected(),
+					requestInfoSO.getRequestType(),
+					requestInfoSO.getRequestVersion());
+
+			if (testStrategyDBUpdate > 0) {
+				output = "true";
+			} else {
+				output = "false";
+			}
+			if (pojoList != null) {
+				if (pojoList.isEmpty()) {
+				}
+				// Save the Data in t_create_config_m_attrib_info Table
+				else {
+					for (CreateConfigPojo pojo : pojoList) {
+						pojo.setRequestId(requestInfoSO
+								.getAlphanumericReqId());
+						pojo.setRequestVersion(requestInfoSO
+								.getRequestVersion());
+						saveDynamicAttribValue(pojo);
+					}
+				}
+			}
+
+			if (requestInfoSO.getApiCallType().equalsIgnoreCase("external")) {
+
+				if (featureList != null && !featureList.isEmpty()) {
+					featureList
+							.forEach(feature -> {
+
+								TemplateFeatureEntity featureid = featureRepo
+										.findById(Integer.parseInt(feature));
+
+								RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+								requestFeatureEntity
+										.settFeatureId(featureid);
+								requestFeatureEntity
+										.settRequestId(requestInfoSO
+												.getAlphanumericReqId());
+								requestFeatureEntity
+										.settHostName(requestInfoSO
+												.getHostname());
+								requestFeatureEntity
+										.settRequestVersion(requestInfoSO
+												.getRequestVersion());
+								requestFeatureRepo
+										.save(requestFeatureEntity);
+							});
+
+				}
+			} else {
+				if (featureList != null && !featureList.isEmpty()) {
+					featureList
+							.forEach(feature -> {
+								TemplateFeatureEntity featureId = featureRepo
+										.findByCommandAndComandDisplayFeature(
+												requestInfoSO
+														.getTemplateID(),
+												feature);
+								if (featureId != null) {
+
+									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+									requestFeatureEntity
+											.settFeatureId(featureId);
+									requestFeatureEntity.settRequestId(requestInfoSO
+											.getAlphanumericReqId());
+									requestFeatureEntity
+											.settHostName(requestInfoSO
+													.getHostname());
+									requestFeatureEntity
+											.settRequestVersion(requestInfoSO
+													.getRequestVersion());
+									requestFeatureRepo
+											.save(requestFeatureEntity);
+								}
+							});
+				}
+			}
+			for (RequestInfoPojo request : requestInfoSOList) {
+				if (request.getHostname() != null) {
+					if (requestInfoSOList.size() == 1) {
+						createHeader(request);
+						createTemplate(request);
+
+					} else {
+						createHeader(request);
+
+					}
+				} else {
+					createTemplate(request);
+				}
+			}
+			// update the scheduler history
+			requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+			if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+				// createTemplate(requestInfoSO);
+
+				// update the scheduler history
+				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+				TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+						requestInfoSO, userName);
+				telnetCommunicationSSH.setDaemon(true);
+				telnetCommunicationSSH.start();
+			} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
+					"VNF")) {
+				/*
+				 * VNFHelper helper = new VNFHelper(); if
+				 * (requestInfoSO.getVnfConfig() != null) { String filepath
+				 * = helper.saveXML(requestInfoSO.getVnfConfig(),
+				 * requestIdForConfig, requestInfoSO); if (filepath != null)
+				 * {
+				 * 
+				 * TelnetCommunicationSSH telnetCommunicationSSH = new
+				 * TelnetCommunicationSSH(requestInfoSO);
+				 * telnetCommunicationSSH.setDaemon(true);
+				 * telnetCommunicationSSH.start();
+				 * 
+				 * } }
+				 */}
+		}
+	} catch (Exception e) {
+		logger.error(e);
+	}
+	return result;
+}
 }

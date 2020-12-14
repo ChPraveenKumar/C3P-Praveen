@@ -400,7 +400,10 @@ public class TestStrategyController {
 			}
 			String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
 			testDetail.setCreatedOn(timeStamp);
-			testDetail.setCreatedBy("admin");
+			
+			if (json.containsKey("userName"))
+				testDetail.setCreatedBy(json.get("userName").toString());
+			
 			if (json.containsKey("Comment")) {
 				testDetail.setComment(json.get("Comment").toString());
 			}
@@ -1571,6 +1574,7 @@ public class TestStrategyController {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
+
 
 	@SuppressWarnings("unchecked")
 	@POST

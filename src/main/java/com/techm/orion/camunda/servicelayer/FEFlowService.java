@@ -99,6 +99,7 @@ public class FEFlowService implements Observer {
 
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
+			String userName = json.get("userName").toString();
 			final boolean status = (Boolean) json.get("status");
 			Float v = Float.parseFloat(version);
 			DecimalFormat df = new DecimalFormat("0.0");
@@ -140,7 +141,7 @@ public class FEFlowService implements Observer {
 								DecimalFormat df = new DecimalFormat("0.0");
 								df.setMaximumFractionDigits(1);
 								String ver = df.format(v2);
-								camundaServiceCreateReq.uploadToServerNew(RequestId, ver, "NEWREQUEST");
+								camundaServiceCreateReq.uploadToServerNew(RequestId, ver, "NEWREQUEST", userName);
 							} catch (JSONException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -211,6 +212,7 @@ public class FEFlowService implements Observer {
 				DecimalFormat df = new DecimalFormat("0.0");
 				df.setMaximumFractionDigits(1);
 				version = df.format(v);
+				String userRole = json.get("userRole").toString();
 				// String readStatus=json.get("readFlag").toString();
 				
 				//data = invokeFtl.getGeneratedBasicConfigFile(RequestId, version);
@@ -233,9 +235,9 @@ public class FEFlowService implements Observer {
 				jsonObject.put("output", jsonArray);
 				
 				//Global.loggedInUser="feuser";
-				if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
+				if (userRole.equalsIgnoreCase("feuser")) {
 					dao.setReadFlagFESE(RequestId, version, 1, "FE");
-				} else if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
+				} else if (userRole.equalsIgnoreCase("seuser")) {
 					dao.setReadFlagFESE(RequestId, version, 1, "SE");
 				}
 			}

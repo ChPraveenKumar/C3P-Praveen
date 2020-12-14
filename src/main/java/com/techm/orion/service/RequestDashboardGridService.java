@@ -27,7 +27,7 @@ public class RequestDashboardGridService {
 	BatchInfoRepo batchRepo;
 
 	public List<ServiceRequestPojo> getGridData(String customer, String region, String site, String vendor, String type,
-			String dashboardType) {
+			String dashboardType, String userName) {
 		List<ServiceRequestPojo> requestList = new ArrayList<>();
 		String loggedUser = null;
 		RequestDetailsResponseMapper mapper = new RequestDetailsResponseMapper();
@@ -44,7 +44,7 @@ public class RequestDashboardGridService {
 			vendor = "%";
 		}
 		if (type.equals("my")) {
-			loggedUser = dcmConfigService.getLogedInUserName();
+			loggedUser = userName;
 		} else {
 			loggedUser = "%";
 		}

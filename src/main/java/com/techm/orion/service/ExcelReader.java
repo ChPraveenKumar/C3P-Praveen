@@ -109,14 +109,14 @@ public class ExcelReader {
 	RequestDetailsEntity requestDetailsEntity;
 
 	/* Method to save data from upload file */
-	public boolean saveDataFromUploadFile(MultipartFile file) {
+	public boolean saveDataFromUploadFile(MultipartFile file, String userName) {
 
 		boolean isFlag = false;
 		String extension = FilenameUtils.getExtension(file.getOriginalFilename());
 		if (extension.equalsIgnoreCase("csv")) {
-			isFlag = readDataFromCsv(file);
+			isFlag = readDataFromCsv(file, userName);
 		} else if (extension.equalsIgnoreCase("xls") || extension.equalsIgnoreCase("xlsx")) {
-			isFlag = readDataFromExcel(file);
+			isFlag = readDataFromExcel(file, userName);
 		}
 
 		return isFlag;
@@ -124,7 +124,7 @@ public class ExcelReader {
 
 	/* Method call to save data from excel file */
 	@SuppressWarnings("null")
-	private boolean readDataFromExcel(MultipartFile file) {
+	private boolean readDataFromExcel(MultipartFile file, String userName) {
 		try {
 			Workbook workbook = getWorkBook(file);
 
@@ -249,9 +249,9 @@ public class ExcelReader {
 						routerVfEntity.setRequestInfoId(requestDtlList.size() + 1);
 						webServiceEntity.setRequestInfoId(requestDtlList.size() + 1);
 						requestDetailsEntity.setRequestinfoid(requestDtlList.size() + 1);
-						requestDetailsEntity.setRequestCreatorName(Global.loggedInUser);
+						requestDetailsEntity.setRequestCreatorName(userName);
 						requestDetailsEntity.setRequestVersion(1.0);
-						requestDetailsEntity.setRequestOwner(Global.loggedInUser);
+						requestDetailsEntity.setRequestOwner(userName);
 
 						if (i1 == 0) {
 							requestDetailsEntity.setRequeststatus("In Progress");
@@ -564,7 +564,7 @@ public class ExcelReader {
 								}
 								/* Invocation of communda flow */
 								TelnetCommunicationSSHImportSR telnetCommunicationSSHImportSR = new TelnetCommunicationSSHImportSR(
-										createConfig);
+										createConfig, userName);
 								telnetCommunicationSSHImportSR.setDaemon(true);
 								telnetCommunicationSSHImportSR.start();
 								/*
@@ -612,7 +612,7 @@ public class ExcelReader {
 	}
 
 	/* Method call to save data from .csv file */
-	private boolean readDataFromCsv(MultipartFile file) {
+	private boolean readDataFromCsv(MultipartFile file, String userName) {
 		try {
 
 			InputStreamReader reader = new InputStreamReader(file.getInputStream());
@@ -691,9 +691,9 @@ public class ExcelReader {
 					routerVfEntity.setRequestInfoId(requestDtlList.size() + 1);
 					webServiceEntity.setRequestInfoId(requestDtlList.size() + 1);
 					requestDetailsEntity.setRequestinfoid(requestDtlList.size() + 1);
-					requestDetailsEntity.setRequestCreatorName(Global.loggedInUser);
+					requestDetailsEntity.setRequestCreatorName(userName);
 					requestDetailsEntity.setRequestVersion(1.0);
-					requestDetailsEntity.setRequestOwner(Global.loggedInUser);
+					requestDetailsEntity.setRequestOwner(userName);
 
 					if (i == 1) {
 						requestDetailsEntity.setRequeststatus("In Progress");
@@ -997,7 +997,7 @@ public class ExcelReader {
 							}
 							/* Invocation of communda flow */
 							TelnetCommunicationSSHImportSR telnetCommunicationSSHImportSR = new TelnetCommunicationSSHImportSR(
-									createConfig);
+									createConfig, userName);
 							telnetCommunicationSSHImportSR.setDaemon(true);
 							telnetCommunicationSSHImportSR.start();
 							/*

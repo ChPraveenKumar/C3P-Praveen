@@ -16,17 +16,38 @@ public class TelnetCommunicationSSH extends Thread {
 	RequestInfoPojo request = null;
 	CamundaServiceCreateReq camundaServiceCreateReq = new CamundaServiceCreateReq();
 	ErrorCodeValidationDeliveryTest errorCodeValidationDeliveryTest = new ErrorCodeValidationDeliveryTest();
+	String userName = null;
 
 	public TelnetCommunicationSSH(CreateConfigRequestDCM list) {
 		// this();
 		configRequest = new CreateConfigRequestDCM();
 		this.configRequest = list;
 	}
-
+	
 	public TelnetCommunicationSSH(RequestInfoPojo list) {
 		// this();
 		request = new RequestInfoPojo();
 		this.request = list;
+	}
+	
+	/*
+	 * Overloaded Constructor for passing user information
+	 */
+	public TelnetCommunicationSSH(CreateConfigRequestDCM list, String userName) {
+		// this();
+		configRequest = new CreateConfigRequestDCM();
+		this.configRequest = list;
+		this.userName = userName;
+	}
+
+	/*
+	 * Overloaded Constructor for passing user information
+	 */
+	public TelnetCommunicationSSH(RequestInfoPojo list, String userName) {
+		// this();
+		request = new RequestInfoPojo();
+		this.request = list;
+		this.userName = userName;
 	}
 
 	// public void connectToRouter(CreateConfigRequestDCM configRequest) throws
@@ -37,20 +58,20 @@ public class TelnetCommunicationSSH extends Thread {
 			if (configRequest != null) {
 				if (configRequest.getScheduledTime().equalsIgnoreCase("")) {
 					camundaServiceCreateReq.uploadToServerNew(configRequest.getRequestId(),
-							Double.toString(configRequest.getRequest_version()), configRequest.getRequestType());
+							Double.toString(configRequest.getRequest_version()), configRequest.getRequestType(), userName);
 					return;
 				}
 				camundaServiceCreateReq.uploadToServer(configRequest.getRequestId(),
-						Double.toString(configRequest.getRequest_version()), configRequest.getRequestType());
+						Double.toString(configRequest.getRequest_version()), configRequest.getRequestType(), userName);
 			}
 			if (request != null) {
 				if (request.getSceheduledTime().equalsIgnoreCase("")) {
 					camundaServiceCreateReq.uploadToServerNew(request.getAlphanumericReqId(),
-							Double.toString(request.getRequestVersion()), request.getRequestType());
+							Double.toString(request.getRequestVersion()), request.getRequestType(), userName);
 					return;
 				}
 				camundaServiceCreateReq.uploadToServer(request.getAlphanumericReqId(),
-						Double.toString(request.getRequestVersion()), request.getRequestType());
+						Double.toString(request.getRequestVersion()), request.getRequestType(), userName);
 
 			}
 

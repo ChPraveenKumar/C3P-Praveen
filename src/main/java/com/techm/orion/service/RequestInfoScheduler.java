@@ -103,7 +103,7 @@ public class RequestInfoScheduler {
 
 								try {
 									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											configRequest);
+											configRequest, detailsList.get(j).getRequestCreatorName());
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
 									System.out.println(timestamp.toString());
@@ -146,7 +146,7 @@ public class RequestInfoScheduler {
 
 								try {
 									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											configRequest);
+											configRequest, detailsList.get(j).getRequestCreatorName());
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
 								} catch (Exception e) {
@@ -192,7 +192,7 @@ public class RequestInfoScheduler {
 								try {
 
 									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											configRequest);
+											configRequest, detailsList.get(j).getRequestCreatorName());
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
 								} catch (Exception e) {
@@ -232,7 +232,7 @@ public class RequestInfoScheduler {
 								try {
 
 									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											configRequest);
+											configRequest, detailsList.get(j).getRequestCreatorName());
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
 								} catch (Exception e) {
