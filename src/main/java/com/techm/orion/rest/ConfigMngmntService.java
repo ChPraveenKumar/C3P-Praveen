@@ -2114,7 +2114,7 @@ public class ConfigMngmntService implements Observer {
 				}
 
 				data = getConfigurationTemplateService.generateTemplate(requestInfoPojo);
-				result = dcmConfigService.updateBatchConfig(requestInfoPojo, null, featureList, userName,features);
+				result = dcmConfigService.updateBatchConfig(requestInfoPojo, createConfigList, featureList, userName,features);
 
 			} else if (requestInfoPojo.getRequestType().equalsIgnoreCase(
 					"NETCONF")
