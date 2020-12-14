@@ -15,6 +15,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -35,6 +36,7 @@ public class Vendors implements Serializable {
 	@Column(name = "vendor")
 	private String vendor;
 	
+	@JsonIgnore
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "vendor")
 	private Set<DeviceFamily> deviceFamily = new HashSet<DeviceFamily>();
 

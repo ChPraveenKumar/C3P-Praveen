@@ -23,4 +23,7 @@ public interface DiscoveryDashboardRepository extends JpaRepository<DiscoveryDas
 	@Query(value = "select count(dis_status) from c3p_t_discovery_dashboard where dis_status=:status and dis_created_by like :creatorName ", nativeQuery = true)
 	int getRequestStatusCount(@Param("status") String status, @Param("creatorName") String creatorName);
 
+	Set<DiscoveryDashboardEntity> findByDisStatusIgnoreCaseAndDisCreatedByIgnoreCaseOrderByDisCreatedDateDesc(
+			String type, String user);
+
 }

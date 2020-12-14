@@ -10,11 +10,13 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 //test commit
 
@@ -37,11 +39,22 @@ public class OS implements Serializable {
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "os")
 	private Set<OSversion> osversion;
 
-	@OneToOne(cascade = { CascadeType.ALL })
+	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
 	@JoinColumn(name="device_family")
 	private DeviceFamily deviceFamily;
 	
+	@Transient
+	private Vendors vendor;
 	
+	
+	public Vendors getVendor() {
+		return vendor;
+	}
+
+	public void setVendor(Vendors vendor) {
+		this.vendor = vendor;
+	}
+
 	public Set<OSversion> getOsversion() {
 		return osversion;
 	}

@@ -13,12 +13,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "c3p_t_glblist_m_device_family", uniqueConstraints = {
@@ -40,19 +40,29 @@ public class DeviceFamily implements Serializable {
 	@JsonIgnore
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "deviceFamily")
 	private Set<Models> models;
-
-	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE})
+	
+	@JsonIgnore
+	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "vendor_id")
 	private Vendors vendor;
 
 	
-	@OneToOne(mappedBy = "deviceFamily",cascade = { CascadeType.ALL })
-	private OS os;
+	@JsonIgnore
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "deviceFamily")
+	private Set<OS> os;
 	
 	
 
 	public Set<Models> getModels() {
 		return models;
+	}
+
+	public Set<OS> getOs() {
+		return os;
+	}
+
+	public void setOs(Set<OS> os) {
+		this.os = os;
 	}
 
 	public void setModels(Set<Models> models) {

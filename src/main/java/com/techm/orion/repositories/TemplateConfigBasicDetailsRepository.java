@@ -20,7 +20,9 @@ public interface TemplateConfigBasicDetailsRepository extends JpaRepository<Temp
 			@Param("temp_vendor") String temp_vendor, @Param("temp_device_family") String temp_device_family,
 			@Param("temp_os_version") String temp_os_version, @Param("temp_region") String temp_region);
 
-	TemplateConfigBasicDetailsEntity findByTempAlias(String aliasName);
+	List<TemplateConfigBasicDetailsEntity> findByTempAlias(String aliasName);
+	//@Query(value ="select * from templateconfig_basic_details where temp_alias =:tempAlias ", nativeQuery = true)
+	//List<TemplateConfigBasicDetailsEntity> findTempAlias(@Param("tempAlias") String tempAlias);
 	
 	@Query(value ="select * from templateconfig_basic_details where temp_id like :tempId% and temp_version = :tempVersion and temp_status ='Approved' ", nativeQuery = true)
 	  List<TemplateConfigBasicDetailsEntity> getTemplateConfigBasicDetails(@Param("tempId") String commands,@Param("tempVersion") String tempVersion);
