@@ -86,5 +86,9 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 	List<TestDetail> getTesListData(@Param("devicefamily") String devicefamily, @Param("os") String os,
 			@Param("region") String region, @Param("osVersion") String osVersion, @Param("vendor") String vendor,
 			@Param("networkfunction") String networkfunction);
+	
+	List<TestDetail> findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(String deviceFamily,
+			String os, String osVersion, String vendor, String region, String NetworkType);
+
 
 }
