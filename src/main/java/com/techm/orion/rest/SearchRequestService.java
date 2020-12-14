@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +40,7 @@ public class SearchRequestService implements Observer {
 		String jsonMessage = "";
 		String jsonArray = "";
 		String jsonArrayReports = "";
-		String key = null, value = null, page = null;
+		String key = null, value = null, page = null, userRole = null;
 		List<ReoprtFlags> reoportflagllist = new ArrayList<ReoprtFlags>();
 		List<ReoprtFlags> reoportflagllistforselectedRecord = new ArrayList<ReoprtFlags>();
 		List<RequestInfoSO> finalList = new ArrayList<RequestInfoSO>();
@@ -52,6 +53,12 @@ public class SearchRequestService implements Observer {
 		ReoprtFlags selected;
 		try {
 			Gson gson = new Gson();
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(searchParameters);
+			
+			if(json.get("userRole") !=null)
+				userRole = json.get("userRole").toString();
+			
 			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
 			key = dto.getKey();
 			value = dto.getValue();
@@ -62,7 +69,7 @@ public class SearchRequestService implements Observer {
 				try {
 					// quick fix for json not getting serialized
 
-					detailsList = requestInfoDao.searchRequestsFromDB(key, value);
+					detailsList = requestInfoDao.searchRequestsFromDB(key, value, userRole);
 					reoportflagllist = requestInfoDao.getReportsInfoForAllRequestsDB();
 					if (page.equalsIgnoreCase("dashboard")) {
 						for (int i = 0; i < detailsList.size(); i++) {

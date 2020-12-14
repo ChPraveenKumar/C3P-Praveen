@@ -358,7 +358,7 @@ public class DeviceDiscrepancyService {
 		JSONObject resultObj = null;
 		JSONObject obj = new JSONObject();
 		JSONParser parser = new JSONParser();
-		String ipAddress = null;
+		String ipAddress = null, logedInUserName = null;;
 		boolean isSucess = false;
 		// String hostName = null;
 		try {
@@ -366,7 +366,8 @@ public class DeviceDiscrepancyService {
 			ipAddress = obj.get("ipAddress").toString();
 			// hostName = obj.get("hostName").toString();
 			deviceDiscovertEntity = discoveryRepo.findAllByMgmtId(ipAddress);
-			String logedInUserName = dcmConfigService.getLogedInUserName();
+			if(obj.get("userName") !=null)
+				logedInUserName = obj.get("userName").toString();
 
 			logger.info(" logedInUserName " + logedInUserName);
 			if (deviceDiscovertEntity != null) {

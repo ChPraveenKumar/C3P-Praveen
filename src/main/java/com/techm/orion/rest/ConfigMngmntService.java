@@ -86,12 +86,14 @@ public class ConfigMngmntService implements Observer {
 		String requestIdForConfig = "";
 		String res = "false";
 		String data = "Failure";
-		String request_creator_name = null;
+		String request_creator_name = null, userName = null;
 
 		try {
 
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
+			if(json.get("userName") !=null)
+				userName = json.get("userName").toString();
 
 			CreateConfigRequestDCM configReqToSendToC3pCode = new CreateConfigRequestDCM();
 
@@ -321,7 +323,7 @@ public class ConfigMngmntService implements Observer {
 				request_creator_name = json.get("requestCreatorName").toString();
 			} else {
 
-				request_creator_name = dcmConfigService.getLogedInUserName();
+				request_creator_name = userName;
 			}
 			// String request_creator_name="seuser";
 			if (request_creator_name.isEmpty()) {
@@ -960,7 +962,7 @@ public class ConfigMngmntService implements Observer {
 				}
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList, userName);
 
 			} else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("NETCONF")
 					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")
@@ -1452,11 +1454,11 @@ public class ConfigMngmntService implements Observer {
 				}
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList, userName);
 				logger.info("log");
 
 			} else {
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null, userName);
 			}
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -1529,7 +1531,8 @@ public class ConfigMngmntService implements Observer {
 		String requestIdForConfig = "";
 		String res = "false";
 		String data = "Failure";		
-
+		String userName = null;
+		
 		GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
 		TemplateManagementDao dao = new TemplateManagementDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
@@ -1543,6 +1546,9 @@ public class ConfigMngmntService implements Observer {
 			RequestInfoPojo requestInfoPojo = new RequestInfoPojo();
 			
 			requestInfoPojo = setRequestInfoData(requestInfoPojo, json);
+
+			if (json.containsKey("requestCreatorName"))
+				userName = json.get("requestCreatorName").toString();
 
 			if (requestInfoPojo.getRequestType().contains("Config")
 					&& requestInfoPojo.getNetworkType().equalsIgnoreCase("PNF")) {
@@ -1611,7 +1617,7 @@ public class ConfigMngmntService implements Observer {
 							invokeFtl.setCommandPosition(null, cammandByTemplate));				
 				}
 				data = getConfigurationTemplateService.generateTemplate(requestInfoPojo);
-				result = dcmConfigService.updateBatchConfig(requestInfoPojo, null, featureList);
+				result = dcmConfigService.updateBatchConfig(requestInfoPojo, null, featureList, userName);
 
 			} else if (requestInfoPojo.getRequestType().equalsIgnoreCase("NETCONF")
 					&& requestInfoPojo.getNetworkType().equalsIgnoreCase("VNF")
@@ -1667,11 +1673,11 @@ public class ConfigMngmntService implements Observer {
 				}
 				configReqToSendToC3pCodeList.add(requestInfoPojo);
 
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList, userName );
 				logger.info("log");
 
 			} else {
-				result = dcmConfigService.updateBatchConfig(requestInfoPojo, null, null);
+				result = dcmConfigService.updateBatchConfig(requestInfoPojo, null, null, userName);
 			}
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -1700,8 +1706,15 @@ public class ConfigMngmntService implements Observer {
 	private RequestInfoPojo setRequestInfoData(RequestInfoPojo requestInfoPojo, JSONObject json) {
 		String requestType = "";
 		String request_creator_name = "";
+		String userName = null;
 		requestInfoPojo.setHostname(json.get("hostName").toString().toUpperCase());
-
+		
+		if (json.get("userName") !=null) 
+			userName = json.get("userName").toString();
+		
+		else if (json.get("requestCreatorName") !=null) 
+				userName = json.get("requestCreatorName").toString();
+		
 		if (json.containsKey("requestType")) {
 			requestInfoPojo.setRequestType(json.get("requestType").toString());
 			requestType = json.get("requestType").toString();
@@ -1781,7 +1794,7 @@ public class ConfigMngmntService implements Observer {
 			request_creator_name = json.get("request_creator_name").toString();
 		} else {
 
-			request_creator_name = dcmConfigService.getLogedInUserName();
+			request_creator_name = userName;
 		}
 
 		if (request_creator_name.isEmpty()) {

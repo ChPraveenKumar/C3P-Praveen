@@ -59,8 +59,7 @@ public interface UserManagementRepository extends JpaRepository<UserManagementEn
 	@Query("SELECT lastPreviousPassword FROM UserManagementEntity where userName=:userName")
 	String findOneByLastPreviousPassword(@Param("userName") String userName );
 	
-	@Query("SELECT userName, currentPassword FROM UserManagementEntity where userName=:userName AND currentPassword=:currentPassword")
-	String findOneByUserName(@Param("userName") String userName, @Param("currentPassword") String currentPassword );
+	UserManagementEntity findByUserNameAndCurrentPassword(@Param("userName") String userName, @Param("currentPassword") String currentPassword);
 	
 	@Query("SELECT userName, currentPassword FROM UserManagementEntity where userName=:userName AND currentPassword=:currentPassword")
 	String findByUserNameCurrentPassword(@Param("userName") String userName, @Param("currentPassword") String currentPassword );
