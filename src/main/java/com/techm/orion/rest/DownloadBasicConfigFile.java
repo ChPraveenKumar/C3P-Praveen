@@ -52,8 +52,7 @@ public class DownloadBasicConfigFile {
 	public void getBasicConfigFile(HttpServletResponse response, @RequestParam String requestId,
 			@RequestParam String version) {
 		try {
-			DownloadBasicConfigFile.loadProperties();
-			String path = DownloadBasicConfigFile.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestId
+			String path = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId
 					+ "V" + version + "_Configuration";
 			
 			String textData = "";
@@ -73,9 +72,8 @@ public class DownloadBasicConfigFile {
 				commandpojo.setCommand_sequence_id(commands.getCommand_sequence_id());
 				textData = textData+commands.getCommand_value();
 			}
-			TextReport.writeFile(DownloadBasicConfigFile.TSA_PROPERTIES.getProperty("responseDownloadPath"), requestId
+			TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestId
 					+ "V" + version + "_basicConfiguration.txt",textData);	
-			System.out.println("textData" +textData);
 			
 			File file = new File(path);
 			if (!file.exists()) {
