@@ -802,7 +802,7 @@ public class GetTemplateConfigurationData implements Observer {
 							jsonArray = array.toString();
 							String s = new Gson().toJson(listShow);
 							obj.put(new String("output"), s);
-							obj.put(new String("comment"), comment);
+							obj.put(new String("comment"), feature.getfComments());
 						//}
 					} else {
 						// fetch commands from master command list based on
@@ -823,7 +823,7 @@ public class GetTemplateConfigurationData implements Observer {
 						jsonArray = array.toString();
 						String s = new Gson().toJson(listShow);
 						obj.put(new String("output"), s);
-						obj.put(new String("comment"), comment);
+						obj.put(new String("comment"), feature.getfComments());
 					}
 				}
 

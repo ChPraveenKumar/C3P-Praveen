@@ -1103,9 +1103,9 @@ public class GetReportData implements Observer {
 				healthCheckArray.put(pow);*/
 
 				// obj.put("osUpgradeStatus", "1");
-				obj.put("preVersionInfo", "12.4");
+				obj.put("preVersionInfo", "");
 
-				obj.put("postVersionInfo", "12.5");
+				obj.put("postVersionInfo", "");
 
 				obj.put("Statusmessage", "Device upgraded Succesfully");
 

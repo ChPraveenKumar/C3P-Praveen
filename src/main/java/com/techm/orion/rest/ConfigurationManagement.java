@@ -25,8 +25,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.MasterAttributes;
+import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
+import com.techm.orion.entitybeans.VendorCommandEntity;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.CreateConfigPojo;
@@ -34,10 +36,12 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterAttribRepository;
+import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.ConfigurationManagmentService;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.service.GetConfigurationTemplateService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
@@ -67,6 +71,9 @@ public class ConfigurationManagement {
 	@Autowired
 	private ConfigurationManagmentService configurationManagmentService;
 
+	@Autowired
+	private MasterCharacteristicsRepository masterCharacteristicRepository;
+	
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -83,6 +90,7 @@ public class ConfigurationManagement {
 		List<String> templateList = null;
 		TemplateManagementDao dao = new TemplateManagementDao();
 		List<RequestInfoPojo> configReqToSendToC3pCodeList = new ArrayList<RequestInfoPojo>();
+		List<String>configGenMtds=new ArrayList<String>();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		try {
 
@@ -91,6 +99,7 @@ public class ConfigurationManagement {
 
 			RequestInfoPojo configReqToSendToC3pCode = new RequestInfoPojo();
 
+			
 			if (json.containsKey("apiCallType")) {
 				configReqToSendToC3pCode.setApiCallType(json.get("apiCallType").toString());
 			}
@@ -133,34 +142,19 @@ public class ConfigurationManagement {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
 			}*/
-			if (!requestType.equals("Test") && !requestType.equals("Audit")) {
-				// template suggestion
-				String template="";
-				if(json.get("templateId")!=null && !json.get("templateId").toString().isEmpty()) {
-					template = json.get("templateId").toString();
-				}
+			if (json.containsKey("configGenerationMethod")) {
+				configReqToSendToC3pCode
+						.setConfigurationGenerationMethods(json.get(
+								"configGenerationMethod").toString());
+				configGenMtds=setConfigGenMtds(json.get(
+						"configGenerationMethod").toString());
 
-				if (configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase(
-						"external")) {
-					if(template.length() != 0)
-					{
-					templateList = new ArrayList<String>();
-					String[] array = template.replace("[", "").replace("]", "")
-							.replace("\"", "").split(",");
-					templateList = Arrays.asList(array);
-					configReqToSendToC3pCode.setTemplateID(template);
-					}
-					else{
-						configReqToSendToC3pCode.setTemplateID(template);
-					}
-				} else {
-					if (json.get("requestType").equals("SLGB")) {
-						configReqToSendToC3pCode.setTemplateID(template);
-					} else {
-						configReqToSendToC3pCode.setTemplateID(template);
-					}
-				}
+			} else {
+				configReqToSendToC3pCode
+						.setConfigurationGenerationMethods("Template");
+				configGenMtds.add("Template");
 			}
+			
 			configReqToSendToC3pCode.setCustomer(json.get("customer").toString());
 			configReqToSendToC3pCode.setManagementIp(json.get("managementIp").toString());
 			configReqToSendToC3pCode.setSiteName(json.get("siteName").toString());
@@ -199,23 +193,45 @@ public class ConfigurationManagement {
 			// parent will be 1.
 			configReqToSendToC3pCode.setRequestParentVersion(1.0);
 			
-			if (json.containsKey("configGenerationMethod")) {
-				configReqToSendToC3pCode
-						.setConfigurationGenerationMethods(json.get(
-								"configGenerationMethod").toString());
+			if (!requestType.equals("Test") && !requestType.equals("Audit")) {
+				// template suggestion
+				String template="";
+				if(json.get("templateId")!=null && !json.get("templateId").toString().isEmpty()) {
+					template = json.get("templateId").toString();
+				}
 
-			} else {
-				configReqToSendToC3pCode
-						.setConfigurationGenerationMethods("Template");
-
-			}
-			if (json.containsKey("selectedFileFeatures")) {
-				configReqToSendToC3pCode.setSelectedFileFeatures(json.get(
-						"selectedFileFeatures").toString());
-			}
-			if (json.containsKey("fileName")) {
-				configReqToSendToC3pCode.setFileName(json.get("fileName")
-						.toString());
+				if (configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase(
+						"external")) {
+					if(configGenMtds.contains("Non-Template"))
+					{
+						
+						String templateName = dcmConfigService.getTemplateName(configReqToSendToC3pCode.getRegion(),
+								configReqToSendToC3pCode.getVendor(), configReqToSendToC3pCode.getModel(), configReqToSendToC3pCode.getOs(),
+								configReqToSendToC3pCode.getOsVersion());
+						configReqToSendToC3pCode.setTemplateID("MACD_Feature" + templateName); 
+					}
+					else
+					{
+						if(template.length() != 0)
+						{
+						templateList = new ArrayList<String>();
+						String[] array = template.replace("[", "").replace("]", "")
+								.replace("\"", "").split(",");
+						templateList = Arrays.asList(array);
+						configReqToSendToC3pCode.setTemplateID(template);
+						}
+						else{
+							configReqToSendToC3pCode.setTemplateID(template);
+						}
+					}
+					
+				} else {
+					if (json.get("requestType").equals("SLGB")) {
+						configReqToSendToC3pCode.setTemplateID(template);
+					} else {
+						configReqToSendToC3pCode.setTemplateID(template);
+					}
+				}
 			}
 
 			if (requestType.equals("SLGB")) {
@@ -314,26 +330,30 @@ public class ConfigurationManagement {
 				 * Extract dynamicAttribs Json Value and map it to MasteAtrribute List
 				 */
 				org.json.simple.JSONArray attribJson = null;
-				if (configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase(
+				/*if (configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase(
 						"external")
 						&& configReqToSendToC3pCode
 								.getConfigurationGenerationMethods().contains(
 										"Template") || configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase(
-												"c3p-ui") ) 
-				{
+												"c3p-ui") ) */
+				//{
+				JSONArray replicationArray = null;
+				org.json.simple.JSONArray replication=null;
 				if (json.containsKey("dynamicAttribs")) {
 					attribJson = (org.json.simple.JSONArray) json.get("dynamicAttribs");
 					
 					if(json.containsKey("replication"))
 					{
-						org.json.simple.JSONArray replication = (org.json.simple.JSONArray) json.get("replication");
+						/*replicationArray = (JSONArray) json
+								.get("replication");*/
+						replication = (org.json.simple.JSONArray) json.get("replication");
 
 						for(int i=0; i<replication.size();i++)
 						{
 							JSONObject replicationObject=(JSONObject) replication.get(i);
 							if(replicationObject.containsKey("featureAttribDetails"))
 							{
-								org.json.simple.JSONArray replicationArray = (org.json.simple.JSONArray) replicationObject.get("featureAttribDetails");
+								replicationArray = (org.json.simple.JSONArray) replicationObject.get("featureAttribDetails");
 								for(int replicationArrayPointer=0;replicationArrayPointer<replicationArray.size();replicationArrayPointer++)
 								{
 									attribJson.add(replicationArray.get(replicationArrayPointer));
@@ -343,15 +363,16 @@ public class ConfigurationManagement {
 						}
 					}
 				}
-				}
+				//}
 				
 				/*--------------------------------------------------------------------------------------------*/
 				List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
 				List<String> featureList = new ArrayList<String>();
+				List<TemplateFeaturePojo> features = null;
 				List<CommandPojo> cammandByTemplate = new ArrayList<>();
 
-				if (configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase("external") && configReqToSendToC3pCode
-						.getConfigurationGenerationMethods().contains(
+				
+				if (configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains(
 								"Template")) {
 					String selectedFeatures = json.get("selectedFeatures").toString();
 					List<String> selectedFeatureAndTemplateId = Arrays.asList(splitStringArray(selectedFeatures));
@@ -380,8 +401,6 @@ public class ConfigurationManagement {
 					if (json.containsKey("selectedFeatures")) {
 						featureListJson = (org.json.simple.JSONArray) json.get("selectedFeatures");
 					}
-					List<TemplateFeaturePojo> features = null;
-
 					if (featureListJson != null && !featureListJson.isEmpty()) {
 						features = new ArrayList<TemplateFeaturePojo>();
 						for (int i = 0; i < featureListJson.size(); i++) {
@@ -398,6 +417,25 @@ public class ConfigurationManagement {
 								.getByAttribTemplateAndFeatureName(templateId, feature);
 						if (byAttribTemplateAndFeatureName != null && !byAttribTemplateAndFeatureName.isEmpty()) {
 							templateAttribute.addAll(byAttribTemplateAndFeatureName);
+						}
+					}
+				}
+				else if(configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains(
+								"Non-Template"))
+				{
+					org.json.simple.JSONArray featureListJson = null;
+					if (json.containsKey("selectedFeatures")) {
+						featureListJson = (org.json.simple.JSONArray) json.get("selectedFeatures");
+					}
+					if (featureListJson != null && !featureListJson.isEmpty()) {
+						features = new ArrayList<TemplateFeaturePojo>();
+						for (int i = 0; i < featureListJson.size(); i++) {
+							JSONObject featureJson = (JSONObject) featureListJson
+									.get(i);
+							TemplateFeaturePojo setTemplateFeatureData = configurationManagmentService
+									.setTemplateFeatureData(featureJson);
+							features.add(setTemplateFeatureData);
+							featureList.add(setTemplateFeatureData.getfName());
 						}
 					}
 				}
@@ -556,16 +594,74 @@ public class ConfigurationManagement {
 
 								}
 					            break;
-						   case "File":
-							   String content = TextReport
-								.readFile(TSALabels.RESPONSE_DOWNLOAD_PATH
-										.getValue()
-										+ configReqToSendToC3pCode.getFileName());
-							   TextReport.writeFile(
-								TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(),
-								configReqToSendToC3pCode.getFileName(), content);
-							  /* configReqToSendToC3pCodeList
-								.add(configReqToSendToC3pCode);*/
+						   case "Non-Template":
+								List<MasterCharacteristicsEntity> attributesFromInput = new ArrayList<MasterCharacteristicsEntity>();
+								for (TemplateFeaturePojo feature : features) {
+									List<MasterCharacteristicsEntity> byAttribMasterFeatureId = masterCharacteristicRepository
+											.findAllByCFId(feature.getfMasterId());
+									if (byAttribMasterFeatureId != null
+											&& !byAttribMasterFeatureId.isEmpty()) {
+										attributesFromInput.addAll(byAttribMasterFeatureId);
+									}
+								}
+								if (attribJson != null) {
+									for (int i = 0; i < attribJson.size(); i++) {
+
+										JSONObject object = (JSONObject) attribJson.get(i);
+										String attribType = null;
+										String attribLabel = object.get("label").toString();
+										String attriValue = object.get("value").toString();
+										if (object.get("type") != null) {
+											attribType = object.get("type").toString();
+										}
+
+										String attib = object.get("name").toString();
+										for (MasterCharacteristicsEntity Attrib : attributesFromInput) {
+											if (attribLabel.contains(Attrib.getcName())) {
+												// String attribName = Attrib.getAttribName();
+												if (attribType == null
+														|| attribType
+																.equalsIgnoreCase("Non-Template")) {
+													if (attribLabel.equals(Attrib.getcName())) {
+														createConfigList.add(setConfigData(0,
+																attriValue, "",
+																Attrib.getcFId(),Attrib.getcId()));
+
+													}
+
+												}
+											}
+										}
+									}
+								}
+
+						
+
+									if (replicationArray != null && !replicationArray.isEmpty()) {
+										// Without TemplateId only Feature Replication
+										cammandByTemplate = configurationManagmentService
+												.getCommandsByMasterFeature(
+														configReqToSendToC3pCode.getVendor(), features);
+										cammandByTemplate = configurationManagmentService
+												.setFeatureData(cammandByTemplate, attribJson);
+										cammandByTemplate = configurationManagmentService
+												.setReplicationFeatureData(cammandByTemplate,
+														replication,
+														configReqToSendToC3pCode.getVendor());
+
+									} 
+
+									logger.info("finalCammands - "
+											+ invokeFtl.setCommandPosition(null,
+													cammandByTemplate));
+									TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH
+											.getValue(), configReqToSendToC3pCode.getTemplateID(),
+											invokeFtl.setCommandPosition(null,
+													cammandByTemplate));
+									GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
+								data = getConfigurationTemplateService
+										.generateTemplate(configReqToSendToC3pCode);
+								
 							   break;
 						}
 					}
@@ -584,7 +680,7 @@ public class ConfigurationManagement {
 				logger.info("createConfigurationDcm - before calling updateAlldetails - " + createConfigList);
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList,features);
 
 			} else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("NETCONF")
 					&& configReqToSendToC3pCode.getNetworkType().equals("VNF")
@@ -662,6 +758,15 @@ public class ConfigurationManagement {
 										}
 
 									}
+									else if(attribType == null || attribType.equalsIgnoreCase("Non-Template"))
+									{
+										if (attib.equals(attribName)) {
+											createConfigList.add(setConfigData(templateAttrib.getId(), attriValue,
+													""));
+											configReqToSendToC3pCode = configurationManagmentService
+													.setAttribValue(attribName, configReqToSendToC3pCode, attriValue);
+										}
+									}
 								}
 							}
 						}
@@ -670,12 +775,12 @@ public class ConfigurationManagement {
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList,null);
 
 			} else {
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, null, null);
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, null, null,null);
 			}
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -712,10 +817,35 @@ public class ConfigurationManagement {
 		createConfigPojo.setTemplateId(templateId);
 		return createConfigPojo;
 	}
+	private CreateConfigPojo setConfigData(int id, String attriValue,
+			String templateId, String masterFeatureId, String masterCharachteristicId) {
+		CreateConfigPojo createConfigPojo = new CreateConfigPojo();
+		if (id != 0) {
+			createConfigPojo.setMasterLabelId(id);
+		}
+		if (masterFeatureId != null) {
+			createConfigPojo.setMasterFeatureId(masterFeatureId);
+		}
+		createConfigPojo.setMasterLabelValue(attriValue);
+		createConfigPojo.setTemplateId(templateId);
+		if(masterCharachteristicId!=null)
+		{
+			createConfigPojo.setMasterCharachteristicId(masterCharachteristicId);
+		}
+		return createConfigPojo;
+	}
 	String [] splitStringArray(String templateid)
 	{
 		String [] array=templateid.replace("[", "").replace("]", "")
 				.replace("\"", "").split(",");
 		return array;
+	}
+	private List<String>setConfigGenMtds(String configGenMethods)
+	{
+		List<String>list=new ArrayList<String>();
+		String [] array=configGenMethods.replace("[", "").replace("]", "")
+				.replace("\"", "").split(",");
+		list=Arrays.asList(array);
+		return list;
 	}
 }
