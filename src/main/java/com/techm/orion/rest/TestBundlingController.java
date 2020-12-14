@@ -375,8 +375,8 @@ public class TestBundlingController {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 			String bundleName = null, networkFunction = null, deviceFamily = null, vendor = null, os = null,
-					osVersion = null, region = null;
-
+					osVersion = null, region = null, userName = null;
+			
 			if (json.get("bundleName") != null) {
 				bundleName = json.get("bundleName").toString();
 			}
@@ -400,6 +400,9 @@ public class TestBundlingController {
 			if (json.get("region") != null) {
 				region = json.get("region").toString();
 			}
+			
+			if(json.get("userName") !=null)
+				userName = json.get("userName").toString();
 
 			JSONArray testListJson = null;
 			if (json.containsKey("tests")) {
@@ -418,7 +421,7 @@ public class TestBundlingController {
 			}
 			if (bundleName != null && networkFunction != null) {
 				testList = testBundleServce.saveBundle(bundleName, networkFunction, vendor, deviceFamily, os, osVersion,
-						region, testDetails);
+						region, testDetails, userName);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

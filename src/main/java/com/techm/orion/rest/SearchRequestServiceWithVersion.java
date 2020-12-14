@@ -50,7 +50,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 		String jsonMessage = "";
 		String jsonArray = "";
 		String jsonArrayReports = "";
-		String key = null, value = null, version = null;
+		String key = null, value = null, version = null, userName= null, userRole = null;
 		List<ReoprtFlags> reoportflagllist = new ArrayList<ReoprtFlags>();
 		List<CertificationTestPojo> testList = new ArrayList<CertificationTestPojo>();
 		List<ReoprtFlags> reoportflagllistforselectedRecord = new ArrayList<ReoprtFlags>();
@@ -65,6 +65,10 @@ public class SearchRequestServiceWithVersion implements Observer {
 
 			JSONParser parser = new JSONParser();
 			JSONObject inputjson = (JSONObject) parser.parse(searchParameters);
+			if(inputjson.get("userName") !=null)
+				userName = inputjson.get("userName").toString();
+			if(inputjson.get("userRole") !=null)
+				userRole = inputjson.get("userRole").toString();
 			JSONObject dilevaryMilestonesforOSupgrade = new JSONObject();
 			Gson gson = new Gson();
 			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
@@ -90,7 +94,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 				try {
 					// quick fix for json not getting serialized
 
-					detailsList = requestInfoDao.searchRequestsFromDBWithVersion(key, value, version);
+					detailsList = requestInfoDao.searchRequestsFromDBWithVersion(key, value, version, userName, userRole);
 					reoportflagllist = requestInfoDao.getReportsInfoForAllRequestsDB();
 					certificationBit = requestInfoDao.getCertificationtestvalidation(value);
 					String type = value.substring(0, Math.min(value.length(), 2));
@@ -343,7 +347,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 				}
 			} else {
 				try {
-					detailsList = requestInfoDao.getAllResquestsFromDB();
+					detailsList = requestInfoDao.getAllResquestsFromDB(userRole);
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
 				} catch (Exception e) {
@@ -374,7 +378,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 		String jsonMessage = "";
 		String jsonArray = "";
 		String jsonArrayReports = "";
-		String key = null, value = null, version = null;
+		String key = null, value = null, version = null, userName = null, userRole = null ;
 		List<ReoprtFlags> reoportflagllist = new ArrayList<ReoprtFlags>();
 		List<CertificationTestPojo> testList = new ArrayList<CertificationTestPojo>();
 		List<ReoprtFlags> reoportflagllistforselectedRecord = new ArrayList<ReoprtFlags>();
@@ -395,6 +399,11 @@ public class SearchRequestServiceWithVersion implements Observer {
 			key = dto.getKey();
 			value = dto.getValue();
 			version = dto.getVersion();
+			
+			if(inputjson.get("userName") !=null)
+				userName = inputjson.get("userName").toString();
+			if(inputjson.get("userRole") !=null)
+				userRole = inputjson.get("userRole").toString();
 
 			if (inputjson.get("readFlag") != null) {
 				Float v = Float.parseFloat(version);
@@ -414,7 +423,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 				try {
 					// quick fix for json not getting serialized
 
-					detailsList = requestInfoDao.searchRequestsFromDBWithVersion(key, value, version);
+					detailsList = requestInfoDao.searchRequestsFromDBWithVersion(key, value, version, userName, userRole);
 					reoportflagllist = requestInfoDao.getReportsInfoForAllRequestsDB();
 					certificationBit = requestInfoDao.getCertificationtestvalidation(value);
 					String type = value.substring(0, Math.min(value.length(), 2));

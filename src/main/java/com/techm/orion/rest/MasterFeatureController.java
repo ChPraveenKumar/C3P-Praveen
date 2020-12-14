@@ -434,8 +434,8 @@ public class MasterFeatureController {
 		masterFeature.setfFlag("custom");
 		masterFeature.setfStatus("Pending");
 		masterFeature.setfOwner("suser");
-		// masterFeature.setfCreatedBy(Global.loggedInUser);
-		masterFeature.setfCreatedBy("admin");
+		if (json.containsKey("userName")) 
+			masterFeature.setfCreatedBy(json.get("userName").toString());
 		Timestamp timestamp = new Timestamp(new Date().getTime());
 		if (timestamp != null) {
 			masterFeature.setfCreatedDate(timestamp);
@@ -535,7 +535,7 @@ public class MasterFeatureController {
 				masterJson = new JSONObject();
 				childList = new JSONArray();
 				featureEntinty = masterFeatureRepository
-						.findByVendorAndStatus(vendorEntity);
+						.findAllByFVendor(vendorEntity);
 				for (MasterFeatureEntity entity : featureEntinty) {
 					childJson = new JSONObject();
 					childJson.put("vendor", entity.getfVendor());
