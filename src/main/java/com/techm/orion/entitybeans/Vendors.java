@@ -36,7 +36,7 @@ public class Vendors implements Serializable {
 	@Column(name = "vendor")
 	private String vendor;
 	
-	@JsonIgnore
+	
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "vendor")
 	private Set<DeviceFamily> deviceFamily = new HashSet<DeviceFamily>();
 
