@@ -36,10 +36,10 @@ public class OS implements Serializable {
 	private String os;
 
 	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "os")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "os")
 	private Set<OSversion> osversion;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
+	@ManyToOne(fetch = FetchType.EAGER, cascade =  CascadeType.PERSIST )
 	@JoinColumn(name="device_family")
 	private DeviceFamily deviceFamily;
 	

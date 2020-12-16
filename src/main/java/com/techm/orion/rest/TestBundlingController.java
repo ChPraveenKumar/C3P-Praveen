@@ -112,8 +112,9 @@ public class TestBundlingController {
 		JSONParser parser = new JSONParser();
 		JSONObject obj = new JSONObject();
 		JSONObject object = null;
+		
 		JSONArray outputArray = new JSONArray();
-		Set<DeviceFamily> familyList = null;
+		DeviceFamily familyList = null;
 		List<OS> oslist = null;
 		try {
 			obj = (JSONObject) parser.parse(request);
@@ -131,18 +132,17 @@ public class TestBundlingController {
 				}
 
 			} else {
-
-				familyList = deviceFamilyRepository.findByDeviceFamily(family);
-
-				if (null != familyList && !familyList.isEmpty()) {
-					object = new JSONObject();
-					List<DeviceFamily> list = new ArrayList<>(familyList);
-					oslist = osRepository.findByDeviceFamily(list.get(0));
-					object.put("Id", oslist.get(0).getId());
-					object.put("Os", oslist.get(0).getOs());
-					outputArray.add(0, object);
-
-				}
+				familyList = deviceFamilyRepository.findVendor(family);
+				List<OS> osFamily = null;
+			
+					osFamily = osRepository.findByDeviceFamily(familyList);
+					
+					osFamily.forEach(action -> {
+						JSONObject obje = new JSONObject();
+					obje.put("Id", action.getId());
+					obje.put("Os", action.getOs());
+					outputArray.add(obje);
+				});
 			}
 
 		} catch (Exception exe) {
@@ -163,6 +163,7 @@ public class TestBundlingController {
 		JSONObject obj = new JSONObject();
 		JSONObject object = null;
 		JSONArray outputArray = new JSONArray();
+		Set<OS> familyList = null;
 
 		Set<OSversion> setosversion = new HashSet<OSversion>();
 
@@ -180,24 +181,20 @@ public class TestBundlingController {
 					object.put("Id", i.getId());
 					object.put("Os", i.getOsversion());
 					outputArray.add(0, object);
-
 				}
 			} else {
 
-				setos = osRepository.findByOs(os);
-
-				for (OS os1 : setos) {
-					setosversion = osversionRepository.findByOs(os1);
-
-					osversionlst.addAll(setosversion);
-					for (OSversion i : osversionlst) {
-						object = new JSONObject();
-						object.put("Id", i.getId());
-						object.put("Os", i.getOsversion());
-						outputArray.add(0, object);
-
-					}
-
+				familyList = osRepository.findByOs(os);
+				Set<OSversion> osVersionFamily = null;
+				for (OS os1 : familyList) {
+				osVersionFamily = osversionRepository.findByOs(os1);
+				List<OSversion> list = new ArrayList<>(osVersionFamily);
+				list.forEach(action -> {
+					JSONObject objectJson = new JSONObject();
+					objectJson.put("Id", action.getId());
+					objectJson.put("Os", action.getOsversion());
+					outputArray.add(objectJson);
+				});
 				}
 			}
 		} catch (Exception exe) {

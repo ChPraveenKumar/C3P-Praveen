@@ -45,6 +45,9 @@ public interface OSRepository extends JpaRepository<OS, Integer> {
 	@Query(value = "select * from c3p_t_glblist_m_os where os =:os", nativeQuery = true)
 	OS findos(@Param("os") String os);
 	
+	@Query(value = "select * from c3p_t_glblist_m_os where device_family =:deviceFamily", nativeQuery = true)
+	List<OS> findDeviceFamList(@Param("deviceFamily") DeviceFamily deviceFamily);
+	
 	
 
 
