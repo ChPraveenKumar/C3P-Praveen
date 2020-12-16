@@ -41,7 +41,7 @@ public class DeviceFamily implements Serializable {
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "deviceFamily")
 	private Set<Models> models;
 	
-	
+	@JsonIgnore
 	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST})
 	@JoinColumn(name = "vendor_id")
 	private Vendors vendor;

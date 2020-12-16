@@ -31,24 +31,14 @@ public interface OSRepository extends JpaRepository<OS, Integer> {
 	
 	OS findByOsAndDeviceFamily(String os, DeviceFamily family);
 	
-	@Query(value = "select vendor_id from c3p_t_glblist_m_os as u inner join c3p_t_glblist_m_device_family as c on u.device_family=c.device_family and \n" + 
-			"        c.vendor_id != (select vendor_id from c3p_t_glblist_m_device_family where device_family =:deviceFamily)" , nativeQuery = true)
-	Set<OS> findVendor(@Param("deviceFamily") DeviceFamily family);
-	
 	@Query(value = "select * from c3p_t_glblist_m_os where osdevice_family =:deviceFamily", nativeQuery = true)
 	Set<OS> findDeviceFamily(@Param("deviceFamily") DeviceFamily deviceFamily);
 
 	@Query(value = "select *from  c3p_t_glblist_m_os a inner join c3p_t_glblist_m_device_family b ON a.device_family = b.id" ,nativeQuery = true)
 	Set<OS> findFamily();
 	
-	//TemplateConfigBasicDetailsEntity findByTempAlias(String aliasName);
 	@Query(value = "select * from c3p_t_glblist_m_os where os =:os", nativeQuery = true)
 	OS findos(@Param("os") String os);
 	
-	@Query(value = "select * from c3p_t_glblist_m_os where device_family =:deviceFamily", nativeQuery = true)
-	List<OS> findDeviceFamList(@Param("deviceFamily") DeviceFamily deviceFamily);
-	
-	
-
-
+	//OS findOneByOs(String os);s
 }

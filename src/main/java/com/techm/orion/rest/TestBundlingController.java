@@ -138,10 +138,10 @@ public class TestBundlingController {
 					osFamily = osRepository.findByDeviceFamily(familyList);
 					
 					osFamily.forEach(action -> {
-						JSONObject obje = new JSONObject();
-					obje.put("Id", action.getId());
-					obje.put("Os", action.getOs());
-					outputArray.add(obje);
+						JSONObject jsonObject = new JSONObject();
+						jsonObject.put("Id", action.getId());
+						jsonObject.put("Os", action.getOs());
+						outputArray.add(jsonObject);
 				});
 			}
 
@@ -186,8 +186,8 @@ public class TestBundlingController {
 
 				familyList = osRepository.findByOs(os);
 				Set<OSversion> osVersionFamily = null;
-				for (OS os1 : familyList) {
-				osVersionFamily = osversionRepository.findByOs(os1);
+				for (OS operatingSystem : familyList) {
+				osVersionFamily = osversionRepository.findByOs(operatingSystem);
 				List<OSversion> list = new ArrayList<>(osVersionFamily);
 				list.forEach(action -> {
 					JSONObject objectJson = new JSONObject();

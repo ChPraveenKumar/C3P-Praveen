@@ -36,7 +36,7 @@ public class OS implements Serializable {
 	private String os;
 
 	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "os")
+	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "os")
 	private Set<OSversion> osversion;
 
 	@ManyToOne(fetch = FetchType.EAGER, cascade =  CascadeType.PERSIST )
