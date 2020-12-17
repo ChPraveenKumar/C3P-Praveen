@@ -39,7 +39,7 @@ public class OS implements Serializable {
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "os")
 	private Set<OSversion> osversion;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.ALL })
+	@ManyToOne(fetch = FetchType.EAGER, cascade =  CascadeType.PERSIST )
 	@JoinColumn(name="device_family")
 	private DeviceFamily deviceFamily;
 	
