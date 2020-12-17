@@ -595,11 +595,16 @@ public class ConfigurationManagmentService {
 		return featurePojo;
 	}
 
-	private void createReplicationFinalTemplate(List<CommandPojo> cammandByTemplate,
+	public void createReplicationFinalTemplate(List<CommandPojo> cammandByTemplate,
 			List<AttribCreateConfigPojo> templateAttribute, String templateID, JSONArray featureReplactionArray,
 			String vendor) {
 		// set Template attribute and sort with position
 		String s = ")!" + '"' + '"' + "}";
+		if(templateID.contains("[")|| templateID.contains("]"))
+		{
+			templateID=templateID.replace("[", "").replace("]", "")
+					.replace("\"", "");
+		}
 		if (templateAttribute != null) {
 			if (cammandByTemplate != null) {
 				cammandByTemplate = invokeFtl.setFeatureCommands(cammandByTemplate, templateAttribute, s);
