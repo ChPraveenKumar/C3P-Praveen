@@ -92,41 +92,47 @@ public class DeviceDiscrepancyService {
 				discrepencyObject.put("dsHostName", discoveryStatusEntity.getDsHostName());
 				discrepencyObject.put("dsDeviceFlag", discoveryStatusEntity.getDsDeviceFlag());
 
-				DeviceDiscoveryEntity deviceDetails = discoveryRepo
-						.findAllByMgmtId(discoveryStatusEntity.getDsIpAddr());
+				//DeviceDiscoveryEntity deviceDetails = discoveryRepo
+						//.findAllByMgmtId(discoveryStatusEntity.getDsIpAddr());
+				
+				List<DeviceDiscoveryEntity> deviceDetails = discoveryRepo.findAllByMgmt(discoveryStatusEntity.getDsIpAddr());
 				JSONArray discreapancyObjectValue = new JSONArray();
+				deviceDetails.forEach(action -> { 
 				if (deviceDetails != null) {
-					if (deviceDetails.getdNewDevice() == 0) {
+					if (action.getdNewDevice() == 0) {
 						discrepencyObject.put("newOrExisting", "New");
 					} else {
 						discrepencyObject.put("newOrExisting", "Existing");
 					}
 					List<HostDiscoveryResultEntity> discrepancyDetails = hostDiscoveryResultRepository
-							.findHostDeviceDiscoveryValue(String.valueOf(deviceDetails.getdId()),
+							.findHostDeviceDiscoveryValue(String.valueOf(action.getdId()),
 									discoveryDetails.getDisId());
 					discrepancyDetails.forEach(deviceDiscrepancy -> {
 
 						discreapancyObjectValue
-								.add(hostDiscrepancyValue(deviceDiscrepancy, deviceDetails.getdVendor()));
+								.add(hostDiscrepancyValue(deviceDiscrepancy, action.getdVendor()));
 					});
 					List<ForkDiscoveryResultEntity> forkDiscrepancyValue = forkDiscoveryResultRepository
-							.findHostDeviceDiscoveryValue(String.valueOf(deviceDetails.getdId()),
+							.findHostDeviceDiscoveryValue(String.valueOf(action.getdId()),
 									discoveryDetails.getDisId());
 					forkDiscrepancyValue.forEach(deviceDiscrepancy -> {
 						if (deviceDiscrepancy != null) {
 							discreapancyObjectValue
-									.add(forkDiscrepancyValueData(deviceDiscrepancy, deviceDetails.getdId(),
-											deviceDetails.getdVendor(), deviceDetails.getdVNFSupport()));
+									.add(forkDiscrepancyValueData(deviceDiscrepancy, action.getdId(),
+											action.getdVendor(), action.getdVNFSupport()));
 						}
 					});
 				}
+				});
 				discrepencyObject.put("discreapancy", discreapancyObjectValue);
 				discrepancyStatusArray.add(discrepencyObject);
 			});
 
 			finalObject.put("discrepancyStatusArray", discrepancyStatusArray);
 		}
+		
 		return finalObject;
+	
 	}
 
 	/* return Decrepancy value to UI according to flag table */
@@ -358,7 +364,7 @@ public class DeviceDiscrepancyService {
 		JSONObject resultObj = null;
 		JSONObject obj = new JSONObject();
 		JSONParser parser = new JSONParser();
-		String ipAddress = null;
+		String ipAddress = null, logedInUserName = null;;
 		boolean isSucess = false;
 		// String hostName = null;
 		try {
@@ -366,7 +372,8 @@ public class DeviceDiscrepancyService {
 			ipAddress = obj.get("ipAddress").toString();
 			// hostName = obj.get("hostName").toString();
 			deviceDiscovertEntity = discoveryRepo.findAllByMgmtId(ipAddress);
-			String logedInUserName = dcmConfigService.getLogedInUserName();
+			if(obj.get("userName") !=null)
+				logedInUserName = obj.get("userName").toString();
 
 			logger.info(" logedInUserName " + logedInUserName);
 			if (deviceDiscovertEntity != null) {

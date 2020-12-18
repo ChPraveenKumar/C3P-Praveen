@@ -193,12 +193,12 @@ public class TemplateManagementDao {
 		return parentList;
 	}
 
-	public void updateReadFlagForTemplate(String templateid, String version, String status) {
+	public void updateReadFlagForTemplate(String templateid, String version, String status, String userRole) {
 		connection = ConnectionFactory.getConnection();
 		String query2 = null;
-		if (Global.loggedInUser.equalsIgnoreCase("Admin")) {
+		if (userRole.equalsIgnoreCase("Admin")) {
 			query2 = "UPDATE templateconfig_basic_details SET temp_read_status_admin=? WHERE temp_id=? and temp_version=?";
-		} else if (Global.loggedInUser.equalsIgnoreCase("suser")) {
+		} else if (userRole.equalsIgnoreCase("suser")) {
 			query2 = "UPDATE templateconfig_basic_details SET temp_read_status_approver=? WHERE temp_id=? and temp_version=?";
 
 		} else {
@@ -210,7 +210,8 @@ public class TemplateManagementDao {
 			pst.setInt(1, Integer.parseInt(status));
 			pst.setString(2, templateid);
 			pst.setString(3, version);
-			pst.executeUpdate();
+			int i = pst.executeUpdate();
+			System.out.println(i);
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -1478,7 +1479,7 @@ public class TemplateManagementDao {
 	@SuppressWarnings("resource")
 	public final Map<String, String> addTemplate(String vendor, String deviceFamily, String model, String os,
 			String osVersion, String region, String oldTemplateId, String oldVersion, String comment,
-			String networkType, String aliasName) {
+			String networkType, String aliasName, String userName) {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
 		String tempid = null, oldversion = null;
@@ -1532,7 +1533,7 @@ public class TemplateManagementDao {
 				ps.setString(8, "1.0");
 				ps.setString(9, "1.0");
 				ps.setString(10, comment);
-				ps.setString(11, Global.loggedInUser);
+				ps.setString(11, userName);
 				ps.setString(12, "suser");
 				ps.setString(13, networkType);
 				ps.setString(14, aliasName);
@@ -1578,7 +1579,7 @@ public class TemplateManagementDao {
 				ps1.setString(8, childversion);
 				ps1.setString(9, parentversion);
 				ps1.setString(10, comment);
-				ps1.setString(11, Global.loggedInUser);
+				ps1.setString(11, userName);
 				ps1.setString(12, "suser");
 				ps1.setString(13, networkType);
 				ps1.setString(14, aliasName);

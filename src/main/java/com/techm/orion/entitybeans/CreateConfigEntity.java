@@ -25,11 +25,33 @@ public class CreateConfigEntity {
 	@Column(name = "request_id ")
 	private String requestId;
 
-	@Column(name = "template_id  ")
+	@Column(name = "template_id")
 	private String templateId;
 	
 	@Column(name = "request_version",length=5)
 	private Double requestVersion=1.0;
+
+	@Column(name = "master_feature_id")
+	private String masterFeatureId;
+	
+	@Column(name = "master_characteristic_id")
+	private String masterCharachteristicId;
+	
+	public String getMasterCharachteristicId() {
+		return masterCharachteristicId;
+	}
+
+	public void setMasterCharachteristicId(String masterCharachteristicId) {
+		this.masterCharachteristicId = masterCharachteristicId;
+	}
+
+	public String getMasterFeatureId() {
+		return masterFeatureId;
+	}
+
+	public void setMasterFeatureId(String masterFeatureId) {
+		this.masterFeatureId = masterFeatureId;
+	}
 
 	public int getId() {
 		return id;

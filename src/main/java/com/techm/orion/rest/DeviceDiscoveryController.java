@@ -92,7 +92,7 @@ public class DeviceDiscoveryController implements Observer {
 				Set<DiscoveryDashboardEntity> discoveryDashboardDB = discoveryDashboardRepo
 						.findByDisStatusIgnoreCase(type);
 				Set<DiscoveryDashboardEntity> discoveryDashboardByUserDB = discoveryDashboardRepo
-						.findByDisStatusIgnoreCaseAndDisCreatedByIgnoreCase(type, user);
+						.findByDisStatusIgnoreCaseAndDisCreatedByIgnoreCaseOrderByDisCreatedDateDesc(type, user);
 				if (discoveryDashboardDB != null && !discoveryDashboardDB.isEmpty()) {
 					discoveryDashboard = new ArrayList<DiscoveryDashboardEntity>(discoveryDashboardDB);
 				} else {

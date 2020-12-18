@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.TemplateManagementDao;
-import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.pojo.UserManagementResulltDetailPojo;
@@ -49,8 +48,8 @@ public class LoginService implements Observer {
 	public Response login(@RequestBody String searchParameters) {
 
 		JSONObject obj = new JSONObject();
-		String username = null, password = null;
-		int notificationCount = 0, ajaxCallInterval = 0;
+		String username = null, password = null, userRole = null;
+		int notificationCount = 0;
 		InputStream inputStream;
 		Properties prop = new Properties();
 		String propFileName = "TSA.properties";
@@ -77,8 +76,7 @@ public class LoginService implements Observer {
 							.checkUserNamePassword(username, password);
 
 					if (userDetails !=null && "Success".equalsIgnoreCase(userDetails.getMessage())) {
-						username =userDetails.getRole();
-						Global.loggedInUser = username;
+						userRole =userDetails.getRole();
 
 						// logic to get ajax call duration set statically in
 						// properties
@@ -89,9 +87,8 @@ public class LoginService implements Observer {
 							throw new FileNotFoundException(
 									"property file '" + propFileName + "' not found in the classpath");
 						}
-						ajaxCallInterval = Integer.parseInt(prop.getProperty("AjaxCallIntervalForPullNotification"));
 
-						if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
+						if (userRole.equalsIgnoreCase("feuser")) {
 							// To get notifications assigned to FE for FE login;
 							RequestInfoDao requestInfoDao = new RequestInfoDao();
 							List<RequestInfoSO> feRequestList = new ArrayList<RequestInfoSO>();
@@ -110,7 +107,6 @@ public class LoginService implements Observer {
 							String jsonFeRequestList = new Gson().toJson(feRequestList);
 							templateNameList = new Gson().toJson(templateNames);
 							obj.put(new String("TemplateList"), templateNameList);
-							obj.put(new String("AjaxCallForNotificationIntervalInSec"), ajaxCallInterval);
 							obj.put(new String("FENotificationCount"), numberOfNotificationsForFE);
 							obj.put(new String("NotificationCount"), totalCount);
 
@@ -124,7 +120,7 @@ public class LoginService implements Observer {
 							obj.put(new String("Message"), userDetails.getMessage());
 							obj.put(new String("Result"), userDetails.isResult());
 							obj.put("userDetails", userDetails);
-						} else if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
+						} else if (userRole.equalsIgnoreCase("seuser")) {
 							RequestInfoDao requestInfoDao = new RequestInfoDao();
 							List<RequestInfoSO> seRequestList = new ArrayList<RequestInfoSO>();
 							seRequestList = requestInfoDao.getSEAssignedRequestList();
@@ -143,7 +139,6 @@ public class LoginService implements Observer {
 
 							templateNameList = new Gson().toJson(templateNames);
 							obj.put(new String("TemplateList"), templateNameList);
-							obj.put(new String("AjaxCallForNotificationIntervalInSec"), ajaxCallInterval);
 							obj.put(new String("NotificationCount"), totalCount);
 
 							obj.put(new String("FENotificationCount"), 0);
@@ -160,9 +155,9 @@ public class LoginService implements Observer {
 
 						} else {
 							notificationCount = templateManagementDao
-									.getNumberOfTemplatesForApprovalForLoggedInUser(username);
+									.getNumberOfTemplatesForApprovalForLoggedInUser(userRole);
 
-							list = templateManagementDao.getTemplatesForApprovalForLoggedInUser(Global.loggedInUser);
+							list = templateManagementDao.getTemplatesForApprovalForLoggedInUser(userRole);
 							for (int i = 0; i < list.size(); i++) {
 								TemplateBasicConfigurationPojo pojo = new TemplateBasicConfigurationPojo();
 								pojo.setTemplateId(list.get(i).getTemplateId());
@@ -181,7 +176,6 @@ public class LoginService implements Observer {
 							templateNameList = new Gson().toJson(templateNames);
 							obj.put(new String("TemplateDetailedList"), jsonList);
 							obj.put(new String("TemplateList"), templateNameList);
-							obj.put(new String("AjaxCallForNotificationIntervalInSec"), ajaxCallInterval);
 							obj.put(new String("TemplateNotificationCount"), notificationCount);
 							obj.put(new String("FENotificationCount"), 0);
 							obj.put(new String("NotificationCount"), totalCount);
@@ -202,7 +196,6 @@ public class LoginService implements Observer {
 						templateNameList = "";
 						obj.put(new String("TemplateDetailedList"), jsonList);
 						obj.put(new String("TemplateList"), templateNameList);
-						obj.put(new String("AjaxCallForNotificationIntervalInSec"), ajaxCallInterval);
 						obj.put(new String("TemplateNotificationCount"), 0);
 						obj.put(new String("FENotificationCount"), 0);
 						obj.put(new String("NotificationCount"), 0);

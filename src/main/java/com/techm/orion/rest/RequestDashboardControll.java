@@ -43,7 +43,7 @@ public class RequestDashboardControll {
 		JSONParser parser = new JSONParser();
 		try {
 			JSONObject json = (JSONObject) parser.parse(request);
-			return Response.status(200).entity(service.getCustomerList(json.get("type").toString())).build();
+			return Response.status(200).entity(service.getCustomerList(json.get("type").toString(), json.get("userName").toString())).build();
 		} catch (ParseException e) {
 			logger.info(e);
 		}
@@ -57,7 +57,7 @@ public class RequestDashboardControll {
 		JSONParser parser = new JSONParser();
 		try {
 			JSONObject json = (JSONObject) parser.parse(request);
-			return Response.status(200).entity(service.getRegionList(json.get("type").toString())).build();
+			return Response.status(200).entity(service.getRegionList(json.get("type").toString(), json.get("userName").toString())).build();
 		} catch (ParseException e) {
 			logger.info(e);
 		}
@@ -71,7 +71,7 @@ public class RequestDashboardControll {
 		JSONParser parser = new JSONParser();
 		try {
 			JSONObject json = (JSONObject) parser.parse(request);
-			return Response.status(200).entity(service.getSiteList(json.get("type").toString())).build();
+			return Response.status(200).entity(service.getSiteList(json.get("type").toString(), json.get("userName").toString())).build();
 		} catch (ParseException e) {
 			logger.info(e);
 		}
@@ -85,7 +85,7 @@ public class RequestDashboardControll {
 		JSONParser parser = new JSONParser();
 		try {
 			JSONObject json = (JSONObject) parser.parse(request);
-			return Response.status(200).entity(service.getVendorList(json.get("type").toString())).build();
+			return Response.status(200).entity(service.getVendorList(json.get("type").toString(), json.get("userName").toString())).build();
 		} catch (ParseException e) {
 			logger.info(e);
 		}
@@ -104,7 +104,10 @@ public class RequestDashboardControll {
 			String site = null;
 			String vendor = null;
 			String type = null;
-			String dashboardType = null;
+			String dashboardType = null, userName = null;
+
+			if (json.containsKey("userName")) 
+				userName = json.get("userName").toString();
 
 			if (json.containsKey("customer")) {
 				customer = json.get("customer").toString();
@@ -125,7 +128,7 @@ public class RequestDashboardControll {
 				dashboardType = json.get("dashboard").toString();
 			}
 
-			return graphService.getTotals(customer, region, site, vendor, type, dashboardType);
+			return graphService.getTotals(customer, region, site, vendor, type, dashboardType, userName);
 		} catch (ParseException e) {
 			logger.info(e);
 		}
@@ -144,7 +147,7 @@ public class RequestDashboardControll {
 			String site = null;
 			String vendor = null;
 			String type = null;
-			String dashboardType = null;
+			String dashboardType = null, userName = null;
 
 			if (json.containsKey("customer")) {
 				customer = json.get("customer").toString();
@@ -164,7 +167,10 @@ public class RequestDashboardControll {
 			if (json.containsKey("dashboard")) {
 				dashboardType = json.get("dashboard").toString();
 			}
-			return gridService.getGridData(customer, region, site, vendor, type, dashboardType);
+			if(json.get("userName") !=null)
+				userName = json.get("userName").toString();
+			
+			return gridService.getGridData(customer, region, site, vendor, type, dashboardType, userName);
 		} catch (ParseException e) {
 			logger.info(e);
 		}
@@ -178,7 +184,7 @@ public class RequestDashboardControll {
 		JSONParser parser = new JSONParser();
 		try {
 			JSONObject json = (JSONObject) parser.parse(request);
-			return graphService.getDataCount(json.get("type").toString());
+			return graphService.getDataCount(json.get("type").toString(), json.get("userName").toString());
 		} catch (ParseException e) {
 			logger.info(e);
 		}
@@ -192,7 +198,7 @@ public class RequestDashboardControll {
 		JSONParser parser = new JSONParser();
 		try {
 			JSONObject json = (JSONObject) parser.parse(request);
-			return graphService.getDeviceDiscoverStatus(json.get("type").toString());
+			return graphService.getDeviceDiscoverStatus(json.get("type").toString(), json.get("userName").toString());
 		} catch (ParseException e) {
 			logger.info(e);
 		}

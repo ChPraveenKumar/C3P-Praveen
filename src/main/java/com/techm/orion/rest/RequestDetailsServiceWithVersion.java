@@ -40,8 +40,12 @@ import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.AttribCreateConfigRepo;
 import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.MasterCharacteristicsRepository;
+import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.RequestFeatureTransactionRepository;
 import com.techm.orion.utility.ReportMileStones;
+import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 
 @RestController
 @RequestMapping("/requestDetails")
@@ -65,13 +69,19 @@ public class RequestDetailsServiceWithVersion {
 	@Autowired
 	private ReportMileStones reportMileStones;
 
+	@Autowired
+	private MasterFeatureRepository masterFeatureRepository;
+	
+	@Autowired
+	private MasterCharacteristicsRepository masterCharachteristicsRepository;
+	
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response search(@RequestBody String searchParameters) {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
-		String key = null, value = null, version = null, requestType = null;
+		String key = null, value = null, version = null, requestType = null, userName = null, userRole = null;
 		try {
 			Gson gson = new Gson();
 			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
@@ -79,12 +89,20 @@ public class RequestDetailsServiceWithVersion {
 			value = dto.getValue();
 			version = dto.getVersion();
 			List<RequestInfoCreateConfig> detailsList = new ArrayList<RequestInfoCreateConfig>();
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(searchParameters);
+			
+			if(json.get("userName") !=null)
+				userName = json.get("userName").toString();
+			if(json.get("userRole") !=null)
+				userRole = json.get("userRole").toString();
+			
 
 			if (value != null && !value.isEmpty()) {
 				try {
 					requestType = value.substring(0, 4);
 					MileStones showMilestone = reportMileStones.getMileStones(requestType);
-					detailsList = requestRedao.getRequestWithVersion(key, value, version);
+					detailsList = requestRedao.getRequestWithVersion(key, value, version, userName, userRole);
 					for (RequestInfoCreateConfig request : detailsList) {
 
 						DeviceDiscoveryEntity device = deviceInforepo.findByDHostName(request.getHostname());
@@ -116,7 +134,7 @@ public class RequestDetailsServiceWithVersion {
 				}
 			} else {
 				try {
-					detailsList = requestRedao.getAllResquestsFromDB();
+					detailsList = requestRedao.getAllResquestsFromDB(userRole);
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
 				} catch (Exception e) {
@@ -144,7 +162,7 @@ public class RequestDetailsServiceWithVersion {
 
 		String jsonArray = "";
 		String jsonArrayReports = "";
-		String key = null, value = null, version = null;
+		String key = null, value = null, version = null, userName = null, userRole = null;
 		List<ReoprtFlags> reoportflagllist = new ArrayList<ReoprtFlags>();
 		List<ReoprtFlags> reoportflagllistforselectedRecord = new ArrayList<ReoprtFlags>();
 		List<RequestInfoCreateConfig> testListforselectedRecord = new ArrayList<RequestInfoCreateConfig>();
@@ -163,6 +181,11 @@ public class RequestDetailsServiceWithVersion {
 			key = dto.getKey();
 			value = dto.getValue();
 			version = dto.getVersion();
+			
+			if(inputjson.get("userName") !=null)
+				userName = inputjson.get("userName").toString();
+			if(inputjson.get("userRole") !=null)
+				userRole = inputjson.get("userRole").toString();
 
 			if (inputjson.get("readFlag") != null) {
 				Float v = Float.parseFloat(version);
@@ -182,7 +205,7 @@ public class RequestDetailsServiceWithVersion {
 				try {
 					// quick fix for json not getting serialized
 
-					detailsList = requestRedao.getRequestWithVersion(key, value, version);
+					detailsList = requestRedao.getRequestWithVersion(key, value, version, userName, userRole);
 					reoportflagllist = requestValue.getReportsInfoForAllRequestsDB();
 					certificationBit = requestRedao.getCertificationtestvalidation(value,Double.valueOf(version));
 					String type = value.substring(0, Math.min(value.length(), 4));
@@ -338,7 +361,7 @@ public class RequestDetailsServiceWithVersion {
 				}
 			} else {
 				try {
-					detailsList = requestRedao.getAllResquestsFromDB();
+					detailsList = requestRedao.getAllResquestsFromDB(userRole);
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
 				} catch (Exception e) {
@@ -371,23 +394,54 @@ public class RequestDetailsServiceWithVersion {
 					.findByTRequestIdAndTRequestVersion(requestId, version);
 			JSONArray featureAndAttrib = new JSONArray();
 			featureList.forEach(feature -> {
+				if(feature.gettFeatureId()!=null)	
+				{
 				JSONObject attribJson = new JSONObject();
 				List<MasterAttributes> masterAttribute = attribConfigRepo
 						.findBytemplateFeatureId(feature.gettFeatureId().getId());
 				attribJson.put("featureName", feature.gettFeatureId().getComandDisplayFeature());
+				attribJson.put("noOfFields", masterAttribute.size());
+
 				JSONArray masterAttrib = new JSONArray();
 				if (masterAttribute != null) {
 					masterAttribute.forEach(attrib -> {
-						JSONObject masterAttribObject = new JSONObject();
-						masterAttribObject.put("name", attrib.getLabel());
-						masterAttribObject.put("value",
-								configRepo.findAttribValuByRequestId(attrib.getId(), requestId, version));
-						masterAttrib.add(masterAttribObject);
+						List<String>values=configRepo.findAttribValuByRequestId(attrib.getId(), requestId, version);
+						values.forEach(value ->{
+							JSONObject masterAttribObject = new JSONObject();
+							masterAttribObject.put("name", attrib.getLabel());
+							masterAttribObject.put("value", value);
+							masterAttrib.add(masterAttribObject);
+						});
+						
 					});
-
 				}
 				attribJson.put("featureValue", masterAttrib);
 				featureAndAttrib.add(attribJson);
+				}
+				else
+				{
+					JSONObject attribJson = new JSONObject();
+				//	List<MasterFeatureEntity> masterAttribute = masterFeatureRepository.findByFeatureId(feature.gettMasterFeatureId().getfId());
+					List<MasterCharacteristicsEntity>masterAttribute=masterCharachteristicsRepository.findAllByCFId(feature.gettMasterFeatureId().getfId());
+					attribJson.put("featureName", feature.gettMasterFeatureId().getfName());
+					attribJson.put("noOfFields", masterAttribute.size());
+
+					JSONArray masterAttrib = new JSONArray();
+					if (masterAttribute != null) {
+						masterAttribute.forEach(attrib -> {
+							List<String>values=configRepo.findAttribValuByRequestIdAndMasterFeatureIdandCharachteristicId(attrib.getcFId(), requestId, version,attrib.getcId());
+							values.forEach(value ->{
+								JSONObject masterAttribObject = new JSONObject();
+								masterAttribObject.put("name", attrib.getcName());
+								masterAttribObject.put("value", value);
+								masterAttrib.add(masterAttribObject);
+							});
+							
+						});
+					}
+					attribJson.put("featureValue", masterAttrib);
+					featureAndAttrib.add(attribJson);
+				}
 			});
 
 			return Response.status(200).entity(featureAndAttrib).build();

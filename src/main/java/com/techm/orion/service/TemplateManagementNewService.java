@@ -569,10 +569,8 @@ public class TemplateManagementNewService {
 		List<TemplateAttribPojo> templateWithAttrib = new ArrayList<>();
 		TemplateAttribPojo templateAttrib = new TemplateAttribPojo();
 		List<AttribCreateConfigJson> attribCreateConfigJson = new ArrayList<AttribCreateConfigJson>();
-		List<MasterFeatureEntity> masterfeatures = masterFeatureRepository.findByFeatureId(featureId);
-		for (MasterFeatureEntity masterfeature : masterfeatures) {
-			templateAttrib = setFeatureDetails(templateAttrib, masterfeature);
-		}
+		MasterFeatureEntity masterfeatures = masterFeatureRepository.findByFId(featureId);
+		templateAttrib = setFeatureDetails(templateAttrib, masterfeatures);
 		List<MasterCharacteristicsEntity> masterChar = masterCharacteristicsRepository
 				.findAllByCFId(templateAttrib.getfId());
 		attribCreateConfigJson = attribCreateConfigResponceMapper.convertCharacteristicsAttribPojoToJson(masterChar);

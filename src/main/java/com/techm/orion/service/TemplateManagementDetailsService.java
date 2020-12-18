@@ -336,13 +336,18 @@ public class TemplateManagementDetailsService {
 	@SuppressWarnings("unchecked")
 	public JSONObject checkAliasNamePresent(@RequestParam String aliasName) throws ParseException {
 		JSONObject jsonObject = new JSONObject();
-		TemplateConfigBasicDetailsEntity tempConfigBasicDetEntity = templateConfigBasicDetailsRepository
+		List<TemplateConfigBasicDetailsEntity> tempConfigBasicDetEntity = templateConfigBasicDetailsRepository
 				.findByTempAlias(aliasName);
-		if (tempConfigBasicDetEntity != null) {
-			jsonObject.put("isAliasPresent", true);
+		if (tempConfigBasicDetEntity.size() > 0) {
+			tempConfigBasicDetEntity.forEach(action -> {
+				if (action.getTempAlias() != null) {
+					jsonObject.put("isAliasPresent", true);
+				}
+			});
 		} else {
 			jsonObject.put("isAliasPresent", false);
 		}
 		return jsonObject;
 	}
 }
+

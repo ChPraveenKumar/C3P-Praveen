@@ -19,13 +19,10 @@ public class TestBundleService {
 	@Autowired
 	private TestBundlingRepository testBundlingRepository;
 
-	@Autowired
-	private DcmConfigService dcmConfigService;
-
 	private static final Logger logger = LogManager.getLogger(RequestInfoScheduler.class);
 
 	public String saveBundle(String bundleName, String networkFunction, String vendor, String deviceFamily, String os,
-			String osVersion, String region, Set<TestDetail> testDetails) {
+			String osVersion, String region, Set<TestDetail> testDetails, String userName) {
 		String saveMessage = null;
 		try {
 
@@ -38,10 +35,8 @@ public class TestBundleService {
 			bundleEntity.setRegion(region);
 			bundleEntity.setNetworkFunction(networkFunction);
 			bundleEntity.setTestDetails(testDetails);
-			String logedInUserName = dcmConfigService.getLogedInUserName();
-			if (logedInUserName != null) {
-				bundleEntity.setUpdatedBy(logedInUserName);
-			}
+			if (userName != null) 
+				bundleEntity.setUpdatedBy(userName);
 			bundleEntity.setUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
 			TestBundling save = testBundlingRepository.save(bundleEntity);
 			if (save.getId() > 0) {

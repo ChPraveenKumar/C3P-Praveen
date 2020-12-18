@@ -4,7 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -33,10 +32,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
-import com.techm.orion.entitybeans.PredefineTestDetailEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TestBundling;
@@ -44,11 +41,9 @@ import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestFeatureList;
 import com.techm.orion.entitybeans.TestRules;
 import com.techm.orion.entitybeans.TestStrategeyVersioningJsonModel;
-import com.techm.orion.pojo.BatchPojo;
 import com.techm.orion.pojo.FirmwareUpgradeDetail;
 import com.techm.orion.pojo.TestStrategyPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
-import com.techm.orion.repositories.PredefineTestDetailsRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.TestBundlingRepository;
 import com.techm.orion.repositories.TestDetailsRepository;
@@ -70,13 +65,6 @@ public class TestStrategyController {
 
 	@Autowired
 	private TestRulesRepository testRulesRepository;
-
-	@Autowired
-	private PredefineTestDetailsRepository predefineTestDetailsRepository;
-
-	/*
-	 * @Autowired TestBundleJoinRepo testBundleJoinRepo;
-	 */
 
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
@@ -412,7 +400,10 @@ public class TestStrategyController {
 			}
 			String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
 			testDetail.setCreatedOn(timeStamp);
-			testDetail.setCreatedBy("admin");
+			
+			if (json.containsKey("userName"))
+				testDetail.setCreatedBy(json.get("userName").toString());
+			
 			if (json.containsKey("Comment")) {
 				testDetail.setComment(json.get("Comment").toString());
 			}
@@ -1401,12 +1392,6 @@ public class TestStrategyController {
 	public JSONArray getTestsForDeviceNewUi(@RequestBody String request) {
 		JSONArray testDetailsValue = new JSONArray();
 		List<TestDetail> testDetailsList = new ArrayList<TestDetail>();
-
-		List<TestDetail> testDetailsFinal = new ArrayList<TestDetail>();
-
-		HashSet<String> testNameList = new HashSet<>();
-		Set<String> testCategoryList = new HashSet<>();
-
 		String deviceFamily = null, vendor = null, os = null, osVersion = null, region = null, networkType = null,
 				requestType = null;
 		JSONParser parser = new JSONParser();
@@ -1468,86 +1453,9 @@ public class TestStrategyController {
 			}
 			testDetailsList = testDetailsRepository.getTesListData(deviceFamily, os, region, osVersion, vendor,
 					networkType);
-			String testCategory = null;
-			for (int i = 0; i < testDetailsList.size(); i++) {
-				switch (requestType) {
-				case "config":
-					testNameList.add(testDetailsList.get(i).getTestName());
-					testCategoryList.add(testDetailsList.get(i).getTestCategory());
-					testDetailsFinal.add(testDetailsList.get(i));
-					break;
-				case "test":
-					testCategory = testDetailsList.get(i).getTestCategory();
-					if (!testCategory.equals("Network Audit")) {
-						testNameList.add(testDetailsList.get(i).getTestName());
-						testCategoryList.add(testDetailsList.get(i).getTestCategory());
-						testDetailsFinal.add(testDetailsList.get(i));
-					}
-					break;
-				case "audit":
-					testCategory = testDetailsList.get(i).getTestCategory();
-					if (testCategory.equals("Network Audit")) {
-						testNameList.add(testDetailsList.get(i).getTestName());
-						testCategoryList.add(testDetailsList.get(i).getTestCategory());
-						testDetailsFinal.add(testDetailsList.get(i));
-					}
-					break;
-
-				default:
-					break;
-				}
-
-			}
-
-			testCategoryList.forEach(category -> {
-				JSONArray testDetailsArray = new JSONArray();
-				testDetailsFinal.stream().filter(it -> category.equals(it.getTestCategory())).forEach(testInfo -> {
-					JSONObject testObject = new JSONObject();
-					testObject.put("testName", testInfo.getTestName() + "_" + testInfo.getVersion());
-					testObject.put("testCategory", testInfo.getTestCategory());
-					testObject.put("testId", testInfo.getTestId());
-					testObject.put("isBundle", false);
-					testDetailsArray.add(testObject);
-				});
-				JSONObject testObject2 = new JSONObject();
-				testObject2.put("name", category);
-				testObject2.put("tests", testDetailsArray);
-				testDetailsValue.add(testObject2);
-			});
-			String requestTypevalue = requestType;
-
-			testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion, vendor, networkType)
-					.forEach(bundle -> {
-						JSONArray testDetailsArray = new JSONArray();
-						boolean auditFlag = false;
-						boolean testOnly = false;
-
-						Set<TestDetail> testDetail = bundle.getTestDetails();
-						if ("test".equals(requestTypevalue)) {
-							testOnly = testDetail.stream()
-									.anyMatch(testInfo -> !testInfo.getTestCategory().equals("Network Audit"));
-						} else if ("audit".equals(requestTypevalue)) {
-							auditFlag = testDetail.stream()
-									.anyMatch(testInfo -> testInfo.getTestCategory().equals("Network Audit"));
-						}
-						if ((auditFlag && "audit".equals(requestTypevalue))
-								|| (testOnly && "test".equals(requestTypevalue))
-								|| (!auditFlag && !testOnly && ("config".equals(requestTypevalue)))) {
-							for (TestDetail testInfo : testDetail) {
-								JSONObject testObject = new JSONObject();
-								testObject.put("testCategory", testInfo.getTestCategory());
-								testObject.put("testName", testInfo.getTestName() + "_" + testInfo.getVersion());
-								testObject.put("testId", testInfo.getTestId());
-								testObject.put("isBundle", true);
-								testDetailsArray.add(testObject);
-							}
-							JSONObject testObject2 = new JSONObject();
-							testObject2.put("name", bundle.getTestBundle());
-							testObject2.put("tests", testDetailsArray);
-							testDetailsValue.add(testObject2);
-						}
-					});
-
+			testDetailsValue = getTestData(deviceFamily, os, region, osVersion, vendor, networkType,requestType,testDetailsValue,testDetailsList);
+			List<TestBundling> testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion, vendor, networkType);
+			testDetailsValue = getBundleData(deviceFamily, os, region, osVersion, vendor, networkType,requestType,testDetailsValue,testBundleData);
 			logger.info(testDetailsValue);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -1667,152 +1575,157 @@ public class TestStrategyController {
 
 	}
 
-	@SuppressWarnings({ "null", "unchecked", "unused" })
+
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/testListForBatch", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response getTestsForBatch(@RequestBody String request) {
+	public JSONArray getTestsForBatch(@RequestBody String request) {
+		JSONArray testDetailsValue = new JSONArray();
 
-		List<TestDetail> testDetailsList = new ArrayList<TestDetail>();
-		List<TestDetail> testDetailsListLatestVersion = new ArrayList<TestDetail>();
-		List<TestDetail> testDetailsFinal = new ArrayList<TestDetail>();
-		List<TestDetail> testDetailsListAllVersion = new ArrayList<TestDetail>();
-		List<PredefineTestDetailEntity> masterTestDetails = new ArrayList<>();
-
-		HashSet<String> testNameList = new HashSet<>();
-		String response = null;
-
-		String deviceModel = null, vendor = null, deviceFamily = null, version = null, region = null, testName = null,
-				networkType = null, requestType = null;
-
+		String deviceFamily = null, vendor = null, os = null, osVersion = null, region = null, networkType = null,
+				requestType = null;
+		JSONParser parser = new JSONParser();
+		JSONObject json;
 		List<String> featuresFromUI = new ArrayList<String>();
-		HashMap<String, String> uiInput = new HashMap<>();
-		Gson gson = new Gson();
+		try {
+			json = (JSONObject) parser.parse(request);
 
-		BatchPojo[] userArray = gson.fromJson(request, BatchPojo[].class);
+			if (json.containsKey("featureList")) {
+				JSONArray fArray = (JSONArray) json.get("featureList");
+				for (int i = 0; i < fArray.size(); i++) {
+					JSONObject fArrayObj = (JSONObject) fArray.get(i);
+					if ((boolean) fArrayObj.get("selected")) {
+						featuresFromUI.add(fArrayObj.get("value").toString());
+					}
+				}
+			}
+			if (json.containsKey("deviceFamily")) {
+				deviceFamily = json.get("deviceFamily").toString();
+			}
+			if (json.containsKey("vendor")) {
+				vendor = json.get("vendor").toString();
+			}
+			if (json.containsKey("os")) {
+				os = json.get("os").toString();
+			}
+			if (json.containsKey("osVersion")) {
+				osVersion = json.get("osVersion").toString();
+			}
+			if (json.containsKey("region")) {
+				region = json.get("region").toString();
+			}
 
-		for (int j = 0; j < userArray.length; j++) {
+			if (json.containsKey("networkType")) {
+				networkType = json.get("networkType").toString();
+			}
+			if (json.containsKey("requestType")) {
+				requestType = json.get("requestType").toString().toLowerCase();
+			}
+			List<TestDetail> testDetailsList = testDetailsRepository.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily, os,osVersion,vendor,region,
+					networkType);
+			testDetailsValue = getTestData(deviceFamily, os, region, osVersion, vendor, networkType,requestType,testDetailsValue,testDetailsList);
+			List<TestBundling> testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion, vendor, networkType);
+			testDetailsValue = getBundleData(deviceFamily, os, region, osVersion, vendor, networkType,requestType,testDetailsValue,testBundleData);
 
-			uiInput.put(userArray[j].getKey(), userArray[j].getValue());
-
+			logger.info(testDetailsValue);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			JSONObject testDetails = new JSONObject();
+			testDetails.put("msg", "Unable read GUI input");
+			testDetailsValue.add(testDetails);
+			return testDetailsValue;
 		}
+		return testDetailsValue;
+	}
 
-		if (uiInput.containsKey("vendor")) {
-			vendor = uiInput.get("vendor").toString();
-		}
-		if (uiInput.containsKey("model")) {
-			deviceModel = uiInput.get("model").toString();
-		}
-		if (uiInput.containsKey("deviceFamily")) {
-			deviceFamily = uiInput.get("deviceFamily").toString();
-		}
-
-		if (uiInput.containsKey("region")) {
-			region = uiInput.get("region").toString();
-		}
-
-		if (uiInput.containsKey("networkFunction")) {
-			networkType = uiInput.get("networkFunction").toString();
-		}
-		if (uiInput.containsKey("requestType")) {
-			requestType = uiInput.get("requestType").toString();
-		}
-
-		masterTestDetails = predefineTestDetailsRepository.findAll();
-
-		if (deviceModel.equals("")) {
-
-			testDetailsList = testDetailsRepository.findBySelectionWithoutModel(region, vendor, networkType);
-		} else {
-			testDetailsList = testDetailsRepository.findBySelection(region, vendor, networkType);
-		}
-
+	@SuppressWarnings("unchecked")
+	private JSONArray getTestData(String deviceFamily, String os, String region, String osVersion, String vendor, String networkType, String requestType, JSONArray testDetailsValue, List<TestDetail> testDetailsList) {
+		List<TestDetail> testDetailsFinal = new ArrayList<TestDetail>();
+		HashSet<String> testNameList = new HashSet<>();
+		Set<String> testCategoryList = new HashSet<>();
+		
 		String testCategory = null;
 		for (int i = 0; i < testDetailsList.size(); i++) {
 			switch (requestType) {
 			case "config":
 				testNameList.add(testDetailsList.get(i).getTestName());
+				testCategoryList.add(testDetailsList.get(i).getTestCategory());
+				testDetailsFinal.add(testDetailsList.get(i));
 				break;
-			case "Test":
+			case "test":
 				testCategory = testDetailsList.get(i).getTestCategory();
 				if (!testCategory.equals("Network Audit")) {
 					testNameList.add(testDetailsList.get(i).getTestName());
+					testCategoryList.add(testDetailsList.get(i).getTestCategory());
+					testDetailsFinal.add(testDetailsList.get(i));
 				}
 				break;
-			case "Network Audit":
+			case "audit":
 				testCategory = testDetailsList.get(i).getTestCategory();
 				if (testCategory.equals("Network Audit")) {
 					testNameList.add(testDetailsList.get(i).getTestName());
+					testCategoryList.add(testDetailsList.get(i).getTestCategory());
+					testDetailsFinal.add(testDetailsList.get(i));
 				}
 				break;
-
 			default:
 				break;
 			}
-
 		}
+		testCategoryList.forEach(category -> {
+			JSONArray testDetailsArray = new JSONArray();
+			testDetailsFinal.stream().filter(it -> category.equals(it.getTestCategory())).forEach(testInfo -> {
+				JSONObject testObject = new JSONObject();
+				testObject.put("testName", testInfo.getTestName() + "_" + testInfo.getVersion());
+				testObject.put("testCategory", testInfo.getTestCategory());
+				testObject.put("testId", testInfo.getTestId());
+				testObject.put("isBundle", false);
+				testDetailsArray.add(testObject);
+			});
+			JSONObject testObject2 = new JSONObject();
+			testObject2.put("name", category);
+			testObject2.put("tests", testDetailsArray);
+			testDetailsValue.add(testObject2);
+		});
+		return testDetailsValue;
+		
+	}
 
-		Iterator<String> itrator = testNameList.iterator();
-		while (itrator.hasNext()) {
-			testName = itrator.next();
-			testDetailsListAllVersion = testDetailsRepository
-					.findByRegionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndNetworkTypeAndTestNameIgnoreCaseContaining(
-							region, vendor, networkType, testName);
+	@SuppressWarnings("unchecked")
+	private JSONArray getBundleData(String deviceFamily, String os, String region, String osVersion, String vendor, String networkType, String requestType, JSONArray testDetailsValue, List<TestBundling> testBundleData) {
+		
+		testBundleData.forEach(bundle -> {
+			JSONArray testDetailsArray = new JSONArray();
+			boolean auditFlag = false;
+			boolean testOnly = false;
 
-			for (int i = 0; i < testDetailsListAllVersion.size(); i++) {
-
-				if (testName.equals(testDetailsListAllVersion.get(i).getTestName())) {
-					version = testDetailsListAllVersion.get(i).getVersion();
-				}
+			Set<TestDetail> testDetail = bundle.getTestDetails();
+			if ("test".equals(requestType)) {
+				testOnly = testDetail.stream()
+						.anyMatch(testInfo -> !testInfo.getTestCategory().equals("Network Audit"));
+			} else if ("audit".equals(requestType)) {
+				auditFlag = testDetail.stream()
+						.anyMatch(testInfo -> testInfo.getTestCategory().equals("Network Audit"));
 			}
-
-			testDetailsListLatestVersion = testDetailsRepository
-					.findByRegionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndNetworkTypeAndTestNameIgnoreCaseContainingAndVersion(
-							region, vendor, networkType, testName, version);
-
-			if (null != testDetailsListLatestVersion || !testDetailsListLatestVersion.isEmpty()) {
-
-				int n = testDetailsListLatestVersion.size();
-
-				List<TestDetail> aList = new ArrayList<TestDetail>(n);
-				for (TestDetail x : testDetailsListLatestVersion) {
-
-					aList.add(x);
+			if ((auditFlag && "audit".equals(requestType))
+					|| (testOnly && "test".equals(requestType))
+					|| (!auditFlag && !testOnly && ("config".equals(requestType)))) {
+				for (TestDetail testInfo : testDetail) {
+					JSONObject testObject = new JSONObject();
+					testObject.put("testCategory", testInfo.getTestCategory());
+					testObject.put("testName", testInfo.getTestName() + "_" + testInfo.getVersion());
+					testObject.put("testId", testInfo.getTestId());
+					testObject.put("isBundle", true);
+					testDetailsArray.add(testObject);
 				}
-
-				if (featuresFromUI != null && featuresFromUI.size() > 0) {
-					for (int i = 0; i < aList.size(); i++) {
-						List<TestFeatureList> dbFeatures = testFeatureListRepository.findByTestDetail(aList.get(i));
-
-						for (int j = 0; j < dbFeatures.size(); j++) {
-							if (featuresFromUI.contains(dbFeatures.get(j).getTestFeature())) {
-								aList.get(i).setSelected(true);
-								aList.get(i).setDisabled(false);
-							}
-						}
-
-					}
-				} else {
-					for (int i = 0; i < aList.size(); i++) {
-
-						aList.get(i).setSelected(false);
-						aList.get(i).setDisabled(false);
-
-					}
-				}
-
-				testDetailsFinal.addAll(aList);
+				JSONObject testObject2 = new JSONObject();
+				testObject2.put("name", bundle.getTestBundle());
+				testObject2.put("tests", testDetailsArray);
+				testDetailsValue.add(testObject2);
 			}
-
-			else {
-				response = "Records not found";
-				return Response.status(200).entity(response).build();
-			}
-		}
-		JSONObject testDetails = new JSONObject();
-		testDetails.put("default", masterTestDetails);
-		testDetails.put("dynamic", testDetailsFinal);
-
-		return Response.status(200).entity(testDetails).build();
+		});
+		return testDetailsValue;
 	}
 
 }

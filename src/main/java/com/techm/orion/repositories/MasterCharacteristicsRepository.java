@@ -11,5 +11,6 @@ import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 public interface MasterCharacteristicsRepository extends JpaRepository<MasterCharacteristicsEntity, Long> {
 	
 	List<MasterCharacteristicsEntity> findAllByCFId(String fid);
+	MasterCharacteristicsEntity findByCFIdAndCName(String fid,String label);
 
 }

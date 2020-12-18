@@ -15,6 +15,8 @@ public class CreateConfigRequestMapper {
 		entity.setRequestId(pojo.getRequestId());
 		entity.setTemplateId(pojo.getTemplateId());
 		entity.setRequestVersion(pojo.getRequestVersion());
+		entity.setMasterFeatureId(pojo.getMasterFeatureId());
+		entity.setMasterCharachteristicId(pojo.getMasterCharachteristicId());
 		return entity;
 
 	}

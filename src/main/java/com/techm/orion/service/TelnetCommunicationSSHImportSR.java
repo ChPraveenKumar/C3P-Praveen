@@ -14,11 +14,22 @@ public class TelnetCommunicationSSHImportSR extends Thread {
 	CreateConfigRequestDCM configRequest = new CreateConfigRequestDCM();
 	CamundaServiceCreateReq camundaServiceCreateReq = new CamundaServiceCreateReq();
 	ErrorCodeValidationDeliveryTest errorCodeValidationDeliveryTest = new ErrorCodeValidationDeliveryTest();
+	String userName = null;
 
 	public TelnetCommunicationSSHImportSR(CreateConfigRequestDCM list) {
-		// this();
+		//this();
 		this.configRequest = list;
 	}
+	 
+	/*
+	 * Overloaded Constructor for passing user information
+	 */
+	public TelnetCommunicationSSHImportSR(CreateConfigRequestDCM list, String userName) {
+		// this();
+		this.configRequest = list;
+		this.userName = userName;
+	}
+
 
 	// public void connectToRouter(CreateConfigRequestDCM configRequest) throws
 	// Exception {
@@ -29,10 +40,10 @@ public class TelnetCommunicationSSHImportSR extends Thread {
 
 			if (configRequest.getScheduledTime().equalsIgnoreCase("")) {
 				camundaServiceCreateReq.uploadToServerNew(configRequest.getRequestId(),
-						Double.toString(configRequest.getRequest_version()), configRequest.getRequestType());
+						Double.toString(configRequest.getRequest_version()), configRequest.getRequestType(), userName);
 			} else {
 				camundaServiceCreateReq.uploadToServer(configRequest.getRequestId(),
-						Double.toString(configRequest.getRequest_version()), configRequest.getRequestType());
+						Double.toString(configRequest.getRequest_version()), configRequest.getRequestType(), userName);
 			}
 
 		} catch (Exception ex) {

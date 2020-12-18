@@ -52,8 +52,9 @@ public class SearchDeviceController {
 
 	@Autowired
 	public TestDetailsRepository testDetailsRepository;
-	
-	private static final Logger logger = LogManager.getLogger(SearchDeviceController.class);
+
+	private static final Logger logger = LogManager
+			.getLogger(SearchDeviceController.class);
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -132,12 +133,13 @@ public class SearchDeviceController {
 			}
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {
-			
+
 				object = new JSONObject();
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
 				object.put("type", "Router");
-				object.put("deviceFamily", getAllDevice.get(i).getdDeviceFamily());
+				object.put("deviceFamily", getAllDevice.get(i)
+						.getdDeviceFamily());
 				object.put("model", getAllDevice.get(i).getdModel());
 				object.put("os", getAllDevice.get(i).getdOs());
 				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
@@ -145,13 +147,26 @@ public class SearchDeviceController {
 				object.put("status", "Available");
 				object.put("customer", getAllDevice.get(i).getCustSiteId()
 						.getcCustName());
-				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
-				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
+				if (getAllDevice.get(i).getdEndOfSupportDate() != null
+						&& !getAllDevice.get(i).getdEndOfSupportDate()
+								.equalsIgnoreCase("Not Available")) {
+					object.put("eos", getAllDevice.get(i)
+							.getdEndOfSupportDate());
+				} else {
+					object.put("eos", "");
+
+				}
+				if (getAllDevice.get(i).getdEndOfSaleDate() != null
+						&& !getAllDevice.get(i).getdEndOfSaleDate()
+								.equalsIgnoreCase("Not Available")) {
+					object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
+				} else {
+					object.put("eol", "");
+
+				}
 				SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
 				object.put("site", site.getcSiteName());
 				object.put("region", site.getcSiteRegion());
-
-			
 
 				outputArray.add(object);
 			}
@@ -209,7 +224,10 @@ public class SearchDeviceController {
 			if (json.containsKey("model")) {
 				modeltosearch = json.get("model").toString();
 			}
-			logger.info("customer -"+customer + ", region-"+region+ ", sitetosearch-"+sitetosearch+", devicetosearch-"+devicetosearch+", modeltosearch-"+modeltosearch+", networktosearch"+networktosearch);
+			logger.info("customer -" + customer + ", region-" + region
+					+ ", sitetosearch-" + sitetosearch + ", devicetosearch-"
+					+ devicetosearch + ", modeltosearch-" + modeltosearch
+					+ ", networktosearch" + networktosearch);
 			// Implementation of search logic based on fields received from UI
 			String nonMandatoryfiltersbits = "000";
 
@@ -230,7 +248,7 @@ public class SearchDeviceController {
 			}
 			if (!(devicetosearch.equals(""))) {
 				nonMandatoryfiltersbits = "222";
-			}			
+			}
 			if (!(sitetosearch.equals("")) && !(devicetosearch.equals(""))) {
 				nonMandatoryfiltersbits = "332";
 			}
@@ -240,12 +258,12 @@ public class SearchDeviceController {
 			if (!(devicetosearch.equals("")) && !(modeltosearch.equals(""))) {
 				nonMandatoryfiltersbits = "433";
 			}
-			if (!(sitetosearch.equals("")) && !(devicetosearch.equals("")) && !(modeltosearch.equals(""))) {
+			if (!(sitetosearch.equals("")) && !(devicetosearch.equals(""))
+					&& !(modeltosearch.equals(""))) {
 				nonMandatoryfiltersbits = "322";
 			}
-			
-			
-			logger.info("nonMandatoryfiltersbits -"+nonMandatoryfiltersbits);
+
+			logger.info("nonMandatoryfiltersbits -" + nonMandatoryfiltersbits);
 
 			if (nonMandatoryfiltersbits.equalsIgnoreCase("000")) {
 				// find only with customer
@@ -331,16 +349,17 @@ public class SearchDeviceController {
 						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDDeviceFamilyAndDModel(
 								customer, region, vendortosearch,
 								networktosearch, devicetosearch, modeltosearch);
-			}			
+			}
 
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {
-			
+
 				object = new JSONObject();
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
 				object.put("type", "Router");
-				object.put("deviceFamily", getAllDevice.get(i).getdDeviceFamily());
+				object.put("deviceFamily", getAllDevice.get(i)
+						.getdDeviceFamily());
 				object.put("model", getAllDevice.get(i).getdModel());
 				object.put("os", getAllDevice.get(i).getdOs());
 				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
@@ -353,8 +372,6 @@ public class SearchDeviceController {
 				SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
 				object.put("site", site.getcSiteName());
 				object.put("region", site.getcSiteRegion());
-
-			
 
 				outputArray.add(object);
 			}
@@ -423,7 +440,8 @@ public class SearchDeviceController {
 	@POST
 	@RequestMapping(value = "/backuppage", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public ResponseEntity<JSONObject> searchFromBackUpPage(@RequestBody String searchParameters) {
+	public ResponseEntity<JSONObject> searchFromBackUpPage(
+			@RequestBody String searchParameters) {
 		String customer = null;
 		String region = null;
 		String site = null;
@@ -437,63 +455,105 @@ public class SearchDeviceController {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(searchParameters);
 			JSONObject object = new JSONObject();
-			
+
 			searchType = getJsonData(json, "field");
-			if(searchType !=null) {
+			if (searchType != null) {
 				searchValue = getJsonData(json, "value");
 			}
 			customer = getJsonData(json, "customer");
 			region = getJsonData(json, "region");
 			site = getJsonData(json, "site");
-			logger.info("searchType : "+searchType +", searchValue: "+searchValue + ", customer: " +customer+ ", region: "+region+", site:"+site);
-			/*Filter for All case.*/
-			if(searchType == null && customer == null && region == null && site == null) {
-				filterResults = deviceInforepo.findAll();				
-			}else {
-				/*Search with filter options like customer, region & site*/
-				if(customer !=null && region !=null && site !=null) {
+			logger.info("searchType : " + searchType + ", searchValue: "
+					+ searchValue + ", customer: " + customer + ", region: "
+					+ region + ", site:" + site);
+			/* Filter for All case. */
+			if (searchType == null && customer == null && region == null
+					&& site == null) {
+				filterResults = deviceInforepo.findAll();
+			} else {
+				/* Search with filter options like customer, region & site */
+				if (customer != null && region != null && site != null) {
 					// find with customer and region and vendor
 					getFilterDevices = deviceInforepo
 							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(
 									customer, region, site);
-				}else if(customer !=null && region !=null && site == null) {
+				} else if (customer != null && region != null && site == null) {
 					// find with customer and region and vendor
 					getFilterDevices = deviceInforepo
-							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegion(customer, region);
-				}else if(customer !=null && region == null && site == null) {
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegion(
+									customer, region);
+				} else if (customer != null && region == null && site == null) {
 					// find with customer and region and vendor
-					getFilterDevices = deviceInforepo.findByCustSiteIdCCustName(customer);
-				}else {
+					getFilterDevices = deviceInforepo
+							.findByCustSiteIdCCustName(customer);
+				} else {
 					getFilterDevices = deviceInforepo.findAll();
 				}
-				
-				/*filter the getFileterDevices list further based on searchType & value*/
-				if(searchType !=null && searchValue !=null && getFilterDevices !=null) {
+
+				/*
+				 * filter the getFileterDevices list further based on searchType
+				 * & value
+				 */
+				if (searchType != null && searchValue != null
+						&& getFilterDevices != null) {
 					final String filterValue = searchValue;
-					if("Host Name".equals(searchType)) {
-						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdHostName())).collect(Collectors.toList());
-					}else if ("Management Ip".equals(searchType)) {
-						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdMgmtIp())).collect(Collectors.toList());
-					}else if ("OS".equals(searchType)) {
-						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdOs())).collect(Collectors.toList());
-					}else if ("OS Version".equals(searchType)) {
-						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdOsVersion())).collect(Collectors.toList());
-					}else if ("Model".equals(searchType)) {
-						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdModel())).collect(Collectors.toList());
-					}else if ("Device Family".equals(searchType)) {
-						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdDeviceFamily())).collect(Collectors.toList());
-					}else if ("EOL".equals(searchType)) {
-						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdEndOfLife())).collect(Collectors.toList());
-					}else if ("EOS".equals(searchType)) {
-						filterResults = getFilterDevices.stream().filter(dInfo -> filterValue.equals(dInfo.getdEndOfSaleDate())).collect(Collectors.toList());
-					}					
-				}else if(getFilterDevices !=null){
-					filterResults = getFilterDevices.stream().collect(Collectors.toList());
-				}				
+					if ("Host Name".equals(searchType)) {
+						filterResults = getFilterDevices
+								.stream()
+								.filter(dInfo -> filterValue.equals(dInfo
+										.getdHostName()))
+								.collect(Collectors.toList());
+					} else if ("Management Ip".equals(searchType)) {
+						filterResults = getFilterDevices
+								.stream()
+								.filter(dInfo -> filterValue.equals(dInfo
+										.getdMgmtIp()))
+								.collect(Collectors.toList());
+					} else if ("OS".equals(searchType)) {
+						filterResults = getFilterDevices
+								.stream()
+								.filter(dInfo -> filterValue.equals(dInfo
+										.getdOs()))
+								.collect(Collectors.toList());
+					} else if ("OS Version".equals(searchType)) {
+						filterResults = getFilterDevices
+								.stream()
+								.filter(dInfo -> filterValue.equals(dInfo
+										.getdOsVersion()))
+								.collect(Collectors.toList());
+					} else if ("Model".equals(searchType)) {
+						filterResults = getFilterDevices
+								.stream()
+								.filter(dInfo -> filterValue.equals(dInfo
+										.getdModel()))
+								.collect(Collectors.toList());
+					} else if ("Device Family".equals(searchType)) {
+						filterResults = getFilterDevices
+								.stream()
+								.filter(dInfo -> filterValue.equals(dInfo
+										.getdDeviceFamily()))
+								.collect(Collectors.toList());
+					} else if ("EOL".equals(searchType)) {
+						filterResults = getFilterDevices
+								.stream()
+								.filter(dInfo -> filterValue.equals(dInfo
+										.getdEndOfLife()))
+								.collect(Collectors.toList());
+					} else if ("EOS".equals(searchType)) {
+						filterResults = getFilterDevices
+								.stream()
+								.filter(dInfo -> filterValue.equals(dInfo
+										.getdEndOfSaleDate()))
+								.collect(Collectors.toList());
+					}
+				} else if (getFilterDevices != null) {
+					filterResults = getFilterDevices.stream().collect(
+							Collectors.toList());
+				}
 			}
 
 			JSONArray outputArray = new JSONArray();
-			for(DeviceDiscoveryEntity deviceInfo :filterResults) {
+			for (DeviceDiscoveryEntity deviceInfo : filterResults) {
 				object = new JSONObject();
 				object.put("hostName", deviceInfo.getdHostName());
 				object.put("managementIp", deviceInfo.getdMgmtIp());
@@ -503,39 +563,41 @@ public class SearchDeviceController {
 				object.put("os", deviceInfo.getdOs());
 				object.put("osVersion", deviceInfo.getdOsVersion());
 				object.put("vendor", deviceInfo.getdVendor());
-				object.put("status", "Available");				
-				if (deviceInfo.getCustSiteId() != null) {					
+				object.put("status", "Available");
+				if (deviceInfo.getCustSiteId() != null) {
 					SiteInfoEntity siteInfo = deviceInfo.getCustSiteId();
 					object.put("customer", siteInfo.getcCustName());
 					object.put("site", siteInfo.getcSiteName());
 					object.put("region", siteInfo.getcSiteRegion());
-				}			
+				}
 				object.put("eos", deviceInfo.getdEndOfSupportDate());
-				object.put("eol", deviceInfo.getdEndOfSaleDate());						
+				object.put("eol", deviceInfo.getdEndOfSaleDate());
 
 				outputArray.add(object);
 			}
-			
+
 			responseObject.put("data", outputArray);
-			responseEntity = new ResponseEntity<JSONObject>(responseObject, HttpStatus.OK);
+			responseEntity = new ResponseEntity<JSONObject>(responseObject,
+					HttpStatus.OK);
 		} catch (Exception exe) {
 			responseObject = new JSONObject();
-			responseObject.put("Error","Filter is not successful");
-			responseEntity = new ResponseEntity<JSONObject>(responseObject, HttpStatus.BAD_REQUEST);
-			logger.error("Exception occured :"+exe.getMessage());
+			responseObject.put("Error", "Filter is not successful");
+			responseEntity = new ResponseEntity<JSONObject>(responseObject,
+					HttpStatus.BAD_REQUEST);
+			logger.error("Exception occured :" + exe.getMessage());
 		}
-		
+
 		return responseEntity;
-		
+
 	}
-	
+
 	private String getJsonData(JSONObject json, String key) {
 		String jsonData = null;
-		if (json.containsKey(key) && json.get(key) !=null) {
+		if (json.containsKey(key) && json.get(key) != null) {
 			jsonData = json.get(key).toString();
-			if("undefined".equals(jsonData) && jsonData.trim().isEmpty()) {
+			if ("undefined".equals(jsonData) && jsonData.trim().isEmpty()) {
 				jsonData = null;
-				logger.info("jsonData is undefined for input key "+key);				
+				logger.info("jsonData is undefined for input key " + key);
 			}
 		}
 		return jsonData;
