@@ -17,7 +17,7 @@ public class ReportMileStones {
 		} else if ("SNRC".equals(requestType)) {
 			mileStone = new MileStones(true, true, true, false, true, true, false, true, true, true, true);
 		} else if ("SLGM".equals(requestType)) {
-			mileStone = new MileStones(true, true, true, false, true, false, false, false, false, false, true);
+			mileStone = new MileStones(true, true, true, false, true, true, false, true, true, true, true);
 		} else if ("SLGT".equals(requestType)) {
 			mileStone = new MileStones(true, false, true, false, false, true, false, true, false, true, true);
 		} else if ("SLGA".equals(requestType)) {

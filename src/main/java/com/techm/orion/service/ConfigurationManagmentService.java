@@ -823,7 +823,7 @@ public class ConfigurationManagmentService {
 		return commandsByFeatureData;
 	}
 
-	private List<CommandPojo> setcammandByTemplate(List<CommandPojo> cammandByTemplate, String vendor) {
+	public List<CommandPojo> setcammandByTemplate(List<CommandPojo> cammandByTemplate, String vendor) {
 		List<CommandPojo> finalCommandList = new ArrayList<>();
 		cammandByTemplate.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
 		List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorName(vendor);

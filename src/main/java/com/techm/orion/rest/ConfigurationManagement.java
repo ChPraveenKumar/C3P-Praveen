@@ -28,7 +28,8 @@ import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
-import com.techm.orion.entitybeans.VendorCommandEntity;
+import com.techm.orion.entitybeans.TestDetail;
+import com.techm.orion.entitybeans.TestFeatureList;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.CreateConfigPojo;
@@ -39,6 +40,7 @@ import com.techm.orion.repositories.MasterAttribRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
+import com.techm.orion.repositories.TestFeatureListRepository;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.ConfigurationManagmentService;
 import com.techm.orion.service.DcmConfigService;
@@ -76,8 +78,10 @@ public class ConfigurationManagement {
 	private MasterCharacteristicsRepository masterCharacteristicRepository;
 	
 	@Autowired
-	private TemplateFeatureRepo templatefeatureRepo;
+	private TestFeatureListRepository testFeatureListRepository;
 	
+	@Autowired
+	private TemplateFeatureRepo templateFeatureRepo;
 
 	@Autowired
 	private ConfigurationManagmentService createConfigurationService;
@@ -197,7 +201,7 @@ public class ConfigurationManagement {
 			// time so
 			// parent will be 1.
 			configReqToSendToC3pCode.setRequestParentVersion(1.0);
-
+			JSONArray toSaveArray = new JSONArray();
 			if (!requestType.equals("Test") && !requestType.equals("Audit")) {
 				// template suggestion
 				String template = "";
@@ -267,7 +271,7 @@ public class ConfigurationManagement {
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 
 				} else {
-					String bit = "0" + "0" + "0" + "0" + "0" + "0" + "0";
+					String bit = "1" + "0" + "1" + "0" + "0" + "1" + "1";
 					logger.info(bit);
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 				}
@@ -277,7 +281,7 @@ public class ConfigurationManagement {
 
 				if (certificationTestFlag != null && certificationTestFlag.containsKey("dynamic")) {
 					JSONArray dynamicArray = (JSONArray) certificationTestFlag.get("dynamic");
-					JSONArray toSaveArray = new JSONArray();
+					
 
 					for (int i = 0; i < dynamicArray.size(); i++) {
 						boolean auditFlag = false;
@@ -297,8 +301,7 @@ public class ConfigurationManagement {
 							}
 						}
 					}
-					String testsSelected = toSaveArray.toString();
-					configReqToSendToC3pCode.setTestsSelected(testsSelected);
+					
 				}
 			}
 
@@ -374,6 +377,10 @@ public class ConfigurationManagement {
 						if (byAttribTemplateAndFeatureName != null && !byAttribTemplateAndFeatureName.isEmpty()) {
 							templateAttribute.addAll(byAttribTemplateAndFeatureName);
 						}
+						TemplateFeatureEntity featureEntity = templateFeatureRepo.findById(Integer.parseInt(featureid));
+						if(featureEntity!=null) {
+						toSaveArray= setFeatureTest(featureEntity.getMasterFId(),toSaveArray);
+						}
 						featureList.add(featureid);
 						// Fetch commands only in case of external api
 						List<CommandPojo> listToSent = dao.getCammandByTemplateAndfeatureId(Integer.parseInt(featureid),
@@ -416,6 +423,7 @@ public class ConfigurationManagement {
 							JSONObject featureJson = (JSONObject) featureListJson.get(i);
 							TemplateFeaturePojo setTemplateFeatureData = configurationManagmentService
 									.setTemplateFeatureData(featureJson);
+							toSaveArray = setFeatureTest(featureJson.get("fId").toString(), toSaveArray);
 							features.add(setTemplateFeatureData);
 							featureList.add(setTemplateFeatureData.getfName());
 						}
@@ -488,12 +496,12 @@ public class ConfigurationManagement {
 					for (String type : methods) {
 						switch (type) {
 						case "Template":
-							RequestInfoPojo request = new RequestInfoPojo();
+//							RequestInfoPojo request = new RequestInfoPojo();
 							for (String template : templateList) {
 								/* Extract Json and map to CreateConfigPojo fields */
 								/* Iterate over major list */
-								request = new RequestInfoPojo();
-								request.setTemplateID(template);
+//								request = new RequestInfoPojo();
+								configReqToSendToC3pCode.setTemplateID(template);
 								if (attribJson != null) {
 									for (int i = 0; i < attribJson.size(); i++) {
 										/*
@@ -535,8 +543,8 @@ public class ConfigurationManagement {
 																		createConfigList.add(
 																				setConfigData(templateAttrib.getId(),
 																						attriValue, templateid));
-																		request = configurationManagmentService
-																				.setAttribValue(attribName, request,
+																		configReqToSendToC3pCode = configurationManagmentService
+																				.setAttribValue(attribName, configReqToSendToC3pCode,
 																						attriValue);
 																	}
 
@@ -552,7 +560,7 @@ public class ConfigurationManagement {
 
 									}
 								}
-								configReqToSendToC3pCodeList.add(request);
+//								configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 								List<CommandPojo> toSend = new ArrayList<CommandPojo>();
 								List<AttribCreateConfigPojo> attribToSend = new ArrayList<AttribCreateConfigPojo>();
 								if (replication != null && !replication.isEmpty()) {
@@ -578,14 +586,10 @@ public class ConfigurationManagement {
 											attribToSend.add(attrib);
 										}
 									}
+									toSend =configurationManagmentService.setcammandByTemplate(toSend, configReqToSendToC3pCode.getVendor());
 									invokeFtl.createFinalTemplate(null, toSend, null, attribToSend, template);
 								}
-								
-								
-								
-								
-
-							}
+								}
 							break;
 						case "Non-Template":
 							List<MasterCharacteristicsEntity> attributesFromInput = new ArrayList<MasterCharacteristicsEntity>();
@@ -647,7 +651,6 @@ public class ConfigurationManagement {
 					}
 					configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 
-					// configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 				}
 
 				/*
@@ -704,6 +707,10 @@ public class ConfigurationManagement {
 					}
 				
 			}
+				if(toSaveArray!=null && !toSaveArray.isEmpty()) {
+				String testsSelected = toSaveArray.toString();
+				configReqToSendToC3pCode.setTestsSelected(testsSelected);
+				}
 				logger.info("createConfigurationDcm - before calling updateAlldetails - " + createConfigList);
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
@@ -873,4 +880,32 @@ public class ConfigurationManagement {
 		return list;
 	}
 	
+	@SuppressWarnings("unchecked")
+	private JSONArray setFeatureTest(String masterFeatureId, JSONArray toSaveArray) {
+		List<TestFeatureList> FeatureTestDetails = testFeatureListRepository.findByTestFeature(masterFeatureId);
+		if(FeatureTestDetails!=null) {
+			for(TestFeatureList testDeatils:FeatureTestDetails) {								
+				TestDetail testDetail = testDeatils.getTestDetail();
+				String testName =testDetail.getTestName()+"_"+testDetail.getVersion();
+				String testCategory=testDetail.getTestCategory();
+				boolean flag =false;
+				for(int i=0;i<toSaveArray.size();i++) {
+					JSONObject object = (JSONObject) toSaveArray.get(i);
+					if(object.get("testCategory").equals(testCategory) && object.get("testName").equals(testName)) {
+						flag =true;
+					}
+				}
+				if(!flag) {
+					JSONObject testObject = new JSONObject();
+					testObject.put("testCategory",testCategory);
+					testObject.put("selected",1);
+					testObject.put("testName",testName);
+					testObject.put("bundleName",new ArrayList<>());
+					toSaveArray.add(testObject);
+				}
+			}
+			
+		}
+		return toSaveArray;		
+	}
 }

@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TestBundling;
@@ -44,11 +45,13 @@ import com.techm.orion.entitybeans.TestStrategeyVersioningJsonModel;
 import com.techm.orion.pojo.FirmwareUpgradeDetail;
 import com.techm.orion.pojo.TestStrategyPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.TestBundlingRepository;
 import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
 import com.techm.orion.repositories.TestRulesRepository;
+import com.techm.orion.service.TemplateManagementNewService;
 
 /*
  * Owner: Vivek Vidhate Module: Test Strategey Logic: To
@@ -75,6 +78,12 @@ public class TestStrategyController {
 	@Autowired
 	private TestBundlingRepository testBundleRepo;
 
+	@Autowired
+	private TemplateManagementNewService templateManagementNewService;
+	
+	@Autowired
+	private MasterFeatureRepository masterFeatureRepository;
+	
 	RequestInfoDao dao = new RequestInfoDao();
 
 	@GET
@@ -315,7 +324,18 @@ public class TestStrategyController {
 				bundleNameList.add(testBundling);
 			}
 			detail.setBundleName(bundleNameList);
-			testfeaturelist = testFeatureListRepository.findByTestDetail(testdetaillist.get(0));
+			List<TestFeatureList> testfeaturelistValue = testFeatureListRepository.findByTestDetail(testdetaillist.get(0));
+			if(testfeaturelistValue!=null && !testfeaturelistValue.isEmpty()) {
+				testfeaturelistValue.forEach(featureDetails->{
+					TestFeatureList feature = new TestFeatureList();
+					MasterFeatureEntity masterFeature = masterFeatureRepository.findByFId(featureDetails.getTestFeature());
+					if(masterFeature!=null) {
+					feature.setId(featureDetails.getId());
+					feature.setTestFeature(masterFeature.getfName());
+					testfeaturelist.add(feature);
+					}
+				});
+			}
 			detail.setListFeatures(testfeaturelist);
 			detail.setText_attributes(testruleslisttextfinal);
 			detail.setTable_attributes(testruleslisttablefinal);
@@ -1727,5 +1747,16 @@ public class TestStrategyController {
 		});
 		return testDetailsValue;
 	}
-
+	@POST
+	@RequestMapping(value = "/getFeaturesForTestDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JSONObject> getFeaturesForDeviceDetail(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = templateManagementNewService.getFeatureForTestDetails(request);
+		if (json != null) {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
 }
