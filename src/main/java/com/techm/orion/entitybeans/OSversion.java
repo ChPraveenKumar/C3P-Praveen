@@ -29,7 +29,7 @@ public class OSversion implements Serializable{
 	@Column(name = "osversion")
 	private String osversion;
 
-	@ManyToOne(fetch = FetchType.EAGER, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
+	@ManyToOne(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
 	private OS os;
 
 	@Transient

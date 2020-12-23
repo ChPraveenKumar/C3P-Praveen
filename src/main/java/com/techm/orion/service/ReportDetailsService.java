@@ -45,7 +45,7 @@ public class ReportDetailsService {
 				data = invokeFtl.getCustomerReport(requestId, version);
 			}
 			if (TestType.equalsIgnoreCase("iosHealthTest")) {
-				data = invokeFtl.iosHealthCheckFile(request.getHostname(), request.getRegion(), "Post");
+				data = invokeFtl.iosHealthCheckFile(request.getHostname(), request.getRegion(), "POST");
 
 			}
 			if (TestType.equalsIgnoreCase("iospreValidate")) {

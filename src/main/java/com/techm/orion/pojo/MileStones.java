@@ -3,6 +3,7 @@ package com.techm.orion.pojo;
 public class MileStones {
 	private boolean start;
 	private boolean generate;
+	private boolean instantiate;
 	private boolean preValidate;
 	private boolean backup;
 	private boolean backupDelivery;
@@ -12,12 +13,13 @@ public class MileStones {
 	private boolean networkAudit;
 	private boolean others;
 	private boolean report;
-	public MileStones(boolean start, boolean generate, boolean preValidate, boolean backup, boolean backupDelivery,
+	public MileStones(boolean start, boolean generate,boolean instantiate, boolean preValidate, boolean backup, boolean backupDelivery,
 			boolean networkTest, boolean preHealthCheck, boolean healthCheck, boolean networkAudit, boolean others,
 			boolean report) {
 		super();
 		this.start = start;
 		this.generate = generate;
+		this.instantiate=instantiate;
 		this.preValidate = preValidate;
 		this.backup = backup;
 		this.backupDelivery = backupDelivery;
@@ -27,6 +29,12 @@ public class MileStones {
 		this.networkAudit = networkAudit;
 		this.others = others;
 		this.report = report;
+	}
+	public boolean isInstantiate() {
+		return instantiate;
+	}
+	public void setInstantiate(boolean instantiate) {
+		this.instantiate = instantiate;
 	}
 	public boolean isStart() {
 		return start;

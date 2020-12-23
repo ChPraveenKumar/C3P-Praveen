@@ -90,7 +90,8 @@ public class FinalReportForTTUTest extends Thread {
 
 			createConfigRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
 			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-
+			if(!type.equalsIgnoreCase("SNAI"))
+			{
 			if (createConfigRequest.getManagementIp() != null && !createConfigRequest.getManagementIp().equals("")) {
 
 				createConfigRequest.setRequestId(RequestId);
@@ -1934,6 +1935,30 @@ public class FinalReportForTTUTest extends Thread {
 					}
 				}
 
+			}
+			}
+			else
+			{
+				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "customer_report", "4", "In Progress");
+				//Check if instantiation is 1 or not in webserviceinfo table
+				int status=requestDao.getStatusForMilestone(RequestId,version,"instantiation");
+				if(status == 1)
+				{
+					value = true;
+					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", "Success");
+					jsonArray = new Gson().toJson(value);
+					obj.put(new String("output"), jsonArray);
+				}
+				else if(status==2)
+				{
+					value = false;
+					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
+					jsonArray = new Gson().toJson(value);
+					obj.put(new String("output"), jsonArray);
+				}
 			}
 		} catch (IOException ex) {
 			if (createConfigRequest.getManagementIp() != null && !createConfigRequest.getManagementIp().equals("")) {

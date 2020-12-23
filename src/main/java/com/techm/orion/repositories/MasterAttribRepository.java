@@ -20,6 +20,8 @@ public interface MasterAttribRepository extends JpaRepository<MasterAttributes,I
 	
 	MasterAttributes findByCharacteristicIdAndTemplateId(String id, String templateId);
 	
+	MasterAttributes findByTemplateIdAndMasterFIDAndLabel(String templateId,String featureId,String label);
+	
 	
 
 }

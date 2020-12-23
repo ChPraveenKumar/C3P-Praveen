@@ -95,6 +95,9 @@ public class RequestInfoDetailsDao {
 		} else if (field.equalsIgnoreCase("network_audit")) {
 			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
 		}
+		else if (field.equalsIgnoreCase("instantiation")) {
+			query = "update webserviceinfo set instantiation = ? where alphanumeric_req_id = ? and version = ? ";
+		}
 
 		try(Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {			
@@ -451,10 +454,9 @@ public class RequestInfoDetailsDao {
 		return requestInfoList;
 	}
 
-	public List<RequestInfoCreateConfig> getAllResquestsFromDB() throws IOException {
+	public List<RequestInfoCreateConfig> getAllResquestsFromDB(String userRole) throws IOException {
 		List<RequestInfoCreateConfig> requestInfoList1 = new ArrayList<>();
-		Global.loggedInUser = "admin";
-		String user = Global.loggedInUser;
+		String user = userRole;
 		List<RequestInfoEntity> entity = new ArrayList<>();
 		switch (user) {
 		case "feuser":
@@ -482,19 +484,19 @@ public class RequestInfoDetailsDao {
 
 	}
 
-	public List<RequestInfoCreateConfig> getRequestWithVersion(String key, String requestId, String version)
+	public List<RequestInfoCreateConfig> getRequestWithVersion(String key, String requestId, String version, String userName, String userRole)
 			throws IOException {
 		List<RequestInfoEntity> requestEntity = null;
-		Global.loggedInUser = "admin";
+		//Global.loggedInUser = "admin";
 		Double finalVersion = Double.valueOf(version);
-		if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
+		if (!userRole.equalsIgnoreCase("admin")) {
 			if (key.equalsIgnoreCase("Request ID") || key.equalsIgnoreCase("Request")) {
 				requestEntity = reository.findAllByAlphanumericReqIdAndRequestVersionAndRequestCreatorName(requestId,
-						finalVersion, Global.loggedInUser);
+						finalVersion, userName);
 				return setEntityDate(requestEntity);
 			}
 			if (key.equalsIgnoreCase("Region")) {
-				requestEntity = reository.findAllByRegionContainingAndRequestCreatorName(key, Global.loggedInUser);
+				requestEntity = reository.findAllByRegionContainingAndRequestCreatorName(key, userName);
 				return setEntityDate(requestEntity);
 			}
 		}
@@ -607,6 +609,9 @@ public class RequestInfoDetailsDao {
 		} else if (field.equalsIgnoreCase("network_audit")) {
 			query = "select network_audit as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		}
+		else if (field.equalsIgnoreCase("instantiation")) {
+			query = "select instantiation as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+		}
 
 		try(Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
@@ -625,4 +630,10 @@ public class RequestInfoDetailsDao {
 		return status;
 	}
 
+	public List<ResourceCharacteristicsHistoryEntity>getListResourcesfromChHistory(String requestid)
+	{
+		List<ResourceCharacteristicsHistoryEntity>list=new ArrayList<>();
+		list=resourceCharHistoryRepo.findBySoRequestId(requestid);
+		return list;
+	}
 }

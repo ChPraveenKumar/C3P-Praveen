@@ -41,7 +41,7 @@ public class LogoutService implements Observer {
 			isSuccess =userCreateInterface.resetUsersDB(loggedInUserName);
 			if (isSuccess) {
 				obj.put(new String("Message"), "Success");
-				Global.loggedInUser = null;
+				//Global.loggedInUser = null;
 			} else {
 				obj.put(new String("Message"), "Failure");
 			}

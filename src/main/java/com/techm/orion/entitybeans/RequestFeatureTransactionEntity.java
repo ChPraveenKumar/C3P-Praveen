@@ -32,6 +32,19 @@ public class RequestFeatureTransactionEntity {
 	@Column(name = "t_request_ver", length = 5)
 	private Double tRequestVersion;
 
+	@OneToOne(cascade = { CascadeType.ALL })
+	@JoinColumn(name = "t_master_feature_id")
+	private MasterFeatureEntity tMasterFeatureId;
+	
+	
+	public MasterFeatureEntity gettMasterFeatureId() {
+		return tMasterFeatureId;
+	}
+
+	public void settMasterFeatureId(MasterFeatureEntity tMasterFeatureId) {
+		this.tMasterFeatureId = tMasterFeatureId;
+	}
+
 	public TemplateFeatureEntity gettFeatureId() {
 		return tFeatureId;
 	}

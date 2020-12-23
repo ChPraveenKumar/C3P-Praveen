@@ -20,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,7 +29,6 @@ import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.VendorDetails;
-
 import com.techm.orion.repositories.CredentialManagementRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestDetailsImportRepo;
@@ -267,5 +267,14 @@ public class CredentialMgmtController {
 		return new ResponseEntity(obj, HttpStatus.OK);
 	}
 
+	@GET
+	@RequestMapping(value = "/profiles", method = RequestMethod.GET, produces = "application/json")
+	public Response getProfiles(@RequestParam String type) {
+
+		List<CredentialManagementEntity> credentialManagementList = new ArrayList<CredentialManagementEntity>();
+		credentialManagementList=credentialManagementRepo.findByProfileType(type);
+		return Response.status(200).entity(credentialManagementList).build();
+
+	}
 
 }

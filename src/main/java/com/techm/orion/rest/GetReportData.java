@@ -32,10 +32,13 @@ import com.google.gson.Gson;
 import com.techm.orion.dao.RequestDetails;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
+import com.techm.orion.repositories.MasterCharacteristicsRepository;
+import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.ReportDetailsService;
 import com.techm.orion.utility.ShowCPUUsage;
@@ -55,7 +58,14 @@ public class GetReportData implements Observer {
 
 	@Autowired
 	RequestInfoDetailsDao requestDao;
+	
+	@Autowired
+	RequestInfoDao requestInfoDao;
 
+	@Autowired
+	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
+
+	
 	@POST
 	@RequestMapping(value = "/getReportDataforTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -168,7 +178,17 @@ public class GetReportData implements Observer {
 					// dilevary milestones will be null
 				}
 
-			} else {
+			} 
+			else if(createConfigRequestDCM.getTestType().equalsIgnoreCase("instantiate"))
+			{
+				List<ResourceCharacteristicsHistoryEntity>list=resourceCharHistoryRepo.findBySoRequestId(createConfigRequestDCM.getRequestId());
+				for(ResourceCharacteristicsHistoryEntity item: list)
+				{
+					jsonMessage=jsonMessage+item.getRcName()+" :"+item.getRcValue()+"\n";
+				}
+				
+			}
+			else {
 				jsonMessage = reportDetailsService.getDetailsForReport(createConfigRequestDCM, requestinfo);
 			}
 
@@ -805,55 +825,57 @@ public class GetReportData implements Observer {
 		int failed = 0;
 		int total = 0;
 		int cancelled = 0;
-
+		String userRole = null;
+		
 		try {
 
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(requestType);
 			String request = json.get("requestType").toString();
+			userRole = json.get("userRole").toString();
 			if (request.equals("overview")) {
-				completed = dcmConfigService.getStatusForSpecificRequestType(null, "Success");
-				failed = dcmConfigService.getStatusForSpecificRequestType(null, "failure");
-				inProgress = dcmConfigService.getStatusForSpecificRequestType(null, "In Progress");
-				scheduled = dcmConfigService.getStatusForSpecificRequestType(null, "Scheduled");
+				completed = dcmConfigService.getStatusForSpecificRequestType(null, "Success", userRole);
+				failed = dcmConfigService.getStatusForSpecificRequestType(null, "failure", userRole);
+				inProgress = dcmConfigService.getStatusForSpecificRequestType(null, "In Progress", userRole);
+				scheduled = dcmConfigService.getStatusForSpecificRequestType(null, "Scheduled", userRole);
 				int holdReqs = dcmConfigService.getHoldRequests();
-				List<RequestInfoSO> allDetails = dcmConfigService.getAllDetails();
+				List<RequestInfoSO> allDetails = dcmConfigService.getAllDetails(userRole);
 				total = allDetails.size();
 
 			} else if (request.equals("networkAudit")) {
-				completed = dcmConfigService.getStatusForSpecificRequestType("NA%", "Success");
-				failed = dcmConfigService.getStatusForSpecificRequestType("NA%", "failure");
-				inProgress = dcmConfigService.getStatusForSpecificRequestType("NA%", "In Progress");
-				scheduled = dcmConfigService.getStatusForSpecificRequestType("NA%", "Scheduled");
-				total = dcmConfigService.getRequestTypeData("NA%");
+				completed = dcmConfigService.getStatusForSpecificRequestType("NA%", "Success", userRole);
+				failed = dcmConfigService.getStatusForSpecificRequestType("NA%", "failure", userRole);
+				inProgress = dcmConfigService.getStatusForSpecificRequestType("NA%", "In Progress", userRole);
+				scheduled = dcmConfigService.getStatusForSpecificRequestType("NA%", "Scheduled", userRole);
+				total = dcmConfigService.getRequestTypeData("NA%", userRole);
 
 			} else if (request.equals("backUp")) {
-				completed = dcmConfigService.getStatusForSpecificRequestType("BU%", "Success");
-				failed = dcmConfigService.getStatusForSpecificRequestType("BU%", "failure");
-				inProgress = dcmConfigService.getStatusForSpecificRequestType("BU%", "In Progress");
-				scheduled = dcmConfigService.getStatusForSpecificRequestType("BU%", "Scheduled");
-				total = dcmConfigService.getRequestTypeData("BU%");
+				completed = dcmConfigService.getStatusForSpecificRequestType("BU%", "Success", userRole);
+				failed = dcmConfigService.getStatusForSpecificRequestType("BU%", "failure", userRole);
+				inProgress = dcmConfigService.getStatusForSpecificRequestType("BU%", "In Progress", userRole);
+				scheduled = dcmConfigService.getStatusForSpecificRequestType("BU%", "Scheduled", userRole);
+				total = dcmConfigService.getRequestTypeData("BU%", userRole);
 
 			} else if (request.equals("configuration")) {
-				completed = dcmConfigService.getStatusForSpecificRequestType("SR%", "Success");
-				failed = dcmConfigService.getStatusForSpecificRequestType("SR%", "failure");
-				inProgress = dcmConfigService.getStatusForSpecificRequestType("SR%", "In Progress");
-				scheduled = dcmConfigService.getStatusForSpecificRequestType("SR%", "Scheduled");
-				total = dcmConfigService.getRequestTypeData("SR%");
+				completed = dcmConfigService.getStatusForSpecificRequestType("SR%", "Success", userRole);
+				failed = dcmConfigService.getStatusForSpecificRequestType("SR%", "failure", userRole);
+				inProgress = dcmConfigService.getStatusForSpecificRequestType("SR%", "In Progress", userRole);
+				scheduled = dcmConfigService.getStatusForSpecificRequestType("SR%", "Scheduled", userRole);
+				total = dcmConfigService.getRequestTypeData("SR%", userRole);
 
 			} else if (request.equals("firmwareUpgrade")) {
-				completed = dcmConfigService.getStatusForSpecificRequestType("OS%", "Success");
-				failed = dcmConfigService.getStatusForSpecificRequestType("OS%", "failure");
-				inProgress = dcmConfigService.getStatusForSpecificRequestType("OS%", "In Progress");
-				scheduled = dcmConfigService.getStatusForSpecificRequestType("OS%", "Scheduled");
-				total = dcmConfigService.getRequestTypeData("OS%");
+				completed = dcmConfigService.getStatusForSpecificRequestType("OS%", "Success", userRole);
+				failed = dcmConfigService.getStatusForSpecificRequestType("OS%", "failure", userRole);
+				inProgress = dcmConfigService.getStatusForSpecificRequestType("OS%", "In Progress", userRole);
+				scheduled = dcmConfigService.getStatusForSpecificRequestType("OS%", "Scheduled", userRole);
+				total = dcmConfigService.getRequestTypeData("OS%", userRole);
 
 			} else if (request.equals("testOnly")) {
-				completed = dcmConfigService.getStatusForSpecificRequestType("TS%", "Success");
-				failed = dcmConfigService.getStatusForSpecificRequestType("TS%", "failure");
-				inProgress = dcmConfigService.getStatusForSpecificRequestType("TS%", "In Progress");
-				scheduled = dcmConfigService.getStatusForSpecificRequestType("TS%", "Scheduled");
-				total = dcmConfigService.getRequestTypeData("TS%");
+				completed = dcmConfigService.getStatusForSpecificRequestType("TS%", "Success", userRole);
+				failed = dcmConfigService.getStatusForSpecificRequestType("TS%", "failure", userRole);
+				inProgress = dcmConfigService.getStatusForSpecificRequestType("TS%", "In Progress", userRole);
+				scheduled = dcmConfigService.getStatusForSpecificRequestType("TS%", "Scheduled", userRole);
+				total = dcmConfigService.getRequestTypeData("TS%", userRole);
 
 			}
 
@@ -958,7 +980,7 @@ public class GetReportData implements Observer {
 					createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 			logger.info(testAndDiagnosis);
 			Set<String> setOfTestBundle = new HashSet<>();
-			if (testAndDiagnosis != null && !testAndDiagnosis.equals("")) {
+			if (testAndDiagnosis != null && !testAndDiagnosis.contains("null")) {
 				org.json.simple.JSONArray testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
 				org.json.simple.JSONArray bundleNamesArray = null;
 				for (int i = 0; i < testArray.size(); i++) {
@@ -1103,9 +1125,9 @@ public class GetReportData implements Observer {
 				healthCheckArray.put(pow);*/
 
 				// obj.put("osUpgradeStatus", "1");
-				obj.put("preVersionInfo", "12.4");
+				obj.put("preVersionInfo", "");
 
-				obj.put("postVersionInfo", "12.5");
+				obj.put("postVersionInfo", "");
 
 				obj.put("Statusmessage", "Device upgraded Succesfully");
 
@@ -1115,7 +1137,7 @@ public class GetReportData implements Observer {
 			} else if (type.equalsIgnoreCase("SLGB")) {
 				obj = dao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
 			} else {
-				obj = dao.getStatusForCustomerReport(createConfigRequestDCM);
+				obj = requestInfoDao.getStatusForCustomerReport(createConfigRequestDCM);
 			}
 
 			/*
