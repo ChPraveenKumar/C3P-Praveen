@@ -29,6 +29,17 @@ public class MasterOIDEntity {
 
 	@Column(name = "oid_m_display_name", length = 1)
 	private String oidDisplayName;
+	
+	@Column(name = "oid_m_scope_flag", length = 1)
+	private String oidScopeFlag;
+
+	public String getOidScopeFlag() {
+		return oidScopeFlag;
+	}
+
+	public void setOidScopeFlag(String oidScopeFlag) {
+		this.oidScopeFlag = oidScopeFlag;
+	}
 
 	@Column(name = "oid_m_for_vendor", length = 45)
 	private String oidVendor;
