@@ -1424,6 +1424,14 @@ public class DcmConfigService {
 		num = requestInfoDao.getRequestTpyeData(requestType);
 		return num;
 	}
+	
+	/* Overloaded method for user information and Get Request using Request Type */
+	public int getRequestTypeData(String requestType, String userRole) {
+		int num = 0;
+		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		num = requestInfoDao.getRequestTpyeData(requestType, userRole);
+		return num;
+	}
 
 	/* Overloaded method for user information and Get Request using Request Type */
 	public int getRequestTypeData(String requestType, String userRole) {

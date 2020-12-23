@@ -8684,6 +8684,130 @@ public class RequestInfoDao {
 
 		return requestInfoList;
 	}
+	
+	/* Overload method for user information and getAll request for Request Type */
+	public int getRequestTpyeData(String requestType, String userRole) {
+		int num = 0;
+		String query = null;
+		ResultSet rs = null;
+		if (userRole.equalsIgnoreCase("seuser")) {
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ? and request_creator_name=?;";
+		} else if (userRole.equalsIgnoreCase("feuser")) {
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ? and RequestOwner=?;";
+
+		} else if (userRole.equalsIgnoreCase("admin")) {
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ?;";
+
+		}
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			ps.setString(1, requestType);
+			if (!userRole.equalsIgnoreCase("admin")) {
+				ps.setString(2, userRole);
+			}
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				num = rs.getInt("total");
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getRequestTpyeData method "
+					+ exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+		return num;
+	}
+	
+	// Overload method for passing user information
+	public List<RequestInfoSO> getAllResquestsFromDB(String userRole) {
+		String query = null;
+		if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
+			query = "SELECT * FROM requestinfoso WHERE request_status NOT IN('Cancelled') and RequestOwner=? and alphanumeric_req_id rlike'SLGC|SLGF|SLGT|SNRC|SNNC|SNNA|SLGB'";
+		} else if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
+			query = "SELECT * FROM requestinfoso WHERE request_status NOT IN('Cancelled') and request_creator_name=? and alphanumeric_req_id rlike'SLGC|SLGF|SLGT|SNRC|SNNC|SNNA|SLGB'";
+
+		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
+			// query =
+			// "SELECT * FROM requestinfoso WHERE request_status NOT
+			// IN('Cancelled') and
+			// alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT * FROM requestinfoso WHERE (request_status NOT IN('Cancelled') AND import_status IS NULL) OR import_status IN('Success')";
+		}
+
+		ResultSet rs = null;
+		RequestInfoSO request = null;
+		List<RequestInfoSO> requestInfoList = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection
+						.prepareStatement(query);) {
+			rs = preparedStmt.executeQuery();
+			requestInfoList = new ArrayList<RequestInfoSO>();
+			int id;
+			while (rs.next()) {
+				request = new RequestInfoSO();
+				id = (rs.getInt("request_info_id"));
+
+				String type = rs.getString("alphanumeric_req_id").substring(
+						0,
+						Math.min(rs.getString("alphanumeric_req_id").length(),
+								4));
+
+				if (!(type.equals("SLGB"))) {
+					request.setOs(rs.getString("Os"));
+					request.setBanner(rs.getString("banner"));
+					request.setDeviceName(rs.getString("device_name"));
+					request.setModel(rs.getString("model"));
+					request.setRegion(rs.getString("region"));
+					request.setService(rs.getString("service"));
+					request.setHostname(rs.getString("hostname"));
+					request.setOsVersion(rs.getString("os_version"));
+					request.setEnablePassword(rs.getString("enable_password"));
+					request.setVrfName(rs.getString("vrf_name"));
+					request.setIsAutoProgress(rs.getBoolean("isAutoProgress"));
+					Timestamp d = rs.getTimestamp("date_of_processing");
+					request.setDateOfProcessing((covnertTStoString(d)));
+					request.setVendor(rs.getString("vendor"));
+					request.setCustomer(rs.getString("customer"));
+					request.setSiteid(rs.getString("siteid"));
+					request.setStatus(rs.getString("request_status"));
+					request.setManagementIp(rs.getString("managementIp"));
+					request.setDisplay_request_id(rs
+							.getString("alphanumeric_req_id"));
+					request.setImportsource(rs.getString("importsource"));
+					request.setDeviceType(rs.getString("device_type"));
+					request.setVpn(rs.getString("vpn"));
+					request.setRequest_id(rs.getInt("request_info_id"));
+					request.setRequest_version(rs.getDouble("request_version"));
+					request.setRequest_parent_version(rs
+							.getDouble("request_parent_version"));
+					request.setRequest_creator_name(rs
+							.getString("request_creator_name"));
+					request.setElapsed_time(rs
+							.getString("request_elapsed_time"));
+
+					Timestamp d1 = rs.getTimestamp("end_date_of_processing");
+					if (d1 != null) {
+						request.setEndDateofProcessing(covnertTStoString(d1));
+					}
+					request.setRequest_assigned_to(rs.getString("RequestOwner"));
+
+					request.setMisArPeSO(getMisArPeSO(id));
+					request.setInternetLcVrf(getInternetLcVrf(id));
+					request.setDeviceInterfaceSO(getDeviceInterfaceSO(id));
+
+					requestInfoList.add(request);
+				}
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getAllResquestsFromDB method "
+					+ exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+
+		return requestInfoList;
+
+	}
 
 	/* Overload method for user information and getAll request for Request Type */
 	public int getRequestTpyeData(String requestType, String userRole) {
