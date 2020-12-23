@@ -1432,15 +1432,6 @@ public class DcmConfigService {
 		num = requestInfoDao.getRequestTpyeData(requestType, userRole);
 		return num;
 	}
-
-	/* Overloaded method for user information and Get Request using Request Type */
-	public int getRequestTypeData(String requestType, String userRole) {
-		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		num = requestInfoDao.getRequestTpyeData(requestType, userRole);
-		return num;
-	}
-
 	/* Get Request using Request Type and Request Status */
 	public int getStatusForSpecificRequestType(String requestType,
 			String requestStatus, String userRole) {
