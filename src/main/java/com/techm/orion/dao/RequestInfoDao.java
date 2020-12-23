@@ -47,6 +47,7 @@ import com.techm.orion.connection.DBUtil;
 import com.techm.orion.entitybeans.BatchIdEntity;
 import com.techm.orion.entitybeans.CertificationTestResultEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
+import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.entitybeans.TestBundling;
 import com.techm.orion.entitybeans.TestDetail;
@@ -76,6 +77,7 @@ import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.pojo.UserValidationResultDetailPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.service.CertificationTestResultService;
 import com.techm.orion.utility.TSALabels;
@@ -94,6 +96,10 @@ public class RequestInfoDao {
 	private CertificationTestResultService certificationTestService;
 	@Autowired
 	private ServiceOrderRepo serviceOrderRepo;
+	
+	@Inject
+	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
+
 	/* SQL information */
 	private static final String INSERT_REQUEST_INFOSO = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
 			+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -916,6 +922,7 @@ public class RequestInfoDao {
 					flags = new ReoprtFlags();
 					flags.setRequestId(resultSet.getString("request_id"));
 					flags.setStart_test(resultSet.getInt("start_test"));
+					flags.setInstantiate(resultSet.getInt("instantiation"));
 					flags.setNetwork_test(resultSet.getInt("network_test"));
 					flags.setHealth_checkup(resultSet.getInt("health_checkup"));
 					flags.setGenerate_config(resultSet
@@ -6348,7 +6355,7 @@ public class RequestInfoDao {
 	/* Method Overloading for UIRevamp */
 	public Map<String, String> insertRequestInDB(RequestInfoPojo requestInfoSO) {
 		Map<String, String> hmap = new HashMap<String, String>();
-		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id, customer = null, siteName = null, family = null, siteId = null, vendor = null, deviceType = null, selectedFileFeatures=null, configGenerationMethods=null;
+		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id, customer = null, siteName = null, family = null, siteId = null, vendor = null, deviceType = null, selectedFileFeatures = null, configGenerationMethods = null;
 		String request_creator_name = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
 		String networktype = null, fileName = null, apiCallType = null;
@@ -6427,7 +6434,14 @@ public class RequestInfoDao {
 					alphaneumeric_req_id = "SLGM-"
 							+ UUID.randomUUID().toString().toUpperCase();
 
-				} else {
+				} else if (requestInfoSO.getRequestType().equalsIgnoreCase(
+						"SNAI")) {
+					alphaneumeric_req_id = "SNAI-"
+							+ UUID.randomUUID().toString().toUpperCase();
+
+				}
+
+				else {
 					alphaneumeric_req_id = "SLGC-"
 							+ UUID.randomUUID().toString().toUpperCase();
 				}
@@ -6545,10 +6559,12 @@ public class RequestInfoDao {
 			} else {
 				selectedFileFeatures = "";
 			}
-			
+
 			if (requestInfoSO.getConfigurationGenerationMethods() != null
-					&& !requestInfoSO.getConfigurationGenerationMethods().isEmpty()) {
-				configGenerationMethods = requestInfoSO.getConfigurationGenerationMethods();
+					&& !requestInfoSO.getConfigurationGenerationMethods()
+							.isEmpty()) {
+				configGenerationMethods = requestInfoSO
+						.getConfigurationGenerationMethods();
 			} else {
 				configGenerationMethods = "";
 			}
@@ -6569,6 +6585,10 @@ public class RequestInfoDao {
 			}
 
 			if (hostname != "") {
+				if(hostname.contains(":::"))
+				{
+					hostname=hostname.split(":::")[0];
+				}
 				requestEntity.setHostName(hostname);
 			}
 
@@ -7029,6 +7049,8 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray othersArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray networkAuditArray = new org.json.simple.JSONArray();
+		org.json.simple.JSONArray instantiationArray = new org.json.simple.JSONArray();
+
 		certificationTestPojo1 = getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "preValidate");
@@ -7318,14 +7340,37 @@ public class RequestInfoDao {
 				networkAuditArray.add(dynamicTestResultArray4.get(i));
 			}
 		}
-		obj.put("Prevalidation", prevalidationArray);
+		if(request.getAlphanumericReqId().startsWith("SNAI"))
+		{
+			org.json.simple.JSONObject itemObject=null;
+			List<ResourceCharacteristicsHistoryEntity>list=resourceCharHistoryRepo.findBySoRequestId(request.getAlphanumericReqId());
+			for(ResourceCharacteristicsHistoryEntity item: list)
+			{
+				itemObject=new org.json.simple.JSONObject();
+				itemObject.put("testname", item.getRcName());
+				itemObject.put("CollectedValue", item.getRcValue());
+				instantiationArray.add(itemObject);
+			}
+		}
+	
 		if (request.getAlphanumericReqId() != null
-				&& !request.getAlphanumericReqId().startsWith("SLGA")) {
+				&& !request.getAlphanumericReqId().startsWith("SLGA") && !request.getAlphanumericReqId().startsWith("SNAI")) {
 			obj.put("Network", networkArray);
 			obj.put("Health_Check", healthArray);
 		}
+		if(request.getAlphanumericReqId() != null
+				 && !request.getAlphanumericReqId().startsWith("SNAI"))
+		{
+		obj.put("Prevalidation", prevalidationArray);
 		obj.put("Others", othersArray);
 		obj.put("NetworkAudit", networkAuditArray);
+		}
+		if(request.getAlphanumericReqId() != null
+				 && request.getAlphanumericReqId().startsWith("SNAI"))
+		{
+			obj.put("Instantiation", instantiationArray);
+
+		}
 		return obj;
 
 	}
@@ -8673,6 +8718,130 @@ public class RequestInfoDao {
 		return num;
 	}
 	
+	// Overload method for passing user information
+	public List<RequestInfoSO> getAllResquestsFromDB(String userRole) {
+		String query = null;
+		if (Global.loggedInUser.equalsIgnoreCase("feuser")) {
+			query = "SELECT * FROM requestinfoso WHERE request_status NOT IN('Cancelled') and RequestOwner=? and alphanumeric_req_id rlike'SLGC|SLGF|SLGT|SNRC|SNNC|SNNA|SLGB'";
+		} else if (Global.loggedInUser.equalsIgnoreCase("seuser")) {
+			query = "SELECT * FROM requestinfoso WHERE request_status NOT IN('Cancelled') and request_creator_name=? and alphanumeric_req_id rlike'SLGC|SLGF|SLGT|SNRC|SNNC|SNNA|SLGB'";
+
+		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
+			// query =
+			// "SELECT * FROM requestinfoso WHERE request_status NOT
+			// IN('Cancelled') and
+			// alphanumeric_req_id rlike'SR|OS'";
+			query = "SELECT * FROM requestinfoso WHERE (request_status NOT IN('Cancelled') AND import_status IS NULL) OR import_status IN('Success')";
+		}
+
+		ResultSet rs = null;
+		RequestInfoSO request = null;
+		List<RequestInfoSO> requestInfoList = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection
+						.prepareStatement(query);) {
+			rs = preparedStmt.executeQuery();
+			requestInfoList = new ArrayList<RequestInfoSO>();
+			int id;
+			while (rs.next()) {
+				request = new RequestInfoSO();
+				id = (rs.getInt("request_info_id"));
+
+				String type = rs.getString("alphanumeric_req_id").substring(
+						0,
+						Math.min(rs.getString("alphanumeric_req_id").length(),
+								4));
+
+				if (!(type.equals("SLGB"))) {
+					request.setOs(rs.getString("Os"));
+					request.setBanner(rs.getString("banner"));
+					request.setDeviceName(rs.getString("device_name"));
+					request.setModel(rs.getString("model"));
+					request.setRegion(rs.getString("region"));
+					request.setService(rs.getString("service"));
+					request.setHostname(rs.getString("hostname"));
+					request.setOsVersion(rs.getString("os_version"));
+					request.setEnablePassword(rs.getString("enable_password"));
+					request.setVrfName(rs.getString("vrf_name"));
+					request.setIsAutoProgress(rs.getBoolean("isAutoProgress"));
+					Timestamp d = rs.getTimestamp("date_of_processing");
+					request.setDateOfProcessing((covnertTStoString(d)));
+					request.setVendor(rs.getString("vendor"));
+					request.setCustomer(rs.getString("customer"));
+					request.setSiteid(rs.getString("siteid"));
+					request.setStatus(rs.getString("request_status"));
+					request.setManagementIp(rs.getString("managementIp"));
+					request.setDisplay_request_id(rs
+							.getString("alphanumeric_req_id"));
+					request.setImportsource(rs.getString("importsource"));
+					request.setDeviceType(rs.getString("device_type"));
+					request.setVpn(rs.getString("vpn"));
+					request.setRequest_id(rs.getInt("request_info_id"));
+					request.setRequest_version(rs.getDouble("request_version"));
+					request.setRequest_parent_version(rs
+							.getDouble("request_parent_version"));
+					request.setRequest_creator_name(rs
+							.getString("request_creator_name"));
+					request.setElapsed_time(rs
+							.getString("request_elapsed_time"));
+
+					Timestamp d1 = rs.getTimestamp("end_date_of_processing");
+					if (d1 != null) {
+						request.setEndDateofProcessing(covnertTStoString(d1));
+					}
+					request.setRequest_assigned_to(rs.getString("RequestOwner"));
+
+					request.setMisArPeSO(getMisArPeSO(id));
+					request.setInternetLcVrf(getInternetLcVrf(id));
+					request.setDeviceInterfaceSO(getDeviceInterfaceSO(id));
+
+					requestInfoList.add(request);
+				}
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getAllResquestsFromDB method "
+					+ exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+
+		return requestInfoList;
+
+	}
+
+	/* Overload method for user information and getAll request for Request Type */
+	public int getRequestTpyeData(String requestType, String userRole) {
+		int num = 0;
+		String query = null;
+		ResultSet rs = null;
+		if (userRole.equalsIgnoreCase("seuser")) {
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ? and request_creator_name=?;";
+		} else if (userRole.equalsIgnoreCase("feuser")) {
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ? and RequestOwner=?;";
+
+		} else if (userRole.equalsIgnoreCase("admin")) {
+			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ?;";
+
+		}
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement ps = connection.prepareStatement(query);) {
+			ps.setString(1, requestType);
+			if (!userRole.equalsIgnoreCase("admin")) {
+				ps.setString(2, userRole);
+			}
+			rs = ps.executeQuery();
+			while (rs.next()) {
+				num = rs.getInt("total");
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getRequestTpyeData method "
+					+ exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+		return num;
+	}
+
 	// Overload method for passing user information
 	public List<RequestInfoSO> getAllResquestsFromDB(String userRole) {
 		String query = null;

@@ -32,10 +32,13 @@ import com.google.gson.Gson;
 import com.techm.orion.dao.RequestDetails;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
+import com.techm.orion.repositories.MasterCharacteristicsRepository;
+import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.ReportDetailsService;
 import com.techm.orion.utility.ShowCPUUsage;
@@ -55,7 +58,14 @@ public class GetReportData implements Observer {
 
 	@Autowired
 	RequestInfoDetailsDao requestDao;
+	
+	@Autowired
+	RequestInfoDao requestInfoDao;
 
+	@Autowired
+	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
+
+	
 	@POST
 	@RequestMapping(value = "/getReportDataforTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -168,7 +178,17 @@ public class GetReportData implements Observer {
 					// dilevary milestones will be null
 				}
 
-			} else {
+			} 
+			else if(createConfigRequestDCM.getTestType().equalsIgnoreCase("instantiate"))
+			{
+				List<ResourceCharacteristicsHistoryEntity>list=resourceCharHistoryRepo.findBySoRequestId(createConfigRequestDCM.getRequestId());
+				for(ResourceCharacteristicsHistoryEntity item: list)
+				{
+					jsonMessage=jsonMessage+item.getRcName()+" :"+item.getRcValue()+"\n";
+				}
+				
+			}
+			else {
 				jsonMessage = reportDetailsService.getDetailsForReport(createConfigRequestDCM, requestinfo);
 			}
 
@@ -960,7 +980,7 @@ public class GetReportData implements Observer {
 					createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 			logger.info(testAndDiagnosis);
 			Set<String> setOfTestBundle = new HashSet<>();
-			if (testAndDiagnosis != null && !testAndDiagnosis.equals("")) {
+			if (testAndDiagnosis != null && !testAndDiagnosis.contains("null")) {
 				org.json.simple.JSONArray testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
 				org.json.simple.JSONArray bundleNamesArray = null;
 				for (int i = 0; i < testArray.size(); i++) {
@@ -1117,7 +1137,7 @@ public class GetReportData implements Observer {
 			} else if (type.equalsIgnoreCase("SLGB")) {
 				obj = dao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
 			} else {
-				obj = dao.getStatusForCustomerReport(createConfigRequestDCM);
+				obj = requestInfoDao.getStatusForCustomerReport(createConfigRequestDCM);
 			}
 
 			/*

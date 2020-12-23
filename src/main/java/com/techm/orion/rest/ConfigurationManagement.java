@@ -133,7 +133,7 @@ public class ConfigurationManagement {
 			if (json.get("networkType") != null && !json.get("networkType").toString().isEmpty()) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equals("VNF")) {
-					if (!requestType.equalsIgnoreCase("Test")) {
+					if (!requestType.equalsIgnoreCase("Test") && !requestType.equalsIgnoreCase("SNAI")) {
 						DeviceDiscoveryEntity device = deviceRepo
 								.findByDHostName(json.get("hostname").toString().toUpperCase());
 						requestType = device.getdConnect();

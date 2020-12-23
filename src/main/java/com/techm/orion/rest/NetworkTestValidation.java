@@ -87,7 +87,7 @@ public class NetworkTestValidation extends Thread {
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
-		if (!((type.equals("SLGB")))) {
+	    if (!((type.equals("SLGB") || (type.equals("SNAI") )))){
 
 			try {
 

@@ -95,6 +95,9 @@ public class RequestInfoDetailsDao {
 		} else if (field.equalsIgnoreCase("network_audit")) {
 			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
 		}
+		else if (field.equalsIgnoreCase("instantiation")) {
+			query = "update webserviceinfo set instantiation = ? where alphanumeric_req_id = ? and version = ? ";
+		}
 
 		try(Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {			
@@ -606,6 +609,9 @@ public class RequestInfoDetailsDao {
 		} else if (field.equalsIgnoreCase("network_audit")) {
 			query = "select network_audit as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		}
+		else if (field.equalsIgnoreCase("instantiation")) {
+			query = "select instantiation as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+		}
 
 		try(Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
@@ -624,4 +630,10 @@ public class RequestInfoDetailsDao {
 		return status;
 	}
 
+	public List<ResourceCharacteristicsHistoryEntity>getListResourcesfromChHistory(String requestid)
+	{
+		List<ResourceCharacteristicsHistoryEntity>list=new ArrayList<>();
+		list=resourceCharHistoryRepo.findBySoRequestId(requestid);
+		return list;
+	}
 }

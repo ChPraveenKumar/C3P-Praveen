@@ -93,6 +93,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();
 			List<RequestInfoEntity> requestDetailEntity1 = new ArrayList<RequestInfoEntity>();
 			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+			if(!RequestId.contains("SNAI-"))
+			{
 			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "Application_test", "4", "In Progress");
@@ -430,6 +432,14 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				}
 
 			}
+			}
+			else
+			{
+				value = true;
+
+				jsonArray = new Gson().toJson(value);
+				obj.put(new String("output"), jsonArray);
+			}
 		} catch (Exception e1) {
 			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
@@ -531,6 +541,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();		
 
 			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+			if(!RequestId.contains("SNAI-"))
+			{	
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "4", "In Progress");
@@ -720,6 +732,14 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 				}
 
+			}
+			}
+			else
+			{
+				value = true;
+
+				jsonArray = new Gson().toJson(value);
+				obj.put(new String("output"), jsonArray);
 			}
 
 		} catch (Exception ex) {
