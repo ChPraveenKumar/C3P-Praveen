@@ -2419,7 +2419,7 @@ public class DcmConfigService {
 					if (configGenMtds.contains("Instantiation")) {
 						// Generate instantiation report
 						instantiationSOIDUpdate(requestInfoSOList,request);
-					} else if (configGenMtds.contains("Template")) {
+					} else if (configGenMtds.contains("Template") || configGenMtds.contains("Non-Template")) {
 						templateFileCreator(requestInfoSOList,request);
 					}
 				}
