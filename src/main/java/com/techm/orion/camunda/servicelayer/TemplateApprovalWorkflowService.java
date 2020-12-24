@@ -5,6 +5,8 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -29,10 +31,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.entitybeans.Notification;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.rest.CamundaServiceTemplateApproval;
 import com.techm.orion.rest.GetTemplateConfigurationData;
@@ -47,7 +51,9 @@ public class TemplateApprovalWorkflowService implements Observer {
 	
 	@Autowired
 	private TemplateFeatureRepo templateFeatureRepo;
-
+	
+	@Autowired
+	private NotificationRepo notificationRepo;
 	
 	@POST
 	@RequestMapping(value = "/saveTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -96,13 +102,22 @@ public class TemplateApprovalWorkflowService implements Observer {
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONParser parser = new JSONParser();
 		String templateId = null, templateVersion = null, status = null, approverComment = null,featureID=null, featureVersion=null;
-		String userTaskId = null;
+		String userTaskId = null, userName = null;
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
+		Date date = new Date();
+		Timestamp timestamp = new Timestamp(date.getTime());
+		Calendar cal = Calendar.getInstance();
 
-		int response = 0;
+		int response = 0, notifId = 0;
 		try {
 			JSONObject json = (JSONObject) parser.parse(string);
-			if(json.containsKey("status") && !json.get("status").toString().isEmpty())
+			if(json.get("notif_id") != null)
+				notifId = Integer.parseInt(json.get("notif_id").toString());
+			if (json.get("userName") != null) 
+				userName = json.get("userName").toString();
+			
+			Notification notificationData = notificationRepo.findById(notifId);
+			if(json.get("status")!=null && json.containsKey("status") && !json.get("status").toString().isEmpty())
 			{
 				status = json.get("status").toString();
 			}
@@ -110,7 +125,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 			{
 				status="";
 			}
-			if(json.containsKey("comment") && !json.get("comment").toString().isEmpty())
+			if(json.get("comment")!=null && json.containsKey("comment") && !json.get("comment").toString().isEmpty())
 			{
 				approverComment = json.get("comment").toString();
 			}
@@ -130,18 +145,21 @@ public class TemplateApprovalWorkflowService implements Observer {
 				}
 				
 				//get feature id based of command type
-				List<TemplateFeatureEntity>listFeatures=templateFeatureRepo.findMasterFIdByCommand(templateidForFeatureExtraction);
-				
-				listFeatures.forEach(feature -> {
-					MasterFeatureEntity masterFeature=masterFeatureRepository.findByFId(feature.getMasterFId());
-					if(masterFeature.getfStatus().equalsIgnoreCase("Pending"))
-					{
-					masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(), json.get("comment").toString() , "Admin", "Suser",Timestamp.valueOf(LocalDateTime.now()), feature.getMasterFId(), "1.0");
+				List<TemplateFeatureEntity> listFeatures = templateFeatureRepo
+						.findMasterFIdByCommand(templateidForFeatureExtraction);
+
+				for (TemplateFeatureEntity feature : listFeatures) {
+					MasterFeatureEntity masterFeature = masterFeatureRepository.findByFId(feature.getMasterFId());
+					if ("Pending".equalsIgnoreCase(masterFeature.getfStatus())) {
+						masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(),
+								json.get("comment").toString(), notificationData.getNotifFromUser(), userName,
+								Timestamp.valueOf(LocalDateTime.now()), feature.getMasterFId(), "1.0");
 					}
-				});
+				}
 				response = templateSaveFlowService.updateTemplateStatus(templateId, templateVersion, status,
 						approverComment);
-				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(json.get("templateid").toString().replace("-", "_"), templateVersion);
+				userTaskId = templateSaveFlowService
+						.getUserTaskIdForTemplate(json.get("templateid").toString().replace("-", "_"), templateVersion);
 				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
 			}
 			else
@@ -163,7 +181,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 				}
 				featureVersion = numberFormat.format(Double.parseDouble(json.get("featureversion").toString()));
 				
-				response=masterFeatureRepository.updateMasterFeatureStatus(status, comment , "Admin", "Suser",Timestamp.valueOf(LocalDateTime.now()), featureID, featureVersion);
+				response=masterFeatureRepository.updateMasterFeatureStatus(status, comment , notificationData.getNotifFromUser(), userName,Timestamp.valueOf(LocalDateTime.now()), featureID, featureVersion);
 				
 				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(featureID, featureVersion);
 				
@@ -171,7 +189,24 @@ public class TemplateApprovalWorkflowService implements Observer {
 				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
 				
 			}
-			
+			notificationData.setNotifStatus("Completed");
+			notificationData.setNotifCompletedby(userName);
+			notificationRepo.save(notificationData);
+			Notification newNotification = new Notification();
+			newNotification.setNotifFromUser(notificationData.getNotifCompletedby());
+			newNotification.setNotifToUser(notificationData.getNotifFromUser());
+			newNotification.setNotifType(notificationData.getNotifType());
+			newNotification.setNotifCreatedDate(timestamp);
+			newNotification.setNotifReference(notificationData.getNotifReference());
+			newNotification.setNotifLabel(notificationData.getNotifReference() +" : " + status);
+			newNotification.setNotifMessage(status);
+			newNotification.setNotifPriority("1");
+			newNotification.setNotifStatus("Pending");
+			cal.setTimeInMillis(timestamp.getTime());
+		    cal.add(Calendar.DAY_OF_MONTH, 30);
+		    timestamp = new Timestamp(cal.getTime().getTime());
+			newNotification.setNotifExpiryDate(timestamp);
+			notificationRepo.save(newNotification);
 			// camundaService.initiateApprovalFlow(templateId, templateVersion, "Admin");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block

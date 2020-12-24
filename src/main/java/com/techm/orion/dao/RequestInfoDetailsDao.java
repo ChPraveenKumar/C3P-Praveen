@@ -34,18 +34,17 @@ import com.techm.orion.entitybeans.ResourceCharacteristicsEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
+import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.mapper.RequestInfoMappper;
-import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
-import com.techm.orion.repositories.AttribCreateConfigRepo;
-import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.repositories.ResourceCharacteristicsRepository;
 import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
+import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.PythonServices;
@@ -64,11 +63,9 @@ public class RequestInfoDetailsDao {
 	@Autowired
 	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo; 
 	@Autowired
-	private DeviceDiscoveryRepository deviceDiscoveryRepository;
-	@Autowired
 	private ResourceCharacteristicsRepository resourceCharRepo; 
 	@Autowired
-	private AttribCreateConfigRepo attribCreateConfigRepo;
+	private UserManagementRepository userManagementRepository;
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
@@ -237,21 +234,6 @@ public class RequestInfoDetailsDao {
 				entity.setRcRequestStatus("Failure");
 				resourceCharHistoryRepo.save(entity);
 			});
-			// INSERT OR update table after Configuration Request gets Failed
-			for (ResourceCharacteristicsHistoryEntity attributes : charHistoryEnity) {
-				ResourceCharacteristicsEntity resourceCharEntity = resourceCharRepo
-						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(attributes.getDeviceId(), attributes.getRcFeatureId(),
-								attributes.getRcCharacteristicId());
-				if (resourceCharEntity == null)
-					resourceCharEntity = new ResourceCharacteristicsEntity();
-				resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());
-				resourceCharEntity.setRcCharacteristicId(attributes.getRcCharacteristicId());
-				resourceCharEntity.setRcCharacteristicName(attributes.getRcName());
-				resourceCharEntity.setRcCharacteristicValue(attributes.getRcValue());
-				resourceCharEntity.setDeviceId(attributes.getDeviceId());
-				resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
-				resourceCharRepo.save(resourceCharEntity);
-			}
 		} else {
 			try {
 				Double finalVersion = Double.valueOf(version);
@@ -291,7 +273,7 @@ public class RequestInfoDetailsDao {
 				pojo.setHostname(entity.getHostName());
 				pojo.setStatus(entity.getStatus());
 				pojo.setNetworkType(entity.getNetworkType());
-
+				pojo.setRequestCreatorName(entity.getRequestCreatorName());
 			}
 		} catch (Exception e) {
 			logger.error(e);
@@ -349,13 +331,15 @@ public class RequestInfoDetailsDao {
 	public boolean changeRequestOwner(String requestid, String version, String owner) {
 		boolean result = false;
 		int res = 0;
-
+		String userRole = null;
 		try {
 			Double finalVersion = Double.valueOf(version);
-
-			if (owner.equalsIgnoreCase("seuser")) {
+			List<UserManagementEntity> userRoleDetails = userManagementRepository.findByUserName(owner);
+			if(!userRoleDetails.isEmpty())
+				userRole = userRoleDetails.get(0).getRole();
+			if (userRole.equalsIgnoreCase("seuser")) {
 				res = reository.updateRequestOwner(owner, false, true, requestid, finalVersion);
-			} else if (owner.equalsIgnoreCase("feuser")) {
+			} else if (userRole.equalsIgnoreCase("feuser")) {
 				res = reository.updateRequestOwner(owner, true, false, requestid, finalVersion);
 			}
 			if (res != 0) {

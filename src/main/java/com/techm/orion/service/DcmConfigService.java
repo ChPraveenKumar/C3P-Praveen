@@ -3179,7 +3179,7 @@ public class DcmConfigService {
 								history.setRcCharacteristicId(attributes
 										.getCharacteristicId());
 								history.setRcName(attributes.getLabel());
-								history.setRcName(attributes.getLabelValue());
+								history.setRcValue(attributes.getLabelValue());
 								history.setDeviceId(did);
 								history.setRcRequestStatus("InProgress");
 								history.setRcDeviceHostname(requestInfoSO

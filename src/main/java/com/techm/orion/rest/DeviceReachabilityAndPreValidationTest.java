@@ -7,7 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -30,12 +33,15 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.Notification;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.RequestDetailsImportRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.PrevalidationTestServiceImpl;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.PingTest;
@@ -63,6 +69,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 	@Autowired
 	private PostUpgradeHealthCheck postUpgradeHealthCheck;
+	
+	@Autowired
+	private NotificationRepo notificationRepo;
+	@Autowired
+	private UserManagementRepository userManagementRepository;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -600,6 +611,18 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					if (type.equalsIgnoreCase("SLGC") ) {
 						String response = "";
 						String responseDownloadPath = "";
+						Notification notificationEntity = new Notification();
+						StringBuilder builder = new StringBuilder();
+						String sUserListData = "";
+						Date date = new Date();
+						Timestamp timestampValue = new Timestamp(date.getTime());
+						Calendar cal = Calendar.getInstance();
+						List<String> sUserList = userManagementRepository.findByWorkGroup();
+						for(String suserList : sUserList)
+						{
+							builder.append(suserList).append(",");
+						}	
+						sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
 						try {
 							response = invokeFtl.generateBasicConfigurationFile(requestinfo);
 							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
@@ -629,9 +652,26 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "feuser");
 							requestDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "In Progress");
+							notificationEntity.setNotifFromUser(requestinfo.getRequestCreatorName());
+							notificationEntity.setNotifToUser(sUserListData);
+							notificationEntity.setNotifType("FE Flow");
+							notificationEntity.setNotifCreatedDate(timestampValue);
+							notificationEntity.setNotifReference(requestinfo.getAlphanumericReqId() + "-V"
+									+ Double.toString(requestinfo.getRequestVersion()));
+							notificationEntity.setNotifLabel(requestinfo.getAlphanumericReqId() + "-V"
+									+ Double.toString(requestinfo.getRequestVersion())+" : "+"Request initiated");
+							notificationEntity.setNotifMessage("Request initiated");
+							notificationEntity.setNotifPriority("1");
+							notificationEntity.setNotifToWorkgroup("FE_USER_ALL");
+							notificationEntity.setNotifStatus("Pending");
+							cal.setTimeInMillis(timestampValue.getTime());
+						    cal.add(Calendar.DAY_OF_MONTH, 30);
+						    timestampValue = new Timestamp(cal.getTime().getTime());
+							notificationEntity.setNotifExpiryDate(timestampValue);
+							notificationRepo.save(notificationEntity);
 							//Code to initiate FE Workflow
 							CamundaServiceFEWorkflow feworkflow=new CamundaServiceFEWorkflow();
-							feworkflow.initiateFEWorkflow(requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()));
+							feworkflow.initiateFEWorkflow(requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()), "FE_USER_ALL");
 							value = false;
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);

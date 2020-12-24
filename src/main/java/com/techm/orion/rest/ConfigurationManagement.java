@@ -112,7 +112,7 @@ public class ConfigurationManagement {
 			RequestInfoPojo configReqToSendToC3pCode = new RequestInfoPojo();
 
 			if (json.containsKey("userName"))
-				userName = json.get("userRole").toString();
+				userName = json.get("userName").toString();
 
 			if (json.containsKey("userRole"))
 				userRole = json.get("userRole").toString();
@@ -240,7 +240,7 @@ public class ConfigurationManagement {
 				request_creator_name = json.get("request_creator_name").toString();
 			} else {
 
-				request_creator_name = userRole;
+				request_creator_name = userName;
 			}
 			// String request_creator_name="seuser";
 			if (request_creator_name.isEmpty()) {

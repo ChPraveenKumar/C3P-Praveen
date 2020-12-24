@@ -81,6 +81,9 @@ public class TemplateManagementNewService {
 
 	@Autowired
 	private AttribCreateConfigResponceMapper attribCreateConfigResponceMapper;
+	
+	@Autowired
+	private GetTemplateConfigurationData templateSaveFlowService;
 
 	public List<GetTemplateMngmntActiveDataPojo> getDataForRightPanelOnEditTemplate(String templateId,
 			boolean selectAll) throws Exception {
@@ -164,7 +167,6 @@ public class TemplateManagementNewService {
 		String templateId = null, templateVersion = null;
 		DecimalFormat numberFormat = new DecimalFormat("#.#");
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
-		GetTemplateConfigurationData templateSaveFlowService = new GetTemplateConfigurationData();
 		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
 		String templateAndVesion = json.get("templateid").toString() + "_V" + json.get("templateVersion").toString();
 		boolean ifTemplateAlreadyPresent = templateDao.checkTemplateVersionAlredyexist(templateAndVesion);
