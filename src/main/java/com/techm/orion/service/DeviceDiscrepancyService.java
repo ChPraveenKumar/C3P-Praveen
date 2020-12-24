@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,8 +41,6 @@ public class DeviceDiscrepancyService {
 	private DeviceDiscoveryRepository discoveryRepo;
 	@Autowired
 	private DiscoveryDashboardRepository dashboardRepo;
-	@Autowired
-	private DcmConfigService dcmConfigService;
 	@Autowired
 	private ForkDiscrepancyResultRepository forkDiscrepancyResultRepository;
 	@Autowired
@@ -605,6 +604,104 @@ public class DeviceDiscrepancyService {
 		discrepancy.put("oid", deviceDiscrepancy.getHdrOIDNo());
 		discrepancy.put("childOid", "");
 		return discrepancy;
+	}
+	@SuppressWarnings("unchecked")
+	public JSONObject getMasterOids(String request) throws ParseException {
+		String userName = null, userRole = null;
+		JSONArray array = new JSONArray();
+		JSONObject jsonObject = new JSONObject();
+		JSONObject masterOids = new JSONObject();
+		JSONParser parser = new JSONParser();
+		jsonObject = (JSONObject) parser.parse(request);
+		userName = jsonObject.get("userName").toString();
+		userRole = jsonObject.get("userRole").toString();
+		List<MasterOIDEntity> masterOIDEntity = masterOIDRepository.findByOidCreatedBy(userName);
+		masterOIDEntity.forEach(masterEntity -> {
+			JSONObject object = new JSONObject();
+			object.put("vendor", masterEntity.getOidVendor());
+			object.put("oid", masterEntity.getOidNo());
+			object.put("category", masterEntity.getOidCategory());
+			object.put("rfAttrib", masterEntity.getOidAttrib());
+			object.put("label", masterEntity.getOidDisplayName());
+			object.put("inScope", masterEntity.getOidScopeFlag());
+			object.put("networkType", masterEntity.getOidNetworkType());
+			object.put("sub", masterEntity.getOidForkFlag());
+			object.put("compare", masterEntity.getOidCompareFlag());
+			object.put("default", masterEntity.getOidDefaultFlag());
+			array.add(object);
+		});
+		masterOids.put("output", array);
+		return masterOids;
+	}
 
+	@SuppressWarnings({ "unchecked" })
+	public JSONObject saveMasterOids(String request) throws ParseException {
+		JSONParser parser = new JSONParser();
+		JSONObject json = new JSONObject();
+		json = (JSONObject) parser.parse(request);
+		MasterOIDEntity masterOid = new MasterOIDEntity();
+		JSONObject object = new JSONObject();
+		boolean isAdd = false;
+		JSONArray jsonArray = (JSONArray) (json.get("oidDetails"));
+		if (json.containsKey("userName")) {
+			masterOid.setOidCreatedBy(json.get("userName").toString());
+		}
+		for (int i = 0; i < jsonArray.size(); i++) {
+			JSONObject oidObject = (JSONObject) jsonArray.get(i);
+			if (oidObject.get("vendor") != null) {
+				masterOid.setOidVendor(oidObject.get("vendor").toString());
+			}
+			if (oidObject.get("oid") != null) {
+				masterOid.setOidNo(oidObject.get("oid").toString());
+			}
+			if (oidObject.get("category") != null) {
+				masterOid.setOidCategory(oidObject.get("category").toString());
+			}
+			if (oidObject.get("rfAttrib") != null) {
+				masterOid.setOidAttrib(oidObject.get("rfAttrib").toString());
+			}
+			if (oidObject.get("label") != null) {
+				masterOid.setOidDisplayName(oidObject.get("label").toString());
+			}
+			if (oidObject.get("inScope") != null) {
+				masterOid.setOidScopeFlag(oidObject.get("inScope").toString());
+			}
+			if (oidObject.get("networkType") != null) {
+				masterOid.setOidNetworkType(oidObject.get("networkType").toString());
+			}
+			if (oidObject.get("sub") != null) {
+				masterOid.setOidForkFlag(oidObject.get("sub").toString());
+			}
+			if (oidObject.get("compare") != null) {
+				masterOid.setOidCompareFlag(oidObject.get("compare").toString());
+			}
+			if (oidObject.get("default") != null) {
+				masterOid.setOidDefaultFlag(oidObject.get("default").toString());
+			}
+
+			List<MasterOIDEntity> masterEntity = masterOIDRepository.findByOidNo(masterOid.getOidNo());
+			if (masterEntity.isEmpty()) {
+				MasterOIDEntity masterOidsEntity = new MasterOIDEntity();
+				masterOidsEntity.setOidNo(masterOid.getOidNo());
+				masterOidsEntity.setOidVendor(masterOid.getOidVendor());
+				masterOidsEntity.setOidCategory(masterOid.getOidCategory());
+				// entity.setOidAttrib(masterOid.getOidAttrib());
+				masterOidsEntity.setOidDisplayName(masterOid.getOidDisplayName());
+				masterOidsEntity.setOidScopeFlag(masterOid.getOidScopeFlag());
+				masterOidsEntity.setOidNetworkType(masterOid.getOidNetworkType());
+				masterOidsEntity.setOidForkFlag(masterOid.getOidForkFlag());
+				masterOidsEntity.setOidCompareFlag(masterOid.getOidCompareFlag());
+				masterOidsEntity.setOidDefaultFlag(masterOid.getOidDefaultFlag());
+				masterOidsEntity.setOidCreatedBy(masterOid.getOidCreatedBy());
+				masterOIDRepository.save(masterOidsEntity);
+				isAdd = true;
+			}
+		}
+		if (isAdd) {
+			object.put("output", "Oids added successfully");
+		} else {
+			object.put("output", "Oids is Duplicate");
+		}
+		return object;
 	}
 }
