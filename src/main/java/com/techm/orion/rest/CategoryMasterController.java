@@ -12,7 +12,6 @@ import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,7 +22,7 @@ import com.techm.orion.entitybeans.CategoryMasterEntity;
 import com.techm.orion.repositories.CategoryDropDownDao;
 import com.techm.orion.repositories.CategoryMasterDao;
 import com.techm.orion.service.CategoryMasterService;
-import com.techm.orion.service.TemplateManagementNewService;
+import com.techm.orion.service.DeviceDiscrepancyService;
 
 @RestController
 @RequestMapping
@@ -36,7 +35,7 @@ public class CategoryMasterController {
 	private CategoryMasterDao categoryMasterDao;
 	
 	@Autowired
-	private TemplateManagementNewService templateManagementNewService;
+	private DeviceDiscrepancyService deviceDiscrepancyService;
 	
 	@Autowired
 	private CategoryDropDownDao categoryDropDownDao;
@@ -50,7 +49,7 @@ public class CategoryMasterController {
 	@RequestMapping(value = "/masterOid", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getMasterOids(@RequestBody String request) throws ParseException {
 		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject json = templateManagementNewService.getMasterOids(request);
+		JSONObject json = deviceDiscrepancyService.getMasterOids(request);
 		if (json != null) {
 			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
 		} else {
@@ -62,7 +61,7 @@ public class CategoryMasterController {
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getCategoryList", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	public ResponseEntity<JSONObject> getCategory(@RequestBody String request) throws ParseException {
+	public ResponseEntity<JSONObject> getCategories(@RequestBody String request) throws ParseException {
 		JSONObject json = new JSONObject();
 		JSONArray array = new JSONArray();
 		String userName = null, userRole = null, category = null;
@@ -71,7 +70,7 @@ public class CategoryMasterController {
 		userName = json.get("userName").toString();
 		userRole = json.get("userRole").toString();
 		category = json.get("category").toString();
-		CategoryMasterEntity categoryMasterEntity = categoryMasterDao.findCategoryId(category);
+		CategoryMasterEntity categoryMasterEntity = categoryMasterDao.findByCategoryName(category);
 		List<CategoryDropDownEntity> categoryDropDownEntity = categoryDropDownDao
 				.findAllByCategoryId(categoryMasterEntity.getId());
 		categoryDropDownEntity.forEach(categoryDropEntity -> {
@@ -89,7 +88,7 @@ public class CategoryMasterController {
 	@RequestMapping(value = "/saveMasterOIds", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> saveMasterOIdInfo(@RequestBody String request) throws ParseException {
 		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject json = templateManagementNewService.saveMasterOids(request);
+		JSONObject json = deviceDiscrepancyService.saveMasterOids(request);
 		if (json != null) {
 			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
 		} else {

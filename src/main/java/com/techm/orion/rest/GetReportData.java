@@ -54,19 +54,16 @@ public class GetReportData implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetReportData.class);
 
 	@Autowired
-	RequestInfoDetailsDao requestDao;
+	private RequestInfoDetailsDao requestDao;
 	
 	@Autowired
-	RequestInfoDao requestInfoDao;
-	
-	@Autowired
-	RequestDetails requestDetails;
+	private RequestDetails requestDetails;
 
 	@Autowired
 	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
 	
 	@Autowired
-	RfoDecomposedRepository rfoDecomposedRepository;
+	private RfoDecomposedRepository rfoDecomposedRepository;
 
 	
 	@POST
@@ -978,7 +975,6 @@ public class GetReportData implements Observer {
 	@ResponseBody
 	public ResponseEntity<JSONObject> customerFinalReport(@RequestBody String request)
 			throws ParseException, SQLException {
-		ResponseEntity<JSONObject> response = null;
 		JSONObject json = new JSONObject();
 		JSONParser parser = new JSONParser();
 		json = (JSONObject) parser.parse(request);
@@ -990,20 +986,11 @@ public class GetReportData implements Observer {
 		JSONObject jsonOb = new JSONObject();
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
 		for (int i = 0; i < rfoDecomposedEntity.size(); i++) {
-			JSONObject jsonObject = new JSONObject();
-			JSONObject Object = null;
-			try {
-				Object = requestDetails.customerReportUIRevamp(rfoDecomposedEntity.get(i).getOdRequestId(), testType,
+			JSONObject reportResponse = null;
+				reportResponse = requestDetails.customerReportUIRevamp(rfoDecomposedEntity.get(i).getOdRequestId(), testType,
 						version);
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			System.out.println("jsonObject value: " + Object);
-			array.add(Object);
+			System.out.println("jsonObject value: " + reportResponse);
+			array.add(reportResponse);
 		}
 		jsonOb.put("output", array);
 		return new ResponseEntity<JSONObject>(jsonOb, HttpStatus.OK);

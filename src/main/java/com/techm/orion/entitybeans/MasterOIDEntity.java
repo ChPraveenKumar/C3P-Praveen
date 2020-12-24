@@ -190,5 +190,4 @@ public class MasterOIDEntity {
 	public void setOidHerf(String oidHerf) {
 		this.oidHerf = oidHerf;
 	}
-
 }

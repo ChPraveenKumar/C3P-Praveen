@@ -27,5 +27,5 @@ public interface MasterOIDRepository extends JpaRepository<MasterOIDEntity, Long
 
 	List<MasterOIDEntity> findByOidCreatedBy(String userName);
 
-	List<MasterOIDEntity> findByoidNo(String oidNo);
+	List<MasterOIDEntity> findByOidNo(String oidNo);
 }

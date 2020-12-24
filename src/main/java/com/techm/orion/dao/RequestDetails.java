@@ -1,7 +1,6 @@
 package com.techm.orion.dao;
 
 import java.sql.Connection;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,15 +24,12 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
-import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.pojo.CreateConfigRequest;
-import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.utility.ShowCPUUsage;
 import com.techm.orion.utility.ShowMemoryTest;
 import com.techm.orion.utility.ShowPowerTest;
-import com.techm.orion.utility.ShowVersionTest;
 
 /*
  * Owner: Rahul Tiwari Reason: Get configuration feature name and details from database
@@ -49,10 +45,10 @@ public class RequestDetails {
 	 */
 	
 	@Autowired
-	RfoDecomposedRepository rfoDecomposedRepository;
+	private RfoDecomposedRepository rfoDecomposedRepository;
 	
 	@Autowired
-	RequestInfoDetailsDao requestDao;
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -167,19 +163,17 @@ public class RequestDetails {
 	}
 	public JSONObject customerReportUIRevamp(String requestID, String testType, String version)
 			throws ParseException, SQLException {
-		JSONArray jsonArray = new JSONArray();
-		RequestInfoDao dao = new RequestInfoDao();
+		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		RequestDetails requestDetailsDao = new RequestDetails();
 		JSONParser parser = new JSONParser();
 		RequestInfoPojo createConfigRequestDCM = new RequestInfoPojo();
-		RequestInfoPojo requestinfo = new RequestInfoPojo();
 		createConfigRequestDCM.setAlphanumericReqId(requestID);
 		createConfigRequestDCM.setTestType(testType);
-		String stringVersion = version;
-		createConfigRequestDCM.setRequestVersion(Double.parseDouble(stringVersion));
+		//String stringVersion = version;
+		createConfigRequestDCM.setRequestVersion(Double.parseDouble(version));
 		Double requestVersion = createConfigRequestDCM.getRequestVersion();
-		if (!stringVersion.contains(".")) {
-			stringVersion = stringVersion + ".0";
+		if (!version.contains(".")) {
+			version = version + ".0";
 		}
 		createConfigRequestDCM.setRequestVersion(requestVersion);
 
@@ -207,9 +201,9 @@ public class RequestDetails {
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
 		JSONObject object = new JSONObject();
 
-		if (type.equalsIgnoreCase("SLGF")) {
+		if ("SLGF".equalsIgnoreCase(type)) {
 			CreateConfigRequest req = new CreateConfigRequest();
-			req = dao.getOSDilevarySteps(createConfigRequestDCM.getAlphanumericReqId(), stringVersion);
+			req = requestInfoDao.getOSDilevarySteps(createConfigRequestDCM.getAlphanumericReqId(), version);
 			JSONArray os_upgrade_dilevary_step_array = new JSONArray();
 			JSONObject stepObj = new JSONObject();
 			if (req.getOs_upgrade_dilevary_post_login_flag() != null) {
@@ -260,13 +254,12 @@ public class RequestDetails {
 			ShowCPUUsage cpuUsage = new ShowCPUUsage();
 			ShowMemoryTest memoryInfo = new ShowMemoryTest();
 			ShowPowerTest powerTest = new ShowPowerTest();
-			ShowVersionTest versionTest = new ShowVersionTest();
-			RequestInfoPojo reqDetail = requestDao.getRequestDetailTRequestInfoDBForVersion(
+			RequestInfoPojo reqDetail = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
 					createConfigRequestDCM.getAlphanumericReqId(),
 					Double.toString(createConfigRequestDCM.getRequestVersion()));
 
-			CreateConfigRequest createConfigRequest = dao
-					.getRequestDetailFromDBForVersion(createConfigRequestDCM.getAlphanumericReqId(), stringVersion);
+			CreateConfigRequest createConfigRequest = requestInfoDao
+					.getRequestDetailFromDBForVersion(createConfigRequestDCM.getAlphanumericReqId(), version);
 
 			createConfigRequest.setHostname(reqDetail.getHostname());
 			createConfigRequest.setSiteid(reqDetail.getSiteid());
@@ -346,10 +339,10 @@ public class RequestDetails {
 			obj.put("OsupgradeSummary", os_upgrade_dilevary_step_array.toString());
 			obj.put("healthCheckSummary", healthCheckArray.toString());
 
-		} else if (type.equalsIgnoreCase("SLGB")) {
-			obj = dao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
+		} else if ("SLGB".equalsIgnoreCase(type)) {
+			obj = requestInfoDao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
 		} else {
-			obj = dao.getStatusForCustomerReport(createConfigRequestDCM);
+			obj = requestInfoDao.getStatusForCustomerReport(createConfigRequestDCM);
 		}
 
 		/*
@@ -358,11 +351,11 @@ public class RequestDetails {
 		 * getAlphanumericReqId(), stringVersion);
 		 */
 
-		RequestInfoPojo reqDetail = requestDao.getRequestDetailTRequestInfoDBForVersion(
+		RequestInfoPojo reqDetail = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
 				createConfigRequestDCM.getAlphanumericReqId(),
 				Double.toString(createConfigRequestDCM.getRequestVersion()));
 		Map<String, String> resultForFlag = new HashMap<String, String>();
-		resultForFlag = dao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion());
+		resultForFlag = requestInfoDao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion());
 		String flagForPrevalidation = "";
 		String flagFordelieverConfig = "";
 		for (Map.Entry<String, String> entry : resultForFlag.entrySet()) {
