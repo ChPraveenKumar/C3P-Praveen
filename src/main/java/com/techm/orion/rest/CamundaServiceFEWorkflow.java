@@ -22,7 +22,7 @@ public class CamundaServiceFEWorkflow {
 	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@SuppressWarnings("unchecked")
-	public void initiateFEWorkflow(String templateId, String version)
+	public void initiateFEWorkflow(String templateId, String version, String approver)
 			throws IOException, JSONException {
 
 		CamundaServiceFEWorkflow.loadProperties();
@@ -35,10 +35,13 @@ public class CamundaServiceFEWorkflow {
 		JSONObject obj2 = new JSONObject();
 
 		JSONObject variableObj = new JSONObject();
+		JSONObject userNameValueObj = new JSONObject();
 
 		obj.put(new String("value"), version);
+		userNameValueObj.put(new String("value"), approver);
 
 		variableObj.put(new String("version"), obj);
+		variableObj.put(new String("approver"), userNameValueObj);
 
 		obj2.put(new String("businessKey"), templateId);
 		obj2.put(new String("variables"), variableObj);
