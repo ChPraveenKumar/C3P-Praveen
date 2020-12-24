@@ -2419,7 +2419,7 @@ public class DcmConfigService {
 					if (configGenMtds.contains("Instantiation")) {
 						// Generate instantiation report
 						instantiationSOIDUpdate(requestInfoSOList,request);
-					} else if (configGenMtds.contains("Template")) {
+					} else if (configGenMtds.contains("Template") || configGenMtds.contains("Non-Template")) {
 						templateFileCreator(requestInfoSOList,request);
 					}
 				}
@@ -3179,7 +3179,7 @@ public class DcmConfigService {
 								history.setRcCharacteristicId(attributes
 										.getCharacteristicId());
 								history.setRcName(attributes.getLabel());
-								history.setRcName(attributes.getLabelValue());
+								history.setRcValue(attributes.getLabelValue());
 								history.setDeviceId(did);
 								history.setRcRequestStatus("InProgress");
 								history.setRcDeviceHostname(requestInfoSO

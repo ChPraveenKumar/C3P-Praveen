@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -37,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.entitybeans.Notification;
 import com.techm.orion.entitybeans.Series;
 import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
@@ -47,11 +49,12 @@ import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.GenericAtrribPojo;
 import com.techm.orion.pojo.PredefinedAtrribPojo;
 import com.techm.orion.pojo.PredefinedMappedAtrribPojo;
-import com.techm.orion.repositories.BasicConfigurationRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.SeriesRepository;
+import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.responseEntity.GetAttribResponseEntity;
 import com.techm.orion.service.AttribSevice;
 import com.techm.orion.service.CategoryMasterService;
@@ -82,7 +85,9 @@ public class MasterFeatureController {
 	@Autowired
 	private AttribCreateConfigResponceMapper attribCreateConfigResponceMapper;
 	@Autowired
-	private BasicConfigurationRepository basicConfigRepo;
+	private NotificationRepo notificationRepo;
+	@Autowired
+	private UserManagementRepository userManagementRepository;
 	
 	/*
 	 * To get Validation, Category and UI component list.
@@ -129,9 +134,24 @@ public class MasterFeatureController {
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONObject json;
+		String userName = null;
 		try {
 			json = (JSONObject) parser.parse(configRequest);
+			if(json.get("userName") !=null)
+				userName = json.get("userName").toString();
 			masterFeature = setMasterFeatureData(json);
+			Notification notificationEntity = new Notification();
+			StringBuilder builder = new StringBuilder();
+			String sUserListData = "";
+			Date date = new Date();
+			Timestamp timestampValue = new Timestamp(date.getTime());
+			Calendar cal = Calendar.getInstance();
+			List<String> sUserList = userManagementRepository.findByRole();
+			for(String suserList : sUserList)
+			{
+				builder.append(suserList).append(",");
+			}	
+			sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
 			// If it is basic config save commands to
 			// t_tpmgmt_m_basic_configuration else to
 			// c3p_template_master_command_list
@@ -165,8 +185,22 @@ public class MasterFeatureController {
 				saveMasterCharacteistics(json, masterFeature, ent.getfId());
 				saveComands(cmdArray, ent.getfId());
 				obj.put("output", "Feature Created");
+				notificationEntity.setNotifFromUser(json.get("userName").toString());
+				notificationEntity.setNotifToUser(sUserListData);
+				notificationEntity.setNotifType("Feature Approval");
+				notificationEntity.setNotifCreatedDate(timestampValue);
+				notificationEntity.setNotifReference(ent.getfId()+"_"+ent.getfName()+"-V"+"1.0");
+				notificationEntity.setNotifLabel(ent.getfId()+"_"+ent.getfName()+"-V"+"1.0"+" : "+ "Approval initiated");
+				notificationEntity.setNotifMessage("Approval initiated");
+				notificationEntity.setNotifPriority("1");
+				notificationEntity.setNotifStatus("Pending");
+				cal.setTimeInMillis(timestampValue.getTime());
+			    cal.add(Calendar.DAY_OF_MONTH, 30);
+			    timestampValue = new Timestamp(cal.getTime().getTime());
+				notificationEntity.setNotifExpiryDate(timestampValue);
+				notificationRepo.save(notificationEntity);
 				camundaService.initiateApprovalFlow(ent.getfId(), "1.0",
-						"Admin");
+						userName);
 
 			//}
 		} catch (ParseException e) {
@@ -393,7 +427,15 @@ public class MasterFeatureController {
 	}
 
 	private MasterFeatureEntity setMasterFeatureData(JSONObject json) {
+		StringBuilder builder = new StringBuilder();
+		String sUserListData = "";
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
+		List<String> sUserList = userManagementRepository.findByRole();
+		for(String suserList : sUserList)
+		{
+			builder.append(suserList).append(",");
+		}	
+		sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
 
 		if (json.containsKey("featureName")) {
 			masterFeature.setfName(json.get("featureName").toString());
@@ -433,7 +475,7 @@ public class MasterFeatureController {
 		masterFeature.setfVersion("1.0");
 		masterFeature.setfFlag("custom");
 		masterFeature.setfStatus("Pending");
-		masterFeature.setfOwner("suser");
+		masterFeature.setfOwner(sUserListData);
 		if (json.containsKey("userName")) 
 			masterFeature.setfCreatedBy(json.get("userName").toString());
 		Timestamp timestamp = new Timestamp(new Date().getTime());
@@ -470,6 +512,18 @@ public class MasterFeatureController {
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
 		JSONObject json;
 		try {
+			Notification notificationEntity = new Notification();
+			StringBuilder builder = new StringBuilder();
+			String sUserListData = "";
+			Date date = new Date();
+			Timestamp timestampValue = new Timestamp(date.getTime());
+			Calendar cal = Calendar.getInstance();
+			List<String> sUserList = userManagementRepository.findByRole();
+			for(String suserList : sUserList)
+			{
+				builder.append(suserList).append(",");
+			}	
+			sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
 			json = (JSONObject) parser.parse(configRequest);
 			masterFeature = setMasterFeatureData(json);
 			JSONArray cmdArray = (JSONArray) (json.get("commands"));
@@ -486,7 +540,21 @@ public class MasterFeatureController {
 							"Basic configuration for this series already exist");
 
 				} else {
-					saveconfiguartionData(json, masterFeature, series);
+					String featurId = saveconfiguartionData(json, masterFeature, series);
+					notificationEntity.setNotifFromUser(json.get("userName").toString());
+					notificationEntity.setNotifToUser(sUserListData);
+					notificationEntity.setNotifType("Feature Approval");
+					notificationEntity.setNotifCreatedDate(timestampValue);
+					notificationEntity.setNotifReference(featurId+"_"+masterFeature.getfName()+"-V"+"1.0");
+					notificationEntity.setNotifLabel(featurId+"_"+masterFeature.getfName()+"-V"+"1.0"+" : "+ "Approval initiated");
+					notificationEntity.setNotifMessage("Approval initiated");
+					notificationEntity.setNotifPriority("1");
+					notificationEntity.setNotifStatus("Pending");
+					cal.setTimeInMillis(timestampValue.getTime());
+				    cal.add(Calendar.DAY_OF_MONTH, 30);
+				    timestampValue = new Timestamp(cal.getTime().getTime());
+					notificationEntity.setNotifExpiryDate(timestampValue);
+					notificationRepo.save(notificationEntity);
 					obj.put("output", "Feature Created");
 				}
 
@@ -509,6 +577,20 @@ public class MasterFeatureController {
 				templateCommandJSONModel.setChecked(false);
 				templateCommandJSONModel.setCommands(commandPojoList);
 				obj.put("output", templateCommandJSONModel);
+				notificationEntity.setNotifFromUser(json.get("userName").toString());
+				notificationEntity.setNotifToUser(sUserListData);
+				notificationEntity.setNotifType("Feature Approval");
+				notificationEntity.setNotifCreatedDate(timestampValue);
+				notificationEntity.setNotifReference(ent.getfId()+"_"+ent.getfName()+"-V"+"1.0");
+				notificationEntity.setNotifLabel(ent.getfId()+"_"+ent.getfName()+"-V"+"1.0"+" : "+ "Approval initiated");
+				notificationEntity.setNotifMessage("Approval initiated");
+				notificationEntity.setNotifPriority("1");
+				notificationEntity.setNotifStatus("Pending");
+				cal.setTimeInMillis(timestampValue.getTime());
+			    cal.add(Calendar.DAY_OF_MONTH, 30);
+			    timestampValue = new Timestamp(cal.getTime().getTime());
+				notificationEntity.setNotifExpiryDate(timestampValue);
+				notificationRepo.save(notificationEntity);
 			}
 
 		} catch (ParseException e) {
@@ -640,13 +722,21 @@ public class MasterFeatureController {
 		JSONArray childList = null;
 		JSONObject json = null, jsonObj = null, attrJsonObj = null;
 		JSONParser parser = new JSONParser();
-		String featureid = null, version = null;
+		String featureid = null, version = null, userName = null;
+		Notification notificationData = null;
+		int notifId = 0;
 		try {
 			json = (JSONObject) parser.parse(request);
 			if (json.get("featureid") != null)
 				featureid = json.get("featureid").toString();
 			if (json.get("version") != null)
 				version = json.get("version").toString();
+			if (json.get("userName") != null) 
+				userName = json.get("userName").toString();
+			if(json.get("notif_id") != null && !json.get("notif_id").equals("")) {
+				notifId = Integer.parseInt(json.get("notif_id").toString());
+				notificationData = notificationRepo.findById(notifId);
+			}
 			childList = new JSONArray();
 			if (featureid != null && version != null) {
 				MasterFeatureEntity featureList = masterFeatureRepository.findByFIdAndFVersion(featureid, version);
@@ -713,6 +803,12 @@ public class MasterFeatureController {
 						jsonObj.put("commands", finalCammands);
 						obj.put(new String("entity"), jsonObj);
 					//}
+				}
+				if(notificationData !=null)
+				{
+					notificationData.setNotifStatus("Completed");
+					notificationData.setNotifCompletedby(userName);
+					notificationRepo.save(notificationData);
 				}
 			}
 		} catch (Exception exe) {

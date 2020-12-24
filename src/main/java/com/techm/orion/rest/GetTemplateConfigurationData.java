@@ -34,8 +34,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDao;
-import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.entitybeans.Notification;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
 import com.techm.orion.models.TemplateVersioningJSONModel;
 import com.techm.orion.pojo.CommandPojo;
@@ -43,9 +43,9 @@ import com.techm.orion.pojo.DeviceDetailsPojo;
 import com.techm.orion.pojo.GetTemplateMngmntPojo;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
-import com.techm.orion.repositories.BasicConfigurationRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementDetailsService;
 
@@ -60,11 +60,13 @@ public class GetTemplateConfigurationData implements Observer {
 	@Autowired
 	private MasterCommandsRepository masterCommandsRepo;
 	@Autowired
-	private BasicConfigurationRepository basicConfigRepo;
-	@Autowired
 	private MasterFeatureService masterFeatureService;
 	@Autowired 
 	private TemplateManagementDetailsService templateManagmntService;
+	@Autowired 
+	private TemplateManagementDao templateManagementDao;
+	@Autowired
+	private NotificationRepo notificationRepo;
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -341,7 +343,7 @@ public class GetTemplateConfigurationData implements Observer {
 		boolean saveComplete = false;
 		Map<String, String> tempIDafterSaveBasicDetails = null;
 		TemplateManagementDao dao = new TemplateManagementDao();
-		String versionToSave = null, userName = null;
+		String versionToSave = null, userName = null, userRole = null;
 		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
 		try {
 			tempIDafterSaveBasicDetails = new HashMap<String, String>();
@@ -356,6 +358,8 @@ public class GetTemplateConfigurationData implements Observer {
 
 			if (json.get("userName") != null) 
 				userName = json.get("userName").toString();
+			if (json.get("userRole") != null) 
+				userRole = json.get("userRole").toString();
 			String finalTemplate = json.get("templateData").toString();
 			String s = ")!" + '"' + '"' + "}";
 			finalTemplate = finalTemplate.replace("\\n", "\n");
@@ -413,11 +417,11 @@ public class GetTemplateConfigurationData implements Observer {
 				aliasName = json.get("aliasName").toString();
 			}
 			if (json.get("templateVersion") != null) {
-				tempIDafterSaveBasicDetails = dao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, templateVersion, comment, networkType, aliasName, userName);
+				tempIDafterSaveBasicDetails = templateManagementDao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
+						templateId, templateVersion, comment, networkType, aliasName, userName, userRole);
 			} else {
-				tempIDafterSaveBasicDetails = dao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, "1.0", comment, networkType, aliasName, userName);
+				tempIDafterSaveBasicDetails = templateManagementDao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
+						templateId, "1.0", comment, networkType, aliasName, userName, userRole);
 				getTemplateMngmntPojo.getTemplateid().substring(getTemplateMngmntPojo.getTemplateid().length() - 3);
 			}
 
@@ -665,13 +669,20 @@ public class GetTemplateConfigurationData implements Observer {
 		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
 		TemplateManagementDao dao = new TemplateManagementDao();
 		JSONObject jsonObj;
-		String templateId = null, userRole = null;
+		String templateId = null, userRole = null, userName = null;
+		int notifId =0;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
 			
 			if (json.get("userRole") != null) 
 				userRole = json.get("userRole").toString();
+			if (json.get("userName") != null) 
+				userName = json.get("userName").toString();
+			if(json.get("notif_id") != null)
+				notifId = Integer.parseInt(json.get("notif_id").toString());
+
+			Notification notificationData = notificationRepo.findById(notifId);
 			
 			if (Boolean.parseBoolean(json.get("isTemplate").toString())) {
 				if (json.containsKey("readFlag")) {
@@ -753,6 +764,8 @@ public class GetTemplateConfigurationData implements Observer {
 				String s = new Gson().toJson(listShow);
 				obj.put(new String("output"), s);
 				obj.put(new String("comment"), comment);
+				notificationData.setNotifReadby(userName);
+				notificationRepo.save(notificationData);
 			} else {
 				/* It is a feature get the commands of a feature */
 				MasterFeatureEntity featureList = masterFeatureRepository.findByFId(json.get("featureid").toString());
@@ -829,6 +842,8 @@ public class GetTemplateConfigurationData implements Observer {
 						String s = new Gson().toJson(listShow);
 						obj.put(new String("output"), s);
 						obj.put(new String("comment"), feature.getfComments());
+						notificationData.setNotifReadby(userName);
+						notificationRepo.save(notificationData);
 					}
 				}
 

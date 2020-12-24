@@ -32,6 +32,8 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.MasterAttributes;
+import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
+import com.techm.orion.entitybeans.Notification;
 import com.techm.orion.entitybeans.RequestFeatureTransactionEntity;
 import com.techm.orion.pojo.MileStones;
 import com.techm.orion.pojo.ReoprtFlags;
@@ -41,11 +43,9 @@ import com.techm.orion.repositories.AttribCreateConfigRepo;
 import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
-import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.RequestFeatureTransactionRepository;
 import com.techm.orion.utility.ReportMileStones;
-import com.techm.orion.entitybeans.MasterFeatureEntity;
-import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 
 @RestController
 @RequestMapping("/requestDetails")
@@ -68,12 +68,11 @@ public class RequestDetailsServiceWithVersion {
 
 	@Autowired
 	private ReportMileStones reportMileStones;
-
-	@Autowired
-	private MasterFeatureRepository masterFeatureRepository;
 	
 	@Autowired
 	private MasterCharacteristicsRepository masterCharachteristicsRepository;
+	@Autowired
+	private NotificationRepo notificationRepo;
 	
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -82,6 +81,8 @@ public class RequestDetailsServiceWithVersion {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 		String key = null, value = null, version = null, requestType = null, userName = null, userRole = null;
+		int notifId = 0;
+		Notification notificationData = null;
 		try {
 			Gson gson = new Gson();
 			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
@@ -96,8 +97,11 @@ public class RequestDetailsServiceWithVersion {
 				userName = json.get("userName").toString();
 			if(json.get("userRole") !=null)
 				userRole = json.get("userRole").toString();
+			if(json.get("notif_id") != null && !json.get("notif_id").equals("")) {
+				notifId = Integer.parseInt(json.get("notif_id").toString());
+				notificationData = notificationRepo.findById(notifId);
+			}
 			
-
 			if (value != null && !value.isEmpty()) {
 				try {
 					requestType = value.substring(0, 4);
@@ -128,7 +132,12 @@ public class RequestDetailsServiceWithVersion {
 
 					obj.put(new String("output"), jsonArray);
 					obj.put(new String("milestone"), showMilestone);
-
+					if(notificationData !=null)
+					{
+						notificationData.setNotifStatus("Completed");
+						notificationData.setNotifCompletedby(userName);
+						notificationRepo.save(notificationData);
+					}
 				} catch (Exception e) {
 					logger.error(e);
 				}

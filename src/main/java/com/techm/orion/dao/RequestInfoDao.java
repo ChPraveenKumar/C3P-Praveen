@@ -52,6 +52,7 @@ import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.entitybeans.TestBundling;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestRules;
+import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.pojo.AlertInformationPojo;
 import com.techm.orion.pojo.CertificationTestPojo;
 import com.techm.orion.pojo.ConfigurationDataValuePojo;
@@ -79,6 +80,7 @@ import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
+import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.CertificationTestResultService;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.UtilityMethods;
@@ -96,6 +98,8 @@ public class RequestInfoDao {
 	private CertificationTestResultService certificationTestService;
 	@Autowired
 	private ServiceOrderRepo serviceOrderRepo;
+	@Autowired
+	private UserManagementRepository userManagementRepository;
 	
 	@Inject
 	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
@@ -4111,18 +4115,22 @@ public class RequestInfoDao {
 	public boolean changeRequestOwner(String requestid, String version,
 			String owner) {
 		boolean result = false;
+		String userRole =null;
+		List<UserManagementEntity> userRoleDetails = userManagementRepository.findByUserName(owner);
 		String query = "update c3p_t_request_info set r_request_owner = ? , r_read_fe=?, r_read_se=? where r_alphanumeric_req_id = ? and r_request_version= ?";
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, owner);
-			if (owner.equalsIgnoreCase("seuser")) {
+			if(!userRoleDetails.isEmpty())
+				userRole = userRoleDetails.get(0).getRole();
+			if (userRole.equalsIgnoreCase("seuser")) {
 				preparedStmt.setInt(2, 1);
 				preparedStmt.setInt(3, 0);
-			} else if (owner.equalsIgnoreCase("feuser")) {
+			} else if (userRole.equalsIgnoreCase("feuser")) {
 				preparedStmt.setInt(2, 0);
 				preparedStmt.setInt(3, 1);
-			} else if (owner.equalsIgnoreCase("admin")) {
+			} else if (userRole.equalsIgnoreCase("admin")) {
 				preparedStmt.setInt(2, 1);
 				preparedStmt.setInt(3, 0);
 			}

@@ -128,4 +128,10 @@ public interface UserManagementRepository extends JpaRepository<UserManagementEn
 	
 	@Query("select userDetails from UserManagementEntity userDetails where userStatus = 1")
 	UserManagementEntity findByUserStatus();
+	
+	@Query("select userName from UserManagementEntity where role = 'suser'")
+	List<String> findByRole();
+	
+	@Query("select userName from UserManagementEntity where workGroup = 'FEUSER_ALL'")
+	List<String> findByWorkGroup();
 }
