@@ -804,6 +804,9 @@ public class ConfigurationManagement {
 						}
 					}
 				}
+				if (toSaveArray != null && !toSaveArray.isEmpty()) {
+					configReqToSendToC3pCode.setTestsSelected(toSaveArray.toString());
+				}
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
@@ -811,6 +814,9 @@ public class ConfigurationManagement {
 						userName, null);
 
 			} else {
+				if (toSaveArray != null && !toSaveArray.isEmpty()) {
+					configReqToSendToC3pCode.setTestsSelected(toSaveArray.toString());
+				}
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, null, null, userName, null);
