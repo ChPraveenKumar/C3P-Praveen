@@ -1,14 +1,12 @@
 package com.techm.orion.rest;
 
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -19,7 +17,10 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,16 +33,15 @@ import com.google.gson.Gson;
 import com.techm.orion.dao.RequestDetails;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
-import com.techm.orion.pojo.CreateConfigRequest;
+import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
+import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
+import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
+import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.ReportDetailsService;
-import com.techm.orion.utility.ShowCPUUsage;
-import com.techm.orion.utility.ShowMemoryTest;
-import com.techm.orion.utility.ShowPowerTest;
-import com.techm.orion.utility.ShowVersionTest;
 
 /*
  * Owner: Ruchita Salvi, Vivek Vidhate Module: Modified for Test Strategey Logic: To
@@ -54,8 +54,18 @@ public class GetReportData implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetReportData.class);
 
 	@Autowired
-	RequestInfoDetailsDao requestDao;
+	private RequestInfoDetailsDao requestDao;
+	
+	@Autowired
+	private RequestDetails requestDetails;
 
+	@Autowired
+	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
+	
+	@Autowired
+	private RfoDecomposedRepository rfoDecomposedRepository;
+
+	
 	@POST
 	@RequestMapping(value = "/getReportDataforTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -168,7 +178,17 @@ public class GetReportData implements Observer {
 					// dilevary milestones will be null
 				}
 
-			} else {
+			} 
+			else if(createConfigRequestDCM.getTestType().equalsIgnoreCase("instantiate"))
+			{
+				List<ResourceCharacteristicsHistoryEntity>list=resourceCharHistoryRepo.findBySoRequestId(createConfigRequestDCM.getRequestId());
+				for(ResourceCharacteristicsHistoryEntity item: list)
+				{
+					jsonMessage=jsonMessage+item.getRcName()+" :"+item.getRcValue()+"\n";
+				}
+				
+			}
+			else {
 				jsonMessage = reportDetailsService.getDetailsForReport(createConfigRequestDCM, requestinfo);
 			}
 
@@ -930,243 +950,49 @@ public class GetReportData implements Observer {
 
 	@POST
 	@RequestMapping(value = "/customerReport", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public Response customerReportUIRevamp(@RequestBody String configRequest) {
-		JSONObject obj = new JSONObject();
-		RequestInfoDao dao = new RequestInfoDao();
-		RequestDetails requestDetailsDao = new RequestDetails();
-		try {
-
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(configRequest);
-
-			RequestInfoPojo createConfigRequestDCM = new RequestInfoPojo();
-
-			RequestInfoPojo requestinfo = new RequestInfoPojo();
-			createConfigRequestDCM.setAlphanumericReqId(json.get("requestID").toString());
-			createConfigRequestDCM.setTestType(json.get("testType").toString());
-			String stringVersion = json.get("version").toString();
-			createConfigRequestDCM.setRequestVersion(Double.parseDouble(stringVersion));
-			Double requestVersion = createConfigRequestDCM.getRequestVersion();
-
-			if (!stringVersion.contains(".")) {
-				stringVersion = stringVersion + ".0";
-			}
-			createConfigRequestDCM.setRequestVersion(requestVersion);
-
-			String type = createConfigRequestDCM.getAlphanumericReqId().substring(0,
-					Math.min(createConfigRequestDCM.getAlphanumericReqId().length(), 4));
-			String testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(
-					createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
-			logger.info(testAndDiagnosis);
-			Set<String> setOfTestBundle = new HashSet<>();
-			if (testAndDiagnosis != null && !testAndDiagnosis.equals("")) {
-				org.json.simple.JSONArray testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
-				org.json.simple.JSONArray bundleNamesArray = null;
-				for (int i = 0; i < testArray.size(); i++) {
-					JSONObject jsonObj = (JSONObject) testArray.get(i);
-					bundleNamesArray = (org.json.simple.JSONArray) jsonObj.get("bundleName");
-					if (bundleNamesArray != null && bundleNamesArray.size() != 0) {
-						for (int k = 0; k < bundleNamesArray.size(); k++) {
-							setOfTestBundle.add((String) bundleNamesArray.get(k));
-						}
-					}
-
-				}
-			}
-			
-			if (type.equalsIgnoreCase("SLGF")) {
-				CreateConfigRequest req = new CreateConfigRequest();
-				req = dao.getOSDilevarySteps(createConfigRequestDCM.getAlphanumericReqId(), stringVersion);
-				JSONArray os_upgrade_dilevary_step_array = new JSONArray();
-				JSONObject stepObj = new JSONObject();
-				if (req.getOs_upgrade_dilevary_post_login_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Login");
-					stepObj.put("status", req.getOs_upgrade_dilevary_post_login_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_flash_size_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Flash size availability");
-					stepObj.put("status", req.getOs_upgrade_dilevary_flash_size_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_backup_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Back up");
-					stepObj.put("status", req.getOs_upgrade_dilevary_backup_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_os_download_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "OS Download");
-					stepObj.put("status", req.getOs_upgrade_dilevary_os_download_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_boot_system_flash_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Boot system flash");
-					stepObj.put("status", req.getOs_upgrade_dilevary_boot_system_flash_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_reload_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Reload");
-					stepObj.put("status", req.getOs_upgrade_dilevary_reload_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-				if (req.getOs_upgrade_dilevary_post_login_flag() != null) {
-					stepObj.clear();
-					stepObj.put("step", "Post login");
-					stepObj.put("status", req.getOs_upgrade_dilevary_post_login_flag());
-					os_upgrade_dilevary_step_array.put(stepObj);
-				}
-
-				// Logic for health checks
-				ShowCPUUsage cpuUsage = new ShowCPUUsage();
-				ShowMemoryTest memoryInfo = new ShowMemoryTest();
-				ShowPowerTest powerTest = new ShowPowerTest();
-				ShowVersionTest versionTest = new ShowVersionTest();
-				RequestInfoPojo reqDetail = requestDao.getRequestDetailTRequestInfoDBForVersion(
-						createConfigRequestDCM.getAlphanumericReqId(),
-						Double.toString(createConfigRequestDCM.getRequestVersion()));
-
-				CreateConfigRequest createConfigRequest = dao
-						.getRequestDetailFromDBForVersion(createConfigRequestDCM.getAlphanumericReqId(), stringVersion);
-
-				createConfigRequest.setHostname(reqDetail.getHostname());
-				createConfigRequest.setSiteid(reqDetail.getSiteid());
-				createConfigRequest.setManagementIp(reqDetail.getManagementIp());
-				createConfigRequest.setCustomer(reqDetail.getCustomer());
-				createConfigRequest.setModel(reqDetail.getModel());
-				createConfigRequest.setRegion(reqDetail.getRegion());
-
-				createConfigRequest.setPre_cpu_usage_percentage(cpuUsage.getCPUUsagePercentage(
-						createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Pre"));
-				createConfigRequest.setPre_memory_info(memoryInfo
-						.getMemoryUsed(createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Pre")
-						.toString());
-				createConfigRequest.setPre_power_info(powerTest.getPowerInfor(createConfigRequest.getHostname(),
-						createConfigRequest.getRegion(), "Pre"));
-				// createConfigRequest.setPre_version_info(versionTest.getVersion(createConfigRequest.getHostname(),createConfigRequest.getRegion(),"Pre"));
-
-				createConfigRequest.setPost_cpu_usage_percentage(cpuUsage.getCPUUsagePercentage(
-						createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Post"));
-				createConfigRequest.setPost_memory_info(memoryInfo
-						.getMemoryUsed(createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Post")
-						.toString());
-				createConfigRequest.setPost_power_info(powerTest.getPowerInfor(createConfigRequest.getHostname(),
-						createConfigRequest.getRegion(), "Post"));
-				// createConfigRequest.setPost_version_info(versionTest.getVersion(createConfigRequest.getHostname(),createConfigRequest.getRegion(),"Post"));
-
-				JSONArray healthCheckArray = new JSONArray();
-
-				JSONObject cpu = new JSONObject();
-				cpu.put("healthcheck", "CPU Usage");
-				cpu.put("preUpgradeValue", createConfigRequest.getPre_cpu_usage_percentage());
-				cpu.put("postUpgradeValue", createConfigRequest.getPost_cpu_usage_percentage());
-
-				if (createConfigRequest.getPre_cpu_usage_percentage() == 0
-						&& createConfigRequest.getPost_cpu_usage_percentage() == 0) {
-					cpu.put("outcome", "Passed");
-				} else if (createConfigRequest.getPre_cpu_usage_percentage() < 0
-						&& createConfigRequest.getPost_cpu_usage_percentage() < 0) {
-					cpu.put("outcome", "Failed");
-				}
-
-				healthCheckArray.put(cpu);
-
-				JSONObject mem = new JSONObject();
-				mem.put("healthcheck", "Memory Usage(%)");
-				mem.put("preUpgradeValue", createConfigRequest.getPre_memory_info());
-				mem.put("postUpgradeValue", createConfigRequest.getPost_memory_info());
-				if (Double.parseDouble(createConfigRequest.getPre_memory_info()) > 0
-						&& Double.parseDouble(createConfigRequest.getPost_memory_info()) > 0) {
-					mem.put("outcome", "Passed");
-				} else {
-					mem.put("outcome", "Failed");
-
-				}
-
-				healthCheckArray.put(mem);
-
-				/*JSONObject pow = new JSONObject();
-				pow.put("healthcheck", "Power Information");
-				pow.put("preUpgradeValue", createConfigRequest.getPre_power_info());
-				pow.put("postUpgradeValue", createConfigRequest.getPost_power_info());
-				if (createConfigRequest.getPre_power_info().equalsIgnoreCase("fail")
-						|| createConfigRequest.getPost_power_info().equalsIgnoreCase("fail")) {
-					pow.put("outcome", "Failed");
-				} else {
-					pow.put("outcome", "Passed");
-
-				}
-				healthCheckArray.put(pow);*/
-
-				// obj.put("osUpgradeStatus", "1");
-				obj.put("preVersionInfo", "");
-
-				obj.put("postVersionInfo", "");
-
-				obj.put("Statusmessage", "Device upgraded Succesfully");
-
-				obj.put("OsupgradeSummary", os_upgrade_dilevary_step_array.toString());
-				obj.put("healthCheckSummary", healthCheckArray.toString());
-
-			} else if (type.equalsIgnoreCase("SLGB")) {
-				obj = dao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
-			} else {
-				obj = dao.getStatusForCustomerReport(createConfigRequestDCM);
-			}
-
-			/*
-			 * CreateConfigRequest reqDetail =
-			 * dao.getRequestDetailFromDBForVersion(createConfigRequestDCM.
-			 * getAlphanumericReqId(), stringVersion);
-			 */
-
-			RequestInfoPojo reqDetail = requestDao.getRequestDetailTRequestInfoDBForVersion(
-					createConfigRequestDCM.getAlphanumericReqId(),
-					Double.toString(createConfigRequestDCM.getRequestVersion()));
-			Map<String, String> resultForFlag = new HashMap<String, String>();
-			resultForFlag = dao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(),
-					reqDetail.getRequestVersion());
-			String flagForPrevalidation = "";
-			String flagFordelieverConfig = "";
-			for (Map.Entry<String, String> entry : resultForFlag.entrySet()) {
-				if (entry.getKey() == "flagForPrevalidation") {
-					flagForPrevalidation = entry.getValue();
-
-				}
-				if (entry.getKey() == "flagFordelieverConfig") {
-					flagFordelieverConfig = entry.getValue();
-				}
-
-			}
-
-			if (flagFordelieverConfig.equalsIgnoreCase("1")) {
-				reqDetail.setDeliever_config("Passed");
-			}
-			if (flagFordelieverConfig.equalsIgnoreCase("2")) {
-				reqDetail.setDeliever_config("Failed");
-			}
-			String detailsStr = new Gson().toJson(reqDetail);
-
-			List<String> out = new ArrayList<String>();
-			out.add(new Gson().toJson(reqDetail));
-			obj.put("details", out);
-			if (type.equalsIgnoreCase("SLGF")) {
-				obj.put("status", reqDetail.getStatus());
-			}
-			obj.put("bundleList", setOfTestBundle);
-		} catch (Exception e) {
-			logger.error(e);
+	public ResponseEntity<JSONObject> customerReportUIRevamp(@RequestBody String request)
+			throws ParseException, SQLException {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = new JSONObject();
+		String requestID = null, testType = null, version = null;
+		JSONParser parser = new JSONParser();
+		json = (JSONObject) parser.parse(request);
+		requestID = json.get("requestID").toString();
+		testType = json.get("testType").toString();
+		version = json.get("version").toString();
+		JSONObject jsonObject = requestDetails.customerReportUIRevamp(requestID, testType, version);
+		if (jsonObject != null) {
+			responseEntity = new ResponseEntity<JSONObject>(jsonObject, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(jsonObject, HttpStatus.BAD_REQUEST);
 		}
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
+		return responseEntity;
+	}
+
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/finalreport/external", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<JSONObject> customerFinalReport(@RequestBody String request)
+			throws ParseException, SQLException {
+		JSONObject json = new JSONObject();
+		JSONParser parser = new JSONParser();
+		json = (JSONObject) parser.parse(request);
+		String soNumber = null;
+		soNumber = json.get("soNumber").toString();
+		String version = "1";
+		String testType = "CustomerReport";
+		List<RfoDecomposedEntity> rfoDecomposedEntity = rfoDecomposedRepository.findRequestId(soNumber);
+		JSONObject jsonOb = new JSONObject();
+		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
+		for (int i = 0; i < rfoDecomposedEntity.size(); i++) {
+			JSONObject reportResponse = null;
+				reportResponse = requestDetails.customerReportUIRevamp(rfoDecomposedEntity.get(i).getOdRequestId(), testType,
+						version);
+			System.out.println("jsonObject value: " + reportResponse);
+			array.add(reportResponse);
+		}
+		jsonOb.put("output", array);
+		return new ResponseEntity<JSONObject>(jsonOb, HttpStatus.OK);
 	}
 }

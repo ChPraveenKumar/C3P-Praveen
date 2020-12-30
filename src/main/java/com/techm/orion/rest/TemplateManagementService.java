@@ -23,9 +23,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateSuggestionDao;
+import com.techm.orion.entitybeans.Notification;
 import com.techm.orion.models.TemplateCommandJSONModel;
 import com.techm.orion.pojo.DeviceDetailsPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
+import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementNewService;
 
@@ -42,6 +44,9 @@ public class TemplateManagementService implements Observer {
 
 	@Autowired
 	private TemplateManagementNewService templateManagmentService;
+	
+	@Autowired
+	private NotificationRepo notificationRepo;
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -149,6 +154,9 @@ public class TemplateManagementService implements Observer {
 	@ResponseBody
 	public ResponseEntity<JSONObject> viewTemplate(@RequestBody String request) {
 		JSONObject basicDeatilsOfTemplate = null;
+		int notifId = 0;
+		Notification notificationData = null;
+		String userName = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
@@ -159,6 +167,13 @@ public class TemplateManagementService implements Observer {
 			}
 			if (json.get("version") != null) {
 				version = json.get("version").toString();
+			}
+			if (json.get("userName") != null) {
+				userName = json.get("userName").toString();
+			}
+			if(json.get("notif_id") != null && !json.get("notif_id").equals("")) {
+				notifId = Integer.parseInt(json.get("notif_id").toString());
+				notificationData = notificationRepo.findById(notifId);
 			}
 			if (template != null && version != null) {
 				String finaltemplate = template + "_V" + version;
@@ -176,6 +191,12 @@ public class TemplateManagementService implements Observer {
 				basicDeatilsOfTemplate.put("featureList", commandChangeFeatureList);
 				basicDeatilsOfTemplate.put("commands",
 						templateManagmentService.setCommandList(consolidatedFeatures, finaltemplate));
+				if(notificationData !=null)
+				{
+					notificationData.setNotifStatus("Completed");
+					notificationData.setNotifCompletedby(userName);
+					notificationRepo.save(notificationData);
+				}
 			} else {
 				basicDeatilsOfTemplate.put(new String("output"), "Missing mandatory data in the service Request");
 			}

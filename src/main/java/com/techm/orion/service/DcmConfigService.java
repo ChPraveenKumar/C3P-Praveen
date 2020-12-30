@@ -500,15 +500,15 @@ public class DcmConfigService {
 
 					JSONArray array = new JSONArray(
 							requestInfoSO.getTestsSelected());
-					if (array.length() != 0) {
+					/*if (array.length() != 0) {
 						for (int i = 0; i < array.length(); i++) {
 							org.json.JSONObject obj = array.getJSONObject(i);
-							String testname = obj.getString("testName");
-							String reqid = configRequest.getRequestId();
+							//String testname = obj.getString("testName");
+							//String reqid = configRequest.getRequestId();
 							// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
 							// "", "",obj.getString("testName"));
 						}
-					}
+					}*/
 					if (testStrategyDBUpdate > 0) {
 						output = "true";
 					} else {
@@ -889,7 +889,7 @@ public class DcmConfigService {
 		detailsList = requestInfoDao.getAllResquestsFromDB();
 		return detailsList;
 	}
-	
+
 	// Overload method for passing user information
 	public List<RequestInfoSO> getAllDetails(String userRole) {
 		List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
@@ -1216,7 +1216,6 @@ public class DcmConfigService {
 					}
 				}
 				float highestVersion = 0, tempVersion = 0;
-				String tempToUseTemp = null;
 				if (isTemplateAvailable) {
 					for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 						tempString = listOfTemplatesAvailable.get(i).substring(
@@ -1292,13 +1291,10 @@ public class DcmConfigService {
 
 		String response = null;
 		String fileToUse = null;
-		boolean isTemplateAvailable = false;
-		boolean isTemplateApproved = false;
 
 		List<String> listOfTemplatesAvailable = new ArrayList<String>();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		String responseHeader = "";
-		TemplateManagementDao templateDao = new TemplateManagementDao();
 		// create the file to push
 		try {
 
@@ -1312,7 +1308,6 @@ public class DcmConfigService {
 				// open folder for template and read all available templatenames
 				final File folder = new File(getTemplateCreationPathForFolder());
 				listOfTemplatesAvailable = listFilesForFolder(folder);
-				String tempString = null;
 				if (listOfTemplatesAvailable.size() > 0) {
 					fileToUse = getAvailableHighestVersion(
 							listOfTemplatesAvailable, configRequest, templateID);
@@ -1437,7 +1432,6 @@ public class DcmConfigService {
 		num = requestInfoDao.getRequestTpyeData(requestType, userRole);
 		return num;
 	}
-
 	/* Get Request using Request Type and Request Status */
 	public int getStatusForSpecificRequestType(String requestType,
 			String requestStatus, String userRole) {
@@ -1451,19 +1445,16 @@ public class DcmConfigService {
 	/* method overloadig for UIRevamp */
 	public Map<String, String> updateAlldetails(
 			List<RequestInfoPojo> requestInfoSOList,
-			List<CreateConfigPojo> pojoList, List<String> featureList,List<TemplateFeaturePojo>features) {
+			List<CreateConfigPojo> pojoList, List<String> featureList,
+			List<TemplateFeaturePojo> features) {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
-		// RequestInfoDao requestInfoDao = new RequestInfoDao();
 		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
 		String validateMessage = "";
-		// TelnetCommunicationSSH telnetCommunicationSSH=new
-		// TelnetCommunicationSSH();
 		String requestIdForConfig = "", requestType = "";
 		String res = "", output = "";
 		Map<String, String> result = new HashMap<String, String>();
 		RequestInfoPojo requestInfoSOTemp = new RequestInfoPojo();
-		String alphanumericRequestId = null, version = null;
-		List<String>configGenMtds=new ArrayList<String>();
+		List<String> configGenMtds = new ArrayList<String>();
 		if (requestInfoSOList.size() == 1) {
 			requestInfoSOTemp = requestInfoSOList.get(0);
 		} else {
@@ -1587,11 +1578,12 @@ public class DcmConfigService {
 					}
 				}
 
-				if(requestInfoSO.getApiCallType().equalsIgnoreCase("external"))
-				{
-					configGenMtds=setConfigGenMtds(requestInfoSO.getConfigurationGenerationMethods());
+				if (requestInfoSO.getApiCallType().equalsIgnoreCase("external")) {
+					configGenMtds = setConfigGenMtds(requestInfoSO
+							.getConfigurationGenerationMethods());
 				}
-				if (requestInfoSO.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains("Template")) {
+				if (requestInfoSO.getApiCallType().equalsIgnoreCase("external")
+						&& configGenMtds.contains("Template")) {
 
 					if (featureList != null && !featureList.isEmpty()) {
 						featureList
@@ -1617,15 +1609,15 @@ public class DcmConfigService {
 								});
 
 					}
-				} 
-				else if(requestInfoSO.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains("Non-Template"))
-				{
-					
+				} else if (requestInfoSO.getApiCallType().equalsIgnoreCase(
+						"external")
+						&& configGenMtds.contains("Non-Template")) {
+
 					features.forEach(feature -> {
 						RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 						MasterFeatureEntity masterFeatureId = masterFeatureRepository
-								.findByFIdAndFVersion(
-										feature.getfMasterId(), "1.0");
+								.findByFIdAndFVersion(feature.getfMasterId(),
+										"1.0");
 
 						requestFeatureEntity
 								.settMasterFeatureId(masterFeatureId);
@@ -1634,14 +1626,13 @@ public class DcmConfigService {
 								.getAlphanumericReqId());
 						requestFeatureEntity.settHostName(requestInfoSO
 								.getHostname());
-						requestFeatureEntity
-								.settRequestVersion(requestInfoSO
-										.getRequestVersion());
+						requestFeatureEntity.settRequestVersion(requestInfoSO
+								.getRequestVersion());
 						requestFeatureRepo.save(requestFeatureEntity);
 					});
-					
-				}
-				else if(requestInfoSO.getApiCallType().equalsIgnoreCase("c3p-ui")) {
+
+				} else if (requestInfoSO.getApiCallType().equalsIgnoreCase(
+						"c3p-ui")) {
 					if (featureList != null && !featureList.isEmpty()) {
 						featureList
 								.forEach(feature -> {
@@ -2030,13 +2021,8 @@ public class DcmConfigService {
 	private void createTemplate(RequestInfoPojo configRequest) {
 		String response = null;
 		String fileToUse = null;
-		boolean isTemplateAvailable = false;
-		boolean isTemplateApproved = false;
-
 		List<String> listOfTemplatesAvailable = new ArrayList<String>();
 		InvokeFtl invokeFtl = new InvokeFtl();
-		String responseHeader = "";
-		TemplateManagementDao templateDao = new TemplateManagementDao();
 		// create the file to push
 		try {
 
@@ -2113,7 +2099,8 @@ public class DcmConfigService {
 	}
 
 	public Map<String, String> updateBatchConfig(RequestInfoPojo requestInfoSO,
-			List<CreateConfigPojo> pojoList, List<String> featureList, String userName, List<TemplateFeaturePojo> features) {
+			List<CreateConfigPojo> pojoList, List<String> featureList,
+			String userName, List<TemplateFeaturePojo> features) {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 
 		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
@@ -2183,14 +2170,14 @@ public class DcmConfigService {
 								requestInfoSO.getRequestType(),
 								requestInfoSO.getRequestVersion());
 						// int testStrategyResultsDB=requestInfoDao.
-						JSONArray array = new JSONArray(
-								requestInfoSO.getTestsSelected());
-						for (int i = 0; i < array.length(); i++) {
+						/*JSONArray array = new JSONArray(
+								requestInfoSO.getTestsSelected());*/
+						/*for (int i = 0; i < array.length(); i++) {
 							org.json.JSONObject obj = array.getJSONObject(i);
 							String testname = obj.getString("testName");
 							String reqid = requestInfoSO.getAlphanumericReqId();
 
-						}
+						}*/
 						if (testStrategyDBUpdate > 0) {
 							output = "true";
 						} else {
@@ -2301,7 +2288,7 @@ public class DcmConfigService {
 								requestInfoSO.getRequestType(),
 								requestInfoSO.getRequestVersion());
 						// int testStrategyResultsDB=requestInfoDao.
-						JSONArray array = new JSONArray(
+						/*JSONArray array = new JSONArray(
 								requestInfoSO.getTestsSelected());
 						for (int i = 0; i < array.length(); i++) {
 							org.json.JSONObject obj = array.getJSONObject(i);
@@ -2309,7 +2296,7 @@ public class DcmConfigService {
 							String reqid = requestInfoSO.getAlphanumericReqId();
 							// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
 							// "", "",obj.getString("testName"));
-						}
+						}*/
 						if (testStrategyDBUpdate > 0) {
 							output = "true";
 						} else {
@@ -2360,7 +2347,7 @@ public class DcmConfigService {
 									});
 
 						}
-					}else {
+					} else {
 						features.forEach(feature -> {
 							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 							MasterFeatureEntity masterFeatureId = masterFeatureRepository
@@ -2416,37 +2403,29 @@ public class DcmConfigService {
 			List<RequestInfoPojo> requestInfoSOList) {
 		if (request.getHostname() != null) {
 			if (request.getConfigurationGenerationMethods() != null) {
-				if (request.getConfigurationGenerationMethods()
-						.contains("File")) {
-					String content = TextReport
-							.readFile(TSALabels.RESPONSE_DOWNLOAD_PATH
-									.getValue() + request.getFileName());
-					TextReport.writeFile(
-							TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-							request.getAlphanumericReqId() + "V"
-									+ request.getRequestVersion()
-									+ "_Configuration", content,
-							"configurationGeneration");
+				List<String> configGenMtds = setConfigGenMtds(request
+						.getConfigurationGenerationMethods());
+				if (configGenMtds.size() > 1) {
+					if (configGenMtds.contains("Instantiation")
+							&& configGenMtds.contains("Template")) {
+						// Generate instantiation report
+						instantiationSOIDUpdate(requestInfoSOList,request);
+						// Generate config to be dilevered
+						
+						templateFileCreator(requestInfoSOList,request);
+						
+					}
 				} else {
-
-					if (requestInfoSOList.size() == 1) {
-						createHeader(request);
-						createTemplate(request);
-
-					} else {
-						createHeader(request);
-
+					if (configGenMtds.contains("Instantiation")) {
+						// Generate instantiation report
+						instantiationSOIDUpdate(requestInfoSOList,request);
+					} else if (configGenMtds.contains("Template") || configGenMtds.contains("Non-Template")) {
+						templateFileCreator(requestInfoSOList,request);
 					}
 				}
+
 			} else {
-				if (requestInfoSOList.size() == 1) {
-					createHeader(request);
-					createTemplate(request);
-
-				} else {
-					createHeader(request);
-
-				}
+				templateFileCreator(requestInfoSOList,request);
 			}
 		} else {
 			createTemplate(request);
@@ -2457,7 +2436,6 @@ public class DcmConfigService {
 			List<String> listOfTemplatesAvailable,
 			RequestInfoPojo configRequest, String templateID) {
 		TemplateManagementDao templateDao = new TemplateManagementDao();
-		float highestversion = 0;
 		String tempString = null, fileToUse = null;
 		float highestVersion = 0, tempVersion = 0;
 		boolean isTemplateAvailable = false, isTemplateApproved = false;
@@ -2515,7 +2493,6 @@ public class DcmConfigService {
 			List<String> listOfTemplatesAvailable,
 			CreateConfigRequestDCM configRequest, String templateID) {
 		TemplateManagementDao templateDao = new TemplateManagementDao();
-		float highestversion = 0;
 		String tempString = null, fileToUse = null;
 		float highestVersion = 0, tempVersion = 0;
 		boolean isTemplateAvailable = false, isTemplateApproved = false;
@@ -2568,20 +2545,22 @@ public class DcmConfigService {
 		}
 		return fileToUse;
 	}
-	private List<String>setConfigGenMtds(String configGenMethods)
-	{
-		List<String>list=new ArrayList<String>();
-		String [] array=configGenMethods.replace("[", "").replace("]", "")
+
+	private List<String> setConfigGenMtds(String configGenMethods) {
+		List<String> list = new ArrayList<String>();
+		String[] array = configGenMethods.replace("[", "").replace("]", "")
 				.replace("\"", "").split(",");
-		list=Arrays.asList(array);
+		list = Arrays.asList(array);
 		return list;
 	}
-	
+
 	/*
 	 * Overloaded method for passing user information
 	 */
-	public Map<String, String> updateAlldetails(CreateConfigRequestDCM configRequest, List<CreateConfigPojo> pojoList,
-			String userName) throws IOException {
+	public Map<String, String> updateAlldetails(
+			CreateConfigRequestDCM configRequest,
+			List<CreateConfigPojo> pojoList, String userName)
+			throws IOException {
 
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
@@ -2620,7 +2599,8 @@ public class DcmConfigService {
 				requestInfoSO.setOsVersion(configRequest.getOsVersion());
 				requestInfoSO.setVrfName(configRequest.getVrfName());
 				requestInfoSO.setManagementIp(configRequest.getManagementIp());
-				requestInfoSO.setEnablePassword(configRequest.getEnablePassword());
+				requestInfoSO.setEnablePassword(configRequest
+						.getEnablePassword());
 				requestInfoSO.setBanner(configRequest.getBanner());
 				requestInfoSO.setRegion(configRequest.getRegion());
 				requestInfoSO.setService(configRequest.getService());
@@ -2629,43 +2609,61 @@ public class DcmConfigService {
 				requestInfoSO.setVendor(configRequest.getVendor());
 				requestInfoSO.setNetworkType(configRequest.getNetworkType());
 				// newly added parameter for request versioning flow
-				requestInfoSO.setRequest_version(configRequest.getRequest_version());
-				requestInfoSO.setRequest_parent_version(configRequest.getRequest_parent_version());
+				requestInfoSO.setRequest_version(configRequest
+						.getRequest_version());
+				requestInfoSO.setRequest_parent_version(configRequest
+						.getRequest_parent_version());
 
 				requestInfoSO.setProcessID(configRequest.getProcessID());
 				// added new to database
 				// new added parameter for request created by field
-				requestInfoSO.setRequest_creator_name(configRequest.getRequest_creator_name());
+				requestInfoSO.setRequest_creator_name(configRequest
+						.getRequest_creator_name());
 				// get templateId to save it
 				requestInfoSO.setTemplateId(configRequest.getTemplateID());
 				requestInfoSO.setSnmpString(configRequest.getSnmpString());
-				requestInfoSO.setSnmpHostAddress(configRequest.getSnmpHostAddress());
+				requestInfoSO.setSnmpHostAddress(configRequest
+						.getSnmpHostAddress());
 				requestInfoSO.setLoopBackType(configRequest.getLoopBackType());
-				requestInfoSO.setLoopbackIPaddress(configRequest.getLoopbackIPaddress());
-				requestInfoSO.setLoopbackSubnetMask(configRequest.getLoopbackSubnetMask());
+				requestInfoSO.setLoopbackIPaddress(configRequest
+						.getLoopbackIPaddress());
+				requestInfoSO.setLoopbackSubnetMask(configRequest
+						.getLoopbackSubnetMask());
 				requestInfoSO.setLanInterface(configRequest.getLanInterface());
 				requestInfoSO.setLanIp(configRequest.getLanIp());
-				requestInfoSO.setLanMaskAddress(configRequest.getLanMaskAddress());
-				requestInfoSO.setLanDescription(configRequest.getLanDescription());
-				requestInfoSO.setScheduledTime(configRequest.getScheduledTime());
-				deviceInterfaceSO.setDescription(configRequest.getDescription());
-				deviceInterfaceSO.setEncapsulation(configRequest.getEncapsulation());
+				requestInfoSO.setLanMaskAddress(configRequest
+						.getLanMaskAddress());
+				requestInfoSO.setLanDescription(configRequest
+						.getLanDescription());
+				requestInfoSO
+						.setScheduledTime(configRequest.getScheduledTime());
+				deviceInterfaceSO
+						.setDescription(configRequest.getDescription());
+				deviceInterfaceSO.setEncapsulation(configRequest
+						.getEncapsulation());
 				deviceInterfaceSO.setIp(configRequest.getIp());
 				deviceInterfaceSO.setMask(configRequest.getMask());
 				deviceInterfaceSO.setName(configRequest.getName());
-				if (configRequest.getSpeed() != null && !configRequest.getSpeed().isEmpty()) {
+				if (configRequest.getSpeed() != null
+						&& !configRequest.getSpeed().isEmpty()) {
 					deviceInterfaceSO.setSpeed(configRequest.getSpeed());
 				} else {
-					deviceInterfaceSO.setBandwidth(configRequest.getBandwidth());
+					deviceInterfaceSO
+							.setBandwidth(configRequest.getBandwidth());
 				}
 				requestInfoSO.setDeviceInterfaceSO(deviceInterfaceSO);
-				requestInfoSO.setCertificationSelectionBit(configRequest.getCertificationSelectionBit());
+				requestInfoSO.setCertificationSelectionBit(configRequest
+						.getCertificationSelectionBit());
 				internetLcVrf.setNeighbor1(configRequest.getNeighbor1());
 				internetLcVrf.setNeighbor2(configRequest.getNeighbor2());
-				internetLcVrf.setNeighbor1_remoteAS(configRequest.getNeighbor1_remoteAS());
-				internetLcVrf.setNeighbor2_remoteAS(configRequest.getNeighbor2_remoteAS());
-				if (configRequest.getBgpASNumber() != null && !configRequest.getBgpASNumber().isEmpty()) {
-					internetLcVrf.setBgpASNumber(configRequest.getBgpASNumber());
+				internetLcVrf.setNeighbor1_remoteAS(configRequest
+						.getNeighbor1_remoteAS());
+				internetLcVrf.setNeighbor2_remoteAS(configRequest
+						.getNeighbor2_remoteAS());
+				if (configRequest.getBgpASNumber() != null
+						&& !configRequest.getBgpASNumber().isEmpty()) {
+					internetLcVrf
+							.setBgpASNumber(configRequest.getBgpASNumber());
 				} else {
 					// added to support vrf when routing protocol is not
 					// selected
@@ -2674,25 +2672,34 @@ public class DcmConfigService {
 
 				}
 				internetLcVrf.setNetworkIp(configRequest.getNetworkIp());
-				internetLcVrf.setNetworkIp_subnetMask(configRequest.getNetworkIp_subnetMask());
-				internetLcVrf.setRoutingProtocol(configRequest.getRoutingProtocol());
+				internetLcVrf.setNetworkIp_subnetMask(configRequest
+						.getNetworkIp_subnetMask());
+				internetLcVrf.setRoutingProtocol(configRequest
+						.getRoutingProtocol());
 				requestInfoSO.setInternetLcVrf(internetLcVrf);
 
 				misArPeSO.setFastEthernetIp(configRequest.getFastEthernetIp());
-				misArPeSO.setRouterVrfVpnDGateway(configRequest.getRouterVrfVpnDGateway());
-				misArPeSO.setRouterVrfVpnDIp(configRequest.getRouterVrfVpnDIp());
+				misArPeSO.setRouterVrfVpnDGateway(configRequest
+						.getRouterVrfVpnDGateway());
+				misArPeSO
+						.setRouterVrfVpnDIp(configRequest.getRouterVrfVpnDIp());
 				requestInfoSO.setMisArPeSO(misArPeSO);
 				requestInfoSO.setIsAutoProgress(true);
 
-				if (configRequest.getRequestType().equalsIgnoreCase("IOSUPGRADE")) {
+				if (configRequest.getRequestType().equalsIgnoreCase(
+						"IOSUPGRADE")) {
 					requestInfoSO.setZipcode(configRequest.getZipcode());
 					requestInfoSO.setManaged(configRequest.getManaged());
-					requestInfoSO.setDownTimeRequired(configRequest.getDownTimeRequired());
-					requestInfoSO.setLastUpgradedOn(configRequest.getLastUpgradedOn());
+					requestInfoSO.setDownTimeRequired(configRequest
+							.getDownTimeRequired());
+					requestInfoSO.setLastUpgradedOn(configRequest
+							.getLastUpgradedOn());
 
 				}
 			} else {
-				alphaneumeric_req_id = "SLGB-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+				alphaneumeric_req_id = "SLGB-"
+						+ UUID.randomUUID().toString().toUpperCase()
+								.substring(0, 7);
 				requestInfoPojo.setRequestType(configRequest.getRequestType());
 				requestInfoPojo.setAlphanumericReqId(alphaneumeric_req_id);
 
@@ -2700,7 +2707,8 @@ public class DcmConfigService {
 				Timestamp timestamp = Timestamp.valueOf(nowDate);
 				requestInfoPojo.setRequestCreatedOn(timestamp.toString());
 
-				requestInfoPojo.setSceheduledTime(configRequest.getScheduledTime());
+				requestInfoPojo.setSceheduledTime(configRequest
+						.getScheduledTime());
 
 				requestInfoPojo.setCustomer(configRequest.getCustomer());
 				requestInfoPojo.setSiteid(configRequest.getSiteid());
@@ -2708,28 +2716,35 @@ public class DcmConfigService {
 				requestInfoPojo.setModel(configRequest.getModel());
 				requestInfoPojo.setOs(configRequest.getOs());
 				requestInfoPojo.setOsVersion(configRequest.getOsVersion());
-				requestInfoPojo.setManagementIp(configRequest.getManagementIp());
+				requestInfoPojo
+						.setManagementIp(configRequest.getManagementIp());
 				requestInfoPojo.setRegion(configRequest.getRegion());
 				requestInfoPojo.setService(configRequest.getService());
 				requestInfoPojo.setHostname(configRequest.getHostname());
 				requestInfoPojo.setVendor(configRequest.getVendor());
 				requestInfoPojo.setNetworkType(configRequest.getNetworkType());
-				requestInfoPojo.setRequestTypeFlag(configRequest.getRequestType_Flag());
-				requestInfoPojo.setRequestVersion(configRequest.getRequest_version());
-				requestInfoPojo.setRequestParentVersion(configRequest.getRequest_parent_version());
+				requestInfoPojo.setRequestTypeFlag(configRequest
+						.getRequestType_Flag());
+				requestInfoPojo.setRequestVersion(configRequest
+						.getRequest_version());
+				requestInfoPojo.setRequestParentVersion(configRequest
+						.getRequest_parent_version());
 				requestInfoPojo.setFamily(configRequest.getFamily());
 				requestInfoPojo.setSiteName(configRequest.getSiteName());
-				requestInfoPojo.setRequestCreatorName(configRequest.getRequest_creator_name());
+				requestInfoPojo.setRequestCreatorName(configRequest
+						.getRequest_creator_name());
 
 				requestInfoPojo.setStartUp(configRequest.getIsStartUp());
 
 				// added new to database
 				// new added parameter for request created by field
-				requestInfoPojo.setRequestCreatorName(configRequest.getRequest_creator_name());
+				requestInfoPojo.setRequestCreatorName(configRequest
+						.getRequest_creator_name());
 				// get templateId to save it
 				requestInfoPojo.setTemplateID(configRequest.getTemplateID());
 
-				requestInfoPojo.setCertificationSelectionBit(configRequest.getCertificationSelectionBit());
+				requestInfoPojo.setCertificationSelectionBit(configRequest
+						.getCertificationSelectionBit());
 
 			}
 			requestInfoSO.setTestsSelected(configRequest.getTestsSelected());
@@ -2743,17 +2758,21 @@ public class DcmConfigService {
 				requestType = configRequest.getRequestType();
 				if (requestType.equals("TS")) {
 					requestType = "SLGT";
-				} else if (requestType.equals("SR") || requestType.equals("configDelivery")) {
+				} else if (requestType.equals("SR")
+						|| requestType.equals("configDelivery")) {
 					requestType = "SLGC";
 				}
 
-				if ((requestType.equals("SLGT")) || (requestType.equals("SLGC"))) {
+				if ((requestType.equals("SLGT"))
+						|| (requestType.equals("SLGC"))) {
 
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					if (!(requestType.equals("SLGT"))) {
 						if (!requestInfoSO.getTemplateId().isEmpty())
-							templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateId());
+							templateSuggestionDao
+									.insertTemplateUsageData(requestInfoSO
+											.getTemplateId());
 					}
 					// validateMessage=requestInfoSO.getProcessID();
 
@@ -2768,10 +2787,13 @@ public class DcmConfigService {
 						}
 
 					}
-					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(configRequest.getRequestId(),
-							configRequest.getTestsSelected(), requestType, configRequest.getRequest_version());
+					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+							configRequest.getRequestId(),
+							configRequest.getTestsSelected(), requestType,
+							configRequest.getRequest_version());
 
-					JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
+					/*JSONArray array = new JSONArray(
+							requestInfoSO.getTestsSelected());
 					if (array.length() != 0) {
 						for (int i = 0; i < array.length(); i++) {
 							org.json.JSONObject obj = array.getJSONObject(i);
@@ -2779,7 +2801,7 @@ public class DcmConfigService {
 							String reqid = configRequest.getRequestId();
 
 						}
-					}
+					}*/
 					if (testStrategyDBUpdate > 0) {
 						output = "true";
 					} else {
@@ -2792,7 +2814,8 @@ public class DcmConfigService {
 						else {
 							for (CreateConfigPojo pojo : pojoList) {
 								pojo.setRequestId(configRequest.getRequestId());
-								pojo.setRequestVersion(configRequest.getRequest_version());
+								pojo.setRequestVersion(configRequest
+										.getRequest_version());
 								saveDynamicAttribValue(pojo);
 							}
 						}
@@ -2800,27 +2823,49 @@ public class DcmConfigService {
 					if (output.equalsIgnoreCase("true")) {
 
 						validateMessage = "Success";
-						if (configRequest.getNetworkType().equalsIgnoreCase("Legacy")) {
+						if (configRequest.getNetworkType().equalsIgnoreCase(
+								"Legacy")) {
 							createTemplate(configRequest);
 
-							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest, userName);
+							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+									configRequest, userName);
 							telnetCommunicationSSH.setDaemon(true);
 							telnetCommunicationSSH.start();
 							// telnetCommunicationSSH.connectToRouter(configRequest);
-						} else if (configRequest.getNetworkType().equalsIgnoreCase(
-								"VNF")) {/*
-											 * VNFHelper helper = new VNFHelper(); if (configRequest .getVnfConfig() !=
-											 * null) { String filepath = helper.saveXML( configRequest .getVnfConfig(),
-											 * requestIdForConfig , configRequest); if (filepath != null) {
-											 * 
-											 * TelnetCommunicationSSH telnetCommunicationSSH = new
-											 * TelnetCommunicationSSH ( configRequest); telnetCommunicationSSH
-											 * .setDaemon(true); telnetCommunicationSSH .start();
-											 * 
-											 * } else { validateMessage = "Failure due to invalid input" ;
-											 * 
-											 * } }
-											 */
+						} else if (configRequest.getNetworkType()
+								.equalsIgnoreCase("VNF")) {/*
+															 * VNFHelper helper
+															 * = new
+															 * VNFHelper(); if
+															 * (configRequest
+															 * .getVnfConfig()
+															 * != null) { String
+															 * filepath =
+															 * helper.saveXML(
+															 * configRequest
+															 * .getVnfConfig(),
+															 * requestIdForConfig
+															 * , configRequest);
+															 * if (filepath !=
+															 * null) {
+															 * 
+															 * TelnetCommunicationSSH
+															 * telnetCommunicationSSH
+															 * = new
+															 * TelnetCommunicationSSH
+															 * ( configRequest);
+															 * telnetCommunicationSSH
+															 * .setDaemon(true);
+															 * telnetCommunicationSSH
+															 * .start();
+															 * 
+															 * } else {
+															 * validateMessage =
+															 * "Failure due to invalid input"
+															 * ;
+															 * 
+															 * } }
+															 */
 						}
 					} else {
 
@@ -2836,8 +2881,9 @@ public class DcmConfigService {
 					hostName = configRequest.getHostname();
 					managementIp = configRequest.getManagementIp();
 
-					requestDetail1 = requestInfoDetailsRepositories.findByHostNameAndManagmentIP(hostName,
-							managementIp);
+					requestDetail1 = requestInfoDetailsRepositories
+							.findByHostNameAndManagmentIP(hostName,
+									managementIp);
 
 					int requestinfoid = 0;
 
@@ -2847,7 +2893,8 @@ public class DcmConfigService {
 
 					}
 
-					requestDetail = requestInfoDetailsRepositories.findByInfoId(requestinfoid);
+					requestDetail = requestInfoDetailsRepositories
+							.findByInfoId(requestinfoid);
 
 					String requestId = null;
 
@@ -2859,7 +2906,8 @@ public class DcmConfigService {
 					configRequest.setRequestId(requestId);
 					createTemplate(configRequest);
 
-					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest, userName);
+					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+							configRequest, userName);
 					telnetCommunicationSSH.setDaemon(true);
 					telnetCommunicationSSH.start();
 				}
@@ -2869,16 +2917,20 @@ public class DcmConfigService {
 				requestType = configRequest.getRequestType();
 				if (requestType.equals("TS")) {
 					requestType = "SLGT";
-				} else if (requestType.equals("SR") || requestType.equals("configDelivery")) {
+				} else if (requestType.equals("SR")
+						|| requestType.equals("configDelivery")) {
 					requestType = "SLGC";
 				}
 
-				if ((requestType.equals("SLGT")) || (requestType.equals("SLGC"))) {
+				if ((requestType.equals("SLGT"))
+						|| (requestType.equals("SLGC"))) {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					if (!(requestType.equals("SLGT"))) {
 						if (!requestInfoSO.getTemplateId().isEmpty())
-							templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateId());
+							templateSuggestionDao
+									.insertTemplateUsageData(requestInfoSO
+											.getTemplateId());
 					}
 
 					for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -2893,10 +2945,13 @@ public class DcmConfigService {
 
 					}
 
-					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(configRequest.getRequestId(),
-							configRequest.getTestsSelected(), requestType, configRequest.getRequest_version());
+					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+							configRequest.getRequestId(),
+							configRequest.getTestsSelected(), requestType,
+							configRequest.getRequest_version());
 
-					JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
+				/*JSONArray array = new JSONArray(
+							requestInfoSO.getTestsSelected());
 					if (array.length() != 0) {
 						for (int i = 0; i < array.length(); i++) {
 							org.json.JSONObject obj = array.getJSONObject(i);
@@ -2905,7 +2960,7 @@ public class DcmConfigService {
 							// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
 							// "", "",obj.getString("testName"));
 						}
-					}
+					}*/
 					if (testStrategyDBUpdate > 0) {
 						output = "true";
 					} else {
@@ -2918,31 +2973,40 @@ public class DcmConfigService {
 						else {
 							for (CreateConfigPojo pojo : pojoList) {
 								pojo.setRequestId(configRequest.getRequestId());
-								pojo.setRequestVersion(configRequest.getRequest_version());
+								pojo.setRequestVersion(configRequest
+										.getRequest_version());
 								saveDynamicAttribValue(pojo);
 							}
 						}
 					}
-					if (configRequest.getNetworkType().equalsIgnoreCase("Legacy")) {
+					if (configRequest.getNetworkType().equalsIgnoreCase(
+							"Legacy")) {
 						createTemplate(configRequest);
 
 						// update the scheduler history
-						requestSchedulerDao.updateScheduledRequest(configRequest);
-						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest, userName);
+						requestSchedulerDao
+								.updateScheduledRequest(configRequest);
+						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+								configRequest, userName);
 						telnetCommunicationSSH.setDaemon(true);
 						telnetCommunicationSSH.start();
 					} else if (configRequest.getNetworkType().equalsIgnoreCase(
 							"VNF")) {/*
-										 * VNFHelper helper = new VNFHelper(); if (configRequest.getVnfConfig() != null)
-										 * { String filepath = helper.saveXML( configRequest.getVnfConfig(),
-										 * requestIdForConfig, configRequest); if (filepath != null) {
-										 * 
-										 * TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-										 * configRequest); telnetCommunicationSSH.setDaemon(true);
-										 * telnetCommunicationSSH.start();
-										 * 
-										 * } }
-										 */
+									 * VNFHelper helper = new VNFHelper(); if
+									 * (configRequest.getVnfConfig() != null) {
+									 * String filepath = helper.saveXML(
+									 * configRequest.getVnfConfig(),
+									 * requestIdForConfig, configRequest); if
+									 * (filepath != null) {
+									 * 
+									 * TelnetCommunicationSSH
+									 * telnetCommunicationSSH = new
+									 * TelnetCommunicationSSH( configRequest);
+									 * telnetCommunicationSSH.setDaemon(true);
+									 * telnetCommunicationSSH.start();
+									 * 
+									 * } }
+									 */
 					}
 
 				} else {
@@ -2954,8 +3018,9 @@ public class DcmConfigService {
 					hostName = configRequest.getHostname();
 					managementIp = configRequest.getManagementIp();
 
-					requestDetail1 = requestInfoDetailsRepositories.findByHostNameAndManagmentIP(hostName,
-							managementIp);
+					requestDetail1 = requestInfoDetailsRepositories
+							.findByHostNameAndManagmentIP(hostName,
+									managementIp);
 
 					int requestinfoid = 0;
 
@@ -2965,7 +3030,8 @@ public class DcmConfigService {
 
 					}
 
-					requestDetail = requestInfoDetailsRepositories.findByInfoId(requestinfoid);
+					requestDetail = requestInfoDetailsRepositories
+							.findByInfoId(requestinfoid);
 
 					String requestId = null;
 
@@ -2977,228 +3043,178 @@ public class DcmConfigService {
 					configRequest.setRequestId(requestId);
 					createTemplate(configRequest);
 
-					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest, userName);
+					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+							configRequest, userName);
 					telnetCommunicationSSH.setDaemon(true);
 					telnetCommunicationSSH.start();
 				}
 			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			logger.error(e);
 		}
 		return result;
 	}
-	
-	/* method overloadig for UIRevamp for passing user information*/
+
+	/* method overloadig for UIRevamp for passing user information */
 	public Map<String, String> updateAlldetails(
 			List<RequestInfoPojo> requestInfoSOList,
-			List<CreateConfigPojo> pojoList, List<String> featureList, String userName, List<TemplateFeaturePojo>features) {
-		List<String>configGenMtds=new ArrayList<String>();
+			List<CreateConfigPojo> pojoList, List<String> featureList,
+			String userName, List<TemplateFeaturePojo> features) {
+		List<String> configGenMtds = new ArrayList<String>();
 
-	RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
-	// RequestInfoDao requestInfoDao = new RequestInfoDao();
-	TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
-	String validateMessage = "";
-	// TelnetCommunicationSSH telnetCommunicationSSH=new
-	// TelnetCommunicationSSH();
-	String requestIdForConfig = "", requestType = "";
-	String res = "", output = "";
-	Map<String, String> result = new HashMap<String, String>();
-	RequestInfoPojo requestInfoSOTemp = new RequestInfoPojo();
-	String alphanumericRequestId = null, version = null;
-	if (requestInfoSOList.size() == 1) {
-		requestInfoSOTemp = requestInfoSOList.get(0);
-	} else {
-		for (RequestInfoPojo request : requestInfoSOList) {
-			if (request.getHostname() != null) {
-				requestInfoSOTemp = request;
+		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
+		// RequestInfoDao requestInfoDao = new RequestInfoDao();
+		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+		String validateMessage = "";
+		// TelnetCommunicationSSH telnetCommunicationSSH=new
+		// TelnetCommunicationSSH();
+		String requestIdForConfig = "", requestType = "";
+		String res = "", output = "";
+		Map<String, String> result = new HashMap<String, String>();
+		RequestInfoPojo requestInfoSOTemp = new RequestInfoPojo();
+		if (requestInfoSOList.size() == 1) {
+			requestInfoSOTemp = requestInfoSOList.get(0);
+		} else {
+			for (RequestInfoPojo request : requestInfoSOList) {
+				if (request.getHostname() != null) {
+					requestInfoSOTemp = request;
+				}
 			}
 		}
-	}
-	final RequestInfoPojo requestInfoSO = requestInfoSOTemp;
-	try {
+		final RequestInfoPojo requestInfoSO = requestInfoSOTemp;
+		try {
 
-		// Map<String, Object> variables = new HashMap<String, Object>();
+			// Map<String, Object> variables = new HashMap<String, Object>();
 
-		/*
-		 * if
-		 * (configRequest.getRequestType().equalsIgnoreCase("IOSUPGRADE")) {
-		 * requestInfoSO.setZipcode(configRequest.getZipcode());
-		 * requestInfoSO.setManaged(configRequest.getManaged());
-		 * requestInfoSO
-		 * .setDownTimeRequired(configRequest.getDownTimeRequired());
-		 * requestInfoSO
-		 * .setLastUpgradedOn(configRequest.getLastUpgradedOn());
-		 * 
-		 * }
-		 */
-		// requestInfoSO.setTestsSelected(configRequest.getTestsSelected());
-		// variables.put("createConfigRequest", requestInfoSO);
-		if (requestInfoSO.getSceheduledTime().isEmpty()) {
-			requestInfoSO.setStatus("In Progress");
-			// validateMessage=validatorConfigManagement.validate(configRequest);
-			result = dao.insertRequestInDB(requestInfoSO);
-			// update template
+			/*
+			 * if
+			 * (configRequest.getRequestType().equalsIgnoreCase("IOSUPGRADE")) {
+			 * requestInfoSO.setZipcode(configRequest.getZipcode());
+			 * requestInfoSO.setManaged(configRequest.getManaged());
+			 * requestInfoSO
+			 * .setDownTimeRequired(configRequest.getDownTimeRequired());
+			 * requestInfoSO
+			 * .setLastUpgradedOn(configRequest.getLastUpgradedOn());
+			 * 
+			 * }
+			 */
+			// requestInfoSO.setTestsSelected(configRequest.getTestsSelected());
+			// variables.put("createConfigRequest", requestInfoSO);
+			if (requestInfoSO.getSceheduledTime().isEmpty()) {
+				requestInfoSO.setStatus("In Progress");
+				// validateMessage=validatorConfigManagement.validate(configRequest);
+				result = dao.insertRequestInDB(requestInfoSO);
+				// update template
 
-			requestType = requestInfoSO.getRequestType();
-			if (!(requestType.equals("Test"))
-					&& !(requestType.equals("Audit"))) {
-				if (!requestInfoSO.getTemplateID().isEmpty())
-					templateSuggestionDao
-							.insertTemplateUsageData(requestInfoSO
-									.getTemplateID());
-			}
+				requestType = requestInfoSO.getRequestType();
+				if (!(requestType.equals("Test"))
+						&& !(requestType.equals("Audit"))) {
+					if (!requestInfoSO.getTemplateID().isEmpty())
+						templateSuggestionDao
+								.insertTemplateUsageData(requestInfoSO
+										.getTemplateID());
+				}
 
-			for (Map.Entry<String, String> entry : result.entrySet()) {
-				if (entry.getKey() == "requestID") {
+				for (Map.Entry<String, String> entry : result.entrySet()) {
+					if (entry.getKey() == "requestID") {
 
-					requestIdForConfig = entry.getValue();
-					requestInfoSO.setAlphanumericReqId(requestIdForConfig);
-					for (RequestInfoPojo request : requestInfoSOList) {
-						request.setAlphanumericReqId(requestIdForConfig);
-						request.setRequestVersion(requestInfoSO
-								.getRequestVersion());
+						requestIdForConfig = entry.getValue();
+						requestInfoSO.setAlphanumericReqId(requestIdForConfig);
+						for (RequestInfoPojo request : requestInfoSOList) {
+							request.setAlphanumericReqId(requestIdForConfig);
+							request.setRequestVersion(requestInfoSO
+									.getRequestVersion());
+						}
 					}
-				}
-				if (entry.getKey() == "result") {
-					res = entry.getValue();
-				}
+					if (entry.getKey() == "result") {
+						res = entry.getValue();
+					}
 
-			}
-			int testStrategyDBUpdate = dao.insertTestRecordInDB(
-					requestInfoSO.getAlphanumericReqId(),
-					requestInfoSO.getTestsSelected(),
-					requestInfoSO.getRequestType(),
-					requestInfoSO.getRequestVersion());
-			// int testStrategyResultsDB=requestInfoDao.
-			/*if (requestInfoSO.getTestsSelected() != null) {
-				JSONArray array = new JSONArray(
-						requestInfoSO.getTestsSelected());
-				for (int i = 0; i < array.length(); i++) {
-					org.json.JSONObject obj = array.getJSONObject(i);
-					String testname = obj.getString("testName");
-					String reqid = requestInfoSO.getAlphanumericReqId();
-					// requestInfoDao.insertIntoTestStrategeyConfigResultsTable(configRequest.getRequestId(),obj.getString("testCategory"),
-					// "", "",obj.getString("testName"));
 				}
-			}*/
-			if (testStrategyDBUpdate > 0) {
-				output = "true";
-			} else {
-				output = "false";
-			}
-			if (pojoList != null) {
-				if (pojoList.isEmpty()) {
+				int testStrategyDBUpdate = dao.insertTestRecordInDB(
+						requestInfoSO.getAlphanumericReqId(),
+						requestInfoSO.getTestsSelected(),
+						requestInfoSO.getRequestType(),
+						requestInfoSO.getRequestVersion());
+				// int testStrategyResultsDB=requestInfoDao.
+				/*
+				 * if (requestInfoSO.getTestsSelected() != null) { JSONArray
+				 * array = new JSONArray( requestInfoSO.getTestsSelected()); for
+				 * (int i = 0; i < array.length(); i++) { org.json.JSONObject
+				 * obj = array.getJSONObject(i); String testname =
+				 * obj.getString("testName"); String reqid =
+				 * requestInfoSO.getAlphanumericReqId(); //
+				 * requestInfoDao.insertIntoTestStrategeyConfigResultsTable
+				 * (configRequest.getRequestId(),obj.getString("testCategory"),
+				 * // "", "",obj.getString("testName")); } }
+				 */
+				if (testStrategyDBUpdate > 0) {
+					output = "true";
+				} else {
+					output = "false";
 				}
-				// Save the Data in t_create_config_m_attrib_info Table
-				else {
-					for (CreateConfigPojo pojo : pojoList) {
-						pojo.setRequestId(requestInfoSO
-								.getAlphanumericReqId());
-						pojo.setRequestVersion(requestInfoSO
-								.getRequestVersion());
-						saveDynamicAttribValue(pojo);
-						int did = deviceDiscoveryRepository
-								.findDid(requestInfoSO.getHostname());
-						String rfoId = rfoDecomposedRepository
-								.findrfoId(requestInfoSO
-										.getAlphanumericReqId());
-						List<MasterAttributes> featureIdAndmCharIdAndLabel = attribCreateConfigRepo
-								.findfeatureCharIdAndLabel(requestInfoSO
-										.getAlphanumericReqId());
-						ResourceCharacteristicsHistoryEntity history = new ResourceCharacteristicsHistoryEntity();
-						for (MasterAttributes attributes : featureIdAndmCharIdAndLabel) {
-							history.setRcFeatureId(attributes
-									.getMasterFID());
-							history.setRcCharacteristicId(attributes
-									.getCharacteristicId());
-							history.setRcName(attributes.getLabel());
-							history.setRcName(attributes.getLabelValue());
-							history.setDeviceId(did);
-							history.setRcRequestStatus("InProgress");
-							history.setRcDeviceHostname(requestInfoSO
-									.getHostname());
-							history.setSoRequestId(requestInfoSO
+				if (pojoList != null) {
+					if (pojoList.isEmpty()) {
+					}
+					// Save the Data in t_create_config_m_attrib_info Table
+					else {
+						for (CreateConfigPojo pojo : pojoList) {
+							pojo.setRequestId(requestInfoSO
 									.getAlphanumericReqId());
-							history.setRfoId(rfoId);
-							history.setRcActionPerformed("ADD");
-							history.setRcValue(pojo.getMasterLabelValue());
-							resourceCharHistoryRepo.save(history);
+							pojo.setRequestVersion(requestInfoSO
+									.getRequestVersion());
+							saveDynamicAttribValue(pojo);
+							int did = deviceDiscoveryRepository
+									.findDid(requestInfoSO.getHostname());
+							String rfoId = rfoDecomposedRepository
+									.findrfoId(requestInfoSO
+											.getAlphanumericReqId());
+							List<MasterAttributes> featureIdAndmCharIdAndLabel = attribCreateConfigRepo
+									.findfeatureCharIdAndLabel(requestInfoSO
+											.getAlphanumericReqId());
+							ResourceCharacteristicsHistoryEntity history = new ResourceCharacteristicsHistoryEntity();
+							for (MasterAttributes attributes : featureIdAndmCharIdAndLabel) {
+								history.setRcFeatureId(attributes
+										.getMasterFID());
+								history.setRcCharacteristicId(attributes
+										.getCharacteristicId());
+								history.setRcName(attributes.getLabel());
+								history.setRcValue(attributes.getLabelValue());
+								history.setDeviceId(did);
+								history.setRcRequestStatus("InProgress");
+								history.setRcDeviceHostname(requestInfoSO
+										.getHostname());
+								history.setSoRequestId(requestInfoSO
+										.getAlphanumericReqId());
+								history.setRfoId(rfoId);
+								history.setRcActionPerformed("ADD");
+								history.setRcValue(pojo.getMasterLabelValue());
+								resourceCharHistoryRepo.save(history);
+							}
 						}
 					}
 				}
-			}
 
-			if(requestInfoSO.getApiCallType().equalsIgnoreCase("external"))
-			{
-				configGenMtds=setConfigGenMtds(requestInfoSO.getConfigurationGenerationMethods());
-			}
-			if (requestInfoSO.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains("Template")) {
-
-				if (featureList != null && !featureList.isEmpty()) {
-					featureList
-							.forEach(feature -> {
-
-								TemplateFeatureEntity featureid = featureRepo
-										.findById(Integer.parseInt(feature));
-
-								RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
-								requestFeatureEntity
-										.settFeatureId(featureid);
-								requestFeatureEntity
-										.settRequestId(requestInfoSO
-												.getAlphanumericReqId());
-								requestFeatureEntity
-										.settHostName(requestInfoSO
-												.getHostname());
-								requestFeatureEntity
-										.settRequestVersion(requestInfoSO
-												.getRequestVersion());
-								requestFeatureRepo
-										.save(requestFeatureEntity);
-							});
-
+				if (requestInfoSO.getApiCallType().equalsIgnoreCase("external")) {
+					configGenMtds = setConfigGenMtds(requestInfoSO
+							.getConfigurationGenerationMethods());
 				}
-			} 
-			else if(requestInfoSO.getApiCallType().equalsIgnoreCase("external") && configGenMtds.contains("Non-Template"))
-			{
-				
-				features.forEach(feature -> {
-					RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
-					MasterFeatureEntity masterFeatureId = masterFeatureRepository
-							.findByFIdAndFVersion(
-									feature.getfMasterId(), "1.0");
+				if (requestInfoSO.getApiCallType().equalsIgnoreCase("external")
+						&& configGenMtds.contains("Template")) {
 
-					requestFeatureEntity
-							.settMasterFeatureId(masterFeatureId);
-					;
-					requestFeatureEntity.settRequestId(requestInfoSO
-							.getAlphanumericReqId());
-					requestFeatureEntity.settHostName(requestInfoSO
-							.getHostname());
-					requestFeatureEntity
-							.settRequestVersion(requestInfoSO
-									.getRequestVersion());
-					requestFeatureRepo.save(requestFeatureEntity);
-				});
-				
-			}
-			else if(requestInfoSO.getApiCallType().equalsIgnoreCase("c3p-ui")) {
-				if (featureList != null && !featureList.isEmpty()) {
-					featureList
-							.forEach(feature -> {
-								TemplateFeatureEntity featureId = featureRepo
-										.findByCommandAndComandDisplayFeature(
-												requestInfoSO
-														.getTemplateID(),
-												feature);
-								if (featureId != null) {
+					if (featureList != null && !featureList.isEmpty()) {
+						featureList
+								.forEach(feature -> {
+
+									TemplateFeatureEntity featureid = featureRepo
+											.findById(Integer.parseInt(feature));
 
 									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 									requestFeatureEntity
-											.settFeatureId(featureId);
-									requestFeatureEntity.settRequestId(requestInfoSO
-											.getAlphanumericReqId());
+											.settFeatureId(featureid);
+									requestFeatureEntity
+											.settRequestId(requestInfoSO
+													.getAlphanumericReqId());
 									requestFeatureEntity
 											.settHostName(requestInfoSO
 													.getHostname());
@@ -3207,85 +3223,293 @@ public class DcmConfigService {
 													.getRequestVersion());
 									requestFeatureRepo
 											.save(requestFeatureEntity);
-								}
-							});
-				}
-			}
+								});
 
-			if (output.equalsIgnoreCase("true")) {
-				validateMessage = "Success";
-				if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
-					for (RequestInfoPojo request : requestInfoSOList) {
-						createTemplateAndHeader(request,requestInfoSOList);
 					}
-					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-							requestInfoSO, userName);
-					telnetCommunicationSSH.setDaemon(true);
-					telnetCommunicationSSH.start();
-					// telnetCommunicationSSH.connectToRouter(configRequest);
-				} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
-						"VNF")) {
-					VNFHelper helper = new VNFHelper();
-					if (requestInfoSO.getVnfConfig() != null) {
-						if (!requestInfoSO.getRequestType()
-								.equalsIgnoreCase("Test")) {
-							String filepath = helper.saveXML(
-									requestInfoSO.getVnfConfig(),
-									requestIdForConfig, requestInfoSO);
-							if (filepath != null) {
+				} else if (requestInfoSO.getApiCallType().equalsIgnoreCase(
+						"external")
+						&& configGenMtds.contains("Non-Template")) {
 
-								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-										requestInfoSO, userName);
-								telnetCommunicationSSH.setDaemon(true);
-								telnetCommunicationSSH.start();
+					features.forEach(feature -> {
+						RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+						MasterFeatureEntity masterFeatureId = masterFeatureRepository
+								.findByFIdAndFVersion(feature.getfMasterId(),
+										"1.0");
 
-							} else {
-								validateMessage = "Failure due to invalid input";
+						requestFeatureEntity
+								.settMasterFeatureId(masterFeatureId);
+						;
+						requestFeatureEntity.settRequestId(requestInfoSO
+								.getAlphanumericReqId());
+						requestFeatureEntity.settHostName(requestInfoSO
+								.getHostname());
+						requestFeatureEntity.settRequestVersion(requestInfoSO
+								.getRequestVersion());
+						requestFeatureRepo.save(requestFeatureEntity);
+					});
 
-							}
-						} else {
-							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-									requestInfoSO, userName);
-							telnetCommunicationSSH.setDaemon(true);
-							telnetCommunicationSSH.start();
+				} else if (requestInfoSO.getApiCallType().equalsIgnoreCase(
+						"c3p-ui")) {
+					if (featureList != null && !featureList.isEmpty()) {
+						featureList
+								.forEach(feature -> {
+									TemplateFeatureEntity featureId = featureRepo
+											.findByCommandAndComandDisplayFeature(
+													requestInfoSO
+															.getTemplateID(),
+													feature);
+									if (featureId != null) {
+
+										RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+										requestFeatureEntity
+												.settFeatureId(featureId);
+										requestFeatureEntity.settRequestId(requestInfoSO
+												.getAlphanumericReqId());
+										requestFeatureEntity
+												.settHostName(requestInfoSO
+														.getHostname());
+										requestFeatureEntity
+												.settRequestVersion(requestInfoSO
+														.getRequestVersion());
+										requestFeatureRepo
+												.save(requestFeatureEntity);
+									}
+								});
+					}
+				}
+
+				if (output.equalsIgnoreCase("true")) {
+					validateMessage = "Success";
+					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+						for (RequestInfoPojo request : requestInfoSOList) {
+							createTemplateAndHeader(request, requestInfoSOList);
 						}
-					} else {
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								requestInfoSO, userName);
 						telnetCommunicationSSH.setDaemon(true);
 						telnetCommunicationSSH.start();
+						// telnetCommunicationSSH.connectToRouter(configRequest);
+					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
+							"VNF")) {
+						if (requestInfoSO.getRequestType().equalsIgnoreCase(
+								"SNAI")) {
+
+							for (RequestInfoPojo request : requestInfoSOList) {
+								createTemplateAndHeader(request,
+										requestInfoSOList);
+							}
+							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+									requestInfoSO, userName);
+							telnetCommunicationSSH.setDaemon(true);
+							telnetCommunicationSSH.start();
+
+						} else {
+							VNFHelper helper = new VNFHelper();
+							if (requestInfoSO.getVnfConfig() != null) {
+								if (!requestInfoSO.getRequestType()
+										.equalsIgnoreCase("Test")) {
+									String filepath = helper.saveXML(
+											requestInfoSO.getVnfConfig(),
+											requestIdForConfig, requestInfoSO);
+									if (filepath != null) {
+
+										TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+												requestInfoSO, userName);
+										telnetCommunicationSSH.setDaemon(true);
+										telnetCommunicationSSH.start();
+
+									} else {
+										validateMessage = "Failure due to invalid input";
+
+									}
+								} else {
+									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+											requestInfoSO, userName);
+									telnetCommunicationSSH.setDaemon(true);
+									telnetCommunicationSSH.start();
+								}
+							} else {
+								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+										requestInfoSO, userName);
+								telnetCommunicationSSH.setDaemon(true);
+								telnetCommunicationSSH.start();
+							}
+						}
 					}
 
+					/*
+					 * validateMessage = "Success";
+					 * createTemplate(requestInfoSO);
+					 * 
+					 * TelnetCommunicationSSH telnetCommunicationSSH = new
+					 * TelnetCommunicationSSH( requestInfoSO);
+					 * telnetCommunicationSSH.setDaemon(true);
+					 * telnetCommunicationSSH.start(); } else { validateMessage
+					 * = "Failure";
+					 * 
+					 * }
+					 */
+
+				} else {
+					requestInfoSO.setStatus("Scheduled");
+					result = dao.insertRequestInDB(requestInfoSO);
+
+					for (Map.Entry<String, String> entry : result.entrySet()) {
+						if (entry.getKey() == "requestID") {
+
+							requestIdForConfig = entry.getValue();
+							requestInfoSO
+									.setAlphanumericReqId(requestIdForConfig);
+						}
+						if (entry.getKey() == "result") {
+							res = entry.getValue();
+						}
+
+					}
+					if (pojoList != null) {
+						if (pojoList.isEmpty()) {
+						}
+						// Save the Data in t_create_config_m_attrib_info Table
+						else {
+							for (CreateConfigPojo pojo : pojoList) {
+								pojo.setRequestId(requestInfoSO
+										.getAlphanumericReqId());
+								pojo.setRequestVersion(requestInfoSO
+										.getRequestVersion());
+								saveDynamicAttribValue(pojo);
+							}
+						}
+					}
+
+					if (requestInfoSO.getApiCallType().equalsIgnoreCase(
+							"external")) {
+
+						if (featureList != null && !featureList.isEmpty()) {
+							featureList
+									.forEach(feature -> {
+
+										TemplateFeatureEntity featureid = featureRepo
+												.findById(Integer
+														.parseInt(feature));
+
+										RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+										requestFeatureEntity
+												.settFeatureId(featureid);
+										requestFeatureEntity.settRequestId(requestInfoSO
+												.getAlphanumericReqId());
+										requestFeatureEntity
+												.settHostName(requestInfoSO
+														.getHostname());
+										requestFeatureEntity
+												.settRequestVersion(requestInfoSO
+														.getRequestVersion());
+										requestFeatureRepo
+												.save(requestFeatureEntity);
+									});
+
+						}
+					} else {
+						if (featureList != null && !featureList.isEmpty()) {
+							featureList
+									.forEach(feature -> {
+										TemplateFeatureEntity featureId = featureRepo
+												.findByCommandAndComandDisplayFeature(
+														requestInfoSO
+																.getTemplateID(),
+														feature);
+										if (featureId != null) {
+
+											RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+											requestFeatureEntity
+													.settFeatureId(featureId);
+											requestFeatureEntity
+													.settRequestId(requestInfoSO
+															.getAlphanumericReqId());
+											requestFeatureEntity
+													.settHostName(requestInfoSO
+															.getHostname());
+											requestFeatureEntity
+													.settRequestVersion(requestInfoSO
+															.getRequestVersion());
+											requestFeatureRepo
+													.save(requestFeatureEntity);
+										}
+									});
+						}
+					}
+					for (RequestInfoPojo request : requestInfoSOList) {
+						createTemplateAndHeader(request, requestInfoSOList);
+					}
+					// update the scheduler history
+					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+						// createTemplate(requestInfoSO);
+
+						// update the scheduler history
+						requestSchedulerDao
+								.updateScheduledRequest(requestInfoSO);
+						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+								requestInfoSO, userName);
+						telnetCommunicationSSH.setDaemon(true);
+						telnetCommunicationSSH.start();
+					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
+							"VNF")) {
+						/*
+						 * VNFHelper helper = new VNFHelper(); if
+						 * (requestInfoSO.getVnfConfig() != null) { String
+						 * filepath =
+						 * helper.saveXML(requestInfoSO.getVnfConfig(),
+						 * requestIdForConfig, requestInfoSO); if (filepath !=
+						 * null) {
+						 * 
+						 * TelnetCommunicationSSH telnetCommunicationSSH = new
+						 * TelnetCommunicationSSH( requestInfoSO);
+						 * telnetCommunicationSSH.setDaemon(true);
+						 * telnetCommunicationSSH.start();
+						 * 
+						 * } }
+						 */}
 				}
-
-				/*
-				 * validateMessage = "Success";
-				 * createTemplate(requestInfoSO);
-				 * 
-				 * TelnetCommunicationSSH telnetCommunicationSSH = new
-				 * TelnetCommunicationSSH( requestInfoSO);
-				 * telnetCommunicationSSH.setDaemon(true);
-				 * telnetCommunicationSSH.start(); } else { validateMessage
-				 * = "Failure";
-				 * 
-				 * }
-				 */
-
 			} else {
+
 				requestInfoSO.setStatus("Scheduled");
 				result = dao.insertRequestInDB(requestInfoSO);
+
+				requestType = requestInfoSO.getRequestType();
+				if (!(requestType.equals("Test"))
+						&& !(requestType.equals("Audit"))) {
+					if (!requestInfoSO.getTemplateID().isEmpty())
+						templateSuggestionDao
+								.insertTemplateUsageData(requestInfoSO
+										.getTemplateID());
+				}
 
 				for (Map.Entry<String, String> entry : result.entrySet()) {
 					if (entry.getKey() == "requestID") {
 
 						requestIdForConfig = entry.getValue();
-						requestInfoSO
-								.setAlphanumericReqId(requestIdForConfig);
+						requestInfoSO.setAlphanumericReqId(requestIdForConfig);
+						for (RequestInfoPojo request : requestInfoSOList) {
+							request.setAlphanumericReqId(requestIdForConfig);
+							request.setRequestVersion(requestInfoSO
+									.getRequestVersion());
+						}
 					}
 					if (entry.getKey() == "result") {
 						res = entry.getValue();
 					}
 
+				}
+				int testStrategyDBUpdate = dao.insertTestRecordInDB(
+						requestInfoSO.getAlphanumericReqId(),
+						requestInfoSO.getTestsSelected(),
+						requestInfoSO.getRequestType(),
+						requestInfoSO.getRequestVersion());
+
+				if (testStrategyDBUpdate > 0) {
+					output = "true";
+				} else {
+					output = "false";
 				}
 				if (pojoList != null) {
 					if (pojoList.isEmpty()) {
@@ -3302,22 +3526,21 @@ public class DcmConfigService {
 					}
 				}
 
-				if (requestInfoSO.getApiCallType().equalsIgnoreCase(
-						"external")) {
+				if (requestInfoSO.getApiCallType().equalsIgnoreCase("external")) {
 
 					if (featureList != null && !featureList.isEmpty()) {
 						featureList
 								.forEach(feature -> {
 
 									TemplateFeatureEntity featureid = featureRepo
-											.findById(Integer
-													.parseInt(feature));
+											.findById(Integer.parseInt(feature));
 
 									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 									requestFeatureEntity
 											.settFeatureId(featureid);
-									requestFeatureEntity.settRequestId(requestInfoSO
-											.getAlphanumericReqId());
+									requestFeatureEntity
+											.settRequestId(requestInfoSO
+													.getAlphanumericReqId());
 									requestFeatureEntity
 											.settHostName(requestInfoSO
 													.getHostname());
@@ -3343,9 +3566,8 @@ public class DcmConfigService {
 										RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 										requestFeatureEntity
 												.settFeatureId(featureId);
-										requestFeatureEntity
-												.settRequestId(requestInfoSO
-														.getAlphanumericReqId());
+										requestFeatureEntity.settRequestId(requestInfoSO
+												.getAlphanumericReqId());
 										requestFeatureEntity
 												.settHostName(requestInfoSO
 														.getHostname());
@@ -3359,7 +3581,18 @@ public class DcmConfigService {
 					}
 				}
 				for (RequestInfoPojo request : requestInfoSOList) {
-					createTemplateAndHeader(request,requestInfoSOList);
+					if (request.getHostname() != null) {
+						if (requestInfoSOList.size() == 1) {
+							createHeader(request);
+							createTemplate(request);
+
+						} else {
+							createHeader(request);
+
+						}
+					} else {
+						createTemplate(request);
+					}
 				}
 				// update the scheduler history
 				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
@@ -3367,8 +3600,7 @@ public class DcmConfigService {
 					// createTemplate(requestInfoSO);
 
 					// update the scheduler history
-					requestSchedulerDao
-							.updateScheduledRequest(requestInfoSO);
+					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
 					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 							requestInfoSO, userName);
 					telnetCommunicationSSH.setDaemon(true);
@@ -3377,175 +3609,49 @@ public class DcmConfigService {
 						"VNF")) {
 					/*
 					 * VNFHelper helper = new VNFHelper(); if
-					 * (requestInfoSO.getVnfConfig() != null) { String
-					 * filepath =
-					 * helper.saveXML(requestInfoSO.getVnfConfig(),
-					 * requestIdForConfig, requestInfoSO); if (filepath !=
-					 * null) {
+					 * (requestInfoSO.getVnfConfig() != null) { String filepath
+					 * = helper.saveXML(requestInfoSO.getVnfConfig(),
+					 * requestIdForConfig, requestInfoSO); if (filepath != null)
+					 * {
 					 * 
 					 * TelnetCommunicationSSH telnetCommunicationSSH = new
-					 * TelnetCommunicationSSH( requestInfoSO);
+					 * TelnetCommunicationSSH(requestInfoSO);
 					 * telnetCommunicationSSH.setDaemon(true);
 					 * telnetCommunicationSSH.start();
 					 * 
 					 * } }
 					 */}
 			}
-		} else {
-
-			requestInfoSO.setStatus("Scheduled");
-			result = dao.insertRequestInDB(requestInfoSO);
-
-			requestType = requestInfoSO.getRequestType();
-			if (!(requestType.equals("Test"))
-					&& !(requestType.equals("Audit"))) {
-				if (!requestInfoSO.getTemplateID().isEmpty())
-					templateSuggestionDao
-							.insertTemplateUsageData(requestInfoSO
-									.getTemplateID());
-			}
-
-			for (Map.Entry<String, String> entry : result.entrySet()) {
-				if (entry.getKey() == "requestID") {
-
-					requestIdForConfig = entry.getValue();
-					requestInfoSO.setAlphanumericReqId(requestIdForConfig);
-					for (RequestInfoPojo request : requestInfoSOList) {
-						request.setAlphanumericReqId(requestIdForConfig);
-						request.setRequestVersion(requestInfoSO
-								.getRequestVersion());
-					}
-				}
-				if (entry.getKey() == "result") {
-					res = entry.getValue();
-				}
-
-			}
-			int testStrategyDBUpdate = dao.insertTestRecordInDB(
-					requestInfoSO.getAlphanumericReqId(),
-					requestInfoSO.getTestsSelected(),
-					requestInfoSO.getRequestType(),
-					requestInfoSO.getRequestVersion());
-
-			if (testStrategyDBUpdate > 0) {
-				output = "true";
-			} else {
-				output = "false";
-			}
-			if (pojoList != null) {
-				if (pojoList.isEmpty()) {
-				}
-				// Save the Data in t_create_config_m_attrib_info Table
-				else {
-					for (CreateConfigPojo pojo : pojoList) {
-						pojo.setRequestId(requestInfoSO
-								.getAlphanumericReqId());
-						pojo.setRequestVersion(requestInfoSO
-								.getRequestVersion());
-						saveDynamicAttribValue(pojo);
-					}
-				}
-			}
-
-			if (requestInfoSO.getApiCallType().equalsIgnoreCase("external")) {
-
-				if (featureList != null && !featureList.isEmpty()) {
-					featureList
-							.forEach(feature -> {
-
-								TemplateFeatureEntity featureid = featureRepo
-										.findById(Integer.parseInt(feature));
-
-								RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
-								requestFeatureEntity
-										.settFeatureId(featureid);
-								requestFeatureEntity
-										.settRequestId(requestInfoSO
-												.getAlphanumericReqId());
-								requestFeatureEntity
-										.settHostName(requestInfoSO
-												.getHostname());
-								requestFeatureEntity
-										.settRequestVersion(requestInfoSO
-												.getRequestVersion());
-								requestFeatureRepo
-										.save(requestFeatureEntity);
-							});
-
-				}
-			} else {
-				if (featureList != null && !featureList.isEmpty()) {
-					featureList
-							.forEach(feature -> {
-								TemplateFeatureEntity featureId = featureRepo
-										.findByCommandAndComandDisplayFeature(
-												requestInfoSO
-														.getTemplateID(),
-												feature);
-								if (featureId != null) {
-
-									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
-									requestFeatureEntity
-											.settFeatureId(featureId);
-									requestFeatureEntity.settRequestId(requestInfoSO
-											.getAlphanumericReqId());
-									requestFeatureEntity
-											.settHostName(requestInfoSO
-													.getHostname());
-									requestFeatureEntity
-											.settRequestVersion(requestInfoSO
-													.getRequestVersion());
-									requestFeatureRepo
-											.save(requestFeatureEntity);
-								}
-							});
-				}
-			}
-			for (RequestInfoPojo request : requestInfoSOList) {
-				if (request.getHostname() != null) {
-					if (requestInfoSOList.size() == 1) {
-						createHeader(request);
-						createTemplate(request);
-
-					} else {
-						createHeader(request);
-
-					}
-				} else {
-					createTemplate(request);
-				}
-			}
-			// update the scheduler history
-			requestSchedulerDao.updateScheduledRequest(requestInfoSO);
-			if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
-				// createTemplate(requestInfoSO);
-
-				// update the scheduler history
-				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
-				TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-						requestInfoSO, userName);
-				telnetCommunicationSSH.setDaemon(true);
-				telnetCommunicationSSH.start();
-			} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
-					"VNF")) {
-				/*
-				 * VNFHelper helper = new VNFHelper(); if
-				 * (requestInfoSO.getVnfConfig() != null) { String filepath
-				 * = helper.saveXML(requestInfoSO.getVnfConfig(),
-				 * requestIdForConfig, requestInfoSO); if (filepath != null)
-				 * {
-				 * 
-				 * TelnetCommunicationSSH telnetCommunicationSSH = new
-				 * TelnetCommunicationSSH(requestInfoSO);
-				 * telnetCommunicationSSH.setDaemon(true);
-				 * telnetCommunicationSSH.start();
-				 * 
-				 * } }
-				 */}
+		} catch (Exception e) {
+			logger.error(e);
 		}
-	} catch (Exception e) {
-		logger.error(e);
+		return result;
 	}
-	return result;
-}
+	private void templateFileCreator(List<RequestInfoPojo> requestInfoSOList,RequestInfoPojo request)
+	{
+		if (requestInfoSOList.size() == 1) {
+			createHeader(request);
+			createTemplate(request);
+
+		} else {
+			createHeader(request);
+
+		}
+	}
+	
+	private void instantiationSOIDUpdate(List<RequestInfoPojo> requestInfoSOList,RequestInfoPojo request)
+	{
+		createHeader(request);
+		if(request.getHostname()!=null)
+		{
+			String tempRequestId=request.getHostname().split(":::")[1];
+			List<ResourceCharacteristicsHistoryEntity>list=resourceCharHistoryRepo.findBySoRequestId(tempRequestId);
+			for(ResourceCharacteristicsHistoryEntity pojo : list)
+			{
+				pojo.setSoRequestId(request.getAlphanumericReqId());
+				resourceCharHistoryRepo.save(pojo);
+			}
+			
+		}
+	}
 }

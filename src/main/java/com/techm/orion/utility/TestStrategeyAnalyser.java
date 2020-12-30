@@ -315,7 +315,7 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + " & " + value2,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Incorrect collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion);
 										}
 									} catch (Exception e) {
 										// fail the test

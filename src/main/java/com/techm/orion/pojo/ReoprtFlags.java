@@ -17,6 +17,7 @@ public class ReoprtFlags {
 	int others_test;
 	int network_audit;
 	double requestVersion;
+	int instantiate;
 	
 	public int getNetwork_audit() {
 		return network_audit;
@@ -109,4 +110,10 @@ public class ReoprtFlags {
 		this.requestVersion = requestVersion;
 	}
 
+	public int getInstantiate() {
+		return instantiate;
+	}
+	public void setInstantiate(int instantiate) {
+		this.instantiate = instantiate;
+	}
 }

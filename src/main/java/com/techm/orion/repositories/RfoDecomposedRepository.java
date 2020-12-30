@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.techm.orion.entitybeans.RfoDecomposedEntity;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Repository
 public interface RfoDecomposedRepository extends
@@ -30,4 +31,7 @@ public interface RfoDecomposedRepository extends
 	@Query(value = "select rfo.od_rfo_id from c3p_rfo_decomposed rfo,t_create_config_m_attrib_info info where rfo.od_request_id = info.request_id "
 			+ "and info.request_id=:request_id", nativeQuery = true)
 	String findrfoId(@Param("request_id") String request_id);
+	
+	@Query(value= "select * from c3p_rfo_decomposed where od_rfo_id =:odRfoId" , nativeQuery = true)
+	public List<RfoDecomposedEntity> findRequestId(@Param("odRfoId")String odRfoId);
 }

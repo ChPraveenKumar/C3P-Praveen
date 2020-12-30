@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -20,11 +21,14 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
 import com.techm.orion.entitybeans.BasicConfiguration;
+import com.techm.orion.entitybeans.Notification;
 import com.techm.orion.exception.DuplicateDataException;
 import com.techm.orion.models.TemplateCommandJSONModel;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
@@ -33,11 +37,18 @@ import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.repositories.NotificationRepo;
+import com.techm.orion.repositories.UserManagementRepository;
 
+@Component
 public class TemplateManagementDao {
 	private static final Logger logger = LogManager.getLogger(TemplateManagementDao.class);
 	private Connection connection;
 	Statement statement;
+	@Autowired
+	private NotificationRepo notificationRepo;
+	@Autowired
+	private UserManagementRepository userManagementRepository;
 
 	public boolean updateMasterFeatureAndCommandTable(String series) {
 		boolean result = false;
@@ -207,7 +218,7 @@ public class TemplateManagementDao {
 		}
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
-			pst.setInt(1, Integer.parseInt(status));
+			pst.setInt(1, "true".equals(status) ?1: 0);
 			pst.setString(2, templateid);
 			pst.setString(3, version);
 			int i = pst.executeUpdate();
@@ -218,9 +229,7 @@ public class TemplateManagementDao {
 			e.printStackTrace();
 		} finally {
 			DBUtil.close(connection);
-
 		}
-
 	}
 
 	public boolean getTemplateStatus(String templateid, String version) {
@@ -1479,7 +1488,7 @@ public class TemplateManagementDao {
 	@SuppressWarnings("resource")
 	public final Map<String, String> addTemplate(String vendor, String deviceFamily, String model, String os,
 			String osVersion, String region, String oldTemplateId, String oldVersion, String comment,
-			String networkType, String aliasName, String userName) {
+			String networkType, String aliasName, String userName, String userRole) {
 		connection = ConnectionFactory.getConnection();
 		boolean result = false;
 		String tempid = null, oldversion = null;
@@ -1495,7 +1504,6 @@ public class TemplateManagementDao {
 		DuplicateDataException exception = null;
 		boolean isPresent = false;
 		try {
-
 			Statement pst = connection.createStatement();
 			ResultSet rs1 = pst.executeQuery(query2);
 			while (rs1.next()) {
@@ -1537,15 +1545,13 @@ public class TemplateManagementDao {
 				ps.setString(12, "suser");
 				ps.setString(13, networkType);
 				ps.setString(14, aliasName);
-
 				// int i=0;
 				int i = ps.executeUpdate();
 				if (i == 1) {
 					result = true;
-
+					createNotification(userName, tempid, "1.0");
 				} else {
 					result = false;
-
 				}
 				resultmap.put("tempid", tempid);
 				resultmap.put("status", "success");
@@ -1583,15 +1589,13 @@ public class TemplateManagementDao {
 				ps1.setString(12, "suser");
 				ps1.setString(13, networkType);
 				ps1.setString(14, aliasName);
-
 				// int i=0;
 				int i = ps1.executeUpdate();
 				if (i == 1) {
 					result = true;
-
+					createNotification(userName, tempid, parentversion);
 				} else {
 					result = false;
-
 				}
 				resultmap.put("tempid", tempid);
 				resultmap.put("status", "success");
@@ -2349,5 +2353,33 @@ public class TemplateManagementDao {
 		}
 		return seriesName;
 	}
+	
+	private void createNotification(String userName, String tempId, String version) {
+		Notification notificationEntity = new Notification();
+		StringBuilder builder = new StringBuilder();
+		String sUserListData = "";
+		Date date = new Date();
+		Timestamp timestamp = new Timestamp(date.getTime());
+		Calendar cal = Calendar.getInstance();
+		List<String> sUserList = userManagementRepository.findByRole();
+		for (String suserList : sUserList) {
+			builder.append(suserList).append(",");
+		}
+		sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
 
+		notificationEntity.setNotifFromUser(userName);
+		notificationEntity.setNotifToUser(sUserListData);
+		notificationEntity.setNotifType("Template Approval");
+		notificationEntity.setNotifCreatedDate(timestamp);
+		notificationEntity.setNotifReference(tempId + "-V" + version);
+		notificationEntity.setNotifLabel(tempId + "-V" + version + " : " + "Approval initiated");
+		notificationEntity.setNotifMessage("Approval initiated");
+		notificationEntity.setNotifPriority("1");
+		notificationEntity.setNotifStatus("Pending");
+		cal.setTimeInMillis(timestamp.getTime());
+		cal.add(Calendar.DAY_OF_MONTH, 30);
+		timestamp = new Timestamp(cal.getTime().getTime());
+		notificationEntity.setNotifExpiryDate(timestamp);
+		notificationRepo.save(notificationEntity);
+	}
 }

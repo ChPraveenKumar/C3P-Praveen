@@ -15,5 +15,7 @@ public interface CategoryDropDownDao extends JpaRepository<CategoryDropDownEntit
 	List<CategoryDropDownEntity> findAllByAttribParentValue(int value);
 
 	List<CategoryDropDownEntity> findAllByCategoryCategoryName(String category);
+	
+	List<CategoryDropDownEntity> findAllByCategoryId(int categoryId);
 
 }

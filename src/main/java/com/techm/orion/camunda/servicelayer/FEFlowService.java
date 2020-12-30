@@ -1,8 +1,11 @@
 package com.techm.orion.camunda.servicelayer;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -24,19 +27,17 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.entitybeans.Notification;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.pojo.CommandPojo;
-import com.techm.orion.pojo.Global;
-import com.techm.orion.repositories.BasicConfigurationRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
+import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
-import com.techm.orion.repositories.SeriesRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.rest.CamundaServiceCreateReq;
 import com.techm.orion.rest.CamundaServiceFEWorkflow;
 import com.techm.orion.rest.DeviceReachabilityAndPreValidationTest;
-import com.techm.orion.service.AttribCreateConfigService;
 
 @Controller
 @RequestMapping("/configuration")
@@ -47,19 +48,15 @@ public class FEFlowService implements Observer {
 	private RequestInfoDetailsRepositories reository;
 
 	@Autowired
-	private SeriesRepository seriesrepo;
-	
-	@Autowired
-	private BasicConfigurationRepository basicConfigRepo;
-	
-	@Autowired
-	private AttribCreateConfigService service;
-	
-	@Autowired
 	private TemplateFeatureRepo templateFeatureRepo;
 	
 	@Autowired
 	private MasterCommandsRepository masterCommandsRepository;
+	@Autowired
+	private NotificationRepo notificationRepo;
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+
 
 	@POST
 	@RequestMapping(value = "/startPreValidateTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -87,11 +84,12 @@ public class FEFlowService implements Observer {
 	@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 	@ResponseBody
 	public Response resumePrevalidationTest(@RequestBody String request) {
-		RequestInfoDao daoService = new RequestInfoDao();
 		JSONObject obj = new JSONObject();
-
+		Date date = new Date();
+		Timestamp timestamp = new Timestamp(date.getTime());
+		Calendar cal = Calendar.getInstance();
+		int notifId = 0;
 		final CamundaServiceFEWorkflow workflowService = new CamundaServiceFEWorkflow();
-		Response response = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
@@ -106,8 +104,8 @@ public class FEFlowService implements Observer {
 			df.setMaximumFractionDigits(1);
 			version = df.format(v);
 			RequestInfoEntity req = reository.findByAlphanumericReqIdAndRequestVersion(RequestId, Double.valueOf(version));
-
-			final String userTaskId = daoService.getUserTaskIdForRequest(RequestId, version);
+			
+			final String userTaskId = requestInfoDao.getUserTaskIdForRequest(RequestId, version);
 			if(!req.getStatus().equalsIgnoreCase("Hold"))
 			{
 			Thread t = new Thread(new Runnable() {
@@ -126,9 +124,9 @@ public class FEFlowService implements Observer {
 				// assign to SE again
 				if(req.getStatus().equalsIgnoreCase("Hold"))
 				{
-					res = daoService.changeRequestOwner(RequestId, version, req.getRequestCreatorName());
-					daoService.changeRequestStatus(RequestId, version, "In Progress");
-					daoService.resetErrorStateOfRechabilityTest(RequestId, version);
+					res = requestInfoDao.changeRequestOwner(RequestId, version, req.getRequestCreatorName());
+					requestInfoDao.changeRequestStatus(RequestId, version, "In Progress");
+					requestInfoDao.resetErrorStateOfRechabilityTest(RequestId, version);
 					// call camunda service for given request id and version
 					Thread t1 = new Thread(new Runnable() {
 
@@ -156,20 +154,50 @@ public class FEFlowService implements Observer {
 				}
 				else
 				{
-					res = daoService.changeRequestOwner(RequestId, version, req.getRequestCreatorName());
-					daoService.changeRequestStatus(RequestId, version, "In Progress");
-					daoService.resetErrorStateOfRechabilityTest(RequestId, version);
+					res = requestInfoDao.changeRequestOwner(RequestId, version, req.getRequestCreatorName());
+					requestInfoDao.changeRequestStatus(RequestId, version, "In Progress");
+					requestInfoDao.resetErrorStateOfRechabilityTest(RequestId, version);
 				}
 
 			} else {
 				// change request status to hold
-				daoService.changeRequestStatus(RequestId, version, "Hold");
-				res = daoService.changeRequestOwner(RequestId, version, req.getRequestCreatorName());
-				daoService.resetErrorStateOfRechabilityTest(RequestId, version);
+				requestInfoDao.changeRequestStatus(RequestId, version, "Hold");
+				res = requestInfoDao.changeRequestOwner(RequestId, version, req.getRequestCreatorName());
+				requestInfoDao.resetErrorStateOfRechabilityTest(RequestId, version);
 
 			}
+			if(json.get("notif_id") != null)
+				notifId = Integer.parseInt(json.get("notif_id").toString());
+			Notification notificationData = notificationRepo.findById(notifId);
+			notificationData.setNotifStatus("Completed");
+			notificationData.setNotifCompletedby(userName);
+			notificationRepo.save(notificationData);
+			Notification newNotification = new Notification();
+			newNotification.setNotifFromUser(notificationData.getNotifCompletedby());
+			newNotification.setNotifToUser(notificationData.getNotifFromUser());
+			newNotification.setNotifType(notificationData.getNotifType());
+			newNotification.setNotifCreatedDate(timestamp);
+			newNotification.setNotifReference(notificationData.getNotifReference());
+			
+			if(status)
+			{
+				newNotification.setNotifMessage("Request proceeded");
+				newNotification.setNotifLabel(notificationData.getNotifReference()+" : "+"Request proceeded");
+			}
+			else
+			{	
+				newNotification.setNotifMessage("Request put on hold");
+				newNotification.setNotifLabel(notificationData.getNotifReference()+" : "+"Request put on hold");
+			}
+			
+			newNotification.setNotifPriority("1");
+			newNotification.setNotifStatus("Pending");
+			cal.setTimeInMillis(timestamp.getTime());
+		    cal.add(Calendar.DAY_OF_MONTH, 30);
+		    timestamp = new Timestamp(cal.getTime().getTime());
+			newNotification.setNotifExpiryDate(timestamp);
+			notificationRepo.save(newNotification);
 			obj.put("result", res);
-
 		}
 		// camundaService.initiateApprovalFlow(templateId, templateVersion,
 		// "Admin");
@@ -201,10 +229,17 @@ public class FEFlowService implements Observer {
 		RequestInfoDao dao = new RequestInfoDao();
 		JSONArray jsonArray = new JSONArray();
 		JSONObject jsonObject = new JSONObject();
+		int notifId =0;
+		String userName = null;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 			if (!json.isEmpty()) {
+				if(json.get("notif_id") != null)
+					notifId = Integer.parseInt(json.get("notif_id").toString());	
+				Notification notificationData = notificationRepo.findById(notifId);
+				if (json.get("userName") != null) 
+					userName = json.get("userName").toString();
 				String RequestId = json.get("requestId").toString();
 				String version = json.get("version").toString();
 				String readFlag = json.get("readFlag").toString();
@@ -240,6 +275,8 @@ public class FEFlowService implements Observer {
 				} else if (userRole.equalsIgnoreCase("seuser")) {
 					dao.setReadFlagFESE(RequestId, version, 1, "SE");
 				}
+				notificationData.setNotifReadby(userName);
+				notificationRepo.save(notificationData);
 			}
 		}
 		// camundaService.initiateApprovalFlow(templateId, templateVersion,

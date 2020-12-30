@@ -22,4 +22,5 @@ public interface CredentialManagementRepo extends JpaRepository<CredentialManage
 	@Transactional
 	void updateRefDevice(int count, String profileName);
 
+	List<CredentialManagementEntity> findByProfileType(String profileType);
 }

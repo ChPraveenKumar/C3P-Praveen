@@ -47,10 +47,12 @@ import com.techm.orion.connection.DBUtil;
 import com.techm.orion.entitybeans.BatchIdEntity;
 import com.techm.orion.entitybeans.CertificationTestResultEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
+import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.entitybeans.TestBundling;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestRules;
+import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.pojo.AlertInformationPojo;
 import com.techm.orion.pojo.CertificationTestPojo;
 import com.techm.orion.pojo.ConfigurationDataValuePojo;
@@ -76,7 +78,9 @@ import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.pojo.UserValidationResultDetailPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
+import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.CertificationTestResultService;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.UtilityMethods;
@@ -94,6 +98,12 @@ public class RequestInfoDao {
 	private CertificationTestResultService certificationTestService;
 	@Autowired
 	private ServiceOrderRepo serviceOrderRepo;
+	@Autowired
+	private UserManagementRepository userManagementRepository;
+	
+	@Inject
+	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
+
 	/* SQL information */
 	private static final String INSERT_REQUEST_INFOSO = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
 			+ "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -916,6 +926,7 @@ public class RequestInfoDao {
 					flags = new ReoprtFlags();
 					flags.setRequestId(resultSet.getString("request_id"));
 					flags.setStart_test(resultSet.getInt("start_test"));
+					flags.setInstantiate(resultSet.getInt("instantiation"));
 					flags.setNetwork_test(resultSet.getInt("network_test"));
 					flags.setHealth_checkup(resultSet.getInt("health_checkup"));
 					flags.setGenerate_config(resultSet
@@ -4104,18 +4115,22 @@ public class RequestInfoDao {
 	public boolean changeRequestOwner(String requestid, String version,
 			String owner) {
 		boolean result = false;
+		String userRole =null;
+		List<UserManagementEntity> userRoleDetails = userManagementRepository.findByUserName(owner);
 		String query = "update c3p_t_request_info set r_request_owner = ? , r_read_fe=?, r_read_se=? where r_alphanumeric_req_id = ? and r_request_version= ?";
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, owner);
-			if (owner.equalsIgnoreCase("seuser")) {
+			if(!userRoleDetails.isEmpty())
+				userRole = userRoleDetails.get(0).getRole();
+			if (userRole.equalsIgnoreCase("seuser")) {
 				preparedStmt.setInt(2, 1);
 				preparedStmt.setInt(3, 0);
-			} else if (owner.equalsIgnoreCase("feuser")) {
+			} else if (userRole.equalsIgnoreCase("feuser")) {
 				preparedStmt.setInt(2, 0);
 				preparedStmt.setInt(3, 1);
-			} else if (owner.equalsIgnoreCase("admin")) {
+			} else if (userRole.equalsIgnoreCase("admin")) {
 				preparedStmt.setInt(2, 1);
 				preparedStmt.setInt(3, 0);
 			}
@@ -6348,7 +6363,7 @@ public class RequestInfoDao {
 	/* Method Overloading for UIRevamp */
 	public Map<String, String> insertRequestInDB(RequestInfoPojo requestInfoSO) {
 		Map<String, String> hmap = new HashMap<String, String>();
-		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id, customer = null, siteName = null, family = null, siteId = null, vendor = null, deviceType = null, selectedFileFeatures=null, configGenerationMethods=null;
+		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id, customer = null, siteName = null, family = null, siteId = null, vendor = null, deviceType = null, selectedFileFeatures = null, configGenerationMethods = null;
 		String request_creator_name = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
 		String networktype = null, fileName = null, apiCallType = null;
@@ -6427,7 +6442,14 @@ public class RequestInfoDao {
 					alphaneumeric_req_id = "SLGM-"
 							+ UUID.randomUUID().toString().toUpperCase();
 
-				} else {
+				} else if (requestInfoSO.getRequestType().equalsIgnoreCase(
+						"SNAI")) {
+					alphaneumeric_req_id = "SNAI-"
+							+ UUID.randomUUID().toString().toUpperCase();
+
+				}
+
+				else {
 					alphaneumeric_req_id = "SLGC-"
 							+ UUID.randomUUID().toString().toUpperCase();
 				}
@@ -6545,10 +6567,12 @@ public class RequestInfoDao {
 			} else {
 				selectedFileFeatures = "";
 			}
-			
+
 			if (requestInfoSO.getConfigurationGenerationMethods() != null
-					&& !requestInfoSO.getConfigurationGenerationMethods().isEmpty()) {
-				configGenerationMethods = requestInfoSO.getConfigurationGenerationMethods();
+					&& !requestInfoSO.getConfigurationGenerationMethods()
+							.isEmpty()) {
+				configGenerationMethods = requestInfoSO
+						.getConfigurationGenerationMethods();
 			} else {
 				configGenerationMethods = "";
 			}
@@ -6569,6 +6593,10 @@ public class RequestInfoDao {
 			}
 
 			if (hostname != "") {
+				if(hostname.contains(":::"))
+				{
+					hostname=hostname.split(":::")[0];
+				}
 				requestEntity.setHostName(hostname);
 			}
 
@@ -7029,6 +7057,8 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray othersArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray networkAuditArray = new org.json.simple.JSONArray();
+		org.json.simple.JSONArray instantiationArray = new org.json.simple.JSONArray();
+
 		certificationTestPojo1 = getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "preValidate");
@@ -7318,14 +7348,37 @@ public class RequestInfoDao {
 				networkAuditArray.add(dynamicTestResultArray4.get(i));
 			}
 		}
-		obj.put("Prevalidation", prevalidationArray);
+		if(request.getAlphanumericReqId().startsWith("SNAI"))
+		{
+			org.json.simple.JSONObject itemObject=null;
+			List<ResourceCharacteristicsHistoryEntity>list=resourceCharHistoryRepo.findBySoRequestId(request.getAlphanumericReqId());
+			for(ResourceCharacteristicsHistoryEntity item: list)
+			{
+				itemObject=new org.json.simple.JSONObject();
+				itemObject.put("testname", item.getRcName());
+				itemObject.put("CollectedValue", item.getRcValue());
+				instantiationArray.add(itemObject);
+			}
+		}
+	
 		if (request.getAlphanumericReqId() != null
-				&& !request.getAlphanumericReqId().startsWith("SLGA")) {
+				&& !request.getAlphanumericReqId().startsWith("SLGA") && !request.getAlphanumericReqId().startsWith("SNAI")) {
 			obj.put("Network", networkArray);
 			obj.put("Health_Check", healthArray);
 		}
+		if(request.getAlphanumericReqId() != null
+				 && !request.getAlphanumericReqId().startsWith("SNAI"))
+		{
+		obj.put("Prevalidation", prevalidationArray);
 		obj.put("Others", othersArray);
 		obj.put("NetworkAudit", networkAuditArray);
+		}
+		if(request.getAlphanumericReqId() != null
+				 && request.getAlphanumericReqId().startsWith("SNAI"))
+		{
+			obj.put("Instantiation", instantiationArray);
+
+		}
 		return obj;
 
 	}
@@ -8763,5 +8816,4 @@ public class RequestInfoDao {
 		return requestInfoList;
 
 	}
-
 }

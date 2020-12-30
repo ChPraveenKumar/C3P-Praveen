@@ -26,6 +26,7 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
+import com.techm.orion.entitybeans.MasterOIDEntity;
 import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
@@ -33,6 +34,7 @@ import com.techm.orion.pojo.AddNewFeatureTemplateMngmntPojo;
 import com.techm.orion.pojo.AttribCreateConfigJson;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CommandPojo;
+import com.techm.orion.pojo.DeviceDetailsPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.TemplateAttribPojo;
 import com.techm.orion.repositories.ErrorValidationRepository;
@@ -40,6 +42,7 @@ import com.techm.orion.repositories.MasterAttribRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.MasterOIDRepository;
 import com.techm.orion.repositories.TemplateCommandsRepository;
 import com.techm.orion.repositories.TemplateConfigBasicDetailsRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
@@ -74,12 +77,15 @@ public class TemplateManagementNewService {
 
 	@Autowired
 	private MasterCommandsRepository masterCommandsRepository;
-	
+
 	@Autowired
 	private MasterAttribRepository masterAttribRepository;
 
 	@Autowired
 	private AttribCreateConfigResponceMapper attribCreateConfigResponceMapper;
+	
+	@Autowired
+	private GetTemplateConfigurationData templateSaveFlowService;
 
 	public List<GetTemplateMngmntActiveDataPojo> getDataForRightPanelOnEditTemplate(String templateId,
 			boolean selectAll) throws Exception {
@@ -163,7 +169,6 @@ public class TemplateManagementNewService {
 		String templateId = null, templateVersion = null;
 		DecimalFormat numberFormat = new DecimalFormat("#.#");
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
-		GetTemplateConfigurationData templateSaveFlowService = new GetTemplateConfigurationData();
 		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
 		String templateAndVesion = json.get("templateid").toString() + "_V" + json.get("templateVersion").toString();
 		boolean ifTemplateAlreadyPresent = templateDao.checkTemplateVersionAlredyexist(templateAndVesion);
@@ -237,7 +242,7 @@ public class TemplateManagementNewService {
 					}
 				}
 			}
-			
+
 			if (oldTemplate != null && !oldTemplate.isEmpty()) {
 				attributeList.addAll(masterAttribRepository.findByTemplateIdContains(oldTemplate));
 				for (MasterAttributes masterAttribute : attributeList) {
@@ -354,73 +359,66 @@ public class TemplateManagementNewService {
 
 	@SuppressWarnings("unchecked")
 	public JSONObject getFeaturesForDevice(String request) throws ParseException {
-		String deviceFamily = null, os = null, osVersion = null, networkType = null, region = null, vendor = null;
+		
 		JSONObject json = new JSONObject();
 		JSONParser parser = new JSONParser();
 		json = (JSONObject) parser.parse(request);
-		if (json.containsKey("deviceFamily")) {
-			deviceFamily = json.get("deviceFamily").toString();
-		}
-		if (json.containsKey("vendor")) {
-			vendor = json.get("vendor").toString();
-		}
-		if (json.containsKey("os")) {
-			os = json.get("os").toString();
-		}
-		if (json.containsKey("osVersion")) {
-			osVersion = json.get("osVersion").toString();
-		}
-		if (json.containsKey("region")) {
-			region = json.get("region").toString();
-		}
-		if (json.containsKey("networkType")) {
-			networkType = json.get("networkType").toString();
-		}
-		if ("All".equals(region)) {
-			region = "%";
-		} else {
-			region = "%" + region + "%";
-		}
-		if ("All".equals(osVersion)) {
-			osVersion = "%";
-		} else {
-			osVersion = "%" + osVersion + "%";
-		}
-		if ("All".equals(os)) {
-			os = "%";
-		} else {
-			os = "%" + os + "%";
-		}
-		if ("All".equals(deviceFamily)) {
-			deviceFamily = "%";
-		} else {
-			deviceFamily = "%" + deviceFamily + "%";
-		}
-		if ("All".equals(networkType)) {
-			networkType = "%";
-		} else {
-			networkType = "%" + networkType + "%";
-		}
+		DeviceDetailsPojo deviceDeatils = setDeviceDeatils(json);
 		JSONObject features = new JSONObject();
-		JSONArray outputArray = new JSONArray();
-		List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.getMasterFeatureData(deviceFamily, os,
-				region, osVersion, vendor, networkType);
-		masterFeatures.forEach(masterFeature -> {
-			JSONObject object = new JSONObject();
-			JSONObject featureDetails = new JSONObject();
-			featureDetails.put("fId", masterFeature.getfId());
-			featureDetails.put("fName", masterFeature.getfName());
-			featureDetails.put("fReplicationFlag", masterFeature.getfReplicationind());
-			object.put("featureDetails", featureDetails);
-			object.put("vendor", masterFeature.getfVendor());
-			object.put("deviceFamily", masterFeature.getfFamily());
-			object.put("os", masterFeature.getfOs());
-			object.put("osVersion", masterFeature.getfOsversion());
-			object.put("region", masterFeature.getfRegion());
-			object.put("networkType", masterFeature.getfNetworkfun());
-			outputArray.add(object);
-		});
-		features.put("output", outputArray);
+		if (deviceDeatils != null) {
+			String deviceFamily = null, os = null, osVersion = null, networkType = null, region = null, vendor = null;
+			deviceFamily = deviceDeatils.getDeviceFamily();
+			os = deviceDeatils.getOs();
+			osVersion = deviceDeatils.getOsVersion();
+			vendor = deviceDeatils.getVendor();
+			region = deviceDeatils.getRegion();
+			networkType=deviceDeatils.getNetworkType();
+			if ("All".equals(region)) {
+				region = "%";
+			} else {
+				region = "%" + region + "%";
+			}
+			if ("All".equals(osVersion)) {
+				osVersion = "%";
+			} else {
+				osVersion = "%" + osVersion + "%";
+			}
+			if ("All".equals(os)) {
+				os = "%";
+			} else {
+				os = "%" + os + "%";
+			}
+			if ("All".equals(deviceFamily)) {
+				deviceFamily = "%";
+			} else {
+				deviceFamily = "%" + deviceFamily + "%";
+			}
+			if ("All".equals(networkType)) {
+				networkType = "%";
+			} else {
+				networkType = "%" + networkType + "%";
+			}
+
+			JSONArray outputArray = new JSONArray();
+			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.getMasterFeatureData(deviceFamily, os,
+					region, osVersion, vendor, networkType);
+			masterFeatures.forEach(masterFeature -> {
+				JSONObject object = new JSONObject();
+				JSONObject featureDetails = new JSONObject();
+				featureDetails.put("fId", masterFeature.getfId());
+				featureDetails.put("fName", masterFeature.getfName());
+				featureDetails.put("fReplicationFlag", masterFeature.getfReplicationind());
+				object.put("featureDetails", featureDetails);
+				object.put("vendor", masterFeature.getfVendor());
+				object.put("deviceFamily", masterFeature.getfFamily());
+				object.put("os", masterFeature.getfOs());
+				object.put("osVersion", masterFeature.getfOsversion());
+				object.put("region", masterFeature.getfRegion());
+				object.put("networkType", masterFeature.getfNetworkfun());
+				outputArray.add(object);
+			});
+			features.put("output", outputArray);
+		}
 		return features;
 	}
 
@@ -440,67 +438,69 @@ public class TemplateManagementNewService {
 		jsonArray = (JSONArray) json.get("features");
 		JSONObject obj = new JSONObject();
 		JSONArray array = new JSONArray();
-		if(jsonArray !=null && !jsonArray.isEmpty()) {
-		MasterFeatureEntity masterFeatureEntity = new MasterFeatureEntity();
-		TemplateFeatureEntity templateFeatureEntity = new TemplateFeatureEntity();
-		String templateId = "";
-		List<TemplateFeatureEntity> commandTypes = new ArrayList<>();
-		List<TemplateConfigBasicDetailsEntity> tempConfigBasic = new ArrayList<>();
-		templateId = dcmConfigService.getTemplateName(region, vendor, os, osVersion, deviceFamily);
-		commandTypes.addAll(templatefeatureRepo.findByCommandId(templateId));
-		List<String> featureList = new ArrayList<>();
-		for (int i = 0; i < jsonArray.size(); i++) {
-			JSONObject featureObject = (JSONObject) jsonArray.get(i);
-			if (featureObject.get("fId") != null) {
-				templateFeatureEntity.setMasterFId(featureObject.get("fId").toString());
-				featureList.add(featureObject.get("fId").toString());
+		if (jsonArray != null && !jsonArray.isEmpty()) {
+			MasterFeatureEntity masterFeatureEntity = new MasterFeatureEntity();
+			TemplateFeatureEntity templateFeatureEntity = new TemplateFeatureEntity();
+			String templateId = "";
+			List<TemplateFeatureEntity> commandTypes = new ArrayList<>();
+			List<TemplateConfigBasicDetailsEntity> tempConfigBasic = new ArrayList<>();
+			templateId = dcmConfigService.getTemplateName(region, vendor, os, osVersion, deviceFamily);
+			commandTypes.addAll(templatefeatureRepo.findByCommandId(templateId));
+			List<String> featureList = new ArrayList<>();
+			for (int i = 0; i < jsonArray.size(); i++) {
+				JSONObject featureObject = (JSONObject) jsonArray.get(i);
+				if (featureObject.get("fId") != null) {
+					templateFeatureEntity.setMasterFId(featureObject.get("fId").toString());
+					featureList.add(featureObject.get("fId").toString());
+				}
+				if (featureObject.get("fName") != null) {
+					masterFeatureEntity.setfName(featureObject.get("fName").toString());
+				}
+				if (featureObject.get("fReplicationFlag") != null) {
+					masterFeatureEntity.setfReplicationind((boolean) featureObject.get("fReplicationFlag"));
+				}
 			}
-			if (featureObject.get("fName") != null) {
-				masterFeatureEntity.setfName(featureObject.get("fName").toString());
+			List<TemplateFeatureEntity> tempFeatureDetails = new ArrayList<>();
+			commandTypes = commandTypes.stream()
+					.filter(UtilityMethods.distinctByKeys(TemplateFeatureEntity::getCommand))
+					.collect(Collectors.toList());
+			commandTypes.forEach(template -> {
+				List<String> featureIds = templatefeatureRepo.findByMasterfeatureIdByTemplateId(template.getCommand());
+				Collections.sort(featureList);
+				Collections.sort(featureIds);
+				boolean flag = false;
+				if (featureList.size() < featureIds.size()) {
+					flag = featureIds.containsAll(featureList);
+				} else if (featureIds.size() == featureList.size()) {
+					flag = featureList.equals(featureIds);
+				}
+				if (flag) {
+					tempFeatureDetails.add(template);
+				}
+			});
+			for (TemplateFeatureEntity featureEntity : tempFeatureDetails) {
+				String tempIdWithVersion = featureEntity.getCommand();
+				String tempId = StringUtils.substringBefore(tempIdWithVersion, "_V");
+				String tempVersion = StringUtils.substringAfter(tempIdWithVersion, "_V");
+				tempConfigBasic.addAll(
+						templateConfigBasicDetailsRepository.getTemplateConfigBasicDetails(tempId, tempVersion));
 			}
-			if (featureObject.get("fReplicationFlag") != null) {
-				masterFeatureEntity.setfReplicationind((boolean) featureObject.get("fReplicationFlag"));
-			}
-		}
-		List<TemplateFeatureEntity> tempFeatureDetails = new ArrayList<>();
-		commandTypes = commandTypes.stream().filter(UtilityMethods.distinctByKeys(TemplateFeatureEntity::getCommand))
-				.collect(Collectors.toList());
-		commandTypes.forEach(template -> {
-			List<String> featureIds = templatefeatureRepo.findByMasterfeatureIdByTemplateId(template.getCommand());
-			Collections.sort(featureList);
-			Collections.sort(featureIds);
-			boolean flag = false;
-			if (featureList.size() < featureIds.size()) {
-				flag = featureIds.containsAll(featureList);
-			} else if (featureIds.size() == featureList.size()) {
-				flag = featureList.equals(featureIds);
-			}
-			if (flag) {
-				tempFeatureDetails.add(template);
-			}
-		});
-		for (TemplateFeatureEntity featureEntity : tempFeatureDetails) {
-			String tempIdWithVersion = featureEntity.getCommand();
-			String tempId = StringUtils.substringBefore(tempIdWithVersion, "_V");
-			String tempVersion = StringUtils.substringAfter(tempIdWithVersion, "_V");
-			tempConfigBasic
-					.addAll(templateConfigBasicDetailsRepository.getTemplateConfigBasicDetails(tempId, tempVersion));
-		}
-		// Check unique Template with Id and Version
-		List<TemplateConfigBasicDetailsEntity> templateList = tempConfigBasic.stream()
-				.filter(UtilityMethods.distinctByKeys(TemplateConfigBasicDetailsEntity::getTempAlias,
-						TemplateConfigBasicDetailsEntity::getTempId, TemplateConfigBasicDetailsEntity::getTempVersion))
-				.collect(Collectors.toList());
-		templateList.forEach(tempConfBasicDetail -> {
-			JSONObject templateDetails = new JSONObject();
-			templateDetails.put("templateId",
-					tempConfBasicDetail.getTempId() + "_V" + tempConfBasicDetail.getTempVersion());
-			templateDetails.put("alias",
-					tempConfBasicDetail.getTempAlias() + "_V" + tempConfBasicDetail.getTempVersion());
-			array.add(templateDetails);
-		});
-		
-		obj.put("templateDetails", array);
+			// Check unique Template with Id and Version
+			List<TemplateConfigBasicDetailsEntity> templateList = tempConfigBasic.stream()
+					.filter(UtilityMethods.distinctByKeys(TemplateConfigBasicDetailsEntity::getTempAlias,
+							TemplateConfigBasicDetailsEntity::getTempId,
+							TemplateConfigBasicDetailsEntity::getTempVersion))
+					.collect(Collectors.toList());
+			templateList.forEach(tempConfBasicDetail -> {
+				JSONObject templateDetails = new JSONObject();
+				templateDetails.put("templateId",
+						tempConfBasicDetail.getTempId() + "_V" + tempConfBasicDetail.getTempVersion());
+				templateDetails.put("alias",
+						tempConfBasicDetail.getTempAlias() + "_V" + tempConfBasicDetail.getTempVersion());
+				array.add(templateDetails);
+			});
+
+			obj.put("templateDetails", array);
 		}
 		if (!array.isEmpty()) {
 			obj.put("Message", "Success");
@@ -620,56 +620,36 @@ public class TemplateManagementNewService {
 
 	@SuppressWarnings("unchecked")
 	public JSONObject getFeaturesForMACDRequest(String request) {
-
-		String deviceFamily = null, os = null, osVersion = null, networkType = null, region = null, vendor = null;
 		JSONObject json = new JSONObject();
 		JSONParser parser = new JSONParser();
-		
 		JSONObject features = new JSONObject();
 		try {
 			json = (JSONObject) parser.parse(request);
-		
-		if (json.containsKey("deviceFamily")) {
-			deviceFamily = json.get("deviceFamily").toString();
-		}
-		if (json.containsKey("vendor")) {
-			vendor = json.get("vendor").toString();
-		}
-		if (json.containsKey("os")) {
-			os = json.get("os").toString();
-		}
-		if (json.containsKey("osVersion")) {
-			osVersion = json.get("osVersion").toString();
-		}
-		if (json.containsKey("region")) {
-			region = json.get("region").toString();
-		}
-		if (json.containsKey("networkType")) {
-			networkType = json.get("networkType").toString();
-		}
-		JSONArray outputArray = new JSONArray();
-		List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findApprovedFeatureEntity(vendor,deviceFamily, os,
-				 osVersion,region, networkType);
-		masterFeatures.forEach(masterFeature -> {
-			if(!"Basic Configuration".contains(masterFeature.getfName())) {
-			JSONObject deviceDetailsObject = new JSONObject();	
-			deviceDetailsObject.put("featureDetails", setFeatureData(masterFeature));
-			deviceDetailsObject = setDeviceDetails(deviceDetailsObject,masterFeature);
-			outputArray.add(deviceDetailsObject);
-			}
-		});
-		features.put("output", outputArray);
+			DeviceDetailsPojo deviceDetails = setDeviceDeatils(json);
+			JSONArray outputArray = new JSONArray();
+			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findApprovedFeatureEntity(
+					deviceDetails.getVendor(), deviceDetails.getDeviceFamily(), deviceDetails.getOs(),
+					deviceDetails.getOsVersion(), deviceDetails.getRegion(), deviceDetails.getNetworkType());
+			masterFeatures.forEach(masterFeature -> {
+				if (!"Basic Configuration".contains(masterFeature.getfName())) {
+					JSONObject deviceDetailsObject = new JSONObject();
+					deviceDetailsObject.put("featureDetails", setFeatureData(masterFeature));
+					deviceDetailsObject = setDeviceDetails(deviceDetailsObject, masterFeature);
+					outputArray.add(deviceDetailsObject);
+				}
+			});
+			features.put("output", outputArray);
 		} catch (ParseException e) {
-			
+
 			e.printStackTrace();
 		}
-		
+
 		return features;
-	
+
 	}
 
 	@SuppressWarnings("unchecked")
-	private JSONObject setDeviceDetails(JSONObject deviceDetailsObject, MasterFeatureEntity masterFeature) {	
+	private JSONObject setDeviceDetails(JSONObject deviceDetailsObject, MasterFeatureEntity masterFeature) {
 		deviceDetailsObject.put("vendor", masterFeature.getfVendor());
 		deviceDetailsObject.put("deviceFamily", masterFeature.getfFamily());
 		deviceDetailsObject.put("os", masterFeature.getfOs());
@@ -685,7 +665,54 @@ public class TemplateManagementNewService {
 		featureDetails.put("fId", masterFeature.getfId());
 		featureDetails.put("fName", masterFeature.getfName());
 		featureDetails.put("fReplicationFlag", masterFeature.getfReplicationind());
-		return featureDetails;	
+		return featureDetails;
 	}
 
+	@SuppressWarnings("unchecked")
+	public JSONObject getFeatureForTestDetails(String request) throws ParseException {
+		JSONObject json = new JSONObject();
+		JSONParser parser = new JSONParser();
+		json = (JSONObject) parser.parse(request);
+		DeviceDetailsPojo deviceDetails = setDeviceDeatils(json);
+		JSONObject features = new JSONObject();
+		JSONArray outputArray = new JSONArray();
+		if (deviceDetails != null) {
+			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository
+					.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(deviceDetails.getVendor(),
+							deviceDetails.getDeviceFamily(), deviceDetails.getOs(), deviceDetails.getOsVersion(),
+							deviceDetails.getRegion(), deviceDetails.getNetworkType());
+			masterFeatures.forEach(masterFeature -> {
+				JSONObject featureDetails = new JSONObject();
+				featureDetails.put("fId", masterFeature.getfId());
+				featureDetails.put("fName", masterFeature.getfName());
+				featureDetails.put("fReplicationFlag", masterFeature.getfReplicationind());
+				outputArray.add(featureDetails);
+			});
+			features.put("output", outputArray);
+		}
+		return features;
+	}
+
+	private DeviceDetailsPojo setDeviceDeatils(JSONObject json) {
+		DeviceDetailsPojo deviceDetails = new DeviceDetailsPojo();
+		if (json.containsKey("deviceFamily")) {
+			deviceDetails.setDeviceFamily(json.get("deviceFamily").toString());
+		}
+		if (json.containsKey("vendor")) {
+			deviceDetails.setVendor(json.get("vendor").toString());
+		}
+		if (json.containsKey("os")) {
+			deviceDetails.setOs(json.get("os").toString());
+		}
+		if (json.containsKey("osVersion")) {
+			deviceDetails.setOsVersion(json.get("osVersion").toString());
+		}
+		if (json.containsKey("region")) {
+			deviceDetails.setRegion(json.get("region").toString());
+		}
+		if (json.containsKey("networkType")) {
+			deviceDetails.setNetworkType(json.get("networkType").toString());
+		}
+		return deviceDetails;
+	}
 }
