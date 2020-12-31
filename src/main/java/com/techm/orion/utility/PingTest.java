@@ -9,60 +9,65 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
-
+@RestController
 public class PingTest {
+	@Autowired
+	RestTemplate restTemplate;
+
 	private static final Logger logger = LogManager.getLogger(PingTest.class);
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
 
-	public boolean cmdPingCall(String managementIp, String routername, String region) throws Exception {
-		/*ProcessBuilder builder = new ProcessBuilder("cmd.exe");
-		Process p = null;
-		boolean flag = true;
-		try {
-			p = builder.start();
-			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
-			String commandToPing = "ping " + managementIp + " -n 20";
-			logger.info("Management ip " + managementIp);
-			p_stdin.write(commandToPing);
-			p_stdin.newLine();
-			p_stdin.flush();
-			try {
-				Thread.sleep(21000);
-			} catch (Exception ee) {
-			}
-			p_stdin.write("exit");
-			p_stdin.newLine();
-			p_stdin.flush();
-		}
+	public boolean cmdPingCall(String managementIp, String routername,
+			String region) throws Exception {
+		/*
+		 * ProcessBuilder builder = new ProcessBuilder("cmd.exe"); Process p =
+		 * null; boolean flag = true; try { p = builder.start(); BufferedWriter
+		 * p_stdin = new BufferedWriter(new
+		 * OutputStreamWriter(p.getOutputStream())); String commandToPing =
+		 * "ping " + managementIp + " -n 20"; logger.info("Management ip " +
+		 * managementIp); p_stdin.write(commandToPing); p_stdin.newLine();
+		 * p_stdin.flush(); try { Thread.sleep(21000); } catch (Exception ee) {
+		 * } p_stdin.write("exit"); p_stdin.newLine(); p_stdin.flush(); }
+		 * 
+		 * catch (IOException e) { e.printStackTrace(); }
+		 */
 
-		catch (IOException e) {
-			e.printStackTrace();
-		}*/
-		
 		StringBuilder commadBuilder = new StringBuilder();
 		Process process = null;
 		boolean flag = true;
 		try {
 			commadBuilder.append("ping ");
 			commadBuilder.append(managementIp);
-			//Pings timeout
-			if("Linux".equals(TSALabels.APP_OS.getValue())) {
+			// Pings timeout
+			if ("Linux".equals(TSALabels.APP_OS.getValue())) {
 				commadBuilder.append(" -c ");
-			}else {
+			} else {
 				commadBuilder.append(" -n ");
 			}
-			//Number of pings
+			// Number of pings
 			commadBuilder.append("5");
-			logger.info("commandToPing -"+commadBuilder);	
-			process = Runtime.getRuntime().exec(commadBuilder.toString());			
-		}catch(IOException exe) {
-			logger.error("Exception in pingResults - "+exe.getMessage());
+			logger.info("commandToPing -" + commadBuilder);
+			process = Runtime.getRuntime().exec(commadBuilder.toString());
+		} catch (IOException exe) {
+			logger.error("Exception in pingResults - " + exe.getMessage());
 		}
 
 		// Scanner s = new Scanner( p.getInputStream() );
@@ -73,15 +78,19 @@ public class PingTest {
 		return flag;
 	}
 
-	private boolean printResult(InputStream input, String routername, String region) throws Exception {
+	private boolean printResult(InputStream input, String routername,
+			String region) throws Exception {
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
 		boolean flag = true;
 		PingTest.loadProperties();
-		String filepath = PingTest.PROPERTIES.getProperty("responseDownloadPath") + routername + "_" + region
-				+ "_Reachability.txt";
+		String filepath = PingTest.PROPERTIES
+				.getProperty("responseDownloadPath")
+				+ routername
+				+ "_"
+				+ region + "_Reachability.txt";
 		File file = new File(filepath);
 
 		// if file doesnt exists, then create it
@@ -117,7 +126,8 @@ public class PingTest {
 			} else if (!(s.equals("")) && s.contains("Request timed out.")) {
 				flag = false;
 
-			} else if (!(s.equals("")) && s.contains("Destination net unreachable")) {
+			} else if (!(s.equals(""))
+					&& s.contains("Destination net unreachable")) {
 				flag = false;
 
 			}
@@ -132,14 +142,18 @@ public class PingTest {
 		return flag;
 	}
 
-	public String readResult(String managementIp, String routername, String region) {
+	public String readResult(String managementIp, String routername,
+			String region) {
 		String result = null;
 
 		try {
 			PingTest.loadProperties();
 
-			String filepath = PingTest.PROPERTIES.getProperty("responseDownloadPath") + routername + "_" + region
-					+ "_Reachability.txt";
+			String filepath = PingTest.PROPERTIES
+					.getProperty("responseDownloadPath")
+					+ routername
+					+ "_"
+					+ region + "_Reachability.txt";
 			result = new String(Files.readAllBytes(Paths.get(filepath)));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -147,65 +161,73 @@ public class PingTest {
 		}
 		return result;
 	}
-	
-	public String pingResults(String managementIp) {
-		logger.info("Start getPingResults - managementIp- "+managementIp);
-		long startTime = System.currentTimeMillis();
-		StringBuilder commadBuilder = new StringBuilder();
-		String responce = null;
+
+	@SuppressWarnings("unchecked")
+	public JSONArray pingResults(String managementIp) {
+		logger.info("Start getPingResults - managementIp- " + managementIp);
+		JSONArray responce = null;
+		RestTemplate restTemplate = new RestTemplate();
+		JSONObject obj = new JSONObject();
+
 		try {
-			commadBuilder.append("ping ");
-			commadBuilder.append(managementIp);
-			//Pings timeout
-			if("Linux".equals(TSALabels.APP_OS.getValue())) {
-				commadBuilder.append(" -c ");
-			}else {
-				commadBuilder.append(" -n ");
+			obj.put(new String("ipAddress"), managementIp);
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(obj,
+					headers);
+			String url=TSALabels.PYTHON_SERVICES.getValue()+TSALabels.PYTHON_PING.getValue();
+			String response = restTemplate.exchange(url,
+					HttpMethod.POST, entity, String.class).getBody();
+
+			JSONParser parser = new JSONParser();
+			JSONObject responsejson = (JSONObject) parser.parse(response);
+			if (responsejson.containsKey("pingReply")) {
+				responce = (JSONArray) responsejson.get("pingReply");
 			}
-			//Number of pings
-			commadBuilder.append("5");
-			logger.info("commandToPing -"+commadBuilder);	
-			Process process = Runtime.getRuntime().exec(commadBuilder.toString());
-			responce = getPingResults(process);
-		}catch(IOException exe) {
-			logger.error("Exception in pingResults - "+exe.getMessage());
+
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		logger.info("Total time taken to getPingResults in millsecs- "+ (System.currentTimeMillis()-startTime));
+		logger.info("Response" + responce);
 		return responce;
 	}
-	
+
 	public String getPingResults(Process process) {
-		logger.info("Start getPingResults - "+process);
+		logger.info("Start getPingResults - " + process);
 		long startTime = System.currentTimeMillis();
 		StringBuilder resultBuilder = new StringBuilder();
 		String responce = null;
-		try(
-				BufferedReader inputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
-				BufferedReader errorStream = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-			){
-			if(errorStream.readLine() != null) {
+		try (BufferedReader inputStream = new BufferedReader(
+				new InputStreamReader(process.getInputStream()));
+				BufferedReader errorStream = new BufferedReader(
+						new InputStreamReader(process.getErrorStream()));) {
+			if (errorStream.readLine() != null) {
 				resultBuilder.append("Error");
 				resultBuilder.append("\n");
 				while ((responce = errorStream.readLine()) != null) {
 					resultBuilder.append(responce);
 					resultBuilder.append("\n");
-		        }
-			}else {
+				}
+			} else {
 				while ((responce = inputStream.readLine()) != null) {
 					resultBuilder.append(responce);
 					resultBuilder.append("\n");
-		        }
+				}
 			}
-			logger.info("getPingResults - "+resultBuilder);
-		}catch(IOException exe) {
-			logger.error("getPingResults Error - "+exe.getMessage());
+			logger.info("getPingResults - " + resultBuilder);
+		} catch (IOException exe) {
+			logger.error("getPingResults Error - " + exe.getMessage());
 		}
-		logger.info("Total time taken to getPingResults in millsecs- "+ (System.currentTimeMillis()-startTime));
+		logger.info("Total time taken to getPingResults in millsecs- "
+				+ (System.currentTimeMillis() - startTime));
 		return resultBuilder.toString();
 	}
 
 	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
+		InputStream PropFile = Thread.currentThread().getContextClassLoader()
+				.getResourceAsStream(PROPERTIES_FILE);
 
 		try {
 			PROPERTIES.load(PropFile);
