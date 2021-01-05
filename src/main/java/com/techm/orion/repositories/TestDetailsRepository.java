@@ -77,10 +77,8 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 	List<TestDetail> findByRegionIgnoreCaseContainingAndVendorIgnoreCaseContainingAndNetworkTypeAndTestNameIgnoreCaseContainingAndVersion(
 			String region, String vendor, String networkType, String testName, String version);
 
-	String testName = "SELECT * FROM t_tststrategy_m_tstdetails e WHERE e.id LIKE %?1%";
 
-	@Query(value = testName, nativeQuery = true)
-	List<TestDetail> findByTestId(int tempTestId);
+	List<TestDetail> findByTestId(String tempTestId);
 
 	@Query(value = "select * from t_tststrategy_m_tstdetails  where (region like :region or region like '%All') and (os like :os or os like '%All') and (os_version like :osVersion or os_version like '%All') and (device_family like :devicefamily or device_family like '%All') and vendor = :vendor and (network_type like :networkfunction or network_type like '%All')", nativeQuery = true)
 	List<TestDetail> getTesListData(@Param("devicefamily") String devicefamily, @Param("os") String os,
