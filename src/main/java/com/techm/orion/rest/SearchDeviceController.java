@@ -68,7 +68,7 @@ public class SearchDeviceController {
 			JSONObject json = (JSONObject) parser.parse(searchParameters);
 			JSONObject object = new JSONObject();
 
-			String customer = null, region = null, vendortosearch = null, networktosearch = null;
+			String customer = null, region = null, vendortosearch = null, networktosearch = null , siteName = null;
 			List<DeviceDiscoveryEntity> getAllDevice = new ArrayList<DeviceDiscoveryEntity>();
 
 			if (json.containsKey("customer")) {
@@ -83,6 +83,9 @@ public class SearchDeviceController {
 			if (json.containsKey("networkFunction")) {
 				networktosearch = json.get("networkFunction").toString();
 			}
+			if (json.containsKey("site")) {
+				siteName = json.get("site").toString();
+			}
 
 			// Implementation of search logic based on fields received from UI
 			String nonMandatoryfiltersbits = "000";
@@ -90,14 +93,17 @@ public class SearchDeviceController {
 			if (customer != null) {
 				nonMandatoryfiltersbits = "100";
 			}
-			if (region != null) {
+			if (region != null && !"All".equals(region)) {
 				nonMandatoryfiltersbits = "110";
 			}
-			if (vendortosearch != null) {
+			if (vendortosearch != null  && !vendortosearch.isEmpty()) {
 				nonMandatoryfiltersbits = "111";
 			}
-			if (networktosearch != null) {
+			if (networktosearch != null && !networktosearch.isEmpty()) {
 				nonMandatoryfiltersbits = "211";
+			}
+			if (siteName != null && !siteName.isEmpty() && !"All".equals(siteName)) {
+				nonMandatoryfiltersbits = "311";
 			}
 
 			if (nonMandatoryfiltersbits.equalsIgnoreCase("000")) {
@@ -130,6 +136,12 @@ public class SearchDeviceController {
 								customer, region, vendortosearch,
 								networktosearch);
 
+			}
+			if (nonMandatoryfiltersbits.equals("311")) {
+				// find with customer and region and site
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(
+								customer, region, siteName);
 			}
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {

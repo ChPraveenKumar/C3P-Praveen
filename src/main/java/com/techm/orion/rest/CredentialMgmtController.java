@@ -16,7 +16,6 @@ import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -24,14 +23,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
 import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
-import com.techm.orion.entitybeans.TestDetail;
-import com.techm.orion.entitybeans.VendorDetails;
 import com.techm.orion.repositories.CredentialManagementRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
-import com.techm.orion.repositories.RequestDetailsImportRepo;
 
 @RestController
 public class CredentialMgmtController {
@@ -276,5 +271,120 @@ public class CredentialMgmtController {
 		return Response.status(200).entity(credentialManagementList).build();
 
 	}
+	
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/addRefferedDevices", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	public ResponseEntity<JSONObject> addRefferedDevices(@RequestBody String request) throws Exception {
 
+		JSONObject reffredDevices = new JSONObject();
+		JSONObject reffredDevicesList = null;
+		JSONObject reffredDevicesJson = new JSONObject();
+		JSONParser reffredDevicesParser = new JSONParser();
+		JSONArray devices = new JSONArray();
+		boolean isProfileTypePresent = false, isDeviceAlreadyExist =false;
+		JSONArray deviceList = null;
+
+		String profileName = null, profileType = null, overwrite = null;
+		try {
+			reffredDevices = (JSONObject) reffredDevicesParser.parse(request);
+
+			if(reffredDevices.get("profileName") !=null)
+				profileName = reffredDevices.get("profileName").toString();
+			if(reffredDevices.get("profileType") !=null)
+				profileType = reffredDevices.get("profileType").toString();
+			if(reffredDevices.get("overwrite") !=null)
+				overwrite = reffredDevices.get("overwrite").toString();
+			if(reffredDevices.get("devices") !=null)
+				deviceList = (JSONArray) reffredDevices.get("devices");
+			
+			if(deviceList !=null)
+			{
+			for(int i = 0; i < deviceList.size(); i++)
+			{
+				reffredDevicesList = new JSONObject();
+				JSONObject deviceName = (JSONObject) deviceList.get(i);
+				DeviceDiscoveryEntity deviceInfo = deviceDiscoveryRepository
+						.findByDHostName(deviceName.get("hostName").toString());
+				if (deviceInfo != null) {
+					
+					if ((deviceInfo.getdSshCredProfile() !=null && deviceInfo.getdSshCredProfile().contains(profileType))
+							|| (deviceInfo.getdSnmpCredProfile() !=null && deviceInfo.getdSnmpCredProfile().contains(profileType)) 
+							|| (deviceInfo.getdTelnetCredProfile() !=null && deviceInfo.getdTelnetCredProfile().contains(profileType)))
+						isProfileTypePresent = true; 
+					else 
+						isProfileTypePresent = false;
+					
+					if (isProfileTypePresent && !"Yes".equalsIgnoreCase(overwrite)) {
+						isDeviceAlreadyExist = true;
+						reffredDevicesList.put("hostName", deviceName.toString());
+						if ("SSH".equalsIgnoreCase(profileType))
+							reffredDevicesList.put("profileName", deviceInfo.getdSshCredProfile());
+						else if ("SNMP".equalsIgnoreCase(profileType))
+							reffredDevicesList.put("profileName", deviceInfo.getdSnmpCredProfile());
+						else if ("Telnet".equalsIgnoreCase(profileType))
+							reffredDevicesList.put("profileName", deviceInfo.getdTelnetCredProfile());
+						reffredDevicesList.put("profileType", profileType);
+						reffredDevicesList.put("hostName", deviceName.get("hostName").toString());
+						devices.add(reffredDevicesList);
+					} else {
+						if ("SSH".equalsIgnoreCase(profileType))
+							deviceInfo.setdSshCredProfile(profileName);
+						else if ("Telnet".equalsIgnoreCase(profileType))
+							deviceInfo.setdSnmpCredProfile(profileName);
+						else if ("SNMP".equalsIgnoreCase(profileType))
+							deviceInfo.setdTelnetCredProfile(profileName);
+						deviceDiscoveryRepository.save(deviceInfo);
+					}
+				}
+			}
+		}
+			reffredDevicesJson.put("devices",devices);
+			if(!isDeviceAlreadyExist && "Yes".equalsIgnoreCase(overwrite))
+				reffredDevicesJson.put("output", "Devices added successfully");
+			else if(isDeviceAlreadyExist)
+				reffredDevicesJson.put("output", "Devices already assigned");
+			else
+				reffredDevicesJson.put("output", "Devices added successfully");
+		} catch (Exception e) {
+			logger.error("exception in addRefferedDevices service " + e);
+		}
+		return new ResponseEntity<JSONObject>(reffredDevicesJson, HttpStatus.OK);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/deleteRefferedDevices", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	public ResponseEntity<JSONObject> deleteRefferedDevices(@RequestBody String request) throws Exception {
+
+		JSONObject reffredDevices = new JSONObject();
+		JSONObject reffredDevicesJson = null;
+		JSONParser reffredDevicesParser = new JSONParser();
+		String profileType = null;
+		try {
+			reffredDevices = (JSONObject) reffredDevicesParser.parse(request);
+			profileType = reffredDevices.get("profileType").toString();
+			JSONArray deviceList = (JSONArray) reffredDevices.get("devices");
+			
+			for(int i = 0; i < deviceList.size(); i++)
+			{
+				reffredDevicesJson = new JSONObject();
+				 JSONObject deviceName = (JSONObject) deviceList.get(i);
+				 DeviceDiscoveryEntity deviceInfo = deviceDiscoveryRepository.findByDHostName(deviceName.get("hostName").toString());
+					if (deviceInfo != null) {
+						if ("SSH".equalsIgnoreCase(profileType))
+							deviceInfo.setdSshCredProfile(null);
+						else if ("Telnet".equalsIgnoreCase(profileType))
+							deviceInfo.setdSnmpCredProfile(null);
+						else if ("SNMP".equalsIgnoreCase(profileType))
+							deviceInfo.setdTelnetCredProfile(null);
+						deviceDiscoveryRepository.save(deviceInfo);
+					}
+			}
+			reffredDevicesJson.put("output", "Devices deleted successfully");
+		} catch (Exception e) {
+			logger.error("exception in deleteRefferedDevices service is "+e);
+		}
+		return new ResponseEntity<JSONObject>(reffredDevicesJson, HttpStatus.OK);
+	}
 }

@@ -428,7 +428,7 @@ public class MasterFeatureController {
 
 	private MasterFeatureEntity setMasterFeatureData(JSONObject json) {
 		StringBuilder builder = new StringBuilder();
-		String sUserListData = "";
+		String sUserListData = "", comments = null, userName = null;
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
 		List<String> sUserList = userManagementRepository.findByRole();
 		for(String suserList : sUserList)
@@ -465,8 +465,13 @@ public class MasterFeatureController {
 				masterFeature.setfCategory("Basic Configuration");
 			}
 		}
-		if (json.containsKey("comments")) {
-			masterFeature.setfComments(json.get("comments").toString().concat("\n"));
+		if (json.containsKey("comments") && json.containsKey("userName")) {
+			comments = json.get("comments").toString();
+			userName = json.get("userName").toString();
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy , HH:mm:ss aa ");  
+		    Date date = new Date();  
+		    comments = userName +" : " +  dateFormat.format(date) +  comments;
+			masterFeature.setfComments(comments.concat("\n"));
 		}
 		if (json.containsKey("isReplicated")) {
 			masterFeature.setfReplicationind(Boolean.parseBoolean(json.get(
