@@ -2,13 +2,17 @@ package com.techm.orion.rest;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -80,10 +84,10 @@ public class TestStrategyController {
 
 	@Autowired
 	private TemplateManagementNewService templateManagementNewService;
-	
+
 	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
-	
+
 	RequestInfoDao dao = new RequestInfoDao();
 
 	@GET
@@ -236,103 +240,94 @@ public class TestStrategyController {
 		List<Integer> findBundleIds = new ArrayList<>();
 		List<String> bundleNameList = new ArrayList<>();
 		String testBundling = null;
-
-		Set<TestDetail> settestDetails = new HashSet<TestDetail>();
-
-		List<TestFeatureList> testfeaturelist = new ArrayList<TestFeatureList>();
-		List<TestRules> testruleslist = null;
 		List<TestDetail> testdetaillist = new ArrayList<TestDetail>();
-		List<TestRules> testruleslisttext = new ArrayList<TestRules>();
-		List<TestRules> testruleslisttable = new ArrayList<TestRules>();
-		List<TestRules> testruleslistsection = new ArrayList<TestRules>();
-		List<TestRules> testruleslistsnippet = new ArrayList<TestRules>();
-		List<TestRules> testruleslistkeyword = new ArrayList<TestRules>();
-		List<TestRules> testruleslisttextfinal = new ArrayList<TestRules>();
-		List<TestRules> testruleslisttablefinal = new ArrayList<TestRules>();
-		List<TestRules> testruleslistsectionfinal = new ArrayList<TestRules>();
-		List<TestRules> testruleslistsnippetfinal = new ArrayList<TestRules>();
-		List<TestRules> testruleslistkeywordfinal = new ArrayList<TestRules>();
-
 		TestDetail detail = null;
 		boolean ischeck = false;
-		settestDetails = testDetailsRepository.findByTestIdAndVersion(testid, version);
+		Set<TestDetail> settestDetails = testDetailsRepository.findByTestIdAndVersion(testid, version);
+		List<TestDetail> testList = testDetailsRepository.findByTestId(testid);
+		Collection<TestDetail> testDetailFinalList = testList.stream().collect(Collectors.toMap(TestDetail::getTestName,
+				Function.identity(), BinaryOperator.maxBy(Comparator.comparing(TestDetail::getVersion)))).values();
+		settestDetails.forEach(testValue -> {
+			boolean flag = false;
+			for (TestDetail latestTest : testDetailFinalList) {
+				if (testValue.getTestName().equals(latestTest.getTestName())
+						&& testValue.getVersion().equals(latestTest.getVersion())) {
+					flag = true;
+					break;
+				}
+			}
+			if (flag) {
+				testValue.setEnabled(true);
+			} else {
+				testValue.setEnabled(false);
+			}
+		});
 		testdetaillist.addAll(settestDetails);
 		if (null != settestDetails && !settestDetails.isEmpty()) {
-
+			List<TestFeatureList> testfeaturelist = new ArrayList<TestFeatureList>();
+			List<TestRules> testruleslist = null;
+			List<TestRules> testruleslisttext = new ArrayList<TestRules>();
+			List<TestRules> testruleslisttable = new ArrayList<TestRules>();
+			List<TestRules> testruleslistsection = new ArrayList<TestRules>();
+			List<TestRules> testruleslistsnippet = new ArrayList<TestRules>();
+			List<TestRules> testruleslistkeyword = new ArrayList<TestRules>();
+			List<TestRules> testruleslisttextfinal = new ArrayList<TestRules>();
+			List<TestRules> testruleslisttablefinal = new ArrayList<TestRules>();
+			List<TestRules> testruleslistsectionfinal = new ArrayList<TestRules>();
+			List<TestRules> testruleslistsnippetfinal = new ArrayList<TestRules>();
+			List<TestRules> testruleslistkeywordfinal = new ArrayList<TestRules>();
 			detail = testdetaillist.get(0);
 
 			testruleslist = testRulesRepository.findByTestDetail(testdetaillist.get(0));
 
 			for (int i = 0; i < testruleslist.size(); i++) {
-
 				if (testruleslist.get(i).getDataType().contains("Text")) {
-
 					int ruleid = testruleslist.get(i).getId();
-
 					testruleslisttext = testRulesRepository.findById(ruleid);
-
 					testruleslisttextfinal.addAll(testruleslisttext);
-
 				}
 				if (testruleslist.get(i).getDataType().contains("Table")) {
-
 					int ruleid = testruleslist.get(i).getId();
-
 					testruleslisttable = testRulesRepository.findById(ruleid);
-
 					testruleslisttablefinal.addAll(testruleslisttable);
-
 				}
 				if (testruleslist.get(i).getDataType().contains("Section")) {
 					String data_type = "Section";
-
 					int ruleid = testruleslist.get(i).getId();
-
 					testruleslistsection = testRulesRepository.findById(ruleid);
-
 					testruleslistsectionfinal.addAll(testruleslistsection);
-
 				}
 				if (testruleslist.get(i).getDataType().contains("Snippet")) {
 					String data_type = "Snippet";
-
 					int ruleid = testruleslist.get(i).getId();
-
 					testruleslistsnippet = testRulesRepository.findById(ruleid);
-
 					testruleslistsnippetfinal.addAll(testruleslistsnippet);
-
 				}
 				if (testruleslist.get(i).getDataType().contains("Keyword")) {
 					String data_type = "Keyword";
-
 					int ruleid = testruleslist.get(i).getId();
-
 					testruleslistkeyword = testRulesRepository.findById(ruleid);
-
 					testruleslistkeywordfinal.addAll(testruleslistkeyword);
-
 				}
 			}
-
 			testDetailsId = testdetaillist.get(0).getId();
-
 			findBundleIds = dao.findBundleId(testDetailsId);
-
 			for (Integer tempObj : findBundleIds) {
 				testBundling = testBundleRepo.findByBundleName(tempObj.intValue());
 				bundleNameList.add(testBundling);
 			}
 			detail.setBundleName(bundleNameList);
-			List<TestFeatureList> testfeaturelistValue = testFeatureListRepository.findByTestDetail(testdetaillist.get(0));
-			if(testfeaturelistValue!=null && !testfeaturelistValue.isEmpty()) {
-				testfeaturelistValue.forEach(featureDetails->{
+			List<TestFeatureList> testfeaturelistValue = testFeatureListRepository
+					.findByTestDetail(testdetaillist.get(0));
+			if (testfeaturelistValue != null && !testfeaturelistValue.isEmpty()) {
+				testfeaturelistValue.forEach(featureDetails -> {
 					TestFeatureList feature = new TestFeatureList();
-					MasterFeatureEntity masterFeature = masterFeatureRepository.findByFId(featureDetails.getTestFeature());
-					if(masterFeature!=null) {
-					feature.setId(featureDetails.getId());
-					feature.setTestFeature(masterFeature.getfName());
-					testfeaturelist.add(feature);
+					MasterFeatureEntity masterFeature = masterFeatureRepository
+							.findByFId(featureDetails.getTestFeature());
+					if (masterFeature != null) {
+						feature.setId(featureDetails.getId());
+						feature.setTestFeature(masterFeature.getfName());
+						testfeaturelist.add(feature);
 					}
 				});
 			}
@@ -362,354 +357,279 @@ public class TestStrategyController {
 		return Response.status(200).entity(testDetailsRepository.findAll()).build();
 	}
 
-	@SuppressWarnings("unused")
+	
 	@POST
 	@RequestMapping(value = "/savetestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response saveBasicConfiguration(@RequestBody String teststrategesaveRqst) {
-
-		String str = "";
-
-		int bundleId = 0;
-
+	public Response saveBasicConfiguration(@RequestBody String teststrategesaveRqst) {		
 		JSONParser parser = new JSONParser();
+		Response response = null;
 		try {
 			JSONObject json = (JSONObject) parser.parse(teststrategesaveRqst);
-			TestDetail testDetail = new TestDetail();
-
-			if (json.containsKey("testName")) {
-				testDetail.setTestName(json.get("testName").toString());
-				testDetail.setTestId(json.get("testName").toString());
-			}
-			if (json.containsKey("testCategory")) {
-				testDetail.setTestCategory(json.get("testCategory").toString());
-			}
-			if (json.containsKey("version")) {
-				testDetail.setVersion(json.get("version").toString());
-			}
-
-			if (json.containsKey("testType")) {
-				testDetail.setTestType(json.get("testType").toString());
-			}
-			if (json.containsKey("connectionProtocol")) {
-				testDetail.setTestConnectionProtocol(json.get("connectionProtocol").toString());
-			}
-			if (json.containsKey("command")) {
-				testDetail.setTestCommand(json.get("command").toString());
-			}
-
-			if (json.containsKey("deviceFamily")) {
-				testDetail.setDeviceFamily(json.get("deviceFamily").toString());
-			}
-			if (json.containsKey("vendor")) {
-				testDetail.setVendor(json.get("vendor").toString());
-			}
-			if (json.containsKey("model")) {
-				testDetail.setDeviceModel(json.get("model").toString());
-			}
-			if (json.containsKey("os")) {
-				testDetail.setOs(json.get("os").toString());
-			}
-			if (json.containsKey("osVersion")) {
-				testDetail.setOsVersion(json.get("osVersion").toString());
-			}
-			if (json.containsKey("region")) {
-				testDetail.setRegion(json.get("region").toString());
-			}
-			if (json.containsKey("networkType")) {
-				testDetail.setNetworkType(json.get("networkType").toString());
-			}
-			String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
-			testDetail.setCreatedOn(timeStamp);
-			
-			if (json.containsKey("userName"))
-				testDetail.setCreatedBy(json.get("userName").toString());
-			
-			if (json.containsKey("Comment")) {
-				testDetail.setComment(json.get("Comment").toString());
-			}
-
-			testDetail.setEnabled(true);
-
-			List<TestFeatureList> list = new ArrayList<TestFeatureList>();
-			if (json.containsKey("featureList")) {
-
-				JSONArray jsonArray = (JSONArray) json.get("featureList");
-				for (int i = 0; i < jsonArray.size(); i++) {
-					TestFeatureList listObj = new TestFeatureList();
-					listObj.setTestDetail(testDetail);
-					listObj.setTestFeature(jsonArray.get(i).toString());
-					list.add(listObj);
-				}
-			}
-
-			Set<TestFeatureList> setFeatureList = new HashSet<TestFeatureList>(list);
-			testDetail.setTestfeaturelist(setFeatureList);
-
-			List<TestRules> rulelst = new ArrayList<TestRules>();
-			List<TestBundling> bundleList = new ArrayList<TestBundling>();
-
-			if (json.containsKey("text_attributes")) {
-
-				JSONArray attribarray = (JSONArray) json.get("text_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestRules rule = new TestRules();
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					rule.setDataType("Text");
-
-					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-					}
-					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText").toString());
-
-					}
-					if (attribobj.containsKey("afterText")) {
-						rule.setAfterText(attribobj.get("afterText").toString());
-					}
-					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
-					}
-					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn").toString());
-					}
-					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
-					}
-					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
-					}
-					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName").toString());
-					}
-					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation").toString());
-					}
-					if (attribobj.containsKey("operator")) {
-						rule.setOperator(attribobj.get("operator").toString());
-					}
-					if (attribobj.containsKey("value1")) {
-						rule.setValue1(attribobj.get("value1").toString());
-					}
-					if (attribobj.containsKey("value2")) {
-						rule.setValue2(attribobj.get("value2").toString());
-					}
-					rule.setTestDetail(testDetail);
-					rulelst.add(rule);
-				}
-
-			}
-
-			if (json.containsKey("table_attributes")) {
-				JSONArray attribarray = (JSONArray) json.get("table_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestRules rule = new TestRules();
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					rule.setDataType("Table");
-
-					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-					}
-					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText").toString());
-
-					}
-					if (attribobj.containsKey("afterText")) {
-						rule.setAfterText(attribobj.get("afterText").toString());
-					}
-					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
-					}
-					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn").toString());
-					}
-					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
-					}
-					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
-					}
-					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName").toString());
-					}
-					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation").toString());
-					}
-					if (attribobj.containsKey("operator")) {
-						rule.setOperator(attribobj.get("operator").toString());
-					}
-					if (attribobj.containsKey("value1")) {
-						rule.setValue1(attribobj.get("value1").toString());
-					}
-					if (attribobj.containsKey("value2")) {
-						rule.setValue2(attribobj.get("value2").toString());
-					}
-					rule.setTestDetail(testDetail);
-					rulelst.add(rule);
-				}
-
-			}
-
-			if (json.containsKey("section_attributes")) {
-				JSONArray attribarray = (JSONArray) json.get("section_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestRules rule = new TestRules();
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					rule.setDataType("Section");
-
-					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-					}
-					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText").toString());
-
-					}
-					if (attribobj.containsKey("afterText")) {
-						rule.setAfterText(attribobj.get("afterText").toString());
-					}
-					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
-					}
-					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn").toString());
-					}
-					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
-					}
-					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
-					}
-					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName").toString());
-					}
-					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation").toString());
-					}
-					if (attribobj.containsKey("operator")) {
-						rule.setOperator(attribobj.get("operator").toString());
-					}
-					if (attribobj.containsKey("value1")) {
-						rule.setValue1(attribobj.get("value1").toString());
-					}
-					if (attribobj.containsKey("value2")) {
-						rule.setValue2(attribobj.get("value2").toString());
-					}
-					rule.setTestDetail(testDetail);
-					rulelst.add(rule);
-				}
-			}
-
-			if (json.containsKey("snippet_attributes")) {
-
-				JSONArray attribarray = (JSONArray) json.get("snippet_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestRules rule = new TestRules();
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					rule.setDataType("Snippet");
-
-					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-					}
-
-					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation").toString());
-					}
-
-					if (attribobj.containsKey("snippet")) {
-						rule.setSnippet(attribobj.get("snippet").toString());
-					}
-
-					rule.setTestDetail(testDetail);
-					rulelst.add(rule);
-				}
-
-			}
-
-			if (json.containsKey("keyword_attributes")) {
-
-				JSONArray attribarray = (JSONArray) json.get("keyword_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestRules rule = new TestRules();
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					rule.setDataType("Keyword");
-
-					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-					}
-
-					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation").toString());
-					}
-
-					if (attribobj.containsKey("keyword")) {
-						rule.setKeyword(attribobj.get("keyword").toString());
-					}
-					rule.setTestDetail(testDetail);
-					rulelst.add(rule);
-
-				}
-
-			}
-
-			if (json.containsKey("bundle_attributes")) {
-
-				JSONArray attribarray = (JSONArray) json.get("bundle_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestBundling bundleDetail = new TestBundling();
-
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					if (attribobj.containsKey("id")) {
-
-						bundleId = Integer.parseInt(attribobj.get("id").toString());
-						bundleDetail.setId(bundleId);
-					}
-
-					bundleList.add(bundleDetail);
-				}
-
-			}
-
-			Set<TestRules> setrules = new HashSet<TestRules>(rulelst);
-			Set<TestBundling> hash_Set = new HashSet<TestBundling>(bundleList);
-			List<TestDetail> savetest1 = new ArrayList<TestDetail>();
-			List<String> testNameCheck = new ArrayList<>();
-			testDetail.setTestrules(setrules);
-			testDetail.setTestbundling(hash_Set);
-			try {
-				savetest1 = testDetailsRepository.findAll();
-
-				if (!(savetest1.isEmpty())) {
-					for (int i = 0; i < savetest1.size(); i++) {
-						String testName = savetest1.get(i).getTestName();
-						testNameCheck.add(testName);
-					}
-				}
-				if (!(testNameCheck.contains(testDetail.getTestName()))) {
-					TestDetail save = testDetailsRepository.save(testDetail);
-
-					str = "Test saved successfully";
-				} else {
-					str = "Test is Duplicate";
-				}
-
-			} catch (DataIntegrityViolationException e) {
-				// TODO Auto-generated catch block
-				return Response.status(409).entity("Test is Duplicate").build();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				return Response.status(422).entity("Could not save service").build();
-			}
+			TestDetail testDetail = setTestData(json);
+			response = saveTestDetails(testDetail);			
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 			logger.error(e);
 		}
-		return Response.status(200).entity(str).build();
+		return response;
+	}
+	
+	@SuppressWarnings("unused")
+	private Response saveTestDetails(TestDetail testDetail) {
+		Response response = null;
+		String str = "";
+		try {
+			Set<TestDetail> TestDetailList = testDetailsRepository.findByTestIdAndVersion(testDetail.getTestId(),
+					testDetail.getVersion());
+			if (TestDetailList.size() > 0) {
+				str = "Test is Duplicate";
+			} else {
+				TestDetail save = testDetailsRepository.save(testDetail);
+				str = "Test saved successfully";
+			}
+			response = Response.status(200).entity(str).build();
+		} catch (DataIntegrityViolationException e) {
+			response =  Response.status(409).entity("Test is Duplicate").build();
+		} catch (Exception e) {
+			response = Response.status(422).entity("Could not save service").build();
+		}
+		return response;
+		
+	}
+
+	private TestDetail setTestData(JSONObject json) {
+		TestDetail testDetail = new TestDetail();
+		testDetail = setTestDetails(json);
+		testDetail.setEnabled(true);
+		testDetail = setTestFeature(json, testDetail);
+		List<TestRules> rulelst = new ArrayList<TestRules>();
+		List<TestBundling> bundleList = new ArrayList<TestBundling>();
+		int bundleId = 0;
+
+		if (json.containsKey("text_attributes") || json.containsKey("table_attributes") ||json.containsKey("section_attributes"))
+		{
+			JSONArray attribarray = (JSONArray) json.get("text_attributes");
+			for (int i = 0; i < attribarray.size(); i++) {
+				TestRules rule = new TestRules();
+				JSONObject attribobj = (JSONObject) attribarray.get(i);
+				rule = setAttributeRule(attribobj, rule);
+				rule.setTestDetail(testDetail);
+				rulelst.add(rule);
+			}
+		}
+
+		if (json.containsKey("table_attributes")) {
+			JSONArray attribarray = (JSONArray) json.get("table_attributes");
+			for (int i = 0; i < attribarray.size(); i++) {
+				TestRules rule = new TestRules();
+				JSONObject attribobj = (JSONObject) attribarray.get(i);
+				rule = setAttributeRule(attribobj, rule);
+				rule.setTestDetail(testDetail);
+				rulelst.add(rule);
+			}
+		}
+
+		if (json.containsKey("section_attributes")) {
+			JSONArray attribarray = (JSONArray) json.get("section_attributes");
+			for (int i = 0; i < attribarray.size(); i++) {
+				TestRules rule = new TestRules();
+				JSONObject attribobj = (JSONObject) attribarray.get(i);
+				rule = setAttributeRule(attribobj, rule);
+				rule.setTestDetail(testDetail);
+				rulelst.add(rule);
+			}
+		}
+
+		if (json.containsKey("snippet_attributes")) {
+			JSONArray attribarray = (JSONArray) json.get("snippet_attributes");
+			for (int i = 0; i < attribarray.size(); i++) {
+				TestRules rule = new TestRules();
+				JSONObject attribobj = (JSONObject) attribarray.get(i);
+				rule = setSnippetAttribute(attribobj, rule);
+				rule.setTestDetail(testDetail);
+				rulelst.add(rule);
+			}
+		}
+
+		if (json.containsKey("keyword_attributes")) {
+			JSONArray attribarray = (JSONArray) json.get("keyword_attributes");
+			for (int i = 0; i < attribarray.size(); i++) {
+				TestRules rule = new TestRules();
+				JSONObject attribobj = (JSONObject) attribarray.get(i);
+				rule = setKeywordAttribute(attribobj, rule);
+				rule.setTestDetail(testDetail);
+				rulelst.add(rule);
+			}
+		}
+
+		if (json.containsKey("bundle_attributes")) {
+			JSONArray attribarray = (JSONArray) json.get("bundle_attributes");
+			for (int i = 0; i < attribarray.size(); i++) {
+				TestBundling bundleDetail = new TestBundling();
+				JSONObject attribobj = (JSONObject) attribarray.get(i);
+				if (attribobj.containsKey("id")) {
+					bundleId = Integer.parseInt(attribobj.get("id").toString());
+					bundleDetail.setId(bundleId);
+				}
+				bundleList.add(bundleDetail);
+			}
+		}
+
+		Set<TestRules> setrules = new HashSet<TestRules>(rulelst);
+		Set<TestBundling> hash_Set = new HashSet<TestBundling>(bundleList);
+		testDetail.setTestrules(setrules);
+		testDetail.setTestbundling(hash_Set);
+		return testDetail;
+
+	}
+
+	private TestRules setKeywordAttribute(JSONObject attribobj, TestRules rule) {
+		rule.setDataType("Keyword");
+		if (attribobj.containsKey("reportedLabel")) {
+			rule.setReportedLabel(attribobj.get("reportedLabel").toString());
+		}
+		if (attribobj.containsKey("evaluation")) {
+			rule.setEvaluation(attribobj.get("evaluation").toString());
+		}
+		if (attribobj.containsKey("keyword")) {
+			rule.setKeyword(attribobj.get("keyword").toString());
+		}
+		return rule;
+	}
+
+	private TestRules setSnippetAttribute(JSONObject attribobj, TestRules rule) {
+		rule.setDataType("Snippet");
+		if (attribobj.containsKey("reportedLabel")) {
+			rule.setReportedLabel(attribobj.get("reportedLabel").toString());
+		}
+
+		if (attribobj.containsKey("evaluation")) {
+			rule.setEvaluation(attribobj.get("evaluation").toString());
+		}
+
+		if (attribobj.containsKey("snippet")) {
+			rule.setSnippet(attribobj.get("snippet").toString());
+		}
+		return rule;
+	}
+
+	private TestRules setAttributeRule(JSONObject attribobj, TestRules rule) {
+		rule.setDataType("Section");
+		if (attribobj.containsKey("reportedLabel")) {
+			rule.setReportedLabel(attribobj.get("reportedLabel").toString());
+		}
+		if (attribobj.containsKey("beforeText")) {
+			rule.setBeforeText(attribobj.get("beforeText").toString());
+		}
+		if (attribobj.containsKey("afterText")) {
+			rule.setAfterText(attribobj.get("afterText").toString());
+		}
+		if (attribobj.containsKey("noOfChars")) {
+			rule.setNumberOfChars(attribobj.get("noOfChars").toString());
+		}
+		if (attribobj.containsKey("fromColumn")) {
+			rule.setFromColumn(attribobj.get("fromColumn").toString());
+		}
+		if (attribobj.containsKey("referenceColumn")) {
+			rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
+		}
+		if (attribobj.containsKey("whereKeyword")) {
+			rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
+		}
+		if (attribobj.containsKey("sectionName")) {
+			rule.setSectionName(attribobj.get("sectionName").toString());
+		}
+		if (attribobj.containsKey("evaluation")) {
+			rule.setEvaluation(attribobj.get("evaluation").toString());
+		}
+		if (attribobj.containsKey("operator")) {
+			rule.setOperator(attribobj.get("operator").toString());
+		}
+		if (attribobj.containsKey("value1")) {
+			rule.setValue1(attribobj.get("value1").toString());
+		}
+		if (attribobj.containsKey("value2")) {
+			rule.setValue2(attribobj.get("value2").toString());
+		}
+		return rule;
+	}
+
+	
+
+	private TestDetail setTestFeature(JSONObject json, TestDetail testDetail) {
+		List<TestFeatureList> list = new ArrayList<TestFeatureList>();
+		if (json.containsKey("featureList")) {
+
+			JSONArray jsonArray = (JSONArray) json.get("featureList");
+			for (int i = 0; i < jsonArray.size(); i++) {
+				TestFeatureList listObj = new TestFeatureList();
+				listObj.setTestDetail(testDetail);
+				listObj.setTestFeature(jsonArray.get(i).toString());
+				list.add(listObj);
+			}
+		}
+
+		Set<TestFeatureList> setFeatureList = new HashSet<TestFeatureList>(list);
+		testDetail.setTestfeaturelist(setFeatureList);
+		return testDetail;
+
+	}
+
+	private TestDetail setTestDetails(JSONObject json) {
+		TestDetail testDetail = new TestDetail();
+
+		if (json.containsKey("testName")) {
+			testDetail.setTestName(json.get("testName").toString());
+			testDetail.setTestId(json.get("testName").toString());
+		}
+		if (json.containsKey("testCategory")) {
+			testDetail.setTestCategory(json.get("testCategory").toString());
+		}
+		if (json.containsKey("version")) {
+			testDetail.setVersion(json.get("version").toString());
+		}
+
+		if (json.containsKey("testType")) {
+			testDetail.setTestType(json.get("testType").toString());
+		}
+		if (json.containsKey("connectionProtocol")) {
+			testDetail.setTestConnectionProtocol(json.get("connectionProtocol").toString());
+		}
+		if (json.containsKey("command")) {
+			testDetail.setTestCommand(json.get("command").toString());
+		}
+
+		if (json.containsKey("deviceFamily")) {
+			testDetail.setDeviceFamily(json.get("deviceFamily").toString());
+		}
+		if (json.containsKey("vendor")) {
+			testDetail.setVendor(json.get("vendor").toString());
+		}
+		if (json.containsKey("model") && json.get("model") != null) {
+			testDetail.setDeviceModel(json.get("model").toString());
+		}
+		if (json.containsKey("os")) {
+			testDetail.setOs(json.get("os").toString());
+		}
+		if (json.containsKey("osVersion")) {
+			testDetail.setOsVersion(json.get("osVersion").toString());
+		}
+		if (json.containsKey("region")) {
+			testDetail.setRegion(json.get("region").toString());
+		}
+		if (json.containsKey("networkType")) {
+			testDetail.setNetworkType(json.get("networkType").toString());
+		}
+		String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
+		testDetail.setCreatedOn(timeStamp);
+
+		if (json.containsKey("userName"))
+			testDetail.setCreatedBy(json.get("userName").toString());
+
+		if (json.containsKey("Comment")) {
+			testDetail.setComment(json.get("Comment").toString());
+		}
+		return testDetail;
+
 	}
 
 	@GET
@@ -736,329 +656,6 @@ public class TestStrategyController {
 			result = testDetailsRepository.findByCreatedByContaining(value);
 		}
 		return Response.status(200).entity(result).build();
-
-	}
-
-	@SuppressWarnings("unused")
-	@POST
-	@RequestMapping(value = "/edittestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response editBasicConfiguration(@RequestBody String teststrategeeditRqst) {
-
-		String str = "";
-		JSONParser parser = new JSONParser();
-		try {
-			JSONObject json = (JSONObject) parser.parse(teststrategeeditRqst);
-
-			TestDetail testDetail = new TestDetail();
-
-			if (json.containsKey("testName")) {
-				testDetail.setTestName(json.get("testName").toString());
-				testDetail.setTestId(json.get("testName").toString());
-			}
-			if (json.containsKey("testCategory")) {
-				testDetail.setTestCategory(json.get("testCategory").toString());
-			}
-			if (json.containsKey("version")) {
-				testDetail.setVersion(json.get("version").toString());
-			}
-			if (json.containsKey("testType")) {
-				testDetail.setTestType(json.get("testType").toString());
-			}
-			if (json.containsKey("connectionProtocol")) {
-				testDetail.setTestConnectionProtocol(json.get("connectionProtocol").toString());
-			}
-			if (json.containsKey("command")) {
-				testDetail.setTestCommand(json.get("command").toString());
-			}
-
-			if (json.containsKey("deviceFamily")) {
-				testDetail.setDeviceFamily(json.get("deviceFamily").toString());
-			}
-			if (json.containsKey("vendor")) {
-				testDetail.setVendor(json.get("vendor").toString());
-			}
-			if (json.containsKey("model")) {
-				testDetail.setDeviceModel(json.get("model").toString());
-			}
-			if (json.containsKey("networkType")) {
-				testDetail.setNetworkType(json.get("networkType").toString());
-			}
-			if (json.containsKey("os")) {
-				testDetail.setOs(json.get("os").toString());
-			}
-			if (json.containsKey("osVersion")) {
-				testDetail.setOsVersion(json.get("osVersion").toString());
-			}
-			if (json.containsKey("region")) {
-				testDetail.setRegion(json.get("region").toString());
-			}
-			String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
-			testDetail.setCreatedOn(timeStamp);
-			testDetail.setCreatedBy("admin");
-
-			if (json.containsKey("Comment")) {
-				testDetail.setComment(json.get("Comment").toString());
-			}
-			List<TestFeatureList> list = new ArrayList<TestFeatureList>();
-			if (json.containsKey("featureList")) {
-
-				JSONArray jsonArray = (JSONArray) json.get("featureList");
-				for (int i = 0; i < jsonArray.size(); i++) {
-					TestFeatureList listObj = new TestFeatureList();
-					listObj.setTestDetail(testDetail);
-					listObj.setTestFeature(jsonArray.get(i).toString());
-					list.add(listObj);
-				}
-			}
-
-			Set<TestFeatureList> setFeatureList = new HashSet<TestFeatureList>(list);
-			testDetail.setTestfeaturelist(setFeatureList);
-
-			List<TestRules> rulelst = new ArrayList<TestRules>();
-
-			if (json.containsKey("text_attributes")) {
-
-				JSONArray attribarray = (JSONArray) json.get("text_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestRules rule = new TestRules();
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					rule.setDataType("Text");
-
-					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-					}
-					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText").toString());
-
-					}
-					if (attribobj.containsKey("afterText")) {
-						rule.setAfterText(attribobj.get("afterText").toString());
-					}
-					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
-					}
-					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn").toString());
-					}
-					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
-					}
-					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
-					}
-					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName").toString());
-					}
-					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation").toString());
-					}
-					if (attribobj.containsKey("operator")) {
-						rule.setOperator(attribobj.get("operator").toString());
-					}
-					if (attribobj.containsKey("value1")) {
-						rule.setValue1(attribobj.get("value1").toString());
-					}
-					if (attribobj.containsKey("value2")) {
-						rule.setValue2(attribobj.get("value2").toString());
-					}
-					rule.setTestDetail(testDetail);
-
-					rulelst.add(rule);
-
-				}
-
-			}
-
-			if (json.containsKey("table_attributes")) {
-				JSONArray attribarray = (JSONArray) json.get("table_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestRules rule = new TestRules();
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					rule.setDataType("Table");
-
-					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-					}
-					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText").toString());
-
-					}
-					if (attribobj.containsKey("afterText")) {
-						rule.setAfterText(attribobj.get("afterText").toString());
-					}
-					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
-					}
-					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn").toString());
-					}
-					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
-					}
-					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
-					}
-					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName").toString());
-					}
-					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation").toString());
-					}
-					if (attribobj.containsKey("operator")) {
-						rule.setOperator(attribobj.get("operator").toString());
-					}
-					if (attribobj.containsKey("value1")) {
-						rule.setValue1(attribobj.get("value1").toString());
-					}
-					if (attribobj.containsKey("value2")) {
-						rule.setValue2(attribobj.get("value2").toString());
-					}
-					rule.setTestDetail(testDetail);
-					rulelst.add(rule);
-
-				}
-
-			}
-
-			if (json.containsKey("section_attributes")) {
-				JSONArray attribarray = (JSONArray) json.get("section_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestRules rule = new TestRules();
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					rule.setDataType("Section");
-
-					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-					}
-					if (attribobj.containsKey("beforeText")) {
-						rule.setBeforeText(attribobj.get("beforeText").toString());
-
-					}
-					if (attribobj.containsKey("afterText")) {
-						rule.setAfterText(attribobj.get("afterText").toString());
-					}
-					if (attribobj.containsKey("noOfChars")) {
-						rule.setNumberOfChars(attribobj.get("noOfChars").toString());
-					}
-					if (attribobj.containsKey("fromColumn")) {
-						rule.setFromColumn(attribobj.get("fromColumn").toString());
-					}
-					if (attribobj.containsKey("referenceColumn")) {
-						rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
-					}
-					if (attribobj.containsKey("whereKeyword")) {
-						rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
-					}
-					if (attribobj.containsKey("sectionName")) {
-						rule.setSectionName(attribobj.get("sectionName").toString());
-					}
-					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation").toString());
-					}
-					if (attribobj.containsKey("operator")) {
-						rule.setOperator(attribobj.get("operator").toString());
-					}
-					if (attribobj.containsKey("value1")) {
-						rule.setValue1(attribobj.get("value1").toString());
-					}
-					if (attribobj.containsKey("value2")) {
-						rule.setValue2(attribobj.get("value2").toString());
-					}
-					rule.setTestDetail(testDetail);
-					rulelst.add(rule);
-
-				}
-			}
-			if (json.containsKey("snippet_attributes")) {
-
-				JSONArray attribarray = (JSONArray) json.get("snippet_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestRules rule = new TestRules();
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					rule.setDataType("Snippet");
-
-					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-					}
-
-					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation").toString());
-					}
-
-					if (attribobj.containsKey("snippet")) {
-						rule.setSnippet(attribobj.get("snippet").toString());
-					}
-
-					rule.setTestDetail(testDetail);
-					rulelst.add(rule);
-				}
-
-			}
-
-			if (json.containsKey("keyword_attributes")) {
-
-				JSONArray attribarray = (JSONArray) json.get("keyword_attributes");
-				for (int i = 0; i < attribarray.size(); i++) {
-					TestRules rule = new TestRules();
-					JSONObject attribobj = (JSONObject) attribarray.get(i);
-
-					rule.setDataType("Keyword");
-
-					if (attribobj.containsKey("reportedLabel")) {
-						rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-					}
-
-					if (attribobj.containsKey("evaluation")) {
-						rule.setEvaluation(attribobj.get("evaluation").toString());
-					}
-
-					if (attribobj.containsKey("keyword")) {
-						rule.setKeyword(attribobj.get("keyword").toString());
-					}
-					rule.setTestDetail(testDetail);
-					rulelst.add(rule);
-
-				}
-
-			}
-
-			String testName = json.get("testName").toString();
-			List<TestDetail> testNameForVersion = testDetailsRepository.findByTestName(testName);
-
-			for (TestDetail tempObj : testNameForVersion) {
-				boolean is_enabled = false;
-				dao.updateVersion(testName, is_enabled);
-			}
-
-			Set<TestRules> setrules = new LinkedHashSet<TestRules>(rulelst);
-			testDetail.setEnabled(true);
-			TestDetail savetest = new TestDetail();
-			testDetail.setTestrules(setrules);
-			try {
-				savetest = testDetailsRepository.save(testDetail);
-
-				if (savetest != null) {
-					str = "Test edited successfully";
-				} else {
-					str = "Error occurred while editing test details";
-				}
-			} catch (DataIntegrityViolationException e) {
-				// TODO Auto-generated catch block
-				return Response.status(409).entity("Test is Duplicate").build();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				return Response.status(422).entity("Could not edit test").build();
-			}
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logger.error(e);
-		}
-		return Response.status(200).entity(str).build();
 	}
 
 	@POST
@@ -1085,12 +682,8 @@ public class TestStrategyController {
 	@RequestMapping(value = "/getTestList", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	public ResponseEntity getTestList() {
-
-		// Create first level
-
 		List<TestStrategyPojo> mainList = new ArrayList<TestStrategyPojo>();
 		mainList = dao.getAllTestsForTestStrategy();
-
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
 		List<TestStrategeyVersioningJsonModel> versioningModel = new ArrayList<TestStrategeyVersioningJsonModel>();
 		TestStrategyPojo objToAdd = null;
@@ -1100,7 +693,25 @@ public class TestStrategyController {
 		int testCount = 0;
 		List<TestStrategyPojo> modelList = new ArrayList<TestStrategyPojo>();
 		try {
-
+			Collection<TestStrategyPojo> testDetailFinalList = mainList.stream()
+					.collect(Collectors.toMap(TestStrategyPojo::getTestName, Function.identity(),
+							BinaryOperator.maxBy(Comparator.comparing(TestStrategyPojo::getVersion))))
+					.values();
+			mainList.forEach(testValue -> {
+				boolean flag = false;
+				for (TestStrategyPojo latestTest : testDetailFinalList) {
+					if (testValue.getTestName().equals(latestTest.getTestName())
+							&& testValue.getVersion().equals(latestTest.getVersion())) {
+						flag = true;
+						break;
+					}
+				}
+				if (flag) {
+					testValue.setEnabled(true);
+				} else {
+					testValue.setEnabled(false);
+				}
+			});
 			for (int i = 0; i < mainList.size(); i++) {
 				tempString = mainList.get(i).getTestName();
 				tempString1 = StringUtils.substringBefore(tempString, "_");
@@ -1155,7 +766,7 @@ public class TestStrategyController {
 					}
 					Collections.reverse(modelList);
 
-					modelList.get(0).setEnabled(true);
+					// modelList.get(0).setEnabled(true);
 					model.setTestStrategyPojoList(modelList);
 					versioningModel.add(model);
 
@@ -1454,28 +1065,31 @@ public class TestStrategyController {
 			if ("All".equals(region)) {
 				region = "%";
 			} else {
-				region = "%" + region+"%";
+				region = "%" + region + "%";
 			}
 			if ("All".equals(osVersion)) {
 				osVersion = "%";
 			} else {
-				osVersion = "%" + osVersion+"%";
+				osVersion = "%" + osVersion + "%";
 			}
 			if ("All".equals(os)) {
 				os = "%";
 			} else {
-				os = "%" + os+"%";
+				os = "%" + os + "%";
 			}
 			if ("All".equals(deviceFamily)) {
 				deviceFamily = "%";
 			} else {
-				deviceFamily = "%" + deviceFamily+"%";
+				deviceFamily = "%" + deviceFamily + "%";
 			}
 			testDetailsList = testDetailsRepository.getTesListData(deviceFamily, os, region, osVersion, vendor,
 					networkType);
-			testDetailsValue = getTestData(deviceFamily, os, region, osVersion, vendor, networkType,requestType,testDetailsValue,testDetailsList);
-			List<TestBundling> testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion, vendor, networkType);
-			testDetailsValue = getBundleData(deviceFamily, os, region, osVersion, vendor, networkType,requestType,testDetailsValue,testBundleData);
+			testDetailsValue = getTestData(deviceFamily, os, region, osVersion, vendor, networkType, requestType,
+					testDetailsValue, testDetailsList);
+			List<TestBundling> testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion,
+					vendor, networkType);
+			testDetailsValue = getBundleData(deviceFamily, os, region, osVersion, vendor, networkType, requestType,
+					testDetailsValue, testBundleData);
 			logger.info(testDetailsValue);
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -1595,7 +1209,6 @@ public class TestStrategyController {
 
 	}
 
-
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/testListForBatch", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -1641,11 +1254,15 @@ public class TestStrategyController {
 			if (json.containsKey("requestType")) {
 				requestType = json.get("requestType").toString().toLowerCase();
 			}
-			List<TestDetail> testDetailsList = testDetailsRepository.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily, os,osVersion,vendor,region,
-					networkType);
-			testDetailsValue = getTestData(deviceFamily, os, region, osVersion, vendor, networkType,requestType,testDetailsValue,testDetailsList);
-			List<TestBundling> testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion, vendor, networkType);
-			testDetailsValue = getBundleData(deviceFamily, os, region, osVersion, vendor, networkType,requestType,testDetailsValue,testBundleData);
+			List<TestDetail> testDetailsList = testDetailsRepository
+					.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily, os, osVersion,
+							vendor, region, networkType);
+			testDetailsValue = getTestData(deviceFamily, os, region, osVersion, vendor, networkType, requestType,
+					testDetailsValue, testDetailsList);
+			List<TestBundling> testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion,
+					vendor, networkType);
+			testDetailsValue = getBundleData(deviceFamily, os, region, osVersion, vendor, networkType, requestType,
+					testDetailsValue, testBundleData);
 
 			logger.info(testDetailsValue);
 		} catch (ParseException e) {
@@ -1660,11 +1277,12 @@ public class TestStrategyController {
 	}
 
 	@SuppressWarnings("unchecked")
-	private JSONArray getTestData(String deviceFamily, String os, String region, String osVersion, String vendor, String networkType, String requestType, JSONArray testDetailsValue, List<TestDetail> testDetailsList) {
+	private JSONArray getTestData(String deviceFamily, String os, String region, String osVersion, String vendor,
+			String networkType, String requestType, JSONArray testDetailsValue, List<TestDetail> testDetailsList) {
 		List<TestDetail> testDetailsFinal = new ArrayList<TestDetail>();
 		HashSet<String> testNameList = new HashSet<>();
 		Set<String> testCategoryList = new HashSet<>();
-		
+
 		String testCategory = null;
 		for (int i = 0; i < testDetailsList.size(); i++) {
 			switch (requestType) {
@@ -1693,9 +1311,15 @@ public class TestStrategyController {
 				break;
 			}
 		}
+
+		Collection<TestDetail> testDetailFinalList = testDetailsFinal.stream()
+				.collect(Collectors.toMap(TestDetail::getTestId, Function.identity(),
+						BinaryOperator.maxBy(Comparator.comparing(TestDetail::getVersion))))
+				.values();
+
 		testCategoryList.forEach(category -> {
 			JSONArray testDetailsArray = new JSONArray();
-			testDetailsFinal.stream().filter(it -> category.equals(it.getTestCategory())).forEach(testInfo -> {
+			testDetailFinalList.stream().filter(it -> category.equals(it.getTestCategory())).forEach(testInfo -> {
 				JSONObject testObject = new JSONObject();
 				testObject.put("testName", testInfo.getTestName() + "_" + testInfo.getVersion());
 				testObject.put("testCategory", testInfo.getTestCategory());
@@ -1709,12 +1333,13 @@ public class TestStrategyController {
 			testDetailsValue.add(testObject2);
 		});
 		return testDetailsValue;
-		
+
 	}
 
 	@SuppressWarnings("unchecked")
-	private JSONArray getBundleData(String deviceFamily, String os, String region, String osVersion, String vendor, String networkType, String requestType, JSONArray testDetailsValue, List<TestBundling> testBundleData) {
-		
+	private JSONArray getBundleData(String deviceFamily, String os, String region, String osVersion, String vendor,
+			String networkType, String requestType, JSONArray testDetailsValue, List<TestBundling> testBundleData) {
+
 		testBundleData.forEach(bundle -> {
 			JSONArray testDetailsArray = new JSONArray();
 			boolean auditFlag = false;
@@ -1728,8 +1353,7 @@ public class TestStrategyController {
 				auditFlag = testDetail.stream()
 						.anyMatch(testInfo -> testInfo.getTestCategory().equals("Network Audit"));
 			}
-			if ((auditFlag && "audit".equals(requestType))
-					|| (testOnly && "test".equals(requestType))
+			if ((auditFlag && "audit".equals(requestType)) || (testOnly && "test".equals(requestType))
 					|| (!auditFlag && !testOnly && ("config".equals(requestType)))) {
 				for (TestDetail testInfo : testDetail) {
 					JSONObject testObject = new JSONObject();
@@ -1747,6 +1371,7 @@ public class TestStrategyController {
 		});
 		return testDetailsValue;
 	}
+
 	@POST
 	@RequestMapping(value = "/getFeaturesForTestDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getFeaturesForDeviceDetail(@RequestBody String request) throws Exception {
