@@ -479,18 +479,4 @@ public class TemplateSuggestionService implements Observer {
 				.build();
 
 	}
-	
-	@POST
-	@RequestMapping(value = "/getFeaturesForMACDRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	public ResponseEntity<JSONObject> getFeaturesForMACDRequest(@RequestBody String request) throws Exception {
-		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject json = templateManagementNewService.getFeaturesForMACDRequest(request);
-		if (json != null) {
-			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
-		} else {
-			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
-		}
-		return responseEntity;
-	}
-
 }

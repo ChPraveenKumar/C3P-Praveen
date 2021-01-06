@@ -26,7 +26,6 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
-import com.techm.orion.entitybeans.MasterOIDEntity;
 import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
@@ -42,7 +41,6 @@ import com.techm.orion.repositories.MasterAttribRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
-import com.techm.orion.repositories.MasterOIDRepository;
 import com.techm.orion.repositories.TemplateCommandsRepository;
 import com.techm.orion.repositories.TemplateConfigBasicDetailsRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
@@ -356,70 +354,40 @@ public class TemplateManagementNewService {
 
 		return finalCammands;
 	}
-
 	@SuppressWarnings("unchecked")
-	public JSONObject getFeaturesForDevice(String request) throws ParseException {
-		
+	public JSONObject getFeaturesForDevice(String request) throws ParseException {		
 		JSONObject json = new JSONObject();
 		JSONParser parser = new JSONParser();
 		json = (JSONObject) parser.parse(request);
 		DeviceDetailsPojo deviceDeatils = setDeviceDeatils(json);
 		JSONObject features = new JSONObject();
-		if (deviceDeatils != null) {
-			String deviceFamily = null, os = null, osVersion = null, networkType = null, region = null, vendor = null;
-			deviceFamily = deviceDeatils.getDeviceFamily();
-			os = deviceDeatils.getOs();
-			osVersion = deviceDeatils.getOsVersion();
-			vendor = deviceDeatils.getVendor();
-			region = deviceDeatils.getRegion();
-			networkType=deviceDeatils.getNetworkType();
-			if ("All".equals(region)) {
-				region = "%";
-			} else {
-				region = "%" + region + "%";
-			}
-			if ("All".equals(osVersion)) {
-				osVersion = "%";
-			} else {
-				osVersion = "%" + osVersion + "%";
-			}
-			if ("All".equals(os)) {
-				os = "%";
-			} else {
-				os = "%" + os + "%";
-			}
-			if ("All".equals(deviceFamily)) {
-				deviceFamily = "%";
-			} else {
-				deviceFamily = "%" + deviceFamily + "%";
-			}
-			if ("All".equals(networkType)) {
-				networkType = "%";
-			} else {
-				networkType = "%" + networkType + "%";
-			}
-
-			JSONArray outputArray = new JSONArray();
-			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.getMasterFeatureData(deviceFamily, os,
-					region, osVersion, vendor, networkType);
-			masterFeatures.forEach(masterFeature -> {
-				JSONObject object = new JSONObject();
-				JSONObject featureDetails = new JSONObject();
-				featureDetails.put("fId", masterFeature.getfId());
-				featureDetails.put("fName", masterFeature.getfName());
-				featureDetails.put("fReplicationFlag", masterFeature.getfReplicationind());
-				object.put("featureDetails", featureDetails);
-				object.put("vendor", masterFeature.getfVendor());
-				object.put("deviceFamily", masterFeature.getfFamily());
-				object.put("os", masterFeature.getfOs());
-				object.put("osVersion", masterFeature.getfOsversion());
-				object.put("region", masterFeature.getfRegion());
-				object.put("networkType", masterFeature.getfNetworkfun());
-				outputArray.add(object);
-			});
-			features.put("output", outputArray);
+		if (deviceDeatils != null) {								
+			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findNearestMatchEntities(deviceDeatils.getVendor(), deviceDeatils.getDeviceFamily(), deviceDeatils.getOs(),
+					deviceDeatils.getOsVersion(),deviceDeatils.getRegion(),deviceDeatils.getNetworkType());
+			features.put("output", setFeatureData(masterFeatures));
 		}
 		return features;
+	}
+
+	@SuppressWarnings("unchecked")
+	private JSONArray setFeatureData(List<MasterFeatureEntity> masterFeatures) {
+		JSONArray outputArray = new JSONArray();
+		masterFeatures.forEach(masterFeature -> {
+			JSONObject object = new JSONObject();
+			JSONObject featureDetails = new JSONObject();
+			featureDetails.put("fId", masterFeature.getfId());
+			featureDetails.put("fName", masterFeature.getfName());
+			featureDetails.put("fReplicationFlag", masterFeature.getfReplicationind());
+			object.put("featureDetails", featureDetails);
+			object.put("vendor", masterFeature.getfVendor());
+			object.put("deviceFamily", masterFeature.getfFamily());
+			object.put("os", masterFeature.getfOs());
+			object.put("osVersion", masterFeature.getfOsversion());
+			object.put("region", masterFeature.getfRegion());
+			object.put("networkType", masterFeature.getfNetworkfun());
+			outputArray.add(object);
+		});
+		return outputArray;
 	}
 
 	@SuppressWarnings({ "unchecked" })
@@ -617,57 +585,6 @@ public class TemplateManagementNewService {
 		}
 		return finalObject;
 	}
-
-	@SuppressWarnings("unchecked")
-	public JSONObject getFeaturesForMACDRequest(String request) {
-		JSONObject json = new JSONObject();
-		JSONParser parser = new JSONParser();
-		JSONObject features = new JSONObject();
-		try {
-			json = (JSONObject) parser.parse(request);
-			DeviceDetailsPojo deviceDetails = setDeviceDeatils(json);
-			JSONArray outputArray = new JSONArray();
-			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findApprovedFeatureEntity(
-					deviceDetails.getVendor(), deviceDetails.getDeviceFamily(), deviceDetails.getOs(),
-					deviceDetails.getOsVersion(), deviceDetails.getRegion(), deviceDetails.getNetworkType());
-			masterFeatures.forEach(masterFeature -> {
-				if (!"Basic Configuration".contains(masterFeature.getfName())) {
-					JSONObject deviceDetailsObject = new JSONObject();
-					deviceDetailsObject.put("featureDetails", setFeatureData(masterFeature));
-					deviceDetailsObject = setDeviceDetails(deviceDetailsObject, masterFeature);
-					outputArray.add(deviceDetailsObject);
-				}
-			});
-			features.put("output", outputArray);
-		} catch (ParseException e) {
-
-			e.printStackTrace();
-		}
-
-		return features;
-
-	}
-
-	@SuppressWarnings("unchecked")
-	private JSONObject setDeviceDetails(JSONObject deviceDetailsObject, MasterFeatureEntity masterFeature) {
-		deviceDetailsObject.put("vendor", masterFeature.getfVendor());
-		deviceDetailsObject.put("deviceFamily", masterFeature.getfFamily());
-		deviceDetailsObject.put("os", masterFeature.getfOs());
-		deviceDetailsObject.put("osVersion", masterFeature.getfOsversion());
-		deviceDetailsObject.put("region", masterFeature.getfRegion());
-		deviceDetailsObject.put("networkType", masterFeature.getfNetworkfun());
-		return deviceDetailsObject;
-	}
-
-	@SuppressWarnings("unchecked")
-	private JSONObject setFeatureData(MasterFeatureEntity masterFeature) {
-		JSONObject featureDetails = new JSONObject();
-		featureDetails.put("fId", masterFeature.getfId());
-		featureDetails.put("fName", masterFeature.getfName());
-		featureDetails.put("fReplicationFlag", masterFeature.getfReplicationind());
-		return featureDetails;
-	}
-
 	@SuppressWarnings("unchecked")
 	public JSONObject getFeatureForTestDetails(String request) throws ParseException {
 		JSONObject json = new JSONObject();
