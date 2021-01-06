@@ -9,7 +9,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
@@ -194,6 +196,102 @@ public class PingTest {
 		return responce;
 	}
 
+	@SuppressWarnings("unchecked")
+	public JSONArray pingResults(String managementIp, String testType) {
+		logger.info("Start getPingResults - managementIp- " + managementIp);
+		JSONArray responce = null;
+		RestTemplate restTemplate = new RestTemplate();
+		JSONObject obj = new JSONObject();
+
+		try {
+			obj.put(new String("ipAddress"), managementIp);
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(obj,
+					headers);
+			String url=TSALabels.PYTHON_SERVICES.getValue()+TSALabels.PYTHON_PING.getValue();
+			String response = restTemplate.exchange(url,
+					HttpMethod.POST, entity, String.class).getBody();
+
+			JSONParser parser = new JSONParser();
+			JSONObject responsejson = (JSONObject) parser.parse(response);
+			
+			switch(testType)
+			{
+			case "healthCheck":
+				responce=new JSONArray();
+				JSONObject latency=new JSONObject();
+				JSONObject frameloss=new JSONObject();
+				JSONObject pingRep=new JSONObject();
+				//this is to calculate latency
+				if(responsejson.containsKey("avg"))
+				{
+					latency.put("latency", responsejson.get("avg").toString());
+					responce.add(latency);
+				}
+				else
+				{
+					latency.put("latency", "0.0");
+					responce.add(latency);
+				}
+				//this is to calculate frameloss
+				if(responsejson.containsKey("pingReply"))
+				{
+					JSONArray pingArray= (JSONArray) responsejson.get("pingReply");
+					List<String>list=new ArrayList<String>();
+					for(int i=0; i<pingArray.size();i++)
+					{
+						list.add(pingArray.get(i).toString());
+					}
+					int frameslost=0;
+					for(String res:list)
+					{
+						if(res.contains("Request timed out"))
+						{
+							frameslost++;
+						}
+					}
+					double frameslostpercent=0;
+					if(frameslost!=0)
+					{
+					frameslostpercent=(frameslost/100)*list.size();
+					}
+					frameloss.put("frameloss", frameslostpercent);
+					responce.add(frameloss);
+					pingRep.put("pingReply", responsejson.get("pingReply").toString());
+					responce.add(pingRep);
+					
+				}
+				else
+				{
+					frameloss.put("frameloss", "0");
+					responce.add(frameloss);
+					pingRep.put("pingReply", "Device not reachable");
+					responce.add(pingRep);
+
+				}
+				
+				break;
+			default:
+				if (responsejson.containsKey("pingReply")) {
+					responce = (JSONArray) responsejson.get("pingReply");
+				}
+				
+				break;
+			}
+		/*	if (responsejson.containsKey("pingReply")) {
+				responce = (JSONArray) responsejson.get("pingReply");
+			}*/
+
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		logger.info("Response" + responce);
+		return responce;
+	}
+	
 	public String getPingResults(Process process) {
 		logger.info("Start getPingResults - " + process);
 		long startTime = System.currentTimeMillis();

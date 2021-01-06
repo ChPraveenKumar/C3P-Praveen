@@ -71,4 +71,6 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	@Param("region") String region, @Param("osVersion") String osVersion, @Param("vendor") String vendor,
 	@Param("networkType") String networkType);
 
+	@Query(value = "select f_name from c3p_m_features where f_id = :f_id", nativeQuery = true)
+	String findNameByFeatureid(@Param("f_id") String f_id);
 }
