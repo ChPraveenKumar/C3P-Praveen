@@ -6,6 +6,8 @@ import java.util.List;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -27,17 +29,19 @@ import com.techm.orion.service.DeviceRequestService;
 @RestController
 public class DeviceRequestController {
 
+	private static final Logger logger = LogManager.getLogger(DeviceDiscoveryController.class);
+
 	@Autowired
-	DeviceRequestService service;
+	private DeviceRequestService service;
 	
 	@Autowired
-	ResourceCharacteristicsRepository resourcecharateristicRepo;
+	private ResourceCharacteristicsRepository resourcecharateristicRepo;
 	
 	@Autowired
-	MasterFeatureRepository masterfeatureRepo;
+	private MasterFeatureRepository masterfeatureRepo;
 	
 	@Autowired
-	MasterCharacteristicsRepository masterCharacteristicRepo;
+	private MasterCharacteristicsRepository masterCharacteristicRepo;
 	
 	@POST
 	@RequestMapping(value = "/getConfigRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -60,7 +64,7 @@ public class DeviceRequestController {
 			}
 
 		} catch (Exception e) {
-
+			logger.error(e);
 		}
 		return Response.status(200).entity(requestDeatils).build();
 	}
@@ -87,14 +91,14 @@ public class DeviceRequestController {
 				featureids=new ArrayList<String>();
 				featureids=resourcecharateristicRepo.findDistinctFeaturesForHostname(hostName);
 				List<ResourceCharacteristicsEntity>listOfCharacteristics;
-				
+				if(featureids!=null || !featureids.isEmpty())
+				{
 				for(String fid: featureids)
 				{
 					JSONObject feature=new JSONObject();
 					feature.put("featureId", fid);
 					String featurename=masterfeatureRepo.findNameByFeatureid(fid);
 					feature.put("featureName", featurename);
-					listOfCharacteristics=new ArrayList<ResourceCharacteristicsEntity>();
 					listOfCharacteristics=resourcecharateristicRepo.findByRcFeatureIdAndRcDeviceHostname(fid, hostName);
 					JSONArray charachteristicArray=new JSONArray();
 					for(ResourceCharacteristicsEntity characteristic: listOfCharacteristics)
@@ -109,10 +113,11 @@ public class DeviceRequestController {
 					feature.put("charachteristics", charachteristicArray);
 					output.add(feature);
 				}
+				}
 			}
 
 		} catch (Exception e) {
-
+			logger.error(e);
 		}
 		return Response.status(200).entity(output).build();
 	}

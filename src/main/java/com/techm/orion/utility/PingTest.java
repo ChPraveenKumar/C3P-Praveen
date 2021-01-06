@@ -2,11 +2,13 @@ package com.techm.orion.utility;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -36,49 +38,6 @@ public class PingTest {
 	private static final Logger logger = LogManager.getLogger(PingTest.class);
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
-
-	public boolean cmdPingCall(String managementIp, String routername,
-			String region) throws Exception {
-		/*
-		 * ProcessBuilder builder = new ProcessBuilder("cmd.exe"); Process p =
-		 * null; boolean flag = true; try { p = builder.start(); BufferedWriter
-		 * p_stdin = new BufferedWriter(new
-		 * OutputStreamWriter(p.getOutputStream())); String commandToPing =
-		 * "ping " + managementIp + " -n 20"; logger.info("Management ip " +
-		 * managementIp); p_stdin.write(commandToPing); p_stdin.newLine();
-		 * p_stdin.flush(); try { Thread.sleep(21000); } catch (Exception ee) {
-		 * } p_stdin.write("exit"); p_stdin.newLine(); p_stdin.flush(); }
-		 * 
-		 * catch (IOException e) { e.printStackTrace(); }
-		 */
-
-		StringBuilder commadBuilder = new StringBuilder();
-		Process process = null;
-		boolean flag = true;
-		try {
-			commadBuilder.append("ping ");
-			commadBuilder.append(managementIp);
-			// Pings timeout
-			if ("Linux".equals(TSALabels.APP_OS.getValue())) {
-				commadBuilder.append(" -c ");
-			} else {
-				commadBuilder.append(" -n ");
-			}
-			// Number of pings
-			commadBuilder.append("5");
-			logger.info("commandToPing -" + commadBuilder);
-			process = Runtime.getRuntime().exec(commadBuilder.toString());
-		} catch (IOException exe) {
-			logger.error("Exception in pingResults - " + exe.getMessage());
-		}
-
-		// Scanner s = new Scanner( p.getInputStream() );
-
-		InputStream input = process.getInputStream();
-		flag = printResult(input, routername, region);
-
-		return flag;
-	}
 
 	private boolean printResult(InputStream input, String routername,
 			String region) throws Exception {
@@ -178,9 +137,10 @@ public class PingTest {
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(obj,
 					headers);
-			String url=TSALabels.PYTHON_SERVICES.getValue()+TSALabels.PYTHON_PING.getValue();
-			String response = restTemplate.exchange(url,
-					HttpMethod.POST, entity, String.class).getBody();
+			String url = TSALabels.PYTHON_SERVICES.getValue()
+					+ TSALabels.PYTHON_PING.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST,
+					entity, String.class).getBody();
 
 			JSONParser parser = new JSONParser();
 			JSONObject responsejson = (JSONObject) parser.parse(response);
@@ -210,79 +170,72 @@ public class PingTest {
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(obj,
 					headers);
-			String url=TSALabels.PYTHON_SERVICES.getValue()+TSALabels.PYTHON_PING.getValue();
-			String response = restTemplate.exchange(url,
-					HttpMethod.POST, entity, String.class).getBody();
+			String url = TSALabels.PYTHON_SERVICES.getValue()
+					+ TSALabels.PYTHON_PING.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST,
+					entity, String.class).getBody();
 
 			JSONParser parser = new JSONParser();
 			JSONObject responsejson = (JSONObject) parser.parse(response);
-			
-			switch(testType)
-			{
+
+			switch (testType) {
 			case "healthCheck":
-				responce=new JSONArray();
-				JSONObject latency=new JSONObject();
-				JSONObject frameloss=new JSONObject();
-				JSONObject pingRep=new JSONObject();
-				//this is to calculate latency
-				if(responsejson.containsKey("avg"))
-				{
+				responce = new JSONArray();
+				JSONObject latency = new JSONObject();
+				JSONObject frameloss = new JSONObject();
+				JSONObject pingRep = new JSONObject();
+				// this is to calculate latency
+				if (responsejson.containsKey("avg")) {
 					latency.put("latency", responsejson.get("avg").toString());
 					responce.add(latency);
-				}
-				else
-				{
+				} else {
 					latency.put("latency", "0.0");
 					responce.add(latency);
 				}
-				//this is to calculate frameloss
-				if(responsejson.containsKey("pingReply"))
-				{
-					JSONArray pingArray= (JSONArray) responsejson.get("pingReply");
-					List<String>list=new ArrayList<String>();
-					for(int i=0; i<pingArray.size();i++)
-					{
+				// this is to calculate frameloss
+				if (responsejson.containsKey("pingReply")) {
+					JSONArray pingArray = (JSONArray) responsejson
+							.get("pingReply");
+					List<String> list = new ArrayList<String>();
+					for (int i = 0; i < pingArray.size(); i++) {
 						list.add(pingArray.get(i).toString());
 					}
-					int frameslost=0;
-					for(String res:list)
-					{
-						if(res.contains("Request timed out"))
-						{
+					int frameslost = 0;
+					for (String res : list) {
+						if (res.contains("Request timed out")) {
 							frameslost++;
 						}
 					}
-					double frameslostpercent=0;
-					if(frameslost!=0)
-					{
-					frameslostpercent=(frameslost/100)*list.size();
+					double frameslostpercent = 0;
+					if (frameslost != 0) {
+						frameslostpercent = (frameslost / 100) * list.size();
 					}
 					frameloss.put("frameloss", frameslostpercent);
 					responce.add(frameloss);
-					pingRep.put("pingReply", responsejson.get("pingReply").toString());
+					pingRep.put("pingReply", responsejson.get("pingReply")
+							.toString());
 					responce.add(pingRep);
-					
-				}
-				else
-				{
+
+				} else {
 					frameloss.put("frameloss", "0");
 					responce.add(frameloss);
 					pingRep.put("pingReply", "Device not reachable");
 					responce.add(pingRep);
 
 				}
-				
+
 				break;
 			default:
 				if (responsejson.containsKey("pingReply")) {
 					responce = (JSONArray) responsejson.get("pingReply");
 				}
-				
+
 				break;
 			}
-		/*	if (responsejson.containsKey("pingReply")) {
-				responce = (JSONArray) responsejson.get("pingReply");
-			}*/
+			/*
+			 * if (responsejson.containsKey("pingReply")) { responce =
+			 * (JSONArray) responsejson.get("pingReply"); }
+			 */
 
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
@@ -291,7 +244,47 @@ public class PingTest {
 		logger.info("Response" + responce);
 		return responce;
 	}
-	
+
+	@SuppressWarnings("unchecked")
+	public boolean pingResults(String managementIp, String hostname,
+			String region) {
+		logger.info("Start getPingResults - managementIp- " + managementIp);
+		boolean responce = false;
+		RestTemplate restTemplate = new RestTemplate();
+		JSONObject obj = new JSONObject();
+
+		try {
+			obj.put(new String("ipAddress"), managementIp);
+
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(obj,
+					headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue()
+					+ TSALabels.PYTHON_PING.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST,
+					entity, String.class).getBody();
+
+			JSONParser parser = new JSONParser();
+			JSONObject responsejson = (JSONObject) parser.parse(response);
+			if (responsejson.containsKey("pingReply")) {
+				JSONArray res = (JSONArray) responsejson.get("pingReply");
+				InputStream stream = new ByteArrayInputStream(res
+						.toJSONString().getBytes(StandardCharsets.UTF_8));
+				responce = printResult(stream, hostname, region);
+			}
+
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		logger.info("Response" + responce);
+		return responce;
+	}
+
 	public String getPingResults(Process process) {
 		logger.info("Start getPingResults - " + process);
 		long startTime = System.currentTimeMillis();

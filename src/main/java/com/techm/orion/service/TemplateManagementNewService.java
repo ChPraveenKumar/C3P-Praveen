@@ -400,7 +400,7 @@ public class TemplateManagementNewService {
 			}
 
 			JSONArray outputArray = new JSONArray();
-			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.getMasterFeatureData(deviceFamily, os,
+			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findNearestMatchEntities(deviceFamily, os,
 					region, osVersion, vendor, networkType);
 			masterFeatures.forEach(masterFeature -> {
 				JSONObject object = new JSONObject();
