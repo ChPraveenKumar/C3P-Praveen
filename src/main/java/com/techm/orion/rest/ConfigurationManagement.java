@@ -263,18 +263,38 @@ public class ConfigurationManagement {
 
 				if (certificationTestFlag != null && certificationTestFlag.containsKey("default")) {
 					// flag test selection
-					JSONObject defaultObj = (JSONObject) certificationTestFlag.get("default");
-
-					if (defaultObj.get("Throughput").toString().equals("1")) {
-						configReqToSendToC3pCode.setThroughputTest(defaultObj.get("Throughput").toString());
+					JSONArray defaultArray = (JSONArray) certificationTestFlag.get("default");
+					String bit = "1010000";
+					int frameloss=0,latency=0,throughput=0;
+					for(int defarray=0; defarray<defaultArray.size();defarray++)
+					{
+					
+						JSONObject defaultObject=(JSONObject) defaultArray.get(defarray);
+						String testName=defaultObject.get("testName").toString();
+						int selectedValue=0;
+						if(Integer.parseInt(defaultObject.get("selected").toString()) == 1)
+						{
+							selectedValue=1;
+						}
+						switch (testName) {
+						case "Frameloss":
+								frameloss=selectedValue;
+							break;
+						case "Latency":
+								latency=selectedValue;
+							break;
+						case "Throughput":
+								throughput=selectedValue;
+							break;
+						}
+						bit= "1010"+ throughput + frameloss + latency;
 					}
-
-					String bit = "1" + "0" + "1" + "0" + defaultObj.get("Throughput").toString() + "1" + "1";
+					
 					logger.info(bit);
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 
 				} else {
-					String bit = "1" + "0" + "1" + "0" + "0" + "1" + "1";
+					String bit = "1010011";
 					logger.info(bit);
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 				}
@@ -645,7 +665,7 @@ public class ConfigurationManagement {
 								}
 							}
 							if (attribJson != null) {
-								for (int i = 0; i < attribJson.size(); i++) {
+								for (int i = 0; i < attribJson.size(); i++) { 
 
 									JSONObject object = (JSONObject) attribJson.get(i);
 									String attribType = null;

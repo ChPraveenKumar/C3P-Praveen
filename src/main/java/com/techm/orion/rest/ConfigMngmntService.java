@@ -98,7 +98,7 @@ public class ConfigMngmntService implements Observer {
 
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
-			if(json.get("userName") !=null)
+			if (json.get("userName") != null)
 				userName = json.get("userName").toString();
 
 			CreateConfigRequestDCM configReqToSendToC3pCode = new CreateConfigRequestDCM();
@@ -1228,12 +1228,17 @@ public class ConfigMngmntService implements Observer {
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
 
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList, userName);
+				result = dcmConfigService.updateAlldetails(
+						configReqToSendToC3pCode, createConfigList, userName);
 
-			} else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("NETCONF")
-					&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")
-					|| configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("RESTCONF")
-							&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
+			} else if (configReqToSendToC3pCode.getRequestType()
+					.equalsIgnoreCase("NETCONF")
+					&& configReqToSendToC3pCode.getNetworkType()
+							.equalsIgnoreCase("VNF")
+					|| configReqToSendToC3pCode.getRequestType()
+							.equalsIgnoreCase("RESTCONF")
+					&& configReqToSendToC3pCode.getNetworkType()
+							.equalsIgnoreCase("VNF")) {
 
 				/*
 				 * create SeriesId for getting master configuration Commands and
@@ -1857,11 +1862,13 @@ public class ConfigMngmntService implements Observer {
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
 
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, createConfigList, userName);
+				result = dcmConfigService.updateAlldetails(
+						configReqToSendToC3pCode, createConfigList, userName);
 				logger.info("log");
 
 			} else {
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCode, null, userName);
+				result = dcmConfigService.updateAlldetails(
+						configReqToSendToC3pCode, null, userName);
 			}
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -1941,9 +1948,9 @@ public class ConfigMngmntService implements Observer {
 		String requestIdForConfig = "";
 		String res = "false";
 
-		String data = "Failure";		
+		String data = "Failure";
 		String userName = null;
-		
+
 		GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		Map<String, String> result = null;
@@ -2050,7 +2057,8 @@ public class ConfigMngmntService implements Observer {
 									if (attribLabel.equals(Attrib.getcName())) {
 										createConfigList.add(setConfigData(0,
 												attriValue, "",
-												Attrib.getcFId(),Attrib.getcId()));
+												Attrib.getcFId(),
+												Attrib.getcId()));
 
 									}
 
@@ -2113,8 +2121,10 @@ public class ConfigMngmntService implements Observer {
 									cammandByTemplate));
 				}
 
-				data = getConfigurationTemplateService.generateTemplate(requestInfoPojo);
-				result = dcmConfigService.updateBatchConfig(requestInfoPojo, createConfigList, featureList, userName,features);
+				data = getConfigurationTemplateService
+						.generateTemplate(requestInfoPojo);
+				result = dcmConfigService.updateBatchConfig(requestInfoPojo,
+						createConfigList, featureList, userName, features);
 
 			} else if (requestInfoPojo.getRequestType().equalsIgnoreCase(
 					"NETCONF")
@@ -2201,7 +2211,8 @@ public class ConfigMngmntService implements Observer {
 									if (attribLabel.equals(Attrib.getcName())) {
 										createConfigList.add(setConfigData(0,
 												attriValue, "",
-												Attrib.getcFId(),Attrib.getcId()));
+												Attrib.getcFId(),
+												Attrib.getcId()));
 
 									}
 
@@ -2212,12 +2223,14 @@ public class ConfigMngmntService implements Observer {
 				}
 				configReqToSendToC3pCodeList.add(requestInfoPojo);
 
-
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList, userName,null);
+				result = dcmConfigService.updateAlldetails(
+						configReqToSendToC3pCodeList, createConfigList,
+						featureList, userName, null);
 				logger.info("log");
 
 			} else {
-				result = dcmConfigService.updateBatchConfig(requestInfoPojo, null, null, userName,null);
+				result = dcmConfigService.updateBatchConfig(requestInfoPojo,
+						null, null, userName, null);
 			}
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {
@@ -2244,19 +2257,21 @@ public class ConfigMngmntService implements Observer {
 	}
 
 	@SuppressWarnings("unchecked")
-	private RequestInfoPojo setRequestInfoData(RequestInfoPojo requestInfoPojo, JSONObject json) {
+	private RequestInfoPojo setRequestInfoData(RequestInfoPojo requestInfoPojo,
+			JSONObject json) {
 		String requestType = "";
 		String request_creator_name = "";
 
 		String userName = null;
-		requestInfoPojo.setHostname(json.get("hostName").toString().toUpperCase());
-		
-		if (json.get("userName") !=null) 
+		requestInfoPojo.setHostname(json.get("hostName").toString()
+				.toUpperCase());
+
+		if (json.get("userName") != null)
 			userName = json.get("userName").toString();
-		
-		else if (json.get("requestCreatorName") !=null) 
-				userName = json.get("requestCreatorName").toString();
-		
+
+		else if (json.get("requestCreatorName") != null)
+			userName = json.get("requestCreatorName").toString();
+
 		if (json.containsKey("requestType")) {
 			requestInfoPojo.setRequestType(json.get("requestType").toString());
 			requestType = json.get("requestType").toString();
@@ -2362,32 +2377,62 @@ public class ConfigMngmntService implements Observer {
 		if (requestType.equals("Test") || requestType.equals("Audit")) {
 			JSONObject certificationTestFlag = null;
 
-
 			if (json.containsKey("certificationTests")) {
 				if (json.get("certificationTests") != null) {
-					certificationTestFlag = (JSONObject) json.get("certificationTests");
+					certificationTestFlag = (JSONObject) json
+							.get("certificationTests");
 				}
 			}
 			if (!(requestType.equals("SLGB"))) {
 
-				if (certificationTestFlag != null && certificationTestFlag.containsKey("default")) {
+				if (certificationTestFlag != null
+						&& certificationTestFlag.containsKey("default")) {
 					// flag test selection
-					JSONObject defaultObj = (JSONObject) certificationTestFlag
-							.get("default");
+					if (certificationTestFlag.containsKey("default")) {
+						JSONArray defaultArray = (JSONArray) certificationTestFlag
+								.get("default");
+						if (defaultArray != null) {
+							String bit = "1010000";
+							int frameloss = 0, latency = 0, throughput = 0;
+							for (int defarray = 0; defarray < defaultArray
+									.size(); defarray++) {
 
-					if (defaultObj.get("Throughput").toString().equals("1")) {
-						requestInfoPojo.setThroughputTest(defaultObj.get(
-								"Throughput").toString());
+								JSONObject defaultObject = (JSONObject) defaultArray
+										.get(defarray);
+								String testName = defaultObject.get("testName")
+										.toString();
+								int selectValue=0;
+								if (Integer.parseInt(defaultObject.get(
+										"selected").toString()) == 1)
+								{
+								selectValue=1;
+								}
+								switch (testName) {
+								case "Frameloss":
+										frameloss = selectValue;
+									break;
+								case "Latency":
+										latency = selectValue;
+									break;
+								case "Throughput":
+										throughput = selectValue;
+									break;
+								}
+								bit = "1010"+ throughput
+										+ frameloss + latency;
+							}
+
+							logger.info(bit);
+							requestInfoPojo.setCertificationSelectionBit(bit);
+
+						} else {
+							String bit = "1010011";
+							logger.info(bit);
+							requestInfoPojo.setCertificationSelectionBit(bit);
+						}
 					}
-
-					String bit = "1" + "0" + "1" + "0"
-							+ defaultObj.get("Throughput").toString() + "1"
-							+ "1";
-					logger.info(bit);
-					requestInfoPojo.setCertificationSelectionBit(bit);
-
 				} else {
-					String bit = "0" + "0" + "0" + "0" + "0" + "0" + "0";
+					String bit = "1010000";
 					logger.info(bit);
 					requestInfoPojo.setCertificationSelectionBit(bit);
 				}
@@ -2395,8 +2440,10 @@ public class ConfigMngmntService implements Observer {
 
 			if (!(requestType.equals("SLGB"))) {
 
-				if (certificationTestFlag != null && certificationTestFlag.containsKey("dynamic")) {
-					JSONArray dynamicArray = (JSONArray) certificationTestFlag.get("dynamic");
+				if (certificationTestFlag != null
+						&& certificationTestFlag.containsKey("dynamic")) {
+					JSONArray dynamicArray = (JSONArray) certificationTestFlag
+							.get("dynamic");
 					JSONArray toSaveArray = new JSONArray();
 
 					for (int i = 0; i < dynamicArray.size(); i++) {
@@ -2411,8 +2458,10 @@ public class ConfigMngmntService implements Observer {
 							auditFlag = category.contains("Network Audit");
 						}
 
-						if ((auditFlag && "Audit".equals(requestType)) || (testOnly && "Test".equals(requestType))
-								|| (!auditFlag && !testOnly && ("Config".equals(requestType)))) {
+						if ((auditFlag && "Audit".equals(requestType))
+								|| (testOnly && "Test".equals(requestType))
+								|| (!auditFlag && !testOnly && ("Config"
+										.equals(requestType)))) {
 							long isSelected = (long) arrayObj.get("selected");
 							if (isSelected == 1) {
 								toSaveArray.add(arrayObj);
@@ -2443,7 +2492,8 @@ public class ConfigMngmntService implements Observer {
 	}
 
 	private CreateConfigPojo setConfigData(int id, String attriValue,
-			String templateId, String masterFeatureId, String masterCharachteristicId) {
+			String templateId, String masterFeatureId,
+			String masterCharachteristicId) {
 		CreateConfigPojo createConfigPojo = new CreateConfigPojo();
 		if (id != 0) {
 			createConfigPojo.setMasterLabelId(id);
@@ -2453,9 +2503,9 @@ public class ConfigMngmntService implements Observer {
 		}
 		createConfigPojo.setMasterLabelValue(attriValue);
 		createConfigPojo.setTemplateId(templateId);
-		if(masterCharachteristicId!=null)
-		{
-			createConfigPojo.setMasterCharachteristicId(masterCharachteristicId);
+		if (masterCharachteristicId != null) {
+			createConfigPojo
+					.setMasterCharachteristicId(masterCharachteristicId);
 		}
 		return createConfigPojo;
 	}

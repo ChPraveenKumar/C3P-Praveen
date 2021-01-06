@@ -18,6 +18,7 @@ import javax.ws.rs.POST;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +79,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 	PingTest pingHelper=new PingTest();
+	//TODO: We need to remove this later or while on GCP
+	public static final String ROUTER_IP_TEMP="10.62.0.24";
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -104,7 +107,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();
 			List<RequestInfoEntity> requestDetailEntity1 = new ArrayList<RequestInfoEntity>();
 			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if(!RequestId.contains("SNAI-"))
+			if(!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains(ROUTER_IP_TEMP)) //Temperory hard coding for 10.62.0.24 router)
 			{
 			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -552,7 +555,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();		
 
 			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if(!RequestId.contains("SNAI-"))
+			if(!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains("10.62.0.24")) //Temperory hard coding for 10.62.0.24 router
 			{	
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -573,10 +576,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				//Boolean reachabilityTest = cmdPingCall(requestinfo.getManagementIp(),
 				//		requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()));
 				boolean reachabilityTest = false;
-				String pingResults = pingHelper.pingResults(requestinfo.getManagementIp());
+				JSONArray pingResults = pingHelper.pingResults(requestinfo.getManagementIp());
 				if (pingResults != null) {
 					if (pingResults.contains("Error") || pingResults.contains("Destination host unreachable")
-							|| pingResults.contains("Request timed out.") || pingResults.contains("100% packet loss")) {
+							|| pingResults.contains("Request timed out") || pingResults.contains("100% packet loss")) {
 						logger.info("pingResults - " + pingResults);
 					} else {
 						reachabilityTest = true;
