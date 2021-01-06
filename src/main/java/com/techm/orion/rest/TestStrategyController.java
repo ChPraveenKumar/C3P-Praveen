@@ -357,34 +357,43 @@ public class TestStrategyController {
 		return Response.status(200).entity(testDetailsRepository.findAll()).build();
 	}
 
-	@SuppressWarnings("unused")
+	
 	@POST
 	@RequestMapping(value = "/savetestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public Response saveBasicConfiguration(@RequestBody String teststrategesaveRqst) {
-		String str = "";
+	public Response saveBasicConfiguration(@RequestBody String teststrategesaveRqst) {		
 		JSONParser parser = new JSONParser();
+		Response response = null;
 		try {
 			JSONObject json = (JSONObject) parser.parse(teststrategesaveRqst);
 			TestDetail testDetail = setTestData(json);
-			try {
-				Set<TestDetail> TestDetailList = testDetailsRepository.findByTestIdAndVersion(testDetail.getTestId(),
-						testDetail.getVersion());
-				if (TestDetailList.size() > 0) {
-					str = "Test is Duplicate";
-				} else {
-					TestDetail save = testDetailsRepository.save(testDetail);
-					str = "Test saved successfully";
-				}
-			} catch (DataIntegrityViolationException e) {
-				return Response.status(409).entity("Test is Duplicate").build();
-			} catch (Exception e) {
-				return Response.status(422).entity("Could not save service").build();
-			}
+			response = saveTestDetails(testDetail);			
 		} catch (ParseException e) {
-			e.printStackTrace();
 			logger.error(e);
 		}
-		return Response.status(200).entity(str).build();
+		return response;
+	}
+	
+	@SuppressWarnings("unused")
+	private Response saveTestDetails(TestDetail testDetail) {
+		Response response = null;
+		String str = "";
+		try {
+			Set<TestDetail> TestDetailList = testDetailsRepository.findByTestIdAndVersion(testDetail.getTestId(),
+					testDetail.getVersion());
+			if (TestDetailList.size() > 0) {
+				str = "Test is Duplicate";
+			} else {
+				TestDetail save = testDetailsRepository.save(testDetail);
+				str = "Test saved successfully";
+			}
+			response = Response.status(200).entity(str).build();
+		} catch (DataIntegrityViolationException e) {
+			response =  Response.status(409).entity("Test is Duplicate").build();
+		} catch (Exception e) {
+			response = Response.status(422).entity("Could not save service").build();
+		}
+		return response;
+		
 	}
 
 	private TestDetail setTestData(JSONObject json) {

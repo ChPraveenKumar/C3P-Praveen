@@ -3276,6 +3276,26 @@ public class DcmConfigService {
 									}
 								});
 					}
+					else {
+						features.forEach(feature -> {
+							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+							MasterFeatureEntity masterFeatureId = masterFeatureRepository
+									.findByFIdAndFVersion(
+											feature.getfMasterId(), "1.0");
+
+							requestFeatureEntity
+									.settMasterFeatureId(masterFeatureId);
+							;
+							requestFeatureEntity.settRequestId(requestInfoSO
+									.getAlphanumericReqId());
+							requestFeatureEntity.settHostName(requestInfoSO
+									.getHostname());
+							requestFeatureEntity
+									.settRequestVersion(requestInfoSO
+											.getRequestVersion());
+							requestFeatureRepo.save(requestFeatureEntity);
+						});
+					}
 				}
 
 				if (output.equalsIgnoreCase("true")) {
