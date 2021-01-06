@@ -405,12 +405,13 @@ public class TestStrategyController {
 		List<TestBundling> bundleList = new ArrayList<TestBundling>();
 		int bundleId = 0;
 
-		if (json.containsKey("text_attributes")) {
+		if (json.containsKey("text_attributes") || json.containsKey("table_attributes") ||json.containsKey("section_attributes"))
+		{
 			JSONArray attribarray = (JSONArray) json.get("text_attributes");
 			for (int i = 0; i < attribarray.size(); i++) {
 				TestRules rule = new TestRules();
 				JSONObject attribobj = (JSONObject) attribarray.get(i);
-				rule = setTestRules(attribobj, rule);
+				rule = setAttributeRule(attribobj, rule);
 				rule.setTestDetail(testDetail);
 				rulelst.add(rule);
 			}
@@ -421,7 +422,7 @@ public class TestStrategyController {
 			for (int i = 0; i < attribarray.size(); i++) {
 				TestRules rule = new TestRules();
 				JSONObject attribobj = (JSONObject) attribarray.get(i);
-				rule = setTeableAttribute(attribobj, rule);
+				rule = setAttributeRule(attribobj, rule);
 				rule.setTestDetail(testDetail);
 				rulelst.add(rule);
 			}
@@ -432,7 +433,7 @@ public class TestStrategyController {
 			for (int i = 0; i < attribarray.size(); i++) {
 				TestRules rule = new TestRules();
 				JSONObject attribobj = (JSONObject) attribarray.get(i);
-				rule = sectionAttribute(attribobj, rule);
+				rule = setAttributeRule(attribobj, rule);
 				rule.setTestDetail(testDetail);
 				rulelst.add(rule);
 			}
@@ -511,7 +512,7 @@ public class TestStrategyController {
 		return rule;
 	}
 
-	private TestRules sectionAttribute(JSONObject attribobj, TestRules rule) {
+	private TestRules setAttributeRule(JSONObject attribobj, TestRules rule) {
 		rule.setDataType("Section");
 		if (attribobj.containsKey("reportedLabel")) {
 			rule.setReportedLabel(attribobj.get("reportedLabel").toString());
@@ -552,91 +553,7 @@ public class TestStrategyController {
 		return rule;
 	}
 
-	private TestRules setTeableAttribute(JSONObject attribobj, TestRules rule) {
-		rule.setDataType("Table");
-
-		if (attribobj.containsKey("reportedLabel")) {
-			rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-		}
-		if (attribobj.containsKey("beforeText")) {
-			rule.setBeforeText(attribobj.get("beforeText").toString());
-
-		}
-		if (attribobj.containsKey("afterText")) {
-			rule.setAfterText(attribobj.get("afterText").toString());
-		}
-		if (attribobj.containsKey("noOfChars")) {
-			rule.setNumberOfChars(attribobj.get("noOfChars").toString());
-		}
-		if (attribobj.containsKey("fromColumn")) {
-			rule.setFromColumn(attribobj.get("fromColumn").toString());
-		}
-		if (attribobj.containsKey("referenceColumn")) {
-			rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
-		}
-		if (attribobj.containsKey("whereKeyword")) {
-			rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
-		}
-		if (attribobj.containsKey("sectionName")) {
-			rule.setSectionName(attribobj.get("sectionName").toString());
-		}
-		if (attribobj.containsKey("evaluation")) {
-			rule.setEvaluation(attribobj.get("evaluation").toString());
-		}
-		if (attribobj.containsKey("operator")) {
-			rule.setOperator(attribobj.get("operator").toString());
-		}
-		if (attribobj.containsKey("value1")) {
-			rule.setValue1(attribobj.get("value1").toString());
-		}
-		if (attribobj.containsKey("value2")) {
-			rule.setValue2(attribobj.get("value2").toString());
-		}
-		return rule;
-
-	}
-
-	private TestRules setTestRules(JSONObject attribobj, TestRules rule) {
-		rule.setDataType("Text");
-		if (attribobj.containsKey("reportedLabel")) {
-			rule.setReportedLabel(attribobj.get("reportedLabel").toString());
-		}
-		if (attribobj.containsKey("beforeText")) {
-			rule.setBeforeText(attribobj.get("beforeText").toString());
-
-		}
-		if (attribobj.containsKey("afterText")) {
-			rule.setAfterText(attribobj.get("afterText").toString());
-		}
-		if (attribobj.containsKey("noOfChars")) {
-			rule.setNumberOfChars(attribobj.get("noOfChars").toString());
-		}
-		if (attribobj.containsKey("fromColumn")) {
-			rule.setFromColumn(attribobj.get("fromColumn").toString());
-		}
-		if (attribobj.containsKey("referenceColumn")) {
-			rule.setReferenceColumn(attribobj.get("referenceColumn").toString());
-		}
-		if (attribobj.containsKey("whereKeyword")) {
-			rule.setWhereKeyword(attribobj.get("whereKeyword").toString());
-		}
-		if (attribobj.containsKey("sectionName")) {
-			rule.setSectionName(attribobj.get("sectionName").toString());
-		}
-		if (attribobj.containsKey("evaluation")) {
-			rule.setEvaluation(attribobj.get("evaluation").toString());
-		}
-		if (attribobj.containsKey("operator")) {
-			rule.setOperator(attribobj.get("operator").toString());
-		}
-		if (attribobj.containsKey("value1")) {
-			rule.setValue1(attribobj.get("value1").toString());
-		}
-		if (attribobj.containsKey("value2")) {
-			rule.setValue2(attribobj.get("value2").toString());
-		}
-		return rule;
-	}
+	
 
 	private TestDetail setTestFeature(JSONObject json, TestDetail testDetail) {
 		List<TestFeatureList> list = new ArrayList<TestFeatureList>();
