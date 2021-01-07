@@ -5742,6 +5742,8 @@ public class RequestInfoDao {
 			throughputObj.put("status", "Passed");
 			throughputObj
 					.put("outcome", certificationTestPojo3.getThroughput());
+			throughputObj
+			.put("CollectedValue", certificationTestPojo3.getThroughput());
 			throughputObj.put("notes", "N/A");
 		} else {
 			throughputObj.put("testname", "Throughput");
@@ -5755,6 +5757,8 @@ public class RequestInfoDao {
 			latencyObj.put("testname", "Latency");
 			latencyObj.put("status", "Passed");
 			latencyObj.put("outcome", certificationTestPojo3.getLatency());
+			latencyObj.put("CollectedValue", certificationTestPojo3.getLatency());
+
 			latencyObj.put("notes", "N/A");
 		} else {
 
@@ -5769,6 +5773,8 @@ public class RequestInfoDao {
 			FrameLossObj.put("testname", "Frameloss");
 			FrameLossObj.put("status", "Passed");
 			FrameLossObj.put("outcome", certificationTestPojo3.getFrameLoss());
+			FrameLossObj.put("CollectedValue", certificationTestPojo3.getFrameLoss());
+
 			FrameLossObj.put("notes", "N/A");
 		} else {
 			FrameLossObj.put("testname", "Frameloss");
@@ -7244,6 +7250,8 @@ public class RequestInfoDao {
 			throughputObj.put("status", "Passed");
 			throughputObj
 					.put("outcome", certificationTestPojo3.getThroughput());
+			throughputObj
+			.put("CollectedValue", certificationTestPojo3.getThroughput());
 			throughputObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("0")) {
@@ -7263,6 +7271,8 @@ public class RequestInfoDao {
 			latencyObj.put("testname", "Latency");
 			latencyObj.put("status", "Passed");
 			latencyObj.put("outcome", certificationTestPojo3.getLatency());
+			latencyObj.put("CollectedValue", certificationTestPojo3.getLatency());
+
 			latencyObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo3.getLatencyTest().equalsIgnoreCase("0")) {
@@ -7282,6 +7292,8 @@ public class RequestInfoDao {
 			FrameLossObj.put("testname", "Frameloss");
 			FrameLossObj.put("status", "Passed");
 			FrameLossObj.put("outcome", certificationTestPojo3.getFrameLoss());
+			FrameLossObj.put("CollectedValue", certificationTestPojo3.getFrameLoss());
+
 			FrameLossObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo3.getFrameLossTest().equalsIgnoreCase("0")) {
