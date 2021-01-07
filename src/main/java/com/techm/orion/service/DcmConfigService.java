@@ -1612,7 +1612,7 @@ public class DcmConfigService {
 				} else if (requestInfoSO.getApiCallType().equalsIgnoreCase(
 						"external")
 						&& configGenMtds.contains("Non-Template")) {
-
+					if(features!=null) {
 					features.forEach(feature -> {
 						RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 						MasterFeatureEntity masterFeatureId = masterFeatureRepository
@@ -1630,7 +1630,7 @@ public class DcmConfigService {
 								.getRequestVersion());
 						requestFeatureRepo.save(requestFeatureEntity);
 					});
-
+				  }
 				} else if (requestInfoSO.getApiCallType().equalsIgnoreCase(
 						"c3p-ui")) {
 					if (featureList != null && !featureList.isEmpty()) {
@@ -2229,6 +2229,7 @@ public class DcmConfigService {
 
 						}
 					} else {
+						if(features!=null) {
 						features.forEach(feature -> {
 							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 							MasterFeatureEntity masterFeatureId = masterFeatureRepository
@@ -2247,6 +2248,7 @@ public class DcmConfigService {
 											.getRequestVersion());
 							requestFeatureRepo.save(requestFeatureEntity);
 						});
+					  }
 					}
 					if (!(requestType.equals("Test"))) {
 						createTemplate(requestInfoSO);
@@ -2348,6 +2350,7 @@ public class DcmConfigService {
 
 						}
 					} else {
+						if(features!=null) {
 						features.forEach(feature -> {
 							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 							MasterFeatureEntity masterFeatureId = masterFeatureRepository
@@ -2366,6 +2369,7 @@ public class DcmConfigService {
 											.getRequestVersion());
 							requestFeatureRepo.save(requestFeatureEntity);
 						});
+					  }
 					}
 					if (!(requestType.equals("Test"))) {
 						createTemplate(requestInfoSO);
@@ -3229,7 +3233,7 @@ public class DcmConfigService {
 				} else if (requestInfoSO.getApiCallType().equalsIgnoreCase(
 						"external")
 						&& configGenMtds.contains("Non-Template")) {
-
+					if(features!=null) {
 					features.forEach(feature -> {
 						RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 						MasterFeatureEntity masterFeatureId = masterFeatureRepository
@@ -3247,7 +3251,7 @@ public class DcmConfigService {
 								.getRequestVersion());
 						requestFeatureRepo.save(requestFeatureEntity);
 					});
-
+				 }
 				} else if (requestInfoSO.getApiCallType().equalsIgnoreCase(
 						"c3p-ui")) {
 					if (featureList != null && !featureList.isEmpty()) {
@@ -3277,6 +3281,7 @@ public class DcmConfigService {
 								});
 					}
 					else {
+						if(features!=null) {
 						features.forEach(feature -> {
 							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 							MasterFeatureEntity masterFeatureId = masterFeatureRepository
@@ -3296,6 +3301,7 @@ public class DcmConfigService {
 							requestFeatureRepo.save(requestFeatureEntity);
 						});
 					}
+				}
 				}
 
 				if (output.equalsIgnoreCase("true")) {
