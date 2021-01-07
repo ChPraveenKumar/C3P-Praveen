@@ -327,6 +327,8 @@ public class HealthCheckTestValidation extends Thread {
 										}
 									
 									}
+									channel.disconnect();
+									session.disconnect();
 								} else {
 
 								}
@@ -391,8 +393,7 @@ public class HealthCheckTestValidation extends Thread {
 
 							}
 							logger.info("DONE");
-							channel.disconnect();
-							session.disconnect();
+							
 							value = true;// hardcoded for default tests
 
 							// this is to evaluate according to newly added tests else it is true by
@@ -406,9 +407,9 @@ public class HealthCheckTestValidation extends Thread {
 
 								}
 							}
-							channel.disconnect();
-							session.disconnect();
 							logger.info("DONE");
+							if(channel!=null)
+							{
 							if (!channel.isClosed()) {
 								channel.disconnect();
 							}
@@ -418,6 +419,7 @@ public class HealthCheckTestValidation extends Thread {
 							} catch (Exception ee) {
 							}
 							logger.info("DONE");
+							}
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 						} catch (IOException ex) {
@@ -448,8 +450,19 @@ public class HealthCheckTestValidation extends Thread {
 
 							}
 						}
-
+						if(channel!=null)
+						{
+						if (!channel.isClosed()) {
+							channel.disconnect();
+						}
 						session.disconnect();
+						try {
+							Thread.sleep(5000);
+						} catch (Exception ee) {
+						}
+						logger.info("DONE");
+						}
+					
 					} else if (type.equalsIgnoreCase("SLGF")) {
 						
 						obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
