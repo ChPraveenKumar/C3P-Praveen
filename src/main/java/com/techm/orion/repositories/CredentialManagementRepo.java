@@ -24,7 +24,7 @@ public interface CredentialManagementRepo extends JpaRepository<CredentialManage
 
 	List<CredentialManagementEntity> findByProfileType(String profileType);
 
-	List<CredentialManagementEntity> findOneByProfileNameAndProfileTypeAndInfoId(String profileName, String profileType,
+	CredentialManagementEntity findOneByProfileNameAndProfileTypeAndInfoId(String profileName, String profileType,
 			int infoId);
 
 	CredentialManagementEntity findOneByProfileName(String profileName);

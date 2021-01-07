@@ -79,37 +79,37 @@ public class CredentialMgmtController {
 	@RequestMapping(value = "/saveCredential", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response saveCredentialDetail(@RequestBody String credentialRequest) throws ParseException {
 		JSONParser parser = new JSONParser();
-		String str = "";
+		String message = "";
 		CredentialManagementEntity saveDetail = null;
 		boolean isAdd = false;
 		CredentialManagementEntity credentialDetail = new CredentialManagementEntity();
-		JSONObject json = (JSONObject) parser.parse(credentialRequest);
-		if (json.containsKey("profileName")) {
-			credentialDetail.setProfileName(json.get("profileName").toString());
+		JSONObject credential = (JSONObject) parser.parse(credentialRequest);
+		if (credential.containsKey("profileName")) {
+			credentialDetail.setProfileName(credential.get("profileName").toString());
 		}
-		if (json.containsKey("profileType")) {
-			credentialDetail.setProfileType(json.get("profileType").toString());
+		if (credential.containsKey("profileType")) {
+			credentialDetail.setProfileType(credential.get("profileType").toString());
 		}
-		if (json.containsKey("description")) {
-			credentialDetail.setDescription(json.get("description").toString());
+		if (credential.containsKey("description")) {
+			credentialDetail.setDescription(credential.get("description").toString());
 		}
-		if (json.containsKey("loginRead")) {
-			credentialDetail.setLoginRead(json.get("loginRead").toString());
+		if (credential.containsKey("loginRead")) {
+			credentialDetail.setLoginRead(credential.get("loginRead").toString());
 		}
-		if (json.containsKey("pwdWrite")) {
-			credentialDetail.setPasswordWrite(json.get("pwdWrite").toString());
+		if (credential.containsKey("pwdWrite")) {
+			credentialDetail.setPasswordWrite(credential.get("pwdWrite").toString());
 		}
-		if (json.containsKey("enablePassword")) {
-			credentialDetail.setEnablePassword(json.get("enablePassword").toString());
+		if (credential.containsKey("enablePassword")) {
+			credentialDetail.setEnablePassword(credential.get("enablePassword").toString());
 		}
-		if (json.containsKey("version")) {
-			credentialDetail.setVersion(json.get("version").toString());
+		if (credential.containsKey("version")) {
+			credentialDetail.setVersion(credential.get("version").toString());
 		}
-		if (json.containsKey("port")) {
-			credentialDetail.setPort(json.get("port").toString());
+		if (credential.containsKey("port")) {
+			credentialDetail.setPort(credential.get("port").toString());
 		}
-		if (json.containsKey("genric")) {
-			credentialDetail.setGenric(json.get("port").toString());
+		if (credential.containsKey("genric")) {
+			credentialDetail.setGenric(credential.get("genric").toString());
 		}
 		CredentialManagementEntity credentailManagement = credentialManagementRepo
 				.findOneByProfileName(credentialDetail.getProfileName());
@@ -146,21 +146,21 @@ public class CredentialMgmtController {
 			isAdd = true;
 		}
 		if (isAdd) {
-			str = "Credential saved successfully";
+			message = "Credential saved successfully";
 		} else {
-			str = "Credential is Duplicate";
+			message = "Credential is Duplicate";
 		}
-		return Response.status(200).entity(str).build();
+		return Response.status(200).entity(message).build();
 	}
 
-	@RequestMapping(value = "/deleteProfile", method = RequestMethod.DELETE, produces = "application/json", consumes = "application/json")
-	public Response deleteProfile(@RequestBody String request) throws ParseException {
+	@RequestMapping(value = "/deleteCredentialProfile", method = RequestMethod.DELETE, produces = "application/json", consumes = "application/json")
+	public Response deleteCredentialProfile(@RequestBody String request) throws ParseException {
 		JSONParser parser = new JSONParser();
 		boolean isDelete = false;
 		CredentialManagementEntity entity = new CredentialManagementEntity();
 		JSONArray deleteList = new JSONArray();
-		JSONObject jsonOb = (JSONObject) parser.parse(request);
-		deleteList = (JSONArray) jsonOb.get("profiles");
+		JSONObject jsonObect = (JSONObject) parser.parse(request);
+		deleteList = (JSONArray) jsonObect.get("profiles");
 		JSONObject json;
 		String msg = null;
 		for (int i = 0; i < deleteList.size(); i++) {
@@ -176,7 +176,7 @@ public class CredentialMgmtController {
 				int id = Integer.parseInt(deviceName.get("infoId").toString());
 				entity.setInfoId(id);
 			}
-			List<CredentialManagementEntity> credential = credentialManagementRepo
+			CredentialManagementEntity credential = credentialManagementRepo
 					.findOneByProfileNameAndProfileTypeAndInfoId(entity.getProfileName(), entity.getProfileType(),
 							entity.getInfoId());
 			if (credential != null) {
