@@ -5518,24 +5518,27 @@ public class RequestInfoDao {
 					requestVersion);
 			org.json.simple.JSONArray testNameArray = (org.json.simple.JSONArray) parser
 					.parse(testAndDiagnosis);
-			for (int i = 0; i < testNameArray.size(); i++) {
-				org.json.simple.JSONObject jsonObj = (org.json.simple.JSONObject) testNameArray
-						.get(i);
-				String category = jsonObj.get("testCategory").toString();
-				if (null != category && testtype.equals(category)) {
-					org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
-					obj.put("category", category);
-					int status = getTestDetails(requestId,
-							jsonObj.get("testName").toString(), requestVersion);
-					obj.put("status", status);
-					String testNameAndVersion = jsonObj.get("testName")
-							.toString();
-					testNameAndVersion = StringUtils.substringAfter(
-							testNameAndVersion, "_");
-					obj.put("testName", testNameAndVersion);
-					array.add(obj);
+			if(testNameArray!=null){
+				for (int i = 0; i < testNameArray.size(); i++) {
+					org.json.simple.JSONObject jsonObj = (org.json.simple.JSONObject) testNameArray
+							.get(i);
+					String category = jsonObj.get("testCategory").toString();
+					if (null != category && testtype.equals(category)) {
+						org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
+						obj.put("category", category);
+						int status = getTestDetails(requestId,
+								jsonObj.get("testName").toString(), requestVersion);
+						obj.put("status", status);
+						String testNameAndVersion = jsonObj.get("testName")
+								.toString();
+						testNameAndVersion = StringUtils.substringAfter(
+								testNameAndVersion, "_");
+						obj.put("testName", testNameAndVersion);
+						array.add(obj);
+					}
 				}
 			}
+			
 		} catch (org.json.simple.parser.ParseException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
