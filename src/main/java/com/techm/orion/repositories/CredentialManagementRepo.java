@@ -16,11 +16,16 @@ public interface CredentialManagementRepo extends JpaRepository<CredentialManage
 
 	List<CredentialManagementEntity> findByProfileName(String profileName);
 	
-	String refDeviceUpdate = "update c3p_t_credential_management u set u.r_ref_device = ?1 where u.r_profile_name = ?2";
+	String refDeviceUpdate = "update c3p_t_credential_management u set u.cr_ref_device = ?1 where u.cr_profile_name = ?2";
 	@Query(value = refDeviceUpdate, nativeQuery = true)
 	@Modifying
 	@Transactional
 	void updateRefDevice(int count, String profileName);
 
 	List<CredentialManagementEntity> findByProfileType(String profileType);
+
+	List<CredentialManagementEntity> findOneByProfileNameAndProfileTypeAndInfoId(String profileName, String profileType,
+			int infoId);
+
+	CredentialManagementEntity findOneByProfileName(String profileName);
 }
