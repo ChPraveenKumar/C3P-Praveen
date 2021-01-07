@@ -405,11 +405,12 @@ public class TestStrategyController {
 		List<TestBundling> bundleList = new ArrayList<TestBundling>();
 		int bundleId = 0;
 
-		if (json.containsKey("text_attributes") || json.containsKey("table_attributes") ||json.containsKey("section_attributes"))
+		if (json.containsKey("text_attributes"))
 		{
 			JSONArray attribarray = (JSONArray) json.get("text_attributes");
 			for (int i = 0; i < attribarray.size(); i++) {
 				TestRules rule = new TestRules();
+				rule.setDataType("Text");
 				JSONObject attribobj = (JSONObject) attribarray.get(i);
 				rule = setAttributeRule(attribobj, rule);
 				rule.setTestDetail(testDetail);
@@ -421,6 +422,7 @@ public class TestStrategyController {
 			JSONArray attribarray = (JSONArray) json.get("table_attributes");
 			for (int i = 0; i < attribarray.size(); i++) {
 				TestRules rule = new TestRules();
+				rule.setDataType("Table");
 				JSONObject attribobj = (JSONObject) attribarray.get(i);
 				rule = setAttributeRule(attribobj, rule);
 				rule.setTestDetail(testDetail);
@@ -432,6 +434,7 @@ public class TestStrategyController {
 			JSONArray attribarray = (JSONArray) json.get("section_attributes");
 			for (int i = 0; i < attribarray.size(); i++) {
 				TestRules rule = new TestRules();
+				rule.setDataType("Section");
 				JSONObject attribobj = (JSONObject) attribarray.get(i);
 				rule = setAttributeRule(attribobj, rule);
 				rule.setTestDetail(testDetail);
@@ -513,7 +516,6 @@ public class TestStrategyController {
 	}
 
 	private TestRules setAttributeRule(JSONObject attribobj, TestRules rule) {
-		rule.setDataType("Section");
 		if (attribobj.containsKey("reportedLabel")) {
 			rule.setReportedLabel(attribobj.get("reportedLabel").toString());
 		}
