@@ -361,59 +361,10 @@ public class TemplateManagementNewService {
 		json = (JSONObject) parser.parse(request);
 		DeviceDetailsPojo deviceDeatils = setDeviceDeatils(json);
 		JSONObject features = new JSONObject();
-		if (deviceDeatils != null) {
-			String deviceFamily = null, os = null, osVersion = null, networkType = null, region = null, vendor = null;
-			deviceFamily = deviceDeatils.getDeviceFamily();
-			os = deviceDeatils.getOs();
-			osVersion = deviceDeatils.getOsVersion();
-			vendor = deviceDeatils.getVendor();
-			region = deviceDeatils.getRegion();
-			networkType=deviceDeatils.getNetworkType();
-			if ("All".equals(region)) {
-				region = "%";
-			} else {
-				region = "%" + region + "%";
-			}
-			if ("All".equals(osVersion)) {
-				osVersion = "%";
-			} else {
-				osVersion = "%" + osVersion + "%";
-			}
-			if ("All".equals(os)) {
-				os = "%";
-			} else {
-				os = "%" + os + "%";
-			}
-			if ("All".equals(deviceFamily)) {
-				deviceFamily = "%";
-			} else {
-				deviceFamily = "%" + deviceFamily + "%";
-			}
-			if ("All".equals(networkType)) {
-				networkType = "%";
-			} else {
-				networkType = "%" + networkType + "%";
-			}
-
-			JSONArray outputArray = new JSONArray();
-			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findNearestMatchEntities(deviceFamily, os,
-					region, osVersion, vendor, networkType);
-			masterFeatures.forEach(masterFeature -> {
-				JSONObject object = new JSONObject();
-				JSONObject featureDetails = new JSONObject();
-				featureDetails.put("fId", masterFeature.getfId());
-				featureDetails.put("fName", masterFeature.getfName());
-				featureDetails.put("fReplicationFlag", masterFeature.getfReplicationind());
-				object.put("featureDetails", featureDetails);
-				object.put("vendor", masterFeature.getfVendor());
-				object.put("deviceFamily", masterFeature.getfFamily());
-				object.put("os", masterFeature.getfOs());
-				object.put("osVersion", masterFeature.getfOsversion());
-				object.put("region", masterFeature.getfRegion());
-				object.put("networkType", masterFeature.getfNetworkfun());
-				outputArray.add(object);
-			});
-			features.put("output", outputArray);
+		if (deviceDeatils != null) {								
+			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findNearestMatchEntities(deviceDeatils.getVendor(), deviceDeatils.getDeviceFamily(), deviceDeatils.getOs(),
+					deviceDeatils.getOsVersion(),deviceDeatils.getRegion(),deviceDeatils.getNetworkType());
+			features.put("output", setFeatureData(masterFeatures));
 		}
 		return features;
 	}
