@@ -20,40 +20,41 @@ public class CredentialManagementEntity implements Serializable {
 	private static final long serialVersionUID = -6260295956377478161L;
 
 	@Id
-	@Column(name = "r_info_id")
+	@Column(name = "cr_info_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int infoId;
 
 	@NotNull
-	@Column(name = "r_profile_name", length = 50, nullable = false)
+	@Column(name = "cr_profile_name", length = 50, nullable = false)
 	private String profileName;
 
-	@Column(name = "r_login_name", length = 50)
-	private String loginName;
+	@Column(name = "cr_login_read", length = 50)
+	private String loginRead;;
 
-	@Column(name = "r_profile_type", length = 50,nullable = false)
+	@Column(name = "cr_profile_type", length = 50,nullable = false)
 	private String profileType;
 
 	@NotNull
-	@Column(name = "r_password", length = 50, nullable = false)
-	private String password;
+	@Column(name = "cr_password_write", length = 50, nullable = false)
+	private String passwordWrite;;
 
-	@Column(name = "r_retype_password", length = 50, nullable = false)
-	private String retypePassowrd;
-
-	@Column(name = "r_enable_password", length = 50, nullable = false)
+	@Column(name = "cr_enable_password", length = 50, nullable = false)
 	private String enablePassword;
 
-	@Column(name = "r_retype_enable_password", length = 50, nullable = false)
-	private String retypeEnablePassword;
-
-	@Column(name = "r_description", length = 500)
+	@Column(name = "cr_description", length = 500)
 	private String description;
 	
-	@Column(name = "r_ref_device", length = 20)
+	@Column(name = "cr_ref_device", length = 20)
 	private int refDevice;
-
-
+	
+	@Column(name = "cr_port", length = 20)
+	private String port;
+	
+	@Column(name = "cr_version", length = 50)
+	private String version;
+	
+	@Column(name = "cr_genric", length = 50)
+	private String genric;
 
 	public int getInfoId() {
 		return infoId;
@@ -71,36 +72,12 @@ public class CredentialManagementEntity implements Serializable {
 		this.profileName = profileName;
 	}
 
-	public String getLoginName() {
-		return loginName;
-	}
-
-	public void setLoginName(String loginName) {
-		this.loginName = loginName;
-	}
-
 	public String getProfileType() {
 		return profileType;
 	}
 
 	public void setProfileType(String profileType) {
 		this.profileType = profileType;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
-
-	public String getRetypePassowrd() {
-		return retypePassowrd;
-	}
-
-	public void setRetypePassowrd(String retypePassowrd) {
-		this.retypePassowrd = retypePassowrd;
 	}
 
 	public String getEnablePassword() {
@@ -110,13 +87,45 @@ public class CredentialManagementEntity implements Serializable {
 	public void setEnablePassword(String enablePassword) {
 		this.enablePassword = enablePassword;
 	}
-
-	public String getRetypeEnablePassword() {
-		return retypeEnablePassword;
+	
+	public String getLoginRead() {
+		return loginRead;
 	}
 
-	public void setRetypeEnablePassword(String retypeEnablePassword) {
-		this.retypeEnablePassword = retypeEnablePassword;
+	public void setLoginRead(String loginRead) {
+		this.loginRead = loginRead;
+	}
+
+	public String getPasswordWrite() {
+		return passwordWrite;
+	}
+
+	public void setPasswordWrite(String passwordWrite) {
+		this.passwordWrite = passwordWrite;
+	}
+
+	public String getPort() {
+		return port;
+	}
+
+	public void setPort(String port) {
+		this.port = port;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public String getGenric() {
+		return genric;
+	}
+
+	public void setGenric(String genric) {
+		this.genric = genric;
 	}
 
 	public static long getSerialversionuid() {
