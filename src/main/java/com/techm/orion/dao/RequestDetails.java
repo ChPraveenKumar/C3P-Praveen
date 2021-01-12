@@ -186,16 +186,20 @@ public class RequestDetails {
 		if (testAndDiagnosis != null && !testAndDiagnosis.equals("")) {
 			org.json.simple.JSONArray testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
 			org.json.simple.JSONArray bundleNamesArray = null;
-			for (int i = 0; i < testArray.size(); i++) {
-				JSONObject jsonObj = (JSONObject) testArray.get(i);
-				bundleNamesArray = (org.json.simple.JSONArray) jsonObj.get("bundleName");
-				if (bundleNamesArray != null && bundleNamesArray.size() != 0) {
-					for (int k = 0; k < bundleNamesArray.size(); k++) {
-						setOfTestBundle.add((String) bundleNamesArray.get(k));
+			if(testArray!=null)
+			{
+				for (int i = 0; i < testArray.size(); i++) {
+					JSONObject jsonObj = (JSONObject) testArray.get(i);
+					bundleNamesArray = (org.json.simple.JSONArray) jsonObj.get("bundleName");
+					if (bundleNamesArray != null && bundleNamesArray.size() != 0) {
+						for (int k = 0; k < bundleNamesArray.size(); k++) {
+							setOfTestBundle.add((String) bundleNamesArray.get(k));
+						}
 					}
-				}
 
+				}
 			}
+			
 		}
 		JSONObject obj = new JSONObject();
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();

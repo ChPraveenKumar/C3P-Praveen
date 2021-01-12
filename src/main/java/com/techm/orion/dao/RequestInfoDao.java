@@ -5518,24 +5518,27 @@ public class RequestInfoDao {
 					requestVersion);
 			org.json.simple.JSONArray testNameArray = (org.json.simple.JSONArray) parser
 					.parse(testAndDiagnosis);
-			for (int i = 0; i < testNameArray.size(); i++) {
-				org.json.simple.JSONObject jsonObj = (org.json.simple.JSONObject) testNameArray
-						.get(i);
-				String category = jsonObj.get("testCategory").toString();
-				if (null != category && testtype.equals(category)) {
-					org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
-					obj.put("category", category);
-					int status = getTestDetails(requestId,
-							jsonObj.get("testName").toString(), requestVersion);
-					obj.put("status", status);
-					String testNameAndVersion = jsonObj.get("testName")
-							.toString();
-					testNameAndVersion = StringUtils.substringAfter(
-							testNameAndVersion, "_");
-					obj.put("testName", testNameAndVersion);
-					array.add(obj);
+			if(testNameArray!=null){
+				for (int i = 0; i < testNameArray.size(); i++) {
+					org.json.simple.JSONObject jsonObj = (org.json.simple.JSONObject) testNameArray
+							.get(i);
+					String category = jsonObj.get("testCategory").toString();
+					if (null != category && testtype.equals(category)) {
+						org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
+						obj.put("category", category);
+						int status = getTestDetails(requestId,
+								jsonObj.get("testName").toString(), requestVersion);
+						obj.put("status", status);
+						String testNameAndVersion = jsonObj.get("testName")
+								.toString();
+						testNameAndVersion = StringUtils.substringAfter(
+								testNameAndVersion, "_");
+						obj.put("testName", testNameAndVersion);
+						array.add(obj);
+					}
 				}
 			}
+			
 		} catch (org.json.simple.parser.ParseException e) {
 			e.printStackTrace();
 		} catch (SQLException e) {
@@ -5742,6 +5745,8 @@ public class RequestInfoDao {
 			throughputObj.put("status", "Passed");
 			throughputObj
 					.put("outcome", certificationTestPojo3.getThroughput());
+			throughputObj
+			.put("CollectedValue", certificationTestPojo3.getThroughput());
 			throughputObj.put("notes", "N/A");
 		} else {
 			throughputObj.put("testname", "Throughput");
@@ -5755,6 +5760,8 @@ public class RequestInfoDao {
 			latencyObj.put("testname", "Latency");
 			latencyObj.put("status", "Passed");
 			latencyObj.put("outcome", certificationTestPojo3.getLatency());
+			latencyObj.put("CollectedValue", certificationTestPojo3.getLatency());
+
 			latencyObj.put("notes", "N/A");
 		} else {
 
@@ -5769,6 +5776,8 @@ public class RequestInfoDao {
 			FrameLossObj.put("testname", "Frameloss");
 			FrameLossObj.put("status", "Passed");
 			FrameLossObj.put("outcome", certificationTestPojo3.getFrameLoss());
+			FrameLossObj.put("CollectedValue", certificationTestPojo3.getFrameLoss());
+
 			FrameLossObj.put("notes", "N/A");
 		} else {
 			FrameLossObj.put("testname", "Frameloss");
@@ -7244,6 +7253,8 @@ public class RequestInfoDao {
 			throughputObj.put("status", "Passed");
 			throughputObj
 					.put("outcome", certificationTestPojo3.getThroughput());
+			throughputObj
+			.put("CollectedValue", certificationTestPojo3.getThroughput());
 			throughputObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("0")) {
@@ -7263,6 +7274,8 @@ public class RequestInfoDao {
 			latencyObj.put("testname", "Latency");
 			latencyObj.put("status", "Passed");
 			latencyObj.put("outcome", certificationTestPojo3.getLatency());
+			latencyObj.put("CollectedValue", certificationTestPojo3.getLatency());
+
 			latencyObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo3.getLatencyTest().equalsIgnoreCase("0")) {
@@ -7282,6 +7295,8 @@ public class RequestInfoDao {
 			FrameLossObj.put("testname", "Frameloss");
 			FrameLossObj.put("status", "Passed");
 			FrameLossObj.put("outcome", certificationTestPojo3.getFrameLoss());
+			FrameLossObj.put("CollectedValue", certificationTestPojo3.getFrameLoss());
+
 			FrameLossObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo3.getFrameLossTest().equalsIgnoreCase("0")) {

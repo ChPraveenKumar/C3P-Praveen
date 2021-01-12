@@ -100,7 +100,7 @@ public class PostUpgradeHealthCheck extends Thread {
 				} else {
 					testToFail = "health_check";
 				}
-				boolean reachability = pingClass.cmdPingCall(host, requestinfo.getHostname(), requestinfo.getRegion());
+				boolean reachability = pingClass.pingResults(host, requestinfo.getHostname(), requestinfo.getRegion());
 				if (reachability) {
 					rechabilityTst = 1;
 				} else {
@@ -264,9 +264,6 @@ public class PostUpgradeHealthCheck extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (java.text.ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e1) {

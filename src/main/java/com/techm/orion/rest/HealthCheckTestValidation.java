@@ -3,6 +3,7 @@ package com.techm.orion.rest;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -24,6 +25,7 @@ import javax.ws.rs.POST;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -49,6 +51,7 @@ import com.techm.orion.service.CSVWriteAndConnectPython;
 import com.techm.orion.service.RegexTestHealthCheck;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
+import com.techm.orion.utility.PingTest;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
@@ -120,64 +123,56 @@ public class HealthCheckTestValidation extends Thread {
 					String frameloss = "";
 					String latency = "";
 					HealthCheckTestValidation.loadProperties();
-					String sshPrivateKeyFilePath = HealthCheckTestValidation.TSA_PROPERTIES
-							.getProperty("sshPrivateKeyPath");
-					String host = requestinfo.getManagementIp();
-					UserPojo userPojo = new UserPojo();
-					userPojo = requestInfoDao.getRouterCredentials(host);
-					logger.info("Request ID in health test validation" + RequestId);
-					String user = null, password = null;
-					user = userPojo.getUsername();
-					password = userPojo.getPassword();
-					/*if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
-						user = "c3pteam";
-						password = "csr1000v";
-					} else {
-						user = userPojo.getUsername();
-						password = userPojo.getPassword();
-					}*/
-					String port = HealthCheckTestValidation.TSA_PROPERTIES.getProperty("portSSH");
-
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
 							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")
 							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
 							|| type.equalsIgnoreCase("SNNM")) {
+						try{
 						
-						
-						session = jsch.getSession(user, host, Integer.parseInt(port));
-						Properties config = new Properties();
-						config.put("StrictHostKeyChecking", "no");
-						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
-								+ "Port " + port);
-						session.setConfig(config);
-						session.setPassword(password);
-						session.connect();
-						logger.info("After session.connect 1");
-						try {
-							Thread.sleep(10000);
-						} catch (Exception ee) {
-						}
-						try {
-
-							channel = session.openChannel("shell");
-							OutputStream ops = channel.getOutputStream();
-
-							PrintStream ps = new PrintStream(ops, true);
-							logger.info("Channel Connected to machine " + host + " server");
-							channel.connect();
-							InputStream input = channel.getInputStream();
-
 							if (requestinfo.getCertificationSelectionBit().substring(5, 6).equalsIgnoreCase("1")
 									|| requestinfo.getCertificationSelectionBit().substring(6).equalsIgnoreCase("1")) {
-								
-								cmdPingCall(requestinfo.getAlphanumericReqId(),
+								logger.info("Frameloss "+requestinfo.getCertificationSelectionBit().substring(5, 6));
+								logger.info("Latency "+requestinfo.getCertificationSelectionBit().substring(6));
+
+								//Code to find out frameloss and latency from command ping using python service
+								PingTest pingHelper=new PingTest();
+								JSONArray pingResults = pingHelper.pingResults(requestinfo.getManagementIp(),"healthCheck");
+								String pingReply="";
+								for(int i=0; i<pingResults.size();i++)
+								{
+									JSONObject healthcheckop=(JSONObject) pingResults.get(i);
+									if(healthcheckop.containsKey("pingReply"))
+									{
+									pingReply=healthcheckop.get("pingReply").toString().replace(",", "\n").replace("[", "").replace("]", "");
+									}
+									if(healthcheckop.containsKey("frameloss"))
+									{
+									frameloss=healthcheckop.get("frameloss").toString();
+									requestInfoDao.updateHealthCheckTestParameter(
+											requestinfo.getAlphanumericReqId(),
+											Double.toString(requestinfo.getRequestVersion()), frameloss,
+											"frameloss");
+									}
+									else if(healthcheckop.containsKey("latency"))
+									{
+									latency=healthcheckop.get("latency").toString();
+									requestInfoDao.updateHealthCheckTestParameter(
+											requestinfo.getAlphanumericReqId(),
+											Double.toString(requestinfo.getRequestVersion()), latency, "latency");
+									}
+								}
+								InputStream targetStream = new ByteArrayInputStream(pingReply.getBytes());
+								printResult(targetStream, requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()));
+							//The below code is kept for reference
+							/*	cmdPingCall(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()),
 										requestinfo.getManagementIp());
 								printResult(input, requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()));														
+										Double.toString(requestinfo.getRequestVersion()));		*/												
 							
 								
-								hmapResult = regexTestHealthCheck.PreValidationForHealthCheckPing(
+								/*hmapResult = regexTestHealthCheck.PreValidationForHealthCheckPing(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()));
 								for (Map.Entry<String, String> entry : hmapResult.entrySet()) {
@@ -196,9 +191,9 @@ public class HealthCheckTestValidation extends Thread {
 												requestinfo.getAlphanumericReqId(),
 												Double.toString(requestinfo.getRequestVersion()), latency, "latency");
 
-									}
+									}*/
 
-								}
+								
 
 								requestinfo.setFrameLoss(frameloss);
 								requestinfo.setLatency(latency);
@@ -211,7 +206,9 @@ public class HealthCheckTestValidation extends Thread {
 							String resultAnalyser = "";
 
 							if (requestinfo.getCertificationSelectionBit().substring(4, 5).equalsIgnoreCase("1")) {
-								String readFile = readFile();
+								logger.info("Throughput "+requestinfo.getCertificationSelectionBit().substring(4, 5));
+
+								/*String readFile = readFile();
 
 								ps.println(readFile);
 								try {
@@ -238,7 +235,7 @@ public class HealthCheckTestValidation extends Thread {
 
 								requestinfo.setThroughput(throughput);
 								requestInfoDao.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), throughput, "throughput");
+										Double.toString(requestinfo.getRequestVersion()), throughput, "throughput");*/
 								resultAnalyser = csvWriteAndConnectPython.ReadWriteAndConnectAnalyser(requestinfo);
 							}
 
@@ -266,9 +263,40 @@ public class HealthCheckTestValidation extends Thread {
 									}
 								}
 								if (finallistOfTests.size() > 0) {
+									String host = requestinfo.getManagementIp();
+									UserPojo userPojo = new UserPojo();
+									userPojo = requestInfoDao.getRouterCredentials(host);
+									String user = null, password = null;
+									user = userPojo.getUsername();
+									password = userPojo.getPassword();
+									
+									String port = TSALabels.PORT_SSH.getValue();
+									session = jsch.getSession(user, host, Integer.parseInt(port));
+									Properties config = new Properties();
+									config.put("StrictHostKeyChecking", "no");
+									session.setConfig(config);
+									session.setPassword(password);
+									logger.info("Before session.connet in health test validation Username" + user
+											+ " Password " + password + " host" + host);
+									session.connect();
+									try {
+										Thread.sleep(5000);
+									} catch (Exception ee) {
+									}
+									
 									results = new ArrayList<Boolean>();
+									channel = session.openChannel("shell");
+									OutputStream ops = channel.getOutputStream();
+
+									PrintStream ps = new PrintStream(ops, true);
+									logger.info("Channel Connected to machine " + host + " server");
+									channel.connect();
+									InputStream input = channel.getInputStream();
+									ps.println("terminal length 0");
+									
 									for (int i = 0; i < finallistOfTests.size(); i++) {
 									
+										
 										// conduct and analyse the tests
 										DeviceDiscoveryEntity device = deviceRepo
 												.findByDHostName(requestinfo.getHostname().toUpperCase());
@@ -284,7 +312,7 @@ public class HealthCheckTestValidation extends Thread {
 										}
 										else
 										{
-										ps.println(finallistOfTests.get(i).getTestCommand());
+											ps.println(finallistOfTests.get(i).getTestCommand());
 										try {
 											Thread.sleep(8000);
 										} catch (Exception ee) {
@@ -299,6 +327,8 @@ public class HealthCheckTestValidation extends Thread {
 										}
 									
 									}
+									channel.disconnect();
+									session.disconnect();
 								} else {
 
 								}
@@ -363,8 +393,7 @@ public class HealthCheckTestValidation extends Thread {
 
 							}
 							logger.info("DONE");
-							channel.disconnect();
-							session.disconnect();
+							
 							value = true;// hardcoded for default tests
 
 							// this is to evaluate according to newly added tests else it is true by
@@ -378,9 +407,9 @@ public class HealthCheckTestValidation extends Thread {
 
 								}
 							}
-							channel.disconnect();
-							session.disconnect();
 							logger.info("DONE");
+							if(channel!=null)
+							{
 							if (!channel.isClosed()) {
 								channel.disconnect();
 							}
@@ -390,6 +419,7 @@ public class HealthCheckTestValidation extends Thread {
 							} catch (Exception ee) {
 							}
 							logger.info("DONE");
+							}
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 						} catch (IOException ex) {
@@ -420,8 +450,19 @@ public class HealthCheckTestValidation extends Thread {
 
 							}
 						}
-
+						if(channel!=null)
+						{
+						if (!channel.isClosed()) {
+							channel.disconnect();
+						}
 						session.disconnect();
+						try {
+							Thread.sleep(5000);
+						} catch (Exception ee) {
+						}
+						logger.info("DONE");
+						}
+					
 					} else if (type.equalsIgnoreCase("SLGF")) {
 						
 						obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");

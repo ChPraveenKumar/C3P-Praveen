@@ -85,6 +85,9 @@ public class ConfigurationManagement {
 
 	@Autowired
 	private ConfigurationManagmentService createConfigurationService;
+	
+	@Autowired
+	private MasterCharacteristicsRepository masterCharachteristicRepository;
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -260,18 +263,38 @@ public class ConfigurationManagement {
 
 				if (certificationTestFlag != null && certificationTestFlag.containsKey("default")) {
 					// flag test selection
-					JSONObject defaultObj = (JSONObject) certificationTestFlag.get("default");
-
-					if (defaultObj.get("Throughput").toString().equals("1")) {
-						configReqToSendToC3pCode.setThroughputTest(defaultObj.get("Throughput").toString());
+					JSONArray defaultArray = (JSONArray) certificationTestFlag.get("default");
+					String bit = "1010000";
+					int frameloss=0,latency=0,throughput=0;
+					for(int defarray=0; defarray<defaultArray.size();defarray++)
+					{
+					
+						JSONObject defaultObject=(JSONObject) defaultArray.get(defarray);
+						String testName=defaultObject.get("testName").toString();
+						int selectedValue=0;
+						if(Integer.parseInt(defaultObject.get("selected").toString()) == 1)
+						{
+							selectedValue=1;
+						}
+						switch (testName) {
+						case "Frameloss":
+								frameloss=selectedValue;
+							break;
+						case "Latency":
+								latency=selectedValue;
+							break;
+						case "Throughput":
+								throughput=selectedValue;
+							break;
+						}
+						bit= "1010"+ throughput + frameloss + latency;
 					}
-
-					String bit = "1" + "0" + "1" + "0" + defaultObj.get("Throughput").toString() + "1" + "1";
+					
 					logger.info(bit);
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 
 				} else {
-					String bit = "1" + "0" + "1" + "0" + "0" + "1" + "1";
+					String bit = "1010011";
 					logger.info(bit);
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 				}
@@ -487,6 +510,47 @@ public class ConfigurationManagement {
 								configReqToSendToC3pCode.getVendor(), configReqToSendToC3pCode.getModel(),
 								configReqToSendToC3pCode.getOs(), configReqToSendToC3pCode.getOsVersion());
 						templateName = "Feature_" + templateName;
+						featureList = null;
+						// Logic to create pojo list
+						List<MasterCharacteristicsEntity> attributesFromInput = new ArrayList<MasterCharacteristicsEntity>();
+						for (TemplateFeaturePojo feature : features) {
+							List<MasterCharacteristicsEntity> byAttribMasterFeatureId = masterCharachteristicRepository
+									.findAllByCFId(feature.getfMasterId());
+							if (byAttribMasterFeatureId != null
+									&& !byAttribMasterFeatureId.isEmpty()) {
+								attributesFromInput.addAll(byAttribMasterFeatureId);
+							}
+						}
+						if (attribJson != null) {
+							for (int i = 0; i < attribJson.size(); i++) {
+
+								JSONObject object = (JSONObject) attribJson.get(i);
+								String attribType = null;
+								String attribLabel = object.get("label").toString();
+								String attriValue = object.get("value").toString();
+								if (object.get("type") != null) {
+									attribType = object.get("type").toString();
+								}
+
+								String attib = object.get("name").toString();
+								for (MasterCharacteristicsEntity Attrib : attributesFromInput) {
+									if (attribLabel.contains(Attrib.getcName())) {
+										// String attribName = Attrib.getAttribName();
+										if (attribType == null
+												|| attribType
+														.equalsIgnoreCase("Non-Template")) {
+											if (attribLabel.equals(Attrib.getcName())) {
+												createConfigList.add(setConfigData(0,
+														attriValue, "",
+														Attrib.getcFId(),Attrib.getcId()));
+
+											}
+
+										}
+									}
+								}
+							}
+						}
 						configReqToSendToC3pCode.setTemplateID(templateName);
 					}
 					configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
@@ -601,7 +665,7 @@ public class ConfigurationManagement {
 								}
 							}
 							if (attribJson != null) {
-								for (int i = 0; i < attribJson.size(); i++) {
+								for (int i = 0; i < attribJson.size(); i++) { 
 
 									JSONObject object = (JSONObject) attribJson.get(i);
 									String attribType = null;
@@ -672,10 +736,13 @@ public class ConfigurationManagement {
 									.size(); replicationArrayPointer++) {									
 									JSONObject object = (JSONObject) replicationArray.get(replicationArrayPointer);
 									String attriValue = object.get("value").toString();
-									String templateid = object.get("templateid").toString();
+									String templateid = null;
+									if(object.get("templateid")!=null) {
+										templateid = object.get("templateid").toString();
+									}
 									String attribLabel = object.get("label").toString();
 									String type=null;
-									if(object.containsKey("type"))
+									if(object.containsKey("type") && object.get("type")!=null)
 									{
 										type=object.get("type").toString();
 									}
@@ -696,9 +763,15 @@ public class ConfigurationManagement {
 									}
 									else
 									{
+										if(templateid!=null) {
 									MasterAttributes masterAttribData = attribRepo.findByTemplateIdAndMasterFIDAndLabel(templateid, featureId,
 											attribLabel);
-									createConfigList.add(setConfigData(masterAttribData.getId(), attriValue, templateid));
+									createConfigList.add(setConfigData(masterAttribData.getId(), attriValue, templateid));}
+										else {
+											MasterCharacteristicsEntity Attrib=masterCharacteristicRepository.findByCFIdAndCName(featureId, attribLabel);
+											createConfigList.add(setConfigData(0, attriValue, "",
+													Attrib.getcFId(), Attrib.getcId()));
+										}
 									}
 								
 							}

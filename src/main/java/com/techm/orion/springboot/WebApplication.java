@@ -15,20 +15,24 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
 @EnableAutoConfiguration
 @EnableTransactionManagement
 @EnableJpaRepositories(basePackages = "com.techm.orion.repositories")
-@EntityScan(basePackages = {"com.techm.orion.entitybeans","com.techm.orion.pojo"})
+@EntityScan(basePackages = { "com.techm.orion.entitybeans",
+		"com.techm.orion.pojo" })
 @ComponentScan(basePackages = "com.techm.orion")
 @EnableSpringConfigured
 @EnableAsync
 @EnableScheduling
-public class WebApplication extends SpringBootServletInitializer implements CommandLineRunner {
+public class WebApplication extends SpringBootServletInitializer implements
+		CommandLineRunner {
 
 	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+	protected SpringApplicationBuilder configure(
+			SpringApplicationBuilder application) {
 		return application.sources(WebApplication.class);
 	}
 
@@ -38,6 +42,11 @@ public class WebApplication extends SpringBootServletInitializer implements Comm
 		builder.failOnUnknownProperties(true);
 		builder.failOnEmptyBeans(false);
 		return builder;
+	}
+
+	@Bean
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
 	}
 
 	public static void main(String[] args) {

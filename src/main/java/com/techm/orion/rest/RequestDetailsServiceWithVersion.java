@@ -107,6 +107,8 @@ public class RequestDetailsServiceWithVersion {
 					requestType = value.substring(0, 4);
 					MileStones showMilestone = reportMileStones.getMileStones(requestType);
 					detailsList = requestRedao.getRequestWithVersion(key, value, version, userName, userRole);
+					if(!requestType.equalsIgnoreCase("SNAI"))//This is bec after SNAI request the VM will be instantiated and then information will be added to device info table
+					{
 					for (RequestInfoCreateConfig request : detailsList) {
 
 						DeviceDiscoveryEntity device = deviceInforepo.findByDHostName(request.getHostname());
@@ -127,7 +129,7 @@ public class RequestDetailsServiceWithVersion {
 							request.setRequestType("BackUp");
 						}
 					}
-
+					}
 					jsonArray = new Gson().toJson(detailsList);
 
 					obj.put(new String("output"), jsonArray);

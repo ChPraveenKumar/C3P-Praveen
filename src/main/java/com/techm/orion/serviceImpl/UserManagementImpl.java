@@ -559,22 +559,24 @@ public class UserManagementImpl implements UserManagementInterface {
 				logger.info("wrong password");
 				userManagementResulltDetailPojo.setMessage("Failure");
 				userManagementResulltDetailPojo.setResult(false);
-				userManagementResulltDetailPojo.setRole(userDetails.getRole());
-				userManagementResulltDetailPojo.setFirstName(userDetails.getFirstName());
-				userManagementResulltDetailPojo.setLastName(userDetails.getLastName());
-				userManagementResulltDetailPojo.setWorkGroup(userDetails.getWorkGroup());
-				userManagementResulltDetailPojo.setUserName(userDetails.getUserName());
-				userManagementResulltDetailPojo.setBaseLocation(userDetails.getBaseLocation());
-				jsonModule = (JSONObject) parser.parse(userDetails.getModuleInfo());
-				userManagementResulltDetailPojo.setModuleInfo(jsonModule);
-				if(userDetails.getSubOrdinate() !=null)
-					userManagementResulltDetailPojo.setSuperUser(true);
-				else
-					userManagementResulltDetailPojo.setSuperUser(false);
-				
-				if (userDetails.getAttempts() >= MAX_ATTEMPTS)
-					userManagementResulltDetailPojo.setMessage("User account is locked!");
-				updateFailAttempts(userName);
+				if (userDetails != null) {
+					userManagementResulltDetailPojo.setRole(userDetails.getRole());
+					userManagementResulltDetailPojo.setFirstName(userDetails.getFirstName());
+					userManagementResulltDetailPojo.setLastName(userDetails.getLastName());
+					userManagementResulltDetailPojo.setWorkGroup(userDetails.getWorkGroup());
+					userManagementResulltDetailPojo.setUserName(userDetails.getUserName());
+					userManagementResulltDetailPojo.setBaseLocation(userDetails.getBaseLocation());
+					jsonModule = (JSONObject) parser.parse(userDetails.getModuleInfo());
+					userManagementResulltDetailPojo.setModuleInfo(jsonModule);
+					if (userDetails.getSubOrdinate() != null)
+						userManagementResulltDetailPojo.setSuperUser(true);
+					else
+						userManagementResulltDetailPojo.setSuperUser(false);
+
+					if (userDetails.getAttempts() >= MAX_ATTEMPTS)
+						userManagementResulltDetailPojo.setMessage("User account is locked!");
+					updateFailAttempts(userName);
+				}
 				userManagementResulltDetailPojo.setMessage("Invalid username or password");
 			}
 		}
