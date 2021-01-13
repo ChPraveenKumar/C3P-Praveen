@@ -328,4 +328,42 @@ public class PingTest {
 		}
 		return false;
 	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject throughputResults(String managementIp, String testType) {
+		logger.info("Start throughput calc - managementIp- " + managementIp);
+		JSONObject responce = null;
+		RestTemplate restTemplate = new RestTemplate();
+		JSONObject obj = new JSONObject();
+
+		try {
+			obj.put(new String("srcMgmtIP"), managementIp);
+			obj.put(new String("srcMgmtPort"), TSALabels.THROUGHPUT_PORT.getValue());
+			obj.put(new String("destMgmtIP"), "");
+			obj.put(new String("destMgmtPort"), "");
+			obj.put(new String("packetCount"), Integer.parseInt(TSALabels.THROUGHPUT_PACKET_SIZE.getValue()));
+			obj.put(new String("throughputUnit"), TSALabels.THROUGHPUT_UNIT.getValue());
+			obj.put(new String("bufferSize"), Integer.parseInt(TSALabels.THROUGHPUT_BUFFER_SIZE.getValue()));
+			obj.put(new String("srcApplication"), "C3P");
+
+			
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(obj,
+					headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue()
+					+ TSALabels.PYTHON_THROUGHPUT.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST,
+					entity, String.class).getBody();
+
+			JSONParser parser = new JSONParser();
+			responce = (JSONObject) parser.parse(response);
+			
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		logger.info("Response" + responce);
+		return responce;
+	}
 }
