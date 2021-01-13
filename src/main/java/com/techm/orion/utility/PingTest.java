@@ -360,8 +360,7 @@ public class PingTest {
 			responce = (JSONObject) parser.parse(response);
 			
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.info("Exception" + e);
 		}
 		logger.info("Response" + responce);
 		return responce;
