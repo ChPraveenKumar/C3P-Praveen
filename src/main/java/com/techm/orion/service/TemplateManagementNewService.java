@@ -81,7 +81,7 @@ public class TemplateManagementNewService {
 
 	@Autowired
 	private AttribCreateConfigResponceMapper attribCreateConfigResponceMapper;
-	
+
 	@Autowired
 	private GetTemplateConfigurationData templateSaveFlowService;
 
@@ -354,16 +354,18 @@ public class TemplateManagementNewService {
 
 		return finalCammands;
 	}
+
 	@SuppressWarnings("unchecked")
-	public JSONObject getFeaturesForDevice(String request) throws ParseException {		
+	public JSONObject getFeaturesForDevice(String request) throws ParseException {
 		JSONObject json = new JSONObject();
 		JSONParser parser = new JSONParser();
 		json = (JSONObject) parser.parse(request);
 		DeviceDetailsPojo deviceDeatils = setDeviceDeatils(json);
 		JSONObject features = new JSONObject();
-		if (deviceDeatils != null) {								
-			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findNearestMatchEntities(deviceDeatils.getVendor(), deviceDeatils.getDeviceFamily(), deviceDeatils.getOs(),
-					deviceDeatils.getOsVersion(),deviceDeatils.getRegion(),deviceDeatils.getNetworkType());
+		if (deviceDeatils != null) {
+			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findNearestMatchEntities(
+					deviceDeatils.getVendor(), deviceDeatils.getDeviceFamily(), deviceDeatils.getOs(),
+					deviceDeatils.getOsVersion(), deviceDeatils.getRegion(), deviceDeatils.getNetworkType());
 			features.put("output", setFeatureData(masterFeatures));
 		}
 		return features;
@@ -412,8 +414,6 @@ public class TemplateManagementNewService {
 			String templateId = "";
 			List<TemplateFeatureEntity> commandTypes = new ArrayList<>();
 			List<TemplateConfigBasicDetailsEntity> tempConfigBasic = new ArrayList<>();
-			templateId = dcmConfigService.getTemplateName(region, vendor, os, osVersion, deviceFamily);
-			commandTypes.addAll(templatefeatureRepo.findByCommandId(templateId));
 			List<String> featureList = new ArrayList<>();
 			for (int i = 0; i < jsonArray.size(); i++) {
 				JSONObject featureObject = (JSONObject) jsonArray.get(i);
@@ -428,10 +428,21 @@ public class TemplateManagementNewService {
 					masterFeatureEntity.setfReplicationind((boolean) featureObject.get("fReplicationFlag"));
 				}
 			}
+			templateId = dcmConfigService.getTemplateName(region, vendor, os, osVersion, deviceFamily);
+			commandTypes.addAll(templatefeatureRepo.findByCommandId(templateId));
+			templateId = dcmConfigService.getTemplateName(region, vendor, os, "All", deviceFamily);
+			commandTypes.addAll(templatefeatureRepo.findByCommandId(templateId));
+			templateId = dcmConfigService.getTemplateName(region, vendor, "All", "All", deviceFamily);
+			commandTypes.addAll(templatefeatureRepo.findByCommandId(templateId));
+			templateId = dcmConfigService.getTemplateName(region, vendor, "All", "All", "All");
+			commandTypes.addAll(templatefeatureRepo.findByCommandId(templateId));
+			templateId = dcmConfigService.getTemplateName("All", vendor, "All", "All", "All");
+			commandTypes.addAll(templatefeatureRepo.findByCommandId(templateId));
 			List<TemplateFeatureEntity> tempFeatureDetails = new ArrayList<>();
 			commandTypes = commandTypes.stream()
 					.filter(UtilityMethods.distinctByKeys(TemplateFeatureEntity::getCommand))
 					.collect(Collectors.toList());
+
 			commandTypes.forEach(template -> {
 				List<String> featureIds = templatefeatureRepo.findByMasterfeatureIdByTemplateId(template.getCommand());
 				Collections.sort(featureList);
@@ -585,6 +596,7 @@ public class TemplateManagementNewService {
 		}
 		return finalObject;
 	}
+
 	@SuppressWarnings("unchecked")
 	public JSONObject getFeatureForTestDetails(String request) throws ParseException {
 		JSONObject json = new JSONObject();

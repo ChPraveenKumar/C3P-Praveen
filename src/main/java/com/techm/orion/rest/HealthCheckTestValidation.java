@@ -208,6 +208,22 @@ public class HealthCheckTestValidation extends Thread {
 							if (requestinfo.getCertificationSelectionBit().substring(4, 5).equalsIgnoreCase("1")) {
 								logger.info("Throughput "+requestinfo.getCertificationSelectionBit().substring(4, 5));
 
+								PingTest pingHelper=new PingTest();
+								JSONObject throughputResults = pingHelper.throughputResults(requestinfo.getManagementIp(),"healthCheck");
+								if(throughputResults.containsKey("error"))
+								{
+									requestinfo.setThroughput("0");
+									requestInfoDao.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
+											Double.toString(requestinfo.getRequestVersion()), "0", "throughput");
+								}
+								else
+								{
+								String throughpput=throughputResults.get("throughput").toString()+throughputResults.get("unit").toString();
+								requestinfo.setThroughput(throughputResults.get("throughput").toString());
+								requestInfoDao.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), throughpput, "throughput");
+								//resultAnalyser = csvWriteAndConnectPython.ReadWriteAndConnectAnalyser(requestinfo);
+								}
 								/*String readFile = readFile();
 
 								ps.println(readFile);
@@ -236,7 +252,7 @@ public class HealthCheckTestValidation extends Thread {
 								requestinfo.setThroughput(throughput);
 								requestInfoDao.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), throughput, "throughput");*/
-								resultAnalyser = csvWriteAndConnectPython.ReadWriteAndConnectAnalyser(requestinfo);
+								
 							}
 
 							/*
