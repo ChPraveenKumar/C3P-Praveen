@@ -35,12 +35,14 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TestStrategeyAnalyser;
@@ -55,16 +57,19 @@ public class NetworkTestValidation extends Thread {
 	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@Autowired
-	RequestInfoDao requestInfoDao;
+	private RequestInfoDao requestInfoDao;
 
 	@Autowired
-	RequestInfoDetailsDao requestDao;
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 
 	@Autowired
-	TestStrategeyAnalyser analyser;
+	private TestStrategeyAnalyser testStrategeyAnalyser;
 
 	@Autowired
-	DeviceDiscoveryRepository deviceRepo;
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private DcmConfigService dcmConfigService;
 	
 	@POST
 	@RequestMapping(value = "/networkCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -89,12 +94,13 @@ public class NetworkTestValidation extends Thread {
 		Session session = null;
 	    if (!((type.equals("SLGB") || (type.equals("SNAI") )))){
 
-			try {
-
+			try {				
 				logger.info("Request ID in network test validation" + RequestId);
-				requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					String statusVAlue = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
+					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+							.findHostNameAndMgmtip(requestinfo.getManagementIp(),requestinfo.getHostname());
+					String statusVAlue = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
 					requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "network_test", "4", statusVAlue);
@@ -108,11 +114,11 @@ public class NetworkTestValidation extends Thread {
 							|| type.equalsIgnoreCase("SNNM")) {
 						NetworkTestValidation.loadProperties();
 						String host = requestinfo.getManagementIp();
-						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials(host);
-						String user = null, password = null;
-						user = userPojo.getUsername();
-						password = userPojo.getPassword();
+						CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+								deviceDetails);
+						String user = routerCredential.getLoginRead();
+						String password = routerCredential.getPasswordWrite();	
+						
 						/*if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 							user = "c3pteam";
 							password = "csr1000v";
@@ -134,6 +140,7 @@ public class NetworkTestValidation extends Thread {
 						} catch (Exception ee) {
 						}
 						try {
+							
 							channel = session.openChannel("shell");
 							OutputStream ops = channel.getOutputStream();
 
@@ -217,14 +224,13 @@ public class NetworkTestValidation extends Thread {
 
 
 										// conduct and analyse the tests
-										DeviceDiscoveryEntity device = deviceRepo
-												.findByDHostName(requestinfo.getHostname().toUpperCase());
-										if(device.getdConnect().equalsIgnoreCase("NETCONF"))
+										
+										if(deviceDetails.getdConnect().equalsIgnoreCase("NETCONF"))
 										{
 											VNFHelper helper=new VNFHelper();
 											helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
 										}
-										else if(device.getdConnect().equalsIgnoreCase("RESTCONF"))
+										else if(deviceDetails.getdConnect().equalsIgnoreCase("RESTCONF"))
 										{
 											ODLClient client=new ODLClient();
 											client.performTest(finallistOfTests.get(i),requestinfo, user, password);
@@ -239,7 +245,7 @@ public class NetworkTestValidation extends Thread {
 
 											// printResult(input,
 											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-											Boolean res = analyser.printAndAnalyse(input, channel,
+											Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 													requestinfo.getAlphanumericReqId(),
 													Double.toString(requestinfo.getRequestVersion()),
 													finallistOfTests.get(i), "Network Test");
@@ -287,9 +293,9 @@ public class NetworkTestValidation extends Thread {
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(2, 3)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(3, 4)));
 
-								String status = requestDao.getPreviousMileStoneStatus(
+								String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
-								int statusData = requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+								int statusData = requestInfoDetailsDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "network_test");
 								if (statusData != 3) {
 									requestInfoDao.editRequestforReportWebserviceInfo(
@@ -308,7 +314,7 @@ public class NetworkTestValidation extends Thread {
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(1, 2)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(2, 3)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(3, 4)));
-								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "network_test", "2",
 										"Failure");
 							}
@@ -337,7 +343,7 @@ public class NetworkTestValidation extends Thread {
 						} catch (IOException ex) {
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "network_test", "2", "Failure");
 
 							String response = "";
@@ -375,7 +381,7 @@ public class NetworkTestValidation extends Thread {
 					logger.info("Exception in network tst" + ex.getMessage());
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "network_test", "2", "Failure");
 					String response = "";
 					String responseDownloadPath = "";

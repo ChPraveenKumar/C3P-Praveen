@@ -34,15 +34,18 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.CredentialManagementEntity;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.Notification;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.RequestDetailsImportRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.UserManagementRepository;
+import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.PrevalidationTestServiceImpl;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.PingTest;
@@ -54,27 +57,31 @@ import com.techm.orion.utility.TextReport;
 public class DeviceReachabilityAndPreValidationTest extends Thread {
 	private static final Logger logger = LogManager.getLogger(DeviceReachabilityAndPreValidationTest.class);
 	@Autowired
-	RequestInfoDao requestInfoDao;
+	private RequestInfoDao requestInfoDao;
 
 	@Autowired
-	RequestInfoDetailsDao requestDao;
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 
 	@Autowired
-	public RequestDetailsImportRepo requestDetailsImportRepo;
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
 	@Autowired
-	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
-
-	@Autowired
-	TestStrategeyAnalyser analyser;
+	private TestStrategeyAnalyser testStrategeyAnalyser;
 
 	@Autowired
 	private PostUpgradeHealthCheck postUpgradeHealthCheck;
 	
 	@Autowired
 	private NotificationRepo notificationRepo;
+	
 	@Autowired
 	private UserManagementRepository userManagementRepository;
+	
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -106,11 +113,14 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
 			List<RequestInfoEntity> requestDetailEntity1 = new ArrayList<RequestInfoEntity>();
-			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 			if(!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains(ROUTER_IP_TEMP)) //Temperory hard coding for 10.62.0.24 router)
 			{
 			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+				 DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+							.findByDHostName(requestinfo.getHostname().toUpperCase());
+				 
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "Application_test", "4", "In Progress");
 
 				requestinfo.setAlphanumericReqId(RequestId);
@@ -159,7 +169,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										+ "_prevalidationTest.txt",
 								response);
 
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
@@ -173,7 +183,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
 								+ requestinfo.getRequestVersion() + "_prevalidationTest.txt", response);
 
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
@@ -187,7 +197,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
 								+ requestinfo.getRequestVersion() + "_prevalidationTest.txt", response);
 
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2", "Failure");
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
@@ -204,14 +214,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							|| type.equalsIgnoreCase("SNNM")) {
 
 						String host = requestinfo.getManagementIp();
-						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials(host);
-
-						String user = null;
-						String password = null;
-
-						user = userPojo.getUsername();
-						password = userPojo.getPassword();
+						CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+								deviceDetails);
+						String user = routerCredential.getLoginRead();
+						String password = routerCredential.getPasswordWrite();
+						
 						/*if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
 							user = "c3pteam";
 							password = "csr1000v";
@@ -294,7 +301,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 									// printResult(input,
 									// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-									Boolean res = analyser.printAndAnalyse(input, channel,
+									Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), finallistOfTests.get(i),
 											"Device Prevalidation");
@@ -329,11 +336,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					else if (type.equalsIgnoreCase("SLGB")) {
 
 						String host = requestinfo.getManagementIp();
-						UserPojo userPojo = new UserPojo();
-						userPojo = requestInfoDao.getRouterCredentials(host);
-
-						String user = userPojo.getUsername();
-						String password = userPojo.getPassword();
+						CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+								deviceDetails);
+						String user = routerCredential.getLoginRead();
+						String password = routerCredential.getPasswordWrite();
+						
 						String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("portSSH");
 						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
@@ -405,7 +412,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 									// printResult(input,
 									// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-									Boolean res = analyser.printAndAnalyse(input, channel,
+									Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), finallistOfTests.get(i),
 											"Device Prevalidation");
@@ -463,7 +470,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						|| e1.getMessage().contains("Auth fail"))) {
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "2_Authentication");
@@ -487,7 +494,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				} else {
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "2");
@@ -554,14 +561,14 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();		
 
-			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 			if(!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains("10.62.0.24")) //Temperory hard coding for 10.62.0.24 router
 			{	
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "4", "In Progress");
 
-				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "Application_test", "4", "In Progress");
 
 				requestinfo.setAlphanumericReqId(RequestId);
@@ -569,7 +576,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 				DeviceReachabilityAndPreValidationTest.loadProperties();
 
-				requestDao.changeRequestInRequestInfoStatus(requestinfo.getAlphanumericReqId(),
+				requestInfoDetailsDao.changeRequestInRequestInfoStatus(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "In Progress");
 
 				// ping to check the reachability
@@ -636,7 +643,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
 									"Failure");
 							requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
@@ -651,9 +658,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									response);
 
 							// CODE TO ASSIGN REQUEST TO FE
-							requestDao.changeRequestOwner(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.changeRequestOwner(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "feuser");
-							requestDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "In Progress");
 							notificationEntity.setNotifFromUser(requestinfo.getRequestCreatorName());
 							notificationEntity.setNotifToUser(sUserListData);
@@ -686,7 +693,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2",
 									"Failure");
 							requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -718,7 +725,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
 									"Failure");
 							requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
@@ -735,7 +742,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							// CODE TO ASSIGN REQUEST TO FE
 							/*requestDao.changeRequestOwner(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "feuser");*/
-							requestDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "Failure");
 							value = false;
 							jsonArray = new Gson().toJson(value);
@@ -755,7 +762,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2", "Failure");
 						requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure",
@@ -789,7 +796,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				jsonArray = new Gson().toJson(value);
 				obj.put(new String("output"), jsonArray);
-				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
 				requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "2");

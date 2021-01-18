@@ -29,6 +29,8 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
+import com.techm.orion.entitybeans.CredentialManagementEntity;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
@@ -39,6 +41,7 @@ import com.techm.orion.mapper.RequestInfoMappper;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.repositories.ResourceCharacteristicsRepository;
@@ -46,6 +49,7 @@ import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
+import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.PythonServices;
 import com.techm.orion.utility.TSALabels;
@@ -66,6 +70,11 @@ public class RequestInfoDetailsDao {
 	private ResourceCharacteristicsRepository resourceCharRepo; 
 	@Autowired
 	private UserManagementRepository userManagementRepository;
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
@@ -497,7 +506,7 @@ public class RequestInfoDetailsDao {
 
 	/* method overloading for UIRevamp */
 	public boolean getRouterConfig(RequestInfoPojo requestinfo, String routerVersionType) {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		InvokeFtl invokeFtl = new InvokeFtl();
 
 		BackupCurrentRouterConfigurationService service = new BackupCurrentRouterConfigurationService();
@@ -505,16 +514,18 @@ public class RequestInfoDetailsDao {
 		try {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = requestinfo.getManagementIp();
-			UserPojo userPojo = new UserPojo();
-			userPojo = requestInfoDao.getRouterCredentials(host);
-			String user, password;
+			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+					.findHostNameAndMgmtip(requestinfo.getManagementIp(),requestinfo.getHostname());
+			
+			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+					deviceDetails);
+			String user = routerCredential.getLoginRead();
+			String password = routerCredential.getPasswordWrite();
 
 			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
 			JSch jsch = new JSch();
 
-			user = userPojo.getUsername();
-			password = userPojo.getPassword();
 			
 			Channel channel = null;
 			Session session = jsch.getSession(user, host, Integer.parseInt(port));

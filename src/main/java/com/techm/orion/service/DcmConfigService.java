@@ -30,6 +30,8 @@ import com.techm.orion.dao.RequestSchedulerDao;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.entitybeans.CreateConfigEntity;
+import com.techm.orion.entitybeans.CredentialManagementEntity;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.entitybeans.RequestFeatureTransactionEntity;
@@ -52,6 +54,7 @@ import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.AttribCreateConfigRepo;
 import com.techm.orion.repositories.CreateConfigRepo;
+import com.techm.orion.repositories.CredentialManagementRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.RequestFeatureTransactionRepository;
@@ -80,7 +83,7 @@ public class DcmConfigService {
 	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
 	@Autowired
-	TemplateFeatureRepo featureRepo;
+	private TemplateFeatureRepo templateFeatureRepo;
 
 	@Autowired
 	RequestFeatureTransactionRepository requestFeatureRepo;
@@ -103,6 +106,9 @@ public class DcmConfigService {
 	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
 
+	@Autowired
+	private CredentialManagementRepo credentialManagementRepo;
+	
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
@@ -1589,7 +1595,7 @@ public class DcmConfigService {
 						featureList
 								.forEach(feature -> {
 
-									TemplateFeatureEntity featureid = featureRepo
+									TemplateFeatureEntity featureid = templateFeatureRepo
 											.findById(Integer.parseInt(feature));
 
 									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
@@ -1636,7 +1642,7 @@ public class DcmConfigService {
 					if (featureList != null && !featureList.isEmpty()) {
 						featureList
 								.forEach(feature -> {
-									TemplateFeatureEntity featureId = featureRepo
+									TemplateFeatureEntity featureId = templateFeatureRepo
 											.findByCommandAndComandDisplayFeature(
 													requestInfoSO
 															.getTemplateID(),
@@ -1758,7 +1764,7 @@ public class DcmConfigService {
 							featureList
 									.forEach(feature -> {
 
-										TemplateFeatureEntity featureid = featureRepo
+										TemplateFeatureEntity featureid = templateFeatureRepo
 												.findById(Integer
 														.parseInt(feature));
 
@@ -1782,7 +1788,7 @@ public class DcmConfigService {
 						if (featureList != null && !featureList.isEmpty()) {
 							featureList
 									.forEach(feature -> {
-										TemplateFeatureEntity featureId = featureRepo
+										TemplateFeatureEntity featureId = templateFeatureRepo
 												.findByCommandAndComandDisplayFeature(
 														requestInfoSO
 																.getTemplateID(),
@@ -1902,7 +1908,7 @@ public class DcmConfigService {
 						featureList
 								.forEach(feature -> {
 
-									TemplateFeatureEntity featureid = featureRepo
+									TemplateFeatureEntity featureid = templateFeatureRepo
 											.findById(Integer.parseInt(feature));
 
 									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
@@ -1926,7 +1932,7 @@ public class DcmConfigService {
 					if (featureList != null && !featureList.isEmpty()) {
 						featureList
 								.forEach(feature -> {
-									TemplateFeatureEntity featureId = featureRepo
+									TemplateFeatureEntity featureId = templateFeatureRepo
 											.findByCommandAndComandDisplayFeature(
 													requestInfoSO
 															.getTemplateID(),
@@ -2204,7 +2210,7 @@ public class DcmConfigService {
 									.forEach(feature -> {
 
 										RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
-										TemplateFeatureEntity featureId = featureRepo
+										TemplateFeatureEntity featureId = templateFeatureRepo
 												.findByCommandAndComandDisplayFeature(
 														requestInfoSO
 																.getTemplateID(),
@@ -2325,7 +2331,7 @@ public class DcmConfigService {
 									.forEach(feature -> {
 
 										RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
-										TemplateFeatureEntity featureId = featureRepo
+										TemplateFeatureEntity featureId = templateFeatureRepo
 												.findByCommandAndComandDisplayFeature(
 														requestInfoSO
 																.getTemplateID(),
@@ -3210,7 +3216,7 @@ public class DcmConfigService {
 						featureList
 								.forEach(feature -> {
 
-									TemplateFeatureEntity featureid = featureRepo
+									TemplateFeatureEntity featureid = templateFeatureRepo
 											.findById(Integer.parseInt(feature));
 
 									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
@@ -3257,7 +3263,7 @@ public class DcmConfigService {
 					if (featureList != null && !featureList.isEmpty()) {
 						featureList
 								.forEach(feature -> {
-									TemplateFeatureEntity featureId = featureRepo
+									TemplateFeatureEntity featureId = templateFeatureRepo
 											.findByCommandAndComandDisplayFeature(
 													requestInfoSO
 															.getTemplateID(),
@@ -3414,7 +3420,7 @@ public class DcmConfigService {
 							featureList
 									.forEach(feature -> {
 
-										TemplateFeatureEntity featureid = featureRepo
+										TemplateFeatureEntity featureid = templateFeatureRepo
 												.findById(Integer
 														.parseInt(feature));
 
@@ -3438,7 +3444,7 @@ public class DcmConfigService {
 						if (featureList != null && !featureList.isEmpty()) {
 							featureList
 									.forEach(feature -> {
-										TemplateFeatureEntity featureId = featureRepo
+										TemplateFeatureEntity featureId = templateFeatureRepo
 												.findByCommandAndComandDisplayFeature(
 														requestInfoSO
 																.getTemplateID(),
@@ -3558,7 +3564,7 @@ public class DcmConfigService {
 						featureList
 								.forEach(feature -> {
 
-									TemplateFeatureEntity featureid = featureRepo
+									TemplateFeatureEntity featureid = templateFeatureRepo
 											.findById(Integer.parseInt(feature));
 
 									RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
@@ -3582,7 +3588,7 @@ public class DcmConfigService {
 					if (featureList != null && !featureList.isEmpty()) {
 						featureList
 								.forEach(feature -> {
-									TemplateFeatureEntity featureId = featureRepo
+									TemplateFeatureEntity featureId = templateFeatureRepo
 											.findByCommandAndComandDisplayFeature(
 													requestInfoSO
 															.getTemplateID(),
@@ -3679,5 +3685,34 @@ public class DcmConfigService {
 			}
 			
 		}
+	}
+	
+	public CredentialManagementEntity getRouterCredential(DeviceDiscoveryEntity deviceDetails) {
+		CredentialManagementEntity credentialDetails = null;
+		String profileName = null;
+		String profileType = null;
+		String connectType = deviceDetails.getdConnect();
+		if (deviceDetails.getdConnect() != null) {
+			switch (connectType.toUpperCase()) {
+			case "Telnet":
+				profileName = deviceDetails.getdTelnetCredProfile();
+				break;
+			case "SNMP":
+				profileName = deviceDetails.getdSnmpCredProfile();
+				
+				break;
+			default:
+				profileName = deviceDetails.getdSshCredProfile();
+				break;
+			}
+			profileType = deviceDetails.getdConnect();
+		} else {
+			profileType = "SSH";
+			profileName = deviceDetails.getdSshCredProfile();
+		}
+		if (profileName != null && profileType != null) {
+			credentialDetails = credentialManagementRepo.findOneByProfileNameAndProfileType(profileName, profileType);
+		}
+		return credentialDetails;
 	}
 }

@@ -39,12 +39,15 @@ import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.CredentialManagementEntity;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
+import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.ErrorCodeValidationDeliveryTest;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
@@ -61,13 +64,22 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 	@Autowired
-	RequestInfoDao requestInfoDao;
+	private RequestInfoDao requestInfoDao;
 
 	@Autowired
-	RequestInfoDetailsDao requestDao;
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 
 	@Autowired
-	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+	
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private BackupCurrentRouterConfigurationService bckupConfigService;
 
 	@POST
 	@RequestMapping(value = "/deliverConfigurationTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -80,7 +92,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		InvokeFtl invokeFtl = new InvokeFtl();
 		ErrorCodeValidationDeliveryTest errorCodeValidationDeliveryTest = new ErrorCodeValidationDeliveryTest();
 		Boolean value = false;
-		BackupCurrentRouterConfigurationService bckupConfigService = new BackupCurrentRouterConfigurationService();
 		List<RequestInfoEntity> requestDetailEntity = new ArrayList<RequestInfoEntity>();
 		long ftp_image_size = 0, available_flash_size = 0;
 		Boolean isStartUp = false;
@@ -95,7 +106,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			// Require requestId and version from camunda
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
-			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
 					RequestId, version);
 
 			if (!RequestId.contains("SNAI-")) {
@@ -108,8 +119,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 				if (requestinfo.getManagementIp() != null
 						&& !requestinfo.getManagementIp().equals("")) {
-
-					requestDao.editRequestforReportWebserviceInfo(
+					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+							.findHostNameAndMgmtip(requestinfo.getManagementIp(),requestinfo.getHostname());
+					
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 							requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()),
 							"deliever_config", "4", "In Progress");
@@ -120,11 +133,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 					DeliverConfigurationAndBackupTest.loadProperties();
 					String host = requestinfo.getManagementIp();
-					UserPojo userPojo = new UserPojo();
-					userPojo = requestInfoDao.getRouterCredentials(host);
-
-					String user = userPojo.getUsername();
-					String password = userPojo.getPassword();
+					CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+							deviceDetails);
+					String user = routerCredential.getLoginRead();
+					String password = routerCredential.getPasswordWrite();
 					String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 							.getProperty("portSSH");
 
@@ -320,7 +332,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 											// value = true;
 
-											requestDao
+											requestInfoDetailsDao
 													.editRequestforReportWebserviceInfo(
 															requestinfo
 																	.getAlphanumericReqId(),
@@ -354,7 +366,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 																key, 2,
 																RequestId,
 																version);
-												requestDao
+												requestInfoDetailsDao
 														.editRequestforReportWebserviceInfo(
 																requestinfo
 																		.getAlphanumericReqId(),
@@ -394,7 +406,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 													.update_dilevary_step_flag_in_db(
 															key, 2, RequestId,
 															version);
-											requestDao
+											requestInfoDetailsDao
 													.editRequestforReportWebserviceInfo(
 															requestinfo
 																	.getAlphanumericReqId(),
@@ -428,7 +440,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 														version);
 										// could not copy image to csr
 										// return error String s,output
-										requestDao
+										requestInfoDetailsDao
 												.editRequestforReportWebserviceInfo(
 														requestinfo
 																.getAlphanumericReqId(),
@@ -458,7 +470,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 													key, 2, RequestId, version);
 									// throw corresponding error from router on
 									// screen
-									requestDao
+									requestInfoDetailsDao
 											.editRequestforReportWebserviceInfo(
 													requestinfo
 															.getAlphanumericReqId(),
@@ -485,7 +497,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									2, RequestId, version);
 							// throw error
 							value = false;
-							requestDao.editRequestforReportWebserviceInfo(
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double
 											.toString(requestinfo
 													.getRequestVersion()),
@@ -512,7 +524,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						// get previous milestone status as the status of
 						// request will not change in
 						// this milestone
-						String status = requestDao.getPreviousMileStoneStatus(
+						String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
 								requestinfo.getAlphanumericReqId(),
 								requestinfo.getRequestVersion());
 						String switchh = "0";
@@ -521,7 +533,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						} else if (status.equalsIgnoreCase("In Progress")) {
 							switchh = "0";
 						}
-						requestDao.editRequestforReportWebserviceInfo(
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 								requestinfo.getAlphanumericReqId(), Double
 										.toString(requestinfo
 												.getRequestVersion()),
@@ -605,7 +617,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 							// to save the backup and deliver the
 							// configuration(configuration in the router)
-							requestDao.getRouterConfig(requestinfo, "previous");
+							requestInfoDetailsDao.getRouterConfig(requestinfo, "previous");
 							Map<String, String> resultForFlag = new HashMap<String, String>();
 							resultForFlag = requestInfoDao.getRequestFlag(
 									requestinfo.getAlphanumericReqId(),
@@ -715,10 +727,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 															+ "_deliveredConfig.txt",
 													response);
 
-									requestDao.getRouterConfig(requestinfo,
+									requestInfoDetailsDao.getRouterConfig(requestinfo,
 											"current");
 									// db call for success deliver config
-									requestDao
+									requestInfoDetailsDao
 											.editRequestforReportWebserviceInfo(
 													requestinfo
 															.getAlphanumericReqId(),
@@ -750,11 +762,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 															+ "_deliveredConfig.txt",
 													response);
 
-									requestDao.getRouterConfig(requestinfo,
+									requestInfoDetailsDao.getRouterConfig(requestinfo,
 											"current");
 
 									// db call for failure in deliver config
-									requestDao
+									requestInfoDetailsDao
 											.editRequestforReportWebserviceInfo(
 													requestinfo
 															.getAlphanumericReqId(),
@@ -786,10 +798,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 												+ "_deliveredConfig.txt",
 										response);
 
-								requestDao.getRouterConfig(requestinfo,
+								requestInfoDetailsDao.getRouterConfig(requestinfo,
 										"current");
 								// db call for success deliver config
-								requestDao.editRequestforReportWebserviceInfo(
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()),
@@ -804,7 +816,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						} catch (IOException ex) {
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-							requestDao.editRequestforReportWebserviceInfo(
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double
 											.toString(requestinfo
 													.getRequestVersion()),
@@ -915,7 +927,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 												.getValue(), "current");
 								// boolean currentconfig=true;
 								if (currentconfig == true) {
-									requestDao
+									requestInfoDetailsDao
 											.editRequestforReportWebserviceInfo(
 													requestinfo
 															.getAlphanumericReqId(),
@@ -945,7 +957,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 								} else {
 									value = false;
-									requestDao
+									requestInfoDetailsDao
 											.editRequestforReportWebserviceInfo(
 													requestinfo
 															.getAlphanumericReqId(),
@@ -958,7 +970,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									String response = "";
 									String responseDownloadPath = "";
 
-									requestDao
+									requestInfoDetailsDao
 											.editRequestforReportWebserviceInfo(
 													requestinfo
 															.getAlphanumericReqId(),
@@ -988,7 +1000,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								String response = "";
 								String responseDownloadPath = "";
 
-								requestDao.editRequestforReportWebserviceInfo(
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()),
@@ -1011,7 +1023,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							String response = "";
 							String responseDownloadPath = "";
 
-							requestDao.editRequestforReportWebserviceInfo(
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double
 											.toString(requestinfo
 													.getRequestVersion()),
@@ -1047,7 +1059,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						// get file from vnf config requests folder
 						// pass file path to vnf helper class push on device
 						// method.
-						requestDao.getRouterConfig(requestinfo, "previous");
+						requestInfoDetailsDao.getRouterConfig(requestinfo, "previous");
 
 						boolean result = helper.pushOnVnfDevice(path);
 						if (result) {
@@ -1065,9 +1077,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 													.getRequestVersion())
 											+ "_deliveredConfig.txt", response);
 
-							requestDao.getRouterConfig(requestinfo, "current");
+							requestInfoDetailsDao.getRouterConfig(requestinfo, "current");
 
-							requestDao.editRequestforReportWebserviceInfo(
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double
 											.toString(requestinfo
 													.getRequestVersion()),
@@ -1116,7 +1128,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				jsonArray = new Gson().toJson(value);
 				obj.put(new String("output"), jsonArray);
 
-				requestDao.editRequestforReportWebserviceInfo(
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 						requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()),
 						"deliever_config", "2", "Failure");
@@ -1191,7 +1203,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 			// to save the backup and deliver the configuration(configuration in
 			// the router)
-			isSuccess = requestDao.getRouterConfig(requestinfo, stage);
+			isSuccess = requestInfoDetailsDao.getRouterConfig(requestinfo, stage);
 		} catch (Exception e) {
 
 		}

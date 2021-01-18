@@ -5316,7 +5316,7 @@ public class RequestInfoDao {
 		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where (device_family like ? or device_family like '%All') and (os like ? or os like '%All') and (os_version like ? or os_version like '%All') and vendor =? and (region like ? or region like '%All') and test_category=? and test_name=? and version=?";
 
 		ResultSet rs = null, rs1 = null, rs2 = null, rs3 = null;
-		String maxVersion = null;
+//		String maxVersion = null;
 		Set<String> setOfTest = new HashSet<>();
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection
@@ -5351,8 +5351,8 @@ public class RequestInfoDao {
 
 							if (rs2 != null) {
 								while (rs2.next()) {
-									maxVersion = rs2.getString("version");
-								}
+								
+								
 
 								try (PreparedStatement tstDetailsTestNameVPs = connection
 										.prepareStatement(queryTstDetailsTestNameV);) {
@@ -5367,9 +5367,9 @@ public class RequestInfoDao {
 									tstDetailsTestNameVPs.setString(6,
 											testCategory);
 									tstDetailsTestNameVPs
-											.setString(7, testName);
+											.setString(7, rs2.getString("test_name"));
 									tstDetailsTestNameVPs.setString(8,
-											maxVersion);
+											rs2.getString("version"));
 
 									rs3 = tstDetailsTestNameVPs.executeQuery();
 									if (rs3 != null) {
@@ -5445,6 +5445,7 @@ public class RequestInfoDao {
 								}
 
 							}
+								}
 						} catch (SQLException exe) {
 							logger.error("SQL Exception in findTestFromTestStrategyDB method "
 									+ exe.getMessage());
@@ -6671,16 +6672,11 @@ public class RequestInfoDao {
 			requestEntity.setrConfigGenerationMethod(configGenerationMethods);
 			requestEntity.setRequestElapsedTime("00:00:00");
 
-			if (scheduledTime != null && scheduledTime != "") {
-
-				SimpleDateFormat sdf = new SimpleDateFormat(
-						"MM/dd/yyyy HH:mm:ss");
-
+			if (scheduledTime != null && scheduledTime != "") {	
 				try {
-					java.util.Date parsedDate = sdf.parse(scheduledTime);
-
-					java.sql.Timestamp timestampTimeForScheduled = new java.sql.Timestamp(
-							parsedDate.getTime());
+//					 Date date = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z").parse(scheduledTime);
+//					 java.sql.Timestamp timestampTimeForScheduled = new java.sql.Timestamp.;
+					 java.sql.Timestamp timestampTimeForScheduled = java.sql.Timestamp.valueOf( scheduledTime ) ;
 
 					// requestEntity.setSceheduledTime(timestampTimeForScheduled);
 					requestEntity.setSceheduledTime(timestampTimeForScheduled);
