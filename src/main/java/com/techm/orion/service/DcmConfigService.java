@@ -3694,12 +3694,11 @@ public class DcmConfigService {
 		String connectType = deviceDetails.getdConnect();
 		if (deviceDetails.getdConnect() != null) {
 			switch (connectType.toUpperCase()) {
-			case "Telnet":
+			case "TELNET":
 				profileName = deviceDetails.getdTelnetCredProfile();
 				break;
 			case "SNMP":
-				profileName = deviceDetails.getdSnmpCredProfile();
-				
+				profileName = deviceDetails.getdSnmpCredProfile();				
 				break;
 			default:
 				profileName = deviceDetails.getdSshCredProfile();
