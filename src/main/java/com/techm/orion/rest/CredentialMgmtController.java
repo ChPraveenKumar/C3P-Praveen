@@ -24,11 +24,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.gson.Gson;
 import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.repositories.CredentialManagementRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.service.CredentialMgmtService;
 
 @RestController
 public class CredentialMgmtController {
@@ -46,6 +48,10 @@ public class CredentialMgmtController {
 	
 	@Autowired
 	private DeviceDiscoveryRepository deviceInforepo;
+	
+	@Autowired
+	private CredentialMgmtService credentialMgmtService;
+
 	
 	@POST
 	@RequestMapping(value = "/getProfileNameValidation", method = RequestMethod.POST, produces = "application/json")
@@ -156,28 +162,30 @@ public class CredentialMgmtController {
 		return Response.status(200).entity(message).build();
 	}
 
-	@RequestMapping(value = "/deleteCredentialProfile", method = RequestMethod.DELETE, produces = "application/json", consumes = "application/json")
+	@RequestMapping(value = "/deleteCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response deleteCredentialProfile(@RequestBody String request) throws ParseException {
-		JSONParser parser = new JSONParser();
 		boolean isDelete = false;
 		CredentialManagementEntity entity = new CredentialManagementEntity();
-		JSONArray deleteList = new JSONArray();
-		JSONObject jsonObect = (JSONObject) parser.parse(request);
-		deleteList = (JSONArray) jsonObect.get("profiles");
+		Gson gson = new Gson();
+		CredentialManagementEntity[] deleteList = gson.fromJson(request, CredentialManagementEntity[].class);
 		JSONObject json;
+		String profileName = null, profileType = null;
+		int infoId ;
 		String msg = null;
-		for (int i = 0; i < deleteList.size(); i++) {
+		if(deleteList != null) {
+		for (int i = 0; i < deleteList.length; i++) {
 			json = new JSONObject();
-			JSONObject deviceName = (JSONObject) deleteList.get(i);
-			if (deviceName.get("profileName") != null) {
-				entity.setProfileName(deviceName.get("profileName").toString());
+			profileName = deleteList[i].getProfileName();
+			profileType = deleteList[i].getProfileType();
+			infoId = deleteList[i].getInfoId();
+			if (profileName != null) {
+				entity.setProfileName(profileName);
 			}
-			if (deviceName.get("profileType") != null) {
-				entity.setProfileType(deviceName.get("profileType").toString());
+			if (profileType != null) {
+				entity.setProfileType(profileType);
 			}
-			if (deviceName.get("infoId") != null) {
-				int id = Integer.parseInt(deviceName.get("infoId").toString());
-				entity.setInfoId(id);
+			if (infoId != 0) {
+				entity.setInfoId(infoId);
 			}
 			CredentialManagementEntity credential = credentialManagementRepo
 					.findOneByProfileNameAndProfileTypeAndInfoId(entity.getProfileName(), entity.getProfileType(),
@@ -219,6 +227,7 @@ public class CredentialMgmtController {
 			} else {
 				msg = "Profile is not deleted";
 			}
+		}
 		}
 		return Response.status(200).entity(msg).build();
 	} 
@@ -628,5 +637,25 @@ public class CredentialMgmtController {
 						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(searchObj)
 				.build();
+	}
+	
+	@POST
+	@RequestMapping(value = "/viewCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	public ResponseEntity<JSONObject> viewCredentialProfile(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = new JSONObject();
+		String infoId = null;
+		JSONParser parser = new JSONParser();
+		json = (JSONObject) parser.parse(request);
+		infoId = json.get("infoId").toString();
+		if(infoId != null) {
+		JSONObject jsonResult = credentialMgmtService.viewCredentialProfile(infoId);
+		if (jsonResult != null) {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
+		}
+	}
+		return responseEntity;
 	}
 }
