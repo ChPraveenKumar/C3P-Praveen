@@ -36,11 +36,12 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TestStrategeyAnalyser;
@@ -55,16 +56,19 @@ public class OthersCheckTestValidation extends Thread {
 	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@Autowired
-	RequestInfoDao requestInfoDao;
+	private RequestInfoDao requestInfoDao;
 
 	@Autowired
-	RequestInfoDetailsDao requestDao;
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 
 	@Autowired
-	TestStrategeyAnalyser analyser;
+	private TestStrategeyAnalyser testStrategeyAnalyser;
 
 	@Autowired
-	DeviceDiscoveryRepository deviceRepo;
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private DcmConfigService dcmConfigService;
 	
 	@POST
 	@RequestMapping(value = "/otherscheckCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -90,13 +94,15 @@ public class OthersCheckTestValidation extends Thread {
 		Session session = null;
 		if (!((type.equals("SLGB") || (type.equals("SNAI"))))) {
 
-			try {
-				requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+			try {				
+				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					String statusVAlue = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
+					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+							.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
+					String statusVAlue = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
 
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "others_test", "4", statusVAlue);
 
 					requestinfo.setAlphanumericReqId(RequestId);
@@ -106,17 +112,15 @@ public class OthersCheckTestValidation extends Thread {
 					String sshPrivateKeyFilePath = OthersCheckTestValidation.TSA_PROPERTIES
 							.getProperty("sshPrivateKeyPath");
 					String host = requestinfo.getManagementIp();
-					UserPojo userPojo = new UserPojo();
-					userPojo = requestInfoDao.getRouterCredentials(host);
+					CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+							deviceDetails);
+					String user = routerCredential.getLoginRead();
+					String password = routerCredential.getPasswordWrite();	
 					logger.info("Request ID in others test validation" + RequestId);
-					String user = null;
-					String password = null;
+					
 					String port = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("portSSH");
 
 					String privateKeyPath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("sshPrivateKeyPath");
-
-					user = userPojo.getUsername();
-					password = userPojo.getPassword();
 					/*if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 						user = "c3pteam";
 						password = "csr1000v";
@@ -175,14 +179,13 @@ public class OthersCheckTestValidation extends Thread {
 									for (int i = 0; i < finallistOfTests.size(); i++) {
 									
 											// conduct and analyse the tests
-											DeviceDiscoveryEntity device = deviceRepo
-													.findByDHostName(requestinfo.getHostname().toUpperCase());
-											if(device.getdConnect().equalsIgnoreCase("NETCONF"))
+											
+											if(deviceDetails.getdConnect().equalsIgnoreCase("NETCONF"))
 											{
 												VNFHelper helper=new VNFHelper();
 												helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
 											}
-											else if(device.getdConnect().equalsIgnoreCase("RESTCONF"))
+											else if(deviceDetails.getdConnect().equalsIgnoreCase("RESTCONF"))
 											{
 												ODLClient client=new ODLClient();
 												client.performTest(finallistOfTests.get(i),requestinfo, user, password);
@@ -198,7 +201,7 @@ public class OthersCheckTestValidation extends Thread {
 												}
 												// printResult(input,
 												// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-												Boolean res = analyser.printAndAnalyse(input, channel,
+												Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 														requestinfo.getAlphanumericReqId(),
 														Double.toString(requestinfo.getRequestVersion()),
 														finallistOfTests.get(i), "Others Test");
@@ -215,11 +218,11 @@ public class OthersCheckTestValidation extends Thread {
 								/*
 								 * Owner: Ruchita Salvi Module: Test Strategey END
 								 */
-								String status = requestDao.getPreviousMileStoneStatus(
+								String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 								String switchh = "1";
 
-								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "others_test", "0", status);
 
 							}
@@ -227,13 +230,13 @@ public class OthersCheckTestValidation extends Thread {
 							 * Owner: Ruchita Salvi Module: Test Strategey END
 							 */
 							if (selectedTests.size() > 0) {
-								String status = requestDao.getPreviousMileStoneStatus(
+								String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 								String switchh = "1";
-								int statusData = requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+								int statusData = requestInfoDetailsDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "others_test");
 								if (statusData != 3) {
-									requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "others_test", "1",
 											status);
 								}
@@ -269,7 +272,7 @@ public class OthersCheckTestValidation extends Thread {
 							logger.info("" + ex.getCause());
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "others_test", "2", "Failure");
 
 							String response = "";
@@ -306,7 +309,7 @@ public class OthersCheckTestValidation extends Thread {
 					ex.printStackTrace();
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "others_test", "2", "Failure");
 
 					String response = "";

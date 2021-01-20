@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.techm.orion.entitybeans.CredentialManagementEntity;
-import com.techm.orion.entitybeans.VendorDetails;
 
 @Repository
 public interface CredentialManagementRepo extends JpaRepository<CredentialManagementEntity, Long>{
@@ -28,4 +27,8 @@ public interface CredentialManagementRepo extends JpaRepository<CredentialManage
 			int infoId);
 
 	CredentialManagementEntity findOneByProfileName(String profileName);
+	
+	CredentialManagementEntity findOneByProfileNameAndProfileType(String profileName, String profileType);
+	
+	
 }

@@ -11,25 +11,36 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.entitybeans.CredentialManagementEntity;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TextReport;
 
+@Service
 public class BackupCurrentRouterConfigurationService extends Thread {
 	private static final Logger logger = LogManager.getLogger(BackupCurrentRouterConfigurationService.class);
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 	CreateConfigRequestDCM configRequest = new CreateConfigRequestDCM();
-
+	
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	
 	public boolean getRouterConfig(CreateConfigRequest configRequest, String routerVersionType) throws IOException {
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
@@ -41,11 +52,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 		try {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
-			UserPojo userPojo = new UserPojo();
-			userPojo = requestInfoDao.getRouterCredentials(host);
-
-			String user = userPojo.getUsername();
-			String password = userPojo.getPassword();
+			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
+			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+					deviceDetails);
+			String user = routerCredential.getLoginRead();
+			String password = routerCredential.getPasswordWrite();
 			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
 			session = jsch.getSession(user, host, Integer.parseInt(port));
@@ -146,11 +158,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 		try {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
-			UserPojo userPojo = new UserPojo();
-			userPojo = requestInfoDao.getRouterCredentials();
-
-			String user = userPojo.getUsername();
-			String password = userPojo.getPassword();
+			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
+			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+					deviceDetails);
+			String user = routerCredential.getLoginRead();
+			String password = routerCredential.getPasswordWrite();
 			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
 			JSch jsch = new JSch();
@@ -382,11 +395,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 		try {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
-			UserPojo userPojo = new UserPojo();
-			userPojo = requestInfoDao.getRouterCredentials(host);
-
-			String user = userPojo.getUsername();
-			String password = userPojo.getPassword();
+			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
+			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+					deviceDetails);
+			String user = routerCredential.getLoginRead();
+			String password = routerCredential.getPasswordWrite();
 			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
 			JSch jsch = new JSch();
@@ -463,11 +477,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 		try {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
-			UserPojo userPojo = new UserPojo();
-			userPojo = requestInfoDao.getRouterCredentials(host);
-
-			String user = userPojo.getUsername();
-			String password = userPojo.getPassword();
+			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
+			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+					deviceDetails);
+			String user = routerCredential.getLoginRead();
+			String password = routerCredential.getPasswordWrite();
 			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
 			JSch jsch = new JSch();

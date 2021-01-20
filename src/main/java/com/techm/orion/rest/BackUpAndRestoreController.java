@@ -49,7 +49,6 @@ import com.techm.orion.models.BackUpRequestVersioningJSONModel;
 import com.techm.orion.pojo.BatchPojo;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.FirmwareUpgradeDetail;
-import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
