@@ -702,6 +702,13 @@ public class ConfigurationManagement {
 										cammandByTemplate, replication, configReqToSendToC3pCode.getVendor());
 
 							}
+							else
+							{
+								cammandByTemplate = configurationManagmentService
+										.getCommandsByMasterFeature(configReqToSendToC3pCode.getVendor(), features);
+								cammandByTemplate = configurationManagmentService.setFeatureData(cammandByTemplate,
+										attribJson);
+							}
 
 							logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
 							TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(),
