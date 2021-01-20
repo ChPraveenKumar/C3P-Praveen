@@ -134,4 +134,8 @@ public interface UserManagementRepository extends JpaRepository<UserManagementEn
 	
 	@Query("select userName from UserManagementEntity where workGroup = 'FEUSER_ALL'")
 	List<String> findByWorkGroup();
+	
+	List<UserManagementEntity> findByWorkGroupAndRole(String workGroup, String role);
+	
+	List<UserManagementEntity> findOneByWorkGroup(String workGroup);
 }
