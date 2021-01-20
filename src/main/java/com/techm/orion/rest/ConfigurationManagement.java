@@ -708,6 +708,7 @@ public class ConfigurationManagement {
 										.getCommandsByMasterFeature(configReqToSendToC3pCode.getVendor(), features);
 								cammandByTemplate = configurationManagmentService.setFeatureData(cammandByTemplate,
 										attribJson);
+								cammandByTemplate =configurationManagmentService.setcammandByTemplate(cammandByTemplate, configReqToSendToC3pCode.getVendor());
 							}
 
 							logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
