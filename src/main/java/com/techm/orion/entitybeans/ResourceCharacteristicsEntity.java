@@ -55,25 +55,25 @@ public class ResourceCharacteristicsEntity implements Serializable
 	private String rcType;
 
 	@Column(name = "rc_created_date")
-	private Timestamp rc_created_date;
+	private Timestamp rcCreatedDate;
 
 	@Column(name = "rc_updated_date")
-	private Timestamp rc_updated_date;
+	private Timestamp rcUpdatedDate;
 
 	public Timestamp getRc_created_date() {
-		return rc_created_date;
+		return rcCreatedDate;
 	}
 
 	public void setRc_created_date(Timestamp rc_created_date) {
-		this.rc_created_date = rc_created_date;
+		this.rcCreatedDate = rc_created_date;
 	}
 
 	public Timestamp getRc_updated_date() {
-		return rc_updated_date;
+		return rcUpdatedDate;
 	}
 
 	public void setRc_updated_date(Timestamp rc_updated_date) {
-		this.rc_updated_date = rc_updated_date;
+		this.rcUpdatedDate = rc_updated_date;
 	}
 
 	public int getDeviceId() {
