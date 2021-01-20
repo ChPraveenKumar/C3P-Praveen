@@ -75,6 +75,7 @@ public class WorkGroupController {
 			workGroup.put("workGroups", workGroupData);
 		} catch (Exception e) {
 			logger.error("exception in getWorkGroupDashboard service " + e);
+			workGroup.put("workGroups", e.getMessage());
 		}
 		return new ResponseEntity<JSONObject>(workGroup, HttpStatus.OK);
 	}
@@ -113,12 +114,11 @@ public class WorkGroupController {
 				workGroupEntity.setSourcesystemcode(sourcesystemcode);
 				WorkGroup savedWorkGroupData = workGroupRepository.save(workGroupEntity);
 				if(savedWorkGroupData !=null)
-					workGroupObj.put("output", "work group added successfully");
+					workGroupResObj.put("output", "work group added successfully");
 		} catch (Exception e) {
 			logger.error("exception in addWorkGroup" + e.getMessage());
 			workGroupResObj.put("output", e.getMessage());
 		}
-		workGroupResObj.put("result", workGroupObj);
 		return new ResponseEntity<JSONObject>(workGroupResObj, HttpStatus.OK);
 	}
 
@@ -219,6 +219,7 @@ public class WorkGroupController {
 			workGroup.put("data", workGroupData);
 		} catch (Exception e) {
 			logger.error("exception in searchWorkGroup service " + e);
+			workGroup.put("data", e.getMessage());
 		}
 		return new ResponseEntity<JSONObject>(workGroup, HttpStatus.OK);
 	}
