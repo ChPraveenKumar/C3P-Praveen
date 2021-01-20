@@ -438,9 +438,9 @@ public class CredentialMgmtController {
 							if ("SSH".equalsIgnoreCase(profileType))
 								deviceInfo.setdSshCredProfile(profileName);
 							else if ("Telnet".equalsIgnoreCase(profileType))
-								deviceInfo.setdSnmpCredProfile(profileName);
-							else if ("SNMP".equalsIgnoreCase(profileType))
 								deviceInfo.setdTelnetCredProfile(profileName);
+							else if ("SNMP".equalsIgnoreCase(profileType))
+								deviceInfo.setdSnmpCredProfile(profileName);
 							deviceDiscoveryRepository.save(deviceInfo);
 						}
 					}
@@ -482,9 +482,9 @@ public class CredentialMgmtController {
 					if ("SSH".equalsIgnoreCase(profileType))
 						deviceInfo.setdSshCredProfile(null);
 					else if ("Telnet".equalsIgnoreCase(profileType))
-						deviceInfo.setdSnmpCredProfile(null);
-					else if ("SNMP".equalsIgnoreCase(profileType))
 						deviceInfo.setdTelnetCredProfile(null);
+					else if ("SNMP".equalsIgnoreCase(profileType))
+						deviceInfo.setdSnmpCredProfile(null);
 					deviceDiscoveryRepository.save(deviceInfo);
 				}
 			}
