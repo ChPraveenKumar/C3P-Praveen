@@ -42,7 +42,6 @@ import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.NotificationRepo;
-import com.techm.orion.repositories.RequestDetailsImportRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.DcmConfigService;
@@ -70,24 +69,24 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 	@Autowired
 	private PostUpgradeHealthCheck postUpgradeHealthCheck;
-	
+
 	@Autowired
 	private NotificationRepo notificationRepo;
-	
+
 	@Autowired
 	private UserManagementRepository userManagementRepository;
-	
+
 	@Autowired
 	private DcmConfigService dcmConfigService;
-	
+
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
-	PingTest pingHelper=new PingTest();
-	//TODO: We need to remove this later or while on GCP
-	public static final String ROUTER_IP_TEMP="10.62.0.24";
+	PingTest pingHelper = new PingTest();
+	// TODO: We need to remove this later or while on GCP
+	public static final String ROUTER_IP_TEMP = "10.62.0.24";
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -100,7 +99,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 		InvokeFtl invokeFtl = new InvokeFtl();
 		PrevalidationTestServiceImpl prevalidationTestServiceImpl = new PrevalidationTestServiceImpl();
 		Boolean value = false, isCheck = false;
-		String status = null, lockRequestId = null;		
+		String status = null, lockRequestId = null;
 		List deviceLocked;
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
 		JSch jsch = new JSch();
@@ -114,359 +113,390 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();
 			List<RequestInfoEntity> requestDetailEntity1 = new ArrayList<RequestInfoEntity>();
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if(!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains(ROUTER_IP_TEMP)) //Temperory hard coding for 10.62.0.24 router)
+			if (!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains(ROUTER_IP_TEMP)) // Temperory
 			{
-			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-				 DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-							.findByDHostName(requestinfo.getHostname().toUpperCase());
-				 
-				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-						Double.toString(requestinfo.getRequestVersion()), "Application_test", "4", "In Progress");
+				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
+							requestinfo.getHostname(), requestinfo.getManagementIp(), "0");
+					if (deviceDetails != null) {
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "Application_test", "4",
+								"In Progress");
 
-				requestinfo.setAlphanumericReqId(RequestId);
-				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
-				// deviceLock for ManagementIP
-				deviceLocked = requestInfoDao.checkForDeviceLock(requestinfo.getAlphanumericReqId(),
-						requestinfo.getManagementIp(), "DeviceTest");
+						requestinfo.setAlphanumericReqId(RequestId);
+						requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
+						// deviceLock for ManagementIP
+						deviceLocked = requestInfoDao.checkForDeviceLock(requestinfo.getAlphanumericReqId(),
+								requestinfo.getManagementIp(), "DeviceTest");
 
-				if (!(deviceLocked.size() == 0)) {
+						if (!(deviceLocked.size() == 0)) {
 
-					for (int j = 0; j < deviceLocked.size(); j++) {
-						lockRequestId = deviceLocked.get(j).toString();
-						requestDetailEntity1 = requestInfoDetailsRepositories.findAllByAlphanumericReqId(lockRequestId);
-						if (!(requestDetailEntity1.isEmpty())) {
-							for (int i = 0; i < requestDetailEntity1.size(); i++) {
-								status = requestDetailEntity1.get(i).getStatus();
+							for (int j = 0; j < deviceLocked.size(); j++) {
+								lockRequestId = deviceLocked.get(j).toString();
+								requestDetailEntity1 = requestInfoDetailsRepositories
+										.findAllByAlphanumericReqId(lockRequestId);
+								if (!(requestDetailEntity1.isEmpty())) {
+									for (int i = 0; i < requestDetailEntity1.size(); i++) {
+										status = requestDetailEntity1.get(i).getStatus();
 
-							}
+									}
 
-							if ((status.equals("Success")) || (status.equals("Failure"))) {
-								requestInfoDao.deleteForDeviceLock(lockRequestId);
-							}
+									if ((status.equals("Success")) || (status.equals("Failure"))) {
+										requestInfoDao.deleteForDeviceLock(lockRequestId);
+									}
 
-							else if ((status).equals("In Progress")) {
+									else if ((status).equals("In Progress")) {
 
-								isCheck = true;
+										isCheck = true;
+									}
+								}
+
 							}
 						}
+						if (isCheck) {
+							String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
+							if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")
+									|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")
+									|| type.equalsIgnoreCase("SLGA") || type.equalsIgnoreCase("SLGM")
+									|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
+								value = false;
+								String response = invokeFtl.generateDevicelockedFile(requestinfo);
 
-					}
-				}
-				if (isCheck) {
-					String type = RequestId.substring(0, Math.min(RequestId.length(), 4));
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC")
-							|| type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SLGA")
-							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
-							|| type.equalsIgnoreCase("SNNM")) {
-						value = false;
-						String response = invokeFtl.generateDevicelockedFile(requestinfo);
+								String responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath,
+										requestinfo.getAlphanumericReqId() + "V" + requestinfo.getRequestVersion()
 
-						String responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
-								requestinfo.getAlphanumericReqId() + "V" + requestinfo.getRequestVersion()
+												+ "_prevalidationTest.txt",
+										response);
 
-										+ "_prevalidationTest.txt",
-								response);
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
+										"Failure");
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
+							} else if (type.equalsIgnoreCase("SLGB")) {
 
-						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
-						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
-					} else if (type.equalsIgnoreCase("SLGB")) {
+								value = false;
+								String response = invokeFtl.generateDevicelockedFile(requestinfo);
 
-						value = false;
-						String response = invokeFtl.generateDevicelockedFile(requestinfo);
+								String responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ requestinfo.getRequestVersion() + "_prevalidationTest.txt", response);
 
-						String responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-								+ requestinfo.getRequestVersion() + "_prevalidationTest.txt", response);
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
+										"Failure");
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
 
-						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
-						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
+							} else if (type.equalsIgnoreCase("SLGF")) {
+								value = false;
+								String response = invokeFtl.generateDevicelockedFile(requestinfo);
 
-					} else if (type.equalsIgnoreCase("SLGF")) {
-						value = false;
-						String response = invokeFtl.generateDevicelockedFile(requestinfo);
+								String responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ requestinfo.getRequestVersion() + "_prevalidationTest.txt", response);
 
-						String responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-								+ requestinfo.getRequestVersion() + "_prevalidationTest.txt", response);
-
-						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2", "Failure");
-						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
-					}
-				} else {
-
-					String type = RequestId.substring(0, Math.min(RequestId.length(), 4)); // to check request
-																							// type id OS or SR
-					requestInfoDao.lockDeviceForRequest(requestinfo.getManagementIp(),
-							requestinfo.getAlphanumericReqId());
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNNC")
-							|| type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SLGA")
-							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
-							|| type.equalsIgnoreCase("SNNM")) {
-
-						String host = requestinfo.getManagementIp();
-						CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
-								deviceDetails);
-						String user = routerCredential.getLoginRead();
-						String password = routerCredential.getPasswordWrite();
-						
-						/*if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) {
-							user = "c3pteam";
-							password = "csr1000v";
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2",
+										"Failure");
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
+							}
 						} else {
-							user = userPojo.getUsername();
-							password = userPojo.getPassword();
-						}*/
-						String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("portSSH");
 
-						// port="22";
-						session = jsch.getSession(user, host, Integer.parseInt(port));
-						Properties config = new Properties();
-						config.put("StrictHostKeyChecking", "no");
-						session.setConfig(config);
-						session.setPassword(password);
-						session.connect();
-						try {
-							Thread.sleep(10000);
-						} catch (Exception ee) {
-						}
-						channel = session.openChannel("shell");
-						OutputStream ops = channel.getOutputStream();
+							String type = RequestId.substring(0, Math.min(RequestId.length(), 4)); // to check request
+																									// type id OS or SR
+							requestInfoDao.lockDeviceForRequest(requestinfo.getManagementIp(),
+									requestinfo.getAlphanumericReqId());
+							if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")
+									|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")
+									|| type.equalsIgnoreCase("SLGA") || type.equalsIgnoreCase("SLGM")
+									|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
 
-						PrintStream ps = new PrintStream(ops, true);
-						logger.info("Channel Connected to machine " + host + " server");
-						channel.connect();
-						InputStream input = channel.getInputStream();
-						ps.println("show version");
-						try {
-							Thread.sleep(1000);
-						} catch (Exception ee) {
-						}
-						/*
-						 * Error here Parameter index out of range (17 > number of parameters, which is
-						 * 16).
-						 * 
-						 */
+								String host = requestinfo.getManagementIp();
+								CredentialManagementEntity routerCredential = dcmConfigService
+										.getRouterCredential(deviceDetails);
+								String user = routerCredential.getLoginRead();
+								String password = routerCredential.getPasswordWrite();
 
-						requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "1");
-						printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()));
+								/*
+								 * if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) { user =
+								 * "c3pteam"; password = "csr1000v"; } else { user = userPojo.getUsername();
+								 * password = userPojo.getPassword(); }
+								 */
+								String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("portSSH");
 
-						value = prevalidationTestServiceImpl.PreValidation(requestinfo,
-								Double.toString(requestinfo.getRequestVersion()), null);
+								// port="22";
+								session = jsch.getSession(user, host, Integer.parseInt(port));
+								Properties config = new Properties();
+								config.put("StrictHostKeyChecking", "no");
+								session.setConfig(config);
+								session.setPassword(password);
+								session.connect();
+								try {
+									Thread.sleep(10000);
+								} catch (Exception ee) {
+								}
+								channel = session.openChannel("shell");
+								OutputStream ops = channel.getOutputStream();
 
-						if (value) {
-							// changes for testing strategy
-							List<Boolean> results = null;
-							RequestInfoDao dao = new RequestInfoDao();
-							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							TestDetail test = new TestDetail();
-							listOfTests = dao.findTestFromTestStrategyDB(
-									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
-									requestinfo.getVendor(), requestinfo.getRegion(), "Device Prevalidation");
-							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
-									"Device Prevalidation",version);
-							if (selectedTests.size() > 0) {
-								for (int i = 0; i < listOfTests.size(); i++) {
-									for (int j = 0; j < selectedTests.size(); j++) {
-										if (selectedTests.get(j).getTestName()
-												.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
-											finallistOfTests.add(listOfTests.get(j));
+								PrintStream ps = new PrintStream(ops, true);
+								logger.info("Channel Connected to machine " + host + " server");
+								channel.connect();
+								InputStream input = channel.getInputStream();
+								ps.println("show version");
+								try {
+									Thread.sleep(1000);
+								} catch (Exception ee) {
+								}
+								/*
+								 * Error here Parameter index out of range (17 > number of parameters, which is
+								 * 16).
+								 * 
+								 */
+
+								requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "1");
+								printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()));
+
+								value = prevalidationTestServiceImpl.PreValidation(requestinfo,
+										Double.toString(requestinfo.getRequestVersion()), null);
+
+								if (value) {
+									// changes for testing strategy
+									List<Boolean> results = null;
+									RequestInfoDao dao = new RequestInfoDao();
+									List<TestDetail> listOfTests = new ArrayList<TestDetail>();
+									List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
+									TestDetail test = new TestDetail();
+									listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(),
+											requestinfo.getOs(), requestinfo.getOsVersion(), requestinfo.getVendor(),
+											requestinfo.getRegion(), "Device Prevalidation");
+									List<TestDetail> selectedTests = dao.findSelectedTests(
+											requestinfo.getAlphanumericReqId(), "Device Prevalidation", version);
+									if (selectedTests.size() > 0) {
+										for (int i = 0; i < listOfTests.size(); i++) {
+											for (int j = 0; j < selectedTests.size(); j++) {
+												if (selectedTests.get(j).getTestName()
+														.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
+													finallistOfTests.add(listOfTests.get(j));
+												}
+											}
 										}
 									}
-								}
-							}
-							if (finallistOfTests.size() > 0) {
-								results = new ArrayList<Boolean>();
-								for (int i = 0; i < finallistOfTests.size(); i++) {
+									if (finallistOfTests.size() > 0) {
+										results = new ArrayList<Boolean>();
+										for (int i = 0; i < finallistOfTests.size(); i++) {
 
-									// conduct and analyse the tests
-									ps.println("terminal length 0");
-									ps.println(finallistOfTests.get(i).getTestCommand());
-									try {
-										Thread.sleep(6000);
-									} catch (Exception ee) {
+											// conduct and analyse the tests
+											ps.println("terminal length 0");
+											ps.println(finallistOfTests.get(i).getTestCommand());
+											try {
+												Thread.sleep(6000);
+											} catch (Exception ee) {
+											}
+
+											// printResult(input,
+											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
+											Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
+													requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()),
+													finallistOfTests.get(i), "Device Prevalidation");
+											results.add(res);
+										}
+										if (results != null) {
+											for (int i = 0; i < results.size(); i++) {
+												if (!results.get(i)) {
+													value = false;
+													break;
+												}
+											}
+										}
+									} else {
+										// No new device prevalidation test added
 									}
 
-									// printResult(input,
-									// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-									Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
-											requestinfo.getAlphanumericReqId(),
-											Double.toString(requestinfo.getRequestVersion()), finallistOfTests.get(i),
-											"Device Prevalidation");
-									results.add(res);
+									/*
+									 * END
+									 * 
+									 */
 								}
-								if (results != null) {
-									for (int i = 0; i < results.size(); i++) {
-										if (!results.get(i)) {
-											value = false;
-											break;
+								// value=true;
+								input.close();
+								channel.disconnect();
+								session.disconnect();
+
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
+							}
+
+							else if (type.equalsIgnoreCase("SLGB")) {
+
+								String host = requestinfo.getManagementIp();
+								CredentialManagementEntity routerCredential = dcmConfigService
+										.getRouterCredential(deviceDetails);
+								String user = routerCredential.getLoginRead();
+								String password = routerCredential.getPasswordWrite();
+
+								String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("portSSH");
+								session = jsch.getSession(user, host, Integer.parseInt(port));
+								Properties config = new Properties();
+								config.put("StrictHostKeyChecking", "no");
+								session.setConfig(config);
+								session.setPassword(password);
+								session.connect();
+								try {
+									Thread.sleep(1000);
+								} catch (Exception ee) {
+								}
+								channel = session.openChannel("shell");
+								OutputStream ops = channel.getOutputStream();
+
+								PrintStream ps = new PrintStream(ops, true);
+								logger.info("Channel Connected to machine " + host + " server");
+								channel.connect();
+								InputStream input = channel.getInputStream();
+								ps.println("show version");
+								try {
+									Thread.sleep(5000);
+								} catch (Exception ee) {
+								}
+								/*
+								 * Error here Parameter index out of range (17 > number of parameters, which is
+								 * 16).
+								 * 
+								 */
+								requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "1");
+								printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()));
+
+								value = prevalidationTestServiceImpl.PreValidation(requestinfo,
+										Double.toString(requestinfo.getRequestVersion()), null);
+
+								if (value) {
+									// changes for testing strategy
+									List<Boolean> results = null;
+									RequestInfoDao dao = new RequestInfoDao();
+									List<TestDetail> listOfTests = new ArrayList<TestDetail>();
+									List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
+									listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(),
+											requestinfo.getOs(), requestinfo.getOsVersion(), requestinfo.getVendor(),
+											requestinfo.getRegion(), "Device Prevalidation");
+									List<TestDetail> selectedTests = dao.findSelectedTests(
+											requestinfo.getAlphanumericReqId(), "Device Prevalidation", version);
+									if (selectedTests.size() > 0) {
+										for (int i = 0; i < listOfTests.size(); i++) {
+											for (int j = 0; j < selectedTests.size(); j++) {
+												if (selectedTests.get(j).getTestName()
+														.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
+													finallistOfTests.add(listOfTests.get(j));
+												}
+											}
 										}
 									}
+									if (finallistOfTests.size() > 0) {
+										results = new ArrayList<Boolean>();
+										for (int i = 0; i < finallistOfTests.size(); i++) {
+
+											// conduct and analyse the tests
+											ps.println("terminal length 0");
+											ps.println(finallistOfTests.get(i).getTestCommand());
+											try {
+												Thread.sleep(6000);
+											} catch (Exception ee) {
+											}
+
+											// printResult(input,
+											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
+											Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
+													requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()),
+													finallistOfTests.get(i), "Device Prevalidation");
+											results.add(res);
+										}
+										if (results != null) {
+											for (int i = 0; i < results.size(); i++) {
+												if (!results.get(i)) {
+													value = false;
+													break;
+												}
+											}
+										}
+									} else {
+										// No new device prevalidation test added
+									}
+
+									/*
+									 * END
+									 * 
+									 */
 								}
-							} else {
-								// No new device prevalidation test added
+								// value=true;
+								channel.disconnect();
+								session.disconnect();
+
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
+
 							}
 
-							/*
-							 * END
-							 * 
-							 */
+							else if (type.equalsIgnoreCase("SLGF")) {
+								// Perform health checks for OS upgrade
+
+								obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "Pre");
+
+							}
 						}
-						// value=true;
-						input.close();
-						channel.disconnect();
-						session.disconnect();
+
+					}else {
 
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
-					}
-
-					else if (type.equalsIgnoreCase("SLGB")) {
-
-						String host = requestinfo.getManagementIp();
-						CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
-								deviceDetails);
-						String user = routerCredential.getLoginRead();
-						String password = routerCredential.getPasswordWrite();
-						
-						String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("portSSH");
-						session = jsch.getSession(user, host, Integer.parseInt(port));
-						Properties config = new Properties();
-						config.put("StrictHostKeyChecking", "no");
-						session.setConfig(config);
-						session.setPassword(password);
-						session.connect();
-						try {
-							Thread.sleep(1000);
-						} catch (Exception ee) {
-						}
-						channel = session.openChannel("shell");
-						OutputStream ops = channel.getOutputStream();
-
-						PrintStream ps = new PrintStream(ops, true);
-						logger.info("Channel Connected to machine " + host + " server");
-						channel.connect();
-						InputStream input = channel.getInputStream();
-						ps.println("show version");
-						try {
-							Thread.sleep(5000);
-						} catch (Exception ee) {
-						}
-						/*
-						 * Error here Parameter index out of range (17 > number of parameters, which is
-						 * 16).
-						 * 
-						 */
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
 						requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "1");
-						printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()));
+								Double.toString(requestinfo.getRequestVersion()), "2");
+						String response = "";
+						String responseDownloadPath = "";
 
-						value = prevalidationTestServiceImpl.PreValidation(requestinfo,
-								Double.toString(requestinfo.getRequestVersion()), null);
+						try {
+							response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
 
-						if (value) {
-							// changes for testing strategy
-							List<Boolean> results = null;
-							RequestInfoDao dao = new RequestInfoDao();
-							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							listOfTests = dao.findTestFromTestStrategyDB(
-									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
-									requestinfo.getVendor(), requestinfo.getRegion(), "Device Prevalidation");
-							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
-									"Device Prevalidation",version);
-							if (selectedTests.size() > 0) {
-								for (int i = 0; i < listOfTests.size(); i++) {
-									for (int j = 0; j < selectedTests.size(); j++) {
-										if (selectedTests.get(j).getTestName()
-												.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
-											finallistOfTests.add(listOfTests.get(j));
-										}
-									}
-								}
-							}
-							if (finallistOfTests.size() > 0) {
-								results = new ArrayList<Boolean>();
-								for (int i = 0; i < finallistOfTests.size(); i++) {
-
-									// conduct and analyse the tests
-									ps.println("terminal length 0");
-									ps.println(finallistOfTests.get(i).getTestCommand());
-									try {
-										Thread.sleep(6000);
-									} catch (Exception ee) {
-									}
-
-									// printResult(input,
-									// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-									Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
-											requestinfo.getAlphanumericReqId(),
-											Double.toString(requestinfo.getRequestVersion()), finallistOfTests.get(i),
-											"Device Prevalidation");
-									results.add(res);
-								}
-								if (results != null) {
-									for (int i = 0; i < results.size(); i++) {
-										if (!results.get(i)) {
-											value = false;
-											break;
-										}
-									}
-								}
-							} else {
-								// No new device prevalidation test added
-							}
-
-							/*
-							 * END
-							 * 
-							 */
+							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+									.getProperty("responseDownloadPath");
+							TextReport.writeFile(responseDownloadPath,
+									requestinfo.getAlphanumericReqId() + "V"
+											+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
+									response);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
-						// value=true;
-						channel.disconnect();
-						session.disconnect();
-
-						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
-
-					}
-
-					else if (type.equalsIgnoreCase("SLGF")) {
-						// Perform health checks for OS upgrade
-
-						obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "Pre");
-						
 					}
 				}
-
-			}
-			}
-			else
-			{
+			} else {
 				value = true;
 
 				jsonArray = new Gson().toJson(value);
 				obj.put(new String("output"), jsonArray);
 			}
 		} catch (Exception e1) {
-			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
 				logger.error("e1.getMessage() - " + e1.getMessage());
 
-				if (e1.getMessage() !=null && (e1.getMessage().contains("invalid server's version string")
+				if (e1.getMessage() != null && (e1.getMessage().contains("invalid server's version string")
 						|| e1.getMessage().contains("Auth fail"))) {
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
@@ -517,24 +547,23 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				}
 
 			}
-		}
-		finally {
+		} finally {
 
 			if (channel != null) {
 				try {
-				session = channel.getSession();
-				
-				if (channel.getExitStatus() == -1) {
-					
+					session = channel.getSession();
+
+					if (channel.getExitStatus() == -1) {
+
 						Thread.sleep(5000);
-					
-				}
+
+					}
 				} catch (Exception e) {
 					logger.error(e);
 				}
 				channel.disconnect();
 				session.disconnect();
-			
+
 			}
 		}
 
@@ -559,135 +588,217 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			JSONObject json = (JSONObject) parser.parse(request);
 			// Require requestId and version from camunda
 			String RequestId = json.get("requestId").toString();
-			String version = json.get("version").toString();		
+			String version = json.get("version").toString();
 
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if(!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains("10.62.0.24")) //Temperory hard coding for 10.62.0.24 router
-			{	
-			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-						Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "4", "In Progress");
+			if (!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains("10.62.0.24")) // Temperory hard
+																										// coding for
+																										// 10.62.0.24
+																										// router
+			{
+				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "4", "In Progress");
 
-				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-						Double.toString(requestinfo.getRequestVersion()), "Application_test", "4", "In Progress");
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "Application_test", "4", "In Progress");
 
-				requestinfo.setAlphanumericReqId(RequestId);
-				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
+					requestinfo.setAlphanumericReqId(RequestId);
+					requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 
-				DeviceReachabilityAndPreValidationTest.loadProperties();
+					DeviceReachabilityAndPreValidationTest.loadProperties();
 
-				requestInfoDetailsDao.changeRequestInRequestInfoStatus(requestinfo.getAlphanumericReqId(),
-						Double.toString(requestinfo.getRequestVersion()), "In Progress");
+					requestInfoDetailsDao.changeRequestInRequestInfoStatus(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "In Progress");
 
-				// ping to check the reachability
-				//Boolean reachabilityTest = cmdPingCall(requestinfo.getManagementIp(),
-				//		requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()));
-				boolean reachabilityTest = false;
-				JSONArray pingResults = pingHelper.pingResults(requestinfo.getManagementIp());
-				if (pingResults != null) {
-					if (pingResults.contains("Error") || pingResults.contains("Destination host unreachable")
-							|| pingResults.contains("Request timed out") || pingResults.contains("100% packet loss")) {
-						logger.info("pingResults - " + pingResults);
+					// ping to check the reachability
+					// Boolean reachabilityTest = cmdPingCall(requestinfo.getManagementIp(),
+					// requestinfo.getAlphanumericReqId(),
+					// Double.toString(requestinfo.getRequestVersion()));
+					boolean reachabilityTest = false;
+					JSONArray pingResults = pingHelper.pingResults(requestinfo.getManagementIp());
+					if (pingResults != null) {
+						if (pingResults.contains("Error") || pingResults.contains("Destination host unreachable")
+								|| pingResults.contains("Request timed out")
+								|| pingResults.contains("100% packet loss")) {
+							logger.info("pingResults - " + pingResults);
+						} else {
+							reachabilityTest = true;
+						}
+					}
+					logger.info("reachabilityTest - " + reachabilityTest);
+
+					// Lock the device for the particular request
+					if (reachabilityTest) {
+
+						value = true;
+
+						String type = requestinfo.getAlphanumericReqId().substring(0,
+								Math.min(requestinfo.getAlphanumericReqId().length(), 2));
+						if (type.equalsIgnoreCase("SLGC")) {
+						} else if (type.equalsIgnoreCase("SLGF")) {
+
+							requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "1",
+									"In Progress");
+
+						}
+
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
+
 					} else {
-						reachabilityTest = true;
-					}
-				}
-				logger.info("reachabilityTest - " + reachabilityTest);
+						// Generate basic configuration assign it to fe and generate
+						// notification
+						String type = requestinfo.getAlphanumericReqId().substring(0,
+								Math.min(requestinfo.getAlphanumericReqId().length(), 4));
+						if (type.equalsIgnoreCase("SLGC")) {
+							String response = "";
+							String responseDownloadPath = "";
+							Notification notificationEntity = new Notification();
+							StringBuilder builder = new StringBuilder();
+							String sUserListData = "";
+							Date date = new Date();
+							Timestamp timestampValue = new Timestamp(date.getTime());
+							Calendar cal = Calendar.getInstance();
+							List<String> sUserList = userManagementRepository.findByWorkGroup();
+							for (String suserList : sUserList) {
+								builder.append(suserList).append(",");
+							}
+							sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
+							try {
+								response = invokeFtl.generateBasicConfigurationFile(requestinfo);
+								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_basicConfiguration.txt",
+										response);
 
-				// Lock the device for the particular request
-				if (reachabilityTest) {
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
+										"Failure");
+								requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "2");
 
-					value = true;
+								response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
+								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
 
-					String type = requestinfo.getAlphanumericReqId().substring(0,
-							Math.min(requestinfo.getAlphanumericReqId().length(), 2));
-					if (type.equalsIgnoreCase("SLGC")) {
-					} else if (type.equalsIgnoreCase("SLGF")) {
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
+										response);
 
-						requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "1",
-								"In Progress");
+								// CODE TO ASSIGN REQUEST TO FE
+								requestInfoDetailsDao.changeRequestOwner(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "feuser");
+								requestInfoDetailsDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "In Progress");
+								notificationEntity.setNotifFromUser(requestinfo.getRequestCreatorName());
+								notificationEntity.setNotifToUser(sUserListData);
+								notificationEntity.setNotifType("FE Flow");
+								notificationEntity.setNotifCreatedDate(timestampValue);
+								notificationEntity.setNotifReference(requestinfo.getAlphanumericReqId() + "-V"
+										+ Double.toString(requestinfo.getRequestVersion()));
+								notificationEntity.setNotifLabel(requestinfo.getAlphanumericReqId() + "-V"
+										+ Double.toString(requestinfo.getRequestVersion()) + " : "
+										+ "Request initiated");
+								notificationEntity.setNotifMessage("Request initiated");
+								notificationEntity.setNotifPriority("1");
+								notificationEntity.setNotifToWorkgroup("FE_USER_ALL");
+								notificationEntity.setNotifStatus("Pending");
+								cal.setTimeInMillis(timestampValue.getTime());
+								cal.add(Calendar.DAY_OF_MONTH, 30);
+								timestampValue = new Timestamp(cal.getTime().getTime());
+								notificationEntity.setNotifExpiryDate(timestampValue);
+								notificationRepo.save(notificationEntity);
+								// Code to initiate FE Workflow
+								CamundaServiceFEWorkflow feworkflow = new CamundaServiceFEWorkflow();
+								feworkflow.initiateFEWorkflow(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "FE_USER_ALL");
+								value = false;
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
 
-					}
+								requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+										requestinfo.getAlphanumericReqId());
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
 
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2",
+										"Failure");
+								requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure",
+										"Failure", "Could not connect to the router.");
+								response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
+								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
 
-				} else {
-					// Generate basic configuration assign it to fe and generate
-					// notification
-					String type = requestinfo.getAlphanumericReqId().substring(0,
-							Math.min(requestinfo.getAlphanumericReqId().length(), 4));
-					if (type.equalsIgnoreCase("SLGC") ) {
-						String response = "";
-						String responseDownloadPath = "";
-						Notification notificationEntity = new Notification();
-						StringBuilder builder = new StringBuilder();
-						String sUserListData = "";
-						Date date = new Date();
-						Timestamp timestampValue = new Timestamp(date.getTime());
-						Calendar cal = Calendar.getInstance();
-						List<String> sUserList = userManagementRepository.findByWorkGroup();
-						for(String suserList : sUserList)
-						{
-							builder.append(suserList).append(",");
-						}	
-						sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
-						try {
-							response = invokeFtl.generateBasicConfigurationFile(requestinfo);
-							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-									+ Double.toString(requestinfo.getRequestVersion()) + "_basicConfiguration.txt",
-									response);
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
+										response);
+								value = false;
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
+							}
+						} else if (type.equalsIgnoreCase("SLGB") || type.equalsIgnoreCase("SLGT")
+								|| type.equalsIgnoreCase("SLGA") || type.equalsIgnoreCase("SNRC")
+								|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRM")
+								|| type.equalsIgnoreCase("SNNM") || type.equalsIgnoreCase("SLGM")) {
 
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
-									"Failure");
-							requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "2");
+							String response = "";
+							String responseDownloadPath = "";
+							try {
+								response = invokeFtl.generateBasicConfigurationFile(requestinfo);
+								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_basicConfiguration.txt",
+										response);
 
-							response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
-							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
+										"Failure");
+								requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "2");
 
-							TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-									+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
-									response);
+								response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
+								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath");
 
-							// CODE TO ASSIGN REQUEST TO FE
-							requestInfoDetailsDao.changeRequestOwner(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "feuser");
-							requestInfoDetailsDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "In Progress");
-							notificationEntity.setNotifFromUser(requestinfo.getRequestCreatorName());
-							notificationEntity.setNotifToUser(sUserListData);
-							notificationEntity.setNotifType("FE Flow");
-							notificationEntity.setNotifCreatedDate(timestampValue);
-							notificationEntity.setNotifReference(requestinfo.getAlphanumericReqId() + "-V"
-									+ Double.toString(requestinfo.getRequestVersion()));
-							notificationEntity.setNotifLabel(requestinfo.getAlphanumericReqId() + "-V"
-									+ Double.toString(requestinfo.getRequestVersion())+" : "+"Request initiated");
-							notificationEntity.setNotifMessage("Request initiated");
-							notificationEntity.setNotifPriority("1");
-							notificationEntity.setNotifToWorkgroup("FE_USER_ALL");
-							notificationEntity.setNotifStatus("Pending");
-							cal.setTimeInMillis(timestampValue.getTime());
-						    cal.add(Calendar.DAY_OF_MONTH, 30);
-						    timestampValue = new Timestamp(cal.getTime().getTime());
-							notificationEntity.setNotifExpiryDate(timestampValue);
-							notificationRepo.save(notificationEntity);
-							//Code to initiate FE Workflow
-							CamundaServiceFEWorkflow feworkflow=new CamundaServiceFEWorkflow();
-							feworkflow.initiateFEWorkflow(requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()), "FE_USER_ALL");
-							value = false;
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
+								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
+										response);
 
+								// CODE TO ASSIGN REQUEST TO FE
+								/*
+								 * requestDao.changeRequestOwner(requestinfo.getAlphanumericReqId(),
+								 * Double.toString(requestinfo.getRequestVersion()), "feuser");
+								 */
+								requestInfoDetailsDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), "Failure");
+								value = false;
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
+							} catch (Exception e) {
+								// TODO Auto-generated catch block
+
+							}
+
+						}
+
+						else if (type.equalsIgnoreCase("SLGF")) {
+							String response = "";
+							String responseDownloadPath = "";
 							requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 									requestinfo.getAlphanumericReqId());
 							jsonArray = new Gson().toJson(value);
@@ -710,82 +821,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 						}
-					} else if (type.equalsIgnoreCase("SLGB") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA")|| type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM") || type.equalsIgnoreCase("SLGM")) {
 
-						String response = "";
-						String responseDownloadPath = "";
-						try {
-							response = invokeFtl.generateBasicConfigurationFile(requestinfo);
-							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-									+ Double.toString(requestinfo.getRequestVersion()) + "_basicConfiguration.txt",
-									response);
-
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
-									"Failure");
-							requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "2");
-
-							response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
-							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-
-							TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-									+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
-									response);
-
-							// CODE TO ASSIGN REQUEST TO FE
-							/*requestDao.changeRequestOwner(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "feuser");*/
-							requestInfoDetailsDao.changeRequestStatus(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "Failure");
-							value = false;
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-
-						}
-
-					}
-
-					else if (type.equalsIgnoreCase("SLGF")) {
-						String response = "";
-						String responseDownloadPath = "";
-						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
-								requestinfo.getAlphanumericReqId());
-						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
-
-						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2", "Failure");
-						requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure",
-								"Failure", "Could not connect to the router.");
-						response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
-						responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-
-						TextReport.writeFile(responseDownloadPath,
-								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
-								response);
-						value = false;
-						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
 					}
 
 				}
-
-			}
-			}
-			else
-			{
+			} else {
 				value = true;
 
 				jsonArray = new Gson().toJson(value);
@@ -793,7 +833,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			}
 
 		} catch (Exception ex) {
-			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				jsonArray = new Gson().toJson(value);
 				obj.put(new String("output"), jsonArray);
 				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),

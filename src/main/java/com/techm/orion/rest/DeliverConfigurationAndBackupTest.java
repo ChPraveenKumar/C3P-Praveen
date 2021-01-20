@@ -120,7 +120,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				if (requestinfo.getManagementIp() != null
 						&& !requestinfo.getManagementIp().equals("")) {
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-							.findHostNameAndMgmtip(requestinfo.getManagementIp(),requestinfo.getHostname());
+							.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
 					
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 							requestinfo.getAlphanumericReqId(),

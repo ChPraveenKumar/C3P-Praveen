@@ -115,7 +115,7 @@ public class HealthCheckTestValidation extends Thread {
 				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-							.findHostNameAndMgmtip(requestinfo.getManagementIp(),requestinfo.getHostname());
+							.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
 					
 					String statusVAlue = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());

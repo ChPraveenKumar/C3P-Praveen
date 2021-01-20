@@ -5,8 +5,10 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -362,17 +364,64 @@ public class TemplateManagementNewService {
 		json = (JSONObject) parser.parse(request);
 		DeviceDetailsPojo deviceDeatils = setDeviceDeatils(json);
 		JSONObject features = new JSONObject();
-		if (deviceDeatils != null) {
-			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findNearestMatchEntities(
-					deviceDeatils.getVendor(), deviceDeatils.getDeviceFamily(), deviceDeatils.getOs(),
-					deviceDeatils.getOsVersion(), deviceDeatils.getRegion(), deviceDeatils.getNetworkType());
-			features.put("output", setFeatureData(masterFeatures));
+		if (deviceDeatils != null) {			
+			features.put("output", setFeatureData(getFeatureOnPriority(deviceDeatils)));
 		}
 		return features;
 	}
 
+	private Set<MasterFeatureEntity> getFeatureOnPriority(DeviceDetailsPojo deviceDeatils) {
+		List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.findNearestMatchEntities(
+				deviceDeatils.getVendor(), deviceDeatils.getDeviceFamily(), deviceDeatils.getOs(),
+				deviceDeatils.getOsVersion());
+		Set<MasterFeatureEntity> featureArray = new HashSet<>();
+		for (MasterFeatureEntity featureValue : masterFeatures) {
+			Set<MasterFeatureEntity> featureList = masterFeatures.stream()
+					.filter(feature -> feature.getfName().equals(featureValue.getfName())
+							&& feature.getfVendor().equals(featureValue.getfVendor())
+							&& feature.getfFamily().equals(featureValue.getfFamily())
+							&& feature.getfOs().equals(featureValue.getfOs())
+							&& feature.getfOsversion().equals(featureValue.getfOsversion()))
+					.collect(Collectors.toSet());
+			if(featureList!=null && featureList.size()>=2) {
+				Set<MasterFeatureEntity> faetureData = null;
+				if(faetureData==null || faetureData.isEmpty()) {
+					faetureData = featureList.stream()
+						.filter(feature -> feature.getfRegion().equals(deviceDeatils.getRegion())
+								&& feature.getfNetworkfun().equals(deviceDeatils.getNetworkType()))
+						.collect(Collectors.toSet());
+				}
+				if(faetureData==null || faetureData.isEmpty()) {
+					faetureData = featureList.stream()
+							.filter(feature -> feature.getfRegion().equals("All")
+									&& feature.getfNetworkfun().equals("All"))
+							.collect(Collectors.toSet());
+					}
+				if(faetureData==null || faetureData.isEmpty()) {
+					faetureData = featureList.stream()
+							.filter(feature -> feature.getfRegion().equals(deviceDeatils.getRegion())
+									&& feature.getfNetworkfun().equals("All"))
+							.collect(Collectors.toSet());
+					}
+				if(faetureData==null || faetureData.isEmpty()) {
+					faetureData = featureList.stream()
+							.filter(feature -> feature.getfRegion().equals("All")
+									&& feature.getfNetworkfun().equals(deviceDeatils.getNetworkType()))
+							.collect(Collectors.toSet());
+					}
+				if(faetureData!=null) {
+					featureArray.addAll(faetureData);
+				}
+				
+			}else if(featureList!=null &&featureList.size()== 1) {
+				featureArray.addAll(featureList);
+			}
+		}
+		return featureArray;		
+	}
+
 	@SuppressWarnings("unchecked")
-	private JSONArray setFeatureData(List<MasterFeatureEntity> masterFeatures) {
+	private JSONArray setFeatureData(Set<MasterFeatureEntity> masterFeatures) {
 		JSONArray outputArray = new JSONArray();
 		masterFeatures.forEach(masterFeature -> {
 			JSONObject object = new JSONObject();

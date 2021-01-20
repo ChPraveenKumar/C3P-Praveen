@@ -93,7 +93,7 @@ public class PostUpgradeHealthCheck extends Thread {
 			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-						.findHostNameAndMgmtip(requestinfo.getManagementIp(),requestinfo.getHostname());
+						.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
 				
 				requestinfo.setAlphanumericReqId(RequestId);
 				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));

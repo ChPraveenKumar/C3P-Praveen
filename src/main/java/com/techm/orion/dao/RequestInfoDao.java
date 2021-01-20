@@ -5316,7 +5316,6 @@ public class RequestInfoDao {
 		String queryTstDetailsTestNameV = "select * from  t_tststrategy_m_tstdetails where (device_family like ? or device_family like '%All') and (os like ? or os like '%All') and (os_version like ? or os_version like '%All') and vendor =? and (region like ? or region like '%All') and test_category=? and test_name=? and version=?";
 
 		ResultSet rs = null, rs1 = null, rs2 = null, rs3 = null;
-//		String maxVersion = null;
 		Set<String> setOfTest = new HashSet<>();
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection

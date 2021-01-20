@@ -53,7 +53,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-					.findHostNameAndMgmtip(configRequest.getManagementIp(),configRequest.getHostname());			
+					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
 			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
 					deviceDetails);
 			String user = routerCredential.getLoginRead();
@@ -159,7 +159,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-					.findHostNameAndMgmtip(configRequest.getManagementIp(),configRequest.getHostname());			
+					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
 			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
 					deviceDetails);
 			String user = routerCredential.getLoginRead();
@@ -396,7 +396,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-					.findHostNameAndMgmtip(configRequest.getManagementIp(),configRequest.getHostname());			
+					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
 			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
 					deviceDetails);
 			String user = routerCredential.getLoginRead();
@@ -478,7 +478,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-					.findHostNameAndMgmtip(configRequest.getManagementIp(),configRequest.getHostname());			
+					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
 			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
 					deviceDetails);
 			String user = routerCredential.getLoginRead();

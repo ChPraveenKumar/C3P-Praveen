@@ -515,7 +515,7 @@ public class RequestInfoDetailsDao {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = requestinfo.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-					.findHostNameAndMgmtip(requestinfo.getManagementIp(),requestinfo.getHostname());
+					.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
 			
 			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
 					deviceDetails);
