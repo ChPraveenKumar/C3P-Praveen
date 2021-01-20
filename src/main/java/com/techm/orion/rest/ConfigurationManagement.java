@@ -294,7 +294,7 @@ public class ConfigurationManagement {
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 
 				} else {
-					String bit = "1010011";
+					String bit = "1010000";
 					logger.info(bit);
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 				}

@@ -96,7 +96,7 @@ public class HealthCheckTestValidation extends Thread {
 		CSVWriteAndConnectPython csvWriteAndConnectPython = new CSVWriteAndConnectPython();
 		// FinalReportTestSSH finalReportTestSSH=new FinalReportTestSSH();
 		Map<String, String> hmapResult = new HashMap<String, String>();
-		Boolean value = false;
+		Boolean value = false, isPredefinedTestSelected=false;
 
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(request);
@@ -139,7 +139,7 @@ public class HealthCheckTestValidation extends Thread {
 									|| requestinfo.getCertificationSelectionBit().substring(6).equalsIgnoreCase("1")) {
 								logger.info("Frameloss "+requestinfo.getCertificationSelectionBit().substring(5, 6));
 								logger.info("Latency "+requestinfo.getCertificationSelectionBit().substring(6));
-
+								isPredefinedTestSelected = true;
 								//Code to find out frameloss and latency from command ping using python service
 								PingTest pingHelper=new PingTest();
 								JSONArray pingResults = pingHelper.pingResults(requestinfo.getManagementIp(),"healthCheck");
@@ -213,7 +213,7 @@ public class HealthCheckTestValidation extends Thread {
 
 							if (requestinfo.getCertificationSelectionBit().substring(4, 5).equalsIgnoreCase("1")) {
 								logger.info("Throughput "+requestinfo.getCertificationSelectionBit().substring(4, 5));
-
+								isPredefinedTestSelected = true;
 								PingTest pingHelper=new PingTest();
 								JSONObject throughputResults = pingHelper.throughputResults(requestinfo.getManagementIp(),"healthCheck");
 								if(throughputResults.containsKey("error"))
@@ -403,9 +403,19 @@ public class HealthCheckTestValidation extends Thread {
 								int statusData = requestInfoDetailsDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "health_check");
 								if (statusData != 3) {
-									requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									
+									if(selectedTests.size() != 0 && isPredefinedTestSelected == true)
+									{
+									    requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "health_check", "1",
 											status);
+									}
+									else
+									{
+										requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+												Double.toString(requestinfo.getRequestVersion()), "health_check", "0",
+												status);
+									}
 								}
 								// to create final report if success
 								/* finalReportTestSSH.FlagCheckTest(configRequest); */
