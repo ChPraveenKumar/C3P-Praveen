@@ -1093,7 +1093,7 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setSiteName(requestDetail.get(i)
 								.getCustSiteId().getcSiteName());
 						requestInfoEntity
-								.setCertificationSelectionBit("1010011");
+								.setCertificationSelectionBit("1010000");
 						requestInfoEntity.setRequestParentVersion(1.0);
 						requestInfoEntity.setRequestTypeFlag("M");
 

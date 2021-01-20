@@ -90,7 +90,7 @@ public class TestStrategeyAnalyser {
 				if (tempTextToAnalyse == null) 
 					tempTextToAnalyse = textContent;
 			    else 
-					tempTextToAnalyse.concat(textContent);
+					tempTextToAnalyse = tempTextToAnalyse+textContent;
 				
 				if (!(textContent.equals(""))) {
 					// if file doesnt exists, then create it
