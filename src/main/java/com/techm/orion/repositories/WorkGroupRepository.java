@@ -14,4 +14,8 @@ public interface WorkGroupRepository extends JpaRepository<WorkGroup, Long> {
 	List<WorkGroup> findAll();
 	@Query("SELECT workGroupName FROM WorkGroup")
 	List<WorkGroup> findName();
+	
+	WorkGroup findByDefaultRole(String role);
+	
+	List<WorkGroup> findByWorkGroupNameOrDefaultRoleOrDescriptionOrCreatedBy(String workGroupName, String role, String description, String createdBy);
 }

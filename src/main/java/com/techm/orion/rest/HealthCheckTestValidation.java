@@ -42,12 +42,13 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.CSVWriteAndConnectPython;
+import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.RegexTestHealthCheck;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
@@ -65,19 +66,22 @@ public class HealthCheckTestValidation extends Thread {
 	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@Autowired
-	RequestInfoDao requestInfoDao;
+	private RequestInfoDao requestInfoDao;
 
 	@Autowired
-	RequestInfoDetailsDao requestDao;
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 
 	@Autowired
-	TestStrategeyAnalyser analyser;
+	private TestStrategeyAnalyser testStrategeyAnalyser;
 
 	@Autowired
 	private PostUpgradeHealthCheck postUpgradeHealthCheck;
 
 	@Autowired
-	DeviceDiscoveryRepository deviceRepo;
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private DcmConfigService dcmConfigService;
 	
 	@POST
 	@RequestMapping(value = "/healthcheckCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -92,7 +96,7 @@ public class HealthCheckTestValidation extends Thread {
 		CSVWriteAndConnectPython csvWriteAndConnectPython = new CSVWriteAndConnectPython();
 		// FinalReportTestSSH finalReportTestSSH=new FinalReportTestSSH();
 		Map<String, String> hmapResult = new HashMap<String, String>();
-		Boolean value = false;
+		Boolean value = false, isPredefinedTestSelected=false;
 
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(request);
@@ -107,13 +111,15 @@ public class HealthCheckTestValidation extends Thread {
 		Session session = null;
 
 	if (!((type.equals("SLGB")|| (type.equals("SNAI"))))) {
-
 			try {
-				requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					String statusVAlue = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
+					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+							.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
+					
+					String statusVAlue = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "health_check", "4", statusVAlue);
 
 					requestinfo.setAlphanumericReqId(RequestId);
@@ -133,7 +139,7 @@ public class HealthCheckTestValidation extends Thread {
 									|| requestinfo.getCertificationSelectionBit().substring(6).equalsIgnoreCase("1")) {
 								logger.info("Frameloss "+requestinfo.getCertificationSelectionBit().substring(5, 6));
 								logger.info("Latency "+requestinfo.getCertificationSelectionBit().substring(6));
-
+								isPredefinedTestSelected = true;
 								//Code to find out frameloss and latency from command ping using python service
 								PingTest pingHelper=new PingTest();
 								JSONArray pingResults = pingHelper.pingResults(requestinfo.getManagementIp(),"healthCheck");
@@ -207,7 +213,7 @@ public class HealthCheckTestValidation extends Thread {
 
 							if (requestinfo.getCertificationSelectionBit().substring(4, 5).equalsIgnoreCase("1")) {
 								logger.info("Throughput "+requestinfo.getCertificationSelectionBit().substring(4, 5));
-
+								isPredefinedTestSelected = true;
 								PingTest pingHelper=new PingTest();
 								JSONObject throughputResults = pingHelper.throughputResults(requestinfo.getManagementIp(),"healthCheck");
 								if(throughputResults.containsKey("error"))
@@ -280,12 +286,10 @@ public class HealthCheckTestValidation extends Thread {
 								}
 								if (finallistOfTests.size() > 0) {
 									String host = requestinfo.getManagementIp();
-									UserPojo userPojo = new UserPojo();
-									userPojo = requestInfoDao.getRouterCredentials(host);
-									String user = null, password = null;
-									user = userPojo.getUsername();
-									password = userPojo.getPassword();
-									
+									CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+											deviceDetails);
+									String user = routerCredential.getLoginRead();
+									String password = routerCredential.getPasswordWrite();	
 									String port = TSALabels.PORT_SSH.getValue();
 									session = jsch.getSession(user, host, Integer.parseInt(port));
 									Properties config = new Properties();
@@ -314,14 +318,13 @@ public class HealthCheckTestValidation extends Thread {
 									
 										
 										// conduct and analyse the tests
-										DeviceDiscoveryEntity device = deviceRepo
-												.findByDHostName(requestinfo.getHostname().toUpperCase());
-										if(device.getdConnect().equalsIgnoreCase("NETCONF"))
+										
+										if(deviceDetails.getdConnect().equalsIgnoreCase("NETCONF"))
 										{
 											VNFHelper helper=new VNFHelper();
 											helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
 										}
-										else if(device.getdConnect().equalsIgnoreCase("RESTCONF"))
+										else if(deviceDetails.getdConnect().equalsIgnoreCase("RESTCONF"))
 										{
 											ODLClient client=new ODLClient();
 											client.performTest(finallistOfTests.get(i),requestinfo, user, password);
@@ -335,7 +338,7 @@ public class HealthCheckTestValidation extends Thread {
 										}
 										// printResult(input,
 										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-										Boolean res = analyser.printAndAnalyse(input, channel,
+										Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 												requestinfo.getAlphanumericReqId(),
 												Double.toString(requestinfo.getRequestVersion()),
 												finallistOfTests.get(i), "Health Check");
@@ -365,13 +368,13 @@ public class HealthCheckTestValidation extends Thread {
 								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), 1, 1, 1);
 
-								String status = requestDao.getPreviousMileStoneStatus(
+								String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 
-								int statusData = requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+								int statusData = requestInfoDetailsDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "health_check");
 								if (statusData != 3) {
-									requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "health_check", "1",
 											status);
 								}
@@ -381,7 +384,7 @@ public class HealthCheckTestValidation extends Thread {
 										Double.toString(requestinfo.getRequestVersion()), 2,
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(5)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(6)));
-								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "health_check", "2",
 										"Failure");
 								// to create final report if failure
@@ -393,16 +396,26 @@ public class HealthCheckTestValidation extends Thread {
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(4, 5)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(5, 6)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(6)));
-								String status = requestDao.getPreviousMileStoneStatus(
+								String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 								String switchh = "1";
 
-								int statusData = requestDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+								int statusData = requestInfoDetailsDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "health_check");
 								if (statusData != 3) {
-									requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									
+									if(selectedTests.size() != 0 && isPredefinedTestSelected == true)
+									{
+									    requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "health_check", "1",
 											status);
+									}
+									else
+									{
+										requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+												Double.toString(requestinfo.getRequestVersion()), "health_check", "0",
+												status);
+									}
 								}
 								// to create final report if success
 								/* finalReportTestSSH.FlagCheckTest(configRequest); */
@@ -444,7 +457,7 @@ public class HealthCheckTestValidation extends Thread {
 							logger.info("" + ex.getCause());
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "health_check", "2", "Failure");
 
 							String response = "";
@@ -495,7 +508,7 @@ public class HealthCheckTestValidation extends Thread {
 					ex.printStackTrace();
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "health_check", "2", "Failure");
 
 					String response = "";
