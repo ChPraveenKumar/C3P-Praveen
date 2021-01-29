@@ -1,7 +1,11 @@
 package com.techm.orion.rest;
 
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -19,6 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
+import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsEntity;
 import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
@@ -74,7 +79,6 @@ public class DeviceRequestController {
 	public Response getConfigFeatures(@RequestBody String request) {
 		List<String>featureids=null;
 		JSONArray output=new JSONArray();
-
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
@@ -97,16 +101,21 @@ public class DeviceRequestController {
 				{
 					JSONObject feature=new JSONObject();
 					feature.put("featureId", fid);
-					String featurename=masterfeatureRepo.findNameByFeatureid(fid);
-					feature.put("featureName", featurename);
+					MasterFeatureEntity featureFromDB=masterfeatureRepo.findByFId(fid);
+					feature.put("featureName", featureFromDB.getfName());
+					feature.put("featureCreatedDate",featureFromDB.getfCreatedDate().toString()) ;
+					feature.put("featureUpdatedDate", featureFromDB.getfUpdatedDate().toString());
+
 					listOfCharacteristics=resourcecharateristicRepo.findByRcFeatureIdAndRcDeviceHostname(fid, hostName);
 					JSONArray charachteristicArray=new JSONArray();
 					for(ResourceCharacteristicsEntity characteristic: listOfCharacteristics)
 					{
 						//Find charachteristic name
 						JSONObject characteristicObj=new JSONObject();
-						characteristicObj.put("charachteriticName", characteristic.getRcCharacteristicName());
-						characteristicObj.put("charachteriticValue", characteristic.getRcCharacteristicValue());
+						characteristicObj.put("characteristicName", characteristic.getRcCharacteristicName());
+						characteristicObj.put("characteristicValue", characteristic.getRcCharacteristicValue());
+						characteristicObj.put("characteristicCreatedDate", characteristic.getRc_created_date().toString());
+						characteristicObj.put("characteristicUpdatedDate", characteristic.getRc_updated_date().toString());
 						charachteristicArray.add(characteristicObj);
 						
 					}
@@ -121,4 +130,5 @@ public class DeviceRequestController {
 		}
 		return Response.status(200).entity(output).build();
 	}
+	
 }

@@ -5,11 +5,11 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.techm.orion.entitybeans.CredentialManagementEntity;
-import com.techm.orion.entitybeans.VendorDetails;
 
 @Repository
 public interface CredentialManagementRepo extends JpaRepository<CredentialManagementEntity, Long>{
@@ -28,4 +28,9 @@ public interface CredentialManagementRepo extends JpaRepository<CredentialManage
 			int infoId);
 
 	CredentialManagementEntity findOneByProfileName(String profileName);
+	
+	CredentialManagementEntity findOneByProfileNameAndProfileType(String profileName, String profileType);
+	
+	@Query(value = "select * from c3p_t_credential_management where cr_info_id =:infoId", nativeQuery = true)
+	List<CredentialManagementEntity> findInfoId(@Param("infoId") String infoId);
 }

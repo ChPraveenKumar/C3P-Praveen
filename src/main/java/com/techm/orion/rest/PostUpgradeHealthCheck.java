@@ -34,9 +34,13 @@ import com.google.gson.Gson;
 import com.jcraft.jsch.Channel;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.CredentialManagementEntity;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.pojo.HealthCheckComponent;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.HealthCheckReport;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.PingTest;
@@ -58,6 +62,12 @@ public class PostUpgradeHealthCheck extends Thread {
 
 	@Autowired
 	RequestInfoDetailsDao requestDao;
+	
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 
 	@POST
 	@RequestMapping(value = "/HealthCheck", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -82,16 +92,17 @@ public class PostUpgradeHealthCheck extends Thread {
 			
 			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-
+				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+						.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
+				
 				requestinfo.setAlphanumericReqId(RequestId);
 				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 
 				String host = requestinfo.getManagementIp();
-				UserPojo userPojo = new UserPojo();
-				userPojo = requestInfoDao.getRouterCredentials(host);
-
-				String user = userPojo.getUsername();
-				String password = userPojo.getPassword();
+				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
+						deviceDetails);
+				String user = routerCredential.getLoginRead();
+				String password = routerCredential.getPasswordWrite();	
 				//String port = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("portSSH");
 				String port="22";
 				PingTest pingClass = new PingTest();

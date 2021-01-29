@@ -49,7 +49,6 @@ import com.techm.orion.models.BackUpRequestVersioningJSONModel;
 import com.techm.orion.pojo.BatchPojo;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.FirmwareUpgradeDetail;
-import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
@@ -1093,7 +1092,7 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setSiteName(requestDetail.get(i)
 								.getCustSiteId().getcSiteName());
 						requestInfoEntity
-								.setCertificationSelectionBit("1010011");
+								.setCertificationSelectionBit("1010000");
 						requestInfoEntity.setRequestParentVersion(1.0);
 						requestInfoEntity.setRequestTypeFlag("M");
 

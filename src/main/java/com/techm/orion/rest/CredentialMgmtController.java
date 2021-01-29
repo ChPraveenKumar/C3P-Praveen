@@ -24,10 +24,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.google.gson.Gson;
 import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.repositories.CredentialManagementRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.service.CredentialMgmtService;
 
 @RestController
 public class CredentialMgmtController {
@@ -38,12 +41,18 @@ public class CredentialMgmtController {
 	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@Autowired
-	public CredentialManagementRepo credentialManagementRepo;
+	private CredentialManagementRepo credentialManagementRepo;
 
 	@Autowired
-	public DeviceDiscoveryRepository deviceDiscoveryRepository;
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private DeviceDiscoveryRepository deviceInforepo;
+	
+	@Autowired
+	private CredentialMgmtService credentialMgmtService;
 
-	@SuppressWarnings("unchecked")
+	
 	@POST
 	@RequestMapping(value = "/getProfileNameValidation", method = RequestMethod.POST, produces = "application/json")
 	@ResponseBody
@@ -153,28 +162,30 @@ public class CredentialMgmtController {
 		return Response.status(200).entity(message).build();
 	}
 
-	@RequestMapping(value = "/deleteCredentialProfile", method = RequestMethod.DELETE, produces = "application/json", consumes = "application/json")
+	@RequestMapping(value = "/deleteCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response deleteCredentialProfile(@RequestBody String request) throws ParseException {
-		JSONParser parser = new JSONParser();
 		boolean isDelete = false;
 		CredentialManagementEntity entity = new CredentialManagementEntity();
-		JSONArray deleteList = new JSONArray();
-		JSONObject jsonObect = (JSONObject) parser.parse(request);
-		deleteList = (JSONArray) jsonObect.get("profiles");
+		Gson gson = new Gson();
+		CredentialManagementEntity[] deleteList = gson.fromJson(request, CredentialManagementEntity[].class);
 		JSONObject json;
+		String profileName = null, profileType = null;
+		int infoId ;
 		String msg = null;
-		for (int i = 0; i < deleteList.size(); i++) {
+		if(deleteList != null) {
+		for (int i = 0; i < deleteList.length; i++) {
 			json = new JSONObject();
-			JSONObject deviceName = (JSONObject) deleteList.get(i);
-			if (deviceName.get("profileName") != null) {
-				entity.setProfileName(deviceName.get("profileName").toString());
+			profileName = deleteList[i].getProfileName();
+			profileType = deleteList[i].getProfileType();
+			infoId = deleteList[i].getInfoId();
+			if (profileName != null) {
+				entity.setProfileName(profileName);
 			}
-			if (deviceName.get("profileType") != null) {
-				entity.setProfileType(deviceName.get("profileType").toString());
+			if (profileType != null) {
+				entity.setProfileType(profileType);
 			}
-			if (deviceName.get("infoId") != null) {
-				int id = Integer.parseInt(deviceName.get("infoId").toString());
-				entity.setInfoId(id);
+			if (infoId != 0) {
+				entity.setInfoId(infoId);
 			}
 			CredentialManagementEntity credential = credentialManagementRepo
 					.findOneByProfileNameAndProfileTypeAndInfoId(entity.getProfileName(), entity.getProfileType(),
@@ -217,8 +228,9 @@ public class CredentialMgmtController {
 				msg = "Profile is not deleted";
 			}
 		}
+		}
 		return Response.status(200).entity(msg).build();
-	}
+	} 
 
 	@GET
 	@RequestMapping(value = "/getAllCredential", method = RequestMethod.GET, produces = "application/json")
@@ -426,9 +438,9 @@ public class CredentialMgmtController {
 							if ("SSH".equalsIgnoreCase(profileType))
 								deviceInfo.setdSshCredProfile(profileName);
 							else if ("Telnet".equalsIgnoreCase(profileType))
-								deviceInfo.setdSnmpCredProfile(profileName);
-							else if ("SNMP".equalsIgnoreCase(profileType))
 								deviceInfo.setdTelnetCredProfile(profileName);
+							else if ("SNMP".equalsIgnoreCase(profileType))
+								deviceInfo.setdSnmpCredProfile(profileName);
 							deviceDiscoveryRepository.save(deviceInfo);
 						}
 					}
@@ -470,9 +482,9 @@ public class CredentialMgmtController {
 					if ("SSH".equalsIgnoreCase(profileType))
 						deviceInfo.setdSshCredProfile(null);
 					else if ("Telnet".equalsIgnoreCase(profileType))
-						deviceInfo.setdSnmpCredProfile(null);
-					else if ("SNMP".equalsIgnoreCase(profileType))
 						deviceInfo.setdTelnetCredProfile(null);
+					else if ("SNMP".equalsIgnoreCase(profileType))
+						deviceInfo.setdSnmpCredProfile(null);
 					deviceDiscoveryRepository.save(deviceInfo);
 				}
 			}
@@ -481,5 +493,169 @@ public class CredentialMgmtController {
 			logger.error("exception in deleteRefferedDevices service is " + e);
 		}
 		return new ResponseEntity<JSONObject>(reffredDevicesJson, HttpStatus.OK);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/searchReffredDevices", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response searchRefferedDevices(@RequestBody String searchParameters) {
+
+		JSONObject searchObj = new JSONObject();
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject searchRefferedDeviceJson = (JSONObject) parser.parse(searchParameters);
+			JSONObject searchObject = new JSONObject();
+
+			String customer = null, region = null, siteName = null, profileName = null, profileType = null;
+			List<DeviceDiscoveryEntity> getAllDevice = new ArrayList<DeviceDiscoveryEntity>();
+
+			if (searchRefferedDeviceJson.containsKey("customer")) {
+				customer = searchRefferedDeviceJson.get("customer").toString();
+			}
+			if (searchRefferedDeviceJson.containsKey("region")) {
+				region = searchRefferedDeviceJson.get("region").toString();
+			}
+			if (searchRefferedDeviceJson.containsKey("profileName")) {
+				profileName = searchRefferedDeviceJson.get("profileName").toString();
+			}
+			if (searchRefferedDeviceJson.containsKey("profileType")) {
+				profileType = searchRefferedDeviceJson.get("profileType").toString();
+			}
+			if (searchRefferedDeviceJson.containsKey("site")) {
+				siteName = searchRefferedDeviceJson.get("site").toString();
+			}
+
+			// Implementation of search logic based on fields received from UI
+			String nonMandatoryfiltersbits = "000";
+
+			if (customer != null) {
+				nonMandatoryfiltersbits = "100";
+			}
+			if (region != null && !"All".equals(region)) {
+				nonMandatoryfiltersbits = "110";
+			}
+			
+			if (siteName != null && !siteName.isEmpty() && !"All".equals(siteName)) {
+				nonMandatoryfiltersbits = "311";
+			}
+
+			if ("000".equals(nonMandatoryfiltersbits)) {
+				// find only with customer
+				getAllDevice = deviceInforepo.findAll();
+			}
+			if ("100".equals(nonMandatoryfiltersbits)) {
+				// find with customer
+				if("SSH".equalsIgnoreCase(profileType))
+					getAllDevice = deviceInforepo
+						.findAllByCustSiteIdCCustNameAndDSshCredProfileNotInOrIsNull(customer, profileName);
+				else if("SNMP".equalsIgnoreCase(profileType))
+					getAllDevice = deviceInforepo
+						.findAllByCustSiteIdCCustNameAndDSnmpCredProfileNotInOrIsNull(customer, profileName);
+				else
+					getAllDevice = deviceInforepo.findAllByCustSiteIdCCustNameAndDTelnetCredProfileNotInOrIsNull(customer, profileName);
+			}
+			if ("110".equals(nonMandatoryfiltersbits)) {
+				// find with customer and region
+				if("SSH".equalsIgnoreCase(profileType))
+					getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDSshCredProfileNotInOrIsNull(customer, region, profileName);
+				else if("SNMP".equalsIgnoreCase(profileType))
+					getAllDevice = deviceInforepo
+					.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDSnmpCredProfileNotInOrIsNull(customer, region, profileName);
+				else
+					getAllDevice = deviceInforepo
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDTelnetCredProfileNotInOrIsNull(customer, region, profileName);
+			}
+			
+			if ("311".equals(nonMandatoryfiltersbits)) {
+				// find with customer and region and site
+				if("SSH".equalsIgnoreCase(profileType))
+					getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDSshCredProfileNotInOrIsNull(customer, region, siteName, profileName);
+				else if("SNMP".equalsIgnoreCase(profileType))
+					getAllDevice = deviceInforepo
+					.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDSnmpCredProfileNotInOrIsNull(customer, region, siteName, profileName);
+				else
+					getAllDevice = deviceInforepo
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDTelnetCredProfileNotInOrIsNull(customer, region, siteName, profileName);
+			}
+			JSONArray outputArray = new JSONArray();
+			
+			for (DeviceDiscoveryEntity deviceDetails: getAllDevice) {
+
+				searchObject = new JSONObject();
+				searchObject.put("hostName", deviceDetails.getdHostName());
+				searchObject.put("managementIp", deviceDetails.getdMgmtIp());
+				searchObject.put("type", "Router");
+				searchObject.put("deviceFamily", deviceDetails
+						.getdDeviceFamily());
+				searchObject.put("model", deviceDetails.getdModel());
+				searchObject.put("os", deviceDetails.getdOs());
+				searchObject.put("osVersion", deviceDetails.getdOsVersion());
+				searchObject.put("vendor", deviceDetails.getdVendor());
+				searchObject.put("status", "Available");
+				searchObject.put("customer", deviceDetails.getCustSiteId()
+						.getcCustName());
+				if (deviceDetails.getdEndOfSupportDate() != null
+						&& !deviceDetails.getdEndOfSupportDate()
+								.equalsIgnoreCase("Not Available")) {
+					searchObject.put("eos", deviceDetails
+							.getdEndOfSupportDate());
+				} else {
+					searchObject.put("eos", "");
+
+				}
+				if (deviceDetails.getdEndOfSaleDate() != null
+						&& !deviceDetails.getdEndOfSaleDate()
+								.equalsIgnoreCase("Not Available")) {
+					searchObject.put("eol", deviceDetails.getdEndOfSaleDate());
+				} else {
+					searchObject.put("eol", "");
+
+				}
+				SiteInfoEntity site = deviceDetails.getCustSiteId();
+				searchObject.put("site", site.getcSiteName());
+				searchObject.put("region", site.getcSiteRegion());
+
+				outputArray.add(searchObject);
+			}
+			searchObj.put("data", outputArray);
+
+		} catch (Exception e) {
+			logger.error("exception in searchReffredDevices service is" +e.getMessage());
+			searchObj.put("data", e.getMessage());
+		}
+
+		return Response
+				.status(200)
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers",
+						"origin, content-type, accept, authorization")
+				.header("Access-Control-Allow-Credentials", "true")
+				.header("Access-Control-Allow-Methods",
+						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(searchObj)
+				.build();
+	}
+	
+	@POST
+	@RequestMapping(value = "/viewCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	public ResponseEntity<JSONObject> viewCredentialProfile(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = new JSONObject();
+		String infoId = null;
+		JSONParser parser = new JSONParser();
+		json = (JSONObject) parser.parse(request);
+		infoId = json.get("infoId").toString();
+		if(infoId != null) {
+		JSONObject jsonResult = credentialMgmtService.viewCredentialProfile(infoId);
+		if (jsonResult != null) {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
+		}
+	}
+		return responseEntity;
 	}
 }

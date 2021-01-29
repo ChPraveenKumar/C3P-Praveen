@@ -294,7 +294,7 @@ public class ConfigurationManagement {
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 
 				} else {
-					String bit = "1010011";
+					String bit = "1010000";
 					logger.info(bit);
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 				}
@@ -701,6 +701,14 @@ public class ConfigurationManagement {
 								cammandByTemplate = configurationManagmentService.setReplicationFeatureData(
 										cammandByTemplate, replication, configReqToSendToC3pCode.getVendor());
 
+							}
+							else
+							{
+								cammandByTemplate = configurationManagmentService
+										.getCommandsByMasterFeature(configReqToSendToC3pCode.getVendor(), features);
+								cammandByTemplate = configurationManagmentService.setFeatureData(cammandByTemplate,
+										attribJson);
+								cammandByTemplate =configurationManagmentService.setcammandByTemplate(cammandByTemplate, configReqToSendToC3pCode.getVendor());
 							}
 
 							logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
