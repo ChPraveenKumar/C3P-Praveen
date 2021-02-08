@@ -411,6 +411,8 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				request.put(new String("requestId"), configRequest.getAlphanumericReqId());
 				request.put(new String("hostname"), configRequest.getManagementIp());
 				request.put(new String("stage"), "current");
+				request.put(new String("version"), configRequest.getRequestVersion());
+	            request.put(new String("hostname"), configRequest.getHostname());
 				HttpHeaders headers = new HttpHeaders();
 				headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 				HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
