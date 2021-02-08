@@ -1,6 +1,7 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,7 +9,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
 
 @Entity
@@ -55,6 +55,18 @@ public class CredentialManagementEntity implements Serializable {
 	
 	@Column(name = "cr_genric", length = 50)
 	private String genric;
+
+	@Column(name = "cr_created_by", length = 45)
+	private String createdBy;
+	
+	@Column(name = "cr_updated_by", length = 45)
+	private String updatedBy;
+	
+	@Column(name = "cr_updated_date")
+	private Date updatedDate;
+	
+	@Column(name = "cr_created_date")
+	private Date createdDate;
 
 	public int getInfoId() {
 		return infoId;
@@ -147,6 +159,38 @@ public class CredentialManagementEntity implements Serializable {
 
 	public void setRefDevice(int refDevice) {
 		this.refDevice = refDevice;
+	}
+	
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	public Date getUpdatedDate() {
+		return updatedDate;
+	}
+
+	public void setUpdatedDate(Date updatedDate) {
+		this.updatedDate = updatedDate;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
 	}
 
 

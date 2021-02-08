@@ -2,6 +2,7 @@ package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -63,11 +64,49 @@ public class IpRangeManagementEntity implements Serializable {
 	@Column(name = "r_updated_by", length = 45)
 	private String rangeUpdatedBy;
 
+	@Column(name = "r_ip_pool_purpose", length = 255)
+	private String rangeIpPoolPurpose;
+
 	@Column(name = "r_created_date")
-	private Timestamp rangeCreatedDate;
+	private Date rangeCreatedDate;
 
 	@Column(name = "r_updated_date")
-	private Timestamp rangeUpdatedDate;
+	private Date rangeUpdatedDate;
+	
+	@Column(name = "r_released_on")
+	private Date rangeReleasedOn;
+	
+	public Date getRangeReleasedOn() {
+		return rangeReleasedOn;
+	}
+
+	public void setRangeReleasedOn(Date rangeReleasedOn) {
+		this.rangeReleasedOn = rangeReleasedOn;
+	}
+	
+	public Date getRangeCreatedDate() {
+		return rangeCreatedDate;
+	}
+
+	public void setRangeCreatedDate(Date rangeCreatedDate) {
+		this.rangeCreatedDate = rangeCreatedDate;
+	}
+
+	public Date getRangeUpdatedDate() {
+		return rangeUpdatedDate;
+	}
+
+	public void setRangeUpdatedDate(Date rangeUpdatedDate) {
+		this.rangeUpdatedDate = rangeUpdatedDate;
+	}
+	
+	public String getRangeIpPoolPurpose() {
+		return rangeIpPoolPurpose;
+	}
+
+	public void setRangeIpPoolPurpose(String rangeIpPoolPurpose) {
+		this.rangeIpPoolPurpose = rangeIpPoolPurpose;
+	}
 	
 	public int getRangePoolId() {
 		return rangePoolId;
@@ -171,22 +210,6 @@ public class IpRangeManagementEntity implements Serializable {
 
 	public void setRangeUpdatedBy(String rangeUpdatedBy) {
 		this.rangeUpdatedBy = rangeUpdatedBy;
-	}
-
-	public Timestamp getRangeCreatedDate() {
-		return rangeCreatedDate;
-	}
-
-	public void setRangeCreatedDate(Timestamp rangeCreatedDate) {
-		this.rangeCreatedDate = rangeCreatedDate;
-	}
-
-	public Timestamp getRangeUpdatedDate() {
-		return rangeUpdatedDate;
-	}
-
-	public void setRangeUpdatedDate(Timestamp rangeUpdatedDate) {
-		this.rangeUpdatedDate = rangeUpdatedDate;
 	}
 	
 	public String getRangeRemarks() {
