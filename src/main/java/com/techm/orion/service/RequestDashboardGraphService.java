@@ -278,7 +278,7 @@ public class RequestDashboardGraphService {
 
 	}
 
-	private String getDay(String date) {
+	public String getDay(String date) {
 		String day = null;
 		switch (date) {
 		case "01":

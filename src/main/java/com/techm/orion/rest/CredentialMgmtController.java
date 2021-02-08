@@ -1,6 +1,7 @@
 package com.techm.orion.rest;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -96,69 +97,62 @@ public class CredentialMgmtController {
 		String message = "";
 		CredentialManagementEntity saveDetail = null;
 		boolean isAdd = false;
+		String profileName = null, profileType = null, description = null, loginRead = null, pwdWrite = null,
+				enablePassword = null, genric = null, port = null, version = null;
 		CredentialManagementEntity credentialDetail = new CredentialManagementEntity();
 		JSONObject credential = (JSONObject) parser.parse(credentialRequest);
 		if (credential.containsKey("profileName")) {
-			credentialDetail.setProfileName(credential.get("profileName").toString());
+			profileName = credential.get("profileName").toString();
 		}
 		if (credential.containsKey("profileType")) {
-			credentialDetail.setProfileType(credential.get("profileType").toString());
+			profileType = credential.get("profileType").toString();
 		}
 		if (credential.containsKey("description")) {
-			credentialDetail.setDescription(credential.get("description").toString());
+			description = credential.get("description").toString();
 		}
 		if (credential.containsKey("loginRead")) {
-			credentialDetail.setLoginRead(credential.get("loginRead").toString());
+			loginRead = credential.get("loginRead").toString();
 		}
 		if (credential.containsKey("pwdWrite")) {
-			credentialDetail.setPasswordWrite(credential.get("pwdWrite").toString());
+			pwdWrite = credential.get("pwdWrite").toString();
 		}
 		if (credential.containsKey("enablePassword")) {
-			credentialDetail.setEnablePassword(credential.get("enablePassword").toString());
+			enablePassword = credential.get("enablePassword").toString();
 		}
 		if (credential.containsKey("version")) {
-			credentialDetail.setVersion(credential.get("version").toString());
+			version = credential.get("version").toString();
 		}
 		if (credential.containsKey("port")) {
-			credentialDetail.setPort(credential.get("port").toString());
+			port = credential.get("port").toString();
 		}
 		if (credential.containsKey("genric")) {
-			credentialDetail.setGenric(credential.get("genric").toString());
+			genric = credential.get("genric").toString();
 		}
-		CredentialManagementEntity credentailManagement = credentialManagementRepo
-				.findOneByProfileName(credentialDetail.getProfileName());
+		CredentialManagementEntity credentailManagement = credentialManagementRepo.findOneByProfileName(profileName);
 		CredentialManagementEntity credentialEntity = new CredentialManagementEntity();
+		Date date = new Date();
 		if (credentailManagement == null) {
-			if (credentialDetail.getProfileType().equalsIgnoreCase("SNMP")) {
-				if (credentialDetail.getVersion().equalsIgnoreCase("SNMP V1C/V2C")) {
-					credentialEntity.setLoginRead(credentialDetail.getLoginRead());
-					credentialEntity.setPasswordWrite(credentialDetail.getPasswordWrite());
-					credentialEntity.setDescription(credentialDetail.getDescription());
-					if (!credentialDetail.getPort().isEmpty()) {
-						credentialEntity.setPort(credentialDetail.getPort());
+			if (profileType.equalsIgnoreCase("SNMP") || profileType.equalsIgnoreCase("SSH") || profileType.equalsIgnoreCase("TELNET")) {
+				//if (version.equalsIgnoreCase("SNMP V1C/V2C")) {
+					credentialEntity.setProfileName(profileName);
+					credentialEntity.setProfileType(profileType);
+					credentialEntity.setLoginRead(loginRead);
+					credentialEntity.setPasswordWrite(pwdWrite);
+					credentialEntity.setDescription(description);
+					credentialEntity.setCreatedDate(date);
+					credentialEntity.setVersion(version);
+					credentialEntity.setGenric(genric);
+					credentialEntity.setVersion(version);
+					credentialEntity.setEnablePassword(enablePassword);
+					if (!port.isEmpty()) {
+						credentialEntity.setPort(port);
 					} else {
-						credentialEntity.getPort().equalsIgnoreCase("161");
+						credentialEntity.setPort("161");
 					}
-				} else {
-					credentialEntity.setLoginRead(credentialDetail.getLoginRead());
-					credentialEntity.setPasswordWrite(credentialDetail.getPasswordWrite());
-					credentialEntity.setEnablePassword(credentialDetail.getEnablePassword());
-					credentialEntity.setGenric(credentialDetail.getGenric());
-					credentialEntity.setPort(credentialDetail.getPort());
-					credentialEntity.setVersion(credentialDetail.getVersion());
-					credentialEntity.setDescription(credentialDetail.getDescription());
-					credentialEntity.setDescription(credentialDetail.getDescription());
-				}
-			} else if (credentialDetail.getProfileType().equalsIgnoreCase("SSH")
-					|| credentialDetail.getProfileType().equalsIgnoreCase("TELNET")) {
-				credentialEntity.setLoginRead(credentialDetail.getLoginRead());
-				credentialEntity.setPasswordWrite(credentialDetail.getPasswordWrite());
-				credentialEntity.setEnablePassword(credentialDetail.getEnablePassword());
-				credentialEntity.setDescription(credentialDetail.getDescription());
 			}
-			saveDetail = credentialManagementRepo.save(credentialDetail);
+			saveDetail = credentialManagementRepo.save(credentialEntity);
 			isAdd = true;
-		}
+			}
 		if (isAdd) {
 			message = "Credential saved successfully";
 		} else {
