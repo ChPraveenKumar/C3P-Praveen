@@ -125,6 +125,9 @@ public class BackUpAndRestoreController {
 	@Autowired
 	DeviceDiscoveryRepository deviceInforepo;
 
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getVendorCheck", method = RequestMethod.POST, produces = "application/json")
@@ -162,6 +165,9 @@ public class BackUpAndRestoreController {
 		return Response.status(200).entity(str).build();
 	}
 
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getManagementIP", method = RequestMethod.POST, produces = "application/json")
@@ -200,6 +206,9 @@ public class BackUpAndRestoreController {
 		return Response.status(200).entity(str).build();
 	}
 
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getBackUpSRList", method = RequestMethod.GET, produces = "application/json")
@@ -306,6 +315,9 @@ public class BackUpAndRestoreController {
 
 	}
 
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getBaselineVersion", method = RequestMethod.POST, produces = "application/json")
@@ -351,6 +363,9 @@ public class BackUpAndRestoreController {
 		return Response.status(200).entity(str).build();
 	}
 
+	/**
+	 * This Api is marked as ***************Both Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/createConfigurationDcmBackUpAndRestore", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -466,7 +481,10 @@ public class BackUpAndRestoreController {
 		return obj;
 
 	}
-
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * */
 	/* Web service call to search request based on user input */
 	@SuppressWarnings("unchecked")
 	@POST
@@ -668,6 +686,9 @@ public class BackUpAndRestoreController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * */
 	@POST
 	@RequestMapping(value = "/batchBackUpAndRestore", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -848,6 +869,9 @@ public class BackUpAndRestoreController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getAllRequest", method = RequestMethod.GET, produces = "application/json")
 	public Response getAllRequest() {
@@ -874,6 +898,9 @@ public class BackUpAndRestoreController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getAllBatchRequest", method = RequestMethod.GET, produces = "application/json")
 	public Response getAllBatchId() {
@@ -909,6 +936,9 @@ public class BackUpAndRestoreController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getSingleBatch", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -950,6 +980,9 @@ public class BackUpAndRestoreController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/batchConfig", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -1147,7 +1180,10 @@ public class BackUpAndRestoreController {
 		return obj;
 
 	}
-
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/batchTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -1330,6 +1366,9 @@ public class BackUpAndRestoreController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/batchOsUpgrade", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -1525,6 +1564,9 @@ public class BackUpAndRestoreController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getAllDeviceFamily", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -1546,6 +1588,9 @@ public class BackUpAndRestoreController {
 		return new ResponseEntity(model, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getAllOs", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -1569,6 +1614,9 @@ public class BackUpAndRestoreController {
 		return new ResponseEntity(model, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/searchOsUpgradeDashboard", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -1688,6 +1736,9 @@ public class BackUpAndRestoreController {
 		return new ResponseEntity(obj, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/filterOsUpgradeDashboard", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

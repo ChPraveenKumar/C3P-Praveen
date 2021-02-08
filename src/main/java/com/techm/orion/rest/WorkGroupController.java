@@ -37,6 +37,9 @@ public class WorkGroupController {
 	@Autowired
 	private UserManagementRepository userManagementRepository;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/fetchWorkGroups", method = RequestMethod.GET, produces = "application/json")
@@ -80,6 +83,9 @@ public class WorkGroupController {
 		return new ResponseEntity<JSONObject>(workGroup, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/addWorkGroup", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -122,7 +128,9 @@ public class WorkGroupController {
 		return new ResponseEntity<JSONObject>(workGroupResObj, HttpStatus.OK);
 	}
 
-	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked" })
 	@POST
 	@RequestMapping(value = "/editWorkGroupRole", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -164,6 +172,9 @@ public class WorkGroupController {
 		return new ResponseEntity<JSONObject>(roleResObj, HttpStatus.OK);
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "unused" })
 	@POST
 	@RequestMapping(value = "/searchWorkGroup", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -224,6 +235,9 @@ public class WorkGroupController {
 		return new ResponseEntity<JSONObject>(workGroup, HttpStatus.OK);
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/validateWorkGroup", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")

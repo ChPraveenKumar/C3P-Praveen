@@ -43,7 +43,10 @@ public class UpdateIpamDBService implements Observer {
 	private String serviceAdd;
 
 	private String regionAdd;
-
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/	
 	@POST
 	@RequestMapping(value = "/update", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -104,6 +107,9 @@ public class UpdateIpamDBService implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/add", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

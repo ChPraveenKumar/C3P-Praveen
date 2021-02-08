@@ -51,6 +51,9 @@ public class GetDataOnRefresh {
 	@Autowired
 	private UserManagementRepository userManagementRepository;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/get", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

@@ -52,6 +52,9 @@ public class TemplateSuggestionService implements Observer {
 	@Autowired
 	TemplateFeatureRepo templatefeatureRepo;
 
+	/**
+	 *This Api is marked as ***************Both Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getFeaturesForDeviceDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getFeaturesForDeviceDetail(@RequestBody String request) throws Exception {
@@ -64,6 +67,10 @@ public class TemplateSuggestionService implements Observer {
 		}
 		return responseEntity;
 	}
+	
+	/**
+	 *This Api is marked as ***************Both Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getFeaturesForSelectedTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -131,6 +138,9 @@ public class TemplateSuggestionService implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************Both Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getTemplateDetailsForSelectedFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getTemplateDetailsForSelectedFeatures(@RequestBody String request)
@@ -176,6 +186,9 @@ public class TemplateSuggestionService implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************Both Api Impacted****************
+	 **/
 	/* Dhanshri Mane */
 	/* Get Attribute Related Features and template Id */
 	@POST
@@ -260,6 +273,9 @@ public class TemplateSuggestionService implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getAttribForMACD", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -280,6 +296,9 @@ public class TemplateSuggestionService implements Observer {
 		return responseEntity;
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -398,6 +417,9 @@ public class TemplateSuggestionService implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getFeaturesForTS", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

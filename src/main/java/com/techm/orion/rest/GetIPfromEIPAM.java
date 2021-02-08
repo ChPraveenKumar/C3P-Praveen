@@ -31,6 +31,9 @@ public class GetIPfromEIPAM implements Observer {
 	@Autowired
 	EIPAMEntityRepository eipamEntityRepository;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getip", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

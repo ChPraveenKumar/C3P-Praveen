@@ -34,8 +34,10 @@ public class GetAllIPAMData implements Observer {
 
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
-
 	@RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	public Response getAll() {

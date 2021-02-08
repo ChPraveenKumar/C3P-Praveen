@@ -24,6 +24,9 @@ import com.techm.orion.service.GetConfigurationTemplateService;
 public class GetConfigurationTemplateForModify {
 	private static final Logger logger = LogManager.getLogger(GetConfigurationTemplateForModify.class);
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/createConfigurationTemplateModify", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

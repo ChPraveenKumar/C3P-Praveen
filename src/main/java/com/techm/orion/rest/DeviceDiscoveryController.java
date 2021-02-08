@@ -63,6 +63,9 @@ public class DeviceDiscoveryController implements Observer {
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/discoverDashboard", method = RequestMethod.GET, produces = "application/json")
@@ -149,6 +152,9 @@ public class DeviceDiscoveryController implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/deviceInventoryDashboard", method = RequestMethod.GET, produces = "application/json")
@@ -233,6 +239,9 @@ public class DeviceDiscoveryController implements Observer {
 		return null;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/deviceDetails", method = RequestMethod.GET, produces = "application/json")

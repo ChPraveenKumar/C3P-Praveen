@@ -81,7 +81,10 @@ public class ConfigMngmntService implements Observer {
 
 	@Autowired
 	private MasterCharacteristicsRepository masterCharachteristicRepository;
-
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/createConfigurationDcm", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

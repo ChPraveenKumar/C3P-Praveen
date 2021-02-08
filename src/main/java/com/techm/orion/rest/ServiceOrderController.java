@@ -35,6 +35,9 @@ public class ServiceOrderController {
 	@Autowired
 	public ServiceOrderRepo serviceOrderRepo;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getAllServiceOrder", method = RequestMethod.GET, produces = "application/json")
@@ -58,6 +61,9 @@ public class ServiceOrderController {
 	}
 
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/updateserviceorder", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

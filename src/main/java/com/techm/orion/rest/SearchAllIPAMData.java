@@ -39,6 +39,9 @@ public class SearchAllIPAMData implements Observer {
 	@Autowired
 	EIPAMEntityRepository eipamEntityRepository;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, produces = "application/json")
 	@ResponseBody

@@ -23,9 +23,11 @@ import com.techm.orion.utility.ExcelToJSONConverter;
 public class GetAllExcelData implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetAllExcelData.class);
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/get", headers = "content-type=multipart/*", method = RequestMethod.POST, produces = "application/json")
-
 	@ResponseBody
 	public Response getAll(@RequestParam("file") MultipartFile file) {
 

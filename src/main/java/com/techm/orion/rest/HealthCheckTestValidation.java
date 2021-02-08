@@ -83,6 +83,9 @@ public class HealthCheckTestValidation extends Thread {
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/healthcheckCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

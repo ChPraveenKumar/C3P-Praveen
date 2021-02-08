@@ -57,6 +57,9 @@ public class GblLstController {
 	@Autowired
 	private RegionsRepository regionsRepository;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/services", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public Response setServices(@RequestBody Services services) {
@@ -70,6 +73,9 @@ public class GblLstController {
 		return Response.status(200).entity("Service added successfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@DELETE
 	@RequestMapping(value = "/services", method = RequestMethod.DELETE, produces = "application/json")
 	public Response delservices(@RequestParam String services) {
@@ -89,12 +95,18 @@ public class GblLstController {
 		return Response.status(200).entity("Service deleted successfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/services", method = RequestMethod.GET, produces = "application/json")
 	public Response getServices() {
 		return Response.status(200).entity(servicesRepository.findAll()).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/regions", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public Response setRegions(@RequestBody Regions regions) {
@@ -108,6 +120,9 @@ public class GblLstController {
 		return Response.status(200).entity("Region added successfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@DELETE
 	@RequestMapping(value = "/regions", method = RequestMethod.DELETE, produces = "application/json")
 	public Response delregions(@RequestParam String regions) {
@@ -127,12 +142,18 @@ public class GblLstController {
 		return Response.status(200).entity("Region deleted successfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/regions", method = RequestMethod.GET, produces = "application/json")
 	public Response getRegions() {
 		return Response.status(200).entity(regionsRepository.findAll()).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/vendor", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public Response setVendor(@RequestBody Vendors vendors) {
@@ -147,6 +168,9 @@ public class GblLstController {
 		return Response.status(200).entity("Vendor added successfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@DELETE
 	@RequestMapping(value = "/vendor", method = RequestMethod.DELETE, produces = "application/json")
 	public Response delVendor(@RequestParam String vendor) {
@@ -168,12 +192,18 @@ public class GblLstController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/vendor", method = RequestMethod.GET, produces = "application/json")
 	public Response getVendors() {
 		return Response.status(200).entity(vendorRepository.findAll()).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/vendors", method = RequestMethod.GET, produces = "application/json")
 	public Response getVendor(@RequestParam String deviceFamily) {
@@ -192,12 +222,18 @@ public class GblLstController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/osversions", method = RequestMethod.GET, produces = "application/json")
 	public Response getOsversions() {
 		return Response.status(200).entity(osversionRepository.findAll()).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/osversionforos", method = RequestMethod.GET, produces = "application/json")
 	public Response getOsversionforos(@RequestParam String os) {
@@ -213,6 +249,9 @@ public class GblLstController {
 		return Response.status(200).entity(osversionlst).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@DELETE
 	@RequestMapping(value = "/osversion", method = RequestMethod.DELETE, produces = "application/json")
 	public Response delOsversion(@RequestParam String osversion) {
@@ -231,6 +270,9 @@ public class GblLstController {
 		return Response.status(200).entity("OS Version deleted successfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/osversion", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response setOSversion(@RequestBody GlobalLstReq globalLstReq) {
@@ -287,6 +329,9 @@ public class GblLstController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@PUT
 	@RequestMapping(value = "/osversion", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
 	public Response updateOSversion(@RequestBody GlobalLstReq globalLstReq) {
@@ -330,13 +375,19 @@ public class GblLstController {
 		return Response.status(200).entity("OS Version updated successfully").build();
 
 	}
-
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/oss", method = RequestMethod.GET, produces = "application/json")
 	public Response getOs() {
 		return Response.status(200).entity(osRepository.findAll()).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/os", method = RequestMethod.GET, produces = "application/json")
 	public Response getOs(@RequestParam String family) {
@@ -352,6 +403,9 @@ public class GblLstController {
 		}
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@DELETE
 	@RequestMapping(value = "/os", method = RequestMethod.DELETE, produces = "application/json")
 	public Response delOs(@RequestParam String os) {
@@ -373,6 +427,9 @@ public class GblLstController {
 		return Response.status(200).entity("OS deleted successfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@PUT
 	@RequestMapping(value = "/os", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
 	public Response updateOS(@RequestBody OS os) {
@@ -410,6 +467,9 @@ public class GblLstController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/os", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response setOS(@RequestBody OS os) {
@@ -475,6 +535,9 @@ public class GblLstController {
 		return Response.status(200).entity(msg).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/models", method = RequestMethod.GET, produces = "application/json")
 	public Response getModels() {
@@ -483,6 +546,9 @@ public class GblLstController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/model", method = RequestMethod.GET, produces = "application/json")
 	public Response getModel(@RequestParam String devicefamily, String vendor, String osVersion) {
@@ -512,6 +578,9 @@ public class GblLstController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@DELETE
 	@RequestMapping(value = "/model", method = RequestMethod.DELETE, produces = "application/json")
 	public Response delModel(@RequestParam String model) {
@@ -530,6 +599,9 @@ public class GblLstController {
 		return Response.status(200).entity("Model deleted successfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/models", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response setModelforadd(@RequestBody GlobalLstReq globalLstReq) {
@@ -582,6 +654,9 @@ public class GblLstController {
 		return Response.status(200).entity("Model " + res + " succesfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@RequestMapping(value = "/models", method = RequestMethod.PUT, produces = "application/json", consumes = "application/json")
 	public Response setModel(@RequestBody GlobalLstReq globalLstReq) {
 		List<Models> modelsreq = globalLstReq.getModels();
@@ -696,6 +771,9 @@ public class GblLstController {
 		return Response.status(200).entity("Model " + res + " succesfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@DELETE
 	@RequestMapping(value = "/deviceFamily", method = RequestMethod.DELETE, produces = "application/json")
 	public Response delDevicetype(@RequestParam String devicefamily) {
@@ -717,12 +795,18 @@ public class GblLstController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/deviceFamilies", method = RequestMethod.GET, produces = "application/json")
 	public Response getDevicetypes() {
 		return Response.status(200).entity(deviceFamilyRepository.findAll()).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/deviceFamily", method = RequestMethod.GET, produces = "application/json")
 	public Response getDevicetype(@RequestParam String vendor) {
@@ -737,6 +821,9 @@ public class GblLstController {
 		}
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/deviceFamily", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public Response setDeviceFamily(@RequestBody GlobalLstReq globalLstReq) {
@@ -770,6 +857,9 @@ public class GblLstController {
 		return Response.status(200).entity("Device Family " + resstr + " succesfully").build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/modifyDeviceFamily", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public Response modifydevicetype(@RequestBody GlobalLstReq globalLstReq) {
@@ -810,6 +900,9 @@ public class GblLstController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/osversionforvendor", method = RequestMethod.GET, produces = "application/json")
 	public Response getOsversionforvendor(@RequestParam String vendor, String model) {
@@ -845,6 +938,9 @@ public class GblLstController {
 		return Response.status(200).entity(osversionlst).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/modifyModel", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response modifyModel(@RequestBody GlobalLstReq globalLstReq) {
@@ -923,6 +1019,9 @@ public class GblLstController {
 		return Response.status(resStatus).entity(message.toString()).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/modifyOsVersion", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response modifyOsVersion(@RequestBody GlobalLstReq globalLstReq) {

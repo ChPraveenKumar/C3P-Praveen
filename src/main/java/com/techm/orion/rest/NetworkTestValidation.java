@@ -71,6 +71,9 @@ public class NetworkTestValidation extends Thread {
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/networkCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

@@ -26,6 +26,9 @@ public class EditC3PUserService implements Observer {
 	private static final Logger logger = LogManager.getLogger(EditC3PUserService.class);
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/isUserPresent", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -88,6 +91,9 @@ public class EditC3PUserService implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	// To be written properly RUCHITA
 	@POST
 	@RequestMapping(value = "/editUserRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

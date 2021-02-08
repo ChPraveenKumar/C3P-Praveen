@@ -43,12 +43,18 @@ public class TpmgmtController {
 	@Autowired
 	MasterAttribRepository masterAttrribRepository;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/basicConfiguration", method = RequestMethod.GET, produces = "application/json")
 	public Response getSeries() {
 		return Response.status(200).entity(basicConfigurationRepository.findAll()).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/basicConfigurations", method = RequestMethod.GET, produces = "application/json")
 	public Response getSeriess(@RequestParam String vendor, String deviceFamily, String model) {
@@ -72,6 +78,9 @@ public class TpmgmtController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/basicConfiguration", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response setBasicConfiguration(@RequestBody BasicConfigurationRqst bscConfigReq) {

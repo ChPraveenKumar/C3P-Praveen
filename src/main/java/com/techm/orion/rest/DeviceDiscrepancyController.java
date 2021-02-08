@@ -28,6 +28,9 @@ public class DeviceDiscrepancyController {
 	@Autowired
 	DeviceDiscrepancyService service;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/discrepancyValue", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -54,6 +57,9 @@ public class DeviceDiscrepancyController {
 		return discripancyValue;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/deviceDiscrepancyTab", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -80,6 +86,9 @@ public class DeviceDiscrepancyController {
 		return discrepancyArray;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/discrepancy", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -98,6 +107,9 @@ public class DeviceDiscrepancyController {
 		return finalObject;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/ignoreAndOverWrite", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -118,6 +130,9 @@ public class DeviceDiscrepancyController {
 	/*
 	 * Webservice for Display of Interfaces from new table
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/intefaceDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
