@@ -25,7 +25,8 @@ public enum TSALabels {
 	ODL_TEST_INTERFACE_BANDWIDTH, ODL_TEST_NEGOTIATION_TEST, ODL_TEST_BANDWIDTH_TEST,
 	
 	/*Python EndPoints*/
-	PYTHON_PING, PYTHON_THROUGHPUT;
+	PYTHON_PING, PYTHON_THROUGHPUT, PYTHON_BACKUP, BACKUP_PORT, IP_MANAGEMENT;
+
 
 	private static final Logger logger = LogManager.getLogger(TSALabels.class);
 	private static ResourceBundle resourceLabels;
