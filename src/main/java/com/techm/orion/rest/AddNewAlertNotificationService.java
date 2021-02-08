@@ -30,6 +30,9 @@ public class AddNewAlertNotificationService implements Observer {
 	public AlertInformationRepository alertInformationRepository;
 
 	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
+	/**
 	 * Alert Page - Web Service - To add new alert information - Post JBDC to
 	 * JPA migration
 	 */

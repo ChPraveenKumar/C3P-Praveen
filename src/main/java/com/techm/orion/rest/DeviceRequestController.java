@@ -48,6 +48,9 @@ public class DeviceRequestController {
 	@Autowired
 	private MasterCharacteristicsRepository masterCharacteristicRepo;
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getConfigRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -73,6 +76,10 @@ public class DeviceRequestController {
 		}
 		return Response.status(200).entity(requestDeatils).build();
 	}
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getConfigFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

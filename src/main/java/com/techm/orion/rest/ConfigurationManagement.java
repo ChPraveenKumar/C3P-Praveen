@@ -89,6 +89,9 @@ public class ConfigurationManagement {
 	@Autowired
 	private MasterCharacteristicsRepository masterCharachteristicRepository;
 
+	/**
+	 *This Api is marked as ***************Both Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

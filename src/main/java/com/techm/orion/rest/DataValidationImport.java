@@ -94,6 +94,9 @@ public class DataValidationImport implements Observer {
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 	CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@Produces("application/json")
 	@RequestMapping(value = "/milestonebits", method = RequestMethod.GET, produces = "application/json")

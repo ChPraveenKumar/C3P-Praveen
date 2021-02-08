@@ -25,6 +25,9 @@ public class InventoryManagmentController {
 	@Autowired
 	InventoryManagmentService service;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getVendors", method = RequestMethod.GET, produces = "application/json")
 	public Response getVendors() {
@@ -33,6 +36,9 @@ public class InventoryManagmentController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getCustomers", method = RequestMethod.GET, produces = "application/json")
 	public Response getCustomers() {
@@ -40,13 +46,19 @@ public class InventoryManagmentController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getUserCustomerInfo", method = RequestMethod.GET, produces = "application/json")
 	public Response getUserCustomerInfo() {
 		return Response.status(200).entity(service.getMyCustomersDevice()).build();
 
 	}
-
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getUserVendorInfo", method = RequestMethod.GET, produces = "application/json")
 	public Response getUserVendorInfo() {
@@ -54,6 +66,9 @@ public class InventoryManagmentController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getAllCustomersDeviceInfo", method = RequestMethod.GET, produces = "application/json")
 	public Response getAllCustomersDeviceInfo() {
@@ -61,6 +76,9 @@ public class InventoryManagmentController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getRequestDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

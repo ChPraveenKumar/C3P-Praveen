@@ -18,6 +18,9 @@ public class IpManagementController {
 	@Autowired
 	private IpManagementService ipManagementService;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getAllHostIps", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<JSONObject> getAllHostIps() {
@@ -31,6 +34,9 @@ public class IpManagementController {
 		return responseEntity;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getAllRangeIps", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<JSONObject> getAllRangeIps() {

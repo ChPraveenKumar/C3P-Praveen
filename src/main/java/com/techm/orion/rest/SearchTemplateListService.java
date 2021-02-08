@@ -33,6 +33,9 @@ public class SearchTemplateListService implements Observer {
 
 	TemplateManagementDetailsService service = new TemplateManagementDetailsService();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

@@ -90,12 +90,18 @@ public class TestStrategyController {
 
 	RequestInfoDao dao = new RequestInfoDao();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/testfeatureList", method = RequestMethod.GET, produces = "application/json")
 	public Response getOsversions() {
 		return Response.status(200).entity(testFeatureListRepository.findAll()).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unused")
 	@POST
 	@RequestMapping(value = "/certificationtestsfordevice", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -231,6 +237,9 @@ public class TestStrategyController {
 		return Response.status(200).entity(testDetailsFinal).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unused", "unchecked", "rawtypes" })
 	@GET
 	@RequestMapping(value = "/getTestDetails", method = RequestMethod.GET, produces = "application/json")
@@ -351,13 +360,18 @@ public class TestStrategyController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getalltests", method = RequestMethod.GET, produces = "application/json")
 	public Response getOs() {
 		return Response.status(200).entity(testDetailsRepository.findAll()).build();
 	}
 
-	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/savetestdetails", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response saveBasicConfiguration(@RequestBody String teststrategesaveRqst) {		
@@ -634,6 +648,9 @@ public class TestStrategyController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/testStrategySearch", method = RequestMethod.GET, produces = "application/json")
 	public Response get(@RequestParam String value, @RequestParam String key) {
@@ -660,6 +677,9 @@ public class TestStrategyController {
 		return Response.status(200).entity(result).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/networkAuditReport", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response networkAuditReport(@RequestBody String teststrategeeditRqst) {
@@ -679,6 +699,9 @@ public class TestStrategyController {
 		return null;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/getTestList", method = RequestMethod.GET, produces = "application/json")
@@ -782,6 +805,9 @@ public class TestStrategyController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked" })
 	@POST
 	@RequestMapping(value = "/getTestnamesAndVersionList", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -869,6 +895,9 @@ public class TestStrategyController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@POST
 	@RequestMapping(value = "/getSearchTestList", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -982,6 +1011,9 @@ public class TestStrategyController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getDeviceInfoByHostName", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response getDeviceInfo(@RequestBody String request) throws ParseException {
@@ -1018,7 +1050,9 @@ public class TestStrategyController {
 	 * For new UI same logic and method only changes in JSON Formate
 	 * (getTestsForDevice)
 	 */
-
+	/**
+	 *This Api is marked as ***************Both Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked" })
 	@POST
 	@RequestMapping(value = "/newCertificationtestsfordevice", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -1104,6 +1138,9 @@ public class TestStrategyController {
 		return testDetailsValue;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getAllVersion", method = { RequestMethod.POST,
@@ -1169,6 +1206,9 @@ public class TestStrategyController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/searchAllRequest", method = { RequestMethod.POST,
@@ -1211,6 +1251,9 @@ public class TestStrategyController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/testListForBatch", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -1338,6 +1381,9 @@ public class TestStrategyController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	private JSONArray getBundleData(String deviceFamily, String os, String region, String osVersion, String vendor,
 			String networkType, String requestType, JSONArray testDetailsValue, List<TestBundling> testBundleData) {
@@ -1374,6 +1420,9 @@ public class TestStrategyController {
 		return testDetailsValue;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getFeaturesForTestDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getFeaturesForDeviceDetail(@RequestBody String request) throws Exception {

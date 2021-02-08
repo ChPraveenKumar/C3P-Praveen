@@ -35,6 +35,9 @@ public class LoginService {
 	@Autowired
 	private UserManagementInterface userCreateInterface;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "null" })
 	@POST
 	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

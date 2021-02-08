@@ -39,6 +39,9 @@ public class GetAllRequestDashboardViewService implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetAllRequestDashboardViewService.class);
 	List<ElapsedTimeFormatPojo> elapsedtimings;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/GetAllDashboardViewJSON", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
@@ -230,6 +233,9 @@ public class GetAllRequestDashboardViewService implements Observer {
 		return count;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getListForConfigurationFeature", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

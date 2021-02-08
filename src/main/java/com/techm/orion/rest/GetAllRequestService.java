@@ -38,6 +38,9 @@ public class GetAllRequestService implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetAllRequestService.class);
 	List<ElapsedTimeFormatPojo> elapsedtimings;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/GetAllRequests", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody

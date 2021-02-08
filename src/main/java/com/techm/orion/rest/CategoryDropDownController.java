@@ -17,12 +17,18 @@ public class CategoryDropDownController {
 	@Autowired
 	CategoryDropDownService service;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/dropdownValue",method = RequestMethod.GET, produces = "application/json")
 	public Response getDropDownValue() {
 		return Response.status(200).entity(service.getAll()).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/dropdownValue/{categoryName}", method = RequestMethod.GET,produces = "application/json")
 	public Response getValueByCategoryName(@PathVariable String categoryName) {

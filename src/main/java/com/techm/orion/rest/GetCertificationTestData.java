@@ -27,7 +27,11 @@ import com.techm.orion.service.CertificationTestFlagDetailsService;
 @RequestMapping("/GetCertificationTestData")
 public class GetCertificationTestData implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetCertificationTestData.class);
+	
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getPrevalidationTestData", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

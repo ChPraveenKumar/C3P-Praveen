@@ -52,7 +52,9 @@ public class CredentialMgmtController {
 	@Autowired
 	private CredentialMgmtService credentialMgmtService;
 
-	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getProfileNameValidation", method = RequestMethod.POST, produces = "application/json")
 	@ResponseBody
@@ -83,6 +85,9 @@ public class CredentialMgmtController {
 		return Response.status(200).entity(str).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unused")
 	@POST
 	@RequestMapping(value = "/saveCredential", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -161,7 +166,10 @@ public class CredentialMgmtController {
 		}
 		return Response.status(200).entity(message).build();
 	}
-
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@RequestMapping(value = "/deleteCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response deleteCredentialProfile(@RequestBody String request) throws ParseException {
 		boolean isDelete = false;
@@ -232,6 +240,9 @@ public class CredentialMgmtController {
 		return Response.status(200).entity(msg).build();
 	} 
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getAllCredential", method = RequestMethod.GET, produces = "application/json")
 	public Response getCredential() {
@@ -271,6 +282,9 @@ public class CredentialMgmtController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/refDeviceList", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -368,6 +382,9 @@ public class CredentialMgmtController {
 		return new ResponseEntity(obj, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/profiles", method = RequestMethod.GET, produces = "application/json")
 	public Response getProfiles(@RequestParam String type) {
@@ -378,6 +395,9 @@ public class CredentialMgmtController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/addRefferedDevices", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -459,6 +479,9 @@ public class CredentialMgmtController {
 		return new ResponseEntity<JSONObject>(reffredDevicesJson, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/deleteRefferedDevices", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -495,6 +518,9 @@ public class CredentialMgmtController {
 		return new ResponseEntity<JSONObject>(reffredDevicesJson, HttpStatus.OK);
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/searchReffredDevices", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -639,6 +665,9 @@ public class CredentialMgmtController {
 				.build();
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/viewCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public ResponseEntity<JSONObject> viewCredentialProfile(@RequestBody String request) throws Exception {

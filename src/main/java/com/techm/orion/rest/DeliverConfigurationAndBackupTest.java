@@ -81,6 +81,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	@Autowired
 	private BackupCurrentRouterConfigurationService bckupConfigService;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/deliverConfigurationTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

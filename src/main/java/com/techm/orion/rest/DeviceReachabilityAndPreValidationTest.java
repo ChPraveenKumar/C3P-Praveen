@@ -88,6 +88,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	// TODO: We need to remove this later or while on GCP
 	public static final String ROUTER_IP_TEMP = "10.62.0.24";
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/performPrevalidateTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -571,6 +574,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/performReachabiltyTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

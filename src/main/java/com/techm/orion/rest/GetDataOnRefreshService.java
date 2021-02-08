@@ -28,6 +28,9 @@ public class GetDataOnRefreshService {
 	@Autowired
 	RequestInfoDetailsDao requestInfoDao;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/get", method = RequestMethod.GET, produces = "application/json")

@@ -567,6 +567,9 @@ public class GetTemplateConfigurationData implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getTemplateList", method = RequestMethod.GET, produces = "application/json")
@@ -656,6 +659,9 @@ public class GetTemplateConfigurationData implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getTemplateViewForTemplateVersion", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -1226,6 +1232,9 @@ public class GetTemplateConfigurationData implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getDataForLeftPanel", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -1264,6 +1273,9 @@ public class GetTemplateConfigurationData implements Observer {
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/checkAliasName", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<JSONObject> checkAliasName(String aliasName) throws Exception {

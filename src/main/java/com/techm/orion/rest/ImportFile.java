@@ -90,7 +90,9 @@ public class ImportFile {
 	private ImportMasterStagingRepo importMasterStagingRepo;
 
 	/* Web service to get all request on Import Dash Board */
-
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = "application/json")
@@ -146,6 +148,9 @@ public class ImportFile {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	/* Web service call to upload file on local storage and save in Database */
 	@POST
 	@RequestMapping(value = "/fileupload", method = RequestMethod.POST)
@@ -158,6 +163,9 @@ public class ImportFile {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	/* Web service call to search request based on user input */
 	@SuppressWarnings("unchecked")
 	@POST
@@ -284,6 +292,9 @@ public class ImportFile {
 		return detailsListFinalAfterSave;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	/* Web service call to validate file against predefine set of rules */
 	@SuppressWarnings("unchecked")
 	@POST
@@ -443,6 +454,9 @@ public class ImportFile {
 	 * Web service call to validate file against predefine set of rules for
 	 * Customer OnBoarding process
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/fileValidationCSVForCOB", method = RequestMethod.POST, produces = "application/json")
@@ -536,6 +550,9 @@ public class ImportFile {
 	 * Web service call to upload file on local storage and save in Database for
 	 * Customer OnBoarding process
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/csvFileSaveInDB", method = RequestMethod.POST, produces = "application/json")
@@ -572,6 +589,9 @@ public class ImportFile {
 	 * Web service call to display Dashboard data on C3P inventory for
 	 * Customer OnBoarding process
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getDashboardData", method = RequestMethod.GET, produces = "application/json")
@@ -618,6 +638,9 @@ public class ImportFile {
 	 * Web service call to get Mydashboard data for
 	 * Customer OnBoarding process
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getMyDashboardData", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
@@ -664,6 +687,9 @@ public class ImportFile {
 	 * Web service call to generate report based on import id for
 	 * Customer OnBoarding process
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/generateReport", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody

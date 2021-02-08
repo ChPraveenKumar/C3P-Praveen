@@ -32,6 +32,9 @@ public class AttributeFeatureServiceTM implements Observer {
 	
 	private static final Logger logger = LogManager.getLogger(AttributeFeatureService.class);
 	
+	/**
+	 * This Api is marked as ***************External Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getFeaturesForAttributes", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -82,6 +85,9 @@ public class AttributeFeatureServiceTM implements Observer {
 
 	}
 
+	/**
+	 * This Api is marked as ***************External Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getFeaturesForSelectedTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -148,6 +154,9 @@ public class AttributeFeatureServiceTM implements Observer {
 
 	}
 
+	/**
+	 * This Api is marked as ***************External Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getTemplateDetailsForSelectedFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
