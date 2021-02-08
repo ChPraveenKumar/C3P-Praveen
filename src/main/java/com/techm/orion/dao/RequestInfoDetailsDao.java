@@ -193,6 +193,8 @@ public class RequestInfoDetailsDao {
 				resourceCharEntity.setRcCharacteristicValue(attributes.getRcValue());
 				resourceCharEntity.setDeviceId(attributes.getDeviceId());
 				resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
+				resourceCharEntity.setRc_created_date(new Timestamp(new Date().getTime()));
+				resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
 				resourceCharRepo.save(resourceCharEntity);
 			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
