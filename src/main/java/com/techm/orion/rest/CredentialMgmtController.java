@@ -250,10 +250,10 @@ public class CredentialMgmtController {
 
 		credentialManagementList = credentialManagementRepo.findAll();
 
-		for (int i = 0; i < credentialManagementList.size(); i++) {
+		for (CredentialManagementEntity credential : credentialManagementList) {
 			int count = 0;
-			profileName = credentialManagementList.get(i).getProfileName();
-			type = credentialManagementList.get(i).getProfileType();
+			profileName = credential.getProfileName();
+			type = credential.getProfileType();
 
 			if (type.equalsIgnoreCase("SSH")) {
 				hostNameList = deviceDiscoveryRepository.findByDSshCredProfile(profileName);
@@ -265,9 +265,9 @@ public class CredentialMgmtController {
 				hostNameList = deviceDiscoveryRepository.findByDSnmpCredProfile(profileName);
 				count = hostNameList.size();
 			}
-
-			credentialManagementRepo.updateRefDevice(count, profileName);
-
+			credential.setRefDevice(count);
+			credential.setProfileName(profileName);
+			credentialManagementRepo.save(credential);
 		}
 
 		credentialManagementFinalList = credentialManagementRepo.findAll();

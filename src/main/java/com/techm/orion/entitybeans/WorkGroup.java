@@ -45,8 +45,8 @@ public class WorkGroup {
 	@Column(name = "sourcesystem")
 	private String sourcesystem;
 
-	@Column(name = "sourcesystemcode")
-	private String sourcesystemcode;
+	@Column(name = "apicalltype")
+	private String apicalltype;
 	
 	public int getId() {
 		return id;
@@ -120,12 +120,12 @@ public class WorkGroup {
 		this.sourcesystem = sourcesystem;
 	}
 
-	public String getSourcesystemcode() {
-		return sourcesystemcode;
+	public String getApicalltype() {
+		return apicalltype;
 	}
 
-	public void setSourcesystemcode(String sourcesystemcode) {
-		this.sourcesystemcode = sourcesystemcode;
+	public void setApicalltype(String apicalltype) {
+		this.apicalltype = apicalltype;
 	}
 
 	public WorkGroup(int id, String workGroupName) {
