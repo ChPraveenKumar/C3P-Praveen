@@ -2395,7 +2395,7 @@ public class ConfigMngmntService implements Observer {
 						JSONArray defaultArray = (JSONArray) certificationTestFlag
 								.get("default");
 						if (defaultArray != null) {
-							String bit = "1010000";
+							String bit = "0000000";
 							int frameloss = 0, latency = 0, throughput = 0;
 							for (int defarray = 0; defarray < defaultArray
 									.size(); defarray++) {
@@ -2429,13 +2429,13 @@ public class ConfigMngmntService implements Observer {
 							requestInfoPojo.setCertificationSelectionBit(bit);
 
 						} else {
-							String bit = "1010011";
+							String bit = "0000011";
 							logger.info(bit);
 							requestInfoPojo.setCertificationSelectionBit(bit);
 						}
 					}
 				} else {
-					String bit = "1010000";
+					String bit = "0000000";
 					logger.info(bit);
 					requestInfoPojo.setCertificationSelectionBit(bit);
 				}

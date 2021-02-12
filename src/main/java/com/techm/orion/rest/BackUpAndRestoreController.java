@@ -456,7 +456,7 @@ public class BackUpAndRestoreController {
 
 				requestInfoEntity.setSiteName(requestDetail.get(i)
 						.getCustSiteId().getcSiteName());
-				requestInfoEntity.setCertificationSelectionBit("1010011");
+				requestInfoEntity.setCertificationSelectionBit("0000000");
 				requestInfoEntity.setRequestParentVersion(1.0);
 				requestInfoEntity.setRequestTypeFlag("M");
 
@@ -818,7 +818,7 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setSiteName(requestDetail.get(i)
 							.getCustSiteId().getcSiteName());
-					requestInfoEntity.setCertificationSelectionBit("1010011");
+					requestInfoEntity.setCertificationSelectionBit("0000000");
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
 					requestInfoEntity.setRequestCreatorName(userName);
@@ -1125,7 +1125,7 @@ public class BackUpAndRestoreController {
 						requestInfoEntity.setSiteName(requestDetail.get(i)
 								.getCustSiteId().getcSiteName());
 						requestInfoEntity
-								.setCertificationSelectionBit("1010000");
+								.setCertificationSelectionBit("0000000");
 						requestInfoEntity.setRequestParentVersion(1.0);
 						requestInfoEntity.setRequestTypeFlag("M");
 
@@ -1327,7 +1327,7 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setSiteName(requestDetail.get(i)
 							.getCustSiteId().getcSiteName());
-					requestInfoEntity.setCertificationSelectionBit("1010011");
+					requestInfoEntity.setCertificationSelectionBit("0000000");
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
 
@@ -1508,7 +1508,7 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setSiteName(requestDetail.get(i)
 							.getCustSiteId().getcSiteName());
-					requestInfoEntity.setCertificationSelectionBit("1010011");
+					requestInfoEntity.setCertificationSelectionBit("0000000");
 					requestInfoEntity.setRequestParentVersion(1.0);
 					requestInfoEntity.setRequestTypeFlag("M");
 

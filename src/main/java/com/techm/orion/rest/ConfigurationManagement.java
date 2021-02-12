@@ -267,7 +267,7 @@ public class ConfigurationManagement {
 				if (certificationTestFlag != null && certificationTestFlag.containsKey("default")) {
 					// flag test selection
 					JSONArray defaultArray = (JSONArray) certificationTestFlag.get("default");
-					String bit = "1010000";
+					String bit = "0000000";
 					int frameloss=0,latency=0,throughput=0;
 					for(int defarray=0; defarray<defaultArray.size();defarray++)
 					{
@@ -290,14 +290,14 @@ public class ConfigurationManagement {
 								throughput=selectedValue;
 							break;
 						}
-						bit= "1010"+ throughput + frameloss + latency;
+						bit= "0000"+ throughput + frameloss + latency;
 					}
 					
 					logger.info(bit);
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 
 				} else {
-					String bit = "1010000";
+					String bit = "0000000";
 					logger.info(bit);
 					configReqToSendToC3pCode.setCertificationSelectionBit(bit);
 				}

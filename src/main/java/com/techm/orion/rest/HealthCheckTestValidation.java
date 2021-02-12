@@ -407,7 +407,7 @@ public class HealthCheckTestValidation extends Thread {
 										Double.toString(requestinfo.getRequestVersion()), "health_check");
 								if (statusData != 3) {
 									
-									if(selectedTests.size() != 0 && isPredefinedTestSelected == true)
+									if(selectedTests.size() != 0 || isPredefinedTestSelected == true)
 									{
 									    requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "health_check", "1",
