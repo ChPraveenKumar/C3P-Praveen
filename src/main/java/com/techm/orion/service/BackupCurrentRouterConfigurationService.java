@@ -409,8 +409,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				request.put(new String("port"), TSALabels.BACKUP_PORT.getValue());
 				request.put(new String("source"), "running");
 				request.put(new String("requestId"), configRequest.getAlphanumericReqId());
-				request.put(new String("hostname"), configRequest.getManagementIp());
-				request.put(new String("stage"), "current");
+				request.put(new String("stage"), "previous");
 				request.put(new String("version"), configRequest.getRequestVersion());
 	            request.put(new String("hostname"), configRequest.getHostname());
 				HttpHeaders headers = new HttpHeaders();
