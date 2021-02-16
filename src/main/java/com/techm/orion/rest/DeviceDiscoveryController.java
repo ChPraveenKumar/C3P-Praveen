@@ -196,7 +196,7 @@ public class DeviceDiscoveryController implements Observer {
 				} else if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("2")) {
 					object.put("state", "Decommissioned");
 				}
-				if (getAllDevice.get(i).getdNewDevice() == 1) {
+				if (getAllDevice.get(i).getdNewDevice() == 0) {
 					object.put("isNew", true);
 				} else {
 					object.put("isNew", false);
@@ -280,8 +280,8 @@ public class DeviceDiscoveryController implements Observer {
 
 				/* Update IsNewFlag */
 				int isNewDevice = inventoryList.get(j).getdNewDevice();
-				if (isNewDevice == 1) {
-					inventoryList.get(j).setdNewDevice(0);
+				if (isNewDevice == 0) {
+					inventoryList.get(j).setdNewDevice(1);
 					deviceDiscoveryRepo.save(inventoryList.get(j));
 				}
 

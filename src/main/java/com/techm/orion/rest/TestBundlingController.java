@@ -351,7 +351,7 @@ public class TestBundlingController {
 							objToAdd.setTest_id(listOfTestId.get(j).getId());
 
 							String s = listOfTestId.get(j).getTestName();
-							String seriesId = StringUtils.substringAfterLast(s, "_");
+							String seriesId = StringUtils.substringAfterLast(s, "_")+"_"+listOfTestId.get(j).getVersion();
 
 							objToAdd.setTestName(seriesId);
 							versioningModelChildList.add(objToAdd);

@@ -1299,13 +1299,53 @@ public class TestStrategyController {
 			if (json.containsKey("requestType")) {
 				requestType = json.get("requestType").toString().toLowerCase();
 			}
-			List<TestDetail> testDetailsList = testDetailsRepository
+			List<TestDetail> testDetailsList = new ArrayList<>();
+			testDetailsList = testDetailsRepository
 					.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily, os, osVersion,
 							vendor, region, networkType);
+			if(testDetailsList.isEmpty()) {
+				testDetailsList = testDetailsRepository
+						.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily, os, osVersion,
+								vendor, region, networkType);
+					
+			} 
+			if(testDetailsList.isEmpty()) {
+				testDetailsList = testDetailsRepository
+						.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily, os, osVersion,
+								vendor, region, "All");
+				
+			}
+			if(testDetailsList.isEmpty()) {
+				testDetailsList = testDetailsRepository
+						.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily, os, osVersion,
+								vendor, "All", networkType);
+				
+			}
+			if(testDetailsList.isEmpty()) {
+				testDetailsList = testDetailsRepository
+						.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(deviceFamily, os, osVersion,
+								vendor, "All", "All");
+				
+			}
 			testDetailsValue = getTestData(deviceFamily, os, region, osVersion, vendor, networkType, requestType,
 					testDetailsValue, testDetailsList);
-			List<TestBundling> testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion,
+			List<TestBundling> testBundleData = new ArrayList<>();
+			
+			testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion,
 					vendor, networkType);
+			if(testBundleData.isEmpty()) {
+				testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, region, osVersion,
+						vendor, "All");
+			}
+			if(testBundleData.isEmpty()) {
+				testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, "All", osVersion,
+						vendor, networkType);
+			}
+			if(testBundleData.isEmpty()) {
+				testBundleData = testBundleRepo.getTestBundleData(deviceFamily, os, "All", osVersion,
+						vendor, "All");
+			}
+			
 			testDetailsValue = getBundleData(deviceFamily, os, region, osVersion, vendor, networkType, requestType,
 					testDetailsValue, testBundleData);
 
@@ -1320,6 +1360,7 @@ public class TestStrategyController {
 		}
 		return testDetailsValue;
 	}
+
 
 	@SuppressWarnings("unchecked")
 	private JSONArray getTestData(String deviceFamily, String os, String region, String osVersion, String vendor,

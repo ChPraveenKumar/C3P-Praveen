@@ -841,8 +841,8 @@ public class BackUpAndRestoreController {
 					if (resultEntity.getInfoId() > 0) {
 						/* Creating request Agains device then update isNew flag */
 						int isNew = requestDetail.get(i).getdNewDevice();
-						if (isNew == 1) {
-							requestDetail.get(i).setdNewDevice(0);
+						if (isNew == 0) {
+							requestDetail.get(i).setdNewDevice(1);
 							deviceDiscoveryRepository
 									.save(requestDetail.get(i));
 						}
