@@ -137,7 +137,7 @@ public class DeviceDiscrepancyService {
 	/* return Decrepancy value to UI according to flag table */
 	@SuppressWarnings("unchecked")
 	public JSONObject discripancyValue(String mgmtip, String hostName) {
-		DeviceDiscoveryEntity devicedetails = discoveryRepo.findAllMgmtId(mgmtip);
+		DeviceDiscoveryEntity devicedetails = discoveryRepo.findAllByMgmtId(mgmtip);
 		JSONObject details = new JSONObject();
 		if (devicedetails != null) {
 			try {
@@ -370,7 +370,7 @@ public class DeviceDiscrepancyService {
 			obj = (JSONObject) parser.parse(request);
 			ipAddress = obj.get("ipAddress").toString();
 			// hostName = obj.get("hostName").toString();
-			deviceDiscovertEntity = discoveryRepo.findAllMgmtId(ipAddress);
+			deviceDiscovertEntity = discoveryRepo.findAllByMgmtId(ipAddress);
 			if(obj.get("userName") !=null)
 				logedInUserName = obj.get("userName").toString();
 
