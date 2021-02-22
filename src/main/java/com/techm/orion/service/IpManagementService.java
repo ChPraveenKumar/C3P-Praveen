@@ -22,6 +22,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.techm.orion.entitybeans.HostIpManagementEntity;
 import com.techm.orion.entitybeans.IpRangeManagementEntity;
+import com.techm.orion.pojo.IpManagement;
 import com.techm.orion.repositories.HostIpManagementRepo;
 import com.techm.orion.repositories.IpRangeManagementRepo;
 import com.techm.orion.utility.TSALabels;
@@ -34,17 +35,17 @@ public class IpManagementService {
 
 	@Autowired
 	private IpRangeManagementRepo ipRangeManagementRepo;
-	
+
 	@Autowired
 	private RequestDashboardGraphService requestDashboardGraphService;
 
 	@SuppressWarnings("unchecked")
-	public JSONObject getAllHostIps() {
+	public JSONObject getHostIps() {
 		JSONObject hostips = new JSONObject();
 		JSONArray outputArray = new JSONArray();
 		List<HostIpManagementEntity> hostIpList = hostIpManagementRepo.findAll();
 		hostIpList.forEach(hostIpManagement -> {
-			if (hostIpManagement.getHostPoolId() == null ) {
+			if (hostIpManagement.getHostPoolId() == null) {
 				JSONObject object = new JSONObject();
 				object.put("status", hostIpManagement.getHostStatus());
 				object.put("customer", hostIpManagement.getHostCustomer());
@@ -63,7 +64,7 @@ public class IpManagementService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public JSONObject getAllRangeIps() {
+	public JSONObject getRangeIps() {
 		JSONObject rangeIps = new JSONObject();
 		JSONArray outputArray = new JSONArray();
 		List<IpRangeManagementEntity> ipRangeList = ipRangeManagementRepo.findAll();
@@ -100,7 +101,7 @@ public class IpManagementService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public JSONObject getIpRangeDetails(String ipRange, String mask) {
+	public JSONObject getIpRangeDetail(String ipRange, String mask) {
 		JSONArray array = new JSONArray();
 		JSONObject ipDetails = new JSONObject();
 		IpRangeManagementEntity ipRangeEntity = ipRangeManagementRepo.findByRangeIpRangeAndRangeMask(ipRange, mask);
@@ -133,7 +134,7 @@ public class IpManagementService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public JSONObject getIpStatusGraph(String request) throws ParseException {
+	public JSONObject getIpStatus(String request) throws ParseException {
 		JSONParser parser = new JSONParser();
 		String type = null, dashboardType = null;
 		JSONObject json = (JSONObject) parser.parse(request);
@@ -151,8 +152,8 @@ public class IpManagementService {
 				jsonObject.put("allocated", hostIpAllocated);
 				break;
 			} else {
-				int rangeIpAllocated = ipRangeManagementRepo.getCountStatus("Allocated");
-				jsonObject.put("allocated", rangeIpAllocated);
+				int hostAllocate = hostIpManagementRepo.getStatusCount("Allocated");
+				jsonObject.put("allocated", hostAllocate);
 				break;
 			}
 		case "reserved":
@@ -161,8 +162,8 @@ public class IpManagementService {
 				jsonObject.put("reserved", hostIpReserved);
 				break;
 			} else {
-				int rangeIpReserved = ipRangeManagementRepo.getCountStatus("Reserved");
-				jsonObject.put("reserved", rangeIpReserved);
+				int hostReserve = hostIpManagementRepo.getStatusCount("Reserved");
+				jsonObject.put("reserved", hostReserve);
 				break;
 			}
 		case "available":
@@ -171,14 +172,14 @@ public class IpManagementService {
 				jsonObject.put("available", hostIpAvailable);
 				break;
 			} else {
-				int rangeIpAvailable = ipRangeManagementRepo.getCountStatus("Available");
-				jsonObject.put("available", rangeIpAvailable);
+				int hostAvailable = hostIpManagementRepo.getStatusCount("Available");
+				jsonObject.put("available", hostAvailable);
 				break;
 			}
 		case "allocatedandreserved":
 		case "reservedandallocated":
 			if (type.equalsIgnoreCase("host")) {
-				int hostIpAllocAndReserCount = hostIpManagementRepo.getStatusCount("Allocated", "Reserved");
+				int hostIpAllocAndReserCount = hostIpManagementRepo.countStatus("Allocated", "Reserved");
 				int allocated = hostIpManagementRepo.getStatus("Allocated");
 				int reserved = hostIpManagementRepo.getStatus("Reserved");
 				jsonObject.put("allocated", allocated);
@@ -186,57 +187,56 @@ public class IpManagementService {
 				jsonObject.put("total", hostIpAllocAndReserCount);
 				break;
 			} else {
-				int rangeIpAllocAndReserCount = ipRangeManagementRepo.getStatusCountNumber("Allocated", "Reserved");
-				int allocated = ipRangeManagementRepo.getCountStatus("Allocated");
-				int reserved = ipRangeManagementRepo.getCountStatus("Reserved");
-				jsonObject.put("allocated", allocated);
-				jsonObject.put("reserved", reserved);
-				jsonObject.put("total", rangeIpAllocAndReserCount);
+				int hostAllocReserve = hostIpManagementRepo.statusCount("Allocated", "Reserved");
+				int allocate = hostIpManagementRepo.getStatusCount("Allocated");
+				int reserve = hostIpManagementRepo.getStatusCount("Reserved");
+				jsonObject.put("allocated", allocate);
+				jsonObject.put("reserved", reserve);
+				jsonObject.put("total", hostAllocReserve);
 				break;
 			}
 		case "reservedandavailable":
 		case "availableandreserved":
 			if (type.equalsIgnoreCase("host")) {
-				int hostIpReserAndAvailCount = hostIpManagementRepo.getStatusCount("Reserved", "Available");
-				int reserved = hostIpManagementRepo.getStatus("Reserved");
+				int hostIpReserAndAvailCount = hostIpManagementRepo.countStatus("Available", "Reserved");
 				int available = hostIpManagementRepo.getStatus("Available");
-				jsonObject.put("reserved", reserved);
+				int reserved = hostIpManagementRepo.getStatus("Reserved");
 				jsonObject.put("available", available);
+				jsonObject.put("reserved", reserved);
 				jsonObject.put("total", hostIpReserAndAvailCount);
 				break;
 			} else {
-				int rangeIpReserAndAvailCount = ipRangeManagementRepo.getStatusCountNumber("Reserved", "Available");
-				int reserved = ipRangeManagementRepo.getCountStatus("Reserved");
-				int available = ipRangeManagementRepo.getCountStatus("Available");
-				jsonObject.put("reserved", reserved);
+				int hostReserveAvail = hostIpManagementRepo.statusCount("Available", "Reserved");
+				int available = hostIpManagementRepo.getStatusCount("Available");
+				int reserve = hostIpManagementRepo.getStatusCount("Reserved");
 				jsonObject.put("available", available);
-				jsonObject.put("total", rangeIpReserAndAvailCount);
+				jsonObject.put("reserved", reserve);
+				jsonObject.put("total", hostReserveAvail);
 				break;
 			}
 		case "allocatedandavailable":
 		case "availableandallocated":
 			if (type.equalsIgnoreCase("host")) {
-				int hostIpAllocAndAvailCount = hostIpManagementRepo.getStatusCount("Allocated", "Available");
-				int allocated = hostIpManagementRepo.getStatus("Allocated");
+				int hostIpAllocAvail = hostIpManagementRepo.countStatus("Available", "Allocated");
 				int available = hostIpManagementRepo.getStatus("Available");
-				jsonObject.put("allocated", allocated);
+				int allocated = hostIpManagementRepo.getStatus("Allocated");
 				jsonObject.put("available", available);
-				jsonObject.put("total", hostIpAllocAndAvailCount);
+				jsonObject.put("allocated", allocated);
+				jsonObject.put("total", hostIpAllocAvail);
 				break;
 			} else {
-				int rangeIpAllocAndAvailCount = ipRangeManagementRepo.getStatusCountNumber("Allocated", "Available");
-				int allocated = ipRangeManagementRepo.getCountStatus("Allocated");
-				int available = ipRangeManagementRepo.getCountStatus("Available");
-				jsonObject.put("allocated", allocated);
+				int hostAvailAlloc = hostIpManagementRepo.statusCount("Available", "Allocated");
+				int available = hostIpManagementRepo.getStatusCount("Available");
+				int allocated = hostIpManagementRepo.getStatusCount("Allocated");
 				jsonObject.put("available", available);
-				jsonObject.put("total", rangeIpAllocAndAvailCount);
+				jsonObject.put("Allocated", allocated);
+				jsonObject.put("total", hostAvailAlloc);
 				break;
 			}
 		default:
 			if (type.equalsIgnoreCase("host")) {
 				int hostIpAllocAndReserAndAvailCount = hostIpManagementRepo.getCount("Allocated", "Available",
 						"Reserved");
-				int hostIpAllocAndAvailCount = hostIpManagementRepo.getStatusCount("Allocated", "Available");
 				int allocated = hostIpManagementRepo.getStatus("Allocated");
 				int available = hostIpManagementRepo.getStatus("Available");
 				int reserved = hostIpManagementRepo.getStatus("Reserved");
@@ -246,15 +246,15 @@ public class IpManagementService {
 				jsonObject.put("total", hostIpAllocAndReserAndAvailCount);
 				break;
 			} else {
-				int rangeIpAllocAndReserAndAvailCount = ipRangeManagementRepo.getCountNumber("Allocated", "Available",
+				int hostAllocAndReserAndAvail = hostIpManagementRepo.getCountStatus("Allocated", "Available",
 						"Reserved");
-				int allocated = ipRangeManagementRepo.getCountStatus("Allocated");
-				int available = ipRangeManagementRepo.getCountStatus("Available");
-				int reserved = ipRangeManagementRepo.getCountStatus("Reserved");
+				int available = hostIpManagementRepo.getStatusCount("Available");
+				int allocated = hostIpManagementRepo.getStatusCount("Allocated");
+				int reserved = hostIpManagementRepo.getStatusCount("Reserved");
 				jsonObject.put("allocated", allocated);
 				jsonObject.put("available", available);
 				jsonObject.put("reserved", reserved);
-				jsonObject.put("total", rangeIpAllocAndReserAndAvailCount);
+				jsonObject.put("total", hostAllocAndReserAndAvail);
 				break;
 			}
 		}
@@ -267,6 +267,7 @@ public class IpManagementService {
 	private JSONObject getDateWiseCount(String type) {
 		Set<String> DateList = new HashSet<>();
 		int dateOfReleased = 0;
+		int dateRelease = 0;
 		List<Integer> releasedCount = new ArrayList<>();
 		List<String> dateList = new ArrayList<>();
 		if (type.equalsIgnoreCase("host")) {
@@ -279,10 +280,10 @@ public class IpManagementService {
 				dateList.add(dayDate);
 			}
 		} else {
-			DateList = ipRangeManagementRepo.getIpRangeReleasedDate();
+			DateList = hostIpManagementRepo.getReleased();
 			for (String date : DateList) {
-				dateOfReleased = ipRangeManagementRepo.datesCount(date);
-				releasedCount.add(dateOfReleased);
+				dateRelease = hostIpManagementRepo.dateCount(date);
+				releasedCount.add(dateRelease);
 				String day = requestDashboardGraphService.getDay(StringUtils.substring(date, 5, 7));
 				String dayDate = StringUtils.substringAfterLast(date, "-") + " " + day;
 				dateList.add(dayDate);
@@ -301,143 +302,137 @@ public class IpManagementService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public JSONObject addHostIp(String request) throws ParseException {
-		JSONObject hostIps = new JSONObject();
-		JSONParser jsonParser = new JSONParser();
-		hostIps = (JSONObject) jsonParser.parse(request);
-		String customer = null, region = null, siteName = null, type = null, ip = null, mask = null, remarks = null;
-		boolean isAdd = false;
-		if (hostIps.containsKey("region")) {
-			region = hostIps.get("region").toString();
+	public JSONObject addIps(String request) throws ParseException {
+		JSONObject json = new JSONObject();
+		JSONParser parser = new JSONParser();
+		json = (JSONObject) parser.parse(request);
+		IpManagement ipManagement = addIpAndIpRange(json);
+		JSONObject outputJson = new JSONObject();
+		if ("Host".equalsIgnoreCase(ipManagement.getIpType())) {
+			outputJson = setHostIpData(ipManagement);
+		} else if ("Range".equalsIgnoreCase(ipManagement.getIpType())) {
+			outputJson = setRangeIpData(ipManagement);
+		} else {
+			outputJson.put("output", "Invalid Type");
 		}
-		if (hostIps.containsKey("customer")) {
-			customer = hostIps.get("customer").toString();
-		}
-		if (hostIps.containsKey("siteName")) {
-			siteName = hostIps.get("siteName").toString();
-		}
-		if (hostIps.containsKey("type")) {
-			type = hostIps.get("type").toString();
-		}
-		if (hostIps.containsKey("ip")) {
-			ip = hostIps.get("ip").toString(); // startIp
-		}
-		if (hostIps.containsKey("mask")) {
-			mask = hostIps.get("mask").toString();
-		}
-		if (hostIps.containsKey("remarks")) {
-			remarks = hostIps.get("remarks").toString();
-		}
-		JSONObject response = new JSONObject();
-		Date date = new Date();
-		if (type.equalsIgnoreCase("Host")) {
-			HostIpManagementEntity hostIpEntity = hostIpManagementRepo.findByHostStartIpAndHostMask(ip, mask);
-			if (hostIpEntity == null) {
-				HostIpManagementEntity hostIpManagement = new HostIpManagementEntity();
-				hostIpManagement.setHostCustomer(customer);
-				hostIpManagement.setHostRegion(region);
-				hostIpManagement.setHostSiteName(siteName);
-				hostIpManagement.setHostStartIp(ip);
-				hostIpManagement.setHostMask(mask);
-				hostIpManagement.setHostRemarks(remarks);
-				hostIpManagement.setHostIpPoolType(type);
-				hostIpManagement.setHostCreatedDate(date);
-				hostIpManagementRepo.save(hostIpManagement);
-				isAdd = true;
-			}
-			if (isAdd) {
-				response.put("output", "Ips added successfully");
-			} else {
-				response.put("output", "Ips is Duplicate");
-			}
-		}
-		return response;
+		return outputJson;
 	}
 
-	public JSONObject addIpRange(String request) throws ParseException {
-		JSONObject jsonObject = new JSONObject();
-		JSONParser jsonParser = new JSONParser();
-		RestTemplate restTemplate = new RestTemplate();
-		jsonObject = (JSONObject) jsonParser.parse(request);
-		String customer = null, region = null, siteName = null, type = null, ip = null, startIp = null, mask = null,
-				endIp = null, remarks = null;
-		boolean isAdd = false;
-		if (jsonObject.containsKey("region")) {
-			region = jsonObject.get("region").toString();
+	private IpManagement addIpAndIpRange(JSONObject json) {
+		IpManagement ipManagement = new IpManagement();
+		if (json.containsKey("region")) {
+			ipManagement.setRegion(json.get("region").toString());
 		}
-		if (jsonObject.containsKey("customer")) {
-			customer = jsonObject.get("customer").toString();
+		if (json.containsKey("customer")) {
+			ipManagement.setCustomer(json.get("customer").toString());
 		}
-		if (jsonObject.containsKey("siteName")) {
-			siteName = jsonObject.get("siteName").toString();
+		if (json.containsKey("siteName")) {
+			ipManagement.setSiteName(json.get("siteName").toString());
 		}
-		if (jsonObject.containsKey("type")) {
-			type = jsonObject.get("type").toString();
+		if (json.containsKey("iptype")) {
+			ipManagement.setIpType(json.get("iptype").toString());
 		}
-		if (jsonObject.containsKey("ip")) {
-			ip = jsonObject.get("ip").toString(); // ip range
+		if (json.containsKey("ip")) {
+			ipManagement.setIp(json.get("ip").toString());
 		}
-		if (jsonObject.containsKey("mask")) {
-			mask = jsonObject.get("mask").toString();
+		if (json.containsKey("mask")) {
+			ipManagement.setMask(json.get("mask").toString());
 		}
-		if (jsonObject.containsKey("remarks")) {
-			remarks = jsonObject.get("remarks").toString();
+		if (json.containsKey("remarks")) {
+			ipManagement.setRemarks(json.get("remarks").toString());
 		}
-		JSONObject rangeJson = new JSONObject();
-		JSONObject obj = new JSONObject();
+		return ipManagement;
+	}
+
+	private JSONObject setHostIpData(IpManagement entity) {
+		JSONObject ipJson = new JSONObject();
+		boolean record = false;
 		Date date = new Date();
-		if (type.equalsIgnoreCase("range")) {
-			IpRangeManagementEntity ipRangeEntity = ipRangeManagementRepo.findByRangeIpRangeAndRangeMask(ip, mask);
-			if (ipRangeEntity == null) {
-				IpRangeManagementEntity ipManagementEntity = new IpRangeManagementEntity();
-				ipManagementEntity.setRangeCustomer(customer);
-				ipManagementEntity.setRangeRegion(region);
-				ipManagementEntity.setRangeSiteName(siteName);
-				ipManagementEntity.setRangeIpPoolType(type);
-				ipManagementEntity.setRangeIpRange(ip);
-				ipManagementEntity.setRangeMask(mask);
-				ipManagementEntity.setRangeRemarks(remarks);
-				ipManagementEntity.setRangeCreatedDate(date);
-				HttpHeaders headers = new HttpHeaders();
-				headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-				rangeJson.put("ip",ipManagementEntity.getRangeIpRange());
-				rangeJson.put("mask",ipManagementEntity.getRangeMask());
-				HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(rangeJson, headers);
-				String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.IP_MANAGEMENT.getValue();
-				String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
-				JSONObject responseJson = (JSONObject) jsonParser.parse(response);
-				HostIpManagementEntity hostEntity = new HostIpManagementEntity();
-				if (responseJson.containsKey("seIP")) {
-					JSONArray result = (JSONArray) responseJson.get("seIP");
-					for (int i = 0; i < result.size(); i++) {
-						String oidObject = (String) result.get(i);
+		HostIpManagementEntity hostIpManagement = new HostIpManagementEntity();
+		HostIpManagementEntity hostIpEntity = hostIpManagementRepo.findByHostStartIpAndHostMask(entity.getIp(),
+				entity.getMask());
+		if (hostIpEntity == null) {
+			hostIpManagement.setHostCustomer(entity.getCustomer());
+			hostIpManagement.setHostRegion(entity.getRegion());
+			hostIpManagement.setHostSiteName(entity.getSiteName());
+			hostIpManagement.setHostStartIp(entity.getIp());
+			hostIpManagement.setHostMask(entity.getMask());
+			hostIpManagement.setHostRemarks(entity.getRemarks());
+			hostIpManagement.setHostIpPoolType(entity.getIpType());
+			hostIpManagement.setHostCreatedDate(date);
+			hostIpManagementRepo.save(hostIpManagement);
+			record = true;
+		}
+		if (record)
+			ipJson.put("output", "Ips added successfully");
+		else
+			ipJson.put("output", "Duplicates Ips");
+		return ipJson;
+	}
+
+	private JSONObject setRangeIpData(IpManagement managementEntity) throws ParseException {
+		Date date = new Date();
+		boolean record = false;
+		RestTemplate restTemplate = new RestTemplate();
+		JSONParser jsonParser = new JSONParser();
+		JSONObject rangeJson = new JSONObject();
+		IpRangeManagementEntity ipRangeEntity = ipRangeManagementRepo
+				.findByRangeIpRangeAndRangeMask(managementEntity.getIp(), managementEntity.getMask());
+		if (ipRangeEntity == null) {
+			IpRangeManagementEntity ipEntity = new IpRangeManagementEntity();
+			ipEntity.setRangeCustomer(managementEntity.getCustomer());
+			ipEntity.setRangeRegion(managementEntity.getRegion());
+			ipEntity.setRangeSiteName(managementEntity.getSiteName());
+			ipEntity.setRangeIpPoolType(managementEntity.getIpType());
+			ipEntity.setRangeIpRange(managementEntity.getIp());
+			ipEntity.setRangeMask(managementEntity.getMask());
+			ipEntity.setRangeRemarks(managementEntity.getRemarks());
+			ipEntity.setRangeCreatedDate(date);
+			HttpHeaders headers = new HttpHeaders();
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(rangeJson, headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.IP_MANAGEMENT.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			JSONObject responseJson = (JSONObject) jsonParser.parse(response);
+			String startIp = null, endIp = null;
+			if (responseJson.containsKey("startip")) {
+				startIp = responseJson.get("startip").toString();
+				ipEntity.setRangeStartIp(startIp);
+			}
+			if (responseJson.containsKey("endip")) {
+				endIp = responseJson.get("endip").toString();
+				ipEntity.setRangeEndIp(endIp);
+			}
+			ipRangeManagementRepo.save(ipEntity);
+			record = true;
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			rangeJson.put("ip", ipEntity.getRangeIpRange());
+			rangeJson.put("mask", ipEntity.getRangeMask());
+			HostIpManagementEntity hostEntity = new HostIpManagementEntity();
+			if (responseJson.containsKey("seIP")) {
+				JSONArray result = (JSONArray) responseJson.get("seIP");
+				for (int i = 0; i < result.size(); i++) {
+					String oidObject = (String) result.get(i);
+					List<HostIpManagementEntity> saveDetail = hostIpManagementRepo
+							.findOneByHostStartIpAndHostMask(oidObject, ipEntity.getRangeMask());
+					if (saveDetail.isEmpty()) {
 						hostEntity.setHostStartIp(oidObject);
-						hostEntity.setHostCustomer(customer);
-						hostEntity.setHostRegion(region);
-						hostEntity.setHostSiteName(siteName);
-						// hostEntity.setHostIpPoolType(type);
-						hostEntity.setHostMask(mask);
-						hostEntity.setHostRemarks(remarks);
+						hostEntity.setHostCustomer(managementEntity.getCustomer());
+						hostEntity.setHostRegion(managementEntity.getRegion());
+						hostEntity.setHostSiteName(managementEntity.getSiteName());
+						hostEntity.setHostPoolId(ipEntity.getRangePoolId());
+						hostEntity.setHostIpPoolType(managementEntity.getIpType());
+						hostEntity.setHostMask(managementEntity.getMask());
+						hostEntity.setHostRemarks(managementEntity.getRemarks());
 						hostEntity.setHostCreatedDate(date);
 						hostIpManagementRepo.save(hostEntity);
+						record = true;
 					}
 				}
-				if (responseJson.containsKey("startip")) {
-					startIp = responseJson.get("startip").toString();
-					ipManagementEntity.setRangeStartIp(startIp);
-				}
-				if (responseJson.containsKey("endip")) {
-					endIp = responseJson.get("endip").toString();
-					ipManagementEntity.setRangeEndIp(endIp);
-				}
-				ipRangeManagementRepo.save(ipManagementEntity);
-				isAdd = true;
 			}
-			if (isAdd) {
-				rangeJson.put("output", "Ips added successfully");
-			} else {
-				rangeJson.put("output", "Ips is Duplicate");
-			}
+			if (record)
+				rangeJson.put("output", "Range Ips added successfully");
+			else
+				rangeJson.put("output", "Duplicates Ips");
 		}
 		return rangeJson;
 	}

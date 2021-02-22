@@ -33,4 +33,6 @@ public interface CredentialManagementRepo extends JpaRepository<CredentialManage
 	
 	@Query(value = "select * from c3p_t_credential_management where cr_info_id =:infoId", nativeQuery = true)
 	List<CredentialManagementEntity> findInfoId(@Param("infoId") String infoId);
+	
+	List<CredentialManagementEntity> findAllByOrderByCreatedDateDesc();
 }

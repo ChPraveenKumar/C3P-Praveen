@@ -270,7 +270,7 @@ public class CredentialMgmtController {
 			credentialManagementRepo.save(credential);
 		}
 
-		credentialManagementFinalList = credentialManagementRepo.findAll();
+		credentialManagementFinalList = credentialManagementRepo.findAllByOrderByCreatedDateDesc();
 
 		return Response.status(200).entity(credentialManagementFinalList).build();
 

@@ -28,4 +28,10 @@ public interface MasterOIDRepository extends JpaRepository<MasterOIDEntity, Long
 	List<MasterOIDEntity> findByOidCreatedBy(String userName);
 
 	List<MasterOIDEntity> findByOidNo(String oidNo);
+	
+	List<MasterOIDEntity> findByOidNoAndOidDisplayName(String oidNo, String oidDisplayName);
+
+	List<MasterOIDEntity> findByOidNoAndOidCategoryAndOidScopeFlagAndOidVendorAndOidNetworkTypeAndOidDisplayName(
+			String oidNo, String oidCategory, String oidScopeFlag, String oidVendor, String oidNetworkType,
+			String oidDisplayName);
 }
