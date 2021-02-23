@@ -12,7 +12,7 @@ import com.techm.orion.entitybeans.HostIpManagementEntity;
 
 @Repository
 public interface HostIpManagementRepo extends JpaRepository<HostIpManagementEntity, Long> {
-	
+
 	List<HostIpManagementEntity> findByHostPoolIdIsNull();
 
 	List<HostIpManagementEntity> findByHostPoolIdAndHostStatus(int rangePoolId, String status);
@@ -25,20 +25,35 @@ public interface HostIpManagementRepo extends JpaRepository<HostIpManagementEnti
 
 	HostIpManagementEntity findByHostStartIpAndHostMask(String hostStartIp, String hostMask);
 
-	@Query(value = "select count(h_rowid) from c3p_host_ip_mgmt where h_status =:status or h_status =:hostStatus", nativeQuery = true)
-	int getStatusCount(@Param("status") String status, @Param("hostStatus") String hostStatus);
+	List<HostIpManagementEntity> findOneByHostStartIpAndHostMask(String hostStartIp, String hostMask);
 
-	@Query(value = "select count(h_rowid) from c3p_host_ip_mgmt where h_status =:status", nativeQuery = true)
+	@Query(value = "select count(h_rowid) from c3p_host_ip_mgmt where (h_status =:status or h_status =:hostStatus) and h_pool_id Is null", nativeQuery = true)
+	int countStatus(@Param("status") String status, @Param("hostStatus") String hostStatus);
+
+	@Query(value = "select count(h_rowid) from c3p_host_ip_mgmt where (h_status =:status or h_status =:hostStatus) and h_pool_id Is not null", nativeQuery = true)
+	int statusCount(@Param("status") String status, @Param("hostStatus") String hostStatus);
+
+	@Query(value = "select count(h_rowid) from c3p_host_ip_mgmt where h_status =:status and h_pool_id Is null", nativeQuery = true)
 	int getStatus(@Param("status") String status);
 
-	@Query(value = "select count(h_rowid) from c3p_host_ip_mgmt where h_status =:status or h_status =:hostStatus or h_status =:hostIpStatus", nativeQuery = true)
+	@Query(value = "select count(h_rowid) from c3p_host_ip_mgmt where h_status =:status and h_pool_id Is not null", nativeQuery = true)
+	int getStatusCount(@Param("status") String status);
+
+	@Query(value = "select count(h_rowid) from c3p_host_ip_mgmt where (h_status =:status or h_status =:hostStatus or h_status =:hostIpStatus) and h_pool_id Is null", nativeQuery = true)
 	int getCount(@Param("status") String status, @Param("hostStatus") String hostStatus,
 			@Param("hostIpStatus") String hostIpStatus);
 
-	@Query(value = "SELECT DATE_FORMAT(h_released_on,'%Y-%m-%d') FROM `c3p_host_ip_mgmt` where `h_released_on`>=(CURDATE()-interval 4 day)", nativeQuery = true)
+	@Query(value = "select count(h_rowid) from c3p_host_ip_mgmt where (h_status =:status or h_status =:hostStatus or h_status =:hostIpStatus) and h_pool_id Is not null", nativeQuery = true)
+	int getCountStatus(@Param("status") String status, @Param("hostStatus") String hostStatus,
+			@Param("hostIpStatus") String hostIpStatus);
+
+	@Query(value = "SELECT DATE_FORMAT(h_released_on,'%Y-%m-%d') FROM `c3p_host_ip_mgmt` where `h_released_on`>=(CURDATE()-interval 7 day) and  h_pool_id Is null;", nativeQuery = true)
 	Set<String> getReleasedDate();
 
+	@Query(value = "SELECT DATE_FORMAT(h_released_on,'%Y-%m-%d') FROM `c3p_host_ip_mgmt` where `h_released_on`>=(CURDATE()-interval 7 day) and  h_pool_id Is not null;", nativeQuery = true)
+	Set<String> getReleased();
+
 	@Query(value = "SELECT count(h_rowid) FROM c3p_host_ip_mgmt where DATE(h_released_on) =:hostReleasedOn", nativeQuery = true)
-	int dateCount(@Param("hostReleasedOn") String hostReleasedOn);    
-	
+	int dateCount(@Param("hostReleasedOn") String hostReleasedOn);
+
 }

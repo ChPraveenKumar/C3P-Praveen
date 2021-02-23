@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.techm.orion.service.IpManagementService;
 
 @RestController
+@RequestMapping("/ipManagement")
 public class IpManagementController {
 
 	@Autowired
@@ -27,10 +28,10 @@ public class IpManagementController {
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@GET
-	@RequestMapping(value = "/getAllHostIps", method = RequestMethod.GET, produces = "application/json")
-	public ResponseEntity<JSONObject> getAllHostIps() {
+	@RequestMapping(value = "/allIps", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<JSONObject> getAllIps() {
 		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject json = ipManagementService.getAllHostIps();
+		JSONObject json = ipManagementService.getHostIps();
 		if (json != null) {
 			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
 		} else {
@@ -43,10 +44,10 @@ public class IpManagementController {
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@GET
-	@RequestMapping(value = "/getAllRangeIps", method = RequestMethod.GET, produces = "application/json")
+	@RequestMapping(value = "/allRangeIps", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<JSONObject> getAllRangeIps() {
 		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject json = ipManagementService.getAllRangeIps();
+		JSONObject json = ipManagementService.getRangeIps();
 		if (json != null) {
 			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
 		} else {
@@ -68,7 +69,7 @@ public class IpManagementController {
 		String mask = null;
 		ipRange = json.get("ipRange").toString();
 		mask = json.get("mask").toString();
-		JSONObject jsonResult = ipManagementService.getIpRangeDetails(ipRange, mask);
+		JSONObject jsonResult = ipManagementService.getIpRangeDetail(ipRange, mask);
 		if (jsonResult != null) {
 			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
 		} else {
@@ -81,10 +82,10 @@ public class IpManagementController {
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@POST
-	@RequestMapping(value = "/addHostIp", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	@RequestMapping(value = "/addIp", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public ResponseEntity<JSONObject> addHostIp(@RequestBody String request) throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject jsonResult = ipManagementService.addHostIp(request);
+		JSONObject jsonResult = ipManagementService.addIps(request);
 		if (jsonResult != null) {
 			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
 		} else {
@@ -97,27 +98,11 @@ public class IpManagementController {
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@POST
-	@RequestMapping(value = "/addIpRange", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-	public ResponseEntity<JSONObject> addIpRange(@RequestBody String request) throws Exception {
-		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject jsonResult = ipManagementService.addIpRange(request);
-		if (jsonResult != null) {
-			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
-		} else {
-			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
-		}
-		return responseEntity;
-	}
-
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
-	@POST
 	@RequestMapping(value = "/getIpStatusGraph", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> getIpStatusGraph(@RequestBody String request) throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject jsonResult = ipManagementService.getIpStatusGraph(request);
+		JSONObject jsonResult = ipManagementService.getIpStatus(request);
 		if (jsonResult != null) {
 			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
 		} else {
