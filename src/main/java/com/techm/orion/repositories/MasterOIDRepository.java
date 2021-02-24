@@ -12,7 +12,8 @@ import com.techm.orion.entitybeans.MasterOIDEntity;
 @Repository
 public interface MasterOIDRepository extends JpaRepository<MasterOIDEntity, Long> {
 
-	MasterOIDEntity findByOidNoAndOidVendorAndOidNetworkType(String oid,String vendor,String networkType);
+	//MasterOIDEntity findByOidNoAndOidVendorAndOidNetworkType(String oid,String vendor,String networkType);
+	List<MasterOIDEntity> findByOidNoAndOidVendorAndOidNetworkType(String oid,String vendor,String networkType);
 	
 	@Query(value = "SELECT oid_m_display_name FROM c3p_m_oid_master_info where oid_m_no = :oidNo and oid_m_for_vendor= :vendor ", nativeQuery = true)
 	String findOidDisplayName(@Param("oidNo") String oidNo, @Param("vendor") String vendor);

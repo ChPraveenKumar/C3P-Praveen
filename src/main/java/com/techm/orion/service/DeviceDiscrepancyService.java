@@ -354,7 +354,8 @@ public class DeviceDiscrepancyService {
 
 	@SuppressWarnings("unchecked")
 	public JSONObject ignoreAndOverWrite(@RequestBody String request) {
-		MasterOIDEntity masterOIDEntity = null;
+		//MasterOIDEntity masterOIDEntity = null;
+		List<MasterOIDEntity> masterOIDEntity = null;
 		HostDiscrepancyResultEntity hostDiscrepancyResultEntity = null;
 		List<HostDiscoveryResultEntity> hostDiscoveryResultEntities = null;
 		ForkDiscrepancyResultEntity forkDiscrepancyResultEntity = null;
@@ -469,27 +470,32 @@ public class DeviceDiscrepancyService {
 						 * If Category = "Host" for this OID, then find the value in "Column name".
 						 * Update the corresponding column of table "Device Info"
 						 */
+						//masterOIDEntity = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkType(
+							//	obj.get("oid").toString(), deviceDiscovertEntity.getdVendor(),
+							//	deviceDiscovertEntity.getdVNFSupport());
 						masterOIDEntity = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkType(
 								obj.get("oid").toString(), deviceDiscovertEntity.getdVendor(),
 								deviceDiscovertEntity.getdVNFSupport());
-						if (masterOIDEntity != null && "Host".equals(masterOIDEntity.getOidCategory())) {
-							if ("d_device_family".equals(masterOIDEntity.getOidAttrib())) {
+						for(int i = 0; i<masterOIDEntity.size();i++) {
+						if (masterOIDEntity != null && "Host".equals(masterOIDEntity.get(i).getOidCategory())) {
+							if ("d_device_family".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdDeviceFamily(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_model".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_model".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdModel(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_os".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_os".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdOs(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_os_version".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_os_version".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdOsVersion(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_hostname".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_hostname".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdHostName(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_macaddress".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_macaddress".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdMACAddress(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_serial_number".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_serial_number".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdSerialNumber(hostDiscoveryResultEntity.getHdrDiscoverValue());
 							}
 							discoveryRepo.save(deviceDiscovertEntity);
 						}
+					}
 					}
 
 				}
@@ -509,7 +515,7 @@ public class DeviceDiscrepancyService {
 					resultObj.put("msg", "Discrepancy ignore is failed");
 				}
 			}
-
+			logger.info("resultObj "+resultObj);
 		} catch (Exception exe) {
 			exe.printStackTrace();
 			logger.error("exception of ignoreAndOverWrite method" + exe.getMessage());
