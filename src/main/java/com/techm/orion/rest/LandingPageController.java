@@ -35,7 +35,9 @@ public class LandingPageController {
 	@Autowired
 	public VendorNewsRepository vendorNewsRepository;
 	
-	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/landingPage", method = RequestMethod.GET, produces = "application/json")
 	public Response getlandingpagedetails(@RequestParam String user) {
@@ -92,6 +94,10 @@ public class LandingPageController {
 				.build();
 		
 	}
+	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getAlerts", method = RequestMethod.GET, produces = "application/json")
 	public Response getAlerts() {
@@ -120,6 +126,10 @@ public class LandingPageController {
 				.build();
 
 	}
+	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getVendorNews", method = RequestMethod.GET, produces = "application/json")
 	public Response getVendorNews() {
@@ -130,6 +140,10 @@ public class LandingPageController {
 				.build();
 
 	}
+	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getTemplateFails", method = RequestMethod.GET, produces = "application/json")
 	public Response getTemplateFails() {
@@ -158,6 +172,10 @@ public class LandingPageController {
 				.build();
 
 	}
+	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getUserConfigurationDetails", method = RequestMethod.GET, produces = "application/json")
 	public Response getUserConfigurationDetails() {
@@ -172,6 +190,10 @@ public class LandingPageController {
 				.build();
 
 	}
+	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getBackupFails", method = RequestMethod.GET, produces = "application/json")
 	public Response getBackupFails() {

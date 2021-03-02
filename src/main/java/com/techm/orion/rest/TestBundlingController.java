@@ -72,6 +72,9 @@ public class TestBundlingController {
 
 	RequestInfoDao dao = new RequestInfoDao();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/deviceFamilyBundling", method = RequestMethod.POST, produces = "application/json")
@@ -104,6 +107,9 @@ public class TestBundlingController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/osBundling", method = RequestMethod.POST, produces = "application/json")
@@ -152,6 +158,9 @@ public class TestBundlingController {
 		return new ResponseEntity(outputArray, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/osversionForBundling", method = RequestMethod.POST, produces = "application/json")
@@ -204,6 +213,9 @@ public class TestBundlingController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/bundleNameValidation", method = RequestMethod.POST, produces = "application/json")
@@ -339,7 +351,7 @@ public class TestBundlingController {
 							objToAdd.setTest_id(listOfTestId.get(j).getId());
 
 							String s = listOfTestId.get(j).getTestName();
-							String seriesId = StringUtils.substringAfterLast(s, "_");
+							String seriesId = StringUtils.substringAfterLast(s, "_")+"_"+listOfTestId.get(j).getVersion();
 
 							objToAdd.setTestName(seriesId);
 							versioningModelChildList.add(objToAdd);
@@ -363,6 +375,9 @@ public class TestBundlingController {
 		return new ResponseEntity(obj, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/saveBundle", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -427,6 +442,9 @@ public class TestBundlingController {
 		return testList;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/searchTestBundleForSingleTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -510,6 +528,9 @@ public class TestBundlingController {
 		return new ResponseEntity(outputArray, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/getBundleList", method = RequestMethod.GET, produces = "application/json")
@@ -557,6 +578,9 @@ public class TestBundlingController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@POST
 	@RequestMapping(value = "/getSearchBundleList", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -632,7 +656,10 @@ public class TestBundlingController {
 		return new ResponseEntity(versioningModel, HttpStatus.OK);
 
 	}
-
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@POST
 	@RequestMapping(value = "/getBundleView", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")

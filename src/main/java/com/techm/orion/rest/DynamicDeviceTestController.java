@@ -29,6 +29,10 @@ public class DynamicDeviceTestController implements Observer {
 	private static final Logger logger = LogManager.getLogger(DynamicDeviceTestController.class);
 	
 	PingTest pingHelper=new PingTest();
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/ping", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -57,7 +61,9 @@ public class DynamicDeviceTestController implements Observer {
 				.build();
 	}
 	
-	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/traceroute", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

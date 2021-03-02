@@ -32,6 +32,9 @@ public class GetLastAlertIDfromDBService implements Observer {
 	 * Alert Page - Web Service - To get last alert count - Post JBDC to JPA
 	 * migration
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getLastAlertId", method = RequestMethod.GET, produces = "application/json")

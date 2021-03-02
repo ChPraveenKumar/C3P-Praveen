@@ -1,6 +1,7 @@
 package com.techm.orion.rest;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -52,7 +53,9 @@ public class CredentialMgmtController {
 	@Autowired
 	private CredentialMgmtService credentialMgmtService;
 
-	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getProfileNameValidation", method = RequestMethod.POST, produces = "application/json")
 	@ResponseBody
@@ -83,6 +86,9 @@ public class CredentialMgmtController {
 		return Response.status(200).entity(str).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unused")
 	@POST
 	@RequestMapping(value = "/saveCredential", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -91,69 +97,62 @@ public class CredentialMgmtController {
 		String message = "";
 		CredentialManagementEntity saveDetail = null;
 		boolean isAdd = false;
+		String profileName = null, profileType = null, description = null, loginRead = null, pwdWrite = null,
+				enablePassword = null, genric = null, port = null, version = null;
 		CredentialManagementEntity credentialDetail = new CredentialManagementEntity();
 		JSONObject credential = (JSONObject) parser.parse(credentialRequest);
 		if (credential.containsKey("profileName")) {
-			credentialDetail.setProfileName(credential.get("profileName").toString());
+			profileName = credential.get("profileName").toString();
 		}
 		if (credential.containsKey("profileType")) {
-			credentialDetail.setProfileType(credential.get("profileType").toString());
+			profileType = credential.get("profileType").toString();
 		}
 		if (credential.containsKey("description")) {
-			credentialDetail.setDescription(credential.get("description").toString());
+			description = credential.get("description").toString();
 		}
 		if (credential.containsKey("loginRead")) {
-			credentialDetail.setLoginRead(credential.get("loginRead").toString());
+			loginRead = credential.get("loginRead").toString();
 		}
 		if (credential.containsKey("pwdWrite")) {
-			credentialDetail.setPasswordWrite(credential.get("pwdWrite").toString());
+			pwdWrite = credential.get("pwdWrite").toString();
 		}
 		if (credential.containsKey("enablePassword")) {
-			credentialDetail.setEnablePassword(credential.get("enablePassword").toString());
+			enablePassword = credential.get("enablePassword").toString();
 		}
 		if (credential.containsKey("version")) {
-			credentialDetail.setVersion(credential.get("version").toString());
+			version = credential.get("version").toString();
 		}
 		if (credential.containsKey("port")) {
-			credentialDetail.setPort(credential.get("port").toString());
+			port = credential.get("port").toString();
 		}
 		if (credential.containsKey("genric")) {
-			credentialDetail.setGenric(credential.get("genric").toString());
+			genric = credential.get("genric").toString();
 		}
-		CredentialManagementEntity credentailManagement = credentialManagementRepo
-				.findOneByProfileName(credentialDetail.getProfileName());
+		CredentialManagementEntity credentailManagement = credentialManagementRepo.findOneByProfileName(profileName);
 		CredentialManagementEntity credentialEntity = new CredentialManagementEntity();
+		Date date = new Date();
 		if (credentailManagement == null) {
-			if (credentialDetail.getProfileType().equalsIgnoreCase("SNMP")) {
-				if (credentialDetail.getVersion().equalsIgnoreCase("SNMP V1C/V2C")) {
-					credentialEntity.setLoginRead(credentialDetail.getLoginRead());
-					credentialEntity.setPasswordWrite(credentialDetail.getPasswordWrite());
-					credentialEntity.setDescription(credentialDetail.getDescription());
-					if (!credentialDetail.getPort().isEmpty()) {
-						credentialEntity.setPort(credentialDetail.getPort());
+			if (profileType.equalsIgnoreCase("SNMP") || profileType.equalsIgnoreCase("SSH") || profileType.equalsIgnoreCase("TELNET")) {
+				//if (version.equalsIgnoreCase("SNMP V1C/V2C")) {
+					credentialEntity.setProfileName(profileName);
+					credentialEntity.setProfileType(profileType);
+					credentialEntity.setLoginRead(loginRead);
+					credentialEntity.setPasswordWrite(pwdWrite);
+					credentialEntity.setDescription(description);
+					credentialEntity.setCreatedDate(date);
+					credentialEntity.setVersion(version);
+					credentialEntity.setGenric(genric);
+					credentialEntity.setVersion(version);
+					credentialEntity.setEnablePassword(enablePassword);
+					if (!port.isEmpty()) {
+						credentialEntity.setPort(port);
 					} else {
-						credentialEntity.getPort().equalsIgnoreCase("161");
+						credentialEntity.setPort("161");
 					}
-				} else {
-					credentialEntity.setLoginRead(credentialDetail.getLoginRead());
-					credentialEntity.setPasswordWrite(credentialDetail.getPasswordWrite());
-					credentialEntity.setEnablePassword(credentialDetail.getEnablePassword());
-					credentialEntity.setGenric(credentialDetail.getGenric());
-					credentialEntity.setPort(credentialDetail.getPort());
-					credentialEntity.setVersion(credentialDetail.getVersion());
-					credentialEntity.setDescription(credentialDetail.getDescription());
-					credentialEntity.setDescription(credentialDetail.getDescription());
-				}
-			} else if (credentialDetail.getProfileType().equalsIgnoreCase("SSH")
-					|| credentialDetail.getProfileType().equalsIgnoreCase("TELNET")) {
-				credentialEntity.setLoginRead(credentialDetail.getLoginRead());
-				credentialEntity.setPasswordWrite(credentialDetail.getPasswordWrite());
-				credentialEntity.setEnablePassword(credentialDetail.getEnablePassword());
-				credentialEntity.setDescription(credentialDetail.getDescription());
 			}
-			saveDetail = credentialManagementRepo.save(credentialDetail);
+			saveDetail = credentialManagementRepo.save(credentialEntity);
 			isAdd = true;
-		}
+			}
 		if (isAdd) {
 			message = "Credential saved successfully";
 		} else {
@@ -161,7 +160,10 @@ public class CredentialMgmtController {
 		}
 		return Response.status(200).entity(message).build();
 	}
-
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@RequestMapping(value = "/deleteCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response deleteCredentialProfile(@RequestBody String request) throws ParseException {
 		boolean isDelete = false;
@@ -232,6 +234,9 @@ public class CredentialMgmtController {
 		return Response.status(200).entity(msg).build();
 	} 
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getAllCredential", method = RequestMethod.GET, produces = "application/json")
 	public Response getCredential() {
@@ -245,10 +250,10 @@ public class CredentialMgmtController {
 
 		credentialManagementList = credentialManagementRepo.findAll();
 
-		for (int i = 0; i < credentialManagementList.size(); i++) {
+		for (CredentialManagementEntity credential : credentialManagementList) {
 			int count = 0;
-			profileName = credentialManagementList.get(i).getProfileName();
-			type = credentialManagementList.get(i).getProfileType();
+			profileName = credential.getProfileName();
+			type = credential.getProfileType();
 
 			if (type.equalsIgnoreCase("SSH")) {
 				hostNameList = deviceDiscoveryRepository.findByDSshCredProfile(profileName);
@@ -260,17 +265,20 @@ public class CredentialMgmtController {
 				hostNameList = deviceDiscoveryRepository.findByDSnmpCredProfile(profileName);
 				count = hostNameList.size();
 			}
-
-			credentialManagementRepo.updateRefDevice(count, profileName);
-
+			credential.setRefDevice(count);
+			credential.setProfileName(profileName);
+			credentialManagementRepo.save(credential);
 		}
 
-		credentialManagementFinalList = credentialManagementRepo.findAll();
+		credentialManagementFinalList = credentialManagementRepo.findAllByOrderByCreatedDateDesc();
 
 		return Response.status(200).entity(credentialManagementFinalList).build();
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/refDeviceList", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -368,6 +376,9 @@ public class CredentialMgmtController {
 		return new ResponseEntity(obj, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/profiles", method = RequestMethod.GET, produces = "application/json")
 	public Response getProfiles(@RequestParam String type) {
@@ -378,6 +389,9 @@ public class CredentialMgmtController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/addRefferedDevices", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -459,6 +473,9 @@ public class CredentialMgmtController {
 		return new ResponseEntity<JSONObject>(reffredDevicesJson, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/deleteRefferedDevices", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -495,6 +512,9 @@ public class CredentialMgmtController {
 		return new ResponseEntity<JSONObject>(reffredDevicesJson, HttpStatus.OK);
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/searchReffredDevices", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -639,6 +659,9 @@ public class CredentialMgmtController {
 				.build();
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/viewCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public ResponseEntity<JSONObject> viewCredentialProfile(@RequestBody String request) throws Exception {

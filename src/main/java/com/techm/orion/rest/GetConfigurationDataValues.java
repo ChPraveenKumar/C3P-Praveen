@@ -31,6 +31,9 @@ public class GetConfigurationDataValues implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetConfigurationDataValues.class);
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getVendor", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
@@ -72,6 +75,9 @@ public class GetConfigurationDataValues implements Observer {
 				.build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getDeviceType", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -160,7 +166,9 @@ public class GetConfigurationDataValues implements Observer {
 				.build();
 	}
 	
-
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/os", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -200,6 +208,9 @@ public class GetConfigurationDataValues implements Observer {
 				.build();
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/osVersion", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -238,6 +249,10 @@ public class GetConfigurationDataValues implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj)
 				.build();
 	}
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getRegion", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody

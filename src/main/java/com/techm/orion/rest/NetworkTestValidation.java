@@ -71,6 +71,9 @@ public class NetworkTestValidation extends Thread {
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/networkCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -270,11 +273,7 @@ public class NetworkTestValidation extends Thread {
 									+ requestinfo.getCertificationSelectionBit().substring(2, 3)
 									+ requestinfo.getCertificationSelectionBit().substring(3, 4));
 							// working on simulator so condition has been set to true
-							if (requestinfo.getCertificationSelectionBit().substring(0, 1).equalsIgnoreCase("1")
-									|| requestinfo.getCertificationSelectionBit().substring(1, 2).equalsIgnoreCase("1")
-									|| requestinfo.getCertificationSelectionBit().substring(2, 3).equalsIgnoreCase("1")
-									|| requestinfo.getCertificationSelectionBit().substring(3, 4)
-											.equalsIgnoreCase("1")) {
+						
 								boolean result = true;
 								if (listOfTests.size() > 0) {
 									if (results != null && !results.isEmpty()) {
@@ -286,13 +285,19 @@ public class NetworkTestValidation extends Thread {
 									}
 								
 								}
+								if (requestinfo.getCertificationSelectionBit().substring(0, 1).equalsIgnoreCase("1")
+										|| requestinfo.getCertificationSelectionBit().substring(1, 2).equalsIgnoreCase("1")
+										|| requestinfo.getCertificationSelectionBit().substring(2, 3).equalsIgnoreCase("1")
+										|| requestinfo.getCertificationSelectionBit().substring(3, 4)
+												.equalsIgnoreCase("1"))
+								{
 								requestInfoDao.updateNetworkTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(0, 1)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(1, 2)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(2, 3)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(3, 4)));
-
+								}
 								String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 								int statusData = requestInfoDetailsDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
@@ -304,21 +309,10 @@ public class NetworkTestValidation extends Thread {
 											status);
 								}
 
-							}
+							
 						
-							else {
-								// db call to set flag false
-								requestInfoDao.updateNetworkTestStatus(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()),
-										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(0, 1)),
-										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(1, 2)),
-										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(2, 3)),
-										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(3, 4)));
-								requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "network_test", "2",
-										"Failure");
-							}
-							value = true;// hardcoded for default tests
+							
+							//value = true;// hardcoded for default tests
 
 							// this is to evaluate according to newly added tests else it is true by
 							// default.
@@ -330,6 +324,10 @@ public class NetworkTestValidation extends Thread {
 									}
 
 								}
+							}
+							else
+							{
+								value = true;
 							}
 							channel.disconnect();
 							session.disconnect();

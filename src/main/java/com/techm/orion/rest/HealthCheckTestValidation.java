@@ -83,6 +83,9 @@ public class HealthCheckTestValidation extends Thread {
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/healthcheckCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -404,7 +407,7 @@ public class HealthCheckTestValidation extends Thread {
 										Double.toString(requestinfo.getRequestVersion()), "health_check");
 								if (statusData != 3) {
 									
-									if(selectedTests.size() != 0 && isPredefinedTestSelected == true)
+									if(selectedTests.size() != 0 || isPredefinedTestSelected == true)
 									{
 									    requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "health_check", "1",

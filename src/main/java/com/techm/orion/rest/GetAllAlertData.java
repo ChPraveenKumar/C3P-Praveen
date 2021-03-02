@@ -33,6 +33,10 @@ public class GetAllAlertData implements Observer {
 	 * JPA migration
 	 */
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
+	
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = "application/json")

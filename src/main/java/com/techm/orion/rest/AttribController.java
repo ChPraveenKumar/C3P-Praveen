@@ -49,11 +49,12 @@ public class AttribController {
 
 	@Autowired
 	AttribCreateConfigService service;
-
-	/*
-	 * To get Predefine attribute ,Generic attribute, Validation, Category and
-	 * UI component list.
-	 */
+	
+	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/	
+	//To get Predefine attribute ,Generic attribute, Validation, Category and UI component list.
 	@GET
 	@Produces("application/json")
 	@RequestMapping(value = "/getMasterAttrib", method = RequestMethod.GET, produces = "application/json")
@@ -74,7 +75,10 @@ public class AttribController {
 
 		return Response.status(200).entity(attribResponseEntity).build();
 	}
-
+	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	/*
 	 * To get Predefine attribute ,Generic attribute, Validation, Category and
 	 * UI component list.
@@ -99,7 +103,9 @@ public class AttribController {
 		return Response.status(200).entity(attribResponseEntity).build();
 	}
 	
-	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	/* To get attributes mapped values */
 	@POST
 	@Produces("application/json")
@@ -162,8 +168,10 @@ public class AttribController {
 
 	}
 	
-	
-//GetAttrbute For selected Attribute	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/	
+	//GetAttrbute For selected Attribute	
 	@POST
 	@Produces("application/json")
 	@RequestMapping(value = "/getFeatureAttribMapping", method = RequestMethod.POST, produces = "application/json")

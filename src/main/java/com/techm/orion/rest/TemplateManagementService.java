@@ -48,6 +48,9 @@ public class TemplateManagementService implements Observer {
 	@Autowired
 	private NotificationRepo notificationRepo;
 
+	/**
+	 *This Api is marked as ***************External Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/addNewFeatureForTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -73,6 +76,9 @@ public class TemplateManagementService implements Observer {
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************External Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/onNextToGetRightPanel", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -105,6 +111,9 @@ public class TemplateManagementService implements Observer {
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************External Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/saveFinalTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -120,6 +129,9 @@ public class TemplateManagementService implements Observer {
 		return response;
 	}
 
+	/**
+	 *This Api is marked as ***************External Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getRightPanelOnEditTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -146,7 +158,10 @@ public class TemplateManagementService implements Observer {
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
-
+	
+	/**
+	 *This Api is marked as ***************External Api Impacted****************
+	 **/
 	/* method added for view template Details */
 	@SuppressWarnings({ "unchecked", "null" })
 	@POST

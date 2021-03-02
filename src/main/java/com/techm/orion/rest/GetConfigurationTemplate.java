@@ -45,6 +45,9 @@ public class GetConfigurationTemplate {
 	@Autowired
 	TemplateFeatureRepo templatefeatureRepo;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/createConfigurationTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

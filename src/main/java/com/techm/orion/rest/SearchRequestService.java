@@ -31,6 +31,9 @@ public class SearchRequestService implements Observer {
 	private static final Logger logger = LogManager.getLogger(SearchRequestService.class);
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

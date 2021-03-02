@@ -26,7 +26,8 @@ public enum TSALabels {
 	
 	EXTERNAL_MILESTONE_API, EXTERNAL_MILESTONE_API_USERNAME, EXTERNAL_MILESTONE_API_PASSWORD,
 	/*Python EndPoints*/
-	PYTHON_PING, PYTHON_THROUGHPUT;
+	PYTHON_PING, PYTHON_THROUGHPUT, PYTHON_BACKUP, BACKUP_PORT, IP_MANAGEMENT;
+
 
 	private static final Logger logger = LogManager.getLogger(TSALabels.class);
 	private static ResourceBundle resourceLabels;

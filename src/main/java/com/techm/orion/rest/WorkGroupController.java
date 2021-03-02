@@ -37,6 +37,9 @@ public class WorkGroupController {
 	@Autowired
 	private UserManagementRepository userManagementRepository;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/fetchWorkGroups", method = RequestMethod.GET, produces = "application/json")
@@ -80,6 +83,9 @@ public class WorkGroupController {
 		return new ResponseEntity<JSONObject>(workGroup, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/addWorkGroup", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -87,7 +93,7 @@ public class WorkGroupController {
 		JSONObject workGroupObj = new JSONObject();
 		JSONObject workGroupResObj = new JSONObject();
 		JSONParser parser = new JSONParser();
-		String workGroupName = null, defaultRole = null, createdBy = null, description = null, sourcesystem = null, sourcesystemcode = null;
+		String workGroupName = null, defaultRole = null, createdBy = null, description = null, sourcesystem = null, apicalltype = null;
 		try {
 			Date date = new Date();
 			JSONObject json = (JSONObject) parser.parse(request);
@@ -101,8 +107,8 @@ public class WorkGroupController {
 				defaultRole = (String) json.get("defaultRole");
 			if (json.get("sourcesystem") != null)
 				sourcesystem = (String) json.get("sourcesystem");
-			if (json.get("sourcesystemcode") != null)
-				sourcesystemcode = (String) json.get("sourcesystemcode");
+			if (json.get("apicalltype") != null)
+				apicalltype = (String) json.get("apicalltype");
 
 				WorkGroup workGroupEntity = new WorkGroup();
 				workGroupEntity.setCreatedBy(createdBy);
@@ -111,7 +117,7 @@ public class WorkGroupController {
 				workGroupEntity.setDescription(description);
 				workGroupEntity.setWorkGroupName(workGroupName);
 				workGroupEntity.setSourcesystem(sourcesystem);
-				workGroupEntity.setSourcesystemcode(sourcesystemcode);
+				workGroupEntity.setApicalltype(apicalltype);
 				WorkGroup savedWorkGroupData = workGroupRepository.save(workGroupEntity);
 				if(savedWorkGroupData !=null)
 					workGroupResObj.put("output", "work group added successfully");
@@ -122,14 +128,16 @@ public class WorkGroupController {
 		return new ResponseEntity<JSONObject>(workGroupResObj, HttpStatus.OK);
 	}
 
-	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked" })
 	@POST
 	@RequestMapping(value = "/editWorkGroupRole", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public ResponseEntity<JSONObject> editWorkGroupRole(@RequestBody String request) {
 		JSONObject roleResObj = new JSONObject();
 		JSONParser roleParser = new JSONParser();
-		String updatedBy = null, defaultRole = null , workGroupName = null, sourcesystem = null, sourcesystemcode = null;
+		String updatedBy = null, defaultRole = null , workGroupName = null, sourcesystem = null, apicalltype = null;
 		try {
 			Date date = new Date();
 			JSONObject json = (JSONObject) roleParser.parse(request);
@@ -141,8 +149,8 @@ public class WorkGroupController {
 				workGroupName = (String) json.get("workGroupName");
 			if (json.get("sourcesystem") != null)
 				sourcesystem = (String) json.get("sourcesystem");
-			if (json.get("sourcesystemcode") != null)
-				sourcesystemcode = (String) json.get("sourcesystemcode");
+			if (json.get("apicalltype") != null)
+				apicalltype = (String) json.get("apicalltype");
 			
 			WorkGroup workGroupDetails = workGroupRepository.findByWorkGroupName(workGroupName);
 			if (workGroupDetails ==null)
@@ -152,7 +160,7 @@ public class WorkGroupController {
 				workGroupDetails.setUpdatedDate(date);
 				workGroupDetails.setDefaultRole(defaultRole);
 				workGroupDetails.setSourcesystem(sourcesystem);
-				workGroupDetails.setSourcesystemcode(sourcesystemcode);
+				workGroupDetails.setApicalltype(apicalltype);
 				WorkGroup savedWorkGroupData = workGroupRepository.save(workGroupDetails);
 				if(savedWorkGroupData !=null)
 					roleResObj.put("output", "role updated successfully");
@@ -164,6 +172,9 @@ public class WorkGroupController {
 		return new ResponseEntity<JSONObject>(roleResObj, HttpStatus.OK);
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "unused" })
 	@POST
 	@RequestMapping(value = "/searchWorkGroup", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -224,6 +235,9 @@ public class WorkGroupController {
 		return new ResponseEntity<JSONObject>(workGroup, HttpStatus.OK);
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/validateWorkGroup", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")

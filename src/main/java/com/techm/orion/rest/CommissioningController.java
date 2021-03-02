@@ -36,6 +36,9 @@ public class CommissioningController implements Observer {
 	@Autowired
 	DeviceDiscoveryRepository deviceDiscoveryRepo;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

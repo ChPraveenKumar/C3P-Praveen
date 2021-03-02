@@ -41,6 +41,10 @@ public class FirmwareUpgradeForSingleDevice {
 	 * : A higher version already exists. Are you sure to add you want to add this
 	 * version ?
 	 */
+	
+	/**
+	 *This Api is marked as ***************Both Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/addFirmwareUpgradeForSingleDevice", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -92,6 +96,9 @@ public class FirmwareUpgradeForSingleDevice {
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************Both Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/addFirmwareUpgradeForSingleDeviceLowerImage", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -130,6 +137,10 @@ public class FirmwareUpgradeForSingleDevice {
 	 * “Update OS” by searching for highest available OS version (from column
 	 * Display Name) against the selected device’s vendor and device model.
 	 */
+	
+	/**
+	 *This Api is marked as ***************Both Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/highestAvailableOsVersionForSingleDevice", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

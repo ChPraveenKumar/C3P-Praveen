@@ -48,6 +48,9 @@ public class GetNotification {
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getNotificationDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

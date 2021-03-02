@@ -32,6 +32,9 @@ import com.techm.orion.service.RequestSchedulerForNewAndModify;
 public class RequestScheduleService implements Observer {
 	private static final Logger logger = LogManager.getLogger(RequestScheduleService.class);
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getScheduledHistory", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -71,6 +74,9 @@ public class RequestScheduleService implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/recheduleRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -131,6 +137,9 @@ public class RequestScheduleService implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/runScheduleRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -414,6 +423,9 @@ public class RequestScheduleService implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/cancelRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -459,6 +471,9 @@ public class RequestScheduleService implements Observer {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/abortRequest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

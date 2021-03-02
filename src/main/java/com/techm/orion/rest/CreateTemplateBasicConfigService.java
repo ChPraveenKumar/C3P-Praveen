@@ -38,6 +38,9 @@ public class CreateTemplateBasicConfigService implements Observer {
 	TemplateManagementDao templateManagemnetDao = new TemplateManagementDao();
 	TemplateManagementDetailsService templateMngmntDtlService = new TemplateManagementDetailsService();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/add", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

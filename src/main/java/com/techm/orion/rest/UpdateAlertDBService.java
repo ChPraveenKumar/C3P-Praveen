@@ -36,6 +36,9 @@ public class UpdateAlertDBService implements Observer {
 	 * Alert Page - Web Service - To update alert information - Post JBDC to JPA
 	 * migration
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/update", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

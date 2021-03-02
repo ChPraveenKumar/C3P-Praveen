@@ -25,6 +25,9 @@ import com.techm.orion.service.AttributeFeatureNewService;
 public abstract class AttributeFeatureService implements Observer {
 	private static final Logger logger = LogManager.getLogger(AttributeFeatureService.class);
 	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getFeaturesForAttributes", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
