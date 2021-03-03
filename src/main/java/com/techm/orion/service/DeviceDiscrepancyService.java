@@ -2,6 +2,7 @@ package com.techm.orion.service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -532,32 +533,12 @@ public class DeviceDiscrepancyService {
 		List<MasterOIDEntity> masterOidEntities = masterOIDRepository.findOidAndDisplayName(vendor, networkType);
 		List<ForkDiscrepancyResultEntity> childOids = null;
 		JSONObject objInterfaces = new JSONObject();
-		JSONObject masterJson = null;
-		JSONObject childJson = null;
-		JSONArray outputArray = new JSONArray();
-		JSONArray childList = null;
-		for (MasterOIDEntity masterEntity : masterOidEntities) {
-			childList = new JSONArray();
-			masterJson = new JSONObject();
-			childOids = forkDiscrepancyResultRepository.findForkDiscrepancy(ipAddress, deviceId,
-					masterEntity.getOidNo());
-			masterJson.put("id", masterEntity.getOidNo());
-			masterJson.put("category", masterEntity.getOidCategory());
-			masterJson.put("displayName", masterEntity.getOidDisplayName());
-
-			for (ForkDiscrepancyResultEntity childOid : childOids) {
-				childJson = new JSONObject();
-				childJson.put("id", childOid.getFidChildOIDNo());
-				childJson.put("discoveredValue", childOid.getFidDiscoverValue());
-				childList.add(childJson);
-			}
-			masterJson.put("childOid", childList);
-			outputArray.add(masterJson);
-		}
-		objInterfaces.put("interfaces", outputArray);
+		JSONArray objectArrayInterfaceData = getInterfaceData(masterOidEntities, childOids, ipAddress, deviceId);
+		if (objectArrayInterfaceData != null)
+			objInterfaces.put("interfaces", objectArrayInterfaceData);
 		return objInterfaces;
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	private JSONArray discroveryDiscreapncy(int deviceId, String vendor, String networkType) {
 		JSONArray discrepancyObject = new JSONArray();
@@ -717,4 +698,75 @@ public class DeviceDiscrepancyService {
 		}
 		return object;
 	}
+	
+	@SuppressWarnings({ "unchecked" })
+    private JSONArray getInterfaceData(List<MasterOIDEntity> masterOidEntities,
+                  List<ForkDiscrepancyResultEntity> childOids, String ipAddress, String deviceId) {
+           JSONArray outputArray = new JSONArray();
+           int maxLength = 0, length = 0;
+           String dotCheck = ".";
+           List<ForkDiscrepancyResultEntity> tempChildOids = new ArrayList<ForkDiscrepancyResultEntity>();
+           for (MasterOIDEntity masterEntity : masterOidEntities) {
+                  childOids = forkDiscrepancyResultRepository.findForkDiscrepancy(ipAddress, deviceId,
+                               masterEntity.getOidNo());
+                  {
+                        JSONObject childJson = null;
+                        JSONArray childList = new JSONArray();
+                        JSONObject masterJson = new JSONObject();
+                        if ("Name".equalsIgnoreCase(masterEntity.getOidDisplayName())) {
+                               maxLength = childOids.size();
+                               tempChildOids.addAll(childOids);
+                        }
+                        length = childOids.size();
+                        if (maxLength > length) {
+                               masterJson.put("id", masterEntity.getOidNo());
+                               masterJson.put("category", masterEntity.getOidCategory());
+                               masterJson.put("displayName", masterEntity.getOidDisplayName());
+                               String tempChildSuffix = null, childSuffix = null;
+                               boolean isSuffixMatch = true;
+                               for (ForkDiscrepancyResultEntity tempChildOid : tempChildOids) {
+                                      if(tempChildOid.getFidChildOIDNo().contains(dotCheck)) {
+                                             tempChildSuffix = tempChildOid.getFidChildOIDNo()
+                                                           .substring(tempChildOid.getFidChildOIDNo().lastIndexOf(dotCheck) + 1);
+                                      }
+                                      for (ForkDiscrepancyResultEntity childOid : childOids) {
+                                             if(childOid.getFidChildOIDNo().contains(dotCheck)) {
+                                                    childSuffix = childOid.getFidChildOIDNo()
+                                                                  .substring(childOid.getFidChildOIDNo().lastIndexOf(dotCheck) + 1);
+                                             }
+                                             if (tempChildSuffix !=null && tempChildSuffix.equals(childSuffix)) {
+                                                    isSuffixMatch = false;
+                                                    childJson = new JSONObject();
+                                                    childJson.put("id", childOid.getFidChildOIDNo());
+                                                    childJson.put("discoveredValue", childOid.getFidDiscoverValue());
+                                                    childList.add(childJson);
+                                                    break;
+                                             }
+                                             isSuffixMatch = true;
+                                      }
+                                      if (isSuffixMatch) {
+                                             childJson = new JSONObject();
+                                             childJson.put("id", "");
+                                             childJson.put("discoveredValue", "");
+                                             childList.add(childJson);
+                                      }
+                               }
+                        } else {
+                               masterJson.put("id", masterEntity.getOidNo());
+                               masterJson.put("category", masterEntity.getOidCategory());
+                               masterJson.put("displayName", masterEntity.getOidDisplayName());
+
+                               for (ForkDiscrepancyResultEntity childOid : childOids) {
+                                      childJson = new JSONObject();
+                                      childJson.put("id", childOid.getFidChildOIDNo());
+                                      childJson.put("discoveredValue", childOid.getFidDiscoverValue());
+                                      childList.add(childJson);
+                               }
+                        }
+                        masterJson.put("childOid", childList);
+                        outputArray.add(masterJson);
+                  }
+           }
+           return outputArray;
+    }
 }
