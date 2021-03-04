@@ -28,7 +28,7 @@ public interface ForkDiscrepancyResultRepository extends JpaRepository<ForkDiscr
 			@Param("odNo") String odNo, @Param("childOid") String chodNo, @Param("ipAddress") String ipAddress);
 
 	@Query(value = "SELECT * FROM c3p_t_fork_inv_discrepancy where fid_ip_address=:fid_ip_address and device_id=:device_id"
-			+ " and fid_oid_no=:fid_oid_no", nativeQuery = true)
+			+ " and fid_oid_no=:fid_oid_no order by fid_row_id desc ", nativeQuery = true)
 	List<ForkDiscrepancyResultEntity> findForkDiscrepancy(@Param("fid_ip_address") String fid_ip_address,
 			@Param("device_id") String device_id, @Param("fid_oid_no") String fid_oid_no);	
 
