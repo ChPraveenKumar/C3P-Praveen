@@ -1,8 +1,7 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-
-import java.sql.Timestamp;
+import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -67,10 +66,24 @@ public class HostIpManagementEntity implements Serializable {
 	private String hostUpdatedBy;
 
 	@Column(name = "h_created_date")
-	private Timestamp hostCreatedDate;
+	private Date hostCreatedDate;
 
 	@Column(name = "h_updated_date")
-	private Timestamp hostUpdatedDate;
+	private Date hostUpdatedDate;
+	
+	@Column(name = "h_released_flag", length = 1)
+	private String hostReleasedFlag;
+	
+	@Column(name = "h_released_on")
+	private Date hostReleasedOn;
+
+	public String getHostReleasedFlag() {
+		return hostReleasedFlag;
+	}
+
+	public void setHostReleasedFlag(String hostReleasedFlag) {
+		this.hostReleasedFlag = hostReleasedFlag;
+	}
 
 	public int getHostRowId() {
 		return hostRowId;
@@ -192,19 +205,27 @@ public class HostIpManagementEntity implements Serializable {
 		this.hostUpdatedBy = hostUpdatedBy;
 	}
 
-	public Timestamp getHostCreatedDate() {
+	public Date getHostCreatedDate() {
 		return hostCreatedDate;
 	}
 
-	public void setHostCreatedDate(Timestamp hostCreatedDate) {
+	public void setHostCreatedDate(Date hostCreatedDate) {
 		this.hostCreatedDate = hostCreatedDate;
 	}
 
-	public Timestamp getHostUpdatedDate() {
+	public Date getHostUpdatedDate() {
 		return hostUpdatedDate;
 	}
 
-	public void setHostUpdatedDate(Timestamp hostUpdatedDate) {
+	public void setHostUpdatedDate(Date hostUpdatedDate) {
 		this.hostUpdatedDate = hostUpdatedDate;
+	}
+
+	public Date getHostReleasedOn() {
+		return hostReleasedOn;
+	}
+
+	public void setHostReleasedOn(Date hostReleasedOn) {
+		this.hostReleasedOn = hostReleasedOn;
 	}
 }

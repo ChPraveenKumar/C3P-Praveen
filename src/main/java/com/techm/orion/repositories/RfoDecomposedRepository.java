@@ -28,6 +28,8 @@ public interface RfoDecomposedRepository extends
 	RfoDecomposedEntity findByOdRequestIdAndOdRequestVersion(String requestId,
 			Double version);
 	
+	RfoDecomposedEntity findByOdRequestId(String requestId);
+	
 	@Query(value = "select rfo.od_rfo_id from c3p_rfo_decomposed rfo,t_create_config_m_attrib_info info where rfo.od_request_id = info.request_id "
 			+ "and info.request_id=:request_id", nativeQuery = true)
 	String findrfoId(@Param("request_id") String request_id);

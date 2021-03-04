@@ -37,6 +37,9 @@ public class RequestCreatorController {
 	@Autowired
 	private ConfigurationManagmentService createConfigurationService;
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getCustomerList", method = RequestMethod.GET, produces = "application/json")
 	public Response getCustomerList() {
@@ -48,6 +51,9 @@ public class RequestCreatorController {
 		return Response.status(200).entity(customerList).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getRegions", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -68,6 +74,9 @@ public class RequestCreatorController {
 		return Response.status(200).entity(region).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getSites", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -124,6 +133,9 @@ public class RequestCreatorController {
 		return Response.status(200).entity("Abc").build();
 	}*/
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getHostName", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -151,6 +163,9 @@ public class RequestCreatorController {
 		return Response.status(200).entity(hostNameList).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getDevieDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -185,6 +200,9 @@ public class RequestCreatorController {
 		return Response.status(200).entity(deviceDetails).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/verifyConfiguration", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

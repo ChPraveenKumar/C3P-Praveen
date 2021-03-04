@@ -22,6 +22,9 @@ public class TemplateManagementGenericController {
 	@Autowired
 	private TemplateManagementGenericService service;
 
+	/**
+	 *This Api is marked as ***************External Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/features", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<JSONObject> getFeatures() {
@@ -35,6 +38,9 @@ public class TemplateManagementGenericController {
 		return responseEntity;
 	}
 
+	/**
+	 *This Api is marked as ***************External Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/characteristics", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<JSONObject> getCharacteristics() {

@@ -25,7 +25,8 @@ public class CredentialMgmtService {
 	@SuppressWarnings("unchecked")
 	public JSONObject viewCredentialProfile(String infoId) {
 		JSONObject credentialJson = new JSONObject();
-		List<CredentialManagementEntity> credentialManagementList = credentialManagementRepo.findInfoId(infoId);
+		int id = Integer.parseInt(infoId);
+		List<CredentialManagementEntity> credentialManagementList = credentialManagementRepo.findByInfoId(id);
 		JSONArray credentialArray = new JSONArray();
 		credentialManagementList.forEach(credentialList -> {
 			JSONObject credential = new JSONObject();

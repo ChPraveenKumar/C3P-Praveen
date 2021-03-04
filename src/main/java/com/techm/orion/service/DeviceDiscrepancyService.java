@@ -2,6 +2,7 @@ package com.techm.orion.service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -171,7 +172,7 @@ public class DeviceDiscrepancyService {
 						fidChildOIDNo = StringUtils.substringAfterLast(fidChildOIDNo, ".");
 						String oidName = masterOIDRepository.findInterFaceOidAndDisplayName(devicedetails.getdVendor(),
 								devicedetails.getdVNFSupport());
-
+						
 						String finalOid = oidName + "." + fidChildOIDNo;
 						String dicreapancyvalue = forkDiscrepancyResultRepository.findForkDiscrepancyValueByDeviceIdAndoidNo(
 								finalOid, String.valueOf(devicedetails.getdId()));
@@ -354,7 +355,8 @@ public class DeviceDiscrepancyService {
 
 	@SuppressWarnings("unchecked")
 	public JSONObject ignoreAndOverWrite(@RequestBody String request) {
-		MasterOIDEntity masterOIDEntity = null;
+		//MasterOIDEntity masterOIDEntity = null;
+		List<MasterOIDEntity> masterOIDEntity = null;
 		HostDiscrepancyResultEntity hostDiscrepancyResultEntity = null;
 		List<HostDiscoveryResultEntity> hostDiscoveryResultEntities = null;
 		ForkDiscrepancyResultEntity forkDiscrepancyResultEntity = null;
@@ -469,27 +471,32 @@ public class DeviceDiscrepancyService {
 						 * If Category = "Host" for this OID, then find the value in "Column name".
 						 * Update the corresponding column of table "Device Info"
 						 */
+						//masterOIDEntity = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkType(
+							//	obj.get("oid").toString(), deviceDiscovertEntity.getdVendor(),
+							//	deviceDiscovertEntity.getdVNFSupport());
 						masterOIDEntity = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkType(
 								obj.get("oid").toString(), deviceDiscovertEntity.getdVendor(),
 								deviceDiscovertEntity.getdVNFSupport());
-						if (masterOIDEntity != null && "Host".equals(masterOIDEntity.getOidCategory())) {
-							if ("d_device_family".equals(masterOIDEntity.getOidAttrib())) {
+						for(int i = 0; i<masterOIDEntity.size();i++) {
+						if (masterOIDEntity != null && "Host".equals(masterOIDEntity.get(i).getOidCategory())) {
+							if ("d_device_family".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdDeviceFamily(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_model".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_model".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdModel(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_os".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_os".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdOs(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_os_version".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_os_version".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdOsVersion(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_hostname".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_hostname".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdHostName(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_macaddress".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_macaddress".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdMACAddress(hostDiscoveryResultEntity.getHdrDiscoverValue());
-							} else if ("d_serial_number".equals(masterOIDEntity.getOidAttrib())) {
+							} else if ("d_serial_number".equals(masterOIDEntity.get(i).getOidAttrib())) {
 								deviceDiscovertEntity.setdSerialNumber(hostDiscoveryResultEntity.getHdrDiscoverValue());
 							}
 							discoveryRepo.save(deviceDiscovertEntity);
 						}
+					}
 					}
 
 				}
@@ -509,7 +516,7 @@ public class DeviceDiscrepancyService {
 					resultObj.put("msg", "Discrepancy ignore is failed");
 				}
 			}
-
+			logger.info("resultObj "+resultObj);
 		} catch (Exception exe) {
 			exe.printStackTrace();
 			logger.error("exception of ignoreAndOverWrite method" + exe.getMessage());
@@ -526,32 +533,12 @@ public class DeviceDiscrepancyService {
 		List<MasterOIDEntity> masterOidEntities = masterOIDRepository.findOidAndDisplayName(vendor, networkType);
 		List<ForkDiscrepancyResultEntity> childOids = null;
 		JSONObject objInterfaces = new JSONObject();
-		JSONObject masterJson = null;
-		JSONObject childJson = null;
-		JSONArray outputArray = new JSONArray();
-		JSONArray childList = null;
-		for (MasterOIDEntity masterEntity : masterOidEntities) {
-			childList = new JSONArray();
-			masterJson = new JSONObject();
-			childOids = forkDiscrepancyResultRepository.findForkDiscrepancy(ipAddress, deviceId,
-					masterEntity.getOidNo());
-			masterJson.put("id", masterEntity.getOidNo());
-			masterJson.put("category", masterEntity.getOidCategory());
-			masterJson.put("displayName", masterEntity.getOidDisplayName());
-
-			for (ForkDiscrepancyResultEntity childOid : childOids) {
-				childJson = new JSONObject();
-				childJson.put("id", childOid.getFidChildOIDNo());
-				childJson.put("discoveredValue", childOid.getFidDiscoverValue());
-				childList.add(childJson);
-			}
-			masterJson.put("childOid", childList);
-			outputArray.add(masterJson);
-		}
-		objInterfaces.put("interfaces", outputArray);
+		JSONArray objectArrayInterfaceData = getInterfaceData(masterOidEntities, childOids, ipAddress, deviceId);
+		if (objectArrayInterfaceData != null)
+			objInterfaces.put("interfaces", objectArrayInterfaceData);
 		return objInterfaces;
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	private JSONArray discroveryDiscreapncy(int deviceId, String vendor, String networkType) {
 		JSONArray discrepancyObject = new JSONArray();
@@ -639,60 +626,67 @@ public class DeviceDiscrepancyService {
 		JSONParser parser = new JSONParser();
 		JSONObject json = new JSONObject();
 		json = (JSONObject) parser.parse(request);
-		MasterOIDEntity masterOid = new MasterOIDEntity();
 		JSONObject object = new JSONObject();
 		boolean isAdd = false;
+		String vendor = null, oid = null, category = null, rfAttrib = null, label = null, inScope = null,
+				networkType = null, sub = null, compare = null;
+		String defaultFlag = null, userName = null;
+
 		JSONArray jsonArray = (JSONArray) (json.get("oidDetails"));
 		if (json.containsKey("userName")) {
-			masterOid.setOidCreatedBy(json.get("userName").toString());
+			userName = json.get("userName").toString();
 		}
 		for (int i = 0; i < jsonArray.size(); i++) {
 			JSONObject oidObject = (JSONObject) jsonArray.get(i);
 			if (oidObject.get("vendor") != null) {
-				masterOid.setOidVendor(oidObject.get("vendor").toString());
+				vendor = oidObject.get("vendor").toString();
 			}
 			if (oidObject.get("oid") != null) {
-				masterOid.setOidNo(oidObject.get("oid").toString());
+				oid = oidObject.get("oid").toString();
 			}
 			if (oidObject.get("category") != null) {
-				masterOid.setOidCategory(oidObject.get("category").toString());
+				category = oidObject.get("category").toString();
 			}
 			if (oidObject.get("rfAttrib") != null) {
-				masterOid.setOidAttrib(oidObject.get("rfAttrib").toString());
+				rfAttrib = oidObject.get("rfAttrib").toString();
 			}
 			if (oidObject.get("label") != null) {
-				masterOid.setOidDisplayName(oidObject.get("label").toString());
+				label = oidObject.get("label").toString();
 			}
 			if (oidObject.get("inScope") != null) {
-				masterOid.setOidScopeFlag(oidObject.get("inScope").toString());
+				inScope = oidObject.get("inScope").toString();
 			}
 			if (oidObject.get("networkType") != null) {
-				masterOid.setOidNetworkType(oidObject.get("networkType").toString());
+				networkType = oidObject.get("networkType").toString();
 			}
 			if (oidObject.get("sub") != null) {
-				masterOid.setOidForkFlag(oidObject.get("sub").toString());
+				sub = oidObject.get("sub").toString();
 			}
 			if (oidObject.get("compare") != null) {
-				masterOid.setOidCompareFlag(oidObject.get("compare").toString());
+				compare = oidObject.get("compare").toString();
 			}
 			if (oidObject.get("default") != null) {
-				masterOid.setOidDefaultFlag(oidObject.get("default").toString());
+				defaultFlag = oidObject.get("default").toString();
 			}
 
-			List<MasterOIDEntity> masterEntity = masterOIDRepository.findByOidNo(masterOid.getOidNo());
+			//List<MasterOIDEntity> masterEntity = masterOIDRepository.findByOidNo(oid);
+			List<MasterOIDEntity> masterEntity = masterOIDRepository
+					.findByOidNoAndOidCategoryAndOidScopeFlagAndOidVendorAndOidNetworkTypeAndOidDisplayName(oid,
+							category, inScope, vendor, networkType, label);
 			if (masterEntity.isEmpty()) {
 				MasterOIDEntity masterOidsEntity = new MasterOIDEntity();
-				masterOidsEntity.setOidNo(masterOid.getOidNo());
-				masterOidsEntity.setOidVendor(masterOid.getOidVendor());
-				masterOidsEntity.setOidCategory(masterOid.getOidCategory());
+				masterOidsEntity.setOidNo(oid);
+				masterOidsEntity.setOidVendor(vendor);
+				masterOidsEntity.setOidCategory(category);
 				// entity.setOidAttrib(masterOid.getOidAttrib());
-				masterOidsEntity.setOidDisplayName(masterOid.getOidDisplayName());
-				masterOidsEntity.setOidScopeFlag(masterOid.getOidScopeFlag());
-				masterOidsEntity.setOidNetworkType(masterOid.getOidNetworkType());
-				masterOidsEntity.setOidForkFlag(masterOid.getOidForkFlag());
-				masterOidsEntity.setOidCompareFlag(masterOid.getOidCompareFlag());
-				masterOidsEntity.setOidDefaultFlag(masterOid.getOidDefaultFlag());
-				masterOidsEntity.setOidCreatedBy(masterOid.getOidCreatedBy());
+				masterOidsEntity.setOidDisplayName(label);
+				masterOidsEntity.setOidScopeFlag(inScope);
+				masterOidsEntity.setOidNetworkType(networkType);
+				masterOidsEntity.setOidForkFlag(sub);
+				masterOidsEntity.setOidCompareFlag(compare);
+				masterOidsEntity.setOidDefaultFlag(defaultFlag);
+				masterOidsEntity.setOidCreatedBy(userName);
+				masterOidsEntity.setOidCreatedDate(Timestamp.valueOf(LocalDateTime.now()));
 				masterOIDRepository.save(masterOidsEntity);
 				isAdd = true;
 			}
@@ -704,4 +698,75 @@ public class DeviceDiscrepancyService {
 		}
 		return object;
 	}
+	
+	@SuppressWarnings({ "unchecked" })
+    private JSONArray getInterfaceData(List<MasterOIDEntity> masterOidEntities,
+                  List<ForkDiscrepancyResultEntity> childOids, String ipAddress, String deviceId) {
+           JSONArray outputArray = new JSONArray();
+           int maxLength = 0, length = 0;
+           String dotCheck = ".";
+           List<ForkDiscrepancyResultEntity> tempChildOids = new ArrayList<ForkDiscrepancyResultEntity>();
+           for (MasterOIDEntity masterEntity : masterOidEntities) {
+                  childOids = forkDiscrepancyResultRepository.findForkDiscrepancy(ipAddress, deviceId,
+                               masterEntity.getOidNo());
+                  {
+                        JSONObject childJson = null;
+                        JSONArray childList = new JSONArray();
+                        JSONObject masterJson = new JSONObject();
+                        if ("Name".equalsIgnoreCase(masterEntity.getOidDisplayName())) {
+                               maxLength = childOids.size();
+                               tempChildOids.addAll(childOids);
+                        }
+                        length = childOids.size();
+                        if (maxLength > length) {
+                               masterJson.put("id", masterEntity.getOidNo());
+                               masterJson.put("category", masterEntity.getOidCategory());
+                               masterJson.put("displayName", masterEntity.getOidDisplayName());
+                               String tempChildSuffix = null, childSuffix = null;
+                               boolean isSuffixMatch = true;
+                               for (ForkDiscrepancyResultEntity tempChildOid : tempChildOids) {
+                                      if(tempChildOid.getFidChildOIDNo().contains(dotCheck)) {
+                                             tempChildSuffix = tempChildOid.getFidChildOIDNo()
+                                                           .substring(tempChildOid.getFidChildOIDNo().lastIndexOf(dotCheck) + 1);
+                                      }
+                                      for (ForkDiscrepancyResultEntity childOid : childOids) {
+                                             if(childOid.getFidChildOIDNo().contains(dotCheck)) {
+                                                    childSuffix = childOid.getFidChildOIDNo()
+                                                                  .substring(childOid.getFidChildOIDNo().lastIndexOf(dotCheck) + 1);
+                                             }
+                                             if (tempChildSuffix !=null && tempChildSuffix.equals(childSuffix)) {
+                                                    isSuffixMatch = false;
+                                                    childJson = new JSONObject();
+                                                    childJson.put("id", childOid.getFidChildOIDNo());
+                                                    childJson.put("discoveredValue", childOid.getFidDiscoverValue());
+                                                    childList.add(childJson);
+                                                    break;
+                                             }
+                                             isSuffixMatch = true;
+                                      }
+                                      if (isSuffixMatch) {
+                                             childJson = new JSONObject();
+                                             childJson.put("id", "");
+                                             childJson.put("discoveredValue", "");
+                                             childList.add(childJson);
+                                      }
+                               }
+                        } else {
+                               masterJson.put("id", masterEntity.getOidNo());
+                               masterJson.put("category", masterEntity.getOidCategory());
+                               masterJson.put("displayName", masterEntity.getOidDisplayName());
+
+                               for (ForkDiscrepancyResultEntity childOid : childOids) {
+                                      childJson = new JSONObject();
+                                      childJson.put("id", childOid.getFidChildOIDNo());
+                                      childJson.put("discoveredValue", childOid.getFidDiscoverValue());
+                                      childList.add(childJson);
+                               }
+                        }
+                        masterJson.put("childOid", childList);
+                        outputArray.add(masterJson);
+                  }
+           }
+           return outputArray;
+    }
 }

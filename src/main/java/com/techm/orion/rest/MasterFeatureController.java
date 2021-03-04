@@ -92,6 +92,9 @@ public class MasterFeatureController {
 	/*
 	 * To get Validation, Category and UI component list.
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@GET
 	@Produces("application/json")
@@ -124,6 +127,9 @@ public class MasterFeatureController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/addFeature", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -243,6 +249,9 @@ public class MasterFeatureController {
 		return commandList;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@POST
 	@RequestMapping(value = "/searchFeature", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -605,6 +614,9 @@ public class MasterFeatureController {
 
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getFeaturesRPC", method = RequestMethod.GET, produces = "application/json")
@@ -653,6 +665,9 @@ public class MasterFeatureController {
 		return new ResponseEntity<JSONObject>(objInterfaces, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/searchFeaturesRPC", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

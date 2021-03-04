@@ -23,6 +23,9 @@ public class GetFAQ implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetFAQ.class);
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/get", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody

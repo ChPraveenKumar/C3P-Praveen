@@ -39,6 +39,9 @@ public class WorkbenchController implements Observer {
 	@Autowired
 	DeviceDiscoveryRepository deviceInforepo;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody

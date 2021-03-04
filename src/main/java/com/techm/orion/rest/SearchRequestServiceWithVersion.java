@@ -41,6 +41,9 @@ public class SearchRequestServiceWithVersion implements Observer {
 	private static final Logger logger = LogManager.getLogger(SearchRequestServiceWithVersion.class);
 	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -365,10 +368,14 @@ public class SearchRequestServiceWithVersion implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
+	
 	/*
 	 * Owner: Rahul Tiwari Module: GLM Logic: To refresh only milestone not entire
 	 * page custom tests
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/refreshmilestones", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -704,10 +711,14 @@ public class SearchRequestServiceWithVersion implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
+	
 	/*
 	 * Owner: Rahul Tiwari Module: TestAndDiagnosis Logic: Get all the test name
 	 * with version custom tests
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getTestAndDiagnosisDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -783,6 +794,9 @@ public class SearchRequestServiceWithVersion implements Observer {
 	 * Owner: Rahul Tiwari Module: Request Details Logic: Get all the configuration
 	 * feature based on request Id and template Id custom tests
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getConfigurationFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -839,6 +853,9 @@ public class SearchRequestServiceWithVersion implements Observer {
 	 * Owner: Rahul Tiwari Module: Request Details Logic: Get configuration feature
 	 * details based on requestId, requestId, temaplate Id and feature custom tests
 	 */
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getConfigurationFeatureDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

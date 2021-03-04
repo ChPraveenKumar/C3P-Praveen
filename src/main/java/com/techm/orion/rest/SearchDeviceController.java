@@ -56,6 +56,9 @@ public class SearchDeviceController {
 	private static final Logger logger = LogManager
 			.getLogger(SearchDeviceController.class);
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/searchInventoryDashboard", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -200,6 +203,9 @@ public class SearchDeviceController {
 				.build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/filterInventoryDashboard", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -405,6 +411,9 @@ public class SearchDeviceController {
 				.build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getDeviceFamily", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -426,6 +435,9 @@ public class SearchDeviceController {
 		return Response.status(200).entity(model).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/getAllModel", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -448,6 +460,9 @@ public class SearchDeviceController {
 		return Response.status(200).entity(model).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/backuppage", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

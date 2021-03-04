@@ -35,6 +35,9 @@ public class SearchAllAlertNotificationDataService implements Observer {
 	 * code and description - Post JBDC to JPA migration
 	 */
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, produces = "application/json")

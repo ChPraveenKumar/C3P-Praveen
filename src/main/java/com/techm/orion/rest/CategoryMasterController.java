@@ -40,11 +40,17 @@ public class CategoryMasterController {
 	@Autowired
 	private CategoryDropDownDao categoryDropDownDao;
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@RequestMapping(value = "/category",method = RequestMethod.GET,produces = "application/json")
 	public Response getAllCategory() {
 		return Response.status(200).entity(categoryService.getAll()).build();
 	}
-
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/masterOid", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getMasterOids(@RequestBody String request) throws ParseException {
@@ -58,6 +64,9 @@ public class CategoryMasterController {
 		return responseEntity;
 	}
 	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getCategoryList", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -84,6 +93,9 @@ public class CategoryMasterController {
 		return new ResponseEntity<JSONObject>(jsonObject, HttpStatus.OK);
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@POST
 	@RequestMapping(value = "/saveMasterOIds", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> saveMasterOIdInfo(@RequestBody String request) throws ParseException {

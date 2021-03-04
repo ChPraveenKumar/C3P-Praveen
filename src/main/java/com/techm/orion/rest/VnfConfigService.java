@@ -89,6 +89,9 @@ public class VnfConfigService implements Observer {
 	@Autowired
 	TestStrategeyAnalyser analyser;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked" })
 	@POST
 	@RequestMapping(value = "/generateConfiguration", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -390,6 +393,9 @@ public class VnfConfigService implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked", "null" })
 	@POST
 	@RequestMapping(value = "/prevalidateODL", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -848,6 +854,9 @@ public class VnfConfigService implements Observer {
 		return obj;
 	}
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings({ "unchecked" })
 	@POST
 	@RequestMapping(value = "/pushConfiguration", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

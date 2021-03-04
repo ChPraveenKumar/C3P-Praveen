@@ -24,6 +24,9 @@ public class LogoutService implements Observer {
 	@Autowired
 	private UserManagementInterface userCreateInterface;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/logout", method = RequestMethod.POST, produces = "application/json")

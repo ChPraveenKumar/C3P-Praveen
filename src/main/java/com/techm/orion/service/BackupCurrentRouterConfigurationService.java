@@ -7,12 +7,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -25,6 +32,7 @@ import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
 @Service
@@ -387,12 +395,35 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 		return false;
 	}
 
+	@SuppressWarnings("unchecked")
 	public boolean getRouterConfig(RequestInfoPojo configRequest, String routerVersionType) {
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		boolean backupdone = false;
 		try {
+			if ("VNF".equalsIgnoreCase(configRequest.getNetworkType())) {
+				RestTemplate restTemplate = new RestTemplate();
+				JSONObject request = new JSONObject();
+				request.put(new String("ip"), configRequest.getManagementIp());
+				request.put(new String("port"), TSALabels.BACKUP_PORT.getValue());
+				request.put(new String("source"), "running");
+				request.put(new String("requestId"), configRequest.getAlphanumericReqId());
+				request.put(new String("stage"), "previous");
+				request.put(new String("version"), configRequest.getRequestVersion());
+	            request.put(new String("hostname"), configRequest.getHostname());
+				HttpHeaders headers = new HttpHeaders();
+				headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+				HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
+				String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_BACKUP.getValue();
+				String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+				if (response != null) {
+					backupdone = true;
+				} else {
+					backupdone = false;
+				}
+			}
+			else {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
@@ -445,7 +476,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				e.printStackTrace();
 			}
 		}
-
+	}
 		catch (Exception ex) {
 			String response = "";
 			String responseDownloadPath = "";

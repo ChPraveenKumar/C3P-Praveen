@@ -45,6 +45,9 @@ public class DownloadBasicConfigFile {
 	@Autowired
 	private MasterCommandsRepository masterCommandsRepository;
 
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
 	@GET
 	@Produces("application/x-download")
 	@ResponseBody
