@@ -67,8 +67,11 @@ public class IpManagementController {
 		JSONObject json = (JSONObject) parser.parse(request);
 		String ipRange = null;
 		String mask = null;
-		ipRange = json.get("ipRange").toString();
-		mask = json.get("mask").toString();
+		if (json.get("ipRange") != null)
+			ipRange = json.get("ipRange").toString();
+		if (json.get("mask") != null)
+			mask = json.get("mask").toString();
+
 		JSONObject jsonResult = ipManagementService.getIpRangeDetail(ipRange, mask);
 		if (jsonResult != null) {
 			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);

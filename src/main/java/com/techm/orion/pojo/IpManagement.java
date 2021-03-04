@@ -1,13 +1,13 @@
 package com.techm.orion.pojo;
 
 public class IpManagement {
-	String customer;
-	String region;
-	String siteName;
-	String ip;
-	String mask;
-	String remarks;
-	String ipType;
+	private String customer;
+	private String region;
+	private String siteName;
+	private String ip;
+	private String mask;
+	private String remarks;
+	private String ipType;
 	
 	public String getCustomer() {
 		return customer;

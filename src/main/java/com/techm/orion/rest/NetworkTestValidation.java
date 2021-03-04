@@ -285,9 +285,9 @@ public class NetworkTestValidation extends Thread {
 									}
 								
 								}
-								if (requestinfo.getCertificationSelectionBit().substring(0, 1).equalsIgnoreCase("1")
-										|| requestinfo.getCertificationSelectionBit().substring(1, 2).equalsIgnoreCase("1")
-										|| requestinfo.getCertificationSelectionBit().substring(2, 3).equalsIgnoreCase("1")
+								if (requestinfo.getCertificationSelectionBit().substring(0, 1).equals("1")
+										|| requestinfo.getCertificationSelectionBit().substring(1, 2).equals("1")
+										|| requestinfo.getCertificationSelectionBit().substring(2, 3).equals("1")
 										|| requestinfo.getCertificationSelectionBit().substring(3, 4)
 												.equalsIgnoreCase("1"))
 								{
