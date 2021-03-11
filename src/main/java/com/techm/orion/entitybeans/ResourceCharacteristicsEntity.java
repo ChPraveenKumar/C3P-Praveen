@@ -1,7 +1,6 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.sql.Date;
 import java.sql.Timestamp;
 
 import javax.persistence.Column;
@@ -59,6 +58,9 @@ public class ResourceCharacteristicsEntity implements Serializable
 
 	@Column(name = "rc_updated_date")
 	private Timestamp rcUpdatedDate;
+	
+	@Column(name = "rc_key_value")
+	private String rcKeyValue;
 
 	public Timestamp getRc_created_date() {
 		return rcCreatedDate;
@@ -166,5 +168,13 @@ public class ResourceCharacteristicsEntity implements Serializable
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+
+	public String getRcKeyValue() {
+		return rcKeyValue;
+	}
+
+	public void setRcKeyValue(String rcKeyValue) {
+		this.rcKeyValue = rcKeyValue;
 	}
 }

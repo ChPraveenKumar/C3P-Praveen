@@ -31,6 +31,7 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
+import com.techm.orion.entitybeans.ResourceCharacteristicsEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.entitybeans.TestDetail;
@@ -43,6 +44,8 @@ import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterAttribRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
+import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.ResourceCharacteristicsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.TestFeatureListRepository;
@@ -93,6 +96,12 @@ public class ConfigurationManagement {
 	
 	@Autowired
 	private MasterCharacteristicsRepository masterCharachteristicRepository;
+	
+	@Autowired
+	private ResourceCharacteristicsRepository resourceCharacteristicsRepository; 
+	
+	@Autowired
+	private MasterFeatureRepository masterFeatureRepository;
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -1003,5 +1012,101 @@ public class ConfigurationManagement {
 
 		}
 		return toSaveArray;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/validateKey", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONArray validateKey(@RequestBody String request) {
+		JSONArray validateKeyResponse = new JSONArray();
+		JSONParser identiferParser = new JSONParser();
+		String featureId = null, keyValue = null, hostName = null, ipAddress = null, attribName = null;
+		try {
+			JSONObject validateIdentifier = (JSONObject) identiferParser.parse(request);
+			if (validateIdentifier.containsKey("hostname") && validateIdentifier.get("hostname") != null)
+				hostName = (String) validateIdentifier.get("hostname");
+			if (validateIdentifier.containsKey("ipaddress") && validateIdentifier.get("ipaddress") != null)
+				ipAddress = (String) validateIdentifier.get("ipaddress");
+			if (validateIdentifier.containsKey("featureId") && validateIdentifier.get("featureId") != null)
+				featureId = (String) validateIdentifier.get("featureId");
+			if (validateIdentifier.containsKey("attribValue") && validateIdentifier.get("attribValue") != null)
+				keyValue = (String) validateIdentifier.get("attribValue");
+			if (validateIdentifier.containsKey("attribName") && validateIdentifier.get("attribName") != null)
+				attribName = (String) validateIdentifier.get("attribName");
+			List<DeviceDiscoveryEntity> deviceInfo = deviceRepo.findByDHostNameAndDMgmtIp(hostName, ipAddress);
+			for (DeviceDiscoveryEntity deviceEntity : deviceInfo) {
+				ResourceCharacteristicsEntity resourceCharEntity = resourceCharacteristicsRepository
+						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicNameAndRcKeyValue(deviceEntity.getdId(), featureId, attribName, keyValue);
+				JSONObject keyResponse = new JSONObject();
+				keyResponse.put("deviceId", deviceEntity.getdId());
+				keyResponse.put("featureId", featureId);
+				keyResponse.put("attribName", attribName);
+				if (resourceCharEntity != null) {
+					keyResponse.put("msg", "Duplicate record found");
+				} else
+					keyResponse.put("msg", "Duplicate record not found");
+				validateKeyResponse.add(keyResponse);
+			}
+		} catch (Exception e) {
+			logger.error("Exception occrued in validateKey" + e.getMessage());
+		}
+		return validateKeyResponse;
+	}
+	
+	@SuppressWarnings({ "unchecked" })
+	@POST
+	@RequestMapping(value = "/getExistingFeatureKeyValue", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONArray getExistingFeatureKeyValue(@RequestBody String request) {
+		JSONParser identiferParser = new JSONParser();
+		JSONArray validateKeyResponse = new JSONArray();
+		String featureId = null, hostName = null, ipAddress = null;
+		JSONObject responseOutput = null;
+		JSONArray featuresList = null;
+		String message = null;
+		try {
+			JSONObject validateIdentifier = (JSONObject) identiferParser.parse(request);
+			if (validateIdentifier.containsKey("hostname") && validateIdentifier.get("hostname") != null)
+				hostName = (String) validateIdentifier.get("hostname");
+			if (validateIdentifier.containsKey("ipaddress") && validateIdentifier.get("ipaddress") != null)
+				ipAddress = (String) validateIdentifier.get("ipaddress");
+			if (validateIdentifier.containsKey("features") && validateIdentifier.get("features") != null)
+				featuresList = (JSONArray) validateIdentifier.get("features");
+			List<DeviceDiscoveryEntity> deviceInfo = deviceRepo.findByDHostNameAndDMgmtIp(hostName, ipAddress);
+			if (featuresList != null && !featuresList.isEmpty()) {
+				for (int i = 0; i < featuresList.size(); i++) {
+					JSONObject json = (JSONObject) featuresList.get(i);
+					if(json.get("featureId") !=null)
+						featureId = (String) json.get("featureId");
+					String featureName = masterFeatureRepository.findNameByFeatureid(featureId);
+					JSONObject keyOutput = new JSONObject();
+					responseOutput = new JSONObject();
+					for (DeviceDiscoveryEntity deviceEntity : deviceInfo) {
+						ResourceCharacteristicsEntity resourceCharEntity = resourceCharacteristicsRepository
+								.findByDeviceIdAndRcFeatureIdAndRcKeyValueIsNotNull(deviceEntity.getdId(), featureId);
+
+						if (resourceCharEntity == null) {
+							message = "match not found";
+							responseOutput.put("attribName", "");
+							responseOutput.put("attribValue", "");
+
+						} else {
+							message = "match found";
+							responseOutput.put("attribName", resourceCharEntity.getRcCharacteristicName());
+							responseOutput.put("attribValue", resourceCharEntity.getRcCharacteristicValue());
+						}
+						responseOutput.put("featureId", featureId);
+						responseOutput.put("featureName", featureName);
+						keyOutput.put("msg", message);
+						keyOutput.put("output", responseOutput);
+					}
+					validateKeyResponse.add(keyOutput);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Exception occrued in getExistingFeatureKeyValue" + e.getMessage());
+		}
+		return validateKeyResponse;
 	}
 }

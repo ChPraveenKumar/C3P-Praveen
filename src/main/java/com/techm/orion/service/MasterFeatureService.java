@@ -734,7 +734,10 @@ public class MasterFeatureService {
 					}
 				}else {
 					templatePojo.setcId(null);
-				}					
+				}		
+				if (jsonObj.get("key") != null) {
+					templatePojo.setKey((boolean)jsonObj.get("key"));
+				}
 				templateAttribList.add(templatePojo);
 			}
 			/* save attrib config */
@@ -759,6 +762,7 @@ public class MasterFeatureService {
 		if(masterAttrib.getcId()!=null) {
 		master.setCharacteristicId(masterAttrib.getcId());
 		}
+		master.setKey(masterAttrib.isKey());
 		masterAttrribRepository.save(master);
 	}
 
