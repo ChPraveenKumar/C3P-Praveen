@@ -9,6 +9,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "c3p_m_characteristics")
@@ -68,7 +69,12 @@ public class MasterCharacteristicsEntity implements Serializable
 
 	@Column(name = "c_type")
 	private String cType;
-
+	
+	@Column(name = "c_is_key", columnDefinition="TINYINT(1)", nullable = false)
+	private boolean cIsKey;
+	
+	@Transient
+	private String labelValue;
 
 	public String getcValidations() {
 		return cValidations;
@@ -202,4 +208,32 @@ public class MasterCharacteristicsEntity implements Serializable
 		this.cType = cType;
 	}
 
+	public boolean iscIsKey() {
+		return cIsKey;
+	}
+
+	public void setcIsKey(boolean cIsKey) {
+		this.cIsKey = cIsKey;
+	}
+
+	public String getLabelValue() {
+		return labelValue;
+	}
+
+	public void setLabelValue(String labelValue) {
+		this.labelValue = labelValue;
+	}
+
+	public MasterCharacteristicsEntity() {
+		super();
+	}
+
+	public MasterCharacteristicsEntity(String cId, String cName, String cFId, String labelValue, boolean cIsKey) {
+		super();
+		this.cId = cId;
+		this.cName = cName;
+		this.cFId = cFId;
+		this.labelValue = labelValue;
+		this.cIsKey = cIsKey;
+	}
 }

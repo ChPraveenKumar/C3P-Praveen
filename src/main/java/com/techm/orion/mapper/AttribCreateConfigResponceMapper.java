@@ -32,6 +32,7 @@ public class AttribCreateConfigResponceMapper {
 		pojo.setAttribLabel(entity.getLabel());
 		pojo.setAttribCategoty(entity.getCategory());
 		pojo.setTemplateFeature(entity.getTemplateFeature());
+		pojo.setKey(entity.isKey());
 		return pojo;
 	}
 
@@ -66,6 +67,7 @@ public class AttribCreateConfigResponceMapper {
 				attribJson.setCategotyLabel(entity.getAttribCategoty());
 				attribJson.setCategory(allByCategoryName);
 			}
+			attribJson.setKey(entity.isKey());
 			jsonList.add(attribJson);
 
 		}
@@ -95,6 +97,7 @@ public class AttribCreateConfigResponceMapper {
 			}else {
 				attribJson.setCharacteriscticsId("");
 			}
+			attribJson.setKey(entity.iscIsKey());
 			jsonList.add(attribJson);
 		}
 		return jsonList;

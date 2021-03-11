@@ -183,8 +183,8 @@ public class RequestInfoDetailsDao {
 			// Successfully
 			for (ResourceCharacteristicsHistoryEntity attributes : charHistoryEnity) {
 				ResourceCharacteristicsEntity resourceCharEntity = resourceCharRepo
-						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(attributes.getDeviceId(), attributes.getRcFeatureId(),
-								attributes.getRcCharacteristicId());
+						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicIdAndRcKeyValue(attributes.getDeviceId(), attributes.getRcFeatureId(),
+								attributes.getRcCharacteristicId(), attributes.getRcKeyValue());
 				if (resourceCharEntity == null)
 					resourceCharEntity = new ResourceCharacteristicsEntity();
 				resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());
@@ -195,6 +195,7 @@ public class RequestInfoDetailsDao {
 				resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
 				resourceCharEntity.setRc_created_date(new Timestamp(new Date().getTime()));
 				resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
+				resourceCharEntity.setRcKeyValue(attributes.getRcKeyValue());
 				resourceCharRepo.save(resourceCharEntity);
 			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
