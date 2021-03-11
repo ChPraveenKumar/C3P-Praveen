@@ -29,7 +29,6 @@ import com.techm.orion.entitybeans.OS;
 import com.techm.orion.entitybeans.OSversion;
 import com.techm.orion.entitybeans.Regions;
 import com.techm.orion.entitybeans.Services;
-import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
 import com.techm.orion.entitybeans.Vendors;
 import com.techm.orion.repositories.DeviceFamilyRepository;
 import com.techm.orion.repositories.ModelsRepository;
@@ -236,17 +235,12 @@ public class GblLstController {
 	 **/
 	@GET
 	@RequestMapping(value = "/osversionforos", method = RequestMethod.GET, produces = "application/json")
-	public Response getOsversionforos(@RequestParam String os, String osId) {
-		Set<OSversion> setosversion = new HashSet<OSversion>();
-		List<OSversion> osversionlst = new ArrayList<OSversion>();
-		Set<OS> osSet= new HashSet<OS>();
+	public Response getOsversionforos(@RequestParam String osId) {
+		Set<OSversion> osversionlst = new HashSet<OSversion>();
+		OS osSet = null;
 		int id = Integer.parseInt(osId);
-		//setos = osRepository.findByOs(os);
-		osSet = osRepository.findOneByOsAndId(os,id);
-		for (OS osObj : osSet) {
-			setosversion = osversionRepository.findOne(osObj.getId());
-			osversionlst.addAll(setosversion);
-		}
+		osSet = osRepository.findById(id);
+		osversionlst = osversionRepository.findOne(osSet.getId());
 		return Response.status(200).entity(osversionlst).build();
 	}
 
@@ -255,10 +249,10 @@ public class GblLstController {
 	 **/
 	@DELETE
 	@RequestMapping(value = "/osversion", method = RequestMethod.DELETE, produces = "application/json")
-	public Response delOsversion(@RequestParam String id, String osversion) {
-		OSversion existingosversion = new OSversion();
+	public Response delOsversion(@RequestParam String id) {
+		OSversion existingosversion = null;
 		int osversion_id = Integer.parseInt(id);
-		existingosversion = osversionRepository.findByOsversionAndId(osversion, osversion_id);
+		existingosversion = osversionRepository.findById(osversion_id);
 		if (existingosversion != null) {
 			osversionRepository.delete(existingosversion);
 			return Response.status(200).entity("OS Version deleted successfully").build();
@@ -404,10 +398,10 @@ public class GblLstController {
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@RequestMapping(value = "/os", method = RequestMethod.DELETE, produces = "application/json")
-	public Response delOs(@RequestParam String os, String osId) {
-		OS osset = new OS();
+	public Response delOs(@RequestParam String osId) {
+		OS osset = null;
 		int id = Integer.parseInt(osId);
-		osset = osRepository.findByOsAndId(os, id);
+		osset = osRepository.findById(id);
 		if (osset != null) {
 			osRepository.delete(osset);
 			return Response.status(200).entity("OS deleted successfully").build();
@@ -571,10 +565,10 @@ public class GblLstController {
 	 **/
 	@DELETE
 	@RequestMapping(value = "/model", method = RequestMethod.DELETE, produces = "application/json")
-	public Response delModel(@RequestParam String id, String model) {
-		Models existingmodel = new Models();
+	public Response delModel(@RequestParam String id) {
+		Models existingmodel = null;
 		int model_Id = Integer.parseInt(id);
-		existingmodel = modelsRepository.findByModelAndId(model, model_Id);
+		existingmodel = modelsRepository.findById(model_Id);
 		if (existingmodel != null) {
 			modelsRepository.delete(existingmodel);
 			return Response.status(200).entity("Model deleted successfully").build();

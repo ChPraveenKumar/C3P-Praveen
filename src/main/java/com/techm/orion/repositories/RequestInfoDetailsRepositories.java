@@ -257,7 +257,7 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	int updateDateOfProcessing(@Param("dateofProcessing") Date dateOfProcessing,
 			@Param("alphanumericReqId") String alphanumericReqId, @Param("requestVersion") Double requestVersion);
 	
-	public List<RequestInfoEntity> findAllByHostNameOrderByDateofProcessingDesc(String hostName);
+	List<RequestInfoEntity> findAllByHostNameOrderByDateofProcessingDesc(String hostName);
 }
 
 

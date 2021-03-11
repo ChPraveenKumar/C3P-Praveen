@@ -15,8 +15,6 @@ public interface DiscoveryDashboardRepository extends JpaRepository<DiscoveryDas
 
 	DiscoveryDashboardEntity findByDisId(int disId);
 
-	Set<DiscoveryDashboardEntity> findByDisStatusIgnoreCase(String status);
-
 	Set<DiscoveryDashboardEntity> findByDisCreatedByIgnoreCaseOrderByDisCreatedDateDesc(String user);
 
 	Set<DiscoveryDashboardEntity> findByDisStatusIgnoreCaseAndDisCreatedByIgnoreCase(String status, String user);
