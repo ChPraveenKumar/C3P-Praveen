@@ -15,12 +15,7 @@ import com.techm.orion.entitybeans.Vendors;
 //@RepositoryRestResource(collectionResourceRel = "ios", path = "ios", excerptProjection = IosProjection.class)
 public interface OSRepository extends JpaRepository<OS, Integer> {
 
-
 	Set<OS> findByOs(String os);
-	// @RestResource(rel = "searchattribute", path = "searchattribute")
-	// List<OS> findByDevicetypeAndVendor(@Param("model") String model,
-	// @Param("devicetype") String devicetype,
-	// @Param("vendor") String vendor);
 
 	String FIND_OS = "SELECT os FROM c3p_t_glblist_m_os";
 
@@ -40,5 +35,5 @@ public interface OSRepository extends JpaRepository<OS, Integer> {
 	@Query(value = "select * from c3p_t_glblist_m_os where os =:os", nativeQuery = true)
 	OS findos(@Param("os") String os);
 	
-	//OS findOneByOs(String os);s
+	OS findById(int id);
 }

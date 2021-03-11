@@ -108,12 +108,12 @@ public class DeviceRequestController {
 				{
 					JSONObject feature=new JSONObject();
 					feature.put("featureId", fid);
-					MasterFeatureEntity featureFromDB=masterfeatureRepo.findByFId(fid);
+					MasterFeatureEntity featureFromDB=masterfeatureRepo.findByFIdOrderByFCreatedDate(fid);
 					feature.put("featureName", featureFromDB.getfName());
-					feature.put("featureCreatedDate",featureFromDB.getfCreatedDate().toString()) ;
-					feature.put("featureUpdatedDate", featureFromDB.getfUpdatedDate().toString());
+					//feature.put("featureCreatedDate",featureFromDB.getfCreatedDate().toString()) ;
+					//feature.put("featureUpdatedDate", featureFromDB.getfUpdatedDate().toString());
 
-					listOfCharacteristics=resourcecharateristicRepo.findByRcFeatureIdAndRcDeviceHostname(fid, hostName);
+					listOfCharacteristics=resourcecharateristicRepo.findByRcFeatureIdAndRcDeviceHostnameOrderByRcCreatedDateDesc(fid, hostName);
 					JSONArray charachteristicArray=new JSONArray();
 					for(ResourceCharacteristicsEntity characteristic: listOfCharacteristics)
 					{
