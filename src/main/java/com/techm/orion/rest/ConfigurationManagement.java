@@ -5,8 +5,13 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.POST;
 
@@ -973,29 +978,30 @@ public class ConfigurationManagement {
 	@SuppressWarnings("unchecked")
 	private JSONArray setFeatureTest(String masterFeatureId, JSONArray toSaveArray) {
 		List<TestFeatureList> FeatureTestDetails = testFeatureListRepository.findByTestFeature(masterFeatureId);
-		if(FeatureTestDetails!=null) {
-			for(TestFeatureList testDeatils:FeatureTestDetails) {								
+		List<TestDetail> testList = new ArrayList<>();
+		if (FeatureTestDetails != null) {
+			for (TestFeatureList testDeatils : FeatureTestDetails) {
 				TestDetail testDetail = testDeatils.getTestDetail();
-				String testName =testDetail.getTestName()+"_"+testDetail.getVersion();
-				String testCategory=testDetail.getTestCategory();
-				boolean flag =false;
-				for(int i=0;i<toSaveArray.size();i++) {
-					JSONObject object = (JSONObject) toSaveArray.get(i);
-					if(object.get("testCategory").equals(testCategory) && object.get("testName").equals(testName)) {
-						flag =true;
-					}
-				}
-				if(!flag) {
-					JSONObject testObject = new JSONObject();
-					testObject.put("testCategory",testCategory);
-					testObject.put("selected",1);
-					testObject.put("testName",testName);
-					testObject.put("bundleName",new ArrayList<>());
-					toSaveArray.add(testObject);
-				}
+				testList.add(testDetail);
 			}
-			
 		}
-		return toSaveArray;		
+		if (testList != null) {
+			Collection<TestDetail> testDetailFinalList = testList.stream()
+					.collect(Collectors.toMap(TestDetail::getTestName, Function.identity(),
+							BinaryOperator.maxBy(Comparator.comparing(TestDetail::getVersion))))
+					.values();
+			for (TestDetail latestTest : testDetailFinalList) {
+				String testName = latestTest.getTestName() + "_" + latestTest.getVersion();
+				String testCategory = latestTest.getTestCategory();
+				JSONObject testObject = new JSONObject();
+				testObject.put("testCategory", testCategory);
+				testObject.put("selected", 1);
+				testObject.put("testName", testName);
+				testObject.put("bundleName", new ArrayList<>());
+				toSaveArray.add(testObject);
+			}
+
+		}
+		return toSaveArray;
 	}
 }
