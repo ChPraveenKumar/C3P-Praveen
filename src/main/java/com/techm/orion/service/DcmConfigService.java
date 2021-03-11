@@ -3244,7 +3244,7 @@ public class DcmConfigService {
 						RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 						MasterFeatureEntity masterFeatureId = masterFeatureRepository
 								.findByFIdAndFVersion(feature.getfMasterId(),
-										"1");
+										"1.0");
 
 						requestFeatureEntity
 								.settMasterFeatureId(masterFeatureId);
