@@ -57,6 +57,9 @@ public class ResourceCharacteristicsHistoryEntity implements Serializable
 
 	@Column(name = "rc_type")
 	private String rcType;
+	
+	@Column(name = "rc_key_value")
+	private String rcKeyValue;
 
 	public int getRcRowid() {
 		return rcRowid;
@@ -172,5 +175,13 @@ public class ResourceCharacteristicsHistoryEntity implements Serializable
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+	
+	public String getRcKeyValue() {
+		return rcKeyValue;
+	}
+
+	public void setRcKeyValue(String rcKeyValue) {
+		this.rcKeyValue = rcKeyValue;
 	}
 }

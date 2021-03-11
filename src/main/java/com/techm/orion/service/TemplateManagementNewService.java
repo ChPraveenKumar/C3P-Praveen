@@ -255,6 +255,7 @@ public class TemplateManagementNewService {
 					saveAttribute.setValidations(masterAttribute.getValidations());
 					saveAttribute.setMasterFID(masterAttribute.getMasterFID());
 					saveAttribute.setCharacteristicId(masterAttribute.getCharacteristicId());
+					saveAttribute.setKey(masterAttribute.isKey());
 					TemplateFeatureEntity templateFeature = masterAttribute.getTemplateFeature();
 					TemplateFeatureEntity finalFeatureId = templatefeatureRepo
 							.findIdByComandDisplayFeatureAndCommandContains(templateFeature.getComandDisplayFeature(),

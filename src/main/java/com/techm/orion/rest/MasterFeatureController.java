@@ -405,6 +405,14 @@ public class MasterFeatureController {
 					}
 
 				}
+				if (jsonObject.get("key") != null) {
+					masterCharacteristic.setcIsKey((boolean)jsonObject
+							.get("key"));
+				}
+				if (jsonObject.get("userName") != null) {
+					masterCharacteristic.setcCreatedBy(jsonObject
+							.get("userName").toString());
+				}
 				timestamp = new Timestamp(new Date().getTime());
 				if (timestamp != null) {
 					masterCharacteristic.setcCreatedDate(timestamp);
@@ -418,7 +426,7 @@ public class MasterFeatureController {
 						+ yyyyMMdd
 						+ UUID.randomUUID().toString().toUpperCase()
 								.substring(0, 6));
-				masterCharacteristic.setcCreatedBy("admin");
+				//masterCharacteristic.setcCreatedBy("admin");
 				masterCharacteristicList.add(masterCharacteristic);
 			}
 

@@ -27,7 +27,7 @@ public interface AttribCreateConfigRepo extends JpaRepository<MasterAttributes, 
 	List<MasterAttributes> findBytemplateFeatureComandDisplayFeatureAndTemplateId(String featureName,String templateId);
 	
 	@Query("select new com.techm.orion.entitybeans.MasterAttributes( att.label, att.masterFID, att.characteristicId,"
-			+ " info.masterLabelValue as labelValue) from MasterAttributes att,"
+			+ " info.masterLabelValue as labelValue, att.isKey) from MasterAttributes att,"
 			+" CreateConfigEntity info where info.masterLabelId=att.id and info.requestId=:requestId") 
 	List<MasterAttributes> findfeatureCharIdAndLabel(@Param("requestId") String requestId);
 	

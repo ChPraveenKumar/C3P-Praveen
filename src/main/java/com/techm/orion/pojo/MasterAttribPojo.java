@@ -13,6 +13,8 @@ public class MasterAttribPojo {
 	String category;
 	
 	String cId;
+	
+	boolean isKey;
 
 	public String getAttribLabel() {
 		return attribLabel;
@@ -60,5 +62,13 @@ public class MasterAttribPojo {
 
 	public void setcId(String cId) {
 		this.cId = cId;
+	} 
+	
+	public boolean isKey() {
+		return isKey;
+	}
+
+	public void setKey(boolean isKey) {
+		this.isKey = isKey;
 	} 
 } 
