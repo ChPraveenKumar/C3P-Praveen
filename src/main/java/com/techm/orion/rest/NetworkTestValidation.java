@@ -151,7 +151,7 @@ public class NetworkTestValidation extends Thread {
 							logger.info("Channel Connected to machine " + host + " server");
 							channel.connect();
 							InputStream input = channel.getInputStream();
-							ps.println("terminal length 0");
+							/*ps.println("terminal length 0");
 							if (requestinfo.getCertificationSelectionBit().substring(0, 1).equalsIgnoreCase("1")) {
 								ps.println("show ip interface brief");
 								printResult(input, channel, requestinfo.getAlphanumericReqId(),
@@ -189,7 +189,7 @@ public class NetworkTestValidation extends Thread {
 							if (channel.isClosed()) {
 								channel.connect();
 
-							}
+							}*/
 
 							/*
 							 * Owner: Ruchita Salvi Module: Test Strategey Logic: To find and run and
@@ -285,9 +285,9 @@ public class NetworkTestValidation extends Thread {
 									}
 								
 								}
-								if (requestinfo.getCertificationSelectionBit().substring(0, 1).equals("1")
-										|| requestinfo.getCertificationSelectionBit().substring(1, 2).equals("1")
-										|| requestinfo.getCertificationSelectionBit().substring(2, 3).equals("1")
+								if (requestinfo.getCertificationSelectionBit().substring(0, 1).equalsIgnoreCase("1")
+										|| requestinfo.getCertificationSelectionBit().substring(1, 2).equalsIgnoreCase("1")
+										|| requestinfo.getCertificationSelectionBit().substring(2, 3).equalsIgnoreCase("1")
 										|| requestinfo.getCertificationSelectionBit().substring(3, 4)
 												.equalsIgnoreCase("1"))
 								{

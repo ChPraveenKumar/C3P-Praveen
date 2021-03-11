@@ -1050,12 +1050,14 @@ public class FinalReportForTTUTest extends Thread {
 				if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA") || type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SLGB")) {
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
-					if (deviceLocked) {
+					if (deviceLocked || requestinfo.getManagementIp().equalsIgnoreCase("10.62.0.24")) {
 
 						// release the locked device
+						if(!requestinfo.getManagementIp().equalsIgnoreCase("10.62.0.24"))
+						{
 						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 								requestinfo.getAlphanumericReqId());
-
+						}
 						CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
 						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
@@ -1139,7 +1141,7 @@ public class FinalReportForTTUTest extends Thread {
 						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 								"networkTest");
-						if (certificationTestPojo.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
+						/*if (certificationTestPojo.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
 							requestinfo.setNetwork_test_interfaceStatus("Passed");
 						}
 						if (certificationTestPojo.getShowInterfaceCmd().equalsIgnoreCase("1")) {
@@ -1150,7 +1152,7 @@ public class FinalReportForTTUTest extends Thread {
 						}
 						if (certificationTestPojo.getShowIpBgpSummaryCmd().equalsIgnoreCase("1")) {
 							requestinfo.setNetwork_test_BGPNeighbor("Passed");
-						}
+						}*/
 						String content = networkTestValidation.validateNetworkTest(requestinfo);
 						if (content != "") {
 							if (content.contains(requestinfo.getC3p_interface().getName()) && content.contains("up")
@@ -1590,7 +1592,7 @@ public class FinalReportForTTUTest extends Thread {
 					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
 							requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 							"networkTest");
-					if (certificationTestPojo.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
+					/*if (certificationTestPojo.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
 						requestinfo.setNetwork_test_interfaceStatus("Passed");
 					}
 					if (certificationTestPojo.getShowInterfaceCmd().equalsIgnoreCase("1")) {
@@ -1601,7 +1603,7 @@ public class FinalReportForTTUTest extends Thread {
 					}
 					if (certificationTestPojo.getShowIpBgpSummaryCmd().equalsIgnoreCase("1")) {
 						requestinfo.setNetwork_test_BGPNeighbor("Passed");
-					}
+					}*/
 					String content = networkTestValidation.validateNetworkTest(requestinfo);
 					if (content != "") {
 						if (content.contains(requestinfo.getC3p_interface().getName()) && content.contains("up")

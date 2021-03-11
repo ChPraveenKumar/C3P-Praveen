@@ -30,7 +30,7 @@ import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.utility.ShowCPUUsage;
 import com.techm.orion.utility.ShowMemoryTest;
 import com.techm.orion.utility.ShowPowerTest;
-
+import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 /*
  * Owner: Rahul Tiwari Reason: Get configuration feature name and details from database
  * and get test name and version from database 
@@ -49,6 +49,12 @@ public class RequestDetails {
 	
 	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;
+	
+	@Autowired
+	private ResourceCharacteristicsHistoryRepository resourceCharHistory;
+	
+	@Autowired
+	RequestInfoDao requestInfoDao;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -163,7 +169,7 @@ public class RequestDetails {
 	}
 	public JSONObject customerReportUIRevamp(String requestID, String testType, String version)
 			throws ParseException, SQLException {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		//RequestInfoDao requestInfoDao = new RequestInfoDao();
 		RequestDetails requestDetailsDao = new RequestDetails();
 		JSONParser parser = new JSONParser();
 		RequestInfoPojo createConfigRequestDCM = new RequestInfoPojo();
@@ -334,9 +340,9 @@ public class RequestDetails {
 			 */
 
 			// obj.put("osUpgradeStatus", "1");
-			obj.put("preVersionInfo", "");
+			obj.put("preVersionInfo", reqDetail.getOsVersion());
 
-			obj.put("postVersionInfo", "");
+			obj.put("postVersionInfo", reqDetail.getOsVersion());
 
 			obj.put("Statusmessage", "Device upgraded Succesfully");
 
@@ -362,6 +368,7 @@ public class RequestDetails {
 		resultForFlag = requestInfoDao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion());
 		String flagForPrevalidation = "";
 		String flagFordelieverConfig = "";
+		String flagForInstantiation ="";
 		for (Map.Entry<String, String> entry : resultForFlag.entrySet()) {
 			if (entry.getKey() == "flagForPrevalidation") {
 				flagForPrevalidation = entry.getValue();
@@ -370,6 +377,9 @@ public class RequestDetails {
 			if (entry.getKey() == "flagFordelieverConfig") {
 				flagFordelieverConfig = entry.getValue();
 			}
+			if (entry.getKey() == "flagForInstantiation") {
+				flagForInstantiation = entry.getValue();
+			}
 
 		}
 		if (flagFordelieverConfig.equalsIgnoreCase("1")) {
@@ -377,6 +387,15 @@ public class RequestDetails {
 		}
 		if (flagFordelieverConfig.equalsIgnoreCase("2")) {
 			reqDetail.setDeliever_config("Failed");
+		}
+		if (flagForInstantiation.equalsIgnoreCase("0")) {
+			reqDetail.setInstantiation("Not Conducted");
+		}
+		if (flagForInstantiation.equalsIgnoreCase("1")) {
+			reqDetail.setInstantiation("Passed");
+		}
+		if (flagForInstantiation.equalsIgnoreCase("2")) {
+			reqDetail.setInstantiation("Failed");
 		}
 		String detailsStr = new Gson().toJson(reqDetail);
 

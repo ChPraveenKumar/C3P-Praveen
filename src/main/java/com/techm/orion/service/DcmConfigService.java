@@ -3119,7 +3119,7 @@ public class DcmConfigService {
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
 						&& !(requestType.equals("Audit"))) {
-					if (!requestInfoSO.getTemplateID().isEmpty())
+					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
 						templateSuggestionDao
 								.insertTemplateUsageData(requestInfoSO
 										.getTemplateID());

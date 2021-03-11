@@ -507,6 +507,7 @@ public class RequestInfoDetailsDao {
 	}
 
 	/* method overloading for UIRevamp */
+	
 	public boolean getRouterConfig(RequestInfoPojo requestinfo, String routerVersionType) {
 		
 		InvokeFtl invokeFtl = new InvokeFtl();
@@ -564,7 +565,7 @@ public class RequestInfoDetailsDao {
 					service.printCurrentVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()));
 				}
-				channel.disconnect();
+		
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
