@@ -82,7 +82,7 @@ public class DeviceDiscoveryController implements Observer {
 		try {
 			// Pull the all types data from DB
 			if ("all".equals(type)) {
-				discoveryDashboard = discoveryDashboardRepo.findAll();
+				discoveryDashboard = discoveryDashboardRepo.findAllByOrderByDisCreatedDateDesc();
 				Set<DiscoveryDashboardEntity> allDiscoveryDashboardByUser = discoveryDashboardRepo
 						.findByDisCreatedByIgnoreCaseOrderByDisCreatedDateDesc(user);
 				if (allDiscoveryDashboardByUser != null && !allDiscoveryDashboardByUser.isEmpty()) {
@@ -93,7 +93,7 @@ public class DeviceDiscoveryController implements Observer {
 
 			} else {
 				Set<DiscoveryDashboardEntity> discoveryDashboardDB = discoveryDashboardRepo
-						.findByDisStatusIgnoreCase(type);
+						.findAllByDisStatusIgnoreCaseOrderByDisCreatedDateDesc(type);
 				Set<DiscoveryDashboardEntity> discoveryDashboardByUserDB = discoveryDashboardRepo
 						.findByDisStatusIgnoreCaseAndDisCreatedByIgnoreCaseOrderByDisCreatedDateDesc(type, user);
 				if (discoveryDashboardDB != null && !discoveryDashboardDB.isEmpty()) {
@@ -163,7 +163,7 @@ public class DeviceDiscoveryController implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-			List<DeviceDiscoveryEntity> getAllDevice = deviceInforepo.findAll();
+			List<DeviceDiscoveryEntity> getAllDevice = deviceInforepo.findAllByOrderByDIdDesc();
 
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {

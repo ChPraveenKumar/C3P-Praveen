@@ -1,5 +1,6 @@
 package com.techm.orion.repositories;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,5 +26,9 @@ public interface DiscoveryDashboardRepository extends JpaRepository<DiscoveryDas
 
 	Set<DiscoveryDashboardEntity> findByDisStatusIgnoreCaseAndDisCreatedByIgnoreCaseOrderByDisCreatedDateDesc(
 			String type, String user);
+	
+	List<DiscoveryDashboardEntity> findAllByOrderByDisCreatedDateDesc();
+
+	Set<DiscoveryDashboardEntity> findAllByDisStatusIgnoreCaseOrderByDisCreatedDateDesc(String type);
 
 }

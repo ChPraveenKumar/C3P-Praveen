@@ -20,7 +20,7 @@ public class DeviceRequestService {
 	public List<ServiceRequestPojo> getConfigServiceRequest(String hostName, String requestType) {
 		RequestDetailsResponseMapper mapper = new RequestDetailsResponseMapper();
 		List<RequestInfoEntity> getSiteServices = new ArrayList<>();
-		List<RequestInfoEntity> findAllByHostName = repo.findAllByHostName(hostName);
+		List<RequestInfoEntity> findAllByHostName = repo.findAllByHostNameOrderByDateofProcessingDesc(hostName);
 		requestType = requestType.toLowerCase();
 		switch (requestType) {
 		case "config":

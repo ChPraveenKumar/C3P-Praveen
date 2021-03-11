@@ -47,7 +47,7 @@ public class ServiceOrderController {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 		List<ServiceOrderEntity> detailsList = new ArrayList<ServiceOrderEntity>();
-		detailsList = serviceOrderRepo.findAll();
+		detailsList = serviceOrderRepo.findAllByOrderByCreatedDateDesc();
 
 		jsonArray = new Gson().toJson(detailsList);
 		obj.put(new String("output"), detailsList);

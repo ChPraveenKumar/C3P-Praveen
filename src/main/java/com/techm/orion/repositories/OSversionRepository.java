@@ -34,5 +34,10 @@ public interface OSversionRepository extends CrudRepository<OSversion, Integer> 
 	//@Query(value = "SELECT osversion FROM OSversion where OSversion.osversion = :osVersion and OSversion.os.id=:osId", nativeQuery = true)
 	@Query(value = "SELECT * FROM c3p_t_glblist_m_osversion where osversion= :osVersion and os_id=:osId", nativeQuery = true)
 	public OSversion findByOsversionOs(@Param("osVersion") String osVersion, @Param("osId") int osId);
+	
+	OSversion findByOsversionAndId(String osversion, int id);
+
+	@Query(value = "select * from c3p_t_glblist_m_osversion where os_id=:osId", nativeQuery = true)
+	Set<OSversion> findOne(@Param("osId") int osId);
 
 }
