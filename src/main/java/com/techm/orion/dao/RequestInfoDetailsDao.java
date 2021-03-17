@@ -37,6 +37,7 @@ import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
+import com.techm.orion.entitybeans.WebServiceEntity;
 import com.techm.orion.mapper.RequestInfoMappper;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.RequestInfoPojo;
@@ -48,6 +49,7 @@ import com.techm.orion.repositories.ResourceCharacteristicsRepository;
 import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.repositories.UserManagementRepository;
+import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
@@ -74,6 +76,8 @@ public class RequestInfoDetailsDao {
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	@Autowired
+	WebServiceRepo webservicerepo;
 	
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
@@ -634,5 +638,12 @@ public class RequestInfoDetailsDao {
 		List<ResourceCharacteristicsHistoryEntity>list=new ArrayList<>();
 		list=resourceCharHistoryRepo.findBySoRequestId(requestid);
 		return list;
+	}
+	public String reasonForInstantiationFailure(String requestid, Double version)
+	{
+		String reason=null;
+		WebServiceEntity entity=webservicerepo.findTextFoundDeliveryTestByAlphanumericReqIdAndVersion(requestid,version);
+		reason=entity.getTextFoundDeliveryTest();
+		return reason;
 	}
 }
