@@ -27,6 +27,7 @@ import com.techm.orion.connection.DBUtil;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.RfoDecomposedRepository;
+import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.utility.ShowCPUUsage;
 import com.techm.orion.utility.ShowMemoryTest;
 import com.techm.orion.utility.ShowPowerTest;
@@ -55,6 +56,9 @@ public class RequestDetails {
 	
 	@Autowired
 	RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	WebServiceRepo webservicerepo;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -396,6 +400,7 @@ public class RequestDetails {
 		}
 		if (flagForInstantiation.equalsIgnoreCase("2")) {
 			reqDetail.setInstantiation("Failed");
+			reqDetail.setReason(requestInfoDetailsDao.reasonForInstantiationFailure(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion()));
 		}
 		String detailsStr = new Gson().toJson(reqDetail);
 
