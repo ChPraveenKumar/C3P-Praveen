@@ -68,6 +68,4 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 
 	@Query(value = "select f_name from c3p_m_features where f_id = :f_id", nativeQuery = true)
 	String findNameByFeatureid(@Param("f_id") String f_id);
-	
-	MasterFeatureEntity findByFIdOrderByFCreatedDate(String fId);
 }

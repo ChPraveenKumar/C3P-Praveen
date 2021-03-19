@@ -17,12 +17,12 @@ JpaRepository<ResourceCharacteristicsEntity, Long> {
 			String rcFeatureId, String rcCharacteristicId);
 	List<ResourceCharacteristicsEntity> findByRcDeviceHostname(String hostname);
 	
-	@Query(value = "select distinct(rc_feature_id) from c3p_resourcecharacteristics  where rc_device_hostname = :hostName order by rc_created_date desc", nativeQuery = true)
+	@Query(value = "select distinct(rc_feature_id) from c3p_resourcecharacteristics  where rc_device_hostname = :hostName", nativeQuery = true)
 	List<String>findDistinctFeaturesForHostname(@Param("hostName") String hostName);
 
 	List<ResourceCharacteristicsEntity> findByRcFeatureIdAndRcDeviceHostnameOrderByRcCreatedDateDesc(String featureId, String hostname);
 	
-	ResourceCharacteristicsEntity findByDeviceIdAndRcFeatureIdAndRcCharacteristicNameAndRcKeyValue(int deviceId, 
+	ResourceCharacteristicsEntity findByDeviceIdAndRcFeatureIdAndRcCharacteristicNameAndRcKeyValue(int deviceId,
 			String rcFeatureId, String rcCharacteristicName, String rcKeyValue);
 	
 	@Query(value = "select * from c3p_resourcecharacteristics where device_id=:device_id and rc_feature_id=:rc_feature_id  "
