@@ -41,7 +41,6 @@ import com.techm.orion.entitybeans.WebServiceEntity;
 import com.techm.orion.mapper.RequestInfoMappper;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
@@ -77,7 +76,7 @@ public class RequestInfoDetailsDao {
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	@Autowired
-	WebServiceRepo webservicerepo;
+	private WebServiceRepo webservicerepo;
 	
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
