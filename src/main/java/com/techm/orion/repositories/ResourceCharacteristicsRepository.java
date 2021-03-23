@@ -20,5 +20,16 @@ JpaRepository<ResourceCharacteristicsEntity, Long> {
 	@Query(value = "select distinct(rc_feature_id) from c3p_resourcecharacteristics  where rc_device_hostname = :hostName", nativeQuery = true)
 	List<String>findDistinctFeaturesForHostname(@Param("hostName") String hostName);
 
-	List<ResourceCharacteristicsEntity>findByRcFeatureIdAndRcDeviceHostname(String featureId, String hostname);
+	List<ResourceCharacteristicsEntity> findByRcFeatureIdAndRcDeviceHostnameOrderByRcCreatedDateDesc(String featureId, String hostname);
+	
+	ResourceCharacteristicsEntity findByDeviceIdAndRcFeatureIdAndRcCharacteristicNameAndRcKeyValue(int deviceId,
+			String rcFeatureId, String rcCharacteristicName, String rcKeyValue);
+	
+	@Query(value = "select * from c3p_resourcecharacteristics where device_id=:device_id and rc_feature_id=:rc_feature_id  "
+			+ " and rc_characteristic_value=rc_key_value ", nativeQuery = true)
+    ResourceCharacteristicsEntity findByDeviceIdAndRcFeatureIdAndRcKeyValueIsNotNull(@Param("device_id") int deviceId,
+		    @Param("rc_feature_id") String rcFeatureId);
+	
+	ResourceCharacteristicsEntity findByDeviceIdAndRcFeatureIdAndRcCharacteristicIdAndRcKeyValue(int deviceId,
+			String rcFeatureId, String rcCharacteristicId, String rcKeyValue);
 }

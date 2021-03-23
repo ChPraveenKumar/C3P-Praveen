@@ -31,7 +31,7 @@ public interface CustomerStagingImportRepo extends JpaRepository<CustomerStaging
 			@Param("importId") String importId);
 
 	@Query("SELECT new com.techm.orion.entitybeans.CustomerStagingEntity (hostname,iPV4ManagementAddress, result, outcomeResult,"
-			+ "rootCause, iPV6ManagementAddress)  FROM CustomerStagingEntity where importId=:importId")
+			+ "rootCause, iPV6ManagementAddress)  FROM CustomerStagingEntity where importId=:importId order by stagingId desc")
 	List<CustomerStagingEntity> generateReport(@Param("importId") String importId);
 
 	@Query("SELECT new com.techm.orion.entitybeans.CustomerStagingEntity (executionDate, count(importId) AS totalDevices,createdBy, "

@@ -26,11 +26,9 @@ import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.utility.ShowCPUUsage;
 import com.techm.orion.utility.ShowMemoryTest;
 import com.techm.orion.utility.ShowPowerTest;
-
 /*
  * Owner: Rahul Tiwari Reason: Get configuration feature name and details from database
  * and get test name and version from database 
@@ -39,16 +37,11 @@ import com.techm.orion.utility.ShowPowerTest;
 @Service
 public class RequestDetails {
 	private static final Logger logger = LogManager.getLogger(RequestDetails.class);
-	/*
-	 * Owner: Rahul Tiwari Module: TestAndDiagnosis Logic: Get test name and version
-	 * based on request id custom tests
-	 */
 	
 	@Autowired
-	private RfoDecomposedRepository rfoDecomposedRepository;
-	
+	private RequestInfoDetailsDao requestInfoDetailsDao;	
 	@Autowired
-	private RequestInfoDetailsDao requestInfoDetailsDao;
+	private RequestInfoDao requestInfoDao;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -161,9 +154,16 @@ public class RequestDetails {
 		}
 		return map;
 	}
+	@SuppressWarnings("unchecked")
 	public JSONObject customerReportUIRevamp(String requestID, String testType, String version)
 			throws ParseException, SQLException {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		String STATUS_PASSED = "Passed";
+		String STATUS_FAILED = "Failed";
+		String STATUS_NC = "Not Conducted";
+		String KEY_0 = "0";
+		String KEY_1 = "1";
+		String KEY_2 = "2";
+		
 		RequestDetails requestDetailsDao = new RequestDetails();
 		JSONParser parser = new JSONParser();
 		RequestInfoPojo createConfigRequestDCM = new RequestInfoPojo();
@@ -181,7 +181,7 @@ public class RequestDetails {
 				Math.min(createConfigRequestDCM.getAlphanumericReqId().length(), 4));
 		String testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(
 				createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
-		logger.info(testAndDiagnosis);
+		logger.info("customerReportUIRevamp - testAndDiagnosis->"+testAndDiagnosis);
 		Set<String> setOfTestBundle = new HashSet<>();
 		if (testAndDiagnosis != null && !testAndDiagnosis.equals("")) {
 			org.json.simple.JSONArray testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
@@ -299,10 +299,10 @@ public class RequestDetails {
 
 			if (createConfigRequest.getPre_cpu_usage_percentage() == 0
 					&& createConfigRequest.getPost_cpu_usage_percentage() == 0) {
-				cpu.put("outcome", "Passed");
+				cpu.put("outcome", STATUS_PASSED);
 			} else if (createConfigRequest.getPre_cpu_usage_percentage() < 0
 					&& createConfigRequest.getPost_cpu_usage_percentage() < 0) {
-				cpu.put("outcome", "Failed");
+				cpu.put("outcome", STATUS_FAILED);
 			}
 
 			healthCheckArray.put(cpu);
@@ -313,30 +313,17 @@ public class RequestDetails {
 			mem.put("postUpgradeValue", createConfigRequest.getPost_memory_info());
 			if (Double.parseDouble(createConfigRequest.getPre_memory_info()) > 0
 					&& Double.parseDouble(createConfigRequest.getPost_memory_info()) > 0) {
-				mem.put("outcome", "Passed");
+				mem.put("outcome", STATUS_PASSED);
 			} else {
-				mem.put("outcome", "Failed");
+				mem.put("outcome", STATUS_FAILED);
 
 			}
 
 			healthCheckArray.put(mem);
 
-			/*
-			 * JSONObject pow = new JSONObject(); pow.put("healthcheck",
-			 * "Power Information"); pow.put("preUpgradeValue",
-			 * createConfigRequest.getPre_power_info()); pow.put("postUpgradeValue",
-			 * createConfigRequest.getPost_power_info()); if
-			 * (createConfigRequest.getPre_power_info().equalsIgnoreCase("fail") ||
-			 * createConfigRequest.getPost_power_info().equalsIgnoreCase("fail")) {
-			 * pow.put("outcome", "Failed"); } else { pow.put("outcome", "Passed");
-			 * 
-			 * } healthCheckArray.put(pow);
-			 */
+			obj.put("preVersionInfo", reqDetail.getOsVersion());
 
-			// obj.put("osUpgradeStatus", "1");
-			obj.put("preVersionInfo", "");
-
-			obj.put("postVersionInfo", "");
+			obj.put("postVersionInfo", reqDetail.getOsVersion());
 
 			obj.put("Statusmessage", "Device upgraded Succesfully");
 
@@ -349,41 +336,46 @@ public class RequestDetails {
 			obj = requestInfoDao.getStatusForCustomerReport(createConfigRequestDCM);
 		}
 
-		/*
-		 * CreateConfigRequest reqDetail =
-		 * dao.getRequestDetailFromDBForVersion(createConfigRequestDCM.
-		 * getAlphanumericReqId(), stringVersion);
-		 */
-
 		RequestInfoPojo reqDetail = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
 				createConfigRequestDCM.getAlphanumericReqId(),
 				Double.toString(createConfigRequestDCM.getRequestVersion()));
 		Map<String, String> resultForFlag = new HashMap<String, String>();
 		resultForFlag = requestInfoDao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion());
-		String flagForPrevalidation = "";
 		String flagFordelieverConfig = "";
-		for (Map.Entry<String, String> entry : resultForFlag.entrySet()) {
-			if (entry.getKey() == "flagForPrevalidation") {
-				flagForPrevalidation = entry.getValue();
-
-			}
+		String flagForInstantiation ="";
+		for (Map.Entry<String, String> entry : resultForFlag.entrySet()) {			
 			if (entry.getKey() == "flagFordelieverConfig") {
 				flagFordelieverConfig = entry.getValue();
 			}
+			if (entry.getKey() == "flagForInstantiation") {
+				flagForInstantiation = entry.getValue();
+			}
 
 		}
-		if (flagFordelieverConfig.equalsIgnoreCase("1")) {
-			reqDetail.setDeliever_config("Passed");
+		if (KEY_0.equals(flagFordelieverConfig)) {
+			reqDetail.setDeliever_config(STATUS_NC);			
 		}
-		if (flagFordelieverConfig.equalsIgnoreCase("2")) {
-			reqDetail.setDeliever_config("Failed");
+		if (KEY_1.equals(flagFordelieverConfig)) {
+			reqDetail.setDeliever_config(STATUS_PASSED);
 		}
-		String detailsStr = new Gson().toJson(reqDetail);
-
+		if (KEY_2.equals(flagFordelieverConfig)) {
+			reqDetail.setDeliever_config(STATUS_FAILED);			
+		}
+		if (KEY_0.equals(flagForInstantiation)) {
+			reqDetail.setInstantiation(STATUS_NC);			
+		}
+		if (KEY_1.equals(flagForInstantiation)) {
+			reqDetail.setInstantiation(STATUS_PASSED);
+		}
+		if (KEY_2.equals(flagForInstantiation)) {
+			reqDetail.setInstantiation(STATUS_FAILED);
+			reqDetail.setReason(requestInfoDetailsDao.reasonForInstantiationFailure(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion()));
+		}
+	
 		List<String> out = new ArrayList<String>();
 		out.add(new Gson().toJson(reqDetail));
 		obj.put("details", out);
-		if (type.equalsIgnoreCase("SLGF")) {
+		if ("SLGF".equalsIgnoreCase(type)) {
 			obj.put("status", reqDetail.getStatus());
 		}
 		obj.put("bundleList", setOfTestBundle);

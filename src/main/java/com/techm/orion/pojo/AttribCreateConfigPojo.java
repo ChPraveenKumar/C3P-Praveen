@@ -27,7 +27,8 @@ public class AttribCreateConfigPojo {
 	private String attribCategoty;
 	
 	private TemplateFeatureEntity templateFeature;
-
+	
+	private boolean isKey;
 	
 	public int getId() {
 		return id;
@@ -108,8 +109,12 @@ public class AttribCreateConfigPojo {
 	public void setTemplateFeature(TemplateFeatureEntity templateFeature) {
 		this.templateFeature = templateFeature;
 	}
-
-
-
 	
+	public boolean isKey() {
+		return isKey;
+	}
+
+	public void setKey(boolean isKey) {
+		this.isKey = isKey;
+	}
 }

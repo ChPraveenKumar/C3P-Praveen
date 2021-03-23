@@ -36,6 +36,7 @@ public class AttribCreateConfigJson {
 	@JsonInclude(Include.NON_NULL)
 	private String characteriscticsId;
 
+	private boolean key;
 	
 	public int getId() {
 		return id;
@@ -133,4 +134,11 @@ public class AttribCreateConfigJson {
 		this.characteriscticsId = characteriscticsId;
 	}
 
+	public boolean isKey() {
+		return key;
+	}
+
+	public void setKey(boolean key) {
+		this.key = key;
+	}
 }

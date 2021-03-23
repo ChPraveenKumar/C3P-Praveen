@@ -37,10 +37,10 @@ import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
+import com.techm.orion.entitybeans.WebServiceEntity;
 import com.techm.orion.mapper.RequestInfoMappper;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
@@ -48,6 +48,7 @@ import com.techm.orion.repositories.ResourceCharacteristicsRepository;
 import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.repositories.UserManagementRepository;
+import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
@@ -74,6 +75,8 @@ public class RequestInfoDetailsDao {
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	@Autowired
+	private WebServiceRepo webservicerepo;
 	
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
@@ -183,8 +186,8 @@ public class RequestInfoDetailsDao {
 			// Successfully
 			for (ResourceCharacteristicsHistoryEntity attributes : charHistoryEnity) {
 				ResourceCharacteristicsEntity resourceCharEntity = resourceCharRepo
-						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicId(attributes.getDeviceId(), attributes.getRcFeatureId(),
-								attributes.getRcCharacteristicId());
+						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicIdAndRcKeyValue(attributes.getDeviceId(), attributes.getRcFeatureId(),
+								attributes.getRcCharacteristicId(), attributes.getRcKeyValue());
 				if (resourceCharEntity == null)
 					resourceCharEntity = new ResourceCharacteristicsEntity();
 				resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());
@@ -195,6 +198,7 @@ public class RequestInfoDetailsDao {
 				resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
 				resourceCharEntity.setRc_created_date(new Timestamp(new Date().getTime()));
 				resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
+				resourceCharEntity.setRcKeyValue(attributes.getRcKeyValue());
 				resourceCharRepo.save(resourceCharEntity);
 			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
@@ -507,6 +511,7 @@ public class RequestInfoDetailsDao {
 	}
 
 	/* method overloading for UIRevamp */
+	
 	public boolean getRouterConfig(RequestInfoPojo requestinfo, String routerVersionType) {
 		
 		InvokeFtl invokeFtl = new InvokeFtl();
@@ -564,7 +569,7 @@ public class RequestInfoDetailsDao {
 					service.printCurrentVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()));
 				}
-				channel.disconnect();
+		
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -632,5 +637,12 @@ public class RequestInfoDetailsDao {
 		List<ResourceCharacteristicsHistoryEntity>list=new ArrayList<>();
 		list=resourceCharHistoryRepo.findBySoRequestId(requestid);
 		return list;
+	}
+	public String reasonForInstantiationFailure(String requestid, Double version)
+	{
+		String reason=null;
+		WebServiceEntity entity=webservicerepo.findTextFoundDeliveryTestByAlphanumericReqIdAndVersion(requestid,version);
+		reason=entity.getTextFoundDeliveryTest();
+		return reason;
 	}
 }

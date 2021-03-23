@@ -111,6 +111,16 @@ public class RequestInfoPojo {
 	
 	private String selectedFileFeatures;
 	
+	private String reason;
+	
+	public String getReason() {
+		return reason;
+	}
+
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+
 	public String getConfigurationGenerationMethods() {
 		return configurationGenerationMethods;
 	}
@@ -265,10 +275,10 @@ public class RequestInfoPojo {
 	private String application_test = "Passed";
 	private String health_checkup = "Passed";
 	private String network_test = "Passed";
-	private String network_test_interfaceStatus = "Not Conducted";
+	/*private String network_test_interfaceStatus = "Not Conducted";
 	private String network_test_wanInterface = "Not Conducted";
 	private String network_test_platformIOS = "Not Conducted";
-	private String network_test_BGPNeighbor = "Not Conducted";
+	private String network_test_BGPNeighbor = "Not Conducted";*/
 
 	private String throughput;
 	private String frameLoss;
@@ -300,6 +310,25 @@ public class RequestInfoPojo {
 	private Boolean StartUp;
 	
 	private Object batchSize;
+	
+	private String instantiation;
+	private String instantiation_failure_reason; 
+
+	public String getInstantiation() {
+		return instantiation;
+	}
+
+	public void setInstantiation(String instantiation_test) {
+		this.instantiation = instantiation_test;
+	}
+
+	public String getInstantiation_failure_reason() {
+		return instantiation_failure_reason;
+	}
+
+	public void setInstantiation_failure_reason(String instantiation_failure_reason) {
+		this.instantiation_failure_reason = instantiation_failure_reason;
+	}
 
 	public Object getBatchSize() {
 		return batchSize;
@@ -1509,7 +1538,7 @@ public class RequestInfoPojo {
 		this.network_test = network_test;
 	}
 
-	public String getNetwork_test_interfaceStatus() {
+	/*public String getNetwork_test_interfaceStatus() {
 		return network_test_interfaceStatus;
 	}
 
@@ -1540,7 +1569,7 @@ public class RequestInfoPojo {
 	public void setNetwork_test_BGPNeighbor(String network_test_BGPNeighbor) {
 		this.network_test_BGPNeighbor = network_test_BGPNeighbor;
 	}
-
+*/
 	public String getThroughput() {
 		return throughput;
 	}

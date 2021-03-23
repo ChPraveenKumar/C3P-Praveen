@@ -48,6 +48,7 @@ import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.PrevalidationTestServiceImpl;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.PingTest;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
 
@@ -85,8 +86,6 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 	PingTest pingHelper = new PingTest();
-	// TODO: We need to remove this later or while on GCP
-	public static final String ROUTER_IP_TEMP = "10.62.0.24";
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -116,7 +115,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();
 			List<RequestInfoEntity> requestDetailEntity1 = new ArrayList<RequestInfoEntity>();
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if (!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains(ROUTER_IP_TEMP)) // Temperory
+			// TODO: We need to remove ROUTER_IP_TEMP later or while on GCP
+			if (!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) // Temperory
 			{
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
@@ -597,10 +597,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();
 
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if (!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains("10.62.0.24")) // Temperory hard
-																										// coding for
-																										// 10.62.0.24
-																										// router
+			/*Temporary hard coding ROUTER_IP_TEMP router*/
+			if (!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) 
 			{
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),

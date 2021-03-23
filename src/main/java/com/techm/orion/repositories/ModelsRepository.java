@@ -22,5 +22,7 @@ public interface ModelsRepository extends JpaRepository<Models, Integer> {
 
 	@Query(value = FIND_MODEL, nativeQuery = true)
 	public List<String> findModel();
+	
+	Models findById(int id);
 
 }

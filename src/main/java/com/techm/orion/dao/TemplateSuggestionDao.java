@@ -285,8 +285,11 @@ public class TemplateSuggestionDao {
 	public void insertTemplateUsageData(String TemplateId) {
 		connection = ConnectionFactory.getConnection();
 
-		String templateId = TemplateId.substring(0, 14);
-		String version = TemplateId.substring(16, 19);
+		String[] arr = TemplateId.split("_V");
+		//String templateId = TemplateId.substring(0, 14);
+		//String version = TemplateId.substring(16, 19);
+		String templateId =  arr[0];
+		String version = arr[1];
 		ResultSet rs = null;
 
 		try {

@@ -8,9 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 
 @Repository
-@Transactional
 public interface ResourceCharacteristicsHistoryRepository extends
 		JpaRepository<ResourceCharacteristicsHistoryEntity, Long> {
-	
+	@Transactional
 	List<ResourceCharacteristicsHistoryEntity> findBySoRequestId(String requestId);
 }

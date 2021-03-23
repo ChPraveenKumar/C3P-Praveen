@@ -426,12 +426,12 @@ public class CredentialMgmtController {
 							.findByDHostName(deviceName.get("hostName").toString());
 					if (deviceInfo != null) {
 
-						if ((deviceInfo.getdSshCredProfile() != null
-								&& deviceInfo.getdSshCredProfile().contains(profileType))
+						if ((deviceInfo.getdSshCredProfile() != null 
+								&& !deviceInfo.getdSshCredProfile().isEmpty() && "SSH".equalsIgnoreCase(profileType))
 								|| (deviceInfo.getdSnmpCredProfile() != null
-										&& deviceInfo.getdSnmpCredProfile().contains(profileType))
+								&& !deviceInfo.getdSnmpCredProfile().isEmpty() && "SNMP".equalsIgnoreCase(profileType))
 								|| (deviceInfo.getdTelnetCredProfile() != null
-										&& deviceInfo.getdTelnetCredProfile().contains(profileType)))
+								&& !deviceInfo.getdTelnetCredProfile().isEmpty() && "Telnet".equalsIgnoreCase(profileType)))
 							isProfileTypePresent = true;
 						else
 							isProfileTypePresent = false;

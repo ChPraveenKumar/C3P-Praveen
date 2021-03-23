@@ -64,6 +64,9 @@ public class MasterAttributes implements Serializable {
 	
 	@Transient
 	private String labelValue;
+	
+	@Column(name = "is_key", columnDefinition="TINYINT(1)", nullable = false)
+	private boolean isKey;
 
 	public int getId() {
 		return id;
@@ -169,12 +172,21 @@ public class MasterAttributes implements Serializable {
 		this.labelValue = labelValue;
 	}
 
-	public MasterAttributes(String label, String masterFID, String characteristicId, String labelValue) {
+	public boolean isKey() {
+		return isKey;
+	}
+
+	public void setKey(boolean isKey) {
+		this.isKey = isKey;
+	}
+
+	public MasterAttributes(String label, String masterFID, String characteristicId, String labelValue, boolean isKey) {
 		super();
 		this.label = label;
 		this.masterFID = masterFID;
 		this.characteristicId = characteristicId;
 		this.labelValue = labelValue;
+		this.isKey = isKey;
 	}
 
 	public MasterAttributes() {

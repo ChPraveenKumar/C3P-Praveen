@@ -44,7 +44,7 @@ public class InstantiationMilestone extends Thread {
 	private static final Logger logger = LogManager.getLogger(InstantiationMilestone.class);
 
 	@Autowired
-	private RequestInfoDetailsDao requestDao;	
+	private RequestInfoDetailsDao requestDao;
 	@Autowired
 	private RestTemplate restTemplate;
 	@Autowired
@@ -53,6 +53,7 @@ public class InstantiationMilestone extends Thread {
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/performInstantiation", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -92,12 +93,29 @@ public class InstantiationMilestone extends Thread {
 				else
 				{
 					value=false;
+					requestDao.editRequestforReportWebserviceInfo(
+							requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo
+									.getRequestVersion()),
+							"instantiation", "2", "Failure");
 				}
 			} catch (JSONException e) {
 				// TODO Auto-generated catch block
+				value=false;
+				requestDao.editRequestforReportWebserviceInfo(
+						requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo
+								.getRequestVersion()),
+						"instantiation", "2", "Failure");
 				e.printStackTrace();
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
+				value=false;
+				requestDao.editRequestforReportWebserviceInfo(
+						requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo
+								.getRequestVersion()),
+						"instantiation", "2", "Failure");
 				e.printStackTrace();
 			}
 			//Call the python API
@@ -116,7 +134,7 @@ public class InstantiationMilestone extends Thread {
 			obj.put(new String("output"), jsonArray);
 
 		}
-
+		
 		return obj;
 	}
 

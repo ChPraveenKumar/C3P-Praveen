@@ -29,7 +29,6 @@ import com.techm.orion.entitybeans.OS;
 import com.techm.orion.entitybeans.OSversion;
 import com.techm.orion.entitybeans.Regions;
 import com.techm.orion.entitybeans.Services;
-import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
 import com.techm.orion.entitybeans.Vendors;
 import com.techm.orion.repositories.DeviceFamilyRepository;
 import com.techm.orion.repositories.ModelsRepository;
@@ -236,16 +235,12 @@ public class GblLstController {
 	 **/
 	@GET
 	@RequestMapping(value = "/osversionforos", method = RequestMethod.GET, produces = "application/json")
-	public Response getOsversionforos(@RequestParam String os) {
-		Set<OS> setos = new HashSet<OS>();
-		Set<OSversion> setosversion = new HashSet<OSversion>();
-		List<OSversion> osversionlst = new ArrayList<OSversion>();
-		setos = osRepository.findByOs(os);
-		for (OS osObj : setos) {
-			setosversion = osversionRepository.findByOs(osObj);
-			osversionlst.addAll(setosversion);
-		}
-
+	public Response getOsversionforos(@RequestParam String osId) {
+		Set<OSversion> osversionlst = new HashSet<OSversion>();
+		OS osSet = null;
+		int id = Integer.parseInt(osId);
+		osSet = osRepository.findById(id);
+		osversionlst = osversionRepository.findOne(osSet.getId());
 		return Response.status(200).entity(osversionlst).build();
 	}
 
@@ -254,20 +249,16 @@ public class GblLstController {
 	 **/
 	@DELETE
 	@RequestMapping(value = "/osversion", method = RequestMethod.DELETE, produces = "application/json")
-	public Response delOsversion(@RequestParam String osversion) {
-		OSversion existingosversion = new OSversion();
-		Set<OSversion> osversionset = new HashSet<OSversion>();
-		osversionset = osversionRepository.findByOsversion(osversion);
-		if (null != osversionset && !osversionset.isEmpty()) {
-			existingosversion = osversionset.iterator().next();
-			try {
-				osversionRepository.delete(existingosversion);
-			} catch (NoSuchElementException e) {
-				return Response.status(200).entity("OS Version does not exist so cant Delete").build();
-			}
+	public Response delOsversion(@RequestParam String id) {
+		OSversion existingosversion = null;
+		int osversion_id = Integer.parseInt(id);
+		existingosversion = osversionRepository.findById(osversion_id);
+		if (existingosversion != null) {
+			osversionRepository.delete(existingosversion);
+			return Response.status(200).entity("OS Version deleted successfully").build();
+		} else {
+			return Response.status(200).entity("OS Version does not exist so cant Delete").build();
 		}
-
-		return Response.status(200).entity("OS Version deleted successfully").build();
 	}
 
 	/**
@@ -406,25 +397,16 @@ public class GblLstController {
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
-	@DELETE
 	@RequestMapping(value = "/os", method = RequestMethod.DELETE, produces = "application/json")
-	public Response delOs(@RequestParam String os) {
-
-		OS existingos = new OS();
-		Set<OS> osset = new HashSet<OS>();
-		osset = osRepository.findByOs(os);
-
-		if (null != osset && !osset.isEmpty()) {
-			existingos = osset.iterator().next();
-
-			try {
-				osRepository.delete(existingos);
-			} catch (NoSuchElementException e) {
-				return Response.status(200).entity("OS does not exist so cannot delete").build();
-			}
-		}
-
-		return Response.status(200).entity("OS deleted successfully").build();
+	public Response delOs(@RequestParam String osId) {
+		OS osset = null;
+		int id = Integer.parseInt(osId);
+		osset = osRepository.findById(id);
+		if (osset != null) {
+			osRepository.delete(osset);
+			return Response.status(200).entity("OS deleted successfully").build();
+		} else
+			return Response.status(200).entity("OS does not exist so cannot delete").build();
 	}
 
 	/**
@@ -583,20 +565,16 @@ public class GblLstController {
 	 **/
 	@DELETE
 	@RequestMapping(value = "/model", method = RequestMethod.DELETE, produces = "application/json")
-	public Response delModel(@RequestParam String model) {
-		Models existingmodel = new Models();
-		Set<Models> modelset = new HashSet<Models>();
-		modelset = modelsRepository.findByModel(model);
-
-		if (null != modelset && !modelset.isEmpty()) {
-			existingmodel = modelset.iterator().next();
-			try {
-				modelsRepository.delete(existingmodel);
-			} catch (NoSuchElementException e) {
-				return Response.status(200).entity("Model does not exist so cannot delete").build();
-			}
+	public Response delModel(@RequestParam String id) {
+		Models existingmodel = null;
+		int model_Id = Integer.parseInt(id);
+		existingmodel = modelsRepository.findById(model_Id);
+		if (existingmodel != null) {
+			modelsRepository.delete(existingmodel);
+			return Response.status(200).entity("Model deleted successfully").build();
+		} else {
+			return Response.status(200).entity("Model does not exist so cannot delete").build();
 		}
-		return Response.status(200).entity("Model deleted successfully").build();
 	}
 
 	/**

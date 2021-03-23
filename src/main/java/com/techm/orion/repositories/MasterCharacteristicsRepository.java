@@ -18,6 +18,9 @@ public interface MasterCharacteristicsRepository extends JpaRepository<MasterCha
 	MasterCharacteristicsEntity findByCFIdAndCName(String fid,String label);
 	@Query(value = "select c_id from c3p_m_characteristics where c_f_id = :c_f_id", nativeQuery = true)
 	String findCharachteristicNameByCId(@Param("c_f_id") String c_f_id);
-
 	
+	@Query("select new com.techm.orion.entitybeans.MasterCharacteristicsEntity( att.cId, att.cName, att.cFId,"
+			+ " info.masterLabelValue as labelValue, att.cIsKey) from MasterCharacteristicsEntity att,"
+			+" CreateConfigEntity info where info.masterCharachteristicId=att.cId and info.requestId=:requestId") 
+	List<MasterCharacteristicsEntity> findfeatureCharIdAndLabel(@Param("requestId") String requestId);	
 }

@@ -101,7 +101,7 @@ public class RequestInfoDao {
 	@Autowired
 	private UserManagementRepository userManagementRepository;
 	
-	@Inject
+	@Autowired
 	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
 
 	/* SQL information */
@@ -4082,10 +4082,11 @@ public class RequestInfoDao {
 
 	public Map<String, String> getRequestFlagForReport(String requestId,
 			double versionId) {
-		String query = "select application_test,deliever_config from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+		String query = "select application_test,deliever_config, instantiation from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
 		String flagForPrevalidation = "";
 		String flagFordelieverConfig = "";
+		String flagForInstantiation ="";
 		Map<String, String> hmap = new HashMap<String, String>();
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String version = numberFormat.format(versionId);
@@ -4099,10 +4100,13 @@ public class RequestInfoDao {
 				while (rs.next()) {
 					flagForPrevalidation = rs.getString("application_test");
 					flagFordelieverConfig = rs.getString("deliever_config");
+					flagForInstantiation =rs.getString("instantiation");
 				}
 			}
 			hmap.put("flagForPrevalidation", flagForPrevalidation);
 			hmap.put("flagFordelieverConfig", flagFordelieverConfig);
+			hmap.put("flagForInstantiation", flagForInstantiation);
+
 		} catch (SQLException exe) {
 			logger.error("SQL Exception in lockDeviceForRequest method "
 					+ exe.getMessage());
@@ -7216,7 +7220,7 @@ public class RequestInfoDao {
 		} else {
 			bgpneighbour = null;
 		}
-		if (bgpneighbour != null) {
+		/*if (bgpneighbour != null) {
 			networkArray.add(bgpneighbour);
 		}
 		if (waninterface != null) {
@@ -7227,7 +7231,7 @@ public class RequestInfoDao {
 		}
 		if (networkIfObj != null) {
 			networkArray.add(networkIfObj);
-		}
+		}*/
 		org.json.simple.JSONArray healthArray = new org.json.simple.JSONArray();
 
 		org.json.simple.JSONObject throughputObj = new org.json.simple.JSONObject();
@@ -7383,12 +7387,12 @@ public class RequestInfoDao {
 		obj.put("Others", othersArray);
 		obj.put("NetworkAudit", networkAuditArray);
 		}
-		if(request.getAlphanumericReqId() != null
+		/*		if(request.getAlphanumericReqId() != null
 				 && request.getAlphanumericReqId().startsWith("SNAI"))
 		{
 			obj.put("Instantiation", instantiationArray);
 
-		}
+		}*/
 		return obj;
 
 	}
