@@ -681,4 +681,43 @@ public class CredentialMgmtController {
 	}
 		return responseEntity;
 	}
+	
+	@POST
+	@RequestMapping(value = "/editSnmpProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	public ResponseEntity<JSONObject> editSnmpProfiles(@RequestBody String request) throws ParseException {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject jsonResult = credentialMgmtService.getEditSnmpProfile(request);
+		if (jsonResult != null) {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+	
+	@POST
+	@RequestMapping(value = "/editSshAndTelentProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	public ResponseEntity<JSONObject> editSshAndTelentProfiles(@RequestBody String request) throws ParseException {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject jsonResult = credentialMgmtService.getEditSshTelnetProfile(request);
+		if (jsonResult != null) {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+	
+	@GET
+	@RequestMapping(value = "/getAllUnAssociatedProfiles", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<JSONObject> getAllIps() {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = credentialMgmtService.getUnAssociatedProfile();
+		if (json != null) {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
 }

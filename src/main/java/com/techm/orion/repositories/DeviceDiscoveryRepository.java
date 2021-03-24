@@ -341,4 +341,8 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	DeviceDiscoveryEntity findByDHostNameAndDMgmtIpAndDDeComm(String tempHostName, String tempManagementIp,String dcomm);
 	
 	List<DeviceDiscoveryEntity> findAllByOrderByDIdDesc();
+	
+	DeviceDiscoveryEntity findOneByDSnmpCredProfile(String profileName);
+
+	DeviceDiscoveryEntity findByDHostNameAndDSnmpCredProfile(String hostname, String profileName);
 }

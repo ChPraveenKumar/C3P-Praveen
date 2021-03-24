@@ -26,7 +26,7 @@ public interface MasterOIDRepository extends JpaRepository<MasterOIDEntity, Long
 	String findInterFaceOidAndDisplayName(@Param("oidVendor") String oidVendor,
 			@Param("oidNetworkType") String oidNetworkType);
 
-	List<MasterOIDEntity> findByOidCreatedBy(String userName);
+	List<MasterOIDEntity> findByOidCreatedByOrderByOidCreatedDateDesc(String userName);
 
 	List<MasterOIDEntity> findByOidNo(String oidNo);
 	

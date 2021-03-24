@@ -1641,7 +1641,7 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		TemplateBasicConfigurationPojo pojo;
 		connection = ConnectionFactory.getConnection();
-		String query2 = "SELECT * FROM templateconfig_basic_details";
+		String query2 = "SELECT * FROM templateconfig_basic_details order by temp_created_date desc";
 		try {
 			Statement pst = connection.createStatement();
 			ResultSet rs1 = pst.executeQuery(query2);

@@ -281,7 +281,7 @@ public class GblLstController {
 
 		for (OSversion osversion : osversions) {
 			/* Find the OS present in DB */
-			existingosset = osRepository.findByOs(osversion.getOs().getOs());
+			existingosset = osRepository.findOneById(osversion.getOs().getId());
 			if (null != existingosset && !existingosset.isEmpty()) {
 				os = existingosset.iterator().next();
 				// existingosversion.setOs(os);

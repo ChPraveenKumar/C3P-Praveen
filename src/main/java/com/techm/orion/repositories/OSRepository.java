@@ -36,4 +36,6 @@ public interface OSRepository extends JpaRepository<OS, Integer> {
 	OS findos(@Param("os") String os);
 	
 	OS findById(int id);
+	
+	Set<OS> findOneById(int id);
 }

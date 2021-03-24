@@ -602,7 +602,7 @@ public class DeviceDiscrepancyService {
 		jsonObject = (JSONObject) parser.parse(request);
 		userName = jsonObject.get("userName").toString();
 		userRole = jsonObject.get("userRole").toString();
-		List<MasterOIDEntity> masterOIDEntity = masterOIDRepository.findByOidCreatedBy(userName);
+		List<MasterOIDEntity> masterOIDEntity = masterOIDRepository.findByOidCreatedByOrderByOidCreatedDateDesc(userName);
 		masterOIDEntity.forEach(masterEntity -> {
 			JSONObject object = new JSONObject();
 			object.put("vendor", masterEntity.getOidVendor());
