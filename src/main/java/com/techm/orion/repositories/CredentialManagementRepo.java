@@ -35,8 +35,5 @@ public interface CredentialManagementRepo extends JpaRepository<CredentialManage
 
 	List<CredentialManagementEntity> findByInfoId(int infoId);
 	
-	@Query(value = "select * from c3p_t_credential_management where cr_ref_device is zero", nativeQuery= true)
-	List<CredentialManagementEntity> findUnassocaitedDevices();
-	
 	List<CredentialManagementEntity> findByProfileNameAndProfileType(String profileName, String profileType);
 }
