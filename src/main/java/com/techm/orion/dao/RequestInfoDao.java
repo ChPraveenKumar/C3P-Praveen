@@ -5520,28 +5520,31 @@ public class RequestInfoDao {
 			Double requestVersion = Double.valueOf(version);
 			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId,
 					requestVersion);
-			org.json.simple.JSONArray testNameArray = (org.json.simple.JSONArray) parser
-					.parse(testAndDiagnosis);
-			if(testNameArray!=null){
-				for (int i = 0; i < testNameArray.size(); i++) {
-					org.json.simple.JSONObject jsonObj = (org.json.simple.JSONObject) testNameArray
-							.get(i);
-					String category = jsonObj.get("testCategory").toString();
-					if (null != category && testtype.equals(category)) {
-						org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
-						obj.put("category", category);
-						int status = getTestDetails(requestId,
-								jsonObj.get("testName").toString(), requestVersion);
-						obj.put("status", status);
-						String testNameAndVersion = jsonObj.get("testName")
-								.toString();
-						testNameAndVersion = StringUtils.substringAfter(
-								testNameAndVersion, "_");
-						obj.put("testName", testNameAndVersion);
-						array.add(obj);
+			logger.info("testAndDiagnosis ->"+testAndDiagnosis);
+			if(testAndDiagnosis !=null && !testAndDiagnosis.isEmpty()) {
+				org.json.simple.JSONArray testNameArray = (org.json.simple.JSONArray) parser
+						.parse(testAndDiagnosis);
+				if(testNameArray!=null){
+					for (int i = 0; i < testNameArray.size(); i++) {
+						org.json.simple.JSONObject jsonObj = (org.json.simple.JSONObject) testNameArray
+								.get(i);
+						String category = jsonObj.get("testCategory").toString();
+						if (null != category && testtype.equals(category)) {
+							org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
+							obj.put("category", category);
+							int status = getTestDetails(requestId,
+									jsonObj.get("testName").toString(), requestVersion);
+							obj.put("status", status);
+							String testNameAndVersion = jsonObj.get("testName")
+									.toString();
+							testNameAndVersion = StringUtils.substringAfter(
+									testNameAndVersion, "_");
+							obj.put("testName", testNameAndVersion);
+							array.add(obj);
+						}
 					}
 				}
-			}
+			}			
 			
 		} catch (org.json.simple.parser.ParseException e) {
 			e.printStackTrace();
@@ -6379,7 +6382,7 @@ public class RequestInfoDao {
 		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id, customer = null, siteName = null, family = null, siteId = null, vendor = null, deviceType = null, selectedFileFeatures = null, configGenerationMethods = null;
 		String request_creator_name = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
-		String networktype = null, fileName = null, apiCallType = null;
+		String networktype = null, fileName = null;
 		double request_version = 0, request_parent_version = 0;
 		boolean startup = false;
 
@@ -8345,57 +8348,6 @@ public class RequestInfoDao {
 			DBUtil.close(rs);
 		}
 		return list;
-	}
-
-	public List<TestStrategyPojo> findById(String key, List temp) {
-		String query = null;
-		List<TestStrategyPojo> requestInfoList = null;
-		TestStrategyPojo request = null;
-		ResultSet rs = null;
-		int value = 0;
-		requestInfoList = new ArrayList<TestStrategyPojo>();
-		for (int i = 0; i < temp.size(); i++) {
-			value = (int) temp.get(i);
-
-			if (key.equals("id")) {
-				query = "SELECT * FROM t_tststrategy_m_tstdetails where id LIKE ?";
-			}
-
-			try (Connection connection = ConnectionFactory.getConnection();
-					PreparedStatement pst = connection.prepareStatement(query);) {
-
-				pst.setString(1, value + "%");
-
-				rs = pst.executeQuery();
-				while (rs.next()) {
-
-					request = new TestStrategyPojo();
-					request.setTestName(rs.getString("test_name"));
-					request.setVersion(rs.getString("version"));
-					request.setTestId(rs.getString("id"));
-					request.setVendor(rs.getString("vendor"));
-					request.setDeviceFamily(rs.getString("device_family"));
-					request.setDeviceModel(rs.getString("device_model"));
-
-					request.setTest_category(rs.getString("test_category"));
-					request.setOs(rs.getString("os"));
-					request.setOsVersion(rs.getString("os_version"));
-					request.setRegion(rs.getString("region"));
-					request.setCreatedDate(rs.getString("created_on"));
-					request.setCreatedBy(rs.getString("created_by"));
-
-					request.setEnabled(rs.getBoolean("is_enabled"));
-					requestInfoList.add(request);
-				}
-
-			} catch (SQLException exe) {
-				logger.error("SQL Exception in findById method "
-						+ exe.getMessage());
-			} finally {
-				DBUtil.close(rs);
-			}
-		}
-		return requestInfoList;
 	}
 
 	public List<TestBundlePojo> findTestIdList(int bundleId) {
