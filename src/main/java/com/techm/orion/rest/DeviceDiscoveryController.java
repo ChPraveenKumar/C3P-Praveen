@@ -184,8 +184,16 @@ public class DeviceDiscoveryController implements Observer {
 					object.put("region", site.getcSiteRegion());
 
 				}
-				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
-				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
+				if(getAllDevice.get(i).getdEndOfSupportDate() !=null && !"Not Available".equalsIgnoreCase(
+						getAllDevice.get(i).getdEndOfSupportDate()))
+					object.put("eos", getAllDevice.get(i).getdEndOfSupportDate().toString());
+				else
+					object.put("eos", "Not Available");
+				
+				if(getAllDevice.get(i).getdEndOfSaleDate() !=null)
+					object.put("eol", getAllDevice.get(i).getdEndOfSaleDate().toString());
+				else
+					object.put("eol", "Not Available");
 
 				object.put("requests", requestInfoDetailsRepositories.getRequestCountByHost(getAllDevice.get(i).getdHostName()));
 				if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("0")) {

@@ -289,6 +289,7 @@ public class RequestInfoDetailsDao {
 				pojo.setStatus(entity.getStatus());
 				pojo.setNetworkType(entity.getNetworkType());
 				pojo.setRequestCreatorName(entity.getRequestCreatorName());
+				pojo.setStartUp(entity.getStartUp());
 			}
 		} catch (Exception e) {
 			logger.error(e);
@@ -518,6 +519,9 @@ public class RequestInfoDetailsDao {
 
 		BackupCurrentRouterConfigurationService service = new BackupCurrentRouterConfigurationService();
 		boolean backupdone = false;
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		try {
 			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = requestinfo.getManagementIp();
@@ -531,11 +535,7 @@ public class RequestInfoDetailsDao {
 
 			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
-			JSch jsch = new JSch();
-
-			
-			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(port));
+			session = jsch.getSession(user, host, Integer.parseInt(port));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -586,6 +586,24 @@ public class RequestInfoDetailsDao {
 						+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt", response,null);
 			} catch (Exception e) {
 				e.printStackTrace();
+			}
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+					session = channel.getSession();
+
+					if (channel.getExitStatus() == -1) {
+
+						Thread.sleep(5000);
+
+					}
+				} catch (Exception e) {
+					logger.error("Exception in getRouterConfig" +e.getMessage());
+				}
+				channel.disconnect();
+				session.disconnect();
 			}
 		}
 		return backupdone;

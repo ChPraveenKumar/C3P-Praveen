@@ -45,10 +45,11 @@ public class ShowMemoryTest {
 		String result = null;
 		ShowMemoryTest.loadProperties();
 		String port = ShowMemoryTest.PROPERTIES.getProperty("portSSH");
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		try {
-			JSch jsch = new JSch();
-			Channel channel = null;
-			Session session = jsch.getSession(username, ip, Integer.parseInt(port));
+			session = jsch.getSession(username, ip, Integer.parseInt(port));
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
@@ -75,17 +76,31 @@ public class ShowMemoryTest {
 			channel.disconnect();
 			session.disconnect();
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSchException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+					session = channel.getSession();
+
+					if (channel.getExitStatus() == -1) {
+
+						Thread.sleep(5000);
+
+					}
+				} catch (Exception e) {
+					logger.error("Exception in memoryInfo" +e.getMessage());
+				}
+				channel.disconnect();
+				session.disconnect();
+			}
 		}
 		return result;
 

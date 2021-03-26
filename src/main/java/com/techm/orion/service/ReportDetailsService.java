@@ -98,6 +98,7 @@ public class ReportDetailsService {
 
 		String requestId = createConfigRequestDCM.getRequestId();
 		String version = createConfigRequestDCM.getVersion_report();
+		String networkType = createConfigRequestDCM.getNetworkType();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		String previousRouterVersion = "";
 		String currentRouterVersion = "";
@@ -107,9 +108,13 @@ public class ReportDetailsService {
 			if (!version.contains(".")) {
 				version = version + ".0";
 			}
-
-			previousRouterVersion = invokeFtl.getPreviousRouterVersion(requestId, version);
-			currentRouterVersion = invokeFtl.getCurrentRouterVersion(requestId, version);
+			if (networkType !=null && "VNF".equalsIgnoreCase(networkType)) {
+				previousRouterVersion = invokeFtl.getPreviousRouterVersionForVNF(requestId, version, networkType);
+				currentRouterVersion = invokeFtl.getCurrentRouterVersionForVNF(requestId, version, networkType);
+			} else {
+				previousRouterVersion = invokeFtl.getPreviousRouterVersion(requestId, version);
+				currentRouterVersion = invokeFtl.getCurrentRouterVersion(requestId, version);
+			}
 			dataList.put("previousRouterVersion", previousRouterVersion);
 			if (flagForData.equalsIgnoreCase("findDiff")) {
 				dataList.put("currentRouterVersion", currentRouterVersion);
@@ -127,6 +132,7 @@ public class ReportDetailsService {
 
 		String requestId = createConfigRequestDCM.getRequestId();
 		String version = createConfigRequestDCM.getVersion_report();
+		String networkType = createConfigRequestDCM.getNetworkType();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		String previousRouterVersion = "";
 		String currentRouterVersion = "";
@@ -136,9 +142,13 @@ public class ReportDetailsService {
 			if (!version.contains(".")) {
 				version = version + ".0";
 			}
-
-			previousRouterVersion = invokeFtl.getStartUpRouterVersion(requestId, version);
-			currentRouterVersion = invokeFtl.getCurrentRouterVersion(requestId, version);
+			if ("VNF".equalsIgnoreCase(networkType)) {
+				previousRouterVersion = invokeFtl.getStartUpRouterVersionForVNF(requestId, version, networkType);
+				currentRouterVersion = invokeFtl.getCurrentRouterVersionForVNF(requestId, version, networkType);
+			} else {
+				previousRouterVersion = invokeFtl.getStartUpRouterVersion(requestId, version);
+				currentRouterVersion = invokeFtl.getCurrentRouterVersion(requestId, version);
+			}
 			dataList.put("previousRouterVersion", previousRouterVersion);
 			if (flagForData.equalsIgnoreCase("findDiff")) {
 				dataList.put("currentRouterVersion", currentRouterVersion);
