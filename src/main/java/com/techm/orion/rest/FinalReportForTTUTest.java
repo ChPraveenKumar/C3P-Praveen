@@ -1878,7 +1878,7 @@ public class FinalReportForTTUTest extends Thread {
 						}
 					}
 				}
-				int fileReadSize = Integer.parseInt(TSALabels.fileChunkSize.getValue());
+				int fileReadSize = Integer.parseInt(TSALabels.FILE_CHUNK_SIZE.getValue());
 				int chunks = (count / fileReadSize) + 1;
 				String line;
 
@@ -1989,7 +1989,7 @@ public class FinalReportForTTUTest extends Thread {
 					}
 				}
 			}
-			int fileReadSize = Integer.parseInt(TSALabels.fileChunkSize.getValue());
+			int fileReadSize = Integer.parseInt(TSALabels.FILE_CHUNK_SIZE.getValue());
 			int chunks = (count / fileReadSize) + 1;
 			String line;
 
