@@ -1397,5 +1397,54 @@ public class InvokeFtl {
 		}
 
 	}
+	
+	public String getPreviousRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
+		InvokeFtl.loadProperties();
+		String content = null, filePath = null;
+		try {
+			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
+			File file = new File(responseDownloadPath + requestId + "V" + version + "_PreviousConfig.txt");
+	
+			if (file.exists() && "VNF".equalsIgnoreCase(networkType)) {
+				filePath = responseDownloadPath + requestId + "V" + version + "_PreviousConfig.txt";
+				content = new String(Files.readAllBytes(Paths.get(filePath)));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return content;
+	}
 
+	public String getCurrentRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
+		InvokeFtl.loadProperties();
+		String content = null, filePath = null;
+		try {
+			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
+			File file = new File(responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt");
+			if (file.exists() && "VNF".equalsIgnoreCase(networkType)) {
+				filePath = responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt";
+
+				content = new String(Files.readAllBytes(Paths.get(filePath)));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return content;
+	}
+	
+	public String getStartUpRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
+		InvokeFtl.loadProperties();
+		String content = null, filePath = null;
+		try {
+			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
+			File file = new File(responseDownloadPath + requestId + "V" + version + "_StartupConfig.txt");
+			if (file.exists()) {
+				filePath = responseDownloadPath + requestId + "V" + version + "_StartupConfig.txt";
+				content = new String(Files.readAllBytes(Paths.get(filePath)));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return content;
+	}
 }

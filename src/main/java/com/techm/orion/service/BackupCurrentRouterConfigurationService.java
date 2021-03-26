@@ -412,6 +412,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				request.put(new String("stage"), "previous");
 				request.put(new String("version"), configRequest.getRequestVersion());
 	            request.put(new String("hostname"), configRequest.getHostname());
+	            request.put(new String("filePath"), TSALabels.RESPONSE_DOWNLOAD_PATH.getValue());
 				HttpHeaders headers = new HttpHeaders();
 				headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 				HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
@@ -500,66 +501,87 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 	}
 
+	@SuppressWarnings("unchecked")
 	public boolean getRouterConfigStartUp(RequestInfoPojo configRequest, String routerVersionType) {
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		boolean backupdone = false;
 		try {
-			BackupCurrentRouterConfigurationService.loadProperties();
-			String host = configRequest.getManagementIp();
-			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
-			CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
-					deviceDetails);
-			String user = routerCredential.getLoginRead();
-			String password = routerCredential.getPasswordWrite();
-			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
-
-			JSch jsch = new JSch();
-			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(port));
-			Properties config = new Properties();
-			config.put("StrictHostKeyChecking", "no");
-			session.setConfig(config);
-			session.setPassword(password);
-			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
+			if ("VNF".equalsIgnoreCase(configRequest.getNetworkType())) {
+				RestTemplate restTemplate = new RestTemplate();
+				JSONObject request = new JSONObject();
+				request.put(new String("ip"), configRequest.getManagementIp());
+				request.put(new String("port"), TSALabels.BACKUP_PORT.getValue());
+				request.put(new String("source"), "startup");
+				request.put(new String("requestId"), configRequest.getAlphanumericReqId());
+				request.put(new String("stage"), "startup");
+				request.put(new String("version"), configRequest.getRequestVersion());
+				request.put(new String("hostname"), configRequest.getHostname());
+				request.put(new String("filePath"), TSALabels.RESPONSE_DOWNLOAD_PATH.getValue());
+				HttpHeaders headers = new HttpHeaders();
+				headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+				HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
+				String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_BACKUP.getValue();
+				String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+				if (response != null) {
+					backupdone = true;
+				} else {
+					backupdone = false;
+				}
 			}
+			else {
+				BackupCurrentRouterConfigurationService.loadProperties();
+				String host = configRequest.getManagementIp();
+				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
+						configRequest.getHostname(), configRequest.getManagementIp(), "0");
+				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
+				String user = routerCredential.getLoginRead();
+				String password = routerCredential.getPasswordWrite();
+				String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
-			try {
-				channel = session.openChannel("shell");
-				OutputStream ops = channel.getOutputStream();
-
-				PrintStream ps = new PrintStream(ops, true);
-				logger.info("Channel Connected to machine " + host + " server");
-				channel.connect();
-				InputStream input = channel.getInputStream();
-				ps.println("terminal length 0");
-				ps.println("show start");
+				JSch jsch = new JSch();
+				Channel channel = null;
+				Session session = jsch.getSession(user, host, Integer.parseInt(port));
+				Properties config = new Properties();
+				config.put("StrictHostKeyChecking", "no");
+				session.setConfig(config);
+				session.setPassword(password);
+				session.connect();
 				try {
-					Thread.sleep(3000);
+					Thread.sleep(10000);
 				} catch (Exception ee) {
 				}
-				if (routerVersionType.equalsIgnoreCase("startup")) {
-					backupdone = true;
-					printstartupVersionInfo(input, channel, configRequest.getAlphanumericReqId(),
-							Double.toString(configRequest.getRequestVersion()));
-				} else {
-					backupdone = true;
-					printCurrentVersionInfo(input, channel, configRequest.getAlphanumericReqId(),
-							Double.toString(configRequest.getRequestVersion()));
-				}
-				channel.disconnect();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
 
-		catch (Exception ex) {
+				try {
+					channel = session.openChannel("shell");
+					OutputStream ops = channel.getOutputStream();
+
+					PrintStream ps = new PrintStream(ops, true);
+					logger.info("Channel Connected to machine " + host + " server");
+					channel.connect();
+					InputStream input = channel.getInputStream();
+					ps.println("terminal length 0");
+					ps.println("show start");
+					try {
+						Thread.sleep(3000);
+					} catch (Exception ee) {
+					}
+					if (routerVersionType.equalsIgnoreCase("startup")) {
+						backupdone = true;
+						printstartupVersionInfo(input, channel, configRequest.getAlphanumericReqId(),
+								Double.toString(configRequest.getRequestVersion()));
+					} else {
+						backupdone = true;
+						printCurrentVersionInfo(input, channel, configRequest.getAlphanumericReqId(),
+								Double.toString(configRequest.getRequestVersion()));
+					}
+					channel.disconnect();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (Exception ex) {
 			String response = "";
 			String responseDownloadPath = "";
 			try {
@@ -573,7 +595,6 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 								+ Double.toString(configRequest.getRequestVersion()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
