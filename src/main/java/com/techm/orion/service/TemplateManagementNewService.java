@@ -83,6 +83,10 @@ public class TemplateManagementNewService {
 
 	@Autowired
 	private AttribCreateConfigResponceMapper attribCreateConfigResponceMapper;
+	
+	@Autowired
+	private TemplateManagementDao templateManagementDao;
+
 
 	@Autowired
 	private GetTemplateConfigurationData templateSaveFlowService;
@@ -337,14 +341,13 @@ public class TemplateManagementNewService {
 
 	}
 
-	public String setCommandList(List<String> featureList, String finaltemplate) {
-		TemplateManagementDao dao = new TemplateManagementDao();
+	public String setCommandList(List<String> featureList, String finaltemplate) {		
 		List<CommandPojo> cammands = new ArrayList<>();
 		for (String feature : featureList) {
 			TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
 					.findIdByComandDisplayFeatureAndCommandContains(feature, finaltemplate);
 			if (findIdByfeatureAndCammand != null) {
-				List<CommandPojo> cammandByTemplateAndfeatureId = dao
+				List<CommandPojo> cammandByTemplateAndfeatureId = templateManagementDao
 						.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(), finaltemplate);
 				cammands.addAll(cammandByTemplateAndfeatureId);
 			}
@@ -352,7 +355,7 @@ public class TemplateManagementNewService {
 		cammands.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
 		String finalCammands = "";
 		for (CommandPojo cammand : cammands) {
-			finalCammands = finalCammands + cammand.getCommandValue();
+			finalCammands = finalCammands + cammand.getCommandValue()+"\n";
 		}
 
 		return finalCammands;
@@ -694,4 +697,14 @@ public class TemplateManagementNewService {
 		}
 		return deviceDetails;
 	}
+	
+	public String getCommands(String finaltemplate) {				
+		List<CommandPojo> cammands = templateManagementDao
+				.getCammandByTemplateId(finaltemplate);
+		String finalCammands = "";
+		for (CommandPojo cammand : cammands) {
+			finalCammands = finalCammands + cammand.getCommandValue()+"\n";
+		}
+		return finalCammands;
+}
 }

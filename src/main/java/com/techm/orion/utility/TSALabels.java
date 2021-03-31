@@ -28,7 +28,10 @@ public enum TSALabels {
 	/*Python EndPoints*/
 	PYTHON_PING, PYTHON_THROUGHPUT, PYTHON_BACKUP, BACKUP_PORT, IP_MANAGEMENT,
 	/*Router temporary IP for testing purpose*/
-	ROUTER_IP_TEMP;
+	ROUTER_IP_TEMP,
+	
+	//Json temporary File
+	JSON_FILE;
 
 
 	private static final Logger logger = LogManager.getLogger(TSALabels.class);
