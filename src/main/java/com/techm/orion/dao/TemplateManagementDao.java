@@ -1640,8 +1640,8 @@ public class TemplateManagementDao {
 	public List<TemplateBasicConfigurationPojo> getTemplateList() {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		TemplateBasicConfigurationPojo pojo;
-		connection = ConnectionFactory.getConnection();
-		String query2 = "SELECT * FROM templateconfig_basic_details order by temp_created_date desc";
+		connection = ConnectionFactory.getConnection();		
+		String query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type not in ('VNF') order by temp_created_date desc";
 		try {
 			Statement pst = connection.createStatement();
 			ResultSet rs1 = pst.executeQuery(query2);
@@ -2381,5 +2381,30 @@ public class TemplateManagementDao {
 		timestamp = new Timestamp(cal.getTime().getTime());
 		notificationEntity.setNotifExpiryDate(timestamp);
 		notificationRepo.save(notificationEntity);
+	}
+	
+	public List<CommandPojo> getCammandByTemplateId(String templateId) {
+		connection = ConnectionFactory.getConnection();
+		String query1 = "SELECT command_value FROM c3p_template_master_command_list where command_type =?";
+		PreparedStatement pst;
+		ResultSet res;
+
+		List<CommandPojo> cammandPojo = new ArrayList<>();
+		try {
+				pst = connection.prepareStatement(query1);				
+				pst.setString(1, templateId);
+				res = pst.executeQuery();
+				CommandPojo cammand = null;
+					while (res.next()) {
+					cammand = new CommandPojo();
+					cammand.setCommandValue(res.getString("command_value"));					
+					cammandPojo.add(cammand);				
+			}
+		} catch (SQLException e) {	
+			e.printStackTrace();
+		} finally {
+			DBUtil.close(connection);
+		}
+		return cammandPojo;
 	}
 }
