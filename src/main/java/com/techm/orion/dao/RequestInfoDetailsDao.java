@@ -663,4 +663,28 @@ public class RequestInfoDetailsDao {
 		reason=entity.getTextFoundDeliveryTest();
 		return reason;
 	}
+	
+	/**
+	 * This method is useful to fetch the Image instance information from
+	 * c3p_deviceinfo_ext table.
+	 * 
+	 * @param deviceId
+	 * @return imageInstanceId
+	 */
+	public String fetchImageInstanceFromDeviceExt(String deviceId) {
+		String imageInstanceId = null;
+		String sqlQuery = "select r_imageInstanceId from c3p_deviceinfo_ext where r_device_id = ?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
+			preparedStmt.setString(1, deviceId);
+			ResultSet rs = preparedStmt.executeQuery();
+
+			while (rs.next()) {
+				imageInstanceId = rs.getString("r_imageInstanceId");
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in fetchImageInstanceFromDeviceExt method " + exe.getMessage());
+		}
+		return imageInstanceId;
+	}
 }
