@@ -86,18 +86,6 @@ public class VnfInstantiationMilestoneService {
 		return vnfInstantiated;
 	}
 
-	private void test(String requestId) {
-		logger.info("Start - vnfInstantiation");
-		boolean vnfInstantiated = false;		
-		ResourceCharacteristicsHistoryEntity resCharHistEntity = resourceCharHistoryRepo.findCloudPlatform(requestId);
-
-		if (resCharHistEntity != null && OPENSTACK_CLOUD.equalsIgnoreCase(resCharHistEntity.getRcValue())) {
-			logger.info("Start - vnfInstantiation 00" + resCharHistEntity.getRcValue());
-			vnfInstantiated = updateVNFInstanceDetails("SNAI-BFD804B", resCharHistEntity.getDeviceId());
-		}
-		logger.info(" vnfInstantiation - vnfInstantiated->" + vnfInstantiated);
-	}
-
 	/**
 	 * This method is useful to update the VNF Instantiation details by pulling the
 	 * instance details until the instance status in active.
@@ -313,13 +301,5 @@ public class VnfInstantiationMilestoneService {
 		} catch (InterruptedException exe) {
 			logger.error("InterruptedException - threadSleep - " + exe.getMessage());
 		}
-	}
-
-	public static void main(String args[]) {
-		VnfInstantiationMilestoneService server = new VnfInstantiationMilestoneService();
-		server.test("SNAI-BFD804B");
-		// server.fetchIpDetails("d52cbc31-e908-4a26-89c0-77f57cacbb41");
-		// server.fetchInstanceDetails("2a3e56eb-a766-48c8-a7fb-8c20df5c7b28");
-		// server.fetchIpDetails("2a3e56eb-a766-48c8-a7fb-8c20df5c7b28");
 	}
 }
