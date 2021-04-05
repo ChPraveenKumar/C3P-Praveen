@@ -795,6 +795,7 @@ public class MasterFeatureController {
 						attrJsonObj.put("uiControl", entity.getcUicomponent());
 						attrJsonObj.put("validations", attribCreateConfigResponceMapper.setValidation(entity.getcValidations()));
 						attrJsonObj.put("category", entity.getcCategory());
+						attrJsonObj.put("key", entity.iscIsKey());
 						childList.add(attrJsonObj);
 					}		
 					jsonObj.put("attribMappings", childList);

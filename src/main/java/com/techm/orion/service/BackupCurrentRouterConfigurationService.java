@@ -484,9 +484,8 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			try {
 				requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
 						Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2", "Failure");
-				response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
-				responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-						.getProperty("responseDownloadPath");
+				response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);			
+				responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
 				TextReport.writeFile(
 						responseDownloadPath, configRequest.getAlphanumericReqId() + "V"
 								+ Double.toString(configRequest.getRequestVersion()) + "_deliveredConfig.txt",

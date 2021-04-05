@@ -22,7 +22,7 @@ public interface ImportMasterStagingRepo extends JpaRepository<ImportMasterStagi
 	@Query("SELECT allimport FROM ImportMasterStagingEntity allimport")
 	List<ImportMasterStagingEntity> getAllImport();
 	
-	@Query("SELECT myimport FROM ImportMasterStagingEntity myimport where userName=:userName order by executionProcessDate Desc")
+	@Query("SELECT myimport FROM ImportMasterStagingEntity myimport where userName like :userName order by executionProcessDate Desc")
 	List<ImportMasterStagingEntity> getMyImport(@Param("userName") String userName);
 	
 	@Query("SELECT count(distinct importId) FROM ImportMasterStagingEntity where userName=:userName and status='Successful'")

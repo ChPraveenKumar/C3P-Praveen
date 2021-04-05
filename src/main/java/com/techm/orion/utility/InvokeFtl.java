@@ -1400,7 +1400,7 @@ public class InvokeFtl {
 	
 	public String getPreviousRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
 		InvokeFtl.loadProperties();
-		String content = null, filePath = null;
+		String content = "", filePath = null;
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
 			File file = new File(responseDownloadPath + requestId + "V" + version + "_PreviousConfig.txt");
@@ -1417,7 +1417,7 @@ public class InvokeFtl {
 
 	public String getCurrentRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
 		InvokeFtl.loadProperties();
-		String content = null, filePath = null;
+		String content = "", filePath = null;
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
 			File file = new File(responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt");
@@ -1434,7 +1434,7 @@ public class InvokeFtl {
 	
 	public String getStartUpRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
 		InvokeFtl.loadProperties();
-		String content = null, filePath = null;
+		String content = "", filePath = null;
 		try {
 			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
 			File file = new File(responseDownloadPath + requestId + "V" + version + "_StartupConfig.txt");

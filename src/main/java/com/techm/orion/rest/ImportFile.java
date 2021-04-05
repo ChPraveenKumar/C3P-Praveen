@@ -605,8 +605,10 @@ public class ImportFile {
 		JSONArray outputArray = new JSONArray();
 		JSONObject object = new JSONObject();
 		try {
-			importMasterData =importMasterStagingRepo.getMyImport(user);
 			myRequestCount = importMasterStagingRepo.myImportCountStatus(user);
+			if("all".equalsIgnoreCase(requestType))
+				user = "%";
+			importMasterData =importMasterStagingRepo.getMyImport(user);
 			allRequestCount = importMasterStagingRepo.allImportCountStatus();
 			for (ImportMasterStagingEntity entity : importMasterData) {
 				object = new JSONObject();
