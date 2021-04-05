@@ -32,10 +32,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.entitybeans.Notification;
+import com.techm.orion.entitybeans.VNFTemplateEntity;
 import com.techm.orion.models.TemplateCommandJSONModel;
 import com.techm.orion.pojo.DeviceDetailsPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.repositories.NotificationRepo;
+import com.techm.orion.repositories.VNFTemplateRepository;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementNewService;
 import com.techm.orion.utility.TSALabels;
@@ -57,6 +59,8 @@ public class TemplateManagementService implements Observer {
 	@Autowired
 	private NotificationRepo notificationRepo;	
 	
+	@Autowired
+	private VNFTemplateRepository vnfTemplateRepo;	
 	/**
 	 *This Api is marked as ***************External Api Impacted****************
 	 **/
@@ -258,22 +262,11 @@ public class TemplateManagementService implements Observer {
 	@ResponseBody
 	public ResponseEntity<JSONArray> getVFNDashboard() {	
 		JSONArray array = new JSONArray();			
-		try (BufferedReader reader = new BufferedReader(new FileReader(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+TSALabels.JSON_FILE.getValue()))) {
-			String line = null;
-			String data = "";
-			while((line = reader.readLine()) != null) {
-				data = data + line; 
-			}
-			JSONParser parser = new JSONParser();
-			array = (JSONArray) parser.parse(data);	
-	        
-	    } catch (FileNotFoundException f) {
-	    	logger.error("Json.Txt File Not Found "+f.getMessage());
-	    } catch (IOException e) {
-	    	logger.error(e.getMessage());
-	    } catch (ParseException e) {
-	    	logger.error("Somthing wrong in Json.txt File Data"+e.getMessage());
-		}		
+		List<VNFTemplateEntity>dbList=new ArrayList<VNFTemplateEntity>();
+		dbList=vnfTemplateRepo.findAll();
+		for (int i=0; i < dbList.size(); i++) {
+			array.add(dbList.get(i).getJSONObject());
+		}
 		return new ResponseEntity<JSONArray>(array, HttpStatus.OK);
 	}	
 
