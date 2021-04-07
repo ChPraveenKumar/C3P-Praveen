@@ -115,6 +115,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();
 			List<RequestInfoEntity> requestDetailEntity1 = new ArrayList<RequestInfoEntity>();
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+			logger.info("ResponseDownloadpath in prevalidation"+DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+										.getProperty("responseDownloadPath"));
+			DeviceReachabilityAndPreValidationTest.loadProperties();
 			// TODO: We need to remove ROUTER_IP_TEMP later or while on GCP
 			if (!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) // Temperory
 			{
