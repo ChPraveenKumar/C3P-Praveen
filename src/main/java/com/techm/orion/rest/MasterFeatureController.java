@@ -18,6 +18,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
@@ -794,6 +795,7 @@ public class MasterFeatureController {
 						attrJsonObj.put("uiControl", entity.getcUicomponent());
 						attrJsonObj.put("validations", attribCreateConfigResponceMapper.setValidation(entity.getcValidations()));
 						attrJsonObj.put("category", entity.getcCategory());
+						attrJsonObj.put("key", entity.iscIsKey());
 						childList.add(attrJsonObj);
 					}		
 					jsonObj.put("attribMappings", childList);
@@ -853,5 +855,48 @@ public class MasterFeatureController {
 				return Integer.valueOf(o1.getSequence_id()).compareTo(Integer.valueOf(o2.getSequence_id()));
 			}
 		});
+	}
+	
+	@POST
+	@RequestMapping(value = "/getVNFFeature", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<List<String>> getVNFFeature(@RequestBody String configRequest) {
+		List<String> featureList = new ArrayList<>();
+		try {
+			JSONParser parser = new JSONParser();
+			String vendor =null,os=null,osVersion=null,templateId =null;
+			JSONObject json = (JSONObject) parser.parse(configRequest);
+			if (json.containsKey("vendor") && json.get("vendor")!=null) {
+				vendor = json.get("vendor").toString();
+			}
+			if (json.containsKey("deviceOs") && json.get("deviceOs")!=null) {
+				os = json.get("deviceOs").toString();
+			}
+			if (json.containsKey("osVersion") && json.get("osVersion")!=null) {
+				osVersion = json.get("osVersion").toString();
+			}
+			if (json.containsKey("templateId") && json.get("templateId")!=null) {
+				templateId = json.get("templateId").toString();
+				templateId = StringUtils.substringBefore(templateId,".yang");
+			}
+			
+			List<MasterFeatureEntity> featureEntinty = masterFeatureRepository
+					.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(
+							vendor, "All", os, osVersion, "All",
+							"VNF");
+			for(MasterFeatureEntity feature :featureEntinty) {
+				if(feature.getfName().contains(templateId)){
+					String featureName = StringUtils.substringAfter(
+							feature.getfName(), templateId+"::");
+					if(feature.getfId().startsWith("F")) {
+					featureList.add(featureName);
+					}
+				}
+			}
+			
+		}catch (Exception e) {
+			logger.error("Exception in getVNF Feature method " + e.getMessage());
+		}		
+		return new ResponseEntity<List<String>>(featureList, HttpStatus.OK);
 	}
 }

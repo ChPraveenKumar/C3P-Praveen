@@ -1,14 +1,11 @@
 package com.techm.orion.service;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -20,19 +17,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.TemplateConfigBasicDetailsEntity;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
-import com.techm.orion.models.TemplateVersioningJSONModel;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.pojo.GetTemplateMngmntPojo;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.TemplateConfigBasicDetailsRepository;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
 @Service
 public class TemplateManagementDetailsService {
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-	
 	
 	@Autowired
 	private TemplateConfigBasicDetailsRepository templateConfigBasicDetailsRepository;
@@ -188,34 +182,12 @@ public class TemplateManagementDetailsService {
 
 	public String saveFinaltemplate(String templateId, String finaltemplate, String version) {
 		String result = null;
-		try {
-			TemplateManagementDetailsService.loadProperties();
-			String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
-					.getProperty("templateCreationPath");
-			if (version.equalsIgnoreCase("1.0")) {
-				TextReport.writeFile(responseDownloadPath, templateId, finaltemplate);
-			} else {
-				TextReport.writeFile(responseDownloadPath, templateId, finaltemplate);
-
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		if (version.equalsIgnoreCase("1.0")) {
+			TextReport.writeFile(TSALabels.TEMPLATE_CREATION_PATH.getValue(), templateId, finaltemplate);
+		} else {
+			TextReport.writeFile(TSALabels.TEMPLATE_CREATION_PATH.getValue(), templateId, finaltemplate);
 		}
-
 		return result;
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 
 	public List<TemplateBasicConfigurationPojo> getTemplateListData() {

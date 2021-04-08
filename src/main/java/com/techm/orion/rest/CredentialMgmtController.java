@@ -3,7 +3,6 @@ package com.techm.orion.rest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -37,9 +36,6 @@ import com.techm.orion.service.CredentialMgmtService;
 public class CredentialMgmtController {
 
 	private static final Logger logger = LogManager.getLogger(BackUpAndRestoreController.class);
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@Autowired
 	private CredentialManagementRepo credentialManagementRepo;
@@ -679,6 +675,45 @@ public class CredentialMgmtController {
 			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
 		}
 	}
+		return responseEntity;
+	}
+	
+	@POST
+	@RequestMapping(value = "/editSnmpProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	public ResponseEntity<JSONObject> editSnmpProfiles(@RequestBody String request) {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject jsonResult = credentialMgmtService.editSnmpProfile(request);
+		if (jsonResult != null) {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+	
+	@POST
+	@RequestMapping(value = "/editSshAndTelentProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	public ResponseEntity<JSONObject> editSshAndTelentProfiles(@RequestBody String request) {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject jsonResult = credentialMgmtService.editSshTelnetProfile(request);
+		if (jsonResult != null) {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+	
+	@GET
+	@RequestMapping(value = "/getAllUnAssociatedProfiles", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<JSONObject> getAllIps() {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = credentialMgmtService.getAllUnAssociatedProfiles();
+		if (json != null) {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
+		}
 		return responseEntity;
 	}
 }

@@ -33,11 +33,13 @@ import com.google.gson.Gson;
 import com.techm.orion.dao.RequestDetails;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
+import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.service.DcmConfigService;
@@ -64,6 +66,9 @@ public class GetReportData implements Observer {
 	
 	@Autowired
 	private RfoDecomposedRepository rfoDecomposedRepository;
+	
+	@Autowired
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
 	
 	@POST
@@ -133,6 +138,7 @@ public class GetReportData implements Observer {
 					}
 
 				}
+				createConfigRequestDCM.setNetworkType(requestinfo.getNetworkType());
 				dataList = reportDetailsService.getRouterConfigDetails(createConfigRequestDCM, "findDiff");
 				for (Map.Entry<String, String> entry : dataList.entrySet()) {
 					if (entry.getKey() == "previousRouterVersion") {
@@ -233,23 +239,27 @@ public class GetReportData implements Observer {
 
 		ReportDetailsService reportDetailsService = new ReportDetailsService();
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
-		String format = "false";
-		String formatColor = "false";
-		String previousRouterVersion = "";
-		String currentRouterVersion = "";
+		String previousRouterVersion = null, currentRouterVersion= null, requestID = null, version = null, networkType = null;
 
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 
 			CreateConfigRequestDCM createConfigRequestDCM = new CreateConfigRequestDCM();
-
-			createConfigRequestDCM.setRequestId(json.get("requestID").toString());
+			if(json.get("requestID") !=null)
+				requestID = json.get("requestID").toString();
+			if(json.get("version") !=null)
+				version = json.get("version").toString();
+			createConfigRequestDCM.setRequestId(requestID);
 			// createConfigRequestDCM.setTestType(json.get("testType").toString());
-			createConfigRequestDCM.setVersion_report(json.get("version").toString());
+			createConfigRequestDCM.setVersion_report(version);
 			String flag = json.get("flagForData").toString();
-
+			RequestInfoEntity requestInfo = requestInfoDetailsRepositories.findByAlphanumericReqIdAndRequestVersion
+					(requestID, Double.parseDouble(version));
+			if(requestInfo !=null)
+				networkType = requestInfo.getNetworkType();
+			createConfigRequestDCM.setNetworkType(networkType);
+			
 			Map<String, String> dataList = reportDetailsService.getRouterConfigDetails(createConfigRequestDCM, flag);
 			for (Map.Entry<String, String> entry : dataList.entrySet()) {
 				if (entry.getKey() == "previousRouterVersion") {
@@ -905,23 +915,27 @@ public class GetReportData implements Observer {
 
 		ReportDetailsService reportDetailsService = new ReportDetailsService();
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
-		String format = "false";
-		String formatColor = "false";
-		String previousRouterVersion = "";
-		String currentRouterVersion = "";
+		String previousRouterVersion = null, currentRouterVersion= null, requestID = null, version = null, networkType = null;
 
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 
 			CreateConfigRequestDCM createConfigRequestDCM = new CreateConfigRequestDCM();
-
-			createConfigRequestDCM.setRequestId(json.get("requestID").toString());
+			if(json.get("requestID") !=null)
+				requestID = json.get("requestID").toString();
+			if(json.get("version") !=null)
+				version = json.get("version").toString();
+			createConfigRequestDCM.setRequestId(requestID);
 			// createConfigRequestDCM.setTestType(json.get("testType").toString());
-			createConfigRequestDCM.setVersion_report(json.get("version").toString());
+			createConfigRequestDCM.setVersion_report(version);
 			String flag = json.get("flagForData").toString();
-
+			RequestInfoEntity requestInfo = requestInfoDetailsRepositories.findByAlphanumericReqIdAndRequestVersion
+					(requestID, Double.parseDouble(version));
+			if(requestInfo !=null)
+				networkType = requestInfo.getNetworkType();
+			createConfigRequestDCM.setNetworkType(networkType);
+			
 			Map<String, String> dataList = reportDetailsService.getStartUpConfigDetails(createConfigRequestDCM, flag);
 			for (Map.Entry<String, String> entry : dataList.entrySet()) {
 				if (entry.getKey() == "previousRouterVersion") {

@@ -3,7 +3,6 @@ package com.techm.orion.utility;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.collections.ListUtils;
 import org.apache.logging.log4j.LogManager;
@@ -29,7 +27,6 @@ import com.techm.orion.pojo.ErrorValidationPojo;
 import com.techm.orion.pojo.ParentVersionPojo;
 import com.techm.orion.pojo.PreValidateTest;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.service.TemplateManagementDetailsService;
 
 import freemarker.cache.ClassTemplateLoader;
 import freemarker.cache.FileTemplateLoader;
@@ -44,12 +41,8 @@ import freemarker.template.Template;
 public class InvokeFtl {
 	private static final Logger logger = LogManager.getLogger(InvokeFtl.class);
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-
 	@Autowired
 	public String getGeneratedConfigFile(String requestID, String version) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 		String content1 = "";
@@ -60,10 +53,10 @@ public class InvokeFtl {
 			String type = requestID.substring(0, Math.min(requestID.length(), 4));
 			String responseDownloadPath = null;
 			if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
-				responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("VnfConfigCreationPath");
+				responseDownloadPath = TSALabels.VNF_CONFIG_CREATION_PATH.getValue();
 				filePath = responseDownloadPath + requestID + "_Configuration.xml";
 			} else {
-				responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
+				responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
 				filePath = responseDownloadPath + requestID + "V" + version + "_Configuration";
 			}
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
@@ -99,20 +92,11 @@ public class InvokeFtl {
 
 	@Autowired
 	public List<String> getGeneratedBasicConfigFile(String requestID, String version) throws Exception {
-		InvokeFtl.loadProperties();
-		String content = "";
 		String filePath = "";
-		String content1 = "BASIC CONFIGURATION";
-		String withHeader = "";
-		String contentNoCmd = "";
 		List<String> lines = new ArrayList<String>();
-
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + requestID + "V" + version + "_basicConfiguration.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_basicConfiguration.txt";
 			lines = Files.readAllLines(Paths.get(filePath));
-
-			// withHeader=content1+"\r\n"+"<font color=\"red\">"+"</font>"+"\r\n"+content;
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -121,12 +105,10 @@ public class InvokeFtl {
 	}
 
 	public String getPreValidationTestResult(String requestID, String version) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + requestID + "V" + version + "_prevalidationTest.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_prevalidationTest.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -546,26 +528,24 @@ public class InvokeFtl {
 
 	public Map<String, String> getDileveryConfigFile(String requestId, String version) throws Exception {
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 		String contentPreviousVersion = "Not Completed";
 		String contentCurrentVersion = "Not Completed";
 		Map<String, String> dataList = new HashMap<String, String>();
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + requestId + "V" + version + "_deliveredConfig.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_deliveredConfig.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			dataList.put("content", content);
 
-			File file = new File(responseDownloadPath + requestId + "V" + version + "_PreviousConfig.txt");
+			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
 
 			if (file.exists()) {
 				contentPreviousVersion = "Completed";
 				dataList.put("contentPreviousVersion", contentPreviousVersion);
 			}
 
-			file = new File(responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt");
+			file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt");
 			if (file.exists()) {
 				contentCurrentVersion = "Completed";
 				dataList.put("contentCurrentVersion", contentCurrentVersion);
@@ -593,13 +573,11 @@ public class InvokeFtl {
 	}
 
 	public String getHealthCheckFile(String requestId, String version) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + requestId + "V" + version + "_HealthCheck.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_HealthCheck.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 
 		} catch (IOException e) {
@@ -609,13 +587,11 @@ public class InvokeFtl {
 	}
 
 	public String iosHealthCheckFile(String requestId, String region, String step) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder");
-			filePath = responseDownloadPath + step + "_" + requestId + "_" + region + "_HealthCheckReport.html";
+			filePath = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + step + "_" + requestId + "_" + region + "_HealthCheckReport.html";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 
 		} catch (IOException e) {
@@ -625,13 +601,11 @@ public class InvokeFtl {
 	}
 
 	public String getOthersCheckFile(String requestId, String version) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + requestId + "V" + version + "_CustomTests.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CustomTests.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 
 		} catch (IOException e) {
@@ -641,12 +615,10 @@ public class InvokeFtl {
 	}
 
 	public String getCustomerReport(String requestId, String version) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + requestId + "V" + version + "_customerReport.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_customerReport.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -655,12 +627,10 @@ public class InvokeFtl {
 	}
 
 	public String getNetworkTestFile(String requestId, String version) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + requestId + "V" + version + "_networkTest.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_networkTest.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			content = content.replace("terminal length 0", "");
 		} catch (IOException e) {
@@ -670,12 +640,10 @@ public class InvokeFtl {
 	}
 
 	public String getNetworkAuditFile(String requestId, String version) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			filePath = responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			content = content.replace("terminal length 0", "");
 		} catch (IOException e) {
@@ -685,15 +653,13 @@ public class InvokeFtl {
 	}
 
 	public String getPreviousRouterVersion(String requestId, String version) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 		String newStr = "";
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			File file = new File(responseDownloadPath + requestId + "V" + version + "_PreviousConfig.txt");
+			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
 			if (file.exists()) {
-				filePath = responseDownloadPath + requestId + "V" + version + "_PreviousConfig.txt";
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				content = content.substring(content.indexOf("run\r\n") + 5);
 				newStr = content.substring(0, content.lastIndexOf("end") + 3);
@@ -705,15 +671,13 @@ public class InvokeFtl {
 	}
 
 	public String getCurrentRouterVersion(String requestId, String version) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 		String newStr = "";
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			File file = new File(responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt");
+			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt");
 			if (file.exists()) {
-				filePath = responseDownloadPath + requestId + "V" + version + "_CurrentVersionConfig.txt";
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt";
 
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				/*
@@ -741,8 +705,7 @@ public class InvokeFtl {
 			Map<String, Object> tree = new HashMap<String, Object>();
 			tree.put("latestVersion", latestVersion);
 			tree.put("compareVersion", compareVersion);
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			String filepath = responseDownloadPath + "noconfig.txt";
+			String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "noconfig.txt";
 			File file = new File(filepath);
 			if (file.exists()) {
 				res = freemarkerDoModify(tree, "noconfig.txt");
@@ -768,8 +731,7 @@ public class InvokeFtl {
 			Map<String, Object> tree = new HashMap<String, Object>();
 			tree.put("latestVersion", latestVersion);
 			tree.put("compareVersion", compareVersion);
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			String filepath = responseDownloadPath + "createconfig.txt";
+			String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "createconfig.txt";
 			File file = new File(filepath);
 			if (file.exists()) {
 				res = freemarkerDoModify(tree, "createconfig.txt");
@@ -786,11 +748,10 @@ public class InvokeFtl {
 	}
 
 	static String freemarkerDoTemplate(Map<String, Object> datamodel, String template) throws Exception {
-		InvokeFtl.loadProperties();
+		@SuppressWarnings("deprecation")
 		Configuration cfg = new Configuration();
 		cfg.setClassForTemplateLoading(InvokeFtl.class, "/");
-		String directory = InvokeFtl.TSA_PROPERTIES.getProperty("newtemplateCreationPath");
-		FileTemplateLoader templateLoader = new FileTemplateLoader(new File(directory));
+		FileTemplateLoader templateLoader = new FileTemplateLoader(new File(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue()));
 		cfg.setTemplateLoader(templateLoader);
 
 		/*
@@ -808,7 +769,7 @@ public class InvokeFtl {
 	}
 
 	static String freemarkerDo(Map<String, Object> datamodel, String template) throws Exception {
-		InvokeFtl.loadProperties();
+		@SuppressWarnings("deprecation")
 		Configuration cfg = new Configuration();
 		ClassTemplateLoader ctl = new ClassTemplateLoader(InvokeFtl.class, "/config");
 		cfg.setTemplateLoader(ctl);
@@ -821,9 +782,9 @@ public class InvokeFtl {
 	}
 
 	static String freemarkerDoModify(Map<String, Object> datamodel, String template) throws Exception {
-		InvokeFtl.loadProperties();
+		@SuppressWarnings("deprecation")
 		Configuration cfg = new Configuration();
-		cfg.setDirectoryForTemplateLoading(new File(InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath")));
+		cfg.setDirectoryForTemplateLoading(new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()));
 		/*
 		 * ClassTemplateLoader ctl = new ClassTemplateLoader(InvokeFtl.class,
 		 * "/config");
@@ -852,18 +813,6 @@ public class InvokeFtl {
 		return res;
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
 	public void createFinalTemplate(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate,
 			List<AttribCreateConfigPojo> masterAttribute, List<AttribCreateConfigPojo> templateAttribute,
 			String templateId) {
@@ -963,6 +912,7 @@ public class InvokeFtl {
 	}
 
 	/* Ruchita Salvi */
+	@SuppressWarnings("unchecked")
 	public void createFinalTemplate(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate,
 			List<AttribCreateConfigPojo> masterAttribute, List<AttribCreateConfigPojo> templateAttribute,
 			String templateId, String apiCallType) {
@@ -1292,15 +1242,13 @@ public class InvokeFtl {
 	}
 
 	public String getStartUpRouterVersion(String requestId, String version) throws Exception {
-		InvokeFtl.loadProperties();
 		String content = "";
 		String filePath = "";
 		String newStr = "";
 		try {
-			String responseDownloadPath = InvokeFtl.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			File file = new File(responseDownloadPath + requestId + "V" + version + "_StartupConfig.txt");
+			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt");
 			if (file.exists()) {
-				filePath = responseDownloadPath + requestId + "V" + version + "_StartupConfig.txt";
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				content = content.substring(content.indexOf("run\r\n") + 5);
 				newStr = content.substring(0, content.lastIndexOf("end") + 3);
@@ -1311,6 +1259,7 @@ public class InvokeFtl {
 		return newStr;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void createFinalTemplateforBatch(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate,
 			List<AttribCreateConfigPojo> masterAttribute, List<AttribCreateConfigPojo> templateAttribute,
 			String templateId) {
@@ -1383,19 +1332,50 @@ public class InvokeFtl {
 
 		logger.info("finalCammands - " + finalCammands);
 		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);
-		try {
-			// new Template is Save in NewTemplate Folder
-			TemplateManagementDetailsService.loadProperties();
-			String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
-					.getProperty("newtemplateCreationPath");
-			logger.info("responseDownloadPath - " + responseDownloadPath);
-			// TextReport.writeFile(responseDownloadPath, templateId, finalCammands);
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 	}
+	
+	public String getPreviousRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
+		String content = "", filePath = null;
+		try {
+			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
+	
+			if (file.exists() && "VNF".equalsIgnoreCase(networkType)) {
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt";
+				content = new String(Files.readAllBytes(Paths.get(filePath)));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return content;
+	}
 
+	public String getCurrentRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
+		String content = "", filePath = null;
+		try {
+			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt");
+			if (file.exists() && "VNF".equalsIgnoreCase(networkType)) {
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt";
+
+				content = new String(Files.readAllBytes(Paths.get(filePath)));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return content;
+	}
+	
+	public String getStartUpRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
+		String content = "", filePath = null;
+		try {
+			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt");
+			if (file.exists()) {
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt";
+				content = new String(Files.readAllBytes(Paths.get(filePath)));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return content;
+	}
 }

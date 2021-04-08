@@ -7,28 +7,23 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 
+import com.techm.orion.utility.TSALabels;
+
 public class CamundaServiceFEWorkflow {
 	private static final Logger logger = LogManager
 			.getLogger(CamundaServiceFEWorkflow.class);
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@SuppressWarnings("unchecked")
 	public void initiateFEWorkflow(String templateId, String version, String approver)
 			throws IOException, JSONException {
 
-		CamundaServiceFEWorkflow.loadProperties();
-		String serverPath = CamundaServiceFEWorkflow.TSA_PROPERTIES
-				.getProperty("serverPath");
-		String query = serverPath
+		String query = TSALabels.WEB_SERVICE_URI.getValue()
 				+ "/engine-rest/process-definition/key/C3P_Template_Approval_Workflow/start ";
 
 		JSONObject obj = new JSONObject();
@@ -74,11 +69,7 @@ public class CamundaServiceFEWorkflow {
 			boolean status) {
 		try {
 			
-			CamundaServiceFEWorkflow.loadProperties();
-
-			String serverPath = CamundaServiceFEWorkflow.TSA_PROPERTIES
-					.getProperty("serverPath");
-			String query = serverPath + "/engine-rest/task/" + userTaskId
+			String query = TSALabels.WEB_SERVICE_URI.getValue() + "/engine-rest/task/" + userTaskId
 					+ "/complete";
 			JSONObject statusObj = new JSONObject();
 			JSONObject obj2 = new JSONObject();
@@ -129,23 +120,10 @@ public class CamundaServiceFEWorkflow {
 			} catch (IOException e) {
 				logger.error(e);
 			}
-		} catch (IOException e1) {
+		} catch (Exception e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread()
-				.getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
 }

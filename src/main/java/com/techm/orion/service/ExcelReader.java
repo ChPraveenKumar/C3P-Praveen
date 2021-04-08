@@ -46,7 +46,6 @@ import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.entitybeans.RouterVfEntity;
 import com.techm.orion.entitybeans.WebServiceEntity;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
-import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.DeviceFamilyRepository;
 import com.techm.orion.repositories.DeviceInterfaceRepo;
@@ -61,7 +60,7 @@ import com.techm.orion.repositories.RouterVfRepo;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.VendorRepository;
 import com.techm.orion.repositories.WebServiceRepo;
-import com.techm.orion.rest.RequestDetailsExport;
+import com.techm.orion.utility.TSALabels;
 
 /*Class to handle import (single, bulk file) validation, data save, milestone validation and communda flow invocation*/
 @Service
@@ -1202,8 +1201,6 @@ public class ExcelReader {
 		String jsonArray1 = "";
 		RequestDetailsEntity ExportList = new RequestDetailsEntity();
 
-		RequestDetailsExport.loadProperties();
-
 		JSONObject names = new JSONObject();
 		JSONObject values = new JSONObject();
 		int Datavalid = 0;
@@ -1381,8 +1378,6 @@ public class ExcelReader {
 		String TemplateList1;
 		List<String> TemplateFeatures = new ArrayList<String>();
 
-		RequestDetailsExport.loadProperties();
-
 		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
 		ExportList2 = deviceInterfaceRepo.findByRequestInfoId(request_info_id);
 		ExportList3 = internetInfoRepo.findByRequestInfoId(request_info_id);
@@ -1399,8 +1394,7 @@ public class ExcelReader {
 		String osversion = ExportList.getOs_version();
 
 		if (isNullOrEmpty(Template_id)) {
-			RequestDetailsExport.loadProperties();
-			String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("templateCreationPath") + Template_id;
+			String path = TSALabels.TEMPLATE_CREATION_PATH.getValue() + Template_id;
 			File file = new File(path);
 			String template = null;
 			DcmConfigService dcmConfigService = new DcmConfigService();
@@ -1615,15 +1609,11 @@ public class ExcelReader {
 					ExportList.setTemplateIdUsed(TemplateList);
 					logger.info("Matched Template Found for Selected features");
 					if (TemplateList != null) {
-						RequestDetailsExport.loadProperties();
-						String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("templateCreationPath")
-								+ TemplateList;
+						String path = TSALabels.TEMPLATE_CREATION_PATH.getValue()	+ TemplateList;
 						File file = new File(path);
-						String template = null;
 
 						if (file.exists()) {
 							flag = true;
-							template = "Valid";
 							obj.put(new String("Result"), "Success");
 							obj.put(new String("Message"), "");
 							TemplateSuggesstion = 1;
@@ -1685,12 +1675,6 @@ public class ExcelReader {
 		InternetInfoEntity ExportList3 = new InternetInfoEntity();
 		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
 
-		try {
-			RequestDetailsExport.loadProperties();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		List<String> Validation = validateDataFeatures(request_info_id);
 		String result = "Invalid";
 
@@ -1737,8 +1721,6 @@ public class ExcelReader {
 		String jsonArray = "";
 
 		RequestDetailsEntity ExportList = new RequestDetailsEntity();
-
-		RequestDetailsExport.loadProperties();
 
 		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
 
@@ -1811,8 +1793,6 @@ public class ExcelReader {
 		String jsonArray = "";
 
 		RequestDetailsEntity ExportList = new RequestDetailsEntity();
-
-		RequestDetailsExport.loadProperties();
 
 		ExportList = requestDetailsExportRepo.findByrequestinfoid(request_info_id);
 		String Scheduled;

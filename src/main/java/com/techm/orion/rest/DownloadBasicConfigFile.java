@@ -2,11 +2,8 @@ package com.techm.orion.rest;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
@@ -34,10 +31,6 @@ import com.techm.orion.utility.TextReport;
 @RequestMapping("/DownloadBasicConfigFile")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class DownloadBasicConfigFile {
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-
-	public static final Properties TSA_PROPERTIES = new Properties();
-	
 	@Autowired
 	private RequestInfoDetailsRepositories reository;
 	@Autowired
@@ -97,18 +90,5 @@ public class DownloadBasicConfigFile {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 }

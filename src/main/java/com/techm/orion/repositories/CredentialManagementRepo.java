@@ -34,4 +34,6 @@ public interface CredentialManagementRepo extends JpaRepository<CredentialManage
 	List<CredentialManagementEntity> findAllByOrderByCreatedDateDesc();
 
 	List<CredentialManagementEntity> findByInfoId(int infoId);
+	
+	List<CredentialManagementEntity> findByProfileNameAndProfileType(String profileName, String profileType);
 }

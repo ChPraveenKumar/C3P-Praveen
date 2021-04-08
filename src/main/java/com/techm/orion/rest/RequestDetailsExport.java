@@ -6,15 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Properties;
 import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletResponse;
@@ -44,42 +40,30 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
 import com.opencsv.CSVWriter;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.DeviceInterfaceEntity;
 import com.techm.orion.entitybeans.InternetInfoEntity;
 import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.repositories.DeviceInterfaceRepo;
 import com.techm.orion.repositories.InternetInfoRepo;
 import com.techm.orion.repositories.RequestDetailsExportRepo;
-import com.techm.orion.repositories.RouterVfRepo;
-import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.utility.TSALabels;
 
 @RestController
 @RequestMapping("/RequestDetailsExport")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
-public class RequestDetailsExport implements Observer {
+public class RequestDetailsExport {
 	private static final Logger logger = LogManager.getLogger(RequestDetailsExport.class);
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
+	@Autowired
+	private RequestDetailsExportRepo requestDetailsExportRepo;
 
 	@Autowired
-	RequestDetailsExportRepo requestDetailsExportRepo;
+	private DeviceInterfaceRepo deviceInterfaceRepo;
 
 	@Autowired
-	DeviceInterfaceRepo deviceInterfaceRepo;
+	private InternetInfoRepo internetInfoRepo;
 
-	@Autowired
-	InternetInfoRepo internetInfoRepo;
-
-	@Autowired
-	RouterVfRepo routerVfRepo;
-
-	@Autowired
-	WebServiceRepo webServiceRepo;
-
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
 
 	@GET
 	@Produces("application/vnd.ms-excel")
@@ -101,8 +85,7 @@ public class RequestDetailsExport implements Observer {
 		// WebServiceEntity ExportList5 = new WebServiceEntity();
 
 		DcmConfigService dcmConfigService = new DcmConfigService();
-		RequestDetailsExport.loadProperties();
-		String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("exportDownloadPath") + "/" + alphanumericReqId
+		String path = TSALabels.EXPORT_DOWNLOAD_PATH.getValue() + "/" + alphanumericReqId
 				+ "_RequestExport.csv";
 		File file = new File(path);
 		try {
@@ -345,8 +328,7 @@ public class RequestDetailsExport implements Observer {
 		// WebServiceEntity ExportList5 = new WebServiceEntity();
 
 		DcmConfigService dcmConfigService = new DcmConfigService();
-		RequestDetailsExport.loadProperties();
-		String path = RequestDetailsExport.TSA_PROPERTIES.getProperty("exportDownloadPath") + "/" + alphanumericReqId
+		String path = TSALabels.EXPORT_DOWNLOAD_PATH.getValue() + "/" + alphanumericReqId
 				+ "_RequestExport.xlsx";
 		File file = new File(path);
 		try {
@@ -673,25 +655,6 @@ public class RequestDetailsExport implements Observer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
 
 	}
 

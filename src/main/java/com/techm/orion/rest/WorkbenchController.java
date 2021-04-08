@@ -2,9 +2,6 @@ package com.techm.orion.rest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Properties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Response;
@@ -27,21 +24,19 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/workbench")
-public class WorkbenchController implements Observer {
+public class WorkbenchController {
 	private static final Logger logger = LogManager.getLogger(WorkbenchController.class);
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
+	@Autowired
+	private RequestInfoDetailsRepositories repo;
 
 	@Autowired
-	RequestInfoDetailsRepositories repo;
-
-	@Autowired
-	DeviceDiscoveryRepository deviceInforepo;
+	private DeviceDiscoveryRepository deviceInforepo;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
+	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
@@ -80,11 +75,5 @@ public class WorkbenchController implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-
-	}
-
+	
 }

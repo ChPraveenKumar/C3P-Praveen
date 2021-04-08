@@ -5,7 +5,6 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -13,10 +12,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
-import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,8 +37,6 @@ public class ODLClient {
 	private String ODL_CONTENT_TYPE = null;
 	private String ODL_USER_CREDENTIALS = "admin:admin";
 	private String ODL_AUTH = "Basic " + new String(Base64.getEncoder().encode(ODL_USER_CREDENTIALS.getBytes()));
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 
 	public String doPostNetworkTopology(String endpoint, String requestBody, String contentType) {
 		String output = null;
@@ -199,7 +193,6 @@ public class ODLClient {
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
 		try {
-			ODLClient.loadProperties();
 
 			url = new URL(ODL_URL);
 
@@ -238,10 +231,10 @@ public class ODLClient {
 
 			String filepath = null;
 			if (step.equalsIgnoreCase("previous")) {
-				filepath = ODLClient.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestID + "V"
+				filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V"
 						+ version + "_PreviousConfig.txt";
 			} else {
-				filepath = ODLClient.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestID + "V"
+				filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V"
 						+ version + "_CurrentVersionConfig.txt";
 			}
 
@@ -270,19 +263,6 @@ public class ODLClient {
 			e.printStackTrace();
 		}
 		return result;
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 
 	public boolean doPUTDilevary(String requestId, String version, String url, String content) {

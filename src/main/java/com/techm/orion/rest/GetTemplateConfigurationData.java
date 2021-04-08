@@ -9,8 +9,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -48,11 +46,12 @@ import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementDetailsService;
+import com.techm.orion.utility.TSALabels;
 
 @Controller
 @RequestMapping("/GetTemplateConfigurationData")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
-public class GetTemplateConfigurationData implements Observer {
+public class GetTemplateConfigurationData {
 	private static final Logger logger = LogManager.getLogger(GetTemplateConfigurationData.class);
 
 	@Autowired
@@ -653,12 +652,6 @@ public class GetTemplateConfigurationData implements Observer {
 
 	}
 
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
-
-	}
-
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -743,11 +736,8 @@ public class GetTemplateConfigurationData implements Observer {
 				GetTemplateMngmntPojo getTemplateMngmntPojo = new GetTemplateMngmntPojo();
 				List<GetTemplateMngmntPojo> list = new ArrayList<GetTemplateMngmntPojo>();
 				getTemplateMngmntPojo.setTemplateid(json.get("templateid").toString().replace("-", "_"));
-				TemplateManagementDetailsService.loadProperties();
-				String responseDownloadPath = TemplateManagementDetailsService.TSA_PROPERTIES
-						.getProperty("templateCreationPath");
 
-				List<String> lines = Files.readAllLines(Paths.get(responseDownloadPath + json.get("templateid").toString().replace("-", "_")));
+				List<String> lines = Files.readAllLines(Paths.get(TSALabels.TEMPLATE_CREATION_PATH.getValue() + json.get("templateid").toString().replace("-", "_")));
 				List<CommandPojo> listShow = new ArrayList<CommandPojo>();
 
 				for (int i = 0; i < lines.size(); i++) {

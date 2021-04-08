@@ -1,17 +1,25 @@
 package com.techm.orion.rest;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +32,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.entitybeans.Notification;
+import com.techm.orion.entitybeans.VNFTemplateEntity;
 import com.techm.orion.models.TemplateCommandJSONModel;
 import com.techm.orion.pojo.DeviceDetailsPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.repositories.NotificationRepo;
+import com.techm.orion.repositories.VNFTemplateRepository;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementNewService;
+import com.techm.orion.utility.TSALabels;
 
 @Controller
 @RequestMapping("/TemplateManagementService")
@@ -46,8 +57,10 @@ public class TemplateManagementService implements Observer {
 	private TemplateManagementNewService templateManagmentService;
 	
 	@Autowired
-	private NotificationRepo notificationRepo;
-
+	private NotificationRepo notificationRepo;	
+	
+	@Autowired
+	private VNFTemplateRepository vnfTemplateRepo;	
 	/**
 	 *This Api is marked as ***************External Api Impacted****************
 	 **/
@@ -220,6 +233,42 @@ public class TemplateManagementService implements Observer {
 		}
 		return new ResponseEntity<JSONObject>(basicDeatilsOfTemplate, HttpStatus.OK);
 	}
+	
+	
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/getTemplateCommand", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<JSONObject> getTemplateCommand(@RequestBody String request) {
+		JSONObject object =  new JSONObject();
+		String xmlComands ="";
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(request);
+			if(json.containsKey("templateId") && json.get("templateId")!=null) {
+				String templateId =json.get("templateId").toString();
+				templateId = StringUtils.substringBefore(templateId,".yang");
+				xmlComands  = templateManagmentService.getCommands(templateId);
+			}
+		} catch (Exception e) {
+			logger.error("Command Not found and Exception occured due to"+e.getMessage());
+		}
+		object.put("xmlOutput", xmlComands);
+		return new ResponseEntity<JSONObject>(object, HttpStatus.OK);
+	}
+	
+	@GET
+	@RequestMapping(value = "/getVFNDashboard", method = RequestMethod.GET)
+	@ResponseBody
+	public ResponseEntity<JSONArray> getVFNDashboard() {	
+		JSONArray array = new JSONArray();			
+		List<VNFTemplateEntity>dbList=new ArrayList<VNFTemplateEntity>();
+		dbList=vnfTemplateRepo.findAll();
+		for (int i=0; i < dbList.size(); i++) {
+			array.add(dbList.get(i).getJSONObject());
+		}
+		return new ResponseEntity<JSONArray>(array, HttpStatus.OK);
+	}	
 
 	@Override
 	public void update(Observable o, Object arg) {

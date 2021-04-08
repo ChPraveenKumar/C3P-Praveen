@@ -1,55 +1,305 @@
 package com.techm.orion.service;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.json.JSONException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
+import com.techm.orion.dao.RequestInfoDetailsDao;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.entitybeans.RequestInfoEntity;
+import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.utility.TSALabels;
 
+@Service
 public class VnfInstantiationMilestoneService {
-	
+	private static final Logger logger = LogManager.getLogger(VnfInstantiationMilestoneService.class);
+	@Autowired
+	private RestTemplate restTemplate;
+	@Autowired
+	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	@Autowired
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+	@Autowired
+	private RequestInfoDetailsDao requestInfoDetailsDao;
+	private static final String OPENSTACK_CLOUD = "OpenStack";
+
 	@SuppressWarnings("unchecked")
-	public JSONObject callPython(String requestId, String version) throws IOException, JSONException, ParseException {
+	public boolean vnfInstantiation(String requestId, String version) {
+		logger.info("Start - vnfInstantiation");
+		boolean vnfInstantiated = false;
+		HttpHeaders headers = null;
+		JSONObject reqInstatiation = null;
+		JSONParser jsonParser = null;
+		try {
+			headers = new HttpHeaders();
+			reqInstatiation = new JSONObject();
+			jsonParser = new JSONParser();
+			reqInstatiation.put(new String("requestId"), requestId);
+			reqInstatiation.put(new String("version"), version);
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(reqInstatiation, headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue() + "C3P/api/ResourceFunction/Cloud/compute/instances/";
+			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			JSONObject responseJson = (JSONObject) jsonParser.parse(response);
+			if (responseJson.containsKey("workflow_status") && responseJson.get("workflow_status") != null
+					&& "true".equalsIgnoreCase(responseJson.get("workflow_status").toString())) {
+				vnfInstantiated = true;
+				/*
+				 * If in case of OpenStack VNF Instantiation then we need to trigger a service
+				 * call to fetch the VNF instance details separately.
+				 */
+				ResourceCharacteristicsHistoryEntity resCharHistEntity = resourceCharHistoryRepo
+						.findCloudPlatform(requestId);
+				if (resCharHistEntity != null && OPENSTACK_CLOUD.equalsIgnoreCase(resCharHistEntity.getRcValue())) {
+					vnfInstantiated = updateVNFInstanceDetails(requestId, resCharHistEntity.getDeviceId());
+				}
+			}
 
-		String serverPath= TSALabels.PYTHON_SERVICES.getValue();
-		String query = serverPath + "C3P/api/ResourceFunction/GCP/compute/instances/";
+		} catch (ParseException exe) {
+			logger.error("ParseException - vnfInstantiation -> " + exe.getMessage());
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - vnfInstantiation -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - vnfInstantiation->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		logger.info("End - vnfInstantiation - vnfInstantiated ->" + vnfInstantiated);
+		return vnfInstantiated;
+	}
 
-		JSONObject obj = new JSONObject();
+	/**
+	 * This method is useful to update the VNF Instantiation details by pulling the
+	 * instance details until the instance status in active.
+	 * 
+	 * @param requestId
+	 */
+	private boolean updateVNFInstanceDetails(String requestId, int deviceId) {
+		logger.info("Start - updateVNFInstanceDetails");
+		boolean isUpdate = false;
+		String imageInstanceId = requestInfoDetailsDao.fetchImageInstanceFromDeviceExt(String.valueOf(deviceId));
+		if (imageInstanceId != null && !imageInstanceId.isEmpty()) {
+			logger.info("updateVNFInstanceDetails- getrImageInstanceId->" + imageInstanceId);
+			Map<String, String> ipDetails = fetchIpDetails(imageInstanceId);
+			if (ipDetails != null) {
+				String ipAddress = ipDetails.get("ipAddress");
+				String macAddress = ipDetails.get("macAddress");
 
-		obj.put(new String("requestId"), requestId);
+				if (ipAddress != null && !ipAddress.isEmpty()) {
+					// Store the ipDetails in c3p_deviceinfo table
+					DeviceDiscoveryEntity deviceInfo = deviceDiscoveryRepository.findBydId(deviceId);
+					if (deviceInfo != null) {
+						deviceInfo.setdMgmtIp(ipAddress);
+						deviceInfo.setdMACAddress(macAddress);
+						deviceDiscoveryRepository.save(deviceInfo);
+						isUpdate = true;
+					}
 
-		obj.put(new String("version"), version);
+					// Store the ManagmentIP in c3p_t_request_info table
+					List<RequestInfoEntity> requestInfos = requestInfoDetailsRepositories
+							.findAllByAlphanumericReqId(requestId);
+					if (requestInfos != null && requestInfos.size() > 0) {
+						RequestInfoEntity requestInfo = requestInfos.get(0);
+						requestInfo.setManagmentIP(ipAddress);
+						requestInfoDetailsRepositories.save(requestInfo);
+						isUpdate = true;
+					}
+				}
 
+			}
+		}
+		logger.info("End - updateVNFInstanceDetails - isUpdate->" + isUpdate);
+		return isUpdate;
+	}
 
-		URL url = new URL(query);
-		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-		conn.setConnectTimeout(5000);
-		conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-		conn.setDoOutput(true);
-		conn.setDoInput(true);
-		conn.setRequestMethod("POST");
+	/**
+	 * This method will fetches the IP and MAC Address details during VNF
+	 * instantiation process
+	 * 
+	 * @param imageInstanceId
+	 * @return ipDetails
+	 */
+	private Map<String, String> fetchIpDetails(String imageInstanceId) {
+		Map<String, String> ipDetails = null;
+		try {
+			String activeResponse = fetchServerDetails(imageInstanceId);
+			if (activeResponse != null) {
+				JSONObject activeServJson = (JSONObject) new JSONParser().parse(activeResponse);
+				if (activeServJson.containsKey("addresses") && activeServJson.get("addresses") != null) {
+					JSONObject addressesObj = (JSONObject) activeServJson.get("addresses");
+					logger.info("fetchInstanceDetails - addressesObj ->" + addressesObj);
+					@SuppressWarnings("unchecked")
+					Set<String> keys = addressesObj.keySet();
+					for (String key : keys) {
+						logger.info("fetchInstanceDetails - key ->" + key);
+						logger.info("fetchInstanceDetails - value ->" + addressesObj.get(key));
+						JSONArray addressArray = (JSONArray) addressesObj.get(key);
+						if (addressArray != null && !addressArray.isEmpty()) {
+							for (int i = 0; i < addressArray.size(); i++) {
+								JSONObject addsObject = (JSONObject) addressArray.get(i);
+								if (ipDetails == null) {
+									ipDetails = new HashMap<String, String>();
+								}
+								if (addsObject.containsKey("addr") && addsObject.get("addr") != null) {
+									ipDetails.put("ipAddress", addsObject.get("addr").toString());
+								}
+								if (addsObject.containsKey("OS-EXT-IPS-MAC:mac_addr")
+										&& addsObject.get("OS-EXT-IPS-MAC:mac_addr") != null) {
+									ipDetails.put("macAddress", addsObject.get("OS-EXT-IPS-MAC:mac_addr").toString());
+								}
+							}
+						}
+					}
+				}
+			}
+		} catch (ParseException exe) {
+			logger.error("ParseException - fetchServerDetails -> " + exe.getMessage());
+		}
 
-		OutputStream os = conn.getOutputStream();
-		os.write(obj.toString().getBytes("UTF-8"));
-		os.close();
+		return ipDetails;
+	}
 
-		// read the response
-		InputStream in = new BufferedInputStream(conn.getInputStream());
-		String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-		//String result="{\"output\": true}";
-		JSONObject jsonObject = new JSONObject();
-		JSONParser parser = new JSONParser();  
-		jsonObject = (JSONObject) parser.parse(result);  
-		//in.close();
-		//conn.disconnect();
-		return jsonObject;
+	/**
+	 * This method will fetches the server details during VNF instantiation process
+	 * 
+	 * @param imageInstanceId
+	 * @return activeResponse
+	 */
+	private String fetchServerDetails(String imageInstanceId) {
+		JSONParser jsonParser = null;
+		String response = null;
+		String activeResponse = null;
+		int serviceCycles = 9;
+		try {
+			jsonParser = new JSONParser();
+			response = fetchInstanceDetails(imageInstanceId);
+			if (response != null) {
+				JSONObject responseJson = (JSONObject) jsonParser.parse(response);
+				logger.info("fetchServerDetails - responseJson ->" + responseJson);
+				if (responseJson.containsKey("server") && responseJson.get("server") != null) {
+					JSONObject serverObj = (JSONObject) responseJson.get("server");
+					if (serverObj.containsKey("status") && serverObj.get("status") != null) {
+						if ("ACTIVE".equals(serverObj.get("status"))) {
+							activeResponse = serverObj.toJSONString();
+						} else {
+							// Trigger recursive calls until the server status changes to ACTIVE or else for
+							// 3 Minutes.
+							for (int i = 0; serviceCycles > i; i++) {
+								threadSleep(20);
+								activeResponse = recursiveFetchServerDetails(imageInstanceId);
+								if (activeResponse != null) {
+									break;
+								}
+							}
+						}
+					}
+
+				}
+			}
+
+		} catch (ParseException exe) {
+			logger.error("ParseException - fetchServerDetails -> " + exe.getMessage());
+		}
+		return activeResponse;
+	}
+
+	/**
+	 * This method is useful to call the fetch server details until the status of
+	 * the server is ACTIVE or else wait for max of 3 Minutes.
+	 * 
+	 * @param imageInstanceId
+	 * @return activeResponse
+	 */
+	private String recursiveFetchServerDetails(String imageInstanceId) {
+		String activeResponse = null;
+		JSONParser jsonParser = null;
+		String response = null;
+		try {
+			jsonParser = new JSONParser();
+			response = fetchInstanceDetails(imageInstanceId);
+			if (response != null) {
+				JSONObject responseJson = (JSONObject) jsonParser.parse(response);
+				logger.info("recursiveFetchServerDetails - responseJson ->" + responseJson);
+				if (responseJson.containsKey("server") && responseJson.get("server") != null) {
+					JSONObject serverObj = (JSONObject) responseJson.get("server");
+					if (serverObj.containsKey("status") && serverObj.get("status") != null) {
+						if ("ACTIVE".equals(serverObj.get("status"))) {
+							activeResponse = serverObj.toJSONString();
+						} else {
+							logger.info("recursiveFetchServerDetails - server status ->"
+									+ serverObj.get("status").toString());
+						}
+					}
+				}
+			}
+
+		} catch (ParseException exe) {
+			logger.error("ParseException - recursiveFetchServerDetails -> " + exe.getMessage());
+		}
+		return activeResponse;
+	}
+
+	/**
+	 * This method is useful to fetch the instance details based on image instance
+	 * id from a service call
+	 * 
+	 * @param imageInstanceId
+	 * @return response
+	 */
+	private String fetchInstanceDetails(String imageInstanceId) {
+		logger.info("Start - fetchInstanceDetails");
+		String response = null;
+		HttpHeaders headers = null;
+		JSONObject reqInstatiation = null;
+		try {
+			headers = new HttpHeaders();
+			reqInstatiation = new JSONObject();
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(reqInstatiation, headers);
+			StringBuilder urlBuilder = new StringBuilder();
+			urlBuilder.append(TSALabels.PYTHON_SERVICES.getValue());
+			urlBuilder.append("C3P/api/ResourceFunction/OpenStack/compute/servers/");
+			urlBuilder.append(imageInstanceId);
+			logger.info("fetchInstanceDetails - urlBuilder ->" + urlBuilder);
+			response = new RestTemplate().exchange(urlBuilder.toString(), HttpMethod.GET, entity, String.class)
+					.getBody();
+
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - fetchInstanceDetails -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - fetchInstanceDetails->" + exe.getMessage());
+		}
+		logger.info("fetchInstanceDetails -  ->" + response);
+		return response;
+	}
+
+	/**
+	 * This method is useful to keep the process on sleep/hold for a specified time.
+	 * 
+	 * @param timeInSecs
+	 */
+	private void threadSleep(int timeInSecs) {
+		try {
+			Thread.sleep(1000 * timeInSecs);
+		} catch (InterruptedException exe) {
+			logger.error("InterruptedException - threadSleep - " + exe.getMessage());
+		}
 	}
 }

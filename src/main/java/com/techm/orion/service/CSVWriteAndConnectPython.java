@@ -5,27 +5,21 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
+import com.techm.orion.utility.TSALabels;
 
 public class CSVWriteAndConnectPython {
 	private static final Logger logger = LogManager.getLogger(CSVWriteAndConnectPython.class);
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-
 	public String ReadWriteAndConnectAnalyser(CreateConfigRequest configRequest) throws IOException {
-		CSVWriteAndConnectPython.loadProperties();
-		String analyserPath = CSVWriteAndConnectPython.TSA_PROPERTIES.getProperty("analyserPath");
-		PrintWriter pw = new PrintWriter(new File(analyserPath + "/SOThrData.csv"));
+		PrintWriter pw = new PrintWriter(new File(TSALabels.ANALYSER_PATH.getValue() + "/SOThrData.csv"));
 
 		StringBuilder sb = new StringBuilder();
 
@@ -50,7 +44,7 @@ public class CSVWriteAndConnectPython {
 		try {
 			p = builder.start();
 			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
-			p_stdin.write("cd " + analyserPath);
+			p_stdin.write("cd " + TSALabels.ANALYSER_PATH.getValue());
 			p_stdin.newLine();
 			p_stdin.flush();
 			p_stdin.write("python testing.py");
@@ -63,7 +57,7 @@ public class CSVWriteAndConnectPython {
 			}
 
 			BufferedReader br = new BufferedReader(
-					new FileReader(analyserPath + "/SOTrainingData_C3P_Throughput_data.csv"));
+					new FileReader(TSALabels.ANALYSER_PATH.getValue() + "/SOTrainingData_C3P_Throughput_data.csv"));
 			while ((line = br.readLine()) != null) {
 
 				// use comma as separator
@@ -83,24 +77,9 @@ public class CSVWriteAndConnectPython {
 
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
 	/* method overloding for UIRevamp */
 	public String ReadWriteAndConnectAnalyser(RequestInfoPojo requestinfo) throws IOException {
-		CSVWriteAndConnectPython.loadProperties();
-		String analyserPath = CSVWriteAndConnectPython.TSA_PROPERTIES.getProperty("analyserPath");
-		PrintWriter pw = new PrintWriter(new File(analyserPath + "/SOThrData.csv"));
+		PrintWriter pw = new PrintWriter(new File(TSALabels.ANALYSER_PATH.getValue() + "/SOThrData.csv"));
 
 		StringBuilder sb = new StringBuilder();
 
@@ -125,7 +104,7 @@ public class CSVWriteAndConnectPython {
 		try {
 			p = builder.start();
 			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
-			p_stdin.write("cd " + analyserPath);
+			p_stdin.write("cd " + TSALabels.ANALYSER_PATH.getValue());
 			p_stdin.newLine();
 			p_stdin.flush();
 			p_stdin.write("python testing.py");
@@ -138,7 +117,7 @@ public class CSVWriteAndConnectPython {
 			}
 
 			BufferedReader br = new BufferedReader(
-					new FileReader(analyserPath + "/SOTrainingData_C3P_Throughput_data.csv"));
+					new FileReader(TSALabels.ANALYSER_PATH.getValue() + "/SOTrainingData_C3P_Throughput_data.csv"));
 			while ((line = br.readLine()) != null) {				
 				// use comma as separator
 				String[] throuhput = line.split(cvsSplitBy);

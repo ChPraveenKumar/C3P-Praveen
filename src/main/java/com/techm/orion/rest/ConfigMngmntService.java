@@ -559,7 +559,7 @@ public class ConfigMngmntService implements Observer {
 						+ "\n");
 			}
 
-			if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase(
+			if (!requestType.equals("SLGB") && configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase(
 					"VNF")) {
 				configReqToSendToC3pCode.setVnfConfig(json.get("vnfConfig")
 						.toString());

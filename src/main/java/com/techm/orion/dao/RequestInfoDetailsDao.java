@@ -289,6 +289,7 @@ public class RequestInfoDetailsDao {
 				pojo.setStatus(entity.getStatus());
 				pojo.setNetworkType(entity.getNetworkType());
 				pojo.setRequestCreatorName(entity.getRequestCreatorName());
+				pojo.setStartUp(entity.getStartUp());
 			}
 		} catch (Exception e) {
 			logger.error(e);
@@ -518,8 +519,10 @@ public class RequestInfoDetailsDao {
 
 		BackupCurrentRouterConfigurationService service = new BackupCurrentRouterConfigurationService();
 		boolean backupdone = false;
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		try {
-			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = requestinfo.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
 					.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
@@ -529,13 +532,8 @@ public class RequestInfoDetailsDao {
 			String user = routerCredential.getLoginRead();
 			String password = routerCredential.getPasswordWrite();
 
-			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
-			JSch jsch = new JSch();
-
-			
-			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(port));
+			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -578,7 +576,6 @@ public class RequestInfoDetailsDao {
 		catch (Exception ex) {
 			String response = "";
 			try {
-				BackupCurrentRouterConfigurationService.loadProperties();
 				editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
@@ -586,6 +583,24 @@ public class RequestInfoDetailsDao {
 						+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt", response,null);
 			} catch (Exception e) {
 				e.printStackTrace();
+			}
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+					session = channel.getSession();
+
+					if (channel.getExitStatus() == -1) {
+
+						Thread.sleep(5000);
+
+					}
+				} catch (Exception e) {
+					logger.error("Exception in getRouterConfig" +e.getMessage());
+				}
+				channel.disconnect();
+				session.disconnect();
 			}
 		}
 		return backupdone;
@@ -644,5 +659,29 @@ public class RequestInfoDetailsDao {
 		WebServiceEntity entity=webservicerepo.findTextFoundDeliveryTestByAlphanumericReqIdAndVersion(requestid,version);
 		reason=entity.getTextFoundDeliveryTest();
 		return reason;
+	}
+	
+	/**
+	 * This method is useful to fetch the Image instance information from
+	 * c3p_deviceinfo_ext table.
+	 * 
+	 * @param deviceId
+	 * @return imageInstanceId
+	 */
+	public String fetchImageInstanceFromDeviceExt(String deviceId) {
+		String imageInstanceId = null;
+		String sqlQuery = "select r_imageInstanceId from c3p_deviceinfo_ext where r_device_id = ?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
+			preparedStmt.setString(1, deviceId);
+			ResultSet rs = preparedStmt.executeQuery();
+
+			while (rs.next()) {
+				imageInstanceId = rs.getString("r_imageInstanceId");
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in fetchImageInstanceFromDeviceExt method " + exe.getMessage());
+		}
+		return imageInstanceId;
 	}
 }

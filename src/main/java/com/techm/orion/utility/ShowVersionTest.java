@@ -115,10 +115,11 @@ public class ShowVersionTest {
 		ShowVersionTest.loadProperties();
 		String port = ShowVersionTest.PROPERTIES.getProperty("portSSH");
 		String osversionOnDevice = null;
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		try {
-			JSch jsch = new JSch();
-			Channel channel = null;
-			Session session = jsch.getSession(username, ip, Integer.parseInt(port));
+			session = jsch.getSession(username, ip, Integer.parseInt(port));
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
@@ -146,18 +147,32 @@ public class ShowVersionTest {
 			channel.disconnect();
 			session.disconnect();
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSchException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			osversionOnDevice = "JSchException";
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally {
+
+			if (channel != null) {
+				try {
+					session = channel.getSession();
+
+					if (channel.getExitStatus() == -1) {
+
+						Thread.sleep(5000);
+
+					}
+				} catch (Exception e) {
+					logger.error("Exception in versionInfo" +e.getMessage());
+				}
+				channel.disconnect();
+				session.disconnect();
+			}
 		}
 		return osversionOnDevice;
 	}

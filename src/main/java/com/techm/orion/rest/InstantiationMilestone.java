@@ -1,6 +1,5 @@
 package com.techm.orion.rest;
 
-import java.io.IOException;
 import java.util.Arrays;
 
 import javax.ws.rs.POST;
@@ -13,7 +12,6 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -49,6 +47,8 @@ public class InstantiationMilestone extends Thread {
 	private RestTemplate restTemplate;
 	@Autowired
 	private RfoDecomposedRepository rfoDecomposedRepo;
+	@Autowired
+	private VnfInstantiationMilestoneService vnfInstantiationMilestoneService;
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -57,85 +57,62 @@ public class InstantiationMilestone extends Thread {
 	@POST
 	@RequestMapping(value = "/performInstantiation", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public JSONObject performInstantiation(@RequestBody String request) throws ParseException {
-
-		JSONObject obj = new JSONObject();
-		String jsonArray = "";
-		Boolean value = false;
-
-		JSONParser parser = new JSONParser();
-		JSONObject json = (JSONObject) parser.parse(request);
-
-		String requestId = json.get("requestId").toString();
-		String version = json.get("version").toString();
-
-		String type = requestId.substring(0, Math.min(requestId.length(), 4));
-		
-		if (("SNAI").equalsIgnoreCase(type)) {
-			RequestInfoPojo requestinfo = new RequestInfoPojo();
-
-			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(
-					requestId, version);
-			//Call python API for Instantiation
-			requestDao.editRequestforReportWebserviceInfo(
-					requestinfo.getAlphanumericReqId(),
-					Double.toString(requestinfo
-							.getRequestVersion()),
-					"instantiation", "4", "In Progress");
-			VnfInstantiationMilestoneService service=new VnfInstantiationMilestoneService();
-			try {
-				JSONObject output=service.callPython(requestId, version);
-				String out=output.get("workflow_status").toString();
-				if(out.equalsIgnoreCase("true"))
-				{
-					value=true;
+	public JSONObject performInstantiation(@RequestBody String request) {
+		logger.info("Start - performInstantiation");
+		JSONObject response = new JSONObject();
+		RequestInfoPojo requestinfo = null;
+		JSONParser jsonParser = null;
+		String requestId = null;
+		String version = null;
+		String type = null;
+		boolean outputStatus = false;
+		try {
+			jsonParser = new JSONParser();
+			JSONObject requestJson = (JSONObject) jsonParser.parse(request);
+			if (requestJson.containsKey("requestId") && requestJson.get("requestId") != null) {
+				requestId = requestJson.get("requestId").toString();
+				if (requestId.length() > 3) {
+					type = requestId.substring(0, Math.min(requestId.length(), 4));
 				}
-				else
-				{
-					value=false;
-					requestDao.editRequestforReportWebserviceInfo(
-							requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo
-									.getRequestVersion()),
-							"instantiation", "2", "Failure");
-				}
-			} catch (JSONException e) {
-				// TODO Auto-generated catch block
-				value=false;
-				requestDao.editRequestforReportWebserviceInfo(
-						requestinfo.getAlphanumericReqId(),
-						Double.toString(requestinfo
-								.getRequestVersion()),
-						"instantiation", "2", "Failure");
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				value=false;
-				requestDao.editRequestforReportWebserviceInfo(
-						requestinfo.getAlphanumericReqId(),
-						Double.toString(requestinfo
-								.getRequestVersion()),
-						"instantiation", "2", "Failure");
-				e.printStackTrace();
 			}
-			//Call the python API
-			
-			requestDao.editRequestforReportWebserviceInfo(
-					requestinfo.getAlphanumericReqId(),
-					Double.toString(requestinfo
-							.getRequestVersion()),
-					"instantiation", "1", "In Progress");
-			jsonArray = new Gson().toJson(value);
-			obj.put(new String("output"), jsonArray);
-			
-		} else {
-			value = true;
-			jsonArray = new Gson().toJson(value);
-			obj.put(new String("output"), jsonArray);
+			if (requestJson.containsKey("version") && requestJson.get("version") != null) {
+				version = requestJson.get("version").toString();
+			}
 
+			if (requestId != null && version != null) {
+				if ("SNAI".equalsIgnoreCase(type)) {
+					requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
+					if (requestinfo != null) {
+						/* Update the Instantiation status in webserviceinfo */
+						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "instantiation", "4", "In Progress");
+						/* Call the vnfInstantiation to instantiate vnf in cloud */
+						outputStatus = vnfInstantiationMilestoneService.vnfInstantiation(requestId, version);
+						if (outputStatus) {
+							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "instantiation", "1",
+									"In Progress");
+						} else {
+							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "instantiation", "2", "Failure");
+						}
+					}
+				} else {
+					logger.info("performInstantiation - type (" + type + ") is not valid for performInstantiation");
+					outputStatus = true;
+				}
+			} else {
+				logger.info("performInstantiation - Missing mandatory inputs (requestId or version) in the request.");
+			}
+
+			String jsonArray = new Gson().toJson(outputStatus);
+			response.put(new String("output"), jsonArray);
+
+		} catch (ParseException exe) {
+			logger.info("Exception - " + exe.getMessage());
 		}
-		
-		return obj;
+		logger.info("End - performInstantiation");
+		return response;
 	}
 
 	/**
@@ -149,7 +126,7 @@ public class InstantiationMilestone extends Thread {
 	@POST
 	@RequestMapping(value = "/pushMilestoneInfo", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public JSONObject pushMilestoneInfo(@RequestBody String request) throws ParseException {
+	public JSONObject pushMilestoneInfo(@RequestBody String request) {
 		logger.info("Start - pushMilestoneInfo");
 		JSONObject outputObj = new JSONObject();
 		boolean isUpdate = false;
