@@ -7,8 +7,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Properties;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +29,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -39,8 +52,6 @@ import com.techm.orion.utility.TextReport;
 public class BackupCurrentRouterConfigurationService extends Thread {
 	private static final Logger logger = LogManager.getLogger(BackupCurrentRouterConfigurationService.class);
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 	CreateConfigRequestDCM configRequest = new CreateConfigRequestDCM();
 	
 	@Autowired
@@ -58,7 +69,6 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 		Channel channel = null;
 		Session session = null;
 		try {
-			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
 					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
@@ -66,9 +76,8 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 					deviceDetails);
 			String user = routerCredential.getLoginRead();
 			String password = routerCredential.getPasswordWrite();
-			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
-			session = jsch.getSession(user, host, Integer.parseInt(port));
+			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -117,15 +126,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			channel.disconnect();
 			session.disconnect();
 			String response = "";
-			String responseDownloadPath = "";
 			try {
 				requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
 						Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
-				responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-						.getProperty("responseDownloadPath");
 				TextReport.writeFile(
-						responseDownloadPath, configRequest.getRequestId() + "V"
+						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 								+ Double.toString(configRequest.getRequest_version()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
@@ -164,7 +170,6 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		boolean backupdone = false;
 		try {
-			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
 					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
@@ -172,11 +177,10 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 					deviceDetails);
 			String user = routerCredential.getLoginRead();
 			String password = routerCredential.getPasswordWrite();
-			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(port));
+			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -219,15 +223,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 		catch (Exception ex) {
 			String response = "";
-			String responseDownloadPath = "";
 			try {
 				requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
 						Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
-				responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-						.getProperty("responseDownloadPath");
 				TextReport.writeFile(
-						responseDownloadPath, configRequest.getRequestId() + "V"
+						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 								+ Double.toString(configRequest.getRequest_version()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
@@ -255,8 +256,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				String filepath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-						.getProperty("responseDownloadPath") + requestID + "V" + version + "_PreviousConfig.txt";
+				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_PreviousConfig.txt";
 				File file = new File(filepath);
 
 				// if file doesnt exists, then create it
@@ -302,8 +302,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				String filepath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-						.getProperty("responseDownloadPath") + requestID + "V" + version + "_StartupConfig.txt";
+				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_StartupConfig.txt";
 				File file = new File(filepath);
 
 				// if file doesnt exists, then create it
@@ -349,8 +348,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				String filepath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty(
-						"responseDownloadPath") + requestID + "V" + version + "_CurrentVersionConfig.txt";
+				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_CurrentVersionConfig.txt";
 				System.out.println("File path for current "+filepath);
 				File file = new File(filepath);
 
@@ -382,50 +380,19 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
-	@SuppressWarnings("unchecked")
 	public boolean getRouterConfig(RequestInfoPojo configRequest, String routerVersionType) {
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		boolean backupdone = false;
 		try {
-			if ("VNF".equalsIgnoreCase(configRequest.getNetworkType())) {
-				RestTemplate restTemplate = new RestTemplate();
-				JSONObject request = new JSONObject();
-				request.put(new String("ip"), configRequest.getManagementIp());
-				request.put(new String("port"), TSALabels.BACKUP_PORT.getValue());
-				request.put(new String("source"), "running");
-				request.put(new String("requestId"), configRequest.getAlphanumericReqId());
-				request.put(new String("stage"), "previous");
-				request.put(new String("version"), configRequest.getRequestVersion());
-	            request.put(new String("hostname"), configRequest.getHostname());
-	            request.put(new String("filePath"), TSALabels.RESPONSE_DOWNLOAD_PATH.getValue());
-				HttpHeaders headers = new HttpHeaders();
-				headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-				HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
-				String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_BACKUP.getValue();
-				String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
-				if (response != null) {
-					backupdone = true;
-				} else {
-					backupdone = false;
-				}
+			if ("VNF".equalsIgnoreCase(configRequest.getNetworkType()) && configRequest.getAlphanumericReqId() !=null 
+					&& configRequest.getRequestVersion() !=null && configRequest.getManagementIp() !=null
+					&& configRequest.getHostname() !=null && routerVersionType !=null) {
+				backupdone = vnfBackup(configRequest.getAlphanumericReqId(), configRequest.getRequestVersion(),
+						configRequest.getManagementIp(), configRequest.getHostname(), routerVersionType, "running");
 			}
 			else {
-			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = configRequest.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
 					.findByDHostNameAndDMgmtIpAndDDeComm(configRequest.getHostname(),configRequest.getManagementIp(),"0");			
@@ -433,11 +400,10 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 					deviceDetails);
 			String user = routerCredential.getLoginRead();
 			String password = routerCredential.getPasswordWrite();
-			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(port));
+			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -480,18 +446,15 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 	}
 		catch (Exception ex) {
 			String response = "";
-			String responseDownloadPath = "";
 			try {
 				requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
 						Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);			
-				responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
 				TextReport.writeFile(
-						responseDownloadPath, configRequest.getAlphanumericReqId() + "V"
+						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
 								+ Double.toString(configRequest.getRequestVersion()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -500,48 +463,30 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 	}
 
-	@SuppressWarnings("unchecked")
+	
 	public boolean getRouterConfigStartUp(RequestInfoPojo configRequest, String routerVersionType) {
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		boolean backupdone = false;
 		try {
-			if ("VNF".equalsIgnoreCase(configRequest.getNetworkType())) {
-				RestTemplate restTemplate = new RestTemplate();
-				JSONObject request = new JSONObject();
-				request.put(new String("ip"), configRequest.getManagementIp());
-				request.put(new String("port"), TSALabels.BACKUP_PORT.getValue());
-				request.put(new String("source"), "startup");
-				request.put(new String("requestId"), configRequest.getAlphanumericReqId());
-				request.put(new String("stage"), "startup");
-				request.put(new String("version"), configRequest.getRequestVersion());
-				request.put(new String("hostname"), configRequest.getHostname());
-				request.put(new String("filePath"), TSALabels.RESPONSE_DOWNLOAD_PATH.getValue());
-				HttpHeaders headers = new HttpHeaders();
-				headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-				HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
-				String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_BACKUP.getValue();
-				String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
-				if (response != null) {
-					backupdone = true;
-				} else {
-					backupdone = false;
-				}
+			if ("VNF".equalsIgnoreCase(configRequest.getNetworkType()) && configRequest.getAlphanumericReqId() !=null 
+					&& configRequest.getRequestVersion() !=null && configRequest.getManagementIp() !=null
+					&& configRequest.getHostname() !=null && routerVersionType !=null) {
+				backupdone = vnfBackup(configRequest.getAlphanumericReqId(), configRequest.getRequestVersion(),
+						configRequest.getManagementIp(), configRequest.getHostname(), routerVersionType, "startup");
 			}
 			else {
-				BackupCurrentRouterConfigurationService.loadProperties();
 				String host = configRequest.getManagementIp();
 				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
 						configRequest.getHostname(), configRequest.getManagementIp(), "0");
 				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
 				String user = routerCredential.getLoginRead();
 				String password = routerCredential.getPasswordWrite();
-				String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
 				JSch jsch = new JSch();
 				Channel channel = null;
-				Session session = jsch.getSession(user, host, Integer.parseInt(port));
+				Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 				Properties config = new Properties();
 				config.put("StrictHostKeyChecking", "no");
 				session.setConfig(config);
@@ -582,15 +527,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			}
 		} catch (Exception ex) {
 			String response = "";
-			String responseDownloadPath = "";
 			try {
 				requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
 						Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
-				responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-						.getProperty("responseDownloadPath");
 				TextReport.writeFile(
-						responseDownloadPath, configRequest.getAlphanumericReqId() + "V"
+						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
 								+ Double.toString(configRequest.getRequestVersion()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
@@ -601,5 +543,81 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 		return backupdone;
 
 	}
+	
+	private String formatXml(String xmlStringToBeFormatted) {
+		String formattedXmlString = null;
+		try {
+			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+			documentBuilderFactory.setValidating(false);
+			DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+			InputSource inputSource = new InputSource(new StringReader(xmlStringToBeFormatted));
+			Document document = documentBuilder.parse(inputSource);
 
+			Transformer transformer = TransformerFactory.newInstance().newTransformer();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+
+			StreamResult streamResult = new StreamResult(new StringWriter());
+			DOMSource dOMSource = new DOMSource(document);
+			transformer.transform(dOMSource, streamResult);
+			if(streamResult.getWriter() !=null)
+				formattedXmlString = streamResult.getWriter().toString().trim();
+		} catch (Exception exe) {
+			logger.error("Exception - formatXml->" + exe.getMessage());
+		}
+		return formattedXmlString;
+	}
+	
+	@SuppressWarnings({ "unchecked", "unused" })
+	private boolean vnfBackup(String requestId, double version, String managementIp, String hostName, String stage, String source) {
+		boolean backupdone = false;
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			JSONObject request = new JSONObject();
+			String fileName = null;
+			request.put(new String("ip"), managementIp);
+			request.put(new String("port"), TSALabels.BACKUP_PORT.getValue());
+			request.put(new String("source"), source);
+			request.put(new String("requestId"), requestId);
+			request.put(new String("stage"), stage);
+			request.put(new String("version"), version);
+			request.put(new String("hostname"), hostName);
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_BACKUP.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			logger.info("response of getConfig is " + response);
+
+			if ("previous".equals(stage)) {
+				fileName = "PreviousConfig.txt";
+			} else if ("startup".equals(stage)) {
+				fileName = "StartupConfig.txt";
+			} else {
+				fileName = "PreviousConfig.txt";
+			}
+
+			if (response.contains("Error")) {
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+						requestId + "V" + Double.toString(version) + "_" + fileName, response);
+			} else {
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+						requestId + "V" + Double.toString(version) + "_" + fileName, formatXml(response));
+			}
+			if (response != null) {
+				backupdone = true;
+			} else {
+				backupdone = false;
+			}
+
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - vnfBackup -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - vnfBackup->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		logger.info("End - vnfBackup ->" + backupdone);
+
+		return backupdone;
+	}
 }

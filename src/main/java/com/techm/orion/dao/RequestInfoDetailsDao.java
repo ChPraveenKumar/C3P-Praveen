@@ -523,7 +523,6 @@ public class RequestInfoDetailsDao {
 		Channel channel = null;
 		Session session = null;
 		try {
-			BackupCurrentRouterConfigurationService.loadProperties();
 			String host = requestinfo.getManagementIp();
 			DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
 					.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
@@ -533,9 +532,8 @@ public class RequestInfoDetailsDao {
 			String user = routerCredential.getLoginRead();
 			String password = routerCredential.getPasswordWrite();
 
-			String port = BackupCurrentRouterConfigurationService.TSA_PROPERTIES.getProperty("portSSH");
 
-			session = jsch.getSession(user, host, Integer.parseInt(port));
+			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -578,7 +576,6 @@ public class RequestInfoDetailsDao {
 		catch (Exception ex) {
 			String response = "";
 			try {
-				BackupCurrentRouterConfigurationService.loadProperties();
 				editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
