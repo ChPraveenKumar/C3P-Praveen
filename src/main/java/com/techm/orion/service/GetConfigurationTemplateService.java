@@ -1,13 +1,10 @@
 package com.techm.orion.service;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
@@ -16,9 +13,6 @@ import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 
 public class GetConfigurationTemplateService {
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 
 	public String generateTemplate(CreateConfigRequestDCM configRequest) {
 

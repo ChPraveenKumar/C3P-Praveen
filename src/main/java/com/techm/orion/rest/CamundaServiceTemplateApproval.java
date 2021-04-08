@@ -7,30 +7,21 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
 
+import com.techm.orion.utility.TSALabels;
+
 public class CamundaServiceTemplateApproval {
 	private static final Logger logger = LogManager.getLogger(CamundaServiceTemplateApproval.class);
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 	
 	@SuppressWarnings("unchecked")
 	public void completeApprovalFlow(String userTaskId, String status,
 			String comment) {
-		try {
-			CamundaServiceTemplateApproval.loadProperties();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		String serverPath = CamundaServiceTemplateApproval.TSA_PROPERTIES
-				.getProperty("serverPath");
-		String query = serverPath +"/engine-rest/task/"
+		String query = TSALabels.WEB_SERVICE_URI.getValue() +"/engine-rest/task/"
 				+ userTaskId + "/complete";
 		JSONObject statusObj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -80,11 +71,7 @@ public class CamundaServiceTemplateApproval {
 	@SuppressWarnings("unchecked")
 	public void initiateApprovalFlow(String templateId, String version,
 			String approver) throws IOException, JSONException {
-		CamundaServiceTemplateApproval.loadProperties();
-
-		String serverPath = CamundaServiceTemplateApproval.TSA_PROPERTIES
-				.getProperty("serverPath");
-		String query = serverPath +"/engine-rest/process-definition/key/C3P_Template_Approval_Workflow/start ";
+		String query = TSALabels.WEB_SERVICE_URI.getValue() +"/engine-rest/process-definition/key/C3P_Template_Approval_Workflow/start ";
 
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -123,18 +110,5 @@ public class CamundaServiceTemplateApproval {
 		in.close();
 		conn.disconnect();
 
-	}
-	
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 }

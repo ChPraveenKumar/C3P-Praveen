@@ -4,12 +4,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.ChildVersionPojo;
@@ -18,18 +16,16 @@ import com.techm.orion.pojo.ModifyConfigResultPojo;
 import com.techm.orion.pojo.ParentVersionPojo;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
 public class CreateAndCompareModifyVersion {
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 
 	public String CompareModifyVersion(String requestIdForConfig, String type) throws Exception {
 
 		String key = "";
 		int counter = 1;
 		int counterCreate = 1;
-		CreateAndCompareModifyVersion.loadProperties();
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		ChildVersionPojo latestVersion = new ChildVersionPojo();
@@ -262,13 +258,10 @@ public class CreateAndCompareModifyVersion {
 		// if the type is template create,we are going to generate a file for it
 		if (type.equalsIgnoreCase("templatecreate")) {
 			try {
-
-				String responseDownloadPath = CreateAndCompareModifyVersion.TSA_PROPERTIES
-						.getProperty("responseDownloadPath");
-				TextReport.writeFile(responseDownloadPath,
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						latestVersion.getRequestId() + "V" + latestVersion.getRequest_version() + "_Configuration",
 						response);
-				TextReport.writeFile(responseDownloadPath,
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						latestVersion.getRequestId() + "V" + latestVersion.getRequest_version() + "_ConfigurationNoCmd",
 						responseforNoCmd);
 
@@ -320,10 +313,7 @@ public class CreateAndCompareModifyVersion {
 		try {
 			BufferedWriter bw = null;
 			FileWriter fw = null;
-			CreateAndCompareModifyVersion.loadProperties();
-			String responseDownloadPath = CreateAndCompareModifyVersion.TSA_PROPERTIES
-					.getProperty("responseDownloadPath");
-			String filepath = responseDownloadPath + "/noconfig.txt";
+			String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "/noconfig.txt";
 			File file = new File(filepath);
 			if (file.exists() && counter == 1) {
 				PrintWriter writer = new PrintWriter(file);
@@ -365,10 +355,7 @@ public class CreateAndCompareModifyVersion {
 		try {
 			BufferedWriter bw = null;
 			FileWriter fw = null;
-			CreateAndCompareModifyVersion.loadProperties();
-			String responseDownloadPath = CreateAndCompareModifyVersion.TSA_PROPERTIES
-					.getProperty("responseDownloadPath");
-			String filepath = responseDownloadPath + "/createconfig.txt";
+			String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "/createconfig.txt";
 			File file = new File(filepath);
 			if (file.exists() && counter == 1) {
 				PrintWriter writer = new PrintWriter(file);
@@ -406,26 +393,12 @@ public class CreateAndCompareModifyVersion {
 		}
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
 	public String CompareModifyVersionForTemplate(String requestIdForConfig, String type,
 			CreateConfigRequestDCM configRequest) throws Exception {
 
 		String key = "";
 		int counter = 1;
 		int counterCreate = 1;
-		CreateAndCompareModifyVersion.loadProperties();
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		ChildVersionPojo latestVersion = new ChildVersionPojo();
@@ -652,13 +625,10 @@ public class CreateAndCompareModifyVersion {
 		// if the type is template create,we are going to generate a file for it
 		if (type.equalsIgnoreCase("templatecreate")) {
 			try {
-
-				String responseDownloadPath = CreateAndCompareModifyVersion.TSA_PROPERTIES
-						.getProperty("responseDownloadPath");
-				TextReport.writeFile(responseDownloadPath,
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						latestVersion.getRequestId() + "V" + latestVersion.getRequest_version() + "_Configuration",
 						response);
-				TextReport.writeFile(responseDownloadPath,
+				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						latestVersion.getRequestId() + "V" + latestVersion.getRequest_version() + "_ConfigurationNoCmd",
 						responseforNoCmd);
 

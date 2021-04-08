@@ -21,27 +21,24 @@ import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.utility.TSALabels;
 
 public class NetworkTestSSH {
 	private static final Logger logger = LogManager.getLogger(NetworkTestSSH.class);
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@SuppressWarnings("unused")
 	public void NetworkTest(CreateConfigRequestDCM configRequest) throws IOException {
 		try {
 
 			RequestInfoDao requestInfoDao = new RequestInfoDao();
-			NetworkTestSSH.loadProperties();
 			UserPojo userPojo = new UserPojo();
 			userPojo = requestInfoDao.getRouterCredentials();
 			String host = configRequest.getManagementIp();
 			String user = userPojo.getUsername();
 			String password = userPojo.getPassword();
-			String port = NetworkTestSSH.TSA_PROPERTIES.getProperty("portSSH");
 			ArrayList<String> commandToPush = new ArrayList<String>();
 			JSch jsch = new JSch();
-			Session session = jsch.getSession(user, host, Integer.parseInt(port));
+			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -54,14 +51,6 @@ public class NetworkTestSSH {
 				logger.info("Channel Connected to machine " + host + " server");
 				channel.connect();
 				InputStream input = channel.getInputStream();
-				/*
-				 * int commandCount = Integer .parseInt(NetworkTestSSH.TSA_PROPERTIES
-				 * .getProperty("networkTestCommand")); for (int count = 1; count
-				 * <=commandCount; count++) { ps.println(NetworkTestSSH.TSA_PROPERTIES
-				 * .getProperty("NT" + count));
-				 * 
-				 * }
-				 */
 				ps.println("terminal length 0");
 				if (configRequest.getInterfaceStatus().equalsIgnoreCase("1")) {
 					ps.println("show ip interface brief");
@@ -160,19 +149,6 @@ public class NetworkTestSSH {
 		}
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
 	private static void printResult(InputStream input, Channel channel, String requestID, String version)
 			throws Exception {
 		BufferedWriter bw = null;
@@ -190,7 +166,7 @@ public class NetworkTestSSH {
 			if (!(s.equals(""))) {
 				logger.info(s);
 
-				String filepath = NetworkTestSSH.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestID
+				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID
 						+ "V" + version + "_networkTest.txt";
 				File file = new File(filepath);
 
@@ -226,7 +202,7 @@ public class NetworkTestSSH {
 	public String validateNetworkTest(CreateConfigRequestDCM configRequest) throws Exception {
 
 		String content = "";
-		String path = NetworkTestSSH.TSA_PROPERTIES.getProperty("responseDownloadPath")
+		String path = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()
 				+ configRequest.getRequestId() + "V" + configRequest.getRequest_version() + "_networkTest.txt";
 
 		File file = new File(path);

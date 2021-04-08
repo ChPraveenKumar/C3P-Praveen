@@ -3,7 +3,6 @@ package com.techm.orion.rest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -37,9 +36,6 @@ import com.techm.orion.service.CredentialMgmtService;
 public class CredentialMgmtController {
 
 	private static final Logger logger = LogManager.getLogger(BackUpAndRestoreController.class);
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@Autowired
 	private CredentialManagementRepo credentialManagementRepo;

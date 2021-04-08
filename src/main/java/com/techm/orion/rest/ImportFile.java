@@ -1,11 +1,9 @@
 package com.techm.orion.rest;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -35,16 +33,13 @@ import com.techm.orion.entitybeans.CustomerStagingEntity;
 import com.techm.orion.entitybeans.ImportMasterStagingEntity;
 import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.pojo.SearchParamPojo;
-import com.techm.orion.repositories.DeviceInterfaceRepo;
 import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ImportMasterStagingRepo;
-import com.techm.orion.repositories.InternetInfoRepo;
 import com.techm.orion.repositories.RequestDetailsImportRepo;
-import com.techm.orion.repositories.RouterVfRepo;
-import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.CustomerStagingInteface;
 import com.techm.orion.service.ExcelReader;
 import com.techm.orion.service.StorageService;
+import com.techm.orion.utility.TSALabels;
 
 /*Class to handle import service(single and bulk) request with other functionality*/
 
@@ -52,39 +47,25 @@ import com.techm.orion.service.StorageService;
 @RequestMapping("/ImportFile")
 public class ImportFile {
 	private static final Logger logger = LogManager.getLogger(ImportFile.class);
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-	List<String> files = new ArrayList<String>();
+	private List<String> files = new ArrayList<String>();
 
 	@Autowired
-	public RequestDetailsImportRepo requestDetailsImportRepo;
-
-	@Autowired
-	public DeviceInterfaceRepo deviceInterfaceRepo;
-
-	@Autowired
-	public InternetInfoRepo internetInfoRepo;
-
-	@Autowired
-	public RouterVfRepo routerVfRepo;
-
-	@Autowired
-	public WebServiceRepo webServiceRepo;
+	private RequestDetailsImportRepo requestDetailsImportRepo;
 
 	@Autowired
 	private ExcelReader excelReader;
 
 	@Autowired
-	StorageService storageService;
+	private StorageService storageService;
 	
 	@Autowired
 	private ExcelFileValidation excelFileValidation;
 	
 	@Autowired
-	public ErrorValidationRepository errorValidationRepository;
+	private ErrorValidationRepository errorValidationRepository;
 	
 	@Autowired
-	CustomerStagingInteface customerStagingInteface;
+	private CustomerStagingInteface customerStagingInteface;
 	
 	@Autowired
 	private ImportMasterStagingRepo importMasterStagingRepo;
@@ -308,13 +289,11 @@ public class ImportFile {
 
 			String FILE_NAME = file.getOriginalFilename();
 			/* Loading file path from properties file */
-			ImportFile.loadProperties();
-			String FILE_LOCAL_PATH = ImportFile.TSA_PROPERTIES.getProperty("importFilePath");
 			String fileNameAsImport = getAlphaNumericString(8);
 			/* Storing file on local system */
 			storageService.store(file, fileNameAsImport);
 			/* Updating file name with alphanumeric number */
-			String TOTAL_FILE_PATH = FILE_LOCAL_PATH.concat(fileNameAsImport.concat("_").concat(FILE_NAME));
+			String TOTAL_FILE_PATH = TSALabels.IMPORT_FILEPATH.getValue().concat(fileNameAsImport.concat("_").concat(FILE_NAME));
 
 			files.add(file.getOriginalFilename());
 
@@ -419,19 +398,6 @@ public class ImportFile {
 
 	}
 
-	/* Method to properties file */
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
 
 	/* Method to generate alphanumeric id for saving file on local storage */
 	static String getAlphaNumericString(int n) {
@@ -470,13 +436,11 @@ public class ImportFile {
 		try {
 			String FILE_NAME = file.getOriginalFilename();
 			/* Loading file path from properties file */
-			ImportFile.loadProperties();
-			String FILE_LOCAL_PATH = ImportFile.TSA_PROPERTIES.getProperty("importFilePath");
 			String fileNameAsImport = getAlphaNumericString(8);
 			/* Storing file on local system */
 			storageService.store(file, fileNameAsImport);
 			/* Updating file name with alphanumeric number */
-			String TOTAL_FILE_PATH = FILE_LOCAL_PATH.concat(fileNameAsImport.concat("_").concat(FILE_NAME));
+			String TOTAL_FILE_PATH = TSALabels.IMPORT_FILEPATH.getValue().concat(fileNameAsImport.concat("_").concat(FILE_NAME));
 			files.add(file.getOriginalFilename());
 			boolean flagCSV = false;
 			String extension = FilenameUtils.getExtension(file.getOriginalFilename());

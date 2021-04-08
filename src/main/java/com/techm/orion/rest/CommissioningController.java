@@ -1,9 +1,6 @@
 package com.techm.orion.rest;
 
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Properties;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -26,19 +23,17 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/deviceCommissioning")
-public class CommissioningController implements Observer {
+public class CommissioningController {
 
 	private static final Logger logger = LogManager.getLogger(CommissioningController.class);
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-
 	@Autowired
-	DeviceDiscoveryRepository deviceDiscoveryRepo;
+	private DeviceDiscoveryRepository deviceDiscoveryRepo;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -72,7 +67,6 @@ public class CommissioningController implements Observer {
 				obj.put("data", "Success");
 			} else {
 				obj.put("data", "Error");
-
 			}
 
 		} catch (Exception e) {
@@ -84,13 +78,6 @@ public class CommissioningController implements Observer {
 				.header("Access-Control-Allow-Credentials", "true")
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-
-	}
-
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

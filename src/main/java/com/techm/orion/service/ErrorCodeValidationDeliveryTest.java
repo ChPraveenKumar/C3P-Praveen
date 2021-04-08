@@ -28,33 +28,25 @@ import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.ChildVersionPojo;
 import com.techm.orion.pojo.CreateConfigRequest;
-import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.ErrorValidationPojo;
 import com.techm.orion.pojo.ModifyConfigResultPojo;
 import com.techm.orion.pojo.ParentVersionPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.rest.DeliverConfigurationAndBackupTest;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
 public class ErrorCodeValidationDeliveryTest extends Thread {
 	private static final Logger logger = LogManager.getLogger(ErrorCodeValidationDeliveryTest.class);
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-	CreateConfigRequestDCM configRequest = new CreateConfigRequestDCM();
-
 	public String checkErrorCode(String requestId, double version) throws IOException {
-		// TODO Auto-generated method stub
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		List<ErrorValidationPojo> list = new ArrayList<ErrorValidationPojo>();
 		String textFound = "";
 		String errorType = null;
 		String errorDescription = null;
 		try {
-			ErrorCodeValidationDeliveryTest.loadProperties();
-			String responselogpath = ErrorCodeValidationDeliveryTest.TSA_PROPERTIES.getProperty("responselogpath");
-
 			list = requestInfoDao.getAllErrorCodeFromRouter();
 			for (Iterator iterator = list.iterator(); iterator.hasNext();) {
 
@@ -63,7 +55,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 				errorType = errorValidationPojo.getError_type();
 				errorDescription = errorValidationPojo.getError_description();
 				String commandError = parseFile(
-						responselogpath + "/" + requestId + "_" + Double.toString(version) + "theSSHfile.txt",
+						TSALabels.RESPONSE_LOG_PATH.getValue() + "/" + requestId + "_" + Double.toString(version) + "theSSHfile.txt",
 						errorMsg);
 				if (commandError != "") {
 					textFound = commandError;
@@ -137,13 +129,10 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 	 * to push no command and get the previous configuration of the version
 	 */
 	public void pushPreviousVersionConfiguration(CreateConfigRequest configRequest) throws IOException {
-		// TelnetCommunicationSSH telnetCommunicationSSH=new
-		// TelnetCommunicationSSH(configRequest);
 		DeliverConfigurationAndBackupTest deliverConfigurationAndBackupTest = new DeliverConfigurationAndBackupTest();
 		Double previousVersion = 0d;
 		try {
 
-			ErrorCodeValidationDeliveryTest.loadProperties();
 			RequestInfoDao requestInfoDao = new RequestInfoDao();
 			String host = configRequest.getManagementIp();
 			UserPojo userPojo = new UserPojo();
@@ -151,12 +140,11 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 
 			String user = userPojo.getUsername();
 			String password = userPojo.getPassword();
-			String port = ErrorCodeValidationDeliveryTest.TSA_PROPERTIES.getProperty("portSSH");
 			ArrayList<String> commandToPush = new ArrayList<String>();
 
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(port));
+			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -214,41 +202,15 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 
 	public String pushNoCommandConfiguration(CreateConfigRequest configRequest) throws IOException {
 
-		Double previousVersion = 0d;
 		String result = "Success";
 		try {
 
-			String no_cmd = "";
 			String key = "";
 			int counter = 1;
 			InvokeFtl invokeFtl = new InvokeFtl();
 			RequestInfoDao requestInfoDao = new RequestInfoDao();
-			CreateAndCompareModifyVersion createAndCompareModifyVersion = new CreateAndCompareModifyVersion();
-			List<ModifyConfigResultPojo> configCmdresultList = new ArrayList<ModifyConfigResultPojo>();
-			configCmdresultList = requestInfoDao.getNoConfigCmdForPreviousConfig();
-			/*
-			 * for (Iterator<ModifyConfigResultPojo> iterator =
-			 * configCmdresultList.iterator(); iterator .hasNext();) {
-			 * ModifyConfigResultPojo modifyConfigResultPojo = (ModifyConfigResultPojo)
-			 * iterator .next();
-			 * no_cmd=no_cmd.concat(";").concat(modifyConfigResultPojo.getNo_SSH_Command());
-			 * 
-			 * String content="config t"+";"+no_cmd+";"; //String content=no_cmd; String
-			 * ar[]=content.split(";");
-			 * createAndCompareModifyVersion.createNoconfigFile(ar,counter); }
-			 */
-			ErrorCodeValidationDeliveryTest.loadProperties();
 			ParentVersionPojo compareVersion = new ParentVersionPojo();
 			ChildVersionPojo latestVersion = new ChildVersionPojo();
-			/*
-			 * compareVersion.setSnmpString(configRequest.getSnmpString());
-			 * compareVersion.setBgpASNumber(configRequest.getBgpASNumber());
-			 * compareVersion.setBanner(banner); compareVersion.setName(name);
-			 * compareVersion.setBandwidth(bandwidth); compareVersion.setIp(ip);
-			 * compareVersion.setMask(mask); compareVersion.setEncapsulation(encapsulation);
-			 * compareVersion.setVrfName(vrfName);
-			 * compareVersion.setEnablePassword(enablePassword);
-			 */
 
 			compareVersion.setEnablePassword(configRequest.getEnablePassword());
 			compareVersion.setVrfName(configRequest.getVrfName());
@@ -350,10 +312,8 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 
 			}
 			String responseforNoCmd = invokeFtl.generateModifyConfigurationToPushNoCmd(latestVersion, compareVersion);
-			String responseDownloadPath = ErrorCodeValidationDeliveryTest.TSA_PROPERTIES
-					.getProperty("responseDownloadPath");
 
-			TextReport.writeFile(responseDownloadPath, configRequest.getRequestId() + "V"
+			TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 					+ configRequest.getRequest_version() + "_ConfigurationNoCmdForError", responseforNoCmd);
 
 			String host = configRequest.getManagementIp();
@@ -362,12 +322,11 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 
 			String user = userPojo.getUsername();
 			String password = userPojo.getPassword();
-			String port = ErrorCodeValidationDeliveryTest.TSA_PROPERTIES.getProperty("portSSH");
 			ArrayList<String> commandToPush = new ArrayList<String>();
 
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(port));
+			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -406,28 +365,12 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
 
 	@SuppressWarnings("resource")
 	public ArrayList<String> readFile(String requestIdForConfig, String version) throws IOException {
 		BufferedReader br = null;
 		LineNumberReader rdr = null;
-		/* StringBuilder sb2=null; */
-		ErrorCodeValidationDeliveryTest.loadProperties();
-		String responseDownloadPath = ErrorCodeValidationDeliveryTest.TSA_PROPERTIES
-				.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_PreviousConfig.txt";
+		String filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_PreviousConfig.txt";
 
 		br = new BufferedReader(new FileReader(filePath));
 		try {
@@ -450,8 +393,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 					}
 				}
 			}
-			int fileReadSize = Integer
-					.parseInt(ErrorCodeValidationDeliveryTest.TSA_PROPERTIES.getProperty("fileChunkSize"));
+			int fileReadSize = Integer.parseInt(TSALabels.FILE_CHUNK_SIZE.getValue());
 			int chunks = (count / fileReadSize) + 1;
 			String line;
 
@@ -496,11 +438,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 	public ArrayList<String> readFileForNoCommand(String requestIdForConfig, String version) throws IOException {
 		BufferedReader br = null;
 		LineNumberReader rdr = null;
-		/* StringBuilder sb2=null; */
-		ErrorCodeValidationDeliveryTest.loadProperties();
-		String responseDownloadPath = ErrorCodeValidationDeliveryTest.TSA_PROPERTIES
-				.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + requestIdForConfig + "V" + version
+		String filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version
 				+ "_ConfigurationNoCmdForError";
 
 		br = new BufferedReader(new FileReader(filePath));
@@ -524,8 +462,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 					}
 				}
 			}
-			int fileReadSize = Integer
-					.parseInt(ErrorCodeValidationDeliveryTest.TSA_PROPERTIES.getProperty("fileChunkSize"));
+			int fileReadSize = Integer.parseInt(TSALabels.FILE_CHUNK_SIZE.getValue());
 			int chunks = (count / fileReadSize) + 1;
 			String line;
 
@@ -572,10 +509,8 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 		FileWriter fw = null;
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
-		ErrorCodeValidationDeliveryTest.loadProperties();
-		String responselogpath = ErrorCodeValidationDeliveryTest.TSA_PROPERTIES.getProperty("responselogpath");
 
-		File file = new File(responselogpath + "/" + "theSSHfile.txt");
+		File file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + "/" + "theSSHfile.txt");
 		/*
 		 * if (file.exists()) { file.delete(); }
 		 */
@@ -587,7 +522,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 
-				file = new File(responselogpath + "/" + "theSSHfile.txt");
+				file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + "/" + "theSSHfile.txt");
 
 				if (!file.exists()) {
 					file.createNewFile();

@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
@@ -114,9 +113,6 @@ public class DcmConfigService {
 	@Autowired
 	private MasterCharacteristicsRepository masterCharacteristicsRepository;
 	
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-
 	public Map<String, String> updateAlldetails(
 			CreateConfigRequestDCM configRequest,
 			List<CreateConfigPojo> pojoList) throws IOException {

@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Properties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
@@ -14,7 +11,6 @@ import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,75 +20,40 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.google.gson.Gson;
-import com.techm.orion.dao.RequestInfoDao;
-import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.entitybeans.RequestDetailsEntity;
-import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.repositories.DeviceFamilyRepository;
-import com.techm.orion.repositories.DeviceInterfaceRepo;
-import com.techm.orion.repositories.InternetInfoRepo;
 import com.techm.orion.repositories.ModelsRepository;
 import com.techm.orion.repositories.OSRepository;
 import com.techm.orion.repositories.OSversionRepository;
 import com.techm.orion.repositories.RegionsRepository;
 import com.techm.orion.repositories.RequestDetailsExportRepo;
-import com.techm.orion.repositories.RouterVfRepo;
 import com.techm.orion.repositories.VendorRepository;
-import com.techm.orion.repositories.WebServiceRepo;
-import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.ExcelReader;
 
 @RestController
 @RequestMapping("/DataValidationImport")
-public class DataValidationImport implements Observer {
+public class DataValidationImport {
 	private static final Logger logger = LogManager.getLogger(DataValidationImport.class);
-
-	// private static final String FILE_PATH = null;
-
-	// private static final String STYLE_CELL_BORDERED = null;
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-
-	public static final Properties TSA_PROPERTIES = new Properties();
-	DcmConfigService dcmConfigService = new DcmConfigService();
-	JSONObject jsonObj;
-	JSONArray array = new JSONArray();
-	TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
 	@Autowired
-	RequestDetailsExportRepo requestDetailsExportRepo;
+	private RequestDetailsExportRepo requestDetailsExportRepo;
 
 	@Autowired
-	DeviceInterfaceRepo deviceInterfaceRepo;
+	private VendorRepository vendorRepository;
 
 	@Autowired
-	InternetInfoRepo internetInfoRepo;
+	private DeviceFamilyRepository deviceFamilyRepository;
 
 	@Autowired
-	RouterVfRepo routerVfRepo;
+	private ModelsRepository modelsRepository;
 
 	@Autowired
-	WebServiceRepo webServiceRepo;
+	private OSRepository oSRepository;
 
 	@Autowired
-	VendorRepository vendorRepository;
+	private OSversionRepository oSversionRepository;
 
 	@Autowired
-	DeviceFamilyRepository deviceFamilyRepository;
-
-	@Autowired
-	ModelsRepository modelsRepository;
-
-	@Autowired
-	OSRepository oSRepository;
-
-	@Autowired
-	OSversionRepository oSversionRepository;
-
-	@Autowired
-	RegionsRepository regionsRepository;
-
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
-	CreateConfigRequest createConfigRequest = new CreateConfigRequest();
+	private RegionsRepository regionsRepository;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -285,11 +246,5 @@ public class DataValidationImport implements Observer {
 		if (str != null && !str.isEmpty())
 			return true;
 		return false;
-	}
-
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-
 	}
 }

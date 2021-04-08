@@ -4,7 +4,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.gson.Gson;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.repositories.ServiceOrderRepo;
 
@@ -29,11 +27,8 @@ import com.techm.orion.repositories.ServiceOrderRepo;
 public class ServiceOrderController {
 	private static final Logger logger = LogManager.getLogger(ServiceOrderController.class);
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-
 	@Autowired
-	public ServiceOrderRepo serviceOrderRepo;
+	private ServiceOrderRepo serviceOrderRepo;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -45,11 +40,9 @@ public class ServiceOrderController {
 	public Response getServiceOrderList() {
 
 		JSONObject obj = new JSONObject();
-		String jsonArray = "";
 		List<ServiceOrderEntity> detailsList = new ArrayList<ServiceOrderEntity>();
 		detailsList = serviceOrderRepo.findAllByOrderByCreatedDateDesc();
 
-		jsonArray = new Gson().toJson(detailsList);
 		obj.put(new String("output"), detailsList);
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -64,6 +57,7 @@ public class ServiceOrderController {
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/updateserviceorder", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

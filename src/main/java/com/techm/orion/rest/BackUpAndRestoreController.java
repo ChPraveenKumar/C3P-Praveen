@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
@@ -72,11 +71,6 @@ public class BackUpAndRestoreController {
 	private static final Logger logger = LogManager
 			.getLogger(BackUpAndRestoreController.class);
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-
-	List<String> files = new ArrayList<String>();
-
 	@Autowired
 	public RequestDetailsImportRepo requestDetailsImportRepo;
 
@@ -128,7 +122,6 @@ public class BackUpAndRestoreController {
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
-	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getVendorCheck", method = RequestMethod.POST, produces = "application/json")
 	@ResponseBody
@@ -168,7 +161,6 @@ public class BackUpAndRestoreController {
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
-	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/getManagementIP", method = RequestMethod.POST, produces = "application/json")
 	@ResponseBody

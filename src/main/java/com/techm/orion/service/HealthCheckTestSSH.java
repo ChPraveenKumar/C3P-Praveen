@@ -28,13 +28,6 @@ import com.techm.orion.utility.TSALabels;
 
 public class HealthCheckTestSSH {
 	private static final Logger logger = LogManager.getLogger(HealthCheckTestSSH.class);
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-	// CreateConfigRequestDCM configRequest=new CreateConfigRequestDCM();
-	/*
-	 * public HealthCheckTestSSH(CreateConfigRequestDCM list) { // this();
-	 * this.configRequest = list; }
-	 */
 
 	// @SuppressWarnings("unused")
 	public void HealthCheckTest(CreateConfigRequestDCM configRequest) throws IOException {
@@ -47,22 +40,18 @@ public class HealthCheckTestSSH {
 			Map<String, String> hmapResult = new HashMap<String, String>();
 
 			RegexTestHealthCheck regexTestHealthCheck = new RegexTestHealthCheck();
-			CSVWriteAndConnectPython csvWriteAndConnectPython = new CSVWriteAndConnectPython();
 			FinalReportTestSSH finalReportTestSSH = new FinalReportTestSSH();
-			HealthCheckTestSSH.loadProperties();
 			String host = configRequest.getManagementIp();
 			UserPojo userPojo = new UserPojo();
 			userPojo = requestInfoDao.getRouterCredentials();
 
 			String user = userPojo.getUsername();
 			String password = userPojo.getPassword();
-			String port = HealthCheckTestSSH.TSA_PROPERTIES.getProperty("portSSH");
 			String throughput = "";
 			String frameloss = "";
 			String latency = "";
-			// ArrayList<String> commandToPush = new ArrayList<String>();
 			JSch jsch = new JSch();
-			Session session = jsch.getSession(user, host, Integer.parseInt(port));
+			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
 			session.setConfig(config);
@@ -192,13 +181,8 @@ public class HealthCheckTestSSH {
 	}
 
 	private static String readFile() throws IOException {
-		String responseDownloadPath = TelnetCommunicationSSH.TSA_PROPERTIES.getProperty("responseDownloadPath");
-
 		BufferedReader br = new BufferedReader(
-				new FileReader(responseDownloadPath + "HealthcheckTestCommand.txt"));
-
-		// BufferedReader br = new BufferedReader(new FileReader("D:/C3P/New
-		// folder/HealthcheckTestCommand.txt"));
+				new FileReader(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "HealthcheckTestCommand.txt"));
 		try {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();
@@ -212,19 +196,6 @@ public class HealthCheckTestSSH {
 		} finally {
 			br.close();
 		}
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 
 	private static void printResult(InputStream input, String requestID, String version) throws Exception {
@@ -241,7 +212,7 @@ public class HealthCheckTestSSH {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				logger.info(s);
-				String filepath = NetworkTestSSH.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestID
+				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID
 						+ "V" + version + "_HealthCheck.txt";
 				File file = new File(filepath);
 
@@ -277,13 +248,12 @@ public class HealthCheckTestSSH {
 		try {
 			p = builder.start();
 			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
-			String filepath = NetworkTestSSH.TSA_PROPERTIES.getProperty("analyserPath");
 			/*
 			 * for (int i=0; i<2; i++) { p_stdin.write("cd..");
 			 * 
 			 * p_stdin.newLine(); p_stdin.flush(); }
 			 */
-			p_stdin.write("cd " + filepath);
+			p_stdin.write("cd " + TSALabels.ANALYSER_PATH.getValue());
 			p_stdin.newLine();
 			p_stdin.flush();
 			p_stdin.write("ttcp -t nbufs 1 verbose host " + managementIp);
@@ -308,32 +278,6 @@ public class HealthCheckTestSSH {
 	}
 
 	private static void cmdPingCall(String requestId, String version, String managementIp) throws Exception {
-		/*ProcessBuilder builder = new ProcessBuilder("cmd.exe");
-		Process p = null;
-		try {
-			p = builder.start();
-			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
-
-			String commandToPing = "ping " + managementIp + " -n 20";
-			p_stdin.write(commandToPing);
-			logger.info("command To Ping : " + commandToPing);
-			logger.info("Management IP : " + managementIp);
-
-			p_stdin.newLine();
-			p_stdin.flush();
-			try {
-				Thread.sleep(21000);
-			} catch (Exception ee) {
-			}
-			p_stdin.write("exit");
-			p_stdin.newLine();
-			p_stdin.flush();
-		}
-
-		catch (IOException e) {
-			e.printStackTrace();
-		}*/
-		
 		StringBuilder commadBuilder = new StringBuilder();
 		Process process = null;
 		try {
