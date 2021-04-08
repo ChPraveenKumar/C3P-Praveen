@@ -983,11 +983,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 													"Failure");
 									response = invokeFtl
 											.generateDeliveryConfigFileFailure(requestinfo);
-									responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
 									TextReport
 											.writeFile(
-													responseDownloadPath,
+													TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 													requestinfo
 															.getAlphanumericReqId()
 															+ "V"
@@ -1001,7 +999,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								jsonArray = new Gson().toJson(value);
 								obj.put(new String("output"), jsonArray);
 								String response = "";
-								String responseDownloadPath = "";
 
 								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 										requestinfo.getAlphanumericReqId(),
@@ -1010,10 +1007,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										"deliever_config", "2", "Failure");
 								response = invokeFtl
 										.generateDeliveryConfigFileFailure(requestinfo);
-								responseDownloadPath = BackupCurrentRouterConfigurationService.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
 								TextReport.writeFile(
-										responseDownloadPath,
+										TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 										requestinfo.getAlphanumericReqId()
 												+ "V"
 												+ Double.toString(requestinfo
@@ -1024,7 +1019,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						} else {
 							value = false;
 							String response = "";
-							String responseDownloadPath = "";
 
 							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double
@@ -1033,10 +1027,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									"deliever_config", "2", "Failure");
 							response = invokeFtl
 									.generateDeliveryConfigFileFailure(requestinfo);
-							responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
 							TextReport.writeFile(
-									responseDownloadPath,
+									TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId()
 											+ "V"
 											+ Double.toString(requestinfo
