@@ -1394,7 +1394,7 @@ public class ExcelReader {
 		String osversion = ExportList.getOs_version();
 
 		if (isNullOrEmpty(Template_id)) {
-			String path = TSALabels.TEMPLATE_CREATION_PATH + Template_id;
+			String path = TSALabels.TEMPLATE_CREATION_PATH.getValue() + Template_id;
 			File file = new File(path);
 			String template = null;
 			DcmConfigService dcmConfigService = new DcmConfigService();
@@ -1609,7 +1609,7 @@ public class ExcelReader {
 					ExportList.setTemplateIdUsed(TemplateList);
 					logger.info("Matched Template Found for Selected features");
 					if (TemplateList != null) {
-						String path = TSALabels.TEMPLATE_CREATION_PATH	+ TemplateList;
+						String path = TSALabels.TEMPLATE_CREATION_PATH.getValue()	+ TemplateList;
 						File file = new File(path);
 
 						if (file.exists()) {
