@@ -626,8 +626,7 @@ public class GetTemplateConfigurationData {
 						if (list.get(k).getTemplateId().equalsIgnoreCase(versioningModelObject.getTemplateId())) {
 							versioningModelChildList.add(list.get(k));
 						}
-					}
-					Collections.reverse(versioningModelChildList);
+					}					
 
 					versioningModelChildList.get(0).setEnabled(true);
 					versioningModelObject.setChildList(versioningModelChildList);
