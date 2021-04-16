@@ -32,6 +32,7 @@ import freemarker.cache.ClassTemplateLoader;
 import freemarker.cache.FileTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import freemarker.template.TemplateException;
 
 /*
  * Owner: Vivek Vidhate Module: FTL Logic: To
@@ -446,20 +447,13 @@ public class InvokeFtl {
 	}
 
 	/* Method Overloading for UIRevamp */
-	public String generateAuthenticationFailure(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
+	public String generateAuthenticationFailure(RequestInfoPojo configRequest) throws TemplateException, IOException{
 
 			Map<String, Object> tree = new HashMap<String, Object>();
 			tree.put("preValidateTest", configRequest);
-			res = freemarkerDo(tree, "RouterAuthenticationFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+			return freemarkerDo(tree, "RouterAuthenticationFailure.ftl");		
 	}
+	
 	public String generateNetworkTestResultFileFailure(RequestInfoPojo configRequest) throws Exception {
 		String res = null;
 		try {
@@ -768,7 +762,7 @@ public class InvokeFtl {
 		return os.toString();
 	}
 
-	static String freemarkerDo(Map<String, Object> datamodel, String template) throws Exception {
+	static String freemarkerDo(Map<String, Object> datamodel, String template) throws TemplateException, IOException {
 		@SuppressWarnings("deprecation")
 		Configuration cfg = new Configuration();
 		ClassTemplateLoader ctl = new ClassTemplateLoader(InvokeFtl.class, "/config");
@@ -1089,19 +1083,12 @@ public class InvokeFtl {
 		return res;
 	}
 
-	public String generatePrevalidationResultFileFailure(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
+	public String generatePrevalidationResultFileFailure(RequestInfoPojo configRequest) throws TemplateException, IOException {	
 
 			Map<String, Object> tree = new HashMap<String, Object>();
 			tree.put("preValidateTest", configRequest);
-			res = freemarkerDo(tree, "PreValidationTemplateFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+			return freemarkerDo(tree, "PreValidationTemplateFailure.ftl");
+		
 	}
 
 	public String generateCustomerReportFailure(RequestInfoPojo requestinfo) throws Exception {
@@ -1379,18 +1366,10 @@ public class InvokeFtl {
 		return content;
 	}
 	
-	public String generateRouterLimitResultFileFailure(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
-
+	public String generateRouterLimitResultFileFailure(RequestInfoPojo configRequest) throws TemplateException, IOException {
 			Map<String, Object> tree = new HashMap<String, Object>();
 			tree.put("preValidateTest", configRequest);
-			res = freemarkerDo(tree, "ConnectionRefuse.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+			return freemarkerDo(tree, "ConnectionRefuse.ftl");
 	}
+		
 }

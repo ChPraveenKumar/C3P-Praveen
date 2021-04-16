@@ -52,6 +52,8 @@ import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
 
+import freemarker.template.TemplateException;
+
 @Controller
 @RequestMapping("/DeviceReachabilityAndPreValidationTest")
 public class DeviceReachabilityAndPreValidationTest extends Thread {
@@ -88,7 +90,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	PingTest pingHelper = new PingTest();
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
@@ -115,11 +117,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();
 			List<RequestInfoEntity> requestDetailEntity1 = new ArrayList<RequestInfoEntity>();
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			logger.info("ResponseDownloadpath in prevalidation"+DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath"));
+			logger.info("ResponseDownloadpath in prevalidation"
+					+ DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("responseDownloadPath"));
 			DeviceReachabilityAndPreValidationTest.loadProperties();
 			// TODO: We need to remove ROUTER_IP_TEMP later or while on GCP
-			if (!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) // Temperory
+			if (!RequestId.contains("SNAI-")
+					&& !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) // Temperory
 			{
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
@@ -464,7 +467,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							}
 						}
 
-					}else {
+					} else {
 
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
@@ -480,9 +483,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
 									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath,
-									requestinfo.getAlphanumericReqId() + "V"
-											+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
+							TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+									+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 									response);
 						} catch (Exception e) {
 							// TODO Auto-generated catch block
@@ -500,79 +502,48 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
 				logger.error("e1.getMessage() - " + e1.getMessage());
+				jsonArray = new Gson().toJson(value);
+				obj.put(new String("output"), jsonArray);
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+				String response = "";
+				String responseDownloadPath = "";
 
 				if (e1.getMessage() != null && (e1.getMessage().contains("invalid server's version string")
 						|| e1.getMessage().contains("Auth fail"))) {
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
-					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "2_Authentication");
-					String response = "";
-					String responseDownloadPath = "";
-
 					try {
 						response = invokeFtl.generateAuthenticationFailure(requestinfo);
-
-						responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
-								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
-								response);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					} catch (TemplateException | IOException e) {
+						logger.error(e);
 					}
 
-				} else if(e1.getMessage() != null && (e1.getMessage().contains("Connection refused"))){
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
-					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+				} else if (e1.getMessage() != null && (e1.getMessage().contains("Connection refused"))) {
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "2_Authentication");
-					String response = "";
-					String responseDownloadPath = "";
-
+							Double.toString(requestinfo.getRequestVersion()), "2_Authentication");					
 					try {
 						response = invokeFtl.generateRouterLimitResultFileFailure(requestinfo);
-
-						responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
-								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
-								response);
-					} catch (Exception e) {						
-						e.printStackTrace();
-					}	
-				}else {
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
-					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+					} catch (TemplateException | IOException e) {
+						logger.error(e);
+					}
+				} else {
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "2");
-					String response = "";
-					String responseDownloadPath = "";
-
 					try {
 						response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
-
-						responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
-								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
-								response);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+					} catch (TemplateException | IOException e) {
+						logger.error(e);
 					}
-				}
 
+				}
+				responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+						.getProperty("responseDownloadPath");
+				TextReport.writeFile(
+						responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+								+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
+						response);
 			}
 		} finally {
 
@@ -599,7 +570,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@POST
 	@RequestMapping(value = "/performReachabiltyTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -621,9 +592,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();
 
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			/*Temporary hard coding ROUTER_IP_TEMP router*/
-			if (!RequestId.contains("SNAI-") && !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) 
-			{
+			/* Temporary hard coding ROUTER_IP_TEMP router */
+			if (!RequestId.contains("SNAI-")
+					&& !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) {
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "4", "In Progress");
