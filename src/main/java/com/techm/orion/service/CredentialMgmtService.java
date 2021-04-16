@@ -186,7 +186,7 @@ public class CredentialMgmtService {
 		return response;
 	}
 
-	private void updateCredProfileInDeviceDiscovery(JSONObject requestJson, String profileName, String profileType) {
+	private JSONObject  updateCredProfileInDeviceDiscovery(JSONObject requestJson, String profileName, String profileType) {
 		String hostName = null;
 		String managementIp = null;
 		String type = null;
@@ -199,7 +199,9 @@ public class CredentialMgmtService {
 		if (requestJson.containsKey("type") && requestJson.get("type") != null) {
 			type = requestJson.get("type").toString();
 		}
+		String msg = "";
 		DeviceDiscoveryEntity deviceInfoEntity = deviceDiscoveryRepository.findByDHostName(hostName);
+		JSONObject json = new JSONObject();
 		if (deviceInfoEntity != null) {
 			deviceInfoEntity.setdHostName(hostName);
 			deviceInfoEntity.setdMgmtIp(managementIp);
@@ -210,11 +212,18 @@ public class CredentialMgmtService {
 			} else if ("SNMP".equalsIgnoreCase(profileType) && (deviceInfoEntity.getdSnmpCredProfile() == null
 					|| deviceInfoEntity.getdSnmpCredProfile().isEmpty())) {
 				deviceInfoEntity.setdSnmpCredProfile(profileName);
-			} else {
+			} else if ("TELNET".equalsIgnoreCase(profileType) && (deviceInfoEntity.getdTelnetCredProfile() == null
+					|| deviceInfoEntity.getdTelnetCredProfile().isEmpty())) {
 				deviceInfoEntity.setdTelnetCredProfile(profileName);
 			}
 			deviceDiscoveryRepository.save(deviceInfoEntity);
+			msg = "saved succesfully";
+		} else {
+			msg = "These devices are already associated";
 		}
+		json.put("status", msg);
+		json.put("hostName", hostName);
+		return json;
 	}
 
 	@SuppressWarnings("unchecked")

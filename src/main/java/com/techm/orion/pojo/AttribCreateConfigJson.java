@@ -32,6 +32,17 @@ public class AttribCreateConfigJson {
 
 	@JsonInclude(Include.NON_NULL)
 	private String attribValue;
+	
+	@JsonInclude(Include.NON_NULL)
+	private String value;
+	
+	public String getValue() {
+		return value;
+	}
+
+	public void setValue(String value) {
+		this.value = value;
+	}
 
 	@JsonInclude(Include.NON_NULL)
 	private String characteriscticsId;

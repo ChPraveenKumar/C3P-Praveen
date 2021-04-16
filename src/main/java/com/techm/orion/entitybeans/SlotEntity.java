@@ -1,0 +1,95 @@
+package com.techm.orion.entitybeans;
+
+import java.io.Serializable;
+import java.util.Set;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+@Entity
+@Table(name = "c3p_slots")
+public class SlotEntity implements Serializable {
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7757402454056442824L;
+
+	@Id
+	@Column(name = "slot_id", length = 20)
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private int slotId;
+	
+	@Column(name = "slot_name", length = 100)
+	private String slotName;
+	
+	@Column(name = "device_id", length = 20)
+	private int deviceId;
+	
+	@Column(name = "has_subslot", length = 3)
+	private String hasSubSlot;
+	
+	@JsonIgnore
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "slotEntity")
+	private Set<SubSlotEntity> subSlotEntity;
+	
+	@JsonIgnore
+	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "slotEntity")
+	private Set<CardEntity> cardEntity;
+
+	public int getSlotId() {
+		return slotId;
+	}
+
+	public void setSlotId(int slotId) {
+		this.slotId = slotId;
+	}
+
+	public String getSlotName() {
+		return slotName;
+	}
+
+	public Set<SubSlotEntity> getSubSlotEntity() {
+		return subSlotEntity;
+	}
+
+	public void setSubSlotEntity(Set<SubSlotEntity> subSlotEntity) {
+		this.subSlotEntity = subSlotEntity;
+	}
+
+	public Set<CardEntity> getCardEntity() {
+		return cardEntity;
+	}
+
+	public void setCardEntity(Set<CardEntity> cardEntity) {
+		this.cardEntity = cardEntity;
+	}
+
+	public void setSlotName(String slotName) {
+		this.slotName = slotName;
+	}
+
+	public int getDeviceId() {
+		return deviceId;
+	}
+
+	public void setDeviceId(int deviceId) {
+		this.deviceId = deviceId;
+	}
+
+	public String getHasSubSlot() {
+		return hasSubSlot;
+	}
+
+	public void setHasSubSlot(String hasSubSlot) {
+		this.hasSubSlot = hasSubSlot;
+	}
+}

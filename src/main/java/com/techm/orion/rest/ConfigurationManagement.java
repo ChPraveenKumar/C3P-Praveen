@@ -1029,7 +1029,7 @@ public class ConfigurationManagement {
 			if (validateIdentifier.containsKey("ipaddress") && validateIdentifier.get("ipaddress") != null)
 				ipAddress = (String) validateIdentifier.get("ipaddress");
 			if (validateIdentifier.containsKey("featureId") && validateIdentifier.get("featureId") != null)
-				featureId = (String) validateIdentifier.get("featureId");
+				featureId = String.valueOf(validateIdentifier.get("featureId"));
 			if (validateIdentifier.containsKey("attribValue") && validateIdentifier.get("attribValue") != null)
 				keyValue = (String) validateIdentifier.get("attribValue");
 			if (validateIdentifier.containsKey("attribName") && validateIdentifier.get("attribName") != null)

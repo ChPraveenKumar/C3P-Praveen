@@ -1,6 +1,7 @@
 package com.techm.orion.repositories;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -34,5 +35,10 @@ public interface AttribCreateConfigRepo extends JpaRepository<MasterAttributes, 
 	List<MasterAttributes> findByMasterFIDAndTemplateId(String masterFID, String templateId);
 	
 	List<MasterAttributes> findByMasterFID(String masterFID);
+	
+	@Query("select new com.techm.orion.entitybeans.MasterAttributes( att.id, att.label, att.name, att.uiComponent, att.validations, att.category, att.attribType, att.templateId, att.seriesId,"
+			+ " att.masterFID, att.characteristicId, info.masterLabelValue as labelValue, att.isKey) from MasterAttributes att,"
+			+" CreateConfigEntity info where info.masterLabelId=att.id and info.requestId=:requestId and info.requestVersion=:requestVersion and att.templateFeature.id=:featureId ") 
+	List<MasterAttributes> findMasterAttributesByRequestIdAndVersionAndFeatureId(@Param("requestId") String requestId, @Param("requestVersion") double requestVersion, @Param("featureId") int featureId);
 }
 
