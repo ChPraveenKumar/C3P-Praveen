@@ -118,5 +118,4 @@ public class SubSlotEntity implements Serializable {
 	public void setSubSlotName(String subSlotName) {
 		this.subSlotName = subSlotName;
 	}
-
 }

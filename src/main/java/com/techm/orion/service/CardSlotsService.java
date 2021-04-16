@@ -98,14 +98,12 @@ public class CardSlotsService {
 			responseJson.put("slots", slotArray);
 
 			float occupiedCount = 0, utilizationCount = 0, reservedCount = 0;
-			float occupiedPercentage = 0, utilizationPercentage = 0, reservedPercentage = 0, occupied =0, utilization = 0, reserved = 0;;
+			float occupiedPercentage = 0, utilizationPercentage = 0, reservedPercentage = 0, occupied = 0;
 			float nameCount = portEntityRepository.portNameCount();
 			occupiedCount = portEntityRepository.statusPortNameCount("Occupied");
 			utilizationCount = portEntityRepository.statusPortNameCount("Utilization");
 			reservedCount = portEntityRepository.statusPortNameCount("Reserved");
 			occupied = occupiedCount;
-			utilization = utilizationCount;
-			reserved = reservedCount;
 			occupiedPercentage = (occupied / nameCount) * 100;
 			utilizationPercentage = (utilizationCount / nameCount) * 100;
 			reservedPercentage = (reservedCount / nameCount) * 100;
@@ -116,5 +114,4 @@ public class CardSlotsService {
 		});
 		return responseJson;
 	}
-	
 }

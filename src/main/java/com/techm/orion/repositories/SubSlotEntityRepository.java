@@ -8,8 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.techm.orion.entitybeans.SubSlotEntity;
 
 @Repository
-public interface SubSlotEntityRepository extends JpaRepository<SubSlotEntity, Long>{
+public interface SubSlotEntityRepository extends JpaRepository<SubSlotEntity, Long> {
 
 	List<SubSlotEntity> findByslotEntitySlotId(int slotId);
-
 }

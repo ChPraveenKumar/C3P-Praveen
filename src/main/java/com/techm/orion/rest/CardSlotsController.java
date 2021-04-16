@@ -31,6 +31,5 @@ public class CardSlotsController {
 			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
 		}
 		return responseEntity;
-	}
-	
+	}	
 }

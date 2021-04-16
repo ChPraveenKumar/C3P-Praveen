@@ -8,10 +8,9 @@ import org.springframework.stereotype.Repository;
 import com.techm.orion.entitybeans.CardEntity;
 
 @Repository
-public interface CardEntityRepository extends JpaRepository<CardEntity, Long>{
+public interface CardEntityRepository extends JpaRepository<CardEntity, Long> {
 
 	List<CardEntity> findByslotEntitySlotId(int slotId);
 
 	List<CardEntity> findBysubSlotEntitySubSlotId(int subSlotId);
-
 }

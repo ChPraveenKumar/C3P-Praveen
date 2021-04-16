@@ -137,5 +137,4 @@ public class SlotEntity implements Serializable {
 	public void setHasSubSlot(String hasSubSlot) {
 		this.hasSubSlot = hasSubSlot;
 	}
-
 }
