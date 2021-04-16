@@ -29,7 +29,7 @@ public class RequestModificationController {
 	private static final Logger logger = LogManager.getLogger(RequestModificationController.class);
 	
 	@Autowired
-	RequestModificationService modifyService;
+	private RequestModificationService modifyService;
 	
 	@Autowired
 	private RequestInfoDetailsRepositories repository;
