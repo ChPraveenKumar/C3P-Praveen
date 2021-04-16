@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "c3p_slots")
 public class SlotEntity implements Serializable {
-	
+
 	/**
 	 * 
 	 */
@@ -28,35 +28,35 @@ public class SlotEntity implements Serializable {
 	@Column(name = "slot_id", length = 20)
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int slotId;
-	
+
 	@Column(name = "slot_name", length = 100)
 	private String slotName;
-	
+
 	@Column(name = "device_id", length = 20)
 	private int deviceId;
-	
+
 	@Column(name = "has_subslot", length = 3)
 	private String hasSubSlot;
-	
+
 	@JsonIgnore
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "slotEntity")
 	private Set<SubSlotEntity> subSlotEntity;
-	
+
 	@JsonIgnore
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "slotEntity")
 	private Set<CardEntity> cardEntity;
-	
+
 	@Column(name = "created_by", length = 45)
-    private String createdBy;
-   
-    @Column(name = "updated_by", length = 45)
-    private String updatedBy;
-   
-    @Column(name = "updated_date")
-    private Date updatedDate;
-   
-    @Column(name = "created_date")
-    private Date createdDate;
+	private String createdBy;
+
+	@Column(name = "updated_by", length = 45)
+	private String updatedBy;
+
+	@Column(name = "updated_date")
+	private Date updatedDate;
+
+	@Column(name = "created_date")
+	private Date createdDate;
 
 	public int getSlotId() {
 		return slotId;
@@ -137,5 +137,5 @@ public class SlotEntity implements Serializable {
 	public void setHasSubSlot(String hasSubSlot) {
 		this.hasSubSlot = hasSubSlot;
 	}
-	
+
 }

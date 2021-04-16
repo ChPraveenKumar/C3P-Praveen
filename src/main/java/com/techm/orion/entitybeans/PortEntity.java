@@ -22,52 +22,52 @@ public class PortEntity implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 3448045052808970374L;
-	
+
 	@Id
 	@Column(name = "port_id", length = 20)
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int portId;
-	
+
 	@Column(name = "port_name", length = 100)
 	private String portName;
-	
-	@ManyToOne(fetch = FetchType.EAGER, cascade =  CascadeType.PERSIST )
-	@JoinColumn(name="card_id")
+
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "card_id")
 	private CardEntity cardEntity;
 
 	@Column(name = "port_status", length = 45)
 	private String portStatus;
-	
+
 	@Column(name = "href", length = 255)
 	private String href;
-	
+
 	@Column(name = "version", length = 45)
 	private String version;
-	
+
 	@Column(name = "baseType", length = 255)
 	private String baseType;
-	
+
 	@Column(name = "referredType", length = 255)
 	private String referredType;
-	
+
 	@Column(name = "schemaLocation", length = 255)
 	private String schemaLocation;
-	
+
 	@Column(name = "type", length = 255)
 	private String type;
-	
+
 	@Column(name = "created_by", length = 45)
-    private String createdBy;
-   
-    @Column(name = "updated_by", length = 45)
-    private String updatedBy;
-   
-    @Column(name = "updated_date")
-    private Date updatedDate;
-   
-    @Column(name = "created_date")
-    private Date createdDate;
-	
+	private String createdBy;
+
+	@Column(name = "updated_by", length = 45)
+	private String updatedBy;
+
+	@Column(name = "updated_date")
+	private Date updatedDate;
+
+	@Column(name = "created_date")
+	private Date createdDate;
+
 	public String getCreatedBy() {
 		return createdBy;
 	}
@@ -179,5 +179,5 @@ public class PortEntity implements Serializable {
 	public void setType(String type) {
 		this.type = type;
 	}
-	
+
 }

@@ -31,37 +31,37 @@ public class CardEntity implements Serializable {
 	@Column(name = "card_id", length = 20)
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int cardId;
-	
+
 	@Column(name = "card_name", length = 100)
 	private String cardName;
-	
-	@ManyToOne(fetch = FetchType.LAZY, cascade =  CascadeType.PERSIST )
-	@JoinColumn(name="slot_id")
+
+	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "slot_id")
 	private SlotEntity slotEntity;
-	
-	@ManyToOne(fetch = FetchType.LAZY, cascade =  CascadeType.PERSIST )
-	@JoinColumn(name="subslot_id")
+
+	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "subslot_id")
 	private SubSlotEntity subSlotEntity;
-	
+
 	@Column(name = "is_in_subslot", length = 3)
 	private String isInSubSlot;
-	
+
 	@JsonIgnore
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "cardEntity")
 	private Set<PortEntity> portEntity;
-	
+
 	@Column(name = "created_by", length = 45)
-    private String createdBy;
-   
-    @Column(name = "updated_by", length = 45)
-    private String updatedBy;
-   
-    @Column(name = "updated_date")
-    private Date updatedDate;
-   
-    @Column(name = "created_date")
-    private Date createdDate;
-    
+	private String createdBy;
+
+	@Column(name = "updated_by", length = 45)
+	private String updatedBy;
+
+	@Column(name = "updated_date")
+	private Date updatedDate;
+
+	@Column(name = "created_date")
+	private Date createdDate;
+
 	public String getCreatedBy() {
 		return createdBy;
 	}
@@ -101,7 +101,7 @@ public class CardEntity implements Serializable {
 	public void setSubSlotEntity(SubSlotEntity subSlotEntity) {
 		this.subSlotEntity = subSlotEntity;
 	}
-	
+
 	public SlotEntity getSlotEntity() {
 		return slotEntity;
 	}
@@ -141,7 +141,5 @@ public class CardEntity implements Serializable {
 	public void setIsInSubSlot(String isInSubSlot) {
 		this.isInSubSlot = isInSubSlot;
 	}
-	
+
 }
-
-

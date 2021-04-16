@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name = "c3p_subslots")
 public class SubSlotEntity implements Serializable {
-	
+
 	/**
 	 * 
 	 */
@@ -31,30 +31,30 @@ public class SubSlotEntity implements Serializable {
 	@Column(name = "subslot_id", length = 20)
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int subSlotId;
-	
+
 	@Column(name = "subslot_name", length = 100)
 	private String subSlotName;
-	
-	@ManyToOne(fetch = FetchType.EAGER, cascade =  CascadeType.PERSIST )
-	@JoinColumn(name="slot_id")
+
+	@ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "slot_id")
 	private SlotEntity slotEntity;
-	
+
 	@JsonIgnore
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "subSlotEntity")
 	private Set<CardEntity> cardEntity;
-	
+
 	@Column(name = "created_by", length = 45)
-    private String createdBy;
-   
-    @Column(name = "updated_by", length = 45)
-    private String updatedBy;
-   
-    @Column(name = "updated_date")
-    private Date updatedDate;
-   
-    @Column(name = "created_date")
-    private Date createdDate;
-	
+	private String createdBy;
+
+	@Column(name = "updated_by", length = 45)
+	private String updatedBy;
+
+	@Column(name = "updated_date")
+	private Date updatedDate;
+
+	@Column(name = "created_date")
+	private Date createdDate;
+
 	public String getCreatedBy() {
 		return createdBy;
 	}
@@ -118,5 +118,5 @@ public class SubSlotEntity implements Serializable {
 	public void setSubSlotName(String subSlotName) {
 		this.subSlotName = subSlotName;
 	}
-	
+
 }
