@@ -183,7 +183,6 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								jsonArray = new Gson().toJson(value);
 								obj.put(new String("output"), jsonArray);
 							} else if (type.equalsIgnoreCase("SLGB")) {
-
 								value = false;
 								String response = invokeFtl.generateDevicelockedFile(requestinfo);
 
@@ -527,7 +526,29 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						e.printStackTrace();
 					}
 
-				} else {
+				} else if(e1.getMessage() != null && (e1.getMessage().contains("Connection refused"))){
+					jsonArray = new Gson().toJson(value);
+					obj.put(new String("output"), jsonArray);
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "2_Authentication");
+					String response = "";
+					String responseDownloadPath = "";
+
+					try {
+						response = invokeFtl.generateRouterLimitResultFileFailure(requestinfo);
+
+						responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+								.getProperty("responseDownloadPath");
+						TextReport.writeFile(responseDownloadPath,
+								requestinfo.getAlphanumericReqId() + "V"
+										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
+								response);
+					} catch (Exception e) {						
+						e.printStackTrace();
+					}	
+				}else {
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),

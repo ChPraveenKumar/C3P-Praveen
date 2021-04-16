@@ -1378,4 +1378,19 @@ public class InvokeFtl {
 		}
 		return content;
 	}
+	
+	public String generateRouterLimitResultFileFailure(RequestInfoPojo configRequest) throws Exception {
+		String res = null;
+		try {
+
+			Map<String, Object> tree = new HashMap<String, Object>();
+			tree.put("preValidateTest", configRequest);
+			res = freemarkerDo(tree, "ConnectionRefuse.ftl");
+
+		} catch (Exception e) {
+
+			throw e;
+		}
+		return res;
+	}
 }
