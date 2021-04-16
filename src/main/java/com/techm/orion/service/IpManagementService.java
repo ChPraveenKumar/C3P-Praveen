@@ -124,7 +124,9 @@ public class IpManagementService {
 			hostip.put("role", hostIpList.get(i).getHostRole());
 			hostip.put("remarks", hostIpList.get(i).getHostRemarks());
 			hostip.put("status", hostIpList.get(i).getHostStatus());
+			if(hostIpList.get(i).getHostReleasedOn() != null) {
 			hostip.put("releasedDate", hostIpList.get(i).getHostReleasedOn().toString());
+			}
 			jsonArray.add(hostip);
 		}
 		rangeIp.put("details", jsonArray);
