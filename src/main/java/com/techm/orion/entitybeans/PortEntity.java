@@ -1,6 +1,7 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -55,6 +56,50 @@ public class PortEntity implements Serializable {
 	@Column(name = "type", length = 255)
 	private String type;
 	
+	@Column(name = "created_by", length = 45)
+    private String createdBy;
+   
+    @Column(name = "updated_by", length = 45)
+    private String updatedBy;
+   
+    @Column(name = "updated_date")
+    private Date updatedDate;
+   
+    @Column(name = "created_date")
+    private Date createdDate;
+	
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	public Date getUpdatedDate() {
+		return updatedDate;
+	}
+
+	public void setUpdatedDate(Date updatedDate) {
+		this.updatedDate = updatedDate;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
 	public CardEntity getCardEntity() {
 		return cardEntity;
 	}
@@ -134,4 +179,5 @@ public class PortEntity implements Serializable {
 	public void setType(String type) {
 		this.type = type;
 	}
+	
 }

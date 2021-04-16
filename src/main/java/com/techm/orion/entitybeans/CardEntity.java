@@ -1,6 +1,7 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -34,15 +35,9 @@ public class CardEntity implements Serializable {
 	@Column(name = "card_name", length = 100)
 	private String cardName;
 	
-	//@Column(name = "slot_id", length = 20)
-	//private String slotId;
-	
 	@ManyToOne(fetch = FetchType.LAZY, cascade =  CascadeType.PERSIST )
 	@JoinColumn(name="slot_id")
 	private SlotEntity slotEntity;
-	
-	//@Column(name = "subslot_id", length = 20)
-	//private String subSlotId;
 	
 	@ManyToOne(fetch = FetchType.LAZY, cascade =  CascadeType.PERSIST )
 	@JoinColumn(name="subslot_id")
@@ -55,6 +50,50 @@ public class CardEntity implements Serializable {
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "cardEntity")
 	private Set<PortEntity> portEntity;
 	
+	@Column(name = "created_by", length = 45)
+    private String createdBy;
+   
+    @Column(name = "updated_by", length = 45)
+    private String updatedBy;
+   
+    @Column(name = "updated_date")
+    private Date updatedDate;
+   
+    @Column(name = "created_date")
+    private Date createdDate;
+    
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	public Date getUpdatedDate() {
+		return updatedDate;
+	}
+
+	public void setUpdatedDate(Date updatedDate) {
+		this.updatedDate = updatedDate;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
+	}
+
 	public SubSlotEntity getSubSlotEntity() {
 		return subSlotEntity;
 	}
@@ -102,6 +141,7 @@ public class CardEntity implements Serializable {
 	public void setIsInSubSlot(String isInSubSlot) {
 		this.isInSubSlot = isInSubSlot;
 	}
+	
 }
 
 

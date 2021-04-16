@@ -1,6 +1,7 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -44,6 +45,18 @@ public class SlotEntity implements Serializable {
 	@JsonIgnore
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "slotEntity")
 	private Set<CardEntity> cardEntity;
+	
+	@Column(name = "created_by", length = 45)
+    private String createdBy;
+   
+    @Column(name = "updated_by", length = 45)
+    private String updatedBy;
+   
+    @Column(name = "updated_date")
+    private Date updatedDate;
+   
+    @Column(name = "created_date")
+    private Date createdDate;
 
 	public int getSlotId() {
 		return slotId;
@@ -51,6 +64,38 @@ public class SlotEntity implements Serializable {
 
 	public void setSlotId(int slotId) {
 		this.slotId = slotId;
+	}
+
+	public String getCreatedBy() {
+		return createdBy;
+	}
+
+	public void setCreatedBy(String createdBy) {
+		this.createdBy = createdBy;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	public Date getUpdatedDate() {
+		return updatedDate;
+	}
+
+	public void setUpdatedDate(Date updatedDate) {
+		this.updatedDate = updatedDate;
+	}
+
+	public Date getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(Date createdDate) {
+		this.createdDate = createdDate;
 	}
 
 	public String getSlotName() {
@@ -92,4 +137,5 @@ public class SlotEntity implements Serializable {
 	public void setHasSubSlot(String hasSubSlot) {
 		this.hasSubSlot = hasSubSlot;
 	}
+	
 }
