@@ -258,6 +258,11 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 			@Param("alphanumericReqId") String alphanumericReqId, @Param("requestVersion") Double requestVersion);
 	
 	List<RequestInfoEntity> findAllByHostNameOrderByDateofProcessingDesc(String hostName);
+	
+	@Query(value = "SELECT r_request_version FROM c3p_t_request_info where r_alphanumeric_req_id =:alphanumericReqId",nativeQuery=true)
+	List<String> findVersions(@Param("alphanumericReqId") String alphanumericReqId);
+	
+	List<RequestInfoEntity> findOneByAlphanumericReqId(String requestId);
 }
 
 

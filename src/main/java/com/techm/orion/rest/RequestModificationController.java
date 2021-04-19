@@ -20,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techm.orion.entitybeans.RequestInfoEntity;
+import com.techm.orion.entitybeans.CreateConfigEntity;
+import com.techm.orion.repositories.CreateConfigRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.service.RequestModificationService;
 @RestController
@@ -58,15 +59,16 @@ public class RequestModificationController {
 	public ResponseEntity<JSONObject> requestDropDown(@RequestParam String requestId) throws Exception {
 		JSONObject json = new JSONObject();
 		JSONArray array = new JSONArray();
-		List<RequestInfoEntity> requestEntity = repository.findAllByAlphanumericReqId(requestId);
-		requestEntity.forEach(entity -> {
-			JSONObject object = new JSONObject();
-			object.put("id", entity.getRequestVersion());
-			array.add(object);
-		});
-		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("response", array);
-		return new ResponseEntity<JSONObject>(jsonObject, HttpStatus.OK);
+		List<String> versionList = repository.findVersions(requestId);
+		//versionList.forEach(requestVersions -> {
+		for(int i = 0; i<versionList.size(); i++) {
+		//	String version = String.valueOf(requestVersions);
+			String version = String.valueOf(versionList.get(i));
+			array.add(version);
+		}
+	//	});
+		json.put("response", array);
+		return new ResponseEntity<JSONObject>(json, HttpStatus.OK);
 	}
 	}
 

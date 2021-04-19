@@ -39,79 +39,81 @@ public class CardSlotsService {
 	@SuppressWarnings("unchecked")
 	public JSONObject getCardSlots(String hostName) {
 		DeviceDiscoveryEntity entity = deviceDiscoveryRepository.findByDHostName(hostName);
-		JSONObject slotEntities = new JSONObject();
-		JSONObject responseJson = new JSONObject();
 		List<SlotEntity> slotEntity = slotEntityRepository.findByDeviceId(entity.getdId());
+		JSONObject responseJson = new JSONObject();
+		JSONArray slotArray = new JSONArray();
 		slotEntity.forEach(slots -> {
-			List<CardEntity> card = cardEntityRepository.findByslotEntitySlotId(slots.getSlotId());
-			List<SubSlotEntity> subSlotEntity = subSlotEntityRepository.findByslotEntitySlotId(slots.getSlotId());
-			JSONArray slotArray = new JSONArray();
+			JSONObject slotEntities = new JSONObject();
+			slotEntities.put("name", slots.getSlotName());
+			// cards
 			JSONArray cardArray = new JSONArray();
+			List<CardEntity> card = cardEntityRepository.findByslotEntitySlotId(slots.getSlotId());
 			card.forEach(cards -> {
-				List<PortEntity> portEntityList = portEntityRepository.findBycardEntityCardId(cards.getCardId());
-				slotEntities.put("name", slots.getSlotName());
 				JSONObject cardEntities = new JSONObject();
 				cardEntities.put("name", cards.getCardName());
+				List<PortEntity> portEntityList = portEntityRepository.findBycardEntityCardId(cards.getCardId());
 				JSONArray interfaceCardArray = new JSONArray();
-				if (portEntityList != null && !portEntityList.isEmpty()) {
-					portEntityList.forEach(ports -> {
-						JSONObject interfaceJson = new JSONObject();
-						interfaceJson.put("interfaceName", ports.getPortName());
-						interfaceJson.put("interfaceStatus", ports.getPortStatus());
-						interfaceCardArray.add(interfaceJson);
-					});
-					cardEntities.put("interfaces", interfaceCardArray);
-					cardArray.add(cardEntities);
-				}
+				portEntityList.forEach(ports -> {
+					JSONObject interfaceJson = new JSONObject();
+					interfaceJson.put("interfaceName", ports.getPortName());
+					interfaceJson.put("interfaceStatus", ports.getPortStatus());
+					interfaceCardArray.add(interfaceJson);
+				});
+				cardEntities.put("interfaces", interfaceCardArray);
+				cardArray.add(cardEntities);
 			});
-			JSONArray subSlotCardArray = new JSONArray();
-			JSONObject subSlotCardObject = new JSONObject();
-			JSONObject subSlotEntities = new JSONObject();
+			// subslots
 			JSONArray subSlotObjArray = new JSONArray();
-			subSlotEntity.forEach(slot -> {
-				if (subSlotEntity != null) {
-					List<CardEntity> cardSubSlot = cardEntityRepository
-							.findBysubSlotEntitySubSlotId(slot.getSubSlotId());
-					cardSubSlot.forEach(cardSubList -> {
-						List<PortEntity> subSlotPortEntityList = portEntityRepository
-								.findBycardEntityCardId(cardSubList.getCardId());
-						subSlotCardObject.put("subSlotName", slot.getSubSlotName());
-						subSlotEntities.put("name", cardSubList.getCardName());
-						JSONArray interfaceSubSlotArray = new JSONArray();
-						subSlotPortEntityList.forEach(subSlotList -> {
-							JSONObject interfaceSubSlotJson = new JSONObject();
-							interfaceSubSlotJson.put("interfaceName", subSlotList.getPortName());
-							interfaceSubSlotJson.put("interfaceStatus", subSlotList.getPortStatus());
-							interfaceSubSlotArray.add(interfaceSubSlotJson);
-						});
-						subSlotEntities.put("interfaces", interfaceSubSlotArray);
-						subSlotCardArray.add(subSlotEntities);
-						subSlotCardObject.put("cards", subSlotCardArray);
-						subSlotObjArray.add(subSlotCardObject);
+			List<SubSlotEntity> subSlotEntity = subSlotEntityRepository.findByslotEntitySlotId(slots.getSlotId());
+			subSlotEntity.forEach(subSlots -> {
+				JSONObject subSlotCardObject = new JSONObject();
+				subSlotCardObject.put("subSlotName", subSlots.getSubSlotName());
+				JSONArray subSlotCardArray = new JSONArray();
+				List<CardEntity> cardSubSlot = cardEntityRepository
+						.findBysubSlotEntitySubSlotId(subSlots.getSubSlotId());
+				cardSubSlot.forEach(cardSubSlots -> {
+					JSONObject subSlotEntities = new JSONObject();
+					subSlotEntities.put("name", cardSubSlots.getCardName());
+					JSONArray interfaceSubSlotArray = new JSONArray();
+					List<PortEntity> subSlotPortEntityList = portEntityRepository
+							.findBycardEntityCardId(cardSubSlots.getCardId());
+					subSlotPortEntityList.forEach(subPorts -> {
+						JSONObject interfaceSubSlotJson = new JSONObject();
+						interfaceSubSlotJson.put("interfaceName", subPorts.getPortName());
+						interfaceSubSlotJson.put("interfaceStatus", subPorts.getPortStatus());
+						interfaceSubSlotArray.add(interfaceSubSlotJson);
 					});
-				}
+					subSlotEntities.put("interfaces", interfaceSubSlotArray);
+					subSlotCardArray.add(subSlotEntities);
+				});
+				subSlotCardObject.put("cards", subSlotCardArray);
+				subSlotObjArray.add(subSlotCardObject);
 			});
+
 			slotEntities.put("name", slots.getSlotName());
 			slotEntities.put("subSlots", subSlotObjArray);
 			slotEntities.put("cards", cardArray);
 			slotArray.add(slotEntities);
-			responseJson.put("slots", slotArray);
-
-			float occupiedCount = 0, utilizationCount = 0, reservedCount = 0;
-			float occupiedPercentage = 0, utilizationPercentage = 0, reservedPercentage = 0, occupied = 0;
-			float nameCount = portEntityRepository.portNameCount();
-			occupiedCount = portEntityRepository.statusPortNameCount("Occupied");
-			utilizationCount = portEntityRepository.statusPortNameCount("Utilization");
-			reservedCount = portEntityRepository.statusPortNameCount("Reserved");
-			occupied = occupiedCount;
-			occupiedPercentage = (occupied / nameCount) * 100;
-			utilizationPercentage = (utilizationCount / nameCount) * 100;
-			reservedPercentage = (reservedCount / nameCount) * 100;
-			responseJson.put("hostName", hostName);
-			responseJson.put("utilization", utilizationPercentage + "%");
-			responseJson.put("occupied", occupiedPercentage + "%");
-			responseJson.put("reserved", reservedPercentage + "%");
 		});
+		responseJson.put("slots", slotArray);
+
+		float occupiedCount = 0, utilizationCount = 0, reservedCount = 0;
+		float occupiedPercentage = 0, utilizationPercentage = 0, reservedPercentage = 0, occupied = 0;
+		float nameCount = portEntityRepository.portNameCount();
+		occupiedCount = portEntityRepository.statusPortNameCount("Occupied");
+		utilizationCount = portEntityRepository.statusPortNameCount("Utilization");
+		reservedCount = portEntityRepository.statusPortNameCount("Reserved");
+		occupied = occupiedCount;
+		occupiedPercentage = (occupied / nameCount) * 100;
+		utilizationPercentage = (utilizationCount / nameCount) * 100;
+		reservedPercentage = (reservedCount / nameCount) * 100;
+		responseJson.put("hostName", hostName);
+		responseJson.put("utilization", utilizationPercentage + "%");
+		responseJson.put("occupied", occupiedPercentage + "%");
+		responseJson.put("reserved", reservedPercentage + "%");
+
 		return responseJson;
+
 	}
+
 }

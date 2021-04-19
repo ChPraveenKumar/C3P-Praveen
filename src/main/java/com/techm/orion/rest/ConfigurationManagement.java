@@ -31,6 +31,7 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
+import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
@@ -45,6 +46,7 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterAttribRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
+import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
@@ -102,6 +104,9 @@ public class ConfigurationManagement {
 	
 	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
+	
+	@Autowired
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -118,6 +123,7 @@ public class ConfigurationManagement {
 		String requestIdForConfig = "";
 		String res = "false";
 		String data = "Failure";
+		String requestId = null;
 		String request_creator_name = null, userName = null, userRole = null;
 		List<String> templateList = null;
 		TemplateManagementDao dao = new TemplateManagementDao();
@@ -207,16 +213,27 @@ public class ConfigurationManagement {
 			} else {
 				configReqToSendToC3pCode.setVnfConfig("");
 			}
+			if (json.containsKey("requestId")) {
+				requestId = json.get("requestId").toString();
+				configReqToSendToC3pCode.setAlphanumericReqId(requestId);
+			}
 			if (!json.containsKey("requestVersion")) {
 				configReqToSendToC3pCode.setRequestVersion(1.0);
 			} else {
-				Double version = Double.parseDouble(json.get("requestVersion").toString()) + 0.1;
-				String requestVersion = df2.format(version);
-				configReqToSendToC3pCode.setRequestVersion(Double.parseDouble(requestVersion));
+				//RequestInfoEntity reqVersions = requestInfoDetailsRepositories.findByAlphanumericReqId(requestId);
+				List<RequestInfoEntity> reqVersions = requestInfoDetailsRepositories.findOneByAlphanumericReqId(requestId);
+				for(int i  = 0 ; i<reqVersions.size(); i++ ) {
+				if(reqVersions.get(i).getAlphanumericReqId() == null) {
+					configReqToSendToC3pCode.setRequestVersion(1.0);
+				}else {
+					Double version = Double.parseDouble(reqVersions.get(i).getRequestVersion().toString()) + 0.1;
+					String requestVersion = df2.format(version);
+					configReqToSendToC3pCode.setRequestVersion(Double.parseDouble(requestVersion));
+				}
 			}
-			if (json.containsKey("requestId")) {
-				configReqToSendToC3pCode.setAlphanumericReqId(json.get("requestId").toString());
 			}
+			
+		
 			// This version is 1 is this will be freshly created request every
 			// time so
 			// parent will be 1.
