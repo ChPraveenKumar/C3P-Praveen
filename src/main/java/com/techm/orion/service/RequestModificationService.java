@@ -68,7 +68,7 @@ public class RequestModificationService {
 					.findBytemplateFeatureId(feature.gettFeatureId().getId());
 			List<CreateConfigEntity> mastLables = configRepo.findAttribValuByMasterLabelIdAndRequestIdAndRequestVersion(
 					masterAttribute.get(0).getId(), requestId, requestVer);
-			logger.debug("feature - size:" + feature.gettFeatureId().getId());
+			logger.debug("feature - size:" + feature.gettFeatureId().getMasterFId());
 			if (mastLables != null && mastLables.size() > 0) {
 				logger.debug("mastLables - size:" + mastLables.size());
 				prepareAttribConfigInfo(featureAndAttrib, requestId, requestVer, feature.gettFeatureId().getId(),
@@ -158,7 +158,7 @@ public class RequestModificationService {
 			for (int i = 0; i < attribInfoLabelsSize; i++) {
 				JSONObject featuresDetailJson = new JSONObject();
 				JSONArray masterAttribArray = new JSONArray();
-				featuresDetailJson.put("id", featureId);
+				
 				//Getting master feature id from t_attrib_m_attribute table.
 				MasterAttributes masterAttrib = masterAttributes.get(counter);
 				boolean replication = false;
@@ -166,6 +166,7 @@ public class RequestModificationService {
 				if(masterfeatures !=null && masterfeatures.getfReplicationind() !=null) {
 					replication = masterfeatures.getfReplicationind();
 				}
+				featuresDetailJson.put("id", masterfeatures.getfId());
 				featuresDetailJson.put("replication", replication);
 				if (i == 0) {
 					featuresDetailJson.put("name", featureName);
