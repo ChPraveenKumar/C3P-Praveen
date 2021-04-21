@@ -12,11 +12,12 @@ import com.techm.orion.entitybeans.PortEntity;
 @Repository
 public interface PortEntityRepository extends JpaRepository<PortEntity, Long> {
 
-	@Query(value = "select count(port_name) from c3p_ports", nativeQuery = true)
-	int portNameCount();
-
-	@Query(value = "select count(port_name) from c3p_ports where port_status =:portStatus", nativeQuery = true)
-	int statusPortNameCount(@Param("portStatus") String portStatus);
-
 	List<PortEntity> findBycardEntityCardId(int cardId);
+	
+	@Query(value = "select count(port.port_name) from c3p_ports port inner join c3p_cards card on port.card_id = card.card_id inner join c3p_slots slot on card.slot_id = slot.slot_id where slot.device_id =:deviceId", nativeQuery = true)
+	int portNameCount(@Param("deviceId") int deviceId);
+	
+	@Query(value = "select count(port.port_name) from c3p_ports port inner join c3p_cards card on port.card_id = card.card_id inner join c3p_slots slot on card.slot_id = slot.slot_id where slot.device_id =:deviceId and port.port_status =:portStatus", nativeQuery = true)
+	int statusPortNameCount(@Param("deviceId") int deviceId, @Param("portStatus") String portStatus);
+		
 }
