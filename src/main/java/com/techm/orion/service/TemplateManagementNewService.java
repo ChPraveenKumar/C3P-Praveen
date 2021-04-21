@@ -703,7 +703,7 @@ public class TemplateManagementNewService {
 				.getCammandByTemplateId(finaltemplate);
 		String finalCammands = "";
 		for (CommandPojo cammand : cammands) {
-			finalCammands = finalCammands + cammand.getCommandValue()+"\n";
+			finalCammands = finalCammands + cammand.getCommandValue();
 		}
 		return finalCammands;
 }
