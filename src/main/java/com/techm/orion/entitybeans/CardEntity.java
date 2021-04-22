@@ -141,4 +141,14 @@ public class CardEntity implements Serializable {
 	public void setIsInSubSlot(String isInSubSlot) {
 		this.isInSubSlot = isInSubSlot;
 	}
+
+	public CardEntity(int cardId, String cardName) {
+		super();
+		this.cardId = cardId;
+		this.cardName = cardName;
+	}
+	
+	public CardEntity() {
+		super();
+	}
 }

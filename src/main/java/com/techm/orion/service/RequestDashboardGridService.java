@@ -1,9 +1,14 @@
 package com.techm.orion.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +34,7 @@ public class RequestDashboardGridService {
 	public List<ServiceRequestPojo> getGridData(String customer, String region, String site, String vendor, String type,
 			String dashboardType, String userName) {
 		List<ServiceRequestPojo> requestList = new ArrayList<>();
+		List<ServiceRequestPojo> listRequest = new ArrayList<>();
 		String loggedUser = null;
 		RequestDetailsResponseMapper mapper = new RequestDetailsResponseMapper();
 		if (customer == null || customer.equalsIgnoreCase("All")) {
@@ -87,7 +93,14 @@ public class RequestDashboardGridService {
 			break;
 		}
 		requestList.sort((ServiceRequestPojo c1, ServiceRequestPojo c2) -> c2.getInfoId() - c1.getInfoId());
-		return requestList;
+		Collection<ServiceRequestPojo> infoEntity = requestList.stream()
+				.collect(Collectors.toMap(ServiceRequestPojo::getAlpha_numeric_req_id, Function.identity(),
+						BinaryOperator.maxBy(Comparator.comparing(ServiceRequestPojo::getRequestVersion))))
+				.values();
+		
+		listRequest.addAll(infoEntity);
+		listRequest.sort((ServiceRequestPojo m1, ServiceRequestPojo m2) -> m2.getDateOfProcessing().compareTo(m1.getDateOfProcessing()));
+		return listRequest;
 	}
 
 	private List<ServiceRequestPojo> getBatchData(List<ServiceRequestPojo> setEntityToPojo, Set<String> batchId) {
