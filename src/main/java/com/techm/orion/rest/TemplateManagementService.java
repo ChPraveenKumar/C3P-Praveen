@@ -248,7 +248,7 @@ public class TemplateManagementService implements Observer {
 			if(json.containsKey("templateId") && json.get("templateId")!=null) {
 				String templateId =json.get("templateId").toString();
 				templateId = StringUtils.substringBefore(templateId,".yang");
-				xmlComands  = templateManagmentService.getCommands(templateId);
+				xmlComands = backupCurrentRouterConfigurationService.formatXml(templateManagmentService.getCommands(templateId));
 			}
 		} catch (Exception e) {
 			logger.error("Command Not found and Exception occured due to"+e.getMessage());

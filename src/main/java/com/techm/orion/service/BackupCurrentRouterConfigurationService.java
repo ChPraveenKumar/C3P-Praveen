@@ -544,7 +544,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 	}
 	
-	private String formatXml(String xmlStringToBeFormatted) {
+	public String formatXml(String xmlStringToBeFormatted) {
 		String formattedXmlString = null;
 		try {
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();

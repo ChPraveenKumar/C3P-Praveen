@@ -38,7 +38,7 @@ import com.google.gson.JsonParser;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.BatchIdEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
-import com.techm.orion.entitybeans.FirmwareUpgradeSingleDeviceEntity;
+import com.techm.orion.entitybeans.ImageManagementEntity;
 import com.techm.orion.entitybeans.RequestDetailsBackUpAndRestoreEntity;
 import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
@@ -52,16 +52,12 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
-import com.techm.orion.repositories.DeviceInterfaceRepo;
-import com.techm.orion.repositories.FirmUpgradeSingleDeviceRepository;
-import com.techm.orion.repositories.InternetInfoRepo;
+import com.techm.orion.repositories.ImageManagementRepository;
 import com.techm.orion.repositories.RequestDetailsBackUpAndRestoreRepo;
 import com.techm.orion.repositories.RequestDetailsImportRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.RouterVfRepo;
-import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.VendorDetailsRepository;
-import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.DcmConfigService;
 
 @Controller
@@ -72,49 +68,37 @@ public class BackUpAndRestoreController {
 			.getLogger(BackUpAndRestoreController.class);
 
 	@Autowired
-	public RequestDetailsImportRepo requestDetailsImportRepo;
-
-	@Autowired
-	public DeviceInterfaceRepo deviceInterfaceRepo;
-
-	@Autowired
-	public InternetInfoRepo internetInfoRepo;
+	private RequestDetailsImportRepo requestDetailsImportRepo;
 
 	@Autowired
 	public RouterVfRepo routerVfRepo;
 
 	@Autowired
-	public WebServiceRepo webServiceRepo;
+	private VendorDetailsRepository vendorDetailsRepo;
 
 	@Autowired
-	public VendorDetailsRepository vendorDetailsRepo;
+	private RequestDetailsBackUpAndRestoreRepo requestDetailsBackUpAndRestoreRepo;
 
 	@Autowired
-	public RequestDetailsBackUpAndRestoreRepo requestDetailsBackUpAndRestoreRepo;
+	private DcmConfigService dcmConfigService;
 
 	@Autowired
-	DcmConfigService dcmConfigService;
+	private ConfigMngmntService myObj;
 
 	@Autowired
-	ConfigMngmntService myObj;
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 
 	@Autowired
-	public DeviceDiscoveryRepository deviceDiscoveryRepository;
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
 	@Autowired
-	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+	private RequestInfoDao dao;
 
 	@Autowired
-	RequestInfoDao dao;
+	private BatchInfoRepo batchInfoRepo;
 
 	@Autowired
-	public BatchInfoRepo batchInfoRepo;
-
-	@Autowired
-	public SiteInfoRepository siteInfoRepository;
-
-	@Autowired
-	FirmUpgradeSingleDeviceRepository firmUpgradeSingleDeviceRepository;
+	private ImageManagementRepository imageManagementRepository;
 
 	@Autowired
 	DeviceDiscoveryRepository deviceInforepo;
@@ -1593,11 +1577,11 @@ public class BackUpAndRestoreController {
 			JSONObject json = (JSONObject) parser.parse(request);
 			String vendor = json.get("vendor").toString();
 			String deviceFamily = json.get("deviceFamily").toString();
-			List<FirmwareUpgradeSingleDeviceEntity> mainList = new ArrayList<FirmwareUpgradeSingleDeviceEntity>();
-			mainList = firmUpgradeSingleDeviceRepository.findByVendorAndFamily(
+			List<ImageManagementEntity> imageManagementEntities = null;
+			imageManagementEntities = imageManagementRepository.findByVendorAndFamily(
 					vendor, deviceFamily);
 
-			mainList.forEach(site -> {
+			imageManagementEntities.forEach(site -> {
 				model.add(site.getDisplayName());
 			});
 		} catch (Exception e) {

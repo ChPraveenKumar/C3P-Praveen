@@ -189,6 +189,25 @@ public class MasterAttributes implements Serializable {
 		this.isKey = isKey;
 	}
 
+	public MasterAttributes(int id, String label, String name, String uiComponent, String validations, String category, String attribType,
+			String templateId, String seriesId, String  masterFID, String characteristicId, String labelValue, boolean isKey) {
+		super();
+		this.id = id;
+		this.label = label;
+		this.name = name;
+		this.uiComponent = uiComponent;
+		this.validations = validations;
+		this.category = category;
+		this.attribType = attribType;
+		this.templateId=templateId;
+		this.seriesId=seriesId;
+		this.masterFID = masterFID;
+		this.characteristicId = characteristicId;
+		this.labelValue = labelValue;
+		this.isKey = isKey;
+		
+	}
+
 	public MasterAttributes() {
 		super();
 	}
