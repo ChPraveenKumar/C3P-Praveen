@@ -38,6 +38,7 @@ import com.techm.orion.pojo.DeviceDetailsPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.VNFTemplateRepository;
+import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementNewService;
 import com.techm.orion.utility.TSALabels;
@@ -61,6 +62,9 @@ public class TemplateManagementService implements Observer {
 	
 	@Autowired
 	private VNFTemplateRepository vnfTemplateRepo;	
+	
+	@Autowired
+	private BackupCurrentRouterConfigurationService backupCurrentRouterConfigurationService;
 	/**
 	 *This Api is marked as ***************External Api Impacted****************
 	 **/
