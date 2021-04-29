@@ -3734,4 +3734,10 @@ public class DcmConfigService {
 			}
 		}
 	}
+	
+	public void updateRequestCount(DeviceDiscoveryEntity deviceDetails){
+		int count = deviceDetails.getdReqCount() + 1;
+		deviceDetails.setdReqCount(count);
+		deviceDiscoveryRepository.save(deviceDetails);
+	}
 }

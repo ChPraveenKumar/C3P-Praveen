@@ -170,6 +170,12 @@ public class DeviceDiscoveryEntity {
 	@Transient
 	private JSONArray contactDetails;
 
+	@Column(name = "d_discrepancy")
+	private int dDiscrepancy;
+	
+	@Column(name = "d_req_count")
+	private int dReqCount;
+	
 	public JSONArray getContactDetails() {
 		return contactDetails;
 	}
@@ -601,4 +607,21 @@ public class DeviceDiscoveryEntity {
 	public void setdDecommReason(String dDecommReason) {
 		this.dDecommReason = dDecommReason;
 	}
+
+	public int getdDiscrepancy() {
+		return dDiscrepancy;
+	}
+
+	public void setdDiscrepancy(int dDiscrepancy) {
+		this.dDiscrepancy = dDiscrepancy;
+	}
+
+	public int getdReqCount() {
+		return dReqCount;
+	}
+
+	public void setdReqCount(int dReqCount) {
+		this.dReqCount = dReqCount;
+	}
+		
 }
