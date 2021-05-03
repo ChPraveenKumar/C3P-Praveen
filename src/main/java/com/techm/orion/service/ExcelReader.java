@@ -1,4 +1,4 @@
-package com.techm.orion.service;
+/*package com.techm.orion.service;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,7 +62,7 @@ import com.techm.orion.repositories.VendorRepository;
 import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.utility.TSALabels;
 
-/*Class to handle import (single, bulk file) validation, data save, milestone validation and communda flow invocation*/
+Class to handle import (single, bulk file) validation, data save, milestone validation and communda flow invocation
 @Service
 public class ExcelReader {
 	private static final Logger logger = LogManager.getLogger(ExcelReader.class);
@@ -107,7 +107,7 @@ public class ExcelReader {
 
 	RequestDetailsEntity requestDetailsEntity;
 
-	/* Method to save data from upload file */
+	 Method to save data from upload file 
 	public boolean saveDataFromUploadFile(MultipartFile file, String userName) {
 
 		boolean isFlag = false;
@@ -121,7 +121,7 @@ public class ExcelReader {
 		return isFlag;
 	}
 
-	/* Method call to save data from excel file */
+	 Method call to save data from excel file 
 	@SuppressWarnings("null")
 	private boolean readDataFromExcel(MultipartFile file, String userName) {
 		try {
@@ -220,7 +220,7 @@ public class ExcelReader {
 				for (int i1 = 0; i1 < noOfRows; i1++) {
 					List<RequestDetailsEntity> requestDtlList = requestDetailsImportRepo.findAll();
 					requestDetailsEntity = new RequestDetailsEntity();
-					/* Setting up schedule time flag in DB */
+					 Setting up schedule time flag in DB 
 					if (header.contains("To Be Scheduled")) {
 						for (j = 0; j < header.size(); j++) {
 							if (header.get(j).equalsIgnoreCase("To Be Scheduled")) {
@@ -410,7 +410,7 @@ public class ExcelReader {
 
 					}
 
-					/* calling repository to save data in Database */
+					 calling repository to save data in Database 
 					requestDetailsImportRepo.save(requestDetailsEntity);
 					deviceInterfaceRepo.save(deviceInterfaceEntity);
 					internetInfoRepo.save(internetInfoEntity);
@@ -421,9 +421,9 @@ public class ExcelReader {
 				List<RequestDetailsEntity> requestByRequestStatus = requestDetailsImportRepo.findAll();
 				Boolean isCheck = false;
 				int requestInfoId = 0;
-				/*
+				
 				 * setting up "In Progress and Awaiting status" on Import Dash board
-				 */
+				 
 				for (int i = (requestInfoIdForBulk - 1); i < requestByRequestStatus.size(); i++) {
 					String status = requestByRequestStatus.get(i).getImportStatus();
 					if (status == null) {
@@ -439,11 +439,11 @@ public class ExcelReader {
 
 					while (isCheck) {
 
-						/*
+						
 						 * calling validate method to perform milestone validation in back end
-						 */
+						 
 						validate(requestInfoId);
-						/* Bulk and single import request execution */
+						 Bulk and single import request execution 
 						for (int i1 = (requestInfoIdForBulk - 1); i1 < requestByRequestStatus.size(); i1++) {
 
 							String importStatusAfterValidation = requestByRequestStatus.get(i1).getImportStatus();
@@ -453,9 +453,9 @@ public class ExcelReader {
 
 								continue;
 							}
-							/*
+							
 							 * Processing of one by one request on Import Dash Board
-							 */
+							 
 							else if ((importStatusAfterValidation.equals("Success")
 									|| importStatusAfterValidation.equals("Awaiting"))
 									&& milestoneAfterValidation.equals("11111")) {
@@ -475,9 +475,9 @@ public class ExcelReader {
 
 								DeviceInterfaceEntity ExportList2 = new DeviceInterfaceEntity();
 								InternetInfoEntity ExportList3 = new InternetInfoEntity();
-								/*
+								
 								 * Setting variable values to push them on communda
-								 */
+								 
 								createConfig.setCustomer(requestByRequestStatus.get(i1).getCustomer());
 								createConfig.setBanner(requestByRequestStatus.get(i1).getBanner());
 								createConfig.setDeviceType(requestByRequestStatus.get(i1).getDevice_type());
@@ -538,11 +538,11 @@ public class ExcelReader {
 								if (requestByRequestStatus.get(i1).getScheduledTime() != null) {
 									createConfig.setScheduledTime(requestByRequestStatus.get(i1).getScheduledTime());
 								}
-								/*
+								
 								 * Generation of configuration and header file on local drive
-								 */
+								 
 								importSRDcmConfigService.createTemplate(createConfig);
-								/* Updating template uses data in Database */
+								 Updating template uses data in Database 
 								String templateIdUsed = createConfig.getTemplateID();
 								templateUsgaeCount.insertTemplateUsageData(templateIdUsed);
 
@@ -552,23 +552,23 @@ public class ExcelReader {
 									requestDetailsImportRepo.updateSuggestedTemplateId(templateIdUsed, id);
 								}
 
-								/*
+								
 								 * Thread halt to restart communda in case of bulk SR
-								 */
+								 
 								try {
 
 									Thread.sleep(70000);
 								} catch (Exception e) {
 									logger.error(e);
 								}
-								/* Invocation of communda flow */
+								 Invocation of communda flow 
 								TelnetCommunicationSSHImportSR telnetCommunicationSSHImportSR = new TelnetCommunicationSSHImportSR(
 										createConfig, userName);
 								telnetCommunicationSSHImportSR.setDaemon(true);
 								telnetCommunicationSSHImportSR.start();
-								/*
+								
 								 * Thread halt to process next SR before previous SR completion
-								 */
+								 
 								try {
 
 									Thread.sleep(180000);
@@ -592,7 +592,7 @@ public class ExcelReader {
 		return true;
 	}
 
-	/* Method call to check for .xls and .xlsx file type */
+	 Method call to check for .xls and .xlsx file type 
 	private Workbook getWorkBook(MultipartFile file) {
 		Workbook workbook = null;
 		String extension = FilenameUtils.getExtension(file.getOriginalFilename());
@@ -610,7 +610,7 @@ public class ExcelReader {
 		return workbook;
 	}
 
-	/* Method call to save data from .csv file */
+	 Method call to save data from .csv file 
 	private boolean readDataFromCsv(MultipartFile file, String userName) {
 		try {
 
@@ -632,7 +632,7 @@ public class ExcelReader {
 			int rowSize = rows.size();
 			int j = 0;
 
-			/* checking for single or bulk request type */
+			 checking for single or bulk request type 
 			if (rowSize == 2) {
 				for (int i = 0; i < (rows.size() - 1); i++) {
 					header = Arrays.asList(rows.get(i));
@@ -644,7 +644,7 @@ public class ExcelReader {
 
 				}
 			}
-			/* Storing row wise value in Map */
+			 Storing row wise value in Map 
 			for (int i = 1; i < (rows.size()); i++) {
 
 				rowValue = Arrays.asList(rows.get(i));
@@ -662,7 +662,7 @@ public class ExcelReader {
 
 				List<RequestDetailsEntity> requestDtlList = requestDetailsImportRepo.findAll();
 				requestDetailsEntity = new RequestDetailsEntity();
-				/* Setting up schedule time flag in DB */
+				 Setting up schedule time flag in DB 
 				if (header.contains("To Be Scheduled")) {
 					for (j = 0; j < header.size(); j++) {
 						if (header.get(j).equalsIgnoreCase("To Be Scheduled")) {
@@ -852,7 +852,7 @@ public class ExcelReader {
 
 				}
 
-				/* calling repository to save data in Database */
+				 calling repository to save data in Database 
 				requestDetailsImportRepo.save(requestDetailsEntity);
 				deviceInterfaceRepo.save(deviceInterfaceEntity);
 				internetInfoRepo.save(internetInfoEntity);
@@ -863,7 +863,7 @@ public class ExcelReader {
 			List<RequestDetailsEntity> requestByRequestStatus = requestDetailsImportRepo.findAll();
 			Boolean isCheck = false;
 			int requestInfoId = 0;
-			/* setting up "In Progress and Awaiting status" on Import Dash board */
+			 setting up "In Progress and Awaiting status" on Import Dash board 
 			for (int i = (requestInfoIdForBulk - 1); i < requestByRequestStatus.size(); i++) {
 				String status = requestByRequestStatus.get(i).getImportStatus();
 				if (status == null) {
@@ -878,11 +878,11 @@ public class ExcelReader {
 				}
 				while (isCheck) {
 
-					/*
+					
 					 * calling validate method to perform milestone validation in back end
-					 */
+					 
 					validate(requestInfoId);
-					/* Bulk and single import request execution */
+					 Bulk and single import request execution 
 					for (int i1 = (requestInfoIdForBulk - 1); i1 < requestByRequestStatus.size(); i1++) {
 
 						String importStatusAfterValidation = requestByRequestStatus.get(i1).getImportStatus();
@@ -891,7 +891,7 @@ public class ExcelReader {
 
 							continue;
 						}
-						/* Processing of one by one request on Import Dash Board */
+						 Processing of one by one request on Import Dash Board 
 						else if ((importStatusAfterValidation.equals("Success")
 								|| importStatusAfterValidation.equals("Awaiting"))
 								&& milestoneAfterValidation.equals("11111")) {
@@ -911,7 +911,7 @@ public class ExcelReader {
 
 							DeviceInterfaceEntity ExportList2 = new DeviceInterfaceEntity();
 							InternetInfoEntity ExportList3 = new InternetInfoEntity();
-							/* Setting variable values to push them on communda */
+							 Setting variable values to push them on communda 
 							createConfig.setCustomer(requestByRequestStatus.get(i1).getCustomer());
 							createConfig.setBanner(requestByRequestStatus.get(i1).getBanner());
 							createConfig.setDeviceType(requestByRequestStatus.get(i1).getDevice_type());
@@ -971,11 +971,11 @@ public class ExcelReader {
 								createConfig.setScheduledTime(requestByRequestStatus.get(i1).getScheduledTime());
 							}
 
-							/*
+							
 							 * Generation of configuration and header file on local drive
-							 */
+							 
 							importSRDcmConfigService.createTemplate(createConfig);
-							/* Updating template uses data in Database */
+							 Updating template uses data in Database 
 							String templateIdUsed = createConfig.getTemplateID();
 							templateUsgaeCount.insertTemplateUsageData(templateIdUsed);
 
@@ -985,23 +985,23 @@ public class ExcelReader {
 								requestDetailsImportRepo.updateSuggestedTemplateId(templateIdUsed, id);
 							}
 
-							/*
+							
 							 * Thread halt to restart communda in case of bulk SR
-							 */
+							 
 							try {
 
 								Thread.sleep(70000);
 							} catch (Exception e) {
 								logger.error(e);
 							}
-							/* Invocation of communda flow */
+							 Invocation of communda flow 
 							TelnetCommunicationSSHImportSR telnetCommunicationSSHImportSR = new TelnetCommunicationSSHImportSR(
 									createConfig, userName);
 							telnetCommunicationSSHImportSR.setDaemon(true);
 							telnetCommunicationSSHImportSR.start();
-							/*
+							
 							 * Thread halt to process next SR before previous SR completion
-							 */
+							 
 							try {
 
 								Thread.sleep(180000);
@@ -1025,7 +1025,7 @@ public class ExcelReader {
 		return true;
 	}
 
-	/* Method call to generate Import Id */
+	 Method call to generate Import Id 
 	static String getAlphaNumericString(int n) {
 
 		String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789";
@@ -1042,7 +1042,7 @@ public class ExcelReader {
 		return sb.toString().concat("-1");
 	}
 
-	/* Method call to generate service request Id */
+	 Method call to generate service request Id 
 	static String getAlphaNumericStringForSR(int n) {
 
 		String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789";
@@ -1060,7 +1060,7 @@ public class ExcelReader {
 		return firstName.concat(secondName);
 	}
 
-	/* Method call for milestone validation */
+	 Method call for milestone validation 
 	public void validate(@RequestParam int request_info_id)
 			throws IOException, SQLException, ParseException, java.text.ParseException {
 
@@ -1084,7 +1084,7 @@ public class ExcelReader {
 
 	}
 
-	/* Method call to set certification bits */
+	 Method call to set certification bits 
 	public int ValidMilestone(int request_info_id)
 			throws IOException, SQLException, ParseException, java.text.ParseException {
 		int TemplateData = 0, DataValidation = 0, TestandTurn = 0, Scheduler = 0, MileStoneData = 0, DataFormat = 0;
@@ -1191,7 +1191,7 @@ public class ExcelReader {
 
 	}
 
-	/* Method call for data validation */
+	 Method call for data validation 
 	@SuppressWarnings("unchecked")
 	public int validateImport(int request_info_id) throws IOException {
 
@@ -1362,7 +1362,7 @@ public class ExcelReader {
 
 	}
 
-	/* Method for template suggestion */
+	 Method for template suggestion 
 	@SuppressWarnings({ "unchecked", "unchecked", "unchecked", "unchecked" })
 	public int validateTemplate(int request_info_id) throws IOException, SQLException, ParseException {
 		int TemplateSuggesstion = 0;
@@ -1660,7 +1660,7 @@ public class ExcelReader {
 
 	}
 
-	/* Method call for data validation */
+	 Method call for data validation 
 	public int validateData(@RequestParam int request_info_id) {
 		int Datavalidation = 0;
 		RequestDetailsEntity entity = new RequestDetailsEntity();
@@ -1710,7 +1710,7 @@ public class ExcelReader {
 
 	}
 
-	/* Method call for test validation */
+	 Method call for test validation 
 	public int validateTest(@RequestParam int request_info_id) throws IOException, SQLException {
 		int TestAndTurnUp = 0;
 		RequestDetailsEntity entity = new RequestDetailsEntity();
@@ -1781,7 +1781,7 @@ public class ExcelReader {
 
 	}
 
-	/* Method call for scheduler */
+	 Method call for scheduler 
 	public int validateScheduler(int request_info_id)
 			throws IOException, SQLException, java.text.ParseException, ParseException {
 		int Scheduler = 0;
@@ -1961,14 +1961,14 @@ public class ExcelReader {
 
 	}
 
-	/* Method call to check for null or empty string */
+	 Method call to check for null or empty string 
 	public static boolean isNullOrEmpty(String str) {
 		if (str != null && !str.isEmpty())
 			return true;
 		return false;
 	}
 
-	/* Method call to validate template features */
+	 Method call to validate template features 
 	List<String> validateDataFeatures(int request_info_id) {
 
 		RequestDetailsEntity ExportList = new RequestDetailsEntity();
@@ -2156,7 +2156,7 @@ public class ExcelReader {
 
 	}
 
-	/* Method call to validate features */
+	 Method call to validate features 
 	public List<String> validateFeatures(int request_info_id) {
 		boolean flagwan, flaglan, flagloop, flagrout, flagenable, flagsnmp, flagbanner, flagvrf = false;
 		List<String> feat = new ArrayList<String>();
@@ -2258,7 +2258,7 @@ public class ExcelReader {
 		return feat;
 	}
 
-	/* Method call to compare two dates in case of schedule request */
+	 Method call to compare two dates in case of schedule request 
 	public static int compareDates(String d1, String d2) throws java.text.ParseException, ParseException {
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -2283,3 +2283,4 @@ public class ExcelReader {
 	}
 
 }
+*/

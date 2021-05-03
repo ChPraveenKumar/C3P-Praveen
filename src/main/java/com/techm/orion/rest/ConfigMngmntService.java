@@ -42,7 +42,6 @@ import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
-import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.VendorCommandRepository;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.ConfigurationManagmentService;
@@ -63,10 +62,7 @@ public class ConfigMngmntService implements Observer {
 
 	@Autowired
 	private DcmConfigService dcmConfigService;
-
-	@Autowired
-	private TemplateFeatureRepo templatefeatureRepo;
-
+	
 	@Autowired
 	private SiteInfoRepository siteInfoRepository;
 
@@ -1947,8 +1943,8 @@ public class ConfigMngmntService implements Observer {
 
 	}
 
-	public String getTemplateId(@RequestBody String configRequest) {
-		String requestIdForConfig = "";
+	public JSONObject getTemplateId(@RequestBody String configRequest) {
+		JSONObject requestIdForConfig = new JSONObject();
 		String res = "false";
 
 		String data = "Failure";
@@ -2238,13 +2234,14 @@ public class ConfigMngmntService implements Observer {
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {
 				if (entry.getKey() == "requestID") {
-					requestIdForConfig = entry.getValue();
+					requestIdForConfig.put("key",entry.getValue());
 
 				}
 				if (entry.getKey() == "result") {
 					res = entry.getValue();
 					if (res.equalsIgnoreCase("true")) {
 						data = "Submitted";
+						requestIdForConfig.put("data",data);
 					}
 
 				}

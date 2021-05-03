@@ -1,38 +1,11 @@
 package com.techm.orion.rest;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Response;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.ParseException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.google.gson.Gson;
-import com.techm.orion.entitybeans.RequestDetailsEntity;
-import com.techm.orion.repositories.DeviceFamilyRepository;
-import com.techm.orion.repositories.ModelsRepository;
-import com.techm.orion.repositories.OSRepository;
-import com.techm.orion.repositories.OSversionRepository;
-import com.techm.orion.repositories.RegionsRepository;
-import com.techm.orion.repositories.RequestDetailsExportRepo;
-import com.techm.orion.repositories.VendorRepository;
-import com.techm.orion.service.ExcelReader;
 
 @RestController
 @RequestMapping("/DataValidationImport")
-public class DataValidationImport {
+public class DataValidationImport {/*
 	private static final Logger logger = LogManager.getLogger(DataValidationImport.class);
 	@Autowired
 	private RequestDetailsExportRepo requestDetailsExportRepo;
@@ -55,9 +28,9 @@ public class DataValidationImport {
 	@Autowired
 	private RegionsRepository regionsRepository;
 
-	/**
+	*//**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
+	 **//*
 	@GET
 	@Produces("application/json")
 	@RequestMapping(value = "/milestonebits", method = RequestMethod.GET, produces = "application/json")
@@ -76,11 +49,11 @@ public class DataValidationImport {
 		if (isNullOrEmpty(ExportList.getValidationMilestoneBits())) {
 			obj.put(new String("PopUpMilestone"), popUpmilestone);
 		}
-		/*
+		
 		 * else { ExcelReader.validate(request_info_id);
 		 * 
 		 * }
-		 */
+		 
 		popUpmilestone = ExportList.getValidationMilestoneBits();
 		obj.put(new String("PopUpMilestone"), popUpmilestone);
 
@@ -247,4 +220,4 @@ public class DataValidationImport {
 			return true;
 		return false;
 	}
-}
+*/}
