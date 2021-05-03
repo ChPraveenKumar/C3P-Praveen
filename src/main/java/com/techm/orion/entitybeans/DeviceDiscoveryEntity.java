@@ -170,10 +170,10 @@ public class DeviceDiscoveryEntity {
 	@Transient
 	private JSONArray contactDetails;
 
-	@Column(name = "d_discrepancy")
+	@Column(name = "d_discrepancy",length = 2)
 	private int dDiscrepancy;
 	
-	@Column(name = "d_req_count")
+	@Column(name = "d_req_count",length = 10)
 	private int dReqCount;
 	
 	public JSONArray getContactDetails() {

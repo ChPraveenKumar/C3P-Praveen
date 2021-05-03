@@ -113,6 +113,9 @@ public class DcmConfigService {
 	@Autowired
 	private MasterCharacteristicsRepository masterCharacteristicsRepository;
 	
+	@Autowired
+	TemplateSuggestionDao templateSuggestionDao ;
+	
 	public Map<String, String> updateAlldetails(
 			CreateConfigRequestDCM configRequest,
 			List<CreateConfigPojo> pojoList) throws IOException {
@@ -121,7 +124,7 @@ public class DcmConfigService {
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		// CamundaServiceCreateReq camundaServiceCreateReq = new
 		// CamundaServiceCreateReq();
-		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+		
 		String validateMessage = "", requestType = "";
 		// TelnetCommunicationSSH telnetCommunicationSSH=new
 		// TelnetCommunicationSSH();
@@ -620,8 +623,7 @@ public class DcmConfigService {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		ValidatorConfigManagement validatorConfigManagement = new ValidatorConfigManagement();
 		CreateAndCompareModifyVersion createAndCompareModifyVersion = new CreateAndCompareModifyVersion();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
-		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+		RequestInfoDao requestInfoDao = new RequestInfoDao();		
 		String validateMessage = "";
 
 		String requestIdForConfig = "";
@@ -1455,8 +1457,7 @@ public class DcmConfigService {
 			List<RequestInfoPojo> requestInfoSOList,
 			List<CreateConfigPojo> pojoList, List<String> featureList,
 			List<TemplateFeaturePojo> features) {
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
-		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();		
 		String validateMessage = "";
 		String requestIdForConfig = "", requestType = "";
 		String res = "", output = "";
@@ -2088,9 +2089,7 @@ public class DcmConfigService {
 	public Map<String, String> updateBatchConfig(RequestInfoPojo requestInfoSO,
 			List<CreateConfigPojo> pojoList, List<String> featureList,
 			String userName, List<TemplateFeaturePojo> features) {
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
-
-		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();		
 		String validateMessage = "";
 
 		String requestIdForConfig = "", requestType = "";
@@ -2567,8 +2566,7 @@ public class DcmConfigService {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		// CamundaServiceCreateReq camundaServiceCreateReq = new
-		// CamundaServiceCreateReq();
-		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+		// CamundaServiceCreateReq();		
 		String validateMessage = "", requestType = "";
 		// TelnetCommunicationSSH telnetCommunicationSSH=new
 		// TelnetCommunicationSSH();
@@ -3066,7 +3064,7 @@ public class DcmConfigService {
 
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		// RequestInfoDao requestInfoDao = new RequestInfoDao();
-		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+		
 		String validateMessage = "";
 		// TelnetCommunicationSSH telnetCommunicationSSH=new
 		// TelnetCommunicationSSH();
