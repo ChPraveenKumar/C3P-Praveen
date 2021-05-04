@@ -263,6 +263,14 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	List<String> findVersions(@Param("alphanumericReqId") String alphanumericReqId);
 	
 	List<RequestInfoEntity> findOneByAlphanumericReqId(String requestId);
+	
+	@Query(value = "select  count(r_status) from c3p_t_request_info where r_status=:status and r_request_creator_name like :creatorName and r_alphanumeric_req_id like :requestId", nativeQuery = true)
+	int  getbackupRequestFailuerStatusCount( @Param("status") String status,@Param("creatorName") String creatorName,@Param("requestId") String requestId);
+	
+	
+	@Query(value = "select  count(r_status) from c3p_t_request_info where r_status=:status and r_request_creator_name like :creatorName and r_alphanumeric_req_id not like :requestId", nativeQuery = true)
+	int  getRequestFailuerStatusCount( @Param("status") String status,@Param("creatorName") String creatorName,@Param("requestId") String requestId);
+	
 }
 
 

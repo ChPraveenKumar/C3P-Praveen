@@ -31,14 +31,9 @@ import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryInterfaceEntity;
 import com.techm.orion.entitybeans.DiscoveryDashboardEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
-import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.DeviceDiscoveryInterfaceRepository;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DiscoveryDashboardRepository;
-import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
-import com.techm.orion.repositories.HostDiscrepancyResultRepository;
-import com.techm.orion.repositories.RequestInfoDetailsRepositories;
-import com.techm.orion.service.InventoryManagmentService;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
@@ -49,22 +44,14 @@ public class DeviceDiscoveryController implements Observer {
 	@Autowired
 	private DiscoveryDashboardRepository discoveryDashboardRepo;
 	@Autowired
-	private InventoryManagmentService inventoryServiceRepo;
-	@Autowired
 	private DeviceDiscoveryRepository deviceInforepo;
 	@Autowired
 	private DeviceDiscoveryInterfaceRepository deviceinterfaceRepo;
 	@Autowired
-	private DeviceDiscoveryRepository deviceDiscoveryRepo;
-	@Autowired
-	private ForkDiscrepancyResultRepository forkDiscrepancyRepo;
-	@Autowired
-	private HostDiscrepancyResultRepository hostDoscreapncyRepo;
-	@Autowired
-	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
-
+	private DeviceDiscoveryRepository deviceDiscoveryRepo;	
+	
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -153,7 +140,7 @@ public class DeviceDiscoveryController implements Observer {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -184,18 +171,18 @@ public class DeviceDiscoveryController implements Observer {
 					object.put("region", site.getcSiteRegion());
 
 				}
-				if(getAllDevice.get(i).getdEndOfSupportDate() !=null && !"Not Available".equalsIgnoreCase(
-						getAllDevice.get(i).getdEndOfSupportDate()))
+				if (getAllDevice.get(i).getdEndOfSupportDate() != null
+						&& !"Not Available".equalsIgnoreCase(getAllDevice.get(i).getdEndOfSupportDate()))
 					object.put("eos", getAllDevice.get(i).getdEndOfSupportDate().toString());
 				else
 					object.put("eos", "Not Available");
-				
-				if(getAllDevice.get(i).getdEndOfSaleDate() !=null)
+
+				if (getAllDevice.get(i).getdEndOfSaleDate() != null)
 					object.put("eol", getAllDevice.get(i).getdEndOfSaleDate().toString());
 				else
 					object.put("eol", "Not Available");
 
-				object.put("requests", requestInfoDetailsRepositories.getRequestCountByHost(getAllDevice.get(i).getdHostName()));
+			object.put("requests", getAllDevice.get(i).getdReqCount());
 				if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("0")) {
 					object.put("state", "");
 				} else if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("1")) {
@@ -209,7 +196,11 @@ public class DeviceDiscoveryController implements Observer {
 				} else {
 					object.put("isNew", false);
 				}
-				object.put("discreapncyFlag", checkDiscreapncy(getAllDevice.get(i)));
+				if (getAllDevice.get(i).getdDiscrepancy()>0) {
+					object.put("discreapncyFlag", "Yes");
+				} else {
+					object.put("discreapncyFlag", "No");
+				}
 				outputArray.add(object);
 			}
 			obj.put("data", outputArray);
@@ -224,31 +215,9 @@ public class DeviceDiscoveryController implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-
-	private String checkDiscreapncy(DeviceDiscoveryEntity deviceDiscoveryEntity) {
-		if (deviceDiscoveryEntity != null) {
-			String id = String.valueOf(deviceDiscoveryEntity.getdId());
-			try {
-				Set<String> hostdiscrepancyValue = hostDoscreapncyRepo.findHostDiscrepancyValue(id);
-				if (hostdiscrepancyValue != null && !hostdiscrepancyValue.isEmpty()) {
-					return "Yes";
-				} else {
-					Set<String> forkDiscrepancyValue = forkDiscrepancyRepo.findForkDiscrepancyValue(id);
-					if (forkDiscrepancyValue != null && !forkDiscrepancyValue.isEmpty()) {
-						return "Yes";
-					} else {
-						return "No";
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return null;
-	}
-
+	
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -304,12 +273,9 @@ public class DeviceDiscoveryController implements Observer {
 				detail.put("dContactPhone", inventoryList.get(j).getdContactPhone());
 
 				contactDetails.add(detail);
-
-				inventoryList.get(j).setContactDetails(contactDetails);
-
+				inventoryList.get(j).setContactDetails(contactDetails);				
 			}
-			List<ServiceRequestPojo> requests = inventoryServiceRepo.getRequestDeatils(hostname);
-			obj.put("requestsRaised", requests.size());
+			
 			obj.put("deviceDetails", inventoryList);
 			obj.put("interfaces", interfaceListInventory);
 		} catch (Exception e) {
