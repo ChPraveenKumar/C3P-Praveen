@@ -171,7 +171,7 @@ public class DeviceDiscrepancyService {
 				}
 				details.put("discrepancy", discrepancyObject);
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.error(e);
 			}
 		}
 		return details;
@@ -350,7 +350,7 @@ public class DeviceDiscrepancyService {
 		boolean flag = false;
 		for (int j = 1; j < discrepancyObject.size(); j++) {
 			JSONObject jObject = (JSONObject) discrepancyObject.get(j);
-			if (jObject.get("childOid").toString() != null) {
+			if (jObject.get("childOid")!= null) {
 				if (discrepancy.get("discrepancyMsg").toString().equals(jObject.get("discrepancyMsg").toString())
 						&& discrepancy.get("childOid").toString().equals(jObject.get("childOid").toString())) {
 					flag = true;
