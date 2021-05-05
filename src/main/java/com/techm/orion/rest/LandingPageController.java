@@ -217,7 +217,7 @@ public class LandingPageController {
 		try {
 			String loggedUser = null;
 			json = (JSONObject) parser.parse(request);
-			if (json.containsKey("userName")) {
+			if (json.containsKey("userName") && json.get("userName")!=null) {
 				loggedUser = json.get("userName").toString();
 			}
 			if (loggedUser != null && !loggedUser.isEmpty()) {
@@ -237,7 +237,7 @@ public class LandingPageController {
 				object.put("passwordChangeCount", getpreviousMonthsData.size());
 				object.put("criticalDeviceCount", deviceCount);
 			}
-		} catch (ParseException | NullPointerException e) {
+		} catch (ParseException e) {
 			logger.error(e);
 		}
 		return object;
