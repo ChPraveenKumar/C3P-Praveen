@@ -238,7 +238,7 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	@Query("SELECT data FROM DeviceDiscoveryEntity data where dIPAddrSix=:dIPAddrSix")
 	List<DeviceDiscoveryEntity> existingDeviceInfoIpV6(@Param("dIPAddrSix") String dIPAddrSix);
 
-	String findDevices = "SELECT * FROM c3p_deviceinfo u where u.d_vendor = ?1 and u.d_device_family = ?2 and u.d_os_version < ?3";
+	String findDevices = "SELECT * FROM c3p_deviceinfo  where d_vendor = ?1 and d_device_family = ?2 and d_os_version < ?3";
 
 	@Query(value = findDevices, nativeQuery = true)
 	@Modifying
@@ -261,7 +261,7 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	List<DeviceDiscoveryEntity> findByVendorFamilyVersionCustomerRegion(String vendor, String deviceFamily,
 			String osVersion, String customer, String region);
 
-	String findDevices3 = "select * FROM c3p_deviceinfo as u inner join c3p_cust_siteinfo as c on u.c_site_id= c.id where u.d_vendor = ?1 and u.d_sries = ?2 and u.d_os_version < ?3 and c.c_cust_name = ?4 and c.c_site_region = ?5 and c.c_site_name = ?6";
+	String findDevices3 = "select * FROM c3p_deviceinfo as u inner join c3p_cust_siteinfo as c on u.c_site_id= c.id where u.d_vendor = ?1 and u.d_device_family = ?2 and u.d_os_version < ?3 and c.c_cust_name = ?4 and c.c_site_region = ?5 and c.c_site_name = ?6";
 
 	@Query(value = findDevices3, nativeQuery = true)
 	@Modifying
@@ -338,4 +338,26 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	DeviceDiscoveryEntity findOneByDSnmpCredProfile(String profileName);
 
 	DeviceDiscoveryEntity findByDHostNameAndDSnmpCredProfile(String hostname, String profileName);
+	
+	@Query(value = "select * from c3p_deviceinfo where d_hostname like :dHostName%", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findByHostName(@Param("dHostName")String dHostName);
+	
+	@Query(value = "select * from c3p_deviceinfo where d_mgmtip like :dMgmtIp%", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findByMgmtIp(@Param("dMgmtIp")String dMgmtIp);
+	
+	@Query(value = "select * from c3p_deviceinfo where d_os like :dOs%", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findByOS(@Param("dOs")String dOs);
+	
+	@Query(value = "select * from c3p_deviceinfo where d_os_version like :dOsVersion%", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findByOsVersion(@Param("dOsVersion")String dOsVersion);
+	
+	@Query(value = "select * from c3p_deviceinfo where d_model like :dModel%", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findByModel(@Param("dModel")String dModel);
+	
+	@Query(value = "select * from c3p_deviceinfo where d_device_family like :dDeviceFamily%", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findByDeviceFamily(@Param("dDeviceFamily")String dDeviceFamily);
+	
+	@Query(value = "select * from c3p_deviceinfo where d_endof_saledate like :dEndOfSaleDate%", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findBySaleDate(@Param("dEndOfSaleDate")String dEndOfSaleDate);
+	
 }

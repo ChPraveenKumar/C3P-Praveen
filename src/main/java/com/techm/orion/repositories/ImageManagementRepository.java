@@ -27,4 +27,7 @@ public interface ImageManagementRepository extends JpaRepository<ImageManagement
 	ImageManagementEntity findByVendorAndFamilyAndDisplayName(String vendor, String deviceFamily, String displayName);
 	
 	ImageManagementEntity findById(int infoId);
+	
+	List<ImageManagementEntity> findByVendor(String vendor);
+	
 }

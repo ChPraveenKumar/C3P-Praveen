@@ -538,18 +538,10 @@ public class DeviceDiscrepancyService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public JSONObject getMasterOids(String request) throws ParseException {
-		String userName = null, userRole = null;
+	public JSONObject getMasterOids() throws ParseException {
 		JSONArray array = new JSONArray();
-		JSONObject jsonObject = new JSONObject();
 		JSONObject masterOids = new JSONObject();
-		JSONParser parser = new JSONParser();
-		jsonObject = (JSONObject) parser.parse(request);
-		userName = jsonObject.get("userName").toString();
-		userRole = jsonObject.get("userRole").toString();
-		List<MasterOIDEntity> masterOIDEntity = masterOIDRepository
-				.findByOidCreatedByOrderByOidCreatedDateDesc(userName);
-		masterOIDEntity.forEach(masterEntity -> {
+		masterOIDRepository.findAllByOrderByOidCreatedDateDesc().forEach(masterEntity -> {
 			JSONObject object = new JSONObject();
 			object.put("vendor", masterEntity.getOidVendor());
 			object.put("oid", masterEntity.getOidNo());

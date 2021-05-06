@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DiscoveryDashboardRepository;
+import com.techm.orion.repositories.ImportMasterStagingRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 
 /*Dhanshri Mane: Added For Request Dashboard*/
@@ -28,6 +29,8 @@ public class RequestDashboardGraphService {
 	private DeviceDiscoveryRepository discoveryRepo;
 	@Autowired
 	private DiscoveryDashboardRepository discoveryDashboardRepository;
+	@Autowired
+	private ImportMasterStagingRepo importMasterStagingRepo;
 
 	public JSONObject getTotals(String customer, String region, String site, String vendor, String type,
 			String dashboardType, String userName) {
@@ -332,6 +335,7 @@ public class RequestDashboardGraphService {
 		finalJson.put("requestCount", getRequestCout("%", "%", "%", "%", "All", loggedUser));
 		finalJson.put("statusCount", getStatusCount(loggedUser));
 		finalJson.put("Devices", getDeviceCount());
+		finalJson.put("onBoarding", getOnBoardingCount(userName));
 		return finalJson;
 	}
 
@@ -365,4 +369,14 @@ public class RequestDashboardGraphService {
 		requestStatusCount.put("fail", repo.getRequestStatusCount("Failure", loggedUser));
 		return requestStatusCount;
 	}
+	
+	private JSONObject getOnBoardingCount(String userName) {
+		int myRequestCount = importMasterStagingRepo.myImportCountStatus(userName);
+		int allRequestCount = importMasterStagingRepo.allImportCountStatus();
+		JSONObject customerBoardingObject = new JSONObject();
+		customerBoardingObject.put("my", myRequestCount);
+		customerBoardingObject.put("all", allRequestCount);
+		return customerBoardingObject;
+	}
+	
 }
