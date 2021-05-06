@@ -50,7 +50,7 @@ public class WorkGroupController {
 		JSONArray workGroupData = new JSONArray();
 		JSONObject workGroupList = null;
 		try {
-			workGroupInfo = workGroupRepository.findAll();
+			workGroupInfo = workGroupRepository.findAllByOrderByCreatedDateDesc();
 			for (WorkGroup workGroupEntity : workGroupInfo) {
 				ArrayList<String> supervisorsName = new ArrayList<>();
 				workGroupList = new JSONObject();

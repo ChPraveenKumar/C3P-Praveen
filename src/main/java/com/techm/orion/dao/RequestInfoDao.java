@@ -7175,10 +7175,10 @@ public class RequestInfoDao {
 			vendorTest.put("CollectedValue", "N/A");
 			vendorTest.put("EvaluationCriteria", "N/A");
 		}
+		prevalidationArray.add(reachabilityObj);
 		prevalidationArray.add(vendorTest);
 		prevalidationArray.add(deviceModel);
 		prevalidationArray.add(iosVersion);
-		prevalidationArray.add(reachabilityObj);
 
 		org.json.simple.JSONArray networkArray = new org.json.simple.JSONArray();
 

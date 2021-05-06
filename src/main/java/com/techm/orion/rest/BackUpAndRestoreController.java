@@ -64,9 +64,6 @@ public class BackUpAndRestoreController {
 
 	private static final Logger logger = LogManager.getLogger(BackUpAndRestoreController.class);
 
-	/*
-	 * @Autowired private RequestDetailsImportRepo requestDetailsImportRepo;
-	 */
 	@Autowired
 	public RouterVfRepo routerVfRepo;
 
@@ -1362,9 +1359,8 @@ public class BackUpAndRestoreController {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 			String vendor = json.get("vendor").toString();
-			List<FirmwareUpgradeDetail> mainList = new ArrayList<FirmwareUpgradeDetail>();
-			mainList = dao.findByVendorName(vendor);
-
+			List<ImageManagementEntity> mainList = new ArrayList<ImageManagementEntity>();
+			mainList = imageManagementRepository.findByVendor(vendor);
 			mainList.forEach(site -> {
 				model.add(site.getFamily());
 			});

@@ -2,6 +2,7 @@ package com.techm.orion.rest;
 
 import java.util.List;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
@@ -51,11 +52,11 @@ public class CategoryMasterController {
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
-	@POST
-	@RequestMapping(value = "/masterOid", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	public ResponseEntity<JSONObject> getMasterOids(@RequestBody String request) throws ParseException {
+	@GET
+	@RequestMapping(value = "/masterOid", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JSONObject> getMasterOids() throws ParseException {
 		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject json = deviceDiscrepancyService.getMasterOids(request);
+		JSONObject json = deviceDiscrepancyService.getMasterOids();
 		if (json != null) {
 			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
 		} else {
