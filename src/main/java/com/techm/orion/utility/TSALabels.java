@@ -31,7 +31,10 @@ public enum TSALabels {
 	ROUTER_IP_TEMP,
 	
 	//Json temporary File
-	JSON_FILE;
+	JSON_FILE,
+	
+	//Timezone var
+	C3P_APPLICATION_SERVER_TIMEZONE;
 
 
 	private static final Logger logger = LogManager.getLogger(TSALabels.class);

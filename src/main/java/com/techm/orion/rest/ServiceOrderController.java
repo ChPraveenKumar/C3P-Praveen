@@ -1,8 +1,11 @@
 package com.techm.orion.rest;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.repositories.ServiceOrderRepo;
+import com.techm.orion.utility.WAFADateUtil;
 
 @RestController
 public class ServiceOrderController {
@@ -30,6 +34,9 @@ public class ServiceOrderController {
 	@Autowired
 	private ServiceOrderRepo serviceOrderRepo;
 
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -43,6 +50,13 @@ public class ServiceOrderController {
 		List<ServiceOrderEntity> detailsList = new ArrayList<ServiceOrderEntity>();
 		detailsList = serviceOrderRepo.findAllByOrderByCreatedDateDesc();
 
+		
+		for (ServiceOrderEntity entity : detailsList) 
+		{ 
+			String fmtDate=dateUtil.dateTimeInAppFormat(entity.getDate());
+			entity.setCreatedDate(fmtDate);
+		}
+		
 		obj.put(new String("output"), detailsList);
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")

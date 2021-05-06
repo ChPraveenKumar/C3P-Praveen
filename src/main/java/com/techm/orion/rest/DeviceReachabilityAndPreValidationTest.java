@@ -479,7 +479,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						String responseDownloadPath = "";
 
 						try {
-							response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
+							response = invokeFtl.generateDeviceDecommissonedFileFalure(requestinfo);
 
 							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
 									.getProperty("responseDownloadPath");
