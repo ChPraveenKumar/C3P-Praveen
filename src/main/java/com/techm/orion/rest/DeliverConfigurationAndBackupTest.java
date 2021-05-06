@@ -557,26 +557,28 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							// configuration(configuration in the router)
 							boolean isCheck = bckupConfigService
 									.getRouterConfig(requestinfo, "previous");
+							boolean isCheck1 = false;
+							String flag ="2", status ="Failure";
 
 							if (isStartUp == true) {
 
 								try {
 
-									boolean isCheck1 = bckupConfigService
+									isCheck1 = bckupConfigService
 											.getRouterConfigStartUp(
 													requestinfo, "startup");
 
 								} catch (Exception ee) {
 								}
 							}
-							requestInfoDao.editRequestforReportWebserviceInfo(
-									tempRequestId,
-									Double.toString(tempVersion),
-									"deliever_config", "1", "In Progress");
-
-							requestInfoDao
-									.updateRequestforReportWebserviceInfo(tempRequestId);
-
+							if(isCheck || isCheck1)
+							{
+								flag ="1";
+								status ="In Progress";
+							}
+							requestInfoDao.editRequestforReportWebserviceInfo(tempRequestId,
+										Double.toString(tempVersion), "deliever_config",flag, status);	
+							requestInfoDao.updateRequestforReportWebserviceInfo(tempRequestId);
 							if (isCheck) {
 								value = true;
 							} else {
@@ -1131,10 +1133,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				try {
 					response = invokeFtl
 							.generateDeliveryConfigFileFailure(requestinfo);
-					String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
 					TextReport.writeFile(
-							responseDownloadPath,
+							TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 							requestinfo.getAlphanumericReqId()
 									+ "V"
 									+ Double.toString(requestinfo
