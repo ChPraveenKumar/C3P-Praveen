@@ -93,7 +93,9 @@ public class TestStrategyController {
 	@Autowired
 	private WAFADateUtil dateUtil;
 	
-	RequestInfoDao dao = new RequestInfoDao();
+	@Autowired
+	private RequestInfoDao dao;
+	//RequestInfoDao dao = new RequestInfoDao();
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
