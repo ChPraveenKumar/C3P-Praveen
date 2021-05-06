@@ -567,17 +567,10 @@ public class TestBundlingController {
 			model.setDeviceModel(temp.getDeviceFamily());
 			model.setOs(temp.getOs() + "/" + temp.getOsVersion());
 			model.setCreatedBy(temp.getUpdatedBy());
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-			Date parsedDate;
-			try {
-			parsedDate = dateFormat.parse(temp.getUpdatedDate().toString());
-			Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
-			model.setCreatedOn(dateUtil.dateTimeInAppFormat(timestamp.toString()));
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			if(temp.getUpdatedDate()!=null)
+			{
+			model.setCreatedOn(dateUtil.dateTimeInAppFormat(dateUtil.convertTimestampFormat(temp.getUpdatedDate())));
 			}
-			//model.setCreatedOn(temp.getUpdatedDate().toString());
 			modelList = new ArrayList<TestStrategyPojo>();
 			for (int i = 0; i < testIdList.size(); i++) {
 				tempTestId = testIdList.get(i).getTest_id();

@@ -27,14 +27,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryInterfaceEntity;
-import com.techm.orion.entitybeans.DeviceInfoExtEntity;
 import com.techm.orion.entitybeans.DiscoveryDashboardEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.repositories.DeviceDiscoveryInterfaceRepository;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
-import com.techm.orion.repositories.DeviceInfoExtRepository;
 import com.techm.orion.repositories.DiscoveryDashboardRepository;
 import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
 import com.techm.orion.repositories.HostDiscrepancyResultRepository;
@@ -64,9 +63,9 @@ public class DeviceDiscoveryController implements Observer {
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 	@Autowired
-	private DeviceInfoExtRepository deviceInfoExtRepo;
-	@Autowired
 	private WAFADateUtil dateUtil;
+	@Autowired
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -267,20 +266,21 @@ public class DeviceDiscoveryController implements Observer {
 				}
 			}
 			for (int j = 0; j < inventoryList.size(); j++) {
-				DeviceInfoExtEntity extObj=deviceInfoExtRepo.findByRDeviceId(String.valueOf(inventoryList.get(j).getdId()));
+				//DeviceInfoExtEntity extObj=deviceInfoExtRepo.findByRDeviceId(String.valueOf(inventoryList.get(j).getdId()));
+				JSONObject extObj=requestInfoDetailsDao.fetchFromDeviceExtLocationDescription(String.valueOf(inventoryList.get(j).getdId()));
 				inventoryList.get(j).setInterfaces(null);
 				inventoryList.get(j).setUsers(null);
-				if(extObj!=null && extObj.getrDescription()!=null)
+				if(extObj!=null && extObj.containsKey("description"))
 				{
-				inventoryList.get(j).setdSystemDescription(extObj.getrDescription());
+				inventoryList.get(j).setdSystemDescription(extObj.get("description").toString());
 				}
 				else
 				{
 				inventoryList.get(j).setdSystemDescription("Not Available");
 				}
-				if(extObj!=null && extObj.getrLatitude()!=null && extObj.getrLongitude()!=null)
+				if(extObj!=null && extObj.containsKey("lat") && extObj.containsKey("long"))
 				{
-				inventoryList.get(j).setdLocation("Lat: "+extObj.getrLatitude()+", Long: "+extObj.getrLongitude());
+				inventoryList.get(j).setdLocation("Lat: "+extObj.get("lat").toString()+", Long: "+extObj.get("long").toString());
 				}
 				else
 				{

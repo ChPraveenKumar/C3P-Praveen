@@ -37,7 +37,7 @@ public class WAFADateUtil {
 			format = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 			return format.format(newDateProcessed);
 		} catch (ParseException e) {
-			e.printStackTrace();
+			logger.error("Error in isOnSameDay "+e);
 		}
 		return null;
 	}
@@ -77,7 +77,7 @@ public class WAFADateUtil {
 			}
 
 		} catch (ParseException e) {
-			e.printStackTrace();
+			logger.error("Error in inBetweenTime "+e);
 		}
 		return false;
 	}
@@ -107,7 +107,7 @@ public class WAFADateUtil {
 			}
 
 		} catch (ParseException e) {
-			e.printStackTrace();
+			logger.error("Error in beforeTime "+e);
 		}
 		return false;
 	}
@@ -137,7 +137,7 @@ public class WAFADateUtil {
 			}
 
 		} catch (ParseException e) {
-			e.printStackTrace();
+			logger.error("Error in afterTime "+e);
 		}
 		return false;
 	}
@@ -199,7 +199,7 @@ public class WAFADateUtil {
 		     timestamp = new java.sql.Timestamp(parsedDate.getTime());;
 		   
 		} catch (ParseException e) {
-		    e.printStackTrace();
+			logger.error("Error in convertStringToTimeStamp "+e);
 		}
 		return timestamp;
 	}
@@ -217,7 +217,39 @@ public class WAFADateUtil {
 		response= timestamp1.toString();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Error in convertTimeStampfromDBToParsableDate "+e);
+		}
+		return response;
+	}
+	public String convertTimestampFormat(Timestamp tmpsmp)
+	{
+		String response=null;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		Date parsedDate;
+		try {
+			parsedDate = dateFormat.parse(tmpsmp.toString());
+			Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+			response = timestamp.toString();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				logger.error("Error in getTestList: "+e);
+			}
+		return response;
+	}
+	
+	public String convertStringToTimestampInSTDFormat(String tmstmp)
+	{
+		String response=null;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/mm/dd hh:mm:ss");
+		Date parsedDate;
+		try {
+			parsedDate = dateFormat.parse(tmstmp);
+		
+			Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+			response= timestamp.toString();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			logger.error("Error in convertStringToTimestampInSTDFormat: "+e);
 		}
 		return response;
 	}

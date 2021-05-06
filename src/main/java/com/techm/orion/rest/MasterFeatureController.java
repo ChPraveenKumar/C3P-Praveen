@@ -492,6 +492,8 @@ public class MasterFeatureController {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy , HH:mm:ss aa ");  
 		    Date date = new Date();  
 		    comments = userName +" : " +  dateFormat.format(date) +  comments;*/
+			if(json.get("comments")!=null && json.get("userName")!=null)
+			{
 			userName = json.get("userName").toString();
 			String timeStamp="00-00-0000 00:00:00";
 			if(json.containsKey("timezone"))
@@ -504,6 +506,7 @@ public class MasterFeatureController {
 			}
 			String _varComment = timeStamp+" "+userName + " : " +json.get("comments").toString();
 			masterFeature.setfComments(_varComment.concat("\n"));
+			}
 		}
 		if (json.containsKey("isReplicated")) {
 			masterFeature.setfReplicationind(Boolean.parseBoolean(json.get(

@@ -20,7 +20,14 @@ public class RequestDetailsResponseMapper {
 			req.setHostname(request.getHostName());
 			req.setRegion(request.getRegion());
 			req.setCustomer(request.getCustomer());
+			if(request.getDateofProcessing()!=null)
+			{
 			req.setDateOfProcessing(dateutil.dateTimeInAppFormat(request.getDateofProcessing().toString()));
+			}
+			else
+			{
+			req.setDateOfProcessing(null);
+			}
 			req.setStatus(request.getStatus());
 			req.setModel(request.getModel());
 			req.setRequestVersion(request.getRequestVersion());

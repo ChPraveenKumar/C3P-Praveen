@@ -50,6 +50,8 @@ public class TemplateManagementDao {
 	private NotificationRepo notificationRepo;
 	@Autowired
 	private UserManagementRepository userManagementRepository;
+	@Autowired
+	private WAFADateUtil dateUtil;
 
 	public boolean updateMasterFeatureAndCommandTable(String series) {
 		boolean result = false;
@@ -1641,14 +1643,12 @@ public class TemplateManagementDao {
 	public List<TemplateBasicConfigurationPojo> getTemplateList() {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		TemplateBasicConfigurationPojo pojo;
-		WAFADateUtil dateUtil;
 		connection = ConnectionFactory.getConnection();		
 		String query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type not in ('VNF') order by temp_created_date desc";
 		try {
 			Statement pst = connection.createStatement();
 			ResultSet rs1 = pst.executeQuery(query2);
 			while (rs1.next()) {
-				dateUtil=new WAFADateUtil();
 				pojo = new TemplateBasicConfigurationPojo();
 				pojo.setVendor(rs1.getString("temp_vendor"));
 				pojo.setModel(rs1.getString("temp_model"));

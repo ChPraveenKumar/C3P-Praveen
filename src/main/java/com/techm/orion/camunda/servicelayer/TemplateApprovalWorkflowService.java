@@ -57,7 +57,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 	private NotificationRepo notificationRepo;
 	
 	@Autowired
-	WAFADateUtil timeUtil;
+	private WAFADateUtil timeUtil;
 	
 	@POST
 	@RequestMapping(value = "/saveTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -121,7 +121,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 				userName = json.get("userName").toString();
 			
 			Notification notificationData = notificationRepo.findById(notifId);
-			if(json.get("status")!=null && json.containsKey("status") && !json.get("status").toString().isEmpty())
+			if(json.containsKey("status") && json.get("status")!=null  && !json.get("status").toString().isEmpty())
 			{
 				
 				status = json.get("status").toString();
@@ -130,19 +130,26 @@ public class TemplateApprovalWorkflowService implements Observer {
 			{
 				status="";
 			}
-			if(json.get("comment")!=null && json.containsKey("comment") && !json.get("comment").toString().isEmpty())
+			if(json.containsKey("comment") && json.get("comment")!=null && !json.get("comment").toString().isEmpty())
 			{
 				String timeStamp="00-00-0000 00:00:00";
 				if(json.containsKey("timezone"))
 				{
+					if(json.get("timezone")!=null)
+					{
 					timeStamp=timeUtil.currentDateTimeFromUserTimeZoneToServerTimzeZone(json.get("timezone").toString());
+					}
+					else
+					{
+					timeStamp=timeUtil.currentDateTime();
+					}
 				}
 				else
 				{
 					timeStamp=timeUtil.currentDateTime();
 				}
-				String _varComment = timeStamp+" "+userName + " : " +json.get("comment").toString().concat("\n");
-				approverComment = _varComment;
+				String varComment = timeStamp+" "+userName + " : " +json.get("comment").toString().concat("\n");
+				approverComment = varComment;
 			}
 			else
 			{
