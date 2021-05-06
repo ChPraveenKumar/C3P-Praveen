@@ -68,10 +68,6 @@ public class DeviceRequestController {
 			if (hostName != null) {
 				requestDeatils = service.getConfigServiceRequest(hostName, requestType);
 			}
-			for(ServiceRequestPojo pojo: requestDeatils)
-			{
-				pojo.setDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getDateOfProcessing()));
-			}
 
 		} catch (Exception e) {
 			logger.error(e);

@@ -375,6 +375,11 @@ public class RequestDetailsServiceWithVersion {
 
 					}
 					String test = new Gson().toJson(jsonArrayForTest);
+					for(RequestInfoCreateConfig pojo: detailsList)
+					{
+						pojo.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(pojo.getRequestCreatedOn()));
+						pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
+					}
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
 					obj.put(new String("ReportStatus"), jsonArrayReports);
