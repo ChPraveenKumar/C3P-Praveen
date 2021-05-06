@@ -558,6 +558,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							boolean isCheck = bckupConfigService
 									.getRouterConfig(requestinfo, "previous");
 							boolean isCheck1 = false;
+							String flag ="2", status ="Failure";
 
 							if (isStartUp == true) {
 
@@ -570,19 +571,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								} catch (Exception ee) {
 								}
 							}
-							if ("PNF".equalsIgnoreCase(requestinfo.getNetworkType())) {
-								requestInfoDao.editRequestforReportWebserviceInfo(tempRequestId,
-										Double.toString(tempVersion), "deliever_config", "1", "In Progress");
+							if(isCheck || isCheck1)
+							{
+								flag ="1";
+								status ="In Progress";
 							}
-							if ("VNF".equalsIgnoreCase(requestinfo.getNetworkType())) {
-								if (isCheck || isCheck1) {
-									requestInfoDao.editRequestforReportWebserviceInfo(tempRequestId,
-											Double.toString(tempVersion), "deliever_config", "1", "In Progress");
-								} else {
-									requestInfoDao.editRequestforReportWebserviceInfo(tempRequestId,
-											Double.toString(tempVersion), "deliever_config", "2", "Failure");
-								}
-							}
+							requestInfoDao.editRequestforReportWebserviceInfo(tempRequestId,
+										Double.toString(tempVersion), "deliever_config",flag, status);	
 							requestInfoDao.updateRequestforReportWebserviceInfo(tempRequestId);
 							if (isCheck) {
 								value = true;
