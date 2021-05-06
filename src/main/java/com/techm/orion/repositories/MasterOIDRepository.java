@@ -35,4 +35,7 @@ public interface MasterOIDRepository extends JpaRepository<MasterOIDEntity, Long
 	List<MasterOIDEntity> findByOidNoAndOidCategoryAndOidScopeFlagAndOidVendorAndOidNetworkTypeAndOidDisplayName(
 			String oidNo, String oidCategory, String oidScopeFlag, String oidVendor, String oidNetworkType,
 			String oidDisplayName);
+	
+	List<MasterOIDEntity> findAllByOrderByOidCreatedDateDesc();
+	
 }
