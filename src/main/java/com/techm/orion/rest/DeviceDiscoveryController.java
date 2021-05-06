@@ -1,7 +1,6 @@
 package com.techm.orion.rest;
 
 import java.net.InetAddress;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -33,7 +32,6 @@ import com.techm.orion.entitybeans.DeviceDiscoveryInterfaceEntity;
 import com.techm.orion.entitybeans.DeviceInfoExtEntity;
 import com.techm.orion.entitybeans.DiscoveryDashboardEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
-import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.DeviceDiscoveryInterfaceRepository;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DeviceInfoExtRepository;
@@ -203,18 +201,18 @@ public class DeviceDiscoveryController implements Observer {
 					object.put("region", site.getcSiteRegion());
 
 				}
-				if(getAllDevice.get(i).getdEndOfSupportDate() !=null && !"Not Available".equalsIgnoreCase(
-						getAllDevice.get(i).getdEndOfSupportDate()))
+				if (getAllDevice.get(i).getdEndOfSupportDate() != null
+						&& !"Not Available".equalsIgnoreCase(getAllDevice.get(i).getdEndOfSupportDate()))
 					object.put("eos", getAllDevice.get(i).getdEndOfSupportDate().toString());
 				else
 					object.put("eos", "Not Available");
-				
-				if(getAllDevice.get(i).getdEndOfSaleDate() !=null)
+
+				if (getAllDevice.get(i).getdEndOfSaleDate() != null)
 					object.put("eol", getAllDevice.get(i).getdEndOfSaleDate().toString());
 				else
 					object.put("eol", "Not Available");
 
-				object.put("requests", requestInfoDetailsRepositories.getRequestCountByHost(getAllDevice.get(i).getdHostName()));
+			object.put("requests", getAllDevice.get(i).getdReqCount());
 				if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("0")) {
 					object.put("state", "");
 				} else if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("1")) {
@@ -228,7 +226,11 @@ public class DeviceDiscoveryController implements Observer {
 				} else {
 					object.put("isNew", false);
 				}
-				object.put("discreapncyFlag", checkDiscreapncy(getAllDevice.get(i)));
+				if (getAllDevice.get(i).getdDiscrepancy()>0) {
+					object.put("discreapncyFlag", "Yes");
+				} else {
+					object.put("discreapncyFlag", "No");
+				}
 				outputArray.add(object);
 			}
 			obj.put("data", outputArray);
@@ -242,28 +244,6 @@ public class DeviceDiscoveryController implements Observer {
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
-	}
-
-	private String checkDiscreapncy(DeviceDiscoveryEntity deviceDiscoveryEntity) {
-		if (deviceDiscoveryEntity != null) {
-			String id = String.valueOf(deviceDiscoveryEntity.getdId());
-			try {
-				Set<String> hostdiscrepancyValue = hostDoscreapncyRepo.findHostDiscrepancyValue(id);
-				if (hostdiscrepancyValue != null && !hostdiscrepancyValue.isEmpty()) {
-					return "Yes";
-				} else {
-					Set<String> forkDiscrepancyValue = forkDiscrepancyRepo.findForkDiscrepancyValue(id);
-					if (forkDiscrepancyValue != null && !forkDiscrepancyValue.isEmpty()) {
-						return "Yes";
-					} else {
-						return "No";
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return null;
 	}
 
 	/**
@@ -340,8 +320,7 @@ public class DeviceDiscoveryController implements Observer {
 				inventoryList.get(j).setContactDetails(contactDetails);
 
 			}
-			List<ServiceRequestPojo> requests = inventoryServiceRepo.getRequestDeatils(hostname);
-			obj.put("requestsRaised", requests.size());
+		
 			obj.put("deviceDetails", inventoryList);
 			obj.put("interfaces", interfaceListInventory);
 		} catch (Exception e) {
