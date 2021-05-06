@@ -56,6 +56,9 @@ public class TemplateApprovalWorkflowService implements Observer {
 	@Autowired
 	private NotificationRepo notificationRepo;
 	
+	@Autowired
+	WAFADateUtil timeUtil;
+	
 	@POST
 	@RequestMapping(value = "/saveTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -129,7 +132,6 @@ public class TemplateApprovalWorkflowService implements Observer {
 			}
 			if(json.get("comment")!=null && json.containsKey("comment") && !json.get("comment").toString().isEmpty())
 			{
-				WAFADateUtil timeUtil=new WAFADateUtil();
 				String timeStamp="00-00-0000 00:00:00";
 				if(json.containsKey("timezone"))
 				{
