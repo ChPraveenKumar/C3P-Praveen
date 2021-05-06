@@ -6819,7 +6819,7 @@ public class RequestInfoDao {
 	}
 
 	public List<FirmwareUpgradeDetail> findByVendorName(String vendor) {
-		String query = "SELECT * FROM firmware_upgrade_single_device where vendor LIKE ?";
+		String query = "SELECT * FROM c3p_m_imagemanagement where im_vendor LIKE ?";
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
@@ -6833,11 +6833,11 @@ public class RequestInfoDao {
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				request = new FirmwareUpgradeDetail();
-				request.setFamily(rs.getString("family"));
-				request.setOs_version(rs.getString("os_version"));
-				request.setCreate_date(rs.getString("create_date"));
-				request.setImage_filename(rs.getString("image_filename"));
-				request.setVendor(rs.getString("vendor"));
+				request.setFamily(rs.getString("im_family"));
+				request.setOs_version(rs.getString("im_os_version"));
+				request.setCreate_date(rs.getString("im_created_date"));
+				request.setImage_filename(rs.getString("im_image_filename"));
+				request.setVendor(rs.getString("im_vendor"));
 
 				requestInfoList.add(request);
 			}
@@ -7489,7 +7489,7 @@ public class RequestInfoDao {
 
 	public List<FirmwareUpgradeDetail> findByFamily(String isFamily,
 			String isVendor) {
-		String query = "SELECT * FROM firmware_upgrade_single_device where family LIKE ? AND vendor LIKE ?";
+		String query = "SELECT * FROM c3p_m_imagemanagement where im_family LIKE ? AND im_vendor LIKE ?";
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
@@ -7502,11 +7502,11 @@ public class RequestInfoDao {
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				request = new FirmwareUpgradeDetail();
-				request.setFamily(rs.getString("family"));
-				request.setOs_version(rs.getString("os_version"));
-				request.setCreate_date(rs.getString("create_date"));
-				request.setImage_filename(rs.getString("image_filename"));
-				request.setVendor(rs.getString("vendor"));
+				request.setFamily(rs.getString("im_family"));
+				request.setOs_version(rs.getString("im_os_version"));
+				request.setCreate_date(rs.getString("im_created_date"));
+				request.setImage_filename(rs.getString("im_image_filename"));
+				request.setVendor(rs.getString("im_vendor"));
 
 				requestInfoList.add(request);
 			}

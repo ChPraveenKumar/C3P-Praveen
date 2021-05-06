@@ -837,6 +837,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				obj.put(new String("output"), jsonArray);
 				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2",
+						"Failure");
 				requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "2");
 				String response = "";
