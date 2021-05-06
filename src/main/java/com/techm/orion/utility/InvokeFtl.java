@@ -1371,5 +1371,10 @@ public class InvokeFtl {
 			tree.put("preValidateTest", configRequest);
 			return freemarkerDo(tree, "ConnectionRefuse.ftl");
 	}
+	public String generateDeviceDecommissonedFileFalure(RequestInfoPojo configRequest) throws TemplateException, IOException {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", configRequest);
+		return freemarkerDo(tree, "DeviceDecommision.ftl");
+}
 		
 }

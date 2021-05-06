@@ -1,6 +1,7 @@
 package com.techm.orion.rest;
 
 import java.net.InetAddress;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -29,16 +30,20 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryInterfaceEntity;
+import com.techm.orion.entitybeans.DeviceInfoExtEntity;
 import com.techm.orion.entitybeans.DiscoveryDashboardEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.DeviceDiscoveryInterfaceRepository;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.DeviceInfoExtRepository;
 import com.techm.orion.repositories.DiscoveryDashboardRepository;
 import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
 import com.techm.orion.repositories.HostDiscrepancyResultRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.service.InventoryManagmentService;
+import com.techm.orion.utility.WAFADateUtil;
+
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
@@ -63,6 +68,11 @@ public class DeviceDiscoveryController implements Observer {
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
+	@Autowired
+	private DeviceInfoExtRepository deviceInfoExtRepo;
+	
+	@Autowired
+	private WAFADateUtil dateUtil;
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -119,7 +129,10 @@ public class DeviceDiscoveryController implements Observer {
 				if (discoveryDashboardByUser != null && !discoveryDashboardByUser.isEmpty()) {
 					myDiscoverySize = discoveryDashboardByUser.size();
 				}
-
+				for(DiscoveryDashboardEntity entity:discoveryDetails)
+				{
+					entity.setDisCreatedDate(dateUtil.dateTimeInAppFormat(entity.getDisCreatedDate().toString()));
+				}
 				obj.put("discoveryDetails", discoveryDetails);
 				obj.put("myDiscovery", myDiscoverySize);
 				obj.put("allDiscovery", allDiscoverySize);
@@ -133,12 +146,18 @@ public class DeviceDiscoveryController implements Observer {
 				} else {
 					discoveryDetails = new ArrayList<DiscoveryDashboardEntity>();
 				}
+				
 				myDiscoverySize = discoveryDetails.size();
 
+				for(DiscoveryDashboardEntity entity:discoveryDetails)
+				{
+					entity.setDisCreatedDate(dateUtil.dateTimeInAppFormat(entity.getDisCreatedDate().toString()));
+				}
 				obj.put("discoveryDetails", discoveryDetails);
 				obj.put("myDiscovery", myDiscoverySize);
 				obj.put("allDiscovery", allDiscoverySize);
 			}
+			
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 
 		} catch (Exception exe) {
@@ -274,12 +293,25 @@ public class DeviceDiscoveryController implements Observer {
 				}
 			}
 			for (int j = 0; j < inventoryList.size(); j++) {
-
+				DeviceInfoExtEntity extObj=deviceInfoExtRepo.findByRDeviceId(String.valueOf(inventoryList.get(j).getdId()));
 				inventoryList.get(j).setInterfaces(null);
 				inventoryList.get(j).setUsers(null);
-				inventoryList.get(j).setdSystemDescription(
-						"This is high security device that enables to connect providers' communication services and distributes service to my enterprise with a local area network. Supports concurrent services at broadband speed. provides VPN support and wireless networking.");
+				if(extObj!=null && extObj.getrDescription()!=null)
+				{
+				inventoryList.get(j).setdSystemDescription(extObj.getrDescription());
+				}
+				else
+				{
+				inventoryList.get(j).setdSystemDescription("Not Available");
+				}
+				if(extObj!=null && extObj.getrLatitude()!=null && extObj.getrLongitude()!=null)
+				{
+				inventoryList.get(j).setdLocation("Lat: "+extObj.getrLatitude()+", Long: "+extObj.getrLongitude());
+				}
+				else
+				{
 				inventoryList.get(j).setdLocation("Not Available");
+				}
 				inventoryList.get(j).setdEndOfSupportDate("Not Available");
 				inventoryList.get(j).setdEndOfLife("Not Available");
 				inventoryList.get(j).setdPollUsing("IP Address");

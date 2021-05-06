@@ -15,6 +15,10 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.techm.orion.utility.WAFADateUtil;
+
 @Entity
 @Table(name = "c3p_t_request_service_order")
 
@@ -71,14 +75,13 @@ public class ServiceOrderEntity implements Serializable {
 	private String action;
 
 	@Column(name = "so_date")
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date date;
+	private Timestamp date;
 	
 	@Column(name = "so_created_by", length = 20)
 	private String createdBy;
 	
 	@Column(name = "so_created_date")
-	private Timestamp createdDate;
+	private String createdDate;
 	
 	@Column(name = "so_updated_by", length = 20)
 	private String updatedBy;
@@ -207,12 +210,11 @@ public class ServiceOrderEntity implements Serializable {
 	}
 
 	public String getDate() {
-		SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy  hh:mm:ss");
-		String strDate = formatter.format(date);
-		return strDate;
+		
+		return date.toString();
 	}
 
-	public void setDate(Date date) {
+	public void setDate(Timestamp date) {
 		this.date = date;
 	}
 
@@ -224,11 +226,11 @@ public class ServiceOrderEntity implements Serializable {
 		this.createdBy = createdBy;
 	}
 
-	public Timestamp getCreatedDate() {
+	public String getCreatedDate() {
 		return createdDate;
 	}
 
-	public void setCreatedDate(Timestamp createdDate) {
+	public void setCreatedDate(String createdDate) {
 		this.createdDate = createdDate;
 	}
 

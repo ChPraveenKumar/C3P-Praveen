@@ -50,13 +50,13 @@ public class DiscoveryDashboardEntity {
 	private String disScheduleId;
 
 	@Column(name = "dis_created_date")
-	private Timestamp disCreatedDate;
+	private String disCreatedDate;
 
 	@Column(name = "dis_created_by", length = 45)
 	private String disCreatedBy;
 
 	@Column(name = "dis_updated_date")
-	private Timestamp disUpdatedDate;
+	private String disUpdatedDate;
 
 	@Column(name = "dis_import_id", length = 20)
 	private String disImportId;
@@ -149,11 +149,11 @@ public class DiscoveryDashboardEntity {
 		this.disScheduleId = disScheduleId;
 	}
 
-	public Timestamp getDisCreatedDate() {
+	public String getDisCreatedDate() {
 		return disCreatedDate;
 	}
 
-	public void setDisCreatedDate(Timestamp disCreatedDate) {
+	public void setDisCreatedDate(String disCreatedDate) {
 		this.disCreatedDate = disCreatedDate;
 	}
 
@@ -165,11 +165,11 @@ public class DiscoveryDashboardEntity {
 		this.disCreatedBy = disCreatedBy;
 	}
 
-	public Timestamp getDisUpdatedDate() {
+	public String getDisUpdatedDate() {
 		return disUpdatedDate;
 	}
 
-	public void setDisUpdatedDate(Timestamp disUpdatedDate) {
+	public void setDisUpdatedDate(String disUpdatedDate) {
 		this.disUpdatedDate = disUpdatedDate;
 	}
 

@@ -8334,7 +8334,10 @@ public class RequestInfoDao {
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
 				request.setRegion(rs.getString("region"));
-				request.setCreatedDate(rs.getString("created_on"));
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/mm/dd hh:mm:ss");
+				Date parsedDate = dateFormat.parse(rs.getString("created_on"));
+				Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+				request.setCreatedDate(timestamp.toString());
 				request.setCreatedBy(rs.getString("created_by"));
 
 				request.setEnabled(rs.getBoolean("is_enabled"));
@@ -8344,6 +8347,9 @@ public class RequestInfoDao {
 		} catch (SQLException exe) {
 			logger.error("SQL Exception in getAllTestsForTestStrategy method "
 					+ exe.getMessage());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally {
 			DBUtil.close(rs);
 		}
@@ -8404,7 +8410,10 @@ public class RequestInfoDao {
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
 				request.setRegion(rs.getString("region"));
-				request.setCreatedDate(rs.getString("created_on"));
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/mm/dd hh:mm:ss");
+				Date parsedDate = dateFormat.parse(rs.getString("created_on"));
+				Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+				request.setCreatedDate(timestamp.toString());
 				request.setCreatedBy(rs.getString("created_by"));
 
 				request.setEnabled(rs.getBoolean("is_enabled"));
@@ -8414,6 +8423,9 @@ public class RequestInfoDao {
 		} catch (SQLException exe) {
 			logger.error("SQL Exception in getTestsForTestStrategyOnId method "
 					+ exe.getMessage());
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} finally {
 			DBUtil.close(rs);
 		}

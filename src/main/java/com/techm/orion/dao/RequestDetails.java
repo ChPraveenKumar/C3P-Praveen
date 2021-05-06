@@ -29,6 +29,7 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.utility.ShowCPUUsage;
 import com.techm.orion.utility.ShowMemoryTest;
 import com.techm.orion.utility.ShowPowerTest;
+import com.techm.orion.utility.WAFADateUtil;
 /*
  * Owner: Rahul Tiwari Reason: Get configuration feature name and details from database
  * and get test name and version from database 
@@ -42,6 +43,9 @@ public class RequestDetails {
 	private RequestInfoDetailsDao requestInfoDetailsDao;	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private WAFADateUtil dateUtil;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -372,6 +376,8 @@ public class RequestDetails {
 			reqDetail.setReason(requestInfoDetailsDao.reasonForInstantiationFailure(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion()));
 		}
 	
+		reqDetail.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(reqDetail.getRequestCreatedOn()));
+		
 		List<String> out = new ArrayList<String>();
 		out.add(new Gson().toJson(reqDetail));
 		obj.put("details", out);

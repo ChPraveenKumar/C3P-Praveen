@@ -59,6 +59,7 @@ import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.responseEntity.GetAttribResponseEntity;
 import com.techm.orion.service.AttribSevice;
 import com.techm.orion.service.CategoryMasterService;
+import com.techm.orion.utility.WAFADateUtil;
 
 @RestController
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
@@ -90,6 +91,8 @@ public class MasterFeatureController {
 	@Autowired
 	private UserManagementRepository userManagementRepository;
 	
+	@Autowired
+	private WAFADateUtil dateUtil;
 	/*
 	 * To get Validation, Category and UI component list.
 	 */
@@ -484,12 +487,23 @@ public class MasterFeatureController {
 			}
 		}
 		if (json.containsKey("comments") && json.containsKey("userName")) {
-			comments = json.get("comments").toString();
+			/*comments = json.get("comments").toString();
 			userName = json.get("userName").toString();
 			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy , HH:mm:ss aa ");  
 		    Date date = new Date();  
-		    comments = userName +" : " +  dateFormat.format(date) +  comments;
-			masterFeature.setfComments(comments.concat("\n"));
+		    comments = userName +" : " +  dateFormat.format(date) +  comments;*/
+			userName = json.get("userName").toString();
+			String timeStamp="00-00-0000 00:00:00";
+			if(json.containsKey("timezone"))
+			{
+				timeStamp=dateUtil.currentDateTimeFromUserTimeZoneToServerTimzeZone(json.get("timezone").toString());
+			}
+			else
+			{
+				timeStamp=dateUtil.currentDateTime();
+			}
+			String _varComment = timeStamp+" "+userName + " : " +json.get("comments").toString();
+			masterFeature.setfComments(_varComment.concat("\n"));
 		}
 		if (json.containsKey("isReplicated")) {
 			masterFeature.setfReplicationind(Boolean.parseBoolean(json.get(
@@ -636,6 +650,7 @@ public class MasterFeatureController {
 		JSONObject childJson = null;
 		JSONObject masterJson = null;
 		JSONArray childList = null;
+		int count=0;
 		List<MasterFeatureEntity> featureEntinty = null;
 		try {
 			List<String> vendor = masterFeatureRepository.findVendor();
@@ -652,14 +667,15 @@ public class MasterFeatureController {
 					childJson.put("deviceOs", entity.getfOs());
 					childJson.put("osVersion", entity.getfOsversion());
 					childJson.put("version", entity.getfVersion());
-					childJson.put("createdDate", entity.getfCreatedDate()
-							.toString());
+					childJson.put("createdDate", dateUtil.dateTimeInAppFormat(entity.getfCreatedDate()
+							.toString()));
 					childJson.put("comment", entity.getfComments());
 					childJson.put("status", entity.getfStatus());
 					childJson.put("networkType", entity.getfNetworkfun());
 					childJson.put("createdBy", entity.getfCreatedBy());
 					childJson.put("featureId", entity.getfId());
 					childJson.put("isEditable", entity.getfIsenabled());
+					count++;
 					childList.add(childJson);
 				}
 				masterJson.put("childList", childList);
@@ -671,6 +687,8 @@ public class MasterFeatureController {
 					+ exe.getMessage());
 		}
 		objInterfaces.put("entity", outputArray);
+		objInterfaces.put("count", count);
+
 		return new ResponseEntity<JSONObject>(objInterfaces, HttpStatus.OK);
 	}
 
@@ -719,8 +737,8 @@ public class MasterFeatureController {
 				childJson.put("deviceOs", entity.getfOs());
 				childJson.put("osVersion", entity.getfOsversion());
 				childJson.put("version", entity.getfVersion());
-				childJson.put("createdDate", entity.getfCreatedDate()
-						.toString());
+				childJson.put("createdDate", dateUtil.dateTimeInAppFormat(entity.getfCreatedDate()
+						.toString()));
 				childJson.put("comment", entity.getfComments());
 				childJson.put("status", entity.getfStatus());
 				childJson.put("networkFunction", entity.getfNetworkfun());

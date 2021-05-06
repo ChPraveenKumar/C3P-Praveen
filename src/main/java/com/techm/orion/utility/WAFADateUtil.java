@@ -1,14 +1,21 @@
 package com.techm.orion.utility;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.time.format.DateTimeFormatter;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.stereotype.Component;
 
+@Component
 public class WAFADateUtil {
 	private static final Logger logger = LogManager.getLogger(WAFADateUtil.class);
 
@@ -149,4 +156,69 @@ public class WAFADateUtil {
 		return date != null;
 	}
 
+	public String currentDateTime()
+	{
+		String response=null;
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy hh:mm:ss");
+		LocalDateTime datetime = LocalDateTime.now();
+		response = datetime.format(formatter);
+		return response;
+		
+	}
+	
+	public String currentDateTimeFromUserTimeZoneToServerTimzeZone(String timezone)
+	{
+		String response=null;
+		// Current date and time using now()
+		ZonedDateTime currentDateTime = ZonedDateTime.now();
+		ZoneId applicationServerZoneId = ZoneId.of(TSALabels.C3P_APPLICATION_SERVER_TIMEZONE.getValue());
+		ZoneId clientZoneID = ZoneId.of(timezone);
+		ZonedDateTime clientDateTime = currentDateTime.withZoneSameInstant(clientZoneID);
+		ZonedDateTime applicationDateTime = clientDateTime.withZoneSameInstant(applicationServerZoneId);
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy hh:mm:ss");
+		response = applicationDateTime.format(formatter);
+		return response;
+	}
+	
+	public String dateTimeInAppFormat(String time)
+	{
+		String response=null;
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy hh:mm:ss");
+		LocalDateTime dateTime= Timestamp.valueOf(time).toLocalDateTime();
+		//LocalDateTime dateTime = LocalDateTime.parse(time);
+		response = dateTime.format(formatter);
+		return response;
+	}
+	
+	public Timestamp convertStringToTimeStamp(String time)
+	{
+		Timestamp timestamp=null;
+		try {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss");
+		    Date parsedDate = dateFormat.parse(time);
+		     timestamp = new java.sql.Timestamp(parsedDate.getTime());;
+		   
+		} catch (ParseException e) {
+		    e.printStackTrace();
+		}
+		return timestamp;
+	}
+	public String convertTimeStampfromDBToParsableDate(String timestampin)
+	{
+		String response=null;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+		Date parsedDate;
+		try {
+		parsedDate = dateFormat.parse(timestampin);
+		Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+		SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+		Date parsedDate1 = dateFormat1.parse(timestamp.toString());
+		Timestamp timestamp1 = new java.sql.Timestamp(parsedDate1.getTime());
+		response= timestamp1.toString();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return response;
+	}
 }

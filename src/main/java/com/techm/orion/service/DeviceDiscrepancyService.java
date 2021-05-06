@@ -33,6 +33,7 @@ import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
 import com.techm.orion.repositories.HostDiscoveryResultRepository;
 import com.techm.orion.repositories.HostDiscrepancyResultRepository;
 import com.techm.orion.repositories.MasterOIDRepository;
+import com.techm.orion.utility.WAFADateUtil;
 
 @Service
 public class DeviceDiscrepancyService {
@@ -55,6 +56,9 @@ public class DeviceDiscrepancyService {
 	@Autowired
 	private DiscoveryStatusEntityRepository discoveryStatusEntityRepository;
 
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
 	@SuppressWarnings("unchecked")
 	public JSONObject discripancyService(String discoveryId) {
 		JSONObject finalObject = new JSONObject();
@@ -72,9 +76,16 @@ public class DeviceDiscrepancyService {
 			finalObject.put("discoveryNetworkMask", discoveryDetails.getDisNetworkMask());
 			finalObject.put("discoveryProfileName", discoveryDetails.getDisProfileName());
 			finalObject.put("discoveryScheduledId", discoveryDetails.getDisScheduleId());
-			finalObject.put("discoveryCreatedDate", discoveryDetails.getDisCreatedDate());
+			finalObject.put("discoveryCreatedDate", dateUtil.dateTimeInAppFormat(discoveryDetails.getDisCreatedDate()));
 			finalObject.put("discoveryCreatedBy", discoveryDetails.getDisCreatedBy());
-			finalObject.put("discoveryUpdatedDate", discoveryDetails.getDisUpdatedDate());
+			if(discoveryDetails.getDisUpdatedDate()!=null)
+			{
+			finalObject.put("discoveryUpdatedDate", dateUtil.dateTimeInAppFormat(discoveryDetails.getDisUpdatedDate()));
+			}
+			else
+			{
+			finalObject.put("discoveryUpdatedDate", null);
+			}
 			finalObject.put("discoveryImportId", discoveryDetails.getDisImportId());
 			List<DiscoveryStatusEntity> details = discoveryStatusEntityRepository.findByDiscoveryId(discoveryDetails);
 			logger.info("discoveryDetails  - details-"+details.size());
@@ -83,10 +94,22 @@ public class DeviceDiscrepancyService {
 				JSONObject discrepencyObject;
 				discrepencyObject = new JSONObject();
 				discrepencyObject.put("dsIpAddr", discoveryStatusEntity.getDsIpAddr());
-				discrepencyObject.put("dsCreatedDate", discoveryStatusEntity.getDsCreatedDate());
-				discrepencyObject.put("dsCreatedBy", discoveryStatusEntity.getDsCreatedBy());
-				discrepencyObject.put("dsUpdatedDate", discoveryStatusEntity.getDsUpdatedDate());
-				discrepencyObject.put("dsStatus", discoveryStatusEntity.getDsStatus());
+				if(discoveryStatusEntity.getDsCreatedDate()!=null)
+				{
+				discrepencyObject.put("dsCreatedDate", dateUtil.dateTimeInAppFormat(discoveryStatusEntity.getDsCreatedDate().toString()));
+				}
+				else
+				{
+				discrepencyObject.put("dsCreatedDate", null);
+				}
+				if(discoveryDetails.getDisUpdatedDate()!=null)
+				{
+				finalObject.put("discoveryUpdatedDate", dateUtil.dateTimeInAppFormat(discoveryDetails.getDisUpdatedDate()));
+				}
+				else
+				{
+				finalObject.put("discoveryUpdatedDate", null);
+				}				discrepencyObject.put("dsStatus", discoveryStatusEntity.getDsStatus());
 				discrepencyObject.put("dsComment", discoveryStatusEntity.getDsComment());
 				discrepencyObject.put("dsDeviceId", discoveryStatusEntity.getDsDeviceId());
 				discrepencyObject.put("dsHostName", discoveryStatusEntity.getDsHostName());
@@ -211,9 +234,12 @@ public class DeviceDiscrepancyService {
 			details.put("discoveryNetworkMask", discoveryDetails.getDisNetworkMask());
 			details.put("discoveryProfileName", discoveryDetails.getDisProfileName());
 			details.put("discoveryScheduledId", discoveryDetails.getDisScheduleId());
-			details.put("discoveryCreatedDate", discoveryDetails.getDisCreatedDate());
+			details.put("discoveryCreatedDate", dateUtil.dateTimeInAppFormat(discoveryDetails.getDisCreatedDate()));
 			details.put("discoveryCreatedBy", discoveryDetails.getDisCreatedBy());
-			details.put("discoveryUpdatedDate", discoveryDetails.getDisUpdatedDate());
+			if(discoveryDetails.getDisUpdatedDate()!=null)
+			{
+			details.put("discoveryUpdatedDate", dateUtil.dateTimeInAppFormat(discoveryDetails.getDisUpdatedDate()));
+			}
 			details.put("discoveryImportId", discoveryDetails.getDisImportId());
 
 		}

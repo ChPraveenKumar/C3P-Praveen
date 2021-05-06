@@ -46,6 +46,7 @@ import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.RequestFeatureTransactionRepository;
 import com.techm.orion.utility.ReportMileStones;
+import com.techm.orion.utility.WAFADateUtil;
 
 @RestController
 @RequestMapping("/requestDetails")
@@ -74,6 +75,8 @@ public class RequestDetailsServiceWithVersion {
 	@Autowired
 	private NotificationRepo notificationRepo;
 	
+	@Autowired
+	private WAFADateUtil dateUtil;
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -132,6 +135,11 @@ public class RequestDetailsServiceWithVersion {
 							request.setRequestType("BackUp");
 						}
 					}
+					}
+					for(RequestInfoCreateConfig pojo: detailsList)
+					{
+						pojo.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(pojo.getRequestCreatedOn()));
+						pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
 					}
 					jsonArray = new Gson().toJson(detailsList);
 

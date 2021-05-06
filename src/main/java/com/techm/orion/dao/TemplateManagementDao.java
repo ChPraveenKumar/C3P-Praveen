@@ -39,6 +39,7 @@ import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.UserManagementRepository;
+import com.techm.orion.utility.WAFADateUtil;
 
 @Component
 public class TemplateManagementDao {
@@ -1640,12 +1641,14 @@ public class TemplateManagementDao {
 	public List<TemplateBasicConfigurationPojo> getTemplateList() {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		TemplateBasicConfigurationPojo pojo;
+		WAFADateUtil dateUtil;
 		connection = ConnectionFactory.getConnection();		
 		String query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type not in ('VNF') order by temp_created_date desc";
 		try {
 			Statement pst = connection.createStatement();
 			ResultSet rs1 = pst.executeQuery(query2);
 			while (rs1.next()) {
+				dateUtil=new WAFADateUtil();
 				pojo = new TemplateBasicConfigurationPojo();
 				pojo.setVendor(rs1.getString("temp_vendor"));
 				pojo.setModel(rs1.getString("temp_model"));
@@ -1655,10 +1658,10 @@ public class TemplateManagementDao {
 				pojo.setRegion(rs1.getString("temp_region"));
 				pojo.setTemplateId(rs1.getString("temp_id"));
 				Timestamp d = rs1.getTimestamp("temp_created_date");
-				pojo.setDate(covnertTStoString(d));
+				pojo.setDate(dateUtil.dateTimeInAppFormat(d.toString()));
 				pojo.setVersion(rs1.getString("temp_version"));
 				Timestamp d1 = rs1.getTimestamp("temp_updated_date");
-				pojo.setUpdatedDate(covnertTStoString(d1));
+				pojo.setUpdatedDate(dateUtil.dateTimeInAppFormat(d.toString()));
 				pojo.setComment(rs1.getString("temp_comment_section"));
 
 				if (pojo.getComment().isEmpty()) {

@@ -1,5 +1,6 @@
 package com.techm.orion.rest;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,7 @@ import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
 import com.techm.orion.repositories.TestRulesRepository;
 import com.techm.orion.service.TemplateManagementNewService;
+import com.techm.orion.utility.WAFADateUtil;
 
 /*
  * Owner: Vivek Vidhate Module: Test Strategey Logic: To
@@ -88,6 +90,9 @@ public class TestStrategyController {
 	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
 
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
 	RequestInfoDao dao = new RequestInfoDao();
 
 	/**
@@ -346,6 +351,19 @@ public class TestStrategyController {
 			detail.setSection_attributes(testruleslistsectionfinal);
 			detail.setSnippet_attributes(testruleslistsnippetfinal);
 			detail.setKeyword_attributes(testruleslistkeywordfinal);
+			
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/dd/MM hh:mm:ss");
+			Date parsedDate;
+			try {
+			parsedDate = dateFormat.parse(detail.getCreatedOn());
+			Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+			detail.setCreatedOn(dateUtil.dateTimeInAppFormat(timestamp.toString()));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
 
 			ischeck = true;
 
@@ -736,6 +754,16 @@ public class TestStrategyController {
 				} else {
 					testValue.setEnabled(false);
 				}
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+				Date parsedDate;
+				try {
+				parsedDate = dateFormat.parse(testValue.getCreatedDate());
+				Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+				testValue.setCreatedDate(dateUtil.dateTimeInAppFormat(timestamp.toString()));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			});
 			for (int i = 0; i < mainList.size(); i++) {
 				tempString = mainList.get(i).getTestName();
@@ -799,9 +827,11 @@ public class TestStrategyController {
 
 			}
 		} catch (Exception exe) {
-			logger.error("Exception occurred while fetching the data object" + exe.getMessage());
 		}
-		return new ResponseEntity(versioningModel, HttpStatus.OK);
+		JSONObject response = new JSONObject();
+		response.put("count", versioningModel.size());
+		response.put("tests",versioningModel);
+		return new ResponseEntity(response, HttpStatus.OK);
 
 	}
 
