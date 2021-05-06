@@ -53,7 +53,7 @@ public class CategoryMasterController {
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@GET
-	@RequestMapping(value = "/masterOid", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
+	@RequestMapping(value = "/masterOid", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<JSONObject> getMasterOids() throws ParseException {
 		ResponseEntity<JSONObject> responseEntity = null;
 		JSONObject json = deviceDiscrepancyService.getMasterOids();

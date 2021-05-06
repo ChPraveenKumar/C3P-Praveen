@@ -1359,9 +1359,7 @@ public class BackUpAndRestoreController {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 			String vendor = json.get("vendor").toString();
-			List<ImageManagementEntity> mainList = new ArrayList<ImageManagementEntity>();
-			mainList = imageManagementRepository.findByVendor(vendor);
-			mainList.forEach(site -> {
+			imageManagementRepository.findByVendor(vendor).forEach(site -> {
 				model.add(site.getFamily());
 			});
 		} catch (Exception e) {

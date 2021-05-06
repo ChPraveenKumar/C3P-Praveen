@@ -510,8 +510,7 @@ public class DeviceDiscrepancyService {
 	public JSONObject getMasterOids() throws ParseException {
 		JSONArray array = new JSONArray();
 		JSONObject masterOids = new JSONObject();
-		List<MasterOIDEntity> masterOIDEntity = masterOIDRepository.findAllByOrderByOidCreatedDateDesc();
-		masterOIDEntity.forEach(masterEntity -> {
+		masterOIDRepository.findAllByOrderByOidCreatedDateDesc().forEach(masterEntity -> {
 			JSONObject object = new JSONObject();
 			object.put("vendor", masterEntity.getOidVendor());
 			object.put("oid", masterEntity.getOidNo());

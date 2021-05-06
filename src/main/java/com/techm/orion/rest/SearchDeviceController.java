@@ -515,8 +515,6 @@ public class SearchDeviceController {
 					getFilterDevices = deviceInforepo.findByModel(searchValue);
 				} else if ("Device Family".equals(searchType)) {
 					getFilterDevices = deviceInforepo.findByDeviceFamily(searchValue);
-				} else if ("EOL".equals(searchType)) {
-					// getFilterDevices = deviceInforepo.findByOS(searchValue); //confirm with team
 				} else if ("EOS".equals(searchType)) {
 					getFilterDevices = deviceInforepo.findBySaleDate(searchValue);
 				}
@@ -524,25 +522,9 @@ public class SearchDeviceController {
 			JSONArray outputArray = new JSONArray();
 			if (searchType != null && searchValue != null && getFilterDevices != null) {
 				for (DeviceDiscoveryEntity deviceInfo : getFilterDevices) {
-					object = new JSONObject();
-					object.put("hostName", deviceInfo.getdHostName());
-					object.put("managementIp", deviceInfo.getdMgmtIp());
-					object.put("type", "Router");
-					object.put("deviceFamily", deviceInfo.getdDeviceFamily());
-					object.put("model", deviceInfo.getdModel());
-					object.put("os", deviceInfo.getdOs());
-					object.put("osVersion", deviceInfo.getdOsVersion());
-					object.put("vendor", deviceInfo.getdVendor());
-					object.put("status", "Available");
-					if (deviceInfo.getCustSiteId() != null) {
-						SiteInfoEntity siteInfo = deviceInfo.getCustSiteId();
-						object.put("customer", siteInfo.getcCustName());
-						object.put("site", siteInfo.getcSiteName());
-						object.put("region", siteInfo.getcSiteRegion());
-					}
-					object.put("eos", deviceInfo.getdEndOfSupportDate());
-					object.put("eol", deviceInfo.getdEndOfSaleDate());
-					outputArray.add(object);
+					JSONObject jsonData = new JSONObject();
+					jsonData = getData(deviceInfo);
+					outputArray.add(jsonData);
 				}
 			}
 			responseObject.put("data", outputArray);
@@ -556,7 +538,32 @@ public class SearchDeviceController {
 		}
 		return responseEntity;
 	}
-
+	
+	@SuppressWarnings("unchecked")
+	private JSONObject getData(DeviceDiscoveryEntity deviceInfo) {
+			JSONObject object = new JSONObject();
+			if(deviceInfo != null) {
+			object.put("hostName", deviceInfo.getdHostName());
+			object.put("managementIp", deviceInfo.getdMgmtIp());
+			object.put("type", "Router");
+			object.put("deviceFamily", deviceInfo.getdDeviceFamily());
+			object.put("model", deviceInfo.getdModel());
+			object.put("os", deviceInfo.getdOs());
+			object.put("osVersion", deviceInfo.getdOsVersion());
+			object.put("vendor", deviceInfo.getdVendor());
+			object.put("status", "Available");
+			if (deviceInfo.getCustSiteId() != null) {
+				SiteInfoEntity siteInfo = deviceInfo.getCustSiteId();
+				object.put("customer", siteInfo.getcCustName());
+				object.put("site", siteInfo.getcSiteName());
+				object.put("region", siteInfo.getcSiteRegion());
+			}
+			object.put("eos", deviceInfo.getdEndOfSupportDate());
+			object.put("eol", deviceInfo.getdEndOfSaleDate());
+			}
+			return object;
+	}
+	
 	private String getJsonData(JSONObject json, String key) {
 		String jsonData = null;
 		if (json.containsKey(key) && json.get(key) != null) {
