@@ -70,7 +70,8 @@ public class GetTemplateConfigurationData {
 
 	@Autowired
 	private WAFADateUtil dateUtil;
-	
+	@Autowired
+	TemplateManagementDetailsService service;
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/back", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
@@ -591,7 +592,7 @@ public class GetTemplateConfigurationData {
 
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
-		TemplateManagementDetailsService service = new TemplateManagementDetailsService();
+		//TemplateManagementDetailsService service = new TemplateManagementDetailsService();
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 
 		try {
