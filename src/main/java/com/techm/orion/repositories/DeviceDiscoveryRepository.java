@@ -71,7 +71,7 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 
 	List<DeviceDiscoveryEntity> findByCustSiteIdId(int siteId);
 
-	List<DeviceDiscoveryEntity> findBydMgmtIp(String dMgmtIp);
+	DeviceDiscoveryEntity findBydMgmtIp(String dMgmtIp);
 
 	DeviceDiscoveryEntity findByDHostName(String hostname);
 
@@ -165,10 +165,6 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 
 	DeviceDiscoveryEntity findDVNFSupportByDHostName(String hostname);
 
-	// @Query(value = "select a from DeviceDiscoveryEntity a where a.dModel= ?
-	// and
-	// a.dVendor=? order by a.dDatePolled desc Limit 0, 5")
-	// List<DeviceDiscoveryEntity> findByTop(String model,String vendor);
 	List<DeviceDiscoveryEntity> findByDHostNameAndDMgmtIp(String tempHostName, String tempManagementIp);
 
 	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendor(String customer,
@@ -277,10 +273,7 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	DeviceDiscoveryEntity findAllByMgmtId(@Param("dMgmtIp") String dMgmtIp);
 	
 	@Query(value = "SELECT d_id FROM c3p_deviceinfo where d_hostname=:d_hostname", nativeQuery = true)
-	int findDid(@Param("d_hostname") String d_hostname);
-	
-	@Query(value = "select * from c3p_deviceinfo where d_mgmtip=:dMgmtIp", nativeQuery = true)
-	List<DeviceDiscoveryEntity>  findAllByMgmt(@Param("dMgmtIp") String dMgmtIp);
+	int findDid(@Param("d_hostname") String d_hostname);	
 	
 
 	@Query(value = "select * from c3p_deviceinfo deviceinfo left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "

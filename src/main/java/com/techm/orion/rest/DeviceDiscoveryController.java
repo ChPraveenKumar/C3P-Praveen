@@ -52,8 +52,6 @@ public class DeviceDiscoveryController implements Observer {
 	@Autowired
 	private DiscoveryDashboardRepository discoveryDashboardRepo;
 	@Autowired
-	private InventoryManagmentService inventoryServiceRepo;
-	@Autowired
 	private DeviceDiscoveryRepository deviceInforepo;
 	@Autowired
 	private DeviceDiscoveryInterfaceRepository deviceinterfaceRepo;
@@ -70,7 +68,7 @@ public class DeviceDiscoveryController implements Observer {
 	@Autowired
 	private WAFADateUtil dateUtil;
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -166,7 +164,7 @@ public class DeviceDiscoveryController implements Observer {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -243,7 +241,7 @@ public class DeviceDiscoveryController implements Observer {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -312,11 +310,9 @@ public class DeviceDiscoveryController implements Observer {
 				detail.put("dContactPhone", inventoryList.get(j).getdContactPhone());
 
 				contactDetails.add(detail);
-
-				inventoryList.get(j).setContactDetails(contactDetails);
-
+				inventoryList.get(j).setContactDetails(contactDetails);				
 			}
-		
+			
 			obj.put("deviceDetails", inventoryList);
 			obj.put("interfaces", interfaceListInventory);
 		} catch (Exception e) {

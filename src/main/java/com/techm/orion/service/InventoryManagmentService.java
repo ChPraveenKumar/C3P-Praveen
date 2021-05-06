@@ -16,15 +16,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
-import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.UserEntity;
-import com.techm.orion.mapper.RequestDetailsResponseMapper;
 import com.techm.orion.pojo.DeviceDiscoverPojo;
-import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.pojo.SiteInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
-import com.techm.orion.repositories.RequestDetailsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.UserRepository;
 
@@ -44,8 +40,7 @@ public class InventoryManagmentService {
 	@Autowired
 	UserRepository userRepo;
 
-	@Autowired
-	RequestDetailsRepository requestDetailsRepo;
+	
 
 	public JSONArray getAllDeviceDescoverdForVendor() {
 
@@ -116,12 +111,12 @@ public class InventoryManagmentService {
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
 	}
 
-	public List<ServiceRequestPojo> getRequestDeatils(String hostName) {
+	/*public List<ServiceRequestPojo> getRequestDeatils(String hostName) {
 		List<RequestDetailsEntity> allRequestDetails = requestDetailsRepo.findAllByHostname(hostName);
 		RequestDetailsResponseMapper mapper = new RequestDetailsResponseMapper();
 		List<ServiceRequestPojo> allRequestMapper = mapper.getAllRequestMapper(allRequestDetails);
 		return allRequestMapper;
-	}
+	}*/
 
 	public List<DeviceDiscoverPojo> getAllDevice() {
 		List<DeviceDiscoveryEntity> getAllDevice = deviceInforepo.findAll();
