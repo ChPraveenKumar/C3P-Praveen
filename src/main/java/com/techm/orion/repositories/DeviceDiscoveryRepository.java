@@ -261,7 +261,7 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	List<DeviceDiscoveryEntity> findByVendorFamilyVersionCustomerRegion(String vendor, String deviceFamily,
 			String osVersion, String customer, String region);
 
-	String findDevices3 = "select * FROM c3p_deviceinfo as u inner join c3p_cust_siteinfo as c on u.c_site_id= c.id where u.d_vendor = ?1 and u.d_sries = ?2 and u.d_os_version < ?3 and c.c_cust_name = ?4 and c.c_site_region = ?5 and c.c_site_name = ?6";
+	String findDevices3 = "select * FROM c3p_deviceinfo as u inner join c3p_cust_siteinfo as c on u.c_site_id= c.id where u.d_vendor = ?1 and u.d_device_family = ?2 and u.d_os_version < ?3 and c.c_cust_name = ?4 and c.c_site_region = ?5 and c.c_site_name = ?6";
 
 	@Query(value = findDevices3, nativeQuery = true)
 	@Modifying
