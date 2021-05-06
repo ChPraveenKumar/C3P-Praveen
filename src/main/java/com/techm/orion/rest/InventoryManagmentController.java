@@ -76,9 +76,9 @@ public class InventoryManagmentController {
 
 	}
 
-	/**
+/*	*//**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
+	 **//*
 	@POST
 	@RequestMapping(value = "/getRequestDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -95,5 +95,5 @@ public class InventoryManagmentController {
 		return Response.status(200).entity(requestDeatils).build();
 
 	}
-
+*/
 }

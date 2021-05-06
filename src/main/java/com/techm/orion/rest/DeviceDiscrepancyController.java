@@ -1,7 +1,6 @@
 package com.techm.orion.rest;
 
 import javax.ws.rs.POST;
-import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -110,28 +109,22 @@ public class DeviceDiscrepancyController {
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
-	@SuppressWarnings("unchecked")
+	 **/	
+	@SuppressWarnings({ "unchecked", "null" })
 	@POST
 	@RequestMapping(value = "/ignoreAndOverWrite", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response ignoreAndOverWrite(@RequestBody String request) {
-		
-		JSONObject resultJson = new  JSONObject();
-		resultJson	= service.ignoreAndOverWrite(request);
+	public ResponseEntity<JSONObject> ignoreAndOverWrite(@RequestBody String request) {		 
+		JSONObject resultJson	= service.ignoreAndOverWrite(request);
 		ResponseEntity<JSONObject> responseEntity = null;
-		/*if(resultJson !=null) {
-			//responseEntity = new ResponseEntity<JSONObject>(resultJson, HttpStatus.OK);
+		if(resultJson !=null) {
+			responseEntity = new ResponseEntity<JSONObject>(resultJson, HttpStatus.OK);
 		}else {
 			resultJson.put("Error","Dicreapncy Not Resolved Successfully");
-			//responseEntity = new ResponseEntity<JSONObject>(resultJson, HttpStatus.BAD_REQUEST);
-		}*/
+			responseEntity = new ResponseEntity<JSONObject>(resultJson, HttpStatus.BAD_REQUEST);
+		}
 	    
-		return Response.status(200).header("Access-Control-Allow-Origin", "*")
-		.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
-		.header("Access-Control-Allow-Credentials", "true")
-		.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
-		.header("Access-Control-Max-Age", "1209600").entity(resultJson).build();
+		return responseEntity ;
 
 	}
 

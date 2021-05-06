@@ -1,4 +1,4 @@
-package com.techm.orion.repositories;
+/*package com.techm.orion.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -11,4 +11,4 @@ public interface RequestDetailsExportRepo extends JpaRepository<RequestDetailsEn
 	RequestDetailsEntity findByAlphanumericReqIdAndRequestVersion(String alphanumericReqId, double request_version);
 
 	RequestDetailsEntity findByrequestinfoid(int request_info_id);
-}
+}*/
