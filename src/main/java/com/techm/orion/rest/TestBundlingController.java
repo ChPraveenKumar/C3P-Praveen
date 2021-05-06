@@ -77,7 +77,8 @@ public class TestBundlingController {
 	
 	private static final Logger logger = LogManager.getLogger(TestBundlingController.class);
 
-	RequestInfoDao dao = new RequestInfoDao();
+	@Autowired
+	RequestInfoDao dao;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
