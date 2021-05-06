@@ -65,10 +65,8 @@ public class DeviceDiscoveryController implements Observer {
 	private HostDiscrepancyResultRepository hostDoscreapncyRepo;
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
-
 	@Autowired
 	private DeviceInfoExtRepository deviceInfoExtRepo;
-	
 	@Autowired
 	private WAFADateUtil dateUtil;
 	/**
@@ -144,9 +142,7 @@ public class DeviceDiscoveryController implements Observer {
 				} else {
 					discoveryDetails = new ArrayList<DiscoveryDashboardEntity>();
 				}
-				
 				myDiscoverySize = discoveryDetails.size();
-
 				for(DiscoveryDashboardEntity entity:discoveryDetails)
 				{
 					entity.setDisCreatedDate(dateUtil.dateTimeInAppFormat(entity.getDisCreatedDate().toString()));
