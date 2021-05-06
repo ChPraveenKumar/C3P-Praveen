@@ -47,6 +47,7 @@ import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementDetailsService;
 import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.WAFADateUtil;
 
 @Controller
 @RequestMapping("/GetTemplateConfigurationData")
@@ -67,6 +68,10 @@ public class GetTemplateConfigurationData {
 	@Autowired
 	private NotificationRepo notificationRepo;
 
+	@Autowired
+	private WAFADateUtil dateUtil;
+	@Autowired
+	TemplateManagementDetailsService service;
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/back", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
@@ -408,7 +413,17 @@ public class GetTemplateConfigurationData {
 
 			}
 			if (json.get("templateComment") != null) {
-				comment = json.get("templateComment").toString();
+				String timeStamp="00-00-0000 00:00:00";
+				if(json.containsKey("timezone"))
+				{
+					timeStamp=dateUtil.currentDateTimeFromUserTimeZoneToServerTimzeZone(json.get("timezone").toString());
+				}
+				else
+				{
+					timeStamp=dateUtil.currentDateTime();
+				}
+				String _varComment = timeStamp+" "+userName + " : " +json.get("templateComment").toString().concat("\n");
+				comment = _varComment;
 			} else {
 				comment = "";
 			}
@@ -577,7 +592,7 @@ public class GetTemplateConfigurationData {
 
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
-		TemplateManagementDetailsService service = new TemplateManagementDetailsService();
+		//TemplateManagementDetailsService service = new TemplateManagementDetailsService();
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 
 		try {
@@ -635,9 +650,11 @@ public class GetTemplateConfigurationData {
 				}
 
 			}
-
+			
 			jsonArray = new Gson().toJson(versioningModel);
 			obj.put(new String("output"), jsonArray);
+			obj.put(new String("count"), versioningModel.size());
+
 
 		} catch (Exception e) {
 			logger.error(e);

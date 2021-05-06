@@ -40,6 +40,7 @@ import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.rest.CamundaServiceTemplateApproval;
 import com.techm.orion.rest.GetTemplateConfigurationData;
+import com.techm.orion.utility.WAFADateUtil;
 
 @Controller
 @RequestMapping("/createTemplate")
@@ -54,6 +55,9 @@ public class TemplateApprovalWorkflowService implements Observer {
 	
 	@Autowired
 	private NotificationRepo notificationRepo;
+	
+	@Autowired
+	private WAFADateUtil timeUtil;
 	
 	@POST
 	@RequestMapping(value = "/saveTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -117,17 +121,35 @@ public class TemplateApprovalWorkflowService implements Observer {
 				userName = json.get("userName").toString();
 			
 			Notification notificationData = notificationRepo.findById(notifId);
-			if(json.get("status")!=null && json.containsKey("status") && !json.get("status").toString().isEmpty())
+			if(json.containsKey("status") && json.get("status")!=null  && !json.get("status").toString().isEmpty())
 			{
+				
 				status = json.get("status").toString();
 			}
 			else
 			{
 				status="";
 			}
-			if(json.get("comment")!=null && json.containsKey("comment") && !json.get("comment").toString().isEmpty())
+			if(json.containsKey("comment") && json.get("comment")!=null && !json.get("comment").toString().isEmpty())
 			{
-				approverComment = json.get("comment").toString();
+				String timeStamp="00-00-0000 00:00:00";
+				if(json.containsKey("timezone"))
+				{
+					if(json.get("timezone")!=null)
+					{
+					timeStamp=timeUtil.currentDateTimeFromUserTimeZoneToServerTimzeZone(json.get("timezone").toString());
+					}
+					else
+					{
+					timeStamp=timeUtil.currentDateTime();
+					}
+				}
+				else
+				{
+					timeStamp=timeUtil.currentDateTime();
+				}
+				String varComment = timeStamp+" "+userName + " : " +json.get("comment").toString().concat("\n");
+				approverComment = varComment;
 			}
 			else
 			{
@@ -152,7 +174,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 					MasterFeatureEntity masterFeature = masterFeatureRepository.findByFId(feature.getMasterFId());
 					if ("Pending".equalsIgnoreCase(masterFeature.getfStatus())) {
 						masterFeatureRepository.updateMasterFeatureStatus(json.get("status").toString(),
-								json.get("comment").toString(), notificationData.getNotifFromUser(), userName,
+								approverComment, notificationData.getNotifFromUser(), userName,
 								Timestamp.valueOf(LocalDateTime.now()), feature.getMasterFId(), "1.0");
 					}
 				}

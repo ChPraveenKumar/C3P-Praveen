@@ -84,6 +84,7 @@ import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.CertificationTestResultService;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.UtilityMethods;
+import com.techm.orion.utility.WAFADateUtil;
 import com.techm.orion.webService.GetAllDetailsService;
 
 @Controller
@@ -103,6 +104,8 @@ public class RequestInfoDao {
 	
 	@Autowired
 	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
+	@Autowired 
+	private WAFADateUtil dateUtil;
 
 	/* SQL information */
 	private static final String INSERT_REQUEST_INFOSO = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
@@ -8329,14 +8332,13 @@ public class RequestInfoDao {
 				request.setVendor(rs.getString("vendor"));
 				request.setDeviceFamily(rs.getString("device_family"));
 				request.setDeviceModel(rs.getString("device_model"));
-
 				request.setTest_category(rs.getString("test_category"));
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
 				request.setRegion(rs.getString("region"));
-				request.setCreatedDate(rs.getString("created_on"));
+				if(rs.getString("created_on")!=null)
+					request.setCreatedDate(dateUtil.convertStringToTimestampInSTDFormat(rs.getString("created_on")));
 				request.setCreatedBy(rs.getString("created_by"));
-
 				request.setEnabled(rs.getBoolean("is_enabled"));
 
 				list.add(request);
@@ -8404,7 +8406,8 @@ public class RequestInfoDao {
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
 				request.setRegion(rs.getString("region"));
-				request.setCreatedDate(rs.getString("created_on"));
+				if(rs.getString("created_on")!=null)
+					request.setCreatedDate(dateUtil.convertStringToTimestampInSTDFormat(rs.getString("created_on")));
 				request.setCreatedBy(rs.getString("created_by"));
 
 				request.setEnabled(rs.getBoolean("is_enabled"));

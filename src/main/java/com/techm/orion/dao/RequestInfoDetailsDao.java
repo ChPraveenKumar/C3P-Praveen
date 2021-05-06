@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -683,5 +684,29 @@ public class RequestInfoDetailsDao {
 			logger.error("SQL Exception in fetchImageInstanceFromDeviceExt method " + exe.getMessage());
 		}
 		return imageInstanceId;
+	}
+	
+	/**
+	 * 
+	 * @param deviceId
+	 * @return imageInstanceId
+	 */
+	public JSONObject fetchFromDeviceExtLocationDescription(String deviceId) {
+		JSONObject response=new JSONObject();
+		String sqlQuery = "select r_latitude,r_longitude,r_description from c3p_deviceinfo_ext where r_device_id = ?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
+			preparedStmt.setString(1, deviceId);
+			ResultSet rs = preparedStmt.executeQuery();
+			while (rs.next()) {
+				response.put("lat", rs.getString("r_imageInstanceId"));
+				response.put("long", rs.getString("r_longitude"));
+				response.put("description", rs.getString("r_description"));
+				
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in fetchImageInstanceFromDeviceExt method " + exe.getMessage());
+		}
+		return response;
 	}
 }

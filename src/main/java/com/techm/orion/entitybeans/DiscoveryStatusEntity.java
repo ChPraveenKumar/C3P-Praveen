@@ -26,13 +26,13 @@ public class DiscoveryStatusEntity {
 	private String dsIpAddr;
 
 	@Column(name = "ds_created_date")
-	private Timestamp dsCreatedDate;
+	private String dsCreatedDate;
 
 	@Column(name = "ds_created_by", length = 45)
 	private String dsCreatedBy;
 
 	@Column(name = "ds_updated_date")
-	private Timestamp dsUpdatedDate;
+	private String dsUpdatedDate;
 
 	@Column(name = "ds_status", length = 45)
 	private String dsStatus;
@@ -69,11 +69,11 @@ public class DiscoveryStatusEntity {
 		this.dsIpAddr = dsIpAddr;
 	}
 
-	public Timestamp getDsCreatedDate() {
+	public String getDsCreatedDate() {
 		return dsCreatedDate;
 	}
 
-	public void setDsCreatedDate(Timestamp dsCreatedDate) {
+	public void setDsCreatedDate(String dsCreatedDate) {
 		this.dsCreatedDate = dsCreatedDate;
 	}
 
@@ -85,11 +85,11 @@ public class DiscoveryStatusEntity {
 		this.dsCreatedBy = dsCreatedBy;
 	}
 
-	public Timestamp getDsUpdatedDate() {
+	public String getDsUpdatedDate() {
 		return dsUpdatedDate;
 	}
 
-	public void setDsUpdatedDate(Timestamp dsUpdatedDate) {
+	public void setDsUpdatedDate(String dsUpdatedDate) {
 		this.dsUpdatedDate = dsUpdatedDate;
 	}
 

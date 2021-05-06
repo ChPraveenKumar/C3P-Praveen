@@ -39,6 +39,7 @@ import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.UserManagementRepository;
+import com.techm.orion.utility.WAFADateUtil;
 
 @Component
 public class TemplateManagementDao {
@@ -49,6 +50,8 @@ public class TemplateManagementDao {
 	private NotificationRepo notificationRepo;
 	@Autowired
 	private UserManagementRepository userManagementRepository;
+	@Autowired
+	private WAFADateUtil dateUtil;
 
 	public boolean updateMasterFeatureAndCommandTable(String series) {
 		boolean result = false;
@@ -1655,10 +1658,10 @@ public class TemplateManagementDao {
 				pojo.setRegion(rs1.getString("temp_region"));
 				pojo.setTemplateId(rs1.getString("temp_id"));
 				Timestamp d = rs1.getTimestamp("temp_created_date");
-				pojo.setDate(covnertTStoString(d));
+				pojo.setDate(dateUtil.dateTimeInAppFormat(d.toString()));
 				pojo.setVersion(rs1.getString("temp_version"));
 				Timestamp d1 = rs1.getTimestamp("temp_updated_date");
-				pojo.setUpdatedDate(covnertTStoString(d1));
+				pojo.setUpdatedDate(dateUtil.dateTimeInAppFormat(d.toString()));
 				pojo.setComment(rs1.getString("temp_comment_section"));
 
 				if (pojo.getComment().isEmpty()) {

@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryInterfaceEntity;
 import com.techm.orion.entitybeans.DiscoveryDashboardEntity;
@@ -34,6 +35,12 @@ import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.repositories.DeviceDiscoveryInterfaceRepository;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DiscoveryDashboardRepository;
+import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
+import com.techm.orion.repositories.HostDiscrepancyResultRepository;
+import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.service.InventoryManagmentService;
+import com.techm.orion.utility.WAFADateUtil;
+
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
@@ -48,8 +55,17 @@ public class DeviceDiscoveryController implements Observer {
 	@Autowired
 	private DeviceDiscoveryInterfaceRepository deviceinterfaceRepo;
 	@Autowired
-	private DeviceDiscoveryRepository deviceDiscoveryRepo;	
-	
+	private DeviceDiscoveryRepository deviceDiscoveryRepo;
+	@Autowired
+	private ForkDiscrepancyResultRepository forkDiscrepancyRepo;
+	@Autowired
+	private HostDiscrepancyResultRepository hostDoscreapncyRepo;
+	@Autowired
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+	@Autowired
+	private WAFADateUtil dateUtil;
+	@Autowired
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -106,7 +122,10 @@ public class DeviceDiscoveryController implements Observer {
 				if (discoveryDashboardByUser != null && !discoveryDashboardByUser.isEmpty()) {
 					myDiscoverySize = discoveryDashboardByUser.size();
 				}
-
+				for(DiscoveryDashboardEntity entity:discoveryDetails)
+				{
+					entity.setDisCreatedDate(dateUtil.dateTimeInAppFormat(entity.getDisCreatedDate().toString()));
+				}
 				obj.put("discoveryDetails", discoveryDetails);
 				obj.put("myDiscovery", myDiscoverySize);
 				obj.put("allDiscovery", allDiscoverySize);
@@ -121,11 +140,15 @@ public class DeviceDiscoveryController implements Observer {
 					discoveryDetails = new ArrayList<DiscoveryDashboardEntity>();
 				}
 				myDiscoverySize = discoveryDetails.size();
-
+				for(DiscoveryDashboardEntity entity:discoveryDetails)
+				{
+					entity.setDisCreatedDate(dateUtil.dateTimeInAppFormat(entity.getDisCreatedDate().toString()));
+				}
 				obj.put("discoveryDetails", discoveryDetails);
 				obj.put("myDiscovery", myDiscoverySize);
 				obj.put("allDiscovery", allDiscoverySize);
 			}
+			
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 
 		} catch (Exception exe) {
@@ -215,7 +238,7 @@ public class DeviceDiscoveryController implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-	
+
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -243,12 +266,26 @@ public class DeviceDiscoveryController implements Observer {
 				}
 			}
 			for (int j = 0; j < inventoryList.size(); j++) {
-
+				//DeviceInfoExtEntity extObj=deviceInfoExtRepo.findByRDeviceId(String.valueOf(inventoryList.get(j).getdId()));
+				JSONObject extObj=requestInfoDetailsDao.fetchFromDeviceExtLocationDescription(String.valueOf(inventoryList.get(j).getdId()));
 				inventoryList.get(j).setInterfaces(null);
 				inventoryList.get(j).setUsers(null);
-				inventoryList.get(j).setdSystemDescription(
-						"This is high security device that enables to connect providers' communication services and distributes service to my enterprise with a local area network. Supports concurrent services at broadband speed. provides VPN support and wireless networking.");
+				if(extObj!=null && extObj.containsKey("description"))
+				{
+				inventoryList.get(j).setdSystemDescription(extObj.get("description").toString());
+				}
+				else
+				{
+				inventoryList.get(j).setdSystemDescription("Not Available");
+				}
+				if(extObj!=null && extObj.containsKey("lat") && extObj.containsKey("long"))
+				{
+				inventoryList.get(j).setdLocation("Lat: "+extObj.get("lat").toString()+", Long: "+extObj.get("long").toString());
+				}
+				else
+				{
 				inventoryList.get(j).setdLocation("Not Available");
+				}
 				inventoryList.get(j).setdEndOfSupportDate("Not Available");
 				inventoryList.get(j).setdEndOfLife("Not Available");
 				inventoryList.get(j).setdPollUsing("IP Address");
