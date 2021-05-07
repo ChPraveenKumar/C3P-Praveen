@@ -384,7 +384,8 @@ public class RequestDetailsServiceWithVersion {
 					for(RequestInfoCreateConfig pojo: detailsList)
 					{
 						pojo.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(pojo.getRequestCreatedOn()));
-						pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
+						if(pojo.getEndDateOfProcessing() !=null)
+							pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
 					}
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
