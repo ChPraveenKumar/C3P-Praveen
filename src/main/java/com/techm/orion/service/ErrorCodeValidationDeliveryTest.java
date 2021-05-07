@@ -22,6 +22,7 @@ import java.util.Properties;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -38,6 +39,7 @@ import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
+@Service
 public class ErrorCodeValidationDeliveryTest extends Thread {
 	private static final Logger logger = LogManager.getLogger(ErrorCodeValidationDeliveryTest.class);
 
