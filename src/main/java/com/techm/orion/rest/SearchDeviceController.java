@@ -503,9 +503,9 @@ public class SearchDeviceController {
 							region);
 				} else if (customer != null && region == null && site == null) {
 					getFilterDevices = deviceInforepo.findByCustSiteIdCCustName(customer);
-				} else if ("Host Name".equals(searchType)) {
+				} else if ("Hostname".equals(searchType)) {
 					getFilterDevices = deviceInforepo.findByHostName(searchValue);
-				} else if ("Management Ip".equals(searchType)) {
+				} else if ("Management IP".equals(searchType)) {
 					getFilterDevices = deviceInforepo.findByMgmtIp(searchValue);
 				} else if ("OS".equals(searchType)) {
 					getFilterDevices = deviceInforepo.findByOS(searchValue);
@@ -520,7 +520,7 @@ public class SearchDeviceController {
 				}
 			}
 			JSONArray outputArray = new JSONArray();
-			if (searchType != null && searchValue != null && getFilterDevices != null) {
+			if (searchType != null && searchValue != null || getFilterDevices != null) {
 				for (DeviceDiscoveryEntity deviceInfo : getFilterDevices) {
 					JSONObject jsonData = new JSONObject();
 					jsonData = getData(deviceInfo);

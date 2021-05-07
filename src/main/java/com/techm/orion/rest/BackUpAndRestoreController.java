@@ -1607,8 +1607,16 @@ public class BackUpAndRestoreController {
 				object.put("vendor", getAllDevice.get(i).getdVendor());
 				object.put("status", "Available");
 				object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
-				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
-				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
+				if (getAllDevice.get(i).getdEndOfSupportDate() != null
+						&& !"Not Available".equalsIgnoreCase(getAllDevice.get(i).getdEndOfSupportDate()))
+					object.put("eos", getAllDevice.get(i).getdEndOfSupportDate().toString());
+				else
+					object.put("eos", "");
+				if (getAllDevice.get(i).getdEndOfSaleDate() != null
+						&& !"Not Available".equalsIgnoreCase(getAllDevice.get(i).getdEndOfSaleDate()))
+					object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
+				else
+					object.put("eol", "");
 				SiteInfoEntity site1 = getAllDevice.get(i).getCustSiteId();
 				object.put("site", site1.getcSiteName());
 				object.put("region", site1.getcSiteRegion());
