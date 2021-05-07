@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.ChildVersionPojo;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
@@ -19,15 +22,19 @@ import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
+@Component
 public class CreateAndCompareModifyVersion {
 
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+	
 	public String CompareModifyVersion(String requestIdForConfig, String type) throws Exception {
 
 		String key = "";
 		int counter = 1;
 		int counterCreate = 1;
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		ChildVersionPojo latestVersion = new ChildVersionPojo();
 		ParentVersionPojo compareVersion = new ParentVersionPojo();
 		InvokeFtl invokeFtl = new InvokeFtl();
@@ -273,9 +280,8 @@ public class CreateAndCompareModifyVersion {
 	}
 
 	public void getConfigData(RequestInfoSO latestVersion, String key, int counter) throws IOException {
-
 		String config_cmd = "";
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		List<ModifyConfigResultPojo> configCmdresultList = new ArrayList<ModifyConfigResultPojo>();
 		configCmdresultList = requestInfoDao.getConfigCmdRecordFordata(latestVersion, key);
 		for (Iterator<ModifyConfigResultPojo> iterator = configCmdresultList.iterator(); iterator.hasNext();) {
@@ -291,9 +297,7 @@ public class CreateAndCompareModifyVersion {
 
 	public void getConfigDataforNoCmd(RequestInfoSO latestVersion, String key, int counter) throws IOException {
 
-		String no_cmd = "";
-
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		String no_cmd = "";		
 		List<ModifyConfigResultPojo> configCmdresultList = new ArrayList<ModifyConfigResultPojo>();
 		configCmdresultList = requestInfoDao.getConfigCmdRecordFordata(latestVersion, key);
 		for (Iterator<ModifyConfigResultPojo> iterator = configCmdresultList.iterator(); iterator.hasNext();) {
@@ -400,7 +404,7 @@ public class CreateAndCompareModifyVersion {
 		int counter = 1;
 		int counterCreate = 1;
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		ChildVersionPojo latestVersion = new ChildVersionPojo();
 		ParentVersionPojo compareVersion = new ParentVersionPojo();
 		InvokeFtl invokeFtl = new InvokeFtl();

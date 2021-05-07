@@ -69,14 +69,21 @@ public class GetReportData implements Observer {
 	
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
-
 	
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private ReportDetailsService reportDetailsService;
 	@POST
 	@RequestMapping(value = "/getReportDataforTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getReportDataforTest(@RequestBody String configRequest) {
 
-		ReportDetailsService reportDetailsService = new ReportDetailsService();
+		
 		JSONObject obj = new JSONObject();
 		String jsonMessage = "";
 		String format = "false";
@@ -156,7 +163,7 @@ public class GetReportData implements Observer {
 				String requesttype = json.get("requestID").toString().substring(0,
 						Math.min(json.get("requestID").toString().length(), 4));
 				if (requesttype.equalsIgnoreCase("SLGF")) {
-					RequestInfoDao requestInfoDao = new RequestInfoDao();
+					
 					Float v = Float.parseFloat(json.get("version").toString());
 					DecimalFormat df = new DecimalFormat("0.0");
 					df.setMaximumFractionDigits(1);
@@ -164,7 +171,7 @@ public class GetReportData implements Observer {
 					dilevaryMilestonesforOSupgrade = requestInfoDao
 							.get_dilevary_steps_status(json.get("requestID").toString(), version_decimal);
 				} else if (requesttype.equalsIgnoreCase("SLGB") || requesttype.equalsIgnoreCase("SLGC")) {
-					RequestInfoDao requestInfoDao = new RequestInfoDao();
+					
 					isCheck = requestInfoDao.get_dilevary_status(json.get("requestID").toString());
 
 					if (isCheck) {
@@ -236,8 +243,7 @@ public class GetReportData implements Observer {
 	@RequestMapping(value = "/getRouterConfigData", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getRouterConfigData(@RequestBody String configRequest) {
-
-		ReportDetailsService reportDetailsService = new ReportDetailsService();
+		
 		JSONObject obj = new JSONObject();
 		String previousRouterVersion = null, currentRouterVersion= null, requestID = null, version = null, networkType = null;
 
@@ -296,7 +302,7 @@ public class GetReportData implements Observer {
 	public Response getRequestStatusData() {
 
 		JSONObject obj = new JSONObject();
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		java.util.List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
 
 		try {
@@ -367,8 +373,7 @@ public class GetReportData implements Observer {
 	@ResponseBody
 	public Response getElapsedTimeData() {
 
-		JSONObject obj = new JSONObject();
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		JSONObject obj = new JSONObject();		
 		java.util.List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
 		try {
 			detailsList = dcmConfigService.getAllDetails();
@@ -438,7 +443,6 @@ public class GetReportData implements Observer {
 		JSONArray result = new JSONArray();
 		java.util.List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
 
-		DcmConfigService dcmConfigService = new DcmConfigService();
 		try {
 			result = dcmConfigService.getColumnChartData();
 			detailsList = dcmConfigService.getAllDetails();
@@ -505,8 +509,8 @@ public class GetReportData implements Observer {
 	public Response getIP(@RequestParam(value = "startDate") String stDate,
 			@RequestParam(value = "endDate") String edDate) {
 		JSONObject obj = new JSONObject();
-		RequestInfoDao dao = new RequestInfoDao();
-		JSONArray result = dao.getStatusReportData(stDate, edDate);
+		
+		JSONArray result = requestInfoDao.getStatusReportData(stDate, edDate);
 		obj.put(new String("Output"), result.toString());
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
@@ -705,7 +709,7 @@ public class GetReportData implements Observer {
 		org.json.simple.JSONArray dynamicTestArray = new org.json.simple.JSONArray();
 
 		JSONParser parser = new JSONParser();
-		RequestInfoDao dao = new RequestInfoDao();
+		
 
 		JSONObject resultObj = new JSONObject();
 
@@ -722,7 +726,7 @@ public class GetReportData implements Observer {
 			createConfigRequestDCM.setTestType(json.get("testType").toString());
 
 			if (createConfigRequestDCM.getTestType().equalsIgnoreCase("networkAuditTest")) {
-				dynamicTestArray = dao.getNetworkAuditReport(createConfigRequestDCM.getRequestId(),
+				dynamicTestArray = requestInfoDao.getNetworkAuditReport(createConfigRequestDCM.getRequestId(),
 						createConfigRequestDCM.getVersion_report(), "Network Audit");
 
 			}
@@ -753,7 +757,7 @@ public class GetReportData implements Observer {
 	public Response getServiceRequestCount() {
 
 		JSONObject obj = new JSONObject();
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		java.util.List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
 
 		try {
@@ -828,7 +832,7 @@ public class GetReportData implements Observer {
 	public Response getRequestDetailsCount(@RequestBody String requestType) {
 
 		JSONObject obj = new JSONObject();
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		int completed = 0;
 		int inProgress = 0;
 		int scheduled = 0;
@@ -912,8 +916,6 @@ public class GetReportData implements Observer {
 	@RequestMapping(value = "/getStartUpConfigData", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getStartUpConfigData(@RequestBody String configRequest) {
-
-		ReportDetailsService reportDetailsService = new ReportDetailsService();
 		JSONObject obj = new JSONObject();
 		String previousRouterVersion = null, currentRouterVersion= null, requestID = null, version = null, networkType = null;
 

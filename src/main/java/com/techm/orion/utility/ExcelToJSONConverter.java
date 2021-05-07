@@ -18,6 +18,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
+import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
@@ -29,7 +30,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.techm.orion.pojo.ExcelToJSONConfigPojo;
 import com.techm.orion.service.DcmConfigService;
-
+@Component
 public class ExcelToJSONConverter {
 	private static final Logger logger = LogManager.getLogger(ExcelToJSONConverter.class);
 

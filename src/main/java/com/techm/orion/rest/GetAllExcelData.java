@@ -9,6 +9,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -22,6 +23,9 @@ import com.techm.orion.utility.ExcelToJSONConverter;
 @RequestMapping("/GetAllExcelData")
 public class GetAllExcelData implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetAllExcelData.class);
+	
+	@Autowired
+	private ExcelToJSONConverter excelToJSONConverter ;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -34,8 +38,8 @@ public class GetAllExcelData implements Observer {
 		JSONObject obj = new JSONObject();
 
 		try {
-			ExcelToJSONConverter converter = new ExcelToJSONConverter();
-			JSONObject response = converter.convert(file);
+			
+			JSONObject response = excelToJSONConverter.convert(file);
 			obj.put(new String("output"), response.toString());
 
 		} catch (Exception e) {

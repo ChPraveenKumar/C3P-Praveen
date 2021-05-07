@@ -17,6 +17,7 @@ import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -28,15 +29,17 @@ import com.techm.orion.utility.TSALabels;
 
 public class HealthCheckTestSSH {
 	private static final Logger logger = LogManager.getLogger(HealthCheckTestSSH.class);
-
+	
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+	
 	// @SuppressWarnings("unused")
 	public void HealthCheckTest(CreateConfigRequestDCM configRequest) throws IOException {
 		/*
 		 * @Override public void run() {
 		 */
 		try {
-
-			RequestInfoDao requestInfoDao = new RequestInfoDao();
+			
 			Map<String, String> hmapResult = new HashMap<String, String>();
 
 			RegexTestHealthCheck regexTestHealthCheck = new RegexTestHealthCheck();

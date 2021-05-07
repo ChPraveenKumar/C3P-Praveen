@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequest;
@@ -19,10 +20,13 @@ import com.techm.orion.utility.TextReport;
 public class FinalReportTestSSH {
 	private static final Logger logger = LogManager.getLogger(FinalReportTestSSH.class);
 
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+	
 	@SuppressWarnings("unused")
 	public void FlagCheckTest(CreateConfigRequestDCM configRequest) throws IOException {
 		try {
-			RequestInfoDao requestInfoDao = new RequestInfoDao();
+			
 			Map<String, String> hmapResult = new HashMap<String, String>();
 			CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 			InvokeFtl invokeFtl = new InvokeFtl();

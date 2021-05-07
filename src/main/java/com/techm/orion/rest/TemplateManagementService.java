@@ -1,9 +1,5 @@
 package com.techm.orion.rest;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -19,7 +15,6 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,7 +36,6 @@ import com.techm.orion.repositories.VNFTemplateRepository;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementNewService;
-import com.techm.orion.utility.TSALabels;
 
 @Controller
 @RequestMapping("/TemplateManagementService")
@@ -154,14 +148,11 @@ public class TemplateManagementService implements Observer {
 	@RequestMapping(value = "/getRightPanelOnEditTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getRightPanelOnEditTemplate(@RequestBody String templateId) {
-
-		JSONObject obj = new JSONObject();
-
-		TemplateManagementNewService templateManagementNewService = new TemplateManagementNewService();
+		JSONObject obj = new JSONObject();	
 
 		try {
 
-			List<GetTemplateMngmntActiveDataPojo> templateactiveList = templateManagementNewService
+			List<GetTemplateMngmntActiveDataPojo> templateactiveList = templateManagmentService
 					.getDataForRightPanelOnEditTemplate(templateId, true);
 
 			obj.put(new String("output"), templateactiveList);

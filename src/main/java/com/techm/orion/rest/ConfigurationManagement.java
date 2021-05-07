@@ -107,6 +107,9 @@ public class ConfigurationManagement {
 	
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+	
+	@Autowired
+	private TemplateManagementDao templateManagementDao ;
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -126,7 +129,7 @@ public class ConfigurationManagement {
 		String requestId = null;
 		String request_creator_name = null, userName = null, userRole = null;
 		List<String> templateList = null;
-		TemplateManagementDao dao = new TemplateManagementDao();
+		
 		List<RequestInfoPojo> configReqToSendToC3pCodeList = new ArrayList<RequestInfoPojo>();
 		List<String> configGenMtds = new ArrayList<String>();
 		InvokeFtl invokeFtl = new InvokeFtl();
@@ -440,7 +443,7 @@ public class ConfigurationManagement {
 						}
 						featureList.add(featureid);
 						// Fetch commands only in case of external api
-						List<CommandPojo> listToSent = dao.getCammandByTemplateAndfeatureId(Integer.parseInt(featureid),
+						List<CommandPojo> listToSent = templateManagementDao.getCammandByTemplateAndfeatureId(Integer.parseInt(featureid),
 								templateid);
 						cammandByTemplate.addAll(listToSent);
 					}

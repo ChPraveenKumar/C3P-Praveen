@@ -78,6 +78,9 @@ public class ConfigMngmntService implements Observer {
 	@Autowired
 	private MasterCharacteristicsRepository masterCharachteristicRepository;
 	
+	@Autowired
+	private TemplateManagementDao templatemanagementDao;
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -609,7 +612,7 @@ public class ConfigMngmntService implements Observer {
 						configReqToSendToC3pCode.getFamily(),
 						configReqToSendToC3pCode.getModel());
 				/* Get Series according to template id */
-				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
+				
 				seriesId = templatemanagementDao.getSeriesId(
 						configReqToSendToC3pCode.getTemplateID(), seriesId);
 				seriesId = StringUtils.substringAfter(seriesId, "Generic_");
@@ -1248,7 +1251,7 @@ public class ConfigMngmntService implements Observer {
 						configReqToSendToC3pCode.getFamily(),
 						configReqToSendToC3pCode.getModel());
 				/* Get Series according to template id */
-				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
+				
 				seriesId = templatemanagementDao.getSeriesId(
 						configReqToSendToC3pCode.getTemplateID(), seriesId);
 				seriesId = StringUtils.substringAfter(seriesId, "Generic_");
@@ -1913,9 +1916,9 @@ public class ConfigMngmntService implements Observer {
 		configReqToSendToC3pCode.setTemplateID(templateName);
 
 		InvokeFtl invokeFtl = new InvokeFtl();
-		TemplateManagementDao dao = new TemplateManagementDao();
+		
 		// Getting Commands Using Series Id
-		List<CommandPojo> cammandsBySeriesId = dao.getCammandsBySeriesId(
+		List<CommandPojo> cammandsBySeriesId = templatemanagementDao.getCammandsBySeriesId(
 				seriesId, null);
 		invokeFtl
 				.createFinalTemplate(cammandsBySeriesId, null, masterAttribute,

@@ -21,6 +21,7 @@ import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -40,8 +41,14 @@ import com.techm.orion.utility.TextReport;
 public class ErrorCodeValidationDeliveryTest extends Thread {
 	private static final Logger logger = LogManager.getLogger(ErrorCodeValidationDeliveryTest.class);
 
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private DeliverConfigurationAndBackupTest deliverConfigurationAndBackupTest;
+	
 	public String checkErrorCode(String requestId, double version) throws IOException {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		List<ErrorValidationPojo> list = new ArrayList<ErrorValidationPojo>();
 		String textFound = "";
 		String errorType = null;
@@ -129,11 +136,10 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 	 * to push no command and get the previous configuration of the version
 	 */
 	public void pushPreviousVersionConfiguration(CreateConfigRequest configRequest) throws IOException {
-		DeliverConfigurationAndBackupTest deliverConfigurationAndBackupTest = new DeliverConfigurationAndBackupTest();
+		
 		Double previousVersion = 0d;
 		try {
 
-			RequestInfoDao requestInfoDao = new RequestInfoDao();
 			String host = configRequest.getManagementIp();
 			UserPojo userPojo = new UserPojo();
 			userPojo = requestInfoDao.getRouterCredentials();
@@ -208,7 +214,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 			String key = "";
 			int counter = 1;
 			InvokeFtl invokeFtl = new InvokeFtl();
-			RequestInfoDao requestInfoDao = new RequestInfoDao();
+			
 			ParentVersionPojo compareVersion = new ParentVersionPojo();
 			ChildVersionPojo latestVersion = new ChildVersionPojo();
 
@@ -551,8 +557,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 
 		String no_cmd = "";
 
-		CreateAndCompareModifyVersion createAndCompareModifyVersion = new CreateAndCompareModifyVersion();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		CreateAndCompareModifyVersion createAndCompareModifyVersion = new CreateAndCompareModifyVersion();		
 		List<ModifyConfigResultPojo> configCmdresultList = new ArrayList<ModifyConfigResultPojo>();
 		configCmdresultList = requestInfoDao.getConfigCmdRecordFordataForDelivery(configRequest, key);
 		for (Iterator<ModifyConfigResultPojo> iterator = configCmdresultList.iterator(); iterator.hasNext();) {

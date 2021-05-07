@@ -24,9 +24,12 @@ import com.techm.orion.entitybeans.TestRules;
 @Component
 public class TestStrategeyAnalyser {
 	private static final Logger logger = LogManager.getLogger(TestStrategeyAnalyser.class);
+	
 	@Autowired
-	RequestInfoDetailsDao requestDetailsInfoDao;
+	private RequestInfoDetailsDao requestDetailsInfoDao;
 
+	@Autowired
+	private RequestInfoDao requestInfoDao;
 	/*
 	 * Owner: Ruchita Salvi Module: Test Strategey Logic: To run and analyse custom
 	 * tests
@@ -35,7 +38,6 @@ public class TestStrategeyAnalyser {
 	public boolean printAndAnalyse(InputStream input, Channel channel, String requestID, String version,
 			TestDetail test, String testIdentifier) throws Exception {
 		Double requestVersion =Double.valueOf(version);
-		RequestInfoDao dao = new RequestInfoDao();
 		boolean res = false;
 		BufferedWriter bufferWriter = null;
 		FileWriter fileWriter = null;
@@ -142,7 +144,7 @@ public class TestStrategeyAnalyser {
 						resultText = rulesLabel.getReportedLabel();
 						collectedValue = "N/A";
 					}
-					res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+					res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 							test.getTestCategory(), result, resultText, collectedValue, "N/A", collectedValue,
 							rulesLabel.getDataType(),requestVersion);
 				}
@@ -169,7 +171,7 @@ public class TestStrategeyAnalyser {
 						resultText = rulesLabel.getReportedLabel();
 						collectedValue = "Failed";
 					}
-					res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+					res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 							test.getTestCategory(), result, resultText, collectedValue, "N/A", collectedValue,
 							rulesLabel.getDataType(),requestVersion);
 				}
@@ -246,7 +248,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1, "N/A",
@@ -257,7 +259,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1,
@@ -270,7 +272,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1, "N/A",
@@ -281,7 +283,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1,
@@ -300,7 +302,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + " & " + value2,
@@ -311,7 +313,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + " & " + value2,
@@ -323,7 +325,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -344,7 +346,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1, "N/A",
@@ -355,7 +357,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1,
@@ -367,7 +369,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -387,7 +389,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1, "N/A",
@@ -398,7 +400,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1,
@@ -410,7 +412,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -430,7 +432,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -442,7 +444,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -455,7 +457,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -475,7 +477,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -487,7 +489,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -500,7 +502,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -520,7 +522,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
@@ -531,7 +533,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
@@ -543,7 +545,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -557,7 +559,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1, "N/A",
@@ -568,7 +570,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1,
@@ -581,7 +583,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1, "N/A",
@@ -592,7 +594,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1,
@@ -605,7 +607,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1, "N/A",
@@ -616,7 +618,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1,
@@ -628,7 +630,7 @@ public class TestStrategeyAnalyser {
 									resultArray.add(result);
 
 									resultText = rulesLabel.getReportedLabel();
-									res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+									res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 											test.getTestCategory(),
 
 											result, resultText, output, "Invalid operator", "Failed",
@@ -638,7 +640,7 @@ public class TestStrategeyAnalyser {
 								result = "Passed";
 								resultArray.add(result);
 								resultText = rulesLabel.getReportedLabel();
-								res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 										test.getTestCategory(), result, resultText, output, "N/A", "",
 										rulesLabel.getDataType(),requestVersion);
 							}
@@ -647,7 +649,7 @@ public class TestStrategeyAnalyser {
 							resultArray.add(result);
 
 							resultText = rulesLabel.getReportedLabel();
-							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
 									"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion);
 							// Update main request status to partial success
@@ -708,7 +710,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1, "N/A",
@@ -719,7 +721,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1,
@@ -732,7 +734,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1, "N/A",
@@ -743,7 +745,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1,
@@ -762,7 +764,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
@@ -773,7 +775,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
@@ -785,7 +787,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -806,7 +808,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1, "N/A",
@@ -817,7 +819,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1,
@@ -829,7 +831,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -849,7 +851,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1, "N/A",
@@ -860,7 +862,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1,
@@ -872,7 +874,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -892,7 +894,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -904,7 +906,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -917,7 +919,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -937,7 +939,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -949,7 +951,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -962,7 +964,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -982,7 +984,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
@@ -993,7 +995,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
@@ -1005,7 +1007,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -1019,7 +1021,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1, "N/A",
@@ -1030,7 +1032,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1,
@@ -1043,7 +1045,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1, "N/A",
@@ -1054,7 +1056,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1,
@@ -1067,7 +1069,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1, "N/A",
@@ -1078,7 +1080,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1,
@@ -1090,7 +1092,7 @@ public class TestStrategeyAnalyser {
 									resultArray.add(result);
 
 									resultText = rulesLabel.getReportedLabel();
-									res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+									res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 											test.getTestCategory(),
 
 											result, resultText, output, "Invalid operator", "Failed",
@@ -1100,7 +1102,7 @@ public class TestStrategeyAnalyser {
 								result = "Passed";
 								resultArray.add(result);
 								resultText = rulesLabel.getReportedLabel();
-								res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 										test.getTestCategory(), result, resultText, output, "N/A", "",
 										rulesLabel.getDataType(),requestVersion);
 							}
@@ -1109,7 +1111,7 @@ public class TestStrategeyAnalyser {
 							resultArray.add(result);
 
 							resultText = rulesLabel.getReportedLabel();
-							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
 									"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion);
 							// Update main request status to partial success
@@ -1184,7 +1186,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1, "N/A",
@@ -1195,7 +1197,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1,
@@ -1208,7 +1210,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1, "N/A",
@@ -1219,7 +1221,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1,
@@ -1238,7 +1240,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
@@ -1249,7 +1251,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
@@ -1261,7 +1263,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -1282,7 +1284,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1, "N/A",
@@ -1293,7 +1295,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1,
@@ -1305,7 +1307,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -1325,7 +1327,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1, "N/A",
@@ -1336,7 +1338,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1,
@@ -1348,7 +1350,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -1368,7 +1370,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -1380,7 +1382,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -1393,7 +1395,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -1413,7 +1415,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -1425,7 +1427,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output,
@@ -1438,7 +1440,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -1458,7 +1460,7 @@ public class TestStrategeyAnalyser {
 											result = "Passed";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
@@ -1469,7 +1471,7 @@ public class TestStrategeyAnalyser {
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
-											res = dao.updateTestStrategeyConfigResultsTable(requestID,
+											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
@@ -1481,7 +1483,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, "Unable to process the rule",
@@ -1495,7 +1497,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1, "N/A",
@@ -1506,7 +1508,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1,
@@ -1519,7 +1521,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1, "N/A",
@@ -1530,7 +1532,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1,
@@ -1543,7 +1545,7 @@ public class TestStrategeyAnalyser {
 										result = "Passed";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1, "N/A",
@@ -1554,7 +1556,7 @@ public class TestStrategeyAnalyser {
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
-										res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1,
@@ -1566,7 +1568,7 @@ public class TestStrategeyAnalyser {
 									resultArray.add(result);
 
 									resultText = rulesLabel.getReportedLabel();
-									res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+									res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 											test.getTestCategory(),
 
 											result, resultText, output, "Invalid operator", "Failed",
@@ -1576,7 +1578,7 @@ public class TestStrategeyAnalyser {
 								result = "Passed";
 								resultArray.add(result);
 								resultText = rulesLabel.getReportedLabel();
-								res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+								res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 										test.getTestCategory(), result, resultText, output, "N/A", "",
 										rulesLabel.getDataType(),requestVersion);
 							}
@@ -1585,7 +1587,7 @@ public class TestStrategeyAnalyser {
 							resultArray.add(result);
 
 							resultText = rulesLabel.getReportedLabel();
-							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
 									"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion);
 							// Update main request status to partial success
@@ -1642,7 +1644,7 @@ public class TestStrategeyAnalyser {
 							result = "Passed";
 							resultArray.add(result);
 							resultText = rulesLabel.getReportedLabel();
-							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(),
 
 									result, resultText, output, "Snippet starts with: " + evaluationOperator, "N/A",
@@ -1654,7 +1656,7 @@ public class TestStrategeyAnalyser {
 							resultArray.add(result);
 
 							resultText = rulesLabel.getReportedLabel();
-							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(),
 
 									result, resultText, output, "Snnipet starts with: " + evaluationOperator,
@@ -1692,7 +1694,7 @@ public class TestStrategeyAnalyser {
 
 							resultArray.add(result);
 							resultText = rulesLabel.getReportedLabel();
-							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(),
 
 									result, resultText, evaluationOperator,
@@ -1702,7 +1704,7 @@ public class TestStrategeyAnalyser {
 							String collectedValue = "Test failed";
 							resultArray.add(result);
 							resultText = rulesLabel.getReportedLabel();
-							res = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(),
 
 									result, resultText, collectedValue, "Keyword starts with: " + evaluationOperator,

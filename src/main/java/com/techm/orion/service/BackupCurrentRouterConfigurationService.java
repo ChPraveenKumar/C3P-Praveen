@@ -41,7 +41,6 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.pojo.CreateConfigRequest;
-import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.utility.InvokeFtl;
@@ -52,16 +51,17 @@ import com.techm.orion.utility.TextReport;
 public class BackupCurrentRouterConfigurationService extends Thread {
 	private static final Logger logger = LogManager.getLogger(BackupCurrentRouterConfigurationService.class);
 
-	CreateConfigRequestDCM configRequest = new CreateConfigRequestDCM();
-	
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 	
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	
+	@Autowired
+	private RequestInfoDao requestInfoDao ;
+	
 	public boolean getRouterConfig(CreateConfigRequest configRequest, String routerVersionType) throws IOException {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		boolean backupdone = false;
@@ -165,7 +165,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 	public boolean getRouterConfigStartUp(CreateConfigRequest configRequest, String routerVersionType)
 			throws IOException {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		boolean backupdone = false;
@@ -381,7 +381,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 	}
 
 	public boolean getRouterConfig(RequestInfoPojo configRequest, String routerVersionType) {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		boolean backupdone = false;
@@ -465,7 +465,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 	
 	public boolean getRouterConfigStartUp(RequestInfoPojo configRequest, String routerVersionType) {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		boolean backupdone = false;

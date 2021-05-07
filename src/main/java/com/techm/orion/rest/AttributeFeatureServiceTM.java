@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,13 +25,15 @@ import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.models.TemplateAttributeJSONModel;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.service.AttributeFeatureNewService;
-import com.techm.orion.service.DcmConfigService;
 
 @Controller
 @RequestMapping("/AttributeFeatureServiceTM")
 public class AttributeFeatureServiceTM implements Observer {
 	
 	private static final Logger logger = LogManager.getLogger(AttributeFeatureService.class);
+	
+	@Autowired
+	private TemplateSuggestionDao templateSuggestionDao ;
 	
 	/**
 	 * This Api is marked as ***************External Api Impacted****************
@@ -92,9 +95,8 @@ public class AttributeFeatureServiceTM implements Observer {
 	@RequestMapping(value = "/getFeaturesForSelectedTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getFeaturesForSelectedTemplate(
-			@RequestBody String templateDetails) {
-		DcmConfigService dcmConfigService = new DcmConfigService();
-		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+			@RequestBody String templateDetails) {		
+		
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 
@@ -163,7 +165,7 @@ public class AttributeFeatureServiceTM implements Observer {
 	public Response getTemplateDetailsForSelectedFeatures(
 			@RequestBody String featuresList) {
 
-		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+		
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 		String jsonList = "";

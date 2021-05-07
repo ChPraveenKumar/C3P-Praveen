@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +30,8 @@ import com.techm.orion.pojo.SearchParamPojo;
 @RequestMapping("/SearchRequestService")
 public class SearchRequestService implements Observer {
 	private static final Logger logger = LogManager.getLogger(SearchRequestService.class);
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
+	@Autowired
+	private RequestInfoDao requestInfoDao;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************

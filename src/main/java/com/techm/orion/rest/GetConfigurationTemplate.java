@@ -36,14 +36,19 @@ import com.techm.orion.utility.InvokeFtl;
 @RequestMapping("/GetConfigurationTemplate")
 public class GetConfigurationTemplate {
 	private static final Logger logger = LogManager.getLogger(GetConfigurationTemplate.class);
+	
 	@Autowired
-	AttribCreateConfigService service;
+	private AttribCreateConfigService service;
 
 	@Autowired
-	DcmConfigService dcmConfigService;
+	private DcmConfigService dcmConfigService;
 
 	@Autowired
-	TemplateFeatureRepo templatefeatureRepo;
+	private TemplateFeatureRepo templatefeatureRepo;
+	
+	@Autowired
+	private GetConfigurationTemplateService getConfigurationTemplateService;
+	
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -60,7 +65,7 @@ public class GetConfigurationTemplate {
 		String data = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequestDCM createConfigRequest = new CreateConfigRequestDCM();
-		GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
+		
 		TemplateManagementDao dao = new TemplateManagementDao();
 		try {
 

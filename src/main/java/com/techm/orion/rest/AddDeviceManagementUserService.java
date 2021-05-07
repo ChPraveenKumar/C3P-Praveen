@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,37 +20,33 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.UserPojo;
-import com.techm.orion.service.InventoryManagmentService;
 
 @Controller
 @RequestMapping("/addDeviceManagementUser")
 public class AddDeviceManagementUserService implements Observer {
 
 	private static final Logger logger = LogManager.getLogger(AddDeviceManagementUserService.class);
-	
-    RequestInfoDao requestInfoDao = new RequestInfoDao();
+	@Autowired
+    private RequestInfoDao requestInfoDao;
     
     /**
      *  This Api is marked as ***************c3p-ui Api Impacted***************
      **/
     
-    @POST
+    @SuppressWarnings("unchecked")
+	@POST
     @RequestMapping(value = "/updateRouterCredential", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     @ResponseBody
     public Response updateRouterCredential(@RequestBody String userDetails) {
-
-	JSONObject obj = new JSONObject();
-	String jsonMessage = "";
-	String jsonArray = "";
+	JSONObject obj = new JSONObject();	
 	String username = null, password = null;
 	try {
 	    Gson gson = new Gson();
 	    UserPojo dto = gson.fromJson(userDetails,
 		    UserPojo.class);
 	    username = dto.getUsername();
-	    password = dto.getPassword();
-	    RequestInfoDao requestInfoDao=new RequestInfoDao();
-	    //List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
+	    password = dto.getPassword();	    
+	    
 	    if (username != null && !username.isEmpty()) {
 		try {
 		    
@@ -86,33 +83,16 @@ public class AddDeviceManagementUserService implements Observer {
      *  This Api is marked as ***************c3p-ui Api Impacted***************
      **/
     
-    @GET
+    @SuppressWarnings("unchecked")
+	@GET
 	@RequestMapping(value = "/getRouterCredentials", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public Response getRouterCredentials() {
-
-	JSONObject obj = new JSONObject();
-	String jsonMessage = "";
-	String jsonArray = "";
-	UserPojo ip=new UserPojo();
-	
-	boolean res=false;
-	try {
-	    Gson gson = new Gson();
-	   
-	    
-	    RequestInfoDao requestInfoDao=new RequestInfoDao();
-	    //List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
-	   
-		try {
-		    
+	JSONObject obj = new JSONObject();	
+	try {	   	    
 			UserPojo userList=requestInfoDao.getRouterCredentials();
 		    obj.put(new String("username"), userList.getUsername());
-		    obj.put(new String("password"), userList.getPassword());
-
-		} catch (Exception e) {
-			logger.error(e);
-		}
+		    obj.put(new String("password"), userList.getPassword());		
 	    
 	} catch (Exception e) {
 		logger.error(e);

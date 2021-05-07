@@ -55,8 +55,12 @@ public class FinalReportForTTUTest extends Thread {
 	private static final Logger logger = LogManager.getLogger(FinalReportForTTUTest.class);
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
 	@Autowired
-	private RequestInfoDetailsDao requestDao;
+	private RequestInfoDetailsDao requestInfoDetailsDao;
+	
+	@Autowired
+	private NetworkTestValidation networkTestValidation;
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -74,7 +78,7 @@ public class FinalReportForTTUTest extends Thread {
 		JSONObject json;
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
-		NetworkTestValidation networkTestValidation = new NetworkTestValidation();
+		
 		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
 		Boolean value = false;
 		String FailureIssueType = "";
@@ -88,7 +92,7 @@ public class FinalReportForTTUTest extends Thread {
 		try {
 
 			createConfigRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
-			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 			if(!type.equalsIgnoreCase("SNAI"))
 			{
 			if (createConfigRequest.getManagementIp() != null && !createConfigRequest.getManagementIp().equals("")) {
@@ -938,9 +942,9 @@ public class FinalReportForTTUTest extends Thread {
 				}
 
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-				String statusVAlue = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
+				String statusVAlue = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 						requestinfo.getRequestVersion());
-				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "customer_report", "4", statusVAlue);
 
 				requestinfo.setAlphanumericReqId(RequestId);
@@ -1076,7 +1080,7 @@ public class FinalReportForTTUTest extends Thread {
 						if (reoprtFlags.getGenerate_config() != 2 && reoprtFlags.getDeliever_config() != 2
 								&& reoprtFlags.getHealth_checkup() != 2 && reoprtFlags.getApplication_test() != 2
 								&& reoprtFlags.getNetwork_test() != 2) {
-							String status = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
+							String status = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 									requestinfo.getRequestVersion());
 							if (status.equalsIgnoreCase("Partial Success")) {
 								status = "Partial Success";
@@ -1084,7 +1088,7 @@ public class FinalReportForTTUTest extends Thread {
 								status = "Success";
 							}
 
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", status);
 							// customer report for success
 
@@ -1103,7 +1107,7 @@ public class FinalReportForTTUTest extends Thread {
 						} else {
 							// customer report for failure
 
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 
@@ -1153,7 +1157,7 @@ public class FinalReportForTTUTest extends Thread {
 					}
 
 					else {
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 						String response = invokeFtl.generateCustomerReportDeviceLocked(requestinfo);						
 						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
@@ -1226,7 +1230,7 @@ public class FinalReportForTTUTest extends Thread {
 							requestinfo.setOs_upgrade_dilevary_post_login_flag(
 									req.getOs_upgrade_dilevary_post_login_flag());
 
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerIOSHealthCheckFailedPost(requestinfo);							
@@ -1260,7 +1264,7 @@ public class FinalReportForTTUTest extends Thread {
 							requestinfo.setOs_upgrade_dilevary_post_login_flag(
 									req.getOs_upgrade_dilevary_post_login_flag());
 
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerIOSDilevaryFail(requestinfo);							
@@ -1331,7 +1335,7 @@ public class FinalReportForTTUTest extends Thread {
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 								response);
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", "Success");
 						value = true;
 						jsonArray = new Gson().toJson(value);
@@ -1339,7 +1343,7 @@ public class FinalReportForTTUTest extends Thread {
 					} else {
 						// in case of health check failure
 						value = false;
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 						String response = invokeFtl.generateCustomerIOSHealthCheckFailed(requestinfo);						
 						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
@@ -1470,7 +1474,7 @@ public class FinalReportForTTUTest extends Thread {
 					if (reoprtFlags.getGenerate_config() != 2 && reoprtFlags.getDeliever_config() != 2
 							&& reoprtFlags.getHealth_checkup() != 2 && reoprtFlags.getApplication_test() != 2
 							&& reoprtFlags.getNetwork_test() != 2) {
-						String status = requestDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
+						String status = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
 								requestinfo.getRequestVersion());
 						if (status.equalsIgnoreCase("Partial Success")) {
 							status = "Partial Success";
@@ -1478,7 +1482,7 @@ public class FinalReportForTTUTest extends Thread {
 							status = "Success";
 						}
 
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", status);
 						// customer report for success
 
@@ -1497,7 +1501,7 @@ public class FinalReportForTTUTest extends Thread {
 					} else {
 						// customer report for failure
 
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 
 						if (reoprtFlags.getGenerate_config() == 2) {
@@ -1558,7 +1562,7 @@ public class FinalReportForTTUTest extends Thread {
 							requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 									requestinfo.getAlphanumericReqId());
 
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerReportDeviceLocked(requestinfo);							
@@ -1602,7 +1606,7 @@ public class FinalReportForTTUTest extends Thread {
 							requestinfo.setOs_upgrade_dilevary_post_login_flag(
 									req.getOs_upgrade_dilevary_post_login_flag());
 
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerIOSHealthCheckFailedPost(requestinfo);							
@@ -1636,7 +1640,7 @@ public class FinalReportForTTUTest extends Thread {
 							requestinfo.setOs_upgrade_dilevary_post_login_flag(
 									req.getOs_upgrade_dilevary_post_login_flag());
 
-							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerIOSDilevaryFail(requestinfo);							
@@ -1707,7 +1711,7 @@ public class FinalReportForTTUTest extends Thread {
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 								response);
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", "Success");
 						value = true;
 						jsonArray = new Gson().toJson(value);
@@ -1715,7 +1719,7 @@ public class FinalReportForTTUTest extends Thread {
 					} else {
 						// in case of health check failure
 						value = false;
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 						String response = invokeFtl.generateCustomerIOSHealthCheckFailed(requestinfo);						
 						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
@@ -1731,14 +1735,14 @@ public class FinalReportForTTUTest extends Thread {
 			}
 			else
 			{
-				requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "customer_report", "4", "In Progress");
 				//Check if instantiation is 1 or not in webserviceinfo table
-				int status=requestDao.getStatusForMilestone(RequestId,version,"instantiation");
+				int status=requestInfoDetailsDao.getStatusForMilestone(RequestId,version,"instantiation");
 				if(status == 1)
 				{
 					value = true;
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", "Success");
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
@@ -1746,7 +1750,7 @@ public class FinalReportForTTUTest extends Thread {
 				else if(status==2)
 				{
 					value = false;
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
@@ -1802,7 +1806,7 @@ public class FinalReportForTTUTest extends Thread {
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
 				if (type.equalsIgnoreCase("SLGC")) {
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 					String response;
 					try {

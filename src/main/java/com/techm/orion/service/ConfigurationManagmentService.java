@@ -63,13 +63,14 @@ public class ConfigurationManagmentService {
 
 	GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
 
-	TemplateManagementDao dao = new TemplateManagementDao();
+	@Autowired
+	private TemplateManagementDao templateManagementDao;
 
 	@SuppressWarnings("unchecked")
 	public JSONObject verifyConfiguration(JSONObject requestJson) {
 		JSONObject obj = new JSONObject();
 		RequestInfoPojo requestInfoData = new RequestInfoPojo();
-		TemplateManagementDao dao = new TemplateManagementDao();
+	
 		requestInfoData = setRequestInfoData(requestJson);
 
 		/* Get Cammands and Template attribute selected Features */
@@ -144,7 +145,7 @@ public class ConfigurationManagmentService {
 					if (byAttribTemplateAndFeatureName != null && !byAttribTemplateAndFeatureName.isEmpty()) {
 						templateAttribute.addAll(byAttribTemplateAndFeatureName);
 					}
-					cammandByTemplate.addAll(dao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(),
+					cammandByTemplate.addAll(templateManagementDao.getCammandByTemplateAndfeatureId(findIdByfeatureAndCammand.getId(),
 							requestInfoData.getTemplateID()));
 				}
 				// Extract Json and map to CreateConfigPojo fields
@@ -620,7 +621,7 @@ public class ConfigurationManagmentService {
 				TemplateFeatureEntity featureData = templatefeatureRepo
 						.findByCommandAndComandDisplayFeatureAndMasterFId(templateID, featureName, featureMasterId);
 				if (featureData != null) {
-					List<CommandPojo> commandsByFeatureData = dao.getCammandByTemplateAndfeatureId(featureData.getId(),
+					List<CommandPojo> commandsByFeatureData = templateManagementDao.getCammandByTemplateAndfeatureId(featureData.getId(),
 							templateID);
 					JSONArray featureAttribArray = (JSONArray) featureDetails.get("featureAttribDetails");
 					// set command label with user value

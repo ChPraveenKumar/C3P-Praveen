@@ -77,8 +77,9 @@ public class RequestInfoDetailsDao {
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	@Autowired
-	private WebServiceRepo webservicerepo;
-	
+	private WebServiceRepo webservicerepo;	
+	@Autowired
+	private BackupCurrentRouterConfigurationService backupCurrentRouterConfigurationService;	
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
@@ -516,9 +517,7 @@ public class RequestInfoDetailsDao {
 	
 	public boolean getRouterConfig(RequestInfoPojo requestinfo, String routerVersionType) {
 		
-		InvokeFtl invokeFtl = new InvokeFtl();
-
-		BackupCurrentRouterConfigurationService service = new BackupCurrentRouterConfigurationService();
+		InvokeFtl invokeFtl = new InvokeFtl();	
 		boolean backupdone = false;
 		JSch jsch = new JSch();
 		Channel channel = null;
@@ -561,11 +560,11 @@ public class RequestInfoDetailsDao {
 				}
 				if (routerVersionType.equalsIgnoreCase("previous")) {
 					backupdone = true;
-					service.printPreviousVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
+					backupCurrentRouterConfigurationService.printPreviousVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()));
 				} else {
 					backupdone = true;
-					service.printCurrentVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
+					backupCurrentRouterConfigurationService.printCurrentVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()));
 				}
 		

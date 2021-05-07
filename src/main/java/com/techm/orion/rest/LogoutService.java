@@ -2,8 +2,10 @@ package com.techm.orion.rest;
 
 import java.util.Observable;
 import java.util.Observer;
+
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -14,13 +16,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import com.techm.orion.pojo.Global;
+
 import com.techm.orion.service.UserManagementInterface;
 
 @Controller
 @RequestMapping("/LogoutService")
 public class LogoutService implements Observer {
 	private static final Logger logger = LogManager.getLogger(LogoutService.class);
+	
 	@Autowired
 	private UserManagementInterface userCreateInterface;
 
