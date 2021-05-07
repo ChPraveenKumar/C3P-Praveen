@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Resource;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -17,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -255,7 +254,8 @@ public class ImportFile {
 
 		}
 		return detailsListFinalAfterSave;
-	}
+	} */
+	
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/fileValidation", method = RequestMethod.POST)
@@ -267,11 +267,11 @@ public class ImportFile {
 		try {
 
 			String FILE_NAME = file.getOriginalFilename();
-			 Loading file path from properties file 
+			//Loading file path from properties file 
 			String fileNameAsImport = getAlphaNumericString(8);
-			 Storing file on local system 
+			//Storing file on local system 
 			storageService.store(file, fileNameAsImport);
-			 Updating file name with alphanumeric number 
+			//Updating file name with alphanumeric number 
 			String TOTAL_FILE_PATH = TSALabels.IMPORT_FILEPATH.getValue().concat(fileNameAsImport.concat("_").concat(FILE_NAME));
 
 			files.add(file.getOriginalFilename());
@@ -403,11 +403,11 @@ public class ImportFile {
 		boolean status = false;
 		try {
 			String FILE_NAME = file.getOriginalFilename();
-			 Loading file path from properties file 
+			//Loading file path from properties file 
 			String fileNameAsImport = getAlphaNumericString(8);
-			 Storing file on local system 
+			//Storing file on local system 
 			storageService.store(file, fileNameAsImport);
-			 Updating file name with alphanumeric number 
+			//Updating file name with alphanumeric number 
 			String TOTAL_FILE_PATH = TSALabels.IMPORT_FILEPATH.getValue().concat(fileNameAsImport.concat("_").concat(FILE_NAME));
 			files.add(file.getOriginalFilename());
 			boolean flagCSV = false;
@@ -508,7 +508,7 @@ public class ImportFile {
 		}
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
-	*/
+	
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getDashboardData", method = RequestMethod.GET, produces = "application/json")
