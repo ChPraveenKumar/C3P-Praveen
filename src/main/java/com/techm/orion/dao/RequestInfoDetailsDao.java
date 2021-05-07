@@ -689,7 +689,7 @@ public class RequestInfoDetailsDao {
 	/**
 	 * 
 	 * @param deviceId
-	 * @return imageInstanceId
+	 * @return location
 	 */
 	public JSONObject fetchFromDeviceExtLocationDescription(String deviceId) {
 		JSONObject response=new JSONObject();
@@ -699,7 +699,7 @@ public class RequestInfoDetailsDao {
 			preparedStmt.setString(1, deviceId);
 			ResultSet rs = preparedStmt.executeQuery();
 			while (rs.next()) {
-				response.put("lat", rs.getString("r_imageInstanceId"));
+				response.put("lat", rs.getString("r_latitude"));
 				response.put("long", rs.getString("r_longitude"));
 				response.put("description", rs.getString("r_description"));
 				
