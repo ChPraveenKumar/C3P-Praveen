@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -76,8 +77,9 @@ public class RequestInfoDetailsDao {
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	@Autowired
-	private WebServiceRepo webservicerepo;
-	
+	private WebServiceRepo webservicerepo;	
+	@Autowired
+	private BackupCurrentRouterConfigurationService backupCurrentRouterConfigurationService;	
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
@@ -515,9 +517,7 @@ public class RequestInfoDetailsDao {
 	
 	public boolean getRouterConfig(RequestInfoPojo requestinfo, String routerVersionType) {
 		
-		InvokeFtl invokeFtl = new InvokeFtl();
-
-		BackupCurrentRouterConfigurationService service = new BackupCurrentRouterConfigurationService();
+		InvokeFtl invokeFtl = new InvokeFtl();	
 		boolean backupdone = false;
 		JSch jsch = new JSch();
 		Channel channel = null;
@@ -560,11 +560,11 @@ public class RequestInfoDetailsDao {
 				}
 				if (routerVersionType.equalsIgnoreCase("previous")) {
 					backupdone = true;
-					service.printPreviousVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
+					backupCurrentRouterConfigurationService.printPreviousVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()));
 				} else {
 					backupdone = true;
-					service.printCurrentVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
+					backupCurrentRouterConfigurationService.printCurrentVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()));
 				}
 		
@@ -683,5 +683,29 @@ public class RequestInfoDetailsDao {
 			logger.error("SQL Exception in fetchImageInstanceFromDeviceExt method " + exe.getMessage());
 		}
 		return imageInstanceId;
+	}
+	
+	/**
+	 * 
+	 * @param deviceId
+	 * @return location
+	 */
+	public JSONObject fetchFromDeviceExtLocationDescription(String deviceId) {
+		JSONObject response=new JSONObject();
+		String sqlQuery = "select r_latitude,r_longitude,r_description from c3p_deviceinfo_ext where r_device_id = ?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
+			preparedStmt.setString(1, deviceId);
+			ResultSet rs = preparedStmt.executeQuery();
+			while (rs.next()) {
+				response.put("lat", rs.getString("r_latitude"));
+				response.put("long", rs.getString("r_longitude"));
+				response.put("description", rs.getString("r_description"));
+				
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in fetchImageInstanceFromDeviceExt method " + exe.getMessage());
+		}
+		return response;
 	}
 }

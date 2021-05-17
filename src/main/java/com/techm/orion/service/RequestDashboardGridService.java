@@ -18,6 +18,7 @@ import com.techm.orion.mapper.RequestDetailsResponseMapper;
 import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.utility.WAFADateUtil;
 
 @Service
 public class RequestDashboardGridService {
@@ -31,6 +32,9 @@ public class RequestDashboardGridService {
 	@Autowired
 	BatchInfoRepo batchRepo;
 
+	@Autowired
+	private WAFADateUtil dateutil;
+	
 	public List<ServiceRequestPojo> getGridData(String customer, String region, String site, String vendor, String type,
 			String dashboardType, String userName) {
 		List<ServiceRequestPojo> requestList = new ArrayList<>();
@@ -97,9 +101,10 @@ public class RequestDashboardGridService {
 				.collect(Collectors.toMap(ServiceRequestPojo::getAlpha_numeric_req_id, Function.identity(),
 						BinaryOperator.maxBy(Comparator.comparing(ServiceRequestPojo::getRequestVersion))))
 				.values();
-		
+	
 		listRequest.addAll(infoEntity);
 		listRequest.sort((ServiceRequestPojo m1, ServiceRequestPojo m2) -> m2.getDateOfProcessing().compareTo(m1.getDateOfProcessing()));
+		
 		return listRequest;
 	}
 

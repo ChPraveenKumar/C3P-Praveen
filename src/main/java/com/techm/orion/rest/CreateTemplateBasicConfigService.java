@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -17,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+
 import com.google.gson.Gson;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
@@ -30,13 +32,16 @@ import com.techm.orion.service.TemplateManagementNewService;
 public class CreateTemplateBasicConfigService implements Observer {
 
 	private static final Logger logger = LogManager.getLogger(CreateTemplateBasicConfigService.class);
-	@Autowired
-	RequestInfoDao requestInfoDao;
+	
 	@Autowired
 	private TemplateManagementNewService templateManagementNewService ;
+	
+	@Autowired
+	private TemplateManagementDetailsService templateManagementDetailsService;
+	
+	@Autowired
+	private TemplateManagementDao templateManagementDao;
 
-	TemplateManagementDao templateManagemnetDao = new TemplateManagementDao();
-	TemplateManagementDetailsService templateMngmntDtlService = new TemplateManagementDetailsService();
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -47,12 +52,10 @@ public class CreateTemplateBasicConfigService implements Observer {
 	@ResponseBody
 	public Response add(@RequestBody String params) {
 
-		JSONObject obj = new JSONObject();
-
-		TemplateManagementDetailsService ConfigService = new TemplateManagementDetailsService();
+		JSONObject obj = new JSONObject();		
 		boolean isDBupdatedSuccessfuly = false;
 		boolean saveComplete = false;
-		TemplateManagementDao dao = new TemplateManagementDao();
+		
 		Map<String, String> tempIDafterSaveBasicDetails = null;
 		try {
 			Gson gson = new Gson();
@@ -78,7 +81,7 @@ public class CreateTemplateBasicConfigService implements Observer {
 				}
 			}
 			if (saveComplete) {
-				isDBupdatedSuccessfuly = ConfigService
+				isDBupdatedSuccessfuly = templateManagementDetailsService
 						.updateTemplateDBonCreate(tempIDafterSaveBasicDetails.get("tempid"));
 				if (isDBupdatedSuccessfuly) {
 
@@ -90,7 +93,7 @@ public class CreateTemplateBasicConfigService implements Observer {
 					} else {
 						tempserieskey=vendor.toUpperCase() + deviceFamily.toUpperCase();
 					}
-					boolean result = dao.updateMasterFeatureAndCommandTable(tempserieskey);
+					boolean result = templateManagementDao.updateMasterFeatureAndCommandTable(tempserieskey);
 					if (result) {
 						obj.put(new String("output"), "Added Successfully");
 						obj.put("series", tempserieskey);
@@ -152,7 +155,7 @@ public class CreateTemplateBasicConfigService implements Observer {
 		try {
 			json = (JSONObject) parser.parse(templateId);
 			String templateid = json.get("templateId").toString();
-			List<TemplateBasicConfigurationPojo> templateBscConfg = templateMngmntDtlService
+			List<TemplateBasicConfigurationPojo> templateBscConfg = templateManagementDetailsService
 					.getTemplateToModify(templateid);
 
 			jsonTemplateArray = new Gson().toJson(templateBscConfg.get(0));

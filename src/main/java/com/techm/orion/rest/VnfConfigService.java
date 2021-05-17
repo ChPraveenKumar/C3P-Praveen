@@ -77,18 +77,17 @@ public class VnfConfigService implements Observer {
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
+	
 	@Autowired
-	AttribCreateConfigService service;
+	private RequestInfoDetailsDao requestDao;
 
 	@Autowired
-	RequestInfoDetailsDao requestDao;
+	private RequestInfoDao requestInfoDao;
 
 	@Autowired
-	RequestInfoDao requestInfoDao;
-
-	@Autowired
-	TestStrategeyAnalyser analyser;
-
+	private TestStrategeyAnalyser analyser;
+	
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -405,7 +404,7 @@ public class VnfConfigService implements Observer {
 
 		JSONObject obj = new JSONObject();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		PrevalidationTestServiceImpl prevalidationTestServiceImpl = new PrevalidationTestServiceImpl();
 		Boolean value = false;
 		JSONParser parser = new JSONParser();
@@ -490,14 +489,14 @@ public class VnfConfigService implements Observer {
 
 							// changes for testing strategy
 							List<Boolean> results = null;
-							RequestInfoDao dao = new RequestInfoDao();
+							
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							listOfTests = dao.findTestFromTestStrategyDB(
+							listOfTests = requestInfoDao.findTestFromTestStrategyDB(
 									createConfigRequest.getDeviceType(), createConfigRequest.getOs(),
 									createConfigRequest.getOsVersion(), createConfigRequest.getVendor(),
 									createConfigRequest.getRegion(), "Device Prevalidation");
-							List<TestDetail> selectedTests = dao.findSelectedTests(createConfigRequest.getRequestId(),
+							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(createConfigRequest.getRequestId(),
 									"Device Prevalidation",version);
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {
@@ -639,13 +638,13 @@ public class VnfConfigService implements Observer {
 
 							// changes for testing strategy
 							List<Boolean> results = null;
-							RequestInfoDao dao = new RequestInfoDao();
+							
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							listOfTests = dao.findTestFromTestStrategyDB(
+							listOfTests = requestInfoDao.findTestFromTestStrategyDB(
 									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Device Prevalidation");
-							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Device Prevalidation",version);
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {

@@ -54,21 +54,25 @@ public class FEFlowService implements Observer {
 	private MasterCommandsRepository masterCommandsRepository;
 	@Autowired
 	private NotificationRepo notificationRepo;
+	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private DeviceReachabilityAndPreValidationTest deviceReachabilityAndPreValidationTest;
 
 
 	@POST
 	@RequestMapping(value = "/startPreValidateTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response prevalidationTest(@RequestBody String request) {
-		DeviceReachabilityAndPreValidationTest DeviceRechabilityService = new DeviceReachabilityAndPreValidationTest();
+		
 		// CamundaServiceTemplateApproval camundaService = new
 		// CamundaServiceTemplateApproval();
 
 		Response response = null;
 		try {
-			DeviceRechabilityService.performPrevalidateTest(request);
+			deviceReachabilityAndPreValidationTest.performPrevalidateTest(request);
 		}
 		// camundaService.initiateApprovalFlow(templateId, templateVersion,
 		// "Admin");
@@ -225,8 +229,7 @@ public class FEFlowService implements Observer {
 	@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 	@ResponseBody
 	public Response getGeneratedConfiguration(@RequestBody String request) {
-		JSONObject obj = new JSONObject();
-		RequestInfoDao dao = new RequestInfoDao();
+		JSONObject obj = new JSONObject();		
 		JSONArray jsonArray = new JSONArray();
 		JSONObject jsonObject = new JSONObject();
 		int notifId =0;
@@ -271,9 +274,9 @@ public class FEFlowService implements Observer {
 				
 				//Global.loggedInUser="feuser";
 				if (userRole.equalsIgnoreCase("feuser")) {
-					dao.setReadFlagFESE(RequestId, version, 1, "FE");
+					requestInfoDao.setReadFlagFESE(RequestId, version, 1, "FE");
 				} else if (userRole.equalsIgnoreCase("seuser")) {
-					dao.setReadFlagFESE(RequestId, version, 1, "SE");
+					requestInfoDao.setReadFlagFESE(RequestId, version, 1, "SE");
 				}
 				notificationData.setNotifReadby(userName);
 				notificationRepo.save(notificationData);
@@ -303,7 +306,7 @@ public class FEFlowService implements Observer {
 	@ResponseBody
 	public Response restartFEFlow(@RequestBody String request) {
 		final CamundaServiceCreateReq camundaServiceCreateReq = new CamundaServiceCreateReq();
-		RequestInfoDao dao = new RequestInfoDao();
+		
 		Response response = null;
 		try {
 
@@ -318,7 +321,7 @@ public class FEFlowService implements Observer {
 			final String version1 = df.format(v);
 			// change request status to In Progress
 
-			dao.changeRequestStatus(RequestId, version1, "In Progress");
+			requestInfoDao.changeRequestStatus(RequestId, version1, "In Progress");
 
 			// call camunda service for given request id and version
 			Thread t = new Thread(new Runnable() {

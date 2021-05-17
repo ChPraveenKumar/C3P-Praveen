@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.json.simple.JSONArray;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequest;
@@ -11,11 +13,14 @@ import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.utility.InvokeFtl;
 
+@Component
 public class ReportDetailsService {
 
+	@Autowired
+	private RequestInfoDao requestInfoDao;
 	public String getDetailsForReport(CreateConfigRequestDCM createConfigRequestDCM, RequestInfoPojo request)
 			throws Exception {
-		RequestInfoDao dao = new RequestInfoDao();
+		
 
 		String requestId = createConfigRequestDCM.getRequestId();
 		String TestType = createConfigRequestDCM.getTestType();
@@ -23,7 +28,7 @@ public class ReportDetailsService {
 		InvokeFtl invokeFtl = new InvokeFtl();
 		String data = "";
 		JSONArray dynamicTestArray = new JSONArray();
-		CreateConfigRequest req = dao.getRequestDetailFromDBForVersion(requestId, version);
+		CreateConfigRequest req = requestInfoDao.getRequestDetailFromDBForVersion(requestId, version);
 		try {
 
 			if (!version.contains(".")) {
@@ -50,7 +55,7 @@ public class ReportDetailsService {
 			}
 			if (TestType.equalsIgnoreCase("iospreValidate")) {
 				// check status for ios pre health check.
-				String res = dao.getRequestFlagForReportPreHealthCheck(requestId, version);
+				String res = requestInfoDao.getRequestFlagForReportPreHealthCheck(requestId, version);
 				if (res.equalsIgnoreCase("1")) {
 					data = invokeFtl.iosHealthCheckFile(request.getHostname(), request.getRegion(), "Pre");
 				} else {

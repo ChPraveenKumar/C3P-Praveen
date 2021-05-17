@@ -15,6 +15,7 @@ import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +31,9 @@ import com.techm.orion.utility.XMLToJSONConverter;
 @RequestMapping("/GetAllXMLData")
 public class GetXMLDataService implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetXMLDataService.class);
+	
+	@Autowired
+	private RequestInfoDao requestInfoDao;
 
 	@POST
 	@RequestMapping(value = "/get", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -225,10 +229,10 @@ public class GetXMLDataService implements Observer {
 
 		List<FirmwareUpgradeDetail> mainList = new ArrayList<FirmwareUpgradeDetail>();
 
-		RequestInfoDao dao = new RequestInfoDao();
+		
 		JSONArray array;
 
-		mainList = dao.findByVendorName(vendorName);
+		mainList = requestInfoDao.findByVendorName(vendorName);
 
 		String isCheck = null, secondCheck = null;
 		int count = 0;
@@ -257,7 +261,7 @@ public class GetXMLDataService implements Observer {
 				array = new JSONArray();
 				arrayElementOneArrayElementOne.put("TestName", isCheck);
 
-				mainList = dao.findByVendorName(vendorName);
+				mainList = requestInfoDao.findByVendorName(vendorName);
 				for (int i1 = 0; i1 < mainList.size(); i1++) {
 					// array.add(mainList.get(i1).getOs_version());
 				}
@@ -270,7 +274,7 @@ public class GetXMLDataService implements Observer {
 				array = new JSONArray();
 				arrayElementOneArrayElementTwo.put("TestName", isCheck);
 
-				mainList = dao.findByVendorName(vendorName);
+				mainList = requestInfoDao.findByVendorName(vendorName);
 				for (int i1 = 0; i1 < mainList.size(); i1++) {
 					// array.add(mainList.get(i1).getOs_version());
 				}

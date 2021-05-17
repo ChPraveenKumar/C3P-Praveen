@@ -46,6 +46,7 @@ import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.RequestFeatureTransactionRepository;
 import com.techm.orion.utility.ReportMileStones;
+import com.techm.orion.utility.WAFADateUtil;
 
 @RestController
 @RequestMapping("/requestDetails")
@@ -73,6 +74,15 @@ public class RequestDetailsServiceWithVersion {
 	private MasterCharacteristicsRepository masterCharachteristicsRepository;
 	@Autowired
 	private NotificationRepo notificationRepo;
+	
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private RequestDetails requestDetailsDao;
+	
+	@Autowired
+	private RequestInfoDao requestinfoDao;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -133,6 +143,12 @@ public class RequestDetailsServiceWithVersion {
 						}
 					}
 					}
+					for(RequestInfoCreateConfig pojo: detailsList)
+					{
+						pojo.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(pojo.getRequestCreatedOn()));
+						if(pojo.getEndDateOfProcessing() !=null)
+							pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
+					}
 					jsonArray = new Gson().toJson(detailsList);
 
 					obj.put(new String("output"), jsonArray);
@@ -172,9 +188,7 @@ public class RequestDetailsServiceWithVersion {
 	@POST
 	@RequestMapping(value = "/refreshmilestones", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response refreshmilestones(@RequestBody String searchParameters) {
-
-		RequestInfoDao requestValue = new RequestInfoDao();
+	public Response refreshmilestones(@RequestBody String searchParameters) {		
 		JSONObject obj = new JSONObject();
 
 		String jsonArray = "";
@@ -223,7 +237,7 @@ public class RequestDetailsServiceWithVersion {
 					// quick fix for json not getting serialized
 
 					detailsList = requestRedao.getRequestWithVersion(key, value, version, userName, userRole);
-					reoportflagllist = requestValue.getReportsInfoForAllRequestsDB();
+					reoportflagllist = requestinfoDao.getReportsInfoForAllRequestsDB();
 					certificationBit = requestRedao.getCertificationtestvalidation(value,Double.valueOf(version));
 					String type = value.substring(0, Math.min(value.length(), 4));
 					if (type.equalsIgnoreCase("SLGF")) {
@@ -231,7 +245,7 @@ public class RequestDetailsServiceWithVersion {
 						DecimalFormat df = new DecimalFormat("0.0");
 						df.setMaximumFractionDigits(1);
 						String version_decimal = df.format(v);
-						dilevaryMilestonesforOSupgrade = requestValue.get_dilevary_steps_status(value, version_decimal);
+						dilevaryMilestonesforOSupgrade = requestinfoDao.get_dilevary_steps_status(value, version_decimal);
 					} else {
 						// dilevary milestones will be null
 					}
@@ -367,6 +381,12 @@ public class RequestDetailsServiceWithVersion {
 
 					}
 					String test = new Gson().toJson(jsonArrayForTest);
+					for(RequestInfoCreateConfig pojo: detailsList)
+					{
+						pojo.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(pojo.getRequestCreatedOn()));
+						if(pojo.getEndDateOfProcessing() !=null)
+							pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
+					}
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
 					obj.put(new String("ReportStatus"), jsonArrayReports);
@@ -489,9 +509,8 @@ public class RequestDetailsServiceWithVersion {
 			// parse testDeatils and get request Id
 			json = (JSONObject) parser.parse(testDetails);
 			String requestId = (String) json.get("requestId");
-			Double requestVersion = Double.valueOf(json.get("version").toString());
-			RequestDetails dao = new RequestDetails();
-			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId, requestVersion);
+			Double requestVersion = Double.valueOf(json.get("version").toString());			
+			String testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(requestId, requestVersion);
 			if(testAndDiagnosis!=null && !testAndDiagnosis.isEmpty()) {
 			JSONArray testNameArray = (JSONArray) parser.parse(testAndDiagnosis);
 			Set<String> setOfTest = new HashSet<>();
@@ -499,8 +518,7 @@ public class RequestDetailsServiceWithVersion {
 				for (int i = 0; i < testNameArray.size(); i++) {
 					JSONObject jsonObj = (JSONObject) testNameArray.get(i);
 					setOfTest.add(jsonObj.get("testName").toString());
-				}
-				RequestInfoDao requestinfoDao = new RequestInfoDao();
+				}				
 				setOfTest.forEach(testName -> {
 					JSONObject tests = new JSONObject();
 					String combination = StringUtils.substringBefore(testName, "_");

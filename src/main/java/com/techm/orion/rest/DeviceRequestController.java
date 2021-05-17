@@ -25,6 +25,7 @@ import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.ResourceCharacteristicsRepository;
 import com.techm.orion.service.DeviceRequestService;
+import com.techm.orion.utility.WAFADateUtil;
 
 @RestController
 public class DeviceRequestController {
@@ -43,6 +44,8 @@ public class DeviceRequestController {
 	@Autowired
 	private MasterCharacteristicsRepository masterCharacteristicRepo;
 	
+	@Autowired
+	private WAFADateUtil dateUtil;
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -108,8 +111,8 @@ public class DeviceRequestController {
 						JSONObject feature = new JSONObject();
 						feature.put("featureId", fid.getfId());
 						feature.put("featureName", fid.getfName());
-						feature.put("featureCreatedDate", fid.getfCreatedDate().toString());
-						feature.put("featureUpdatedDate", fid.getfUpdatedDate().toString());
+						feature.put("featureCreatedDate", dateUtil.dateTimeInAppFormat(fid.getfCreatedDate().toString()));
+						feature.put("featureUpdatedDate", dateUtil.dateTimeInAppFormat(fid.getfUpdatedDate().toString()));
 
 						listOfCharacteristics = resourcecharateristicRepo
 								.findByRcFeatureIdAndRcDeviceHostnameOrderByRcCreatedDateDesc(fid.getfId(), hostName);
@@ -120,9 +123,9 @@ public class DeviceRequestController {
 							characteristicObj.put("characteristicName", characteristic.getRcCharacteristicName());
 							characteristicObj.put("characteristicValue", characteristic.getRcCharacteristicValue());
 							characteristicObj.put("characteristicCreatedDate",
-									characteristic.getRc_created_date().toString());
+									dateUtil.dateTimeInAppFormat(characteristic.getRc_created_date().toString()));
 							characteristicObj.put("characteristicUpdatedDate",
-									characteristic.getRc_updated_date().toString());
+									dateUtil.dateTimeInAppFormat(characteristic.getRc_updated_date().toString()));
 							charachteristicArray.add(characteristicObj);
 						}
 						feature.put("charachteristics", charachteristicArray);

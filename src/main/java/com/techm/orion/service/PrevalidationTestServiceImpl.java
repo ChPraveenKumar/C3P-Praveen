@@ -26,6 +26,9 @@ public class PrevalidationTestServiceImpl {
 
 	@Autowired
 	public CertificationTestResultRepository certificationRepo;
+	
+	@Autowired
+	private RequestInfoDao requestInfoDao;
 
 	public boolean PreValidation(CreateConfigRequest configRequest, String version, String mountStatus)
 			throws Exception {
@@ -41,7 +44,7 @@ public class PrevalidationTestServiceImpl {
 		String store = "";
 		boolean value = false;
 		PreValidateTest preValidateTest = new PreValidateTest();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		data = exp.split("\\|");
 
 		String text = readFile(configRequest.getRequestId(), version);
@@ -237,7 +240,7 @@ public class PrevalidationTestServiceImpl {
 		String store = "";
 		boolean value = false;
 		PreValidateTest preValidateTest = new PreValidateTest();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		data = exp.split("\\|");
 
 		String text = readFile(configRequest.getAlphanumericReqId(), version);

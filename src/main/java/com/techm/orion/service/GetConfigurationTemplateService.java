@@ -6,19 +6,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 
+@Component
 public class GetConfigurationTemplateService {
 
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+	
 	public String generateTemplate(CreateConfigRequestDCM configRequest) {
 
 		String response = null;
 		InvokeFtl invokeFtl = new InvokeFtl();
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		List<String> listOfTemplatesAvailable = new ArrayList<String>();
 		boolean isTemplateAvailable = false;
 		String fileToUse = null;
@@ -96,9 +106,7 @@ public class GetConfigurationTemplateService {
 
 	public String getTemplateOnModify(CreateConfigRequestDCM configRequest) {
 		CreateAndCompareModifyVersion createAndCompareModifyVersion = new CreateAndCompareModifyVersion();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
-
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		String requestIdForConfig = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
 		String responseForTemplate = "";
@@ -157,7 +165,7 @@ public class GetConfigurationTemplateService {
 	public String generateTemplate(RequestInfoPojo configRequest) {
 		String response = null;
 		InvokeFtl invokeFtl = new InvokeFtl();
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		List<String> listOfTemplatesAvailable = new ArrayList<String>();
 		boolean isTemplateAvailable = false;
 		String fileToUse = null;

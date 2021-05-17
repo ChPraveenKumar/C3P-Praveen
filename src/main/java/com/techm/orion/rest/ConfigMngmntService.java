@@ -42,7 +42,6 @@ import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
-import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.VendorCommandRepository;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.ConfigurationManagmentService;
@@ -63,10 +62,7 @@ public class ConfigMngmntService implements Observer {
 
 	@Autowired
 	private DcmConfigService dcmConfigService;
-
-	@Autowired
-	private TemplateFeatureRepo templatefeatureRepo;
-
+	
 	@Autowired
 	private SiteInfoRepository siteInfoRepository;
 
@@ -81,6 +77,9 @@ public class ConfigMngmntService implements Observer {
 
 	@Autowired
 	private MasterCharacteristicsRepository masterCharachteristicRepository;
+	
+	@Autowired
+	private TemplateManagementDao templatemanagementDao;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -613,7 +612,7 @@ public class ConfigMngmntService implements Observer {
 						configReqToSendToC3pCode.getFamily(),
 						configReqToSendToC3pCode.getModel());
 				/* Get Series according to template id */
-				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
+				
 				seriesId = templatemanagementDao.getSeriesId(
 						configReqToSendToC3pCode.getTemplateID(), seriesId);
 				seriesId = StringUtils.substringAfter(seriesId, "Generic_");
@@ -1252,7 +1251,7 @@ public class ConfigMngmntService implements Observer {
 						configReqToSendToC3pCode.getFamily(),
 						configReqToSendToC3pCode.getModel());
 				/* Get Series according to template id */
-				TemplateManagementDao templatemanagementDao = new TemplateManagementDao();
+				
 				seriesId = templatemanagementDao.getSeriesId(
 						configReqToSendToC3pCode.getTemplateID(), seriesId);
 				seriesId = StringUtils.substringAfter(seriesId, "Generic_");
@@ -1917,9 +1916,9 @@ public class ConfigMngmntService implements Observer {
 		configReqToSendToC3pCode.setTemplateID(templateName);
 
 		InvokeFtl invokeFtl = new InvokeFtl();
-		TemplateManagementDao dao = new TemplateManagementDao();
+		
 		// Getting Commands Using Series Id
-		List<CommandPojo> cammandsBySeriesId = dao.getCammandsBySeriesId(
+		List<CommandPojo> cammandsBySeriesId = templatemanagementDao.getCammandsBySeriesId(
 				seriesId, null);
 		invokeFtl
 				.createFinalTemplate(cammandsBySeriesId, null, masterAttribute,
@@ -1947,8 +1946,8 @@ public class ConfigMngmntService implements Observer {
 
 	}
 
-	public String getTemplateId(@RequestBody String configRequest) {
-		String requestIdForConfig = "";
+	public JSONObject getTemplateId(@RequestBody String configRequest) {
+		JSONObject requestIdForConfig = new JSONObject();
 		String res = "false";
 
 		String data = "Failure";
@@ -2238,13 +2237,14 @@ public class ConfigMngmntService implements Observer {
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {
 				if (entry.getKey() == "requestID") {
-					requestIdForConfig = entry.getValue();
+					requestIdForConfig.put("key",entry.getValue());
 
 				}
 				if (entry.getKey() == "result") {
 					res = entry.getValue();
 					if (res.equalsIgnoreCase("true")) {
 						data = "Submitted";
+						requestIdForConfig.put("data",data);
 					}
 
 				}

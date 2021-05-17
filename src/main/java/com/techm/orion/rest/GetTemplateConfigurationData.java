@@ -47,6 +47,7 @@ import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementDetailsService;
 import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.WAFADateUtil;
 
 @Controller
 @RequestMapping("/GetTemplateConfigurationData")
@@ -67,6 +68,9 @@ public class GetTemplateConfigurationData {
 	@Autowired
 	private NotificationRepo notificationRepo;
 
+	@Autowired
+	private WAFADateUtil dateUtil;	
+	
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/back", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
@@ -98,10 +102,9 @@ public class GetTemplateConfigurationData {
 	public Response getParentFeatureList(@RequestParam String templateid) {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
-		List<String> list = new ArrayList<String>();
-		TemplateManagementDao dao = new TemplateManagementDao();
+		List<String> list = new ArrayList<String>();		
 		try {
-			list = dao.getParentFeatureList(templateid);
+			list = templateManagementDao.getParentFeatureList(templateid);
 		} catch (Exception e) {
 			logger.error(e);
 		}
@@ -124,9 +127,7 @@ public class GetTemplateConfigurationData {
 
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
-
-		JSONArray array = new JSONArray();
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
+		JSONArray array = new JSONArray();		
 		JSONObject jsonObj;
 		try {
 			JSONParser parser = new JSONParser();
@@ -176,8 +177,7 @@ public class GetTemplateConfigurationData {
 		String jsonArray = "";
 		org.json.simple.JSONArray checkA = new org.json.simple.JSONArray();
 		JSONArray array = new JSONArray();
-		org.json.simple.JSONArray nameArray = new org.json.simple.JSONArray();
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
+		org.json.simple.JSONArray nameArray = new org.json.simple.JSONArray();		
 		JSONObject jsonObj;
 		try {
 			JSONParser parser = new JSONParser();
@@ -230,12 +230,9 @@ public class GetTemplateConfigurationData {
 	@RequestMapping(value = "/getDataForSelectedfeature", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getDataForSelectedfeature(@RequestBody String templateFeatureRequest) {
-
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
-
-		JSONArray array = new JSONArray();
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
+		JSONArray array = new JSONArray();		
 		JSONObject jsonObj;
 		try {
 			JSONParser parser = new JSONParser();
@@ -301,8 +298,7 @@ public class GetTemplateConfigurationData {
 
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
-		List<TemplateLeftPanelJSONModel> list = new ArrayList<TemplateLeftPanelJSONModel>();
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
+		List<TemplateLeftPanelJSONModel> list = new ArrayList<TemplateLeftPanelJSONModel>();		
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(string);
@@ -340,10 +336,8 @@ public class GetTemplateConfigurationData {
 		JSONObject obj = new JSONObject();
 		String jsonList = "";
 		boolean saveComplete = false;
-		Map<String, String> tempIDafterSaveBasicDetails = null;
-		TemplateManagementDao dao = new TemplateManagementDao();
-		String versionToSave = null, userName = null, userRole = null;
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
+		Map<String, String> tempIDafterSaveBasicDetails = null;		
+		String versionToSave = null, userName = null, userRole = null;		
 		try {
 			tempIDafterSaveBasicDetails = new HashMap<String, String>();
 			JSONParser parser = new JSONParser();
@@ -408,7 +402,17 @@ public class GetTemplateConfigurationData {
 
 			}
 			if (json.get("templateComment") != null) {
-				comment = json.get("templateComment").toString();
+				String timeStamp="00-00-0000 00:00:00";
+				if(json.containsKey("timezone"))
+				{
+					timeStamp=dateUtil.currentDateTimeFromUserTimeZoneToServerTimzeZone(json.get("timezone").toString());
+				}
+				else
+				{
+					timeStamp=dateUtil.currentDateTime();
+				}
+				String _varComment = timeStamp+" "+userName + " : " +json.get("templateComment").toString().concat("\n");
+				comment = _varComment;
 			} else {
 				comment = "";
 			}
@@ -522,9 +526,7 @@ public class GetTemplateConfigurationData {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
-
-		JSONArray array = new JSONArray();
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
+		JSONArray array = new JSONArray();		
 		JSONObject jsonObj;
 		boolean selectAll = false;
 		try {
@@ -577,7 +579,6 @@ public class GetTemplateConfigurationData {
 
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
-		TemplateManagementDetailsService service = new TemplateManagementDetailsService();
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 
 		try {
@@ -585,7 +586,7 @@ public class GetTemplateConfigurationData {
 			List<TemplateBasicConfigurationPojo> versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();
 			TemplateBasicConfigurationPojo objToAdd;
 			TemplateVersioningJSONModel versioningModelObject = null;
-			list = service.getTemplateListData();
+			list = templateManagmntService.getTemplateListData();
 			// create treeview json
 			for (int i = 0; i < list.size(); i++) {
 				boolean objectPrsent = false;
@@ -635,9 +636,11 @@ public class GetTemplateConfigurationData {
 				}
 
 			}
-
+			
 			jsonArray = new Gson().toJson(versioningModel);
 			obj.put(new String("output"), jsonArray);
+			obj.put(new String("count"), versioningModel.size());
+
 
 		} catch (Exception e) {
 			logger.error(e);
@@ -663,9 +666,7 @@ public class GetTemplateConfigurationData {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 		String comment = "";
-		JSONArray array = new JSONArray();
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
-		TemplateManagementDao dao = new TemplateManagementDao();
+		JSONArray array = new JSONArray();				
 		JSONObject jsonObj;
 		String templateId = null, userRole = null, userName = null;
 		int notifId =0;
@@ -686,7 +687,7 @@ public class GetTemplateConfigurationData {
 				if (json.containsKey("readFlag")) {
 
 					if (json.get("readFlag") != null) {
-						dao.updateReadFlagForTemplate(
+						templateManagementDao.updateReadFlagForTemplate(
 								json.get("templateid")
 										.toString()
 										.substring(
@@ -705,7 +706,7 @@ public class GetTemplateConfigurationData {
 								json.get("readFlag").toString(), userRole);
 					}
 
-					List<TemplateBasicConfigurationPojo> templatelistforcomment = dao.getTemplateList();
+					List<TemplateBasicConfigurationPojo> templatelistforcomment = templateManagementDao.getTemplateList();
 					for (TemplateBasicConfigurationPojo listcomment : templatelistforcomment) {
 
 						if (listcomment.getTemplateId().equalsIgnoreCase(
@@ -862,9 +863,7 @@ public class GetTemplateConfigurationData {
 	public Response updateOnModify(@RequestBody String templateFeatureRequest) {
 
 		JSONObject obj = new JSONObject();
-
-		Map<String, String> templateDetails = null;
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
+		Map<String, String> templateDetails = null;		
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
@@ -895,8 +894,6 @@ public class GetTemplateConfigurationData {
 
 		JSONObject obj = new JSONObject();
 		Map<String, String> templateDetails = null;
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
-
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
@@ -943,11 +940,6 @@ public class GetTemplateConfigurationData {
 	public Response getDataForRightPanel(@RequestBody String templateFeatureRequest) {
 
 		JSONObject obj = new JSONObject();
-		String jsonArray = "";
-
-		JSONArray array = new JSONArray();
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
-		JSONObject jsonObj;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
@@ -981,30 +973,8 @@ public class GetTemplateConfigurationData {
 	@RequestMapping(value = "/singleSelect", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response selectFeature(@RequestBody String request) {
-
 		JSONObject obj = new JSONObject();
-		String jsonArray = "";
-		String templateId, command_display_feature, command_parent;
-		int command_id;
-		JSONArray array = new JSONArray();
-		boolean select = false;
-
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
-		JSONObject jsonObj;
 		try {
-			/*
-			 * JSONParser parser = new JSONParser(); JSONObject json = (JSONObject)
-			 * parser.parse(request);
-			 * 
-			 * templateId=json.get("tempalteId").toString(); command_display_feature
-			 * =json.get("command_display_feature").toString();
-			 * command_parent=json.get("command_parent_feature").toString();
-			 * command_id=Integer.parseInt(json.get("command_id").toString());
-			 * select=Boolean.parseBoolean(json.get("select").toString());
-			 */
-			// String
-			// res=templateManagmntService.selectFeature(templateId,command_display_feature,command_parent,command_id,select);
-
 			String res = templateManagmntService.selectFeature(request);
 
 			obj.put(new String("output"), res);
@@ -1032,8 +1002,6 @@ public class GetTemplateConfigurationData {
 				newFeature = null, lstCmdId = null;
 		int parent_id = 0, save = 0, topLineNum = 0, bottomLineNum = 0, hasParent = 0;
 		boolean dragged = false;
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
-		JSONObject jsonObj;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
@@ -1102,43 +1070,13 @@ public class GetTemplateConfigurationData {
 	@RequestMapping(value = "/nextOnTemplateManagement", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response nextOnTemplateManagement(@RequestBody String request) {
-
-		JSONObject obj = new JSONObject();
-		TemplateManagementDetailsService templateManagmntService = new TemplateManagementDetailsService();
+		JSONObject obj = new JSONObject();		
 		String comand_display_feature = null, command_to_add = null, command_type = null, templateId = null,
 				newFeature = null, lstCmdId = null;
 		int parent_id = 0, save = 0, topLineNum = 0, bottomLineNum = 0, hasParent = 0;
 		boolean dragged = false;
 		boolean res = false;
-		/*
-		 * "dragId":"drop_drag_jhjhhhhhhhhhhhhhhhh", "confText":"sddsds",
-		 * "noCommandText":"sds", "parent_id":"1", "newParentFeature":"false",
-		 * "childId":"8", "lastCmdId":"41", "parentFeatureId":"2"
-		 */
-		/*
-		 * if(json.get("newParentFeature")!=null) {
-		 * newFeature=json.get("newParentFeature").toString(); }
-		 * if(json.get("lastCmdId")!=null) { lstCmdId=json.get("lastCmdId").toString();
-		 * } if(json.get("tempalteId")!=null) {
-		 * templateId=json.get("tempalteId").toString(); } else {
-		 * templateId=Global.templateid; } if(json.get("dragId")!=null) {
-		 * comand_display_feature=json.get("dragId").toString(); }
-		 * if(json.get("confText")!=null) {
-		 * command_to_add=json.get("confText").toString(); }
-		 * if(json.get("command_type")!=null) {
-		 * command_type=json.get("command_type").toString(); }
-		 * if(json.get("parent_id")!=null) {
-		 * parent_id=Integer.parseInt(json.get("parent_id").toString()); }
-		 * if(json.get("dragged")!=null) {
-		 * dragged=Boolean.parseBoolean(json.get("dragged").toString()); }
-		 * if(json.get("save")!=null) {
-		 * save=Integer.parseInt(json.get("save").toString()); }
-		 * if(json.get("childId")!=null) {
-		 * topLineNum=Integer.parseInt(json.get("childId").toString()); }
-		 * if(json.get("bottomLineNum")!=null) {
-		 * bottomLineNum=Integer.parseInt(json.get("bottomLineNum").toString()); }
-		 * if(parent_id!=0) { hasParent=1; }
-		 */
+
 		try {
 			org.json.simple.JSONArray newFeatureArray = null;
 			JSONParser parser = new JSONParser();

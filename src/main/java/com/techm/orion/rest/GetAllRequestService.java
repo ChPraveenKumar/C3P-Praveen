@@ -19,6 +19,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,6 +38,11 @@ import com.techm.orion.webService.GetAllDetailsService;
 public class GetAllRequestService implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetAllRequestService.class);
 	List<ElapsedTimeFormatPojo> elapsedtimings;
+	
+
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -45,7 +51,7 @@ public class GetAllRequestService implements Observer {
 	@RequestMapping(value = "/GetAllRequests", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	public Response GetAllRequests() {
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		JSONObject obj = new JSONObject();
 		String jsonMessage = "";
 		String jsonArray = "";

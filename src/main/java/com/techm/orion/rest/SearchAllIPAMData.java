@@ -1,7 +1,6 @@
 package com.techm.orion.rest;
 
 import java.sql.Connection;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
@@ -23,7 +22,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.orion.connection.ConnectionFactory;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.EIPAMEntity;
 import com.techm.orion.repositories.EIPAMEntityRepository;
 
@@ -32,10 +30,7 @@ import com.techm.orion.repositories.EIPAMEntityRepository;
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class SearchAllIPAMData implements Observer {
 	private static final Logger logger = LogManager.getLogger(SearchAllIPAMData.class);
-	private Connection connection;
-	Statement statement;
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
-
+	
 	@Autowired
 	EIPAMEntityRepository eipamEntityRepository;
 

@@ -27,11 +27,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryInterfaceEntity;
 import com.techm.orion.entitybeans.DiscoveryDashboardEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
-import com.techm.orion.pojo.ServiceRequestPojo;
 import com.techm.orion.repositories.DeviceDiscoveryInterfaceRepository;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DiscoveryDashboardRepository;
@@ -39,6 +39,8 @@ import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
 import com.techm.orion.repositories.HostDiscrepancyResultRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.service.InventoryManagmentService;
+import com.techm.orion.utility.WAFADateUtil;
+
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
@@ -48,8 +50,6 @@ public class DeviceDiscoveryController implements Observer {
 
 	@Autowired
 	private DiscoveryDashboardRepository discoveryDashboardRepo;
-	@Autowired
-	private InventoryManagmentService inventoryServiceRepo;
 	@Autowired
 	private DeviceDiscoveryRepository deviceInforepo;
 	@Autowired
@@ -62,9 +62,12 @@ public class DeviceDiscoveryController implements Observer {
 	private HostDiscrepancyResultRepository hostDoscreapncyRepo;
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
-
+	@Autowired
+	private WAFADateUtil dateUtil;
+	@Autowired
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -119,7 +122,10 @@ public class DeviceDiscoveryController implements Observer {
 				if (discoveryDashboardByUser != null && !discoveryDashboardByUser.isEmpty()) {
 					myDiscoverySize = discoveryDashboardByUser.size();
 				}
-
+				for(DiscoveryDashboardEntity entity:discoveryDetails)
+				{
+					entity.setDisCreatedDate(dateUtil.dateTimeInAppFormat(entity.getDisCreatedDate().toString()));
+				}
 				obj.put("discoveryDetails", discoveryDetails);
 				obj.put("myDiscovery", myDiscoverySize);
 				obj.put("allDiscovery", allDiscoverySize);
@@ -134,11 +140,15 @@ public class DeviceDiscoveryController implements Observer {
 					discoveryDetails = new ArrayList<DiscoveryDashboardEntity>();
 				}
 				myDiscoverySize = discoveryDetails.size();
-
+				for(DiscoveryDashboardEntity entity:discoveryDetails)
+				{
+					entity.setDisCreatedDate(dateUtil.dateTimeInAppFormat(entity.getDisCreatedDate().toString()));
+				}
 				obj.put("discoveryDetails", discoveryDetails);
 				obj.put("myDiscovery", myDiscoverySize);
 				obj.put("allDiscovery", allDiscoverySize);
 			}
+			
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 
 		} catch (Exception exe) {
@@ -153,7 +163,7 @@ public class DeviceDiscoveryController implements Observer {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -184,18 +194,18 @@ public class DeviceDiscoveryController implements Observer {
 					object.put("region", site.getcSiteRegion());
 
 				}
-				if(getAllDevice.get(i).getdEndOfSupportDate() !=null && !"Not Available".equalsIgnoreCase(
-						getAllDevice.get(i).getdEndOfSupportDate()))
+				if (getAllDevice.get(i).getdEndOfSupportDate() != null
+						&& !"Not Available".equalsIgnoreCase(getAllDevice.get(i).getdEndOfSupportDate()))
 					object.put("eos", getAllDevice.get(i).getdEndOfSupportDate().toString());
 				else
 					object.put("eos", "Not Available");
-				
-				if(getAllDevice.get(i).getdEndOfSaleDate() !=null)
+
+				if (getAllDevice.get(i).getdEndOfSaleDate() != null)
 					object.put("eol", getAllDevice.get(i).getdEndOfSaleDate().toString());
 				else
 					object.put("eol", "Not Available");
 
-				object.put("requests", requestInfoDetailsRepositories.getRequestCountByHost(getAllDevice.get(i).getdHostName()));
+			object.put("requests", getAllDevice.get(i).getdReqCount());
 				if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("0")) {
 					object.put("state", "");
 				} else if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("1")) {
@@ -209,7 +219,11 @@ public class DeviceDiscoveryController implements Observer {
 				} else {
 					object.put("isNew", false);
 				}
-				object.put("discreapncyFlag", checkDiscreapncy(getAllDevice.get(i)));
+				if (getAllDevice.get(i).getdDiscrepancy()>0) {
+					object.put("discreapncyFlag", "Yes");
+				} else {
+					object.put("discreapncyFlag", "No");
+				}
 				outputArray.add(object);
 			}
 			obj.put("data", outputArray);
@@ -225,30 +239,8 @@ public class DeviceDiscoveryController implements Observer {
 
 	}
 
-	private String checkDiscreapncy(DeviceDiscoveryEntity deviceDiscoveryEntity) {
-		if (deviceDiscoveryEntity != null) {
-			String id = String.valueOf(deviceDiscoveryEntity.getdId());
-			try {
-				Set<String> hostdiscrepancyValue = hostDoscreapncyRepo.findHostDiscrepancyValue(id);
-				if (hostdiscrepancyValue != null && !hostdiscrepancyValue.isEmpty()) {
-					return "Yes";
-				} else {
-					Set<String> forkDiscrepancyValue = forkDiscrepancyRepo.findForkDiscrepancyValue(id);
-					if (forkDiscrepancyValue != null && !forkDiscrepancyValue.isEmpty()) {
-						return "Yes";
-					} else {
-						return "No";
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		return null;
-	}
-
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -274,12 +266,26 @@ public class DeviceDiscoveryController implements Observer {
 				}
 			}
 			for (int j = 0; j < inventoryList.size(); j++) {
-
+				//DeviceInfoExtEntity extObj=deviceInfoExtRepo.findByRDeviceId(String.valueOf(inventoryList.get(j).getdId()));
+				JSONObject extObj=requestInfoDetailsDao.fetchFromDeviceExtLocationDescription(String.valueOf(inventoryList.get(j).getdId()));
 				inventoryList.get(j).setInterfaces(null);
 				inventoryList.get(j).setUsers(null);
-				inventoryList.get(j).setdSystemDescription(
-						"This is high security device that enables to connect providers' communication services and distributes service to my enterprise with a local area network. Supports concurrent services at broadband speed. provides VPN support and wireless networking.");
+				if(extObj!=null && extObj.containsKey("description"))
+				{
+				inventoryList.get(j).setdSystemDescription(extObj.get("description").toString());
+				}
+				else
+				{
+				inventoryList.get(j).setdSystemDescription("Not Available");
+				}
+				if(extObj!=null && extObj.containsKey("lat") && extObj.containsKey("long"))
+				{
+				inventoryList.get(j).setdLocation("Lat: "+extObj.get("lat").toString()+", Long: "+extObj.get("long").toString());
+				}
+				else
+				{
 				inventoryList.get(j).setdLocation("Not Available");
+				}
 				inventoryList.get(j).setdEndOfSupportDate("Not Available");
 				inventoryList.get(j).setdEndOfLife("Not Available");
 				inventoryList.get(j).setdPollUsing("IP Address");
@@ -304,12 +310,9 @@ public class DeviceDiscoveryController implements Observer {
 				detail.put("dContactPhone", inventoryList.get(j).getdContactPhone());
 
 				contactDetails.add(detail);
-
-				inventoryList.get(j).setContactDetails(contactDetails);
-
+				inventoryList.get(j).setContactDetails(contactDetails);				
 			}
-			List<ServiceRequestPojo> requests = inventoryServiceRepo.getRequestDeatils(hostname);
-			obj.put("requestsRaised", requests.size());
+			
 			obj.put("deviceDetails", inventoryList);
 			obj.put("interfaces", interfaceListInventory);
 		} catch (Exception e) {

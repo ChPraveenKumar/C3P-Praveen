@@ -20,6 +20,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,6 +42,9 @@ public class ConfigComparisonService implements Observer {
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -51,7 +55,7 @@ public class ConfigComparisonService implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-			RequestInfoDao dao = new RequestInfoDao();
+			
 			ConfigComparisonService.loadProperties();
 			String pythonScriptFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("pythonScriptPath");
 			String standardConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("standardConfigPath");
@@ -73,7 +77,7 @@ public class ConfigComparisonService implements Observer {
 			String label = keys[5];
 			String test_name = keys[0] + "_" + keys[1] + "_" + keys[2];
 			// String requestId="SR-DC394C0";
-			String snippet = dao.getSnippet(label, test_name);
+			String snippet = requestInfoDao.getSnippet(label, test_name);
 			// write it to temp file StandardConfiguration.txt
 			String filepath1 = standardConfigPath + "StandardConfiguration.txt";
 			FileWriter fw1 = null;
@@ -207,7 +211,7 @@ public class ConfigComparisonService implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-			RequestInfoDao dao = new RequestInfoDao();
+			
 			ConfigComparisonService.loadProperties();
 			String pythonScriptFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("pythonScriptPath");
 			String standardConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("standardConfigPath");
@@ -225,10 +229,10 @@ public class ConfigComparisonService implements Observer {
 
 			// RequestId="USCI7200IO12.4_NA_Test_1.0_Snippet_Router Uptime";
 
-			String tempRequestId = dao.findByRequestId(requestId);
+			String tempRequestId = requestInfoDao.findByRequestId(requestId);
 			String tempRequestId1 = tempRequestId.substring(0, 15);
 			String tempRequestId12 = tempRequestId1.concat(RequestId);
-			String snippet = dao.getSnippet(reportLabel, testName);
+			String snippet = requestInfoDao.getSnippet(reportLabel, testName);
 			// write it to temp file StandardConfiguration.txt
 			String filepath1 = standardConfigPath + "StandardConfiguration.txt";
 			FileWriter fw1 = null;
@@ -511,7 +515,7 @@ public class ConfigComparisonService implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-			//RequestInfoDao dao = new RequestInfoDao();
+
 			ConfigComparisonService.loadProperties();
 			String pythonScriptFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("pythonScriptPath");
 			//String standardConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("standardConfigPath");
@@ -591,7 +595,7 @@ public class ConfigComparisonService implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-			//RequestInfoDao dao = new RequestInfoDao();
+
 			ConfigComparisonService.loadProperties();
 			String pythonScriptFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("pythonScriptPath");
 			//String standardConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("standardConfigPath");

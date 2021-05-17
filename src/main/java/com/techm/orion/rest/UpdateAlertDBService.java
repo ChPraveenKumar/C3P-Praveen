@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.AlertInformation;
 import com.techm.orion.repositories.AlertInformationRepository;
 
@@ -27,10 +26,11 @@ import com.techm.orion.repositories.AlertInformationRepository;
 @RequestMapping("/UpdateAlertDBService")
 public class UpdateAlertDBService implements Observer {
 	private static final Logger logger = LogManager.getLogger(UpdateAlertDBService.class);
-	/* Autowired JPA Repository */
+	
 	@Autowired
-	public AlertInformationRepository alertInformationRepository;
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
+	private AlertInformationRepository alertInformationRepository;
+	
+
 
 	/**
 	 * Alert Page - Web Service - To update alert information - Post JBDC to JPA

@@ -1,7 +1,10 @@
 package com.techm.orion.rest;
 
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -43,6 +46,7 @@ import com.techm.orion.repositories.TestBundlingRepository;
 import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.VendorRepository;
 import com.techm.orion.service.TestBundleService;
+import com.techm.orion.utility.WAFADateUtil;
 
 @RestController
 public class TestBundlingController {
@@ -68,9 +72,13 @@ public class TestBundlingController {
 	@Autowired
 	private TestBundleService testBundleServce;
 
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
 	private static final Logger logger = LogManager.getLogger(TestBundlingController.class);
 
-	RequestInfoDao dao = new RequestInfoDao();
+	@Autowired
+	RequestInfoDao dao;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -560,11 +568,15 @@ public class TestBundlingController {
 			model.setDeviceModel(temp.getDeviceFamily());
 			model.setOs(temp.getOs() + "/" + temp.getOsVersion());
 			model.setCreatedBy(temp.getUpdatedBy());
-			model.setCreatedOn(temp.getUpdatedDate().toString());
+			if(temp.getUpdatedDate()!=null)
+			{
+			model.setCreatedOn(dateUtil.dateTimeInAppFormat(dateUtil.convertTimestampFormat(temp.getUpdatedDate())));
+			}
 			modelList = new ArrayList<TestStrategyPojo>();
 			for (int i = 0; i < testIdList.size(); i++) {
 				tempTestId = testIdList.get(i).getTest_id();
 				mainList = dao.getTestsForTestStrategyOnId(tempTestId);
+				mainList.get(0).setCreatedDate(dateUtil.dateTimeInAppFormat(mainList.get(0).getCreatedDate()));
 				modelList.add(mainList.get(0));
 			}
 			Collections.reverse(modelList);

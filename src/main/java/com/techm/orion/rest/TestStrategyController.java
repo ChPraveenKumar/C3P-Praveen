@@ -1,5 +1,6 @@
 package com.techm.orion.rest;
 
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,6 +57,7 @@ import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
 import com.techm.orion.repositories.TestRulesRepository;
 import com.techm.orion.service.TemplateManagementNewService;
+import com.techm.orion.utility.WAFADateUtil;
 
 /*
  * Owner: Vivek Vidhate Module: Test Strategey Logic: To
@@ -88,7 +90,11 @@ public class TestStrategyController {
 	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
 
-	RequestInfoDao dao = new RequestInfoDao();
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private RequestInfoDao requestInfoDao;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -320,7 +326,7 @@ public class TestStrategyController {
 				}
 			}
 			testDetailsId = testdetaillist.get(0).getId();
-			findBundleIds = dao.findBundleId(testDetailsId);
+			findBundleIds = requestInfoDao.findBundleId(testDetailsId);
 			for (Integer tempObj : findBundleIds) {
 				testBundling = testBundleRepo.findByBundleName(tempObj.intValue());
 				bundleNameList.add(testBundling);
@@ -346,6 +352,19 @@ public class TestStrategyController {
 			detail.setSection_attributes(testruleslistsectionfinal);
 			detail.setSnippet_attributes(testruleslistsnippetfinal);
 			detail.setKeyword_attributes(testruleslistkeywordfinal);
+			
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/dd/MM hh:mm:ss");
+			Date parsedDate;
+			try {
+			parsedDate = dateFormat.parse(detail.getCreatedOn());
+			Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+			detail.setCreatedOn(dateUtil.dateTimeInAppFormat(timestamp.toString()));
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
 
 			ischeck = true;
 
@@ -708,7 +727,7 @@ public class TestStrategyController {
 	@ResponseBody
 	public ResponseEntity getTestList() {
 		List<TestStrategyPojo> mainList = new ArrayList<TestStrategyPojo>();
-		mainList = dao.getAllTestsForTestStrategy();
+		mainList = requestInfoDao.getAllTestsForTestStrategy();
 		TestStrategeyVersioningJsonModel model = new TestStrategeyVersioningJsonModel();
 		List<TestStrategeyVersioningJsonModel> versioningModel = new ArrayList<TestStrategeyVersioningJsonModel>();
 		TestStrategyPojo objToAdd = null;
@@ -735,6 +754,16 @@ public class TestStrategyController {
 					testValue.setEnabled(true);
 				} else {
 					testValue.setEnabled(false);
+				}
+				SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+				Date parsedDate;
+				try {
+				parsedDate = dateFormat.parse(testValue.getCreatedDate());
+				Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+				testValue.setCreatedDate(dateUtil.dateTimeInAppFormat(timestamp.toString()));
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			});
 			for (int i = 0; i < mainList.size(); i++) {
@@ -799,9 +828,11 @@ public class TestStrategyController {
 
 			}
 		} catch (Exception exe) {
-			logger.error("Exception occurred while fetching the data object" + exe.getMessage());
 		}
-		return new ResponseEntity(versioningModel, HttpStatus.OK);
+		JSONObject response = new JSONObject();
+		response.put("count", versioningModel.size());
+		response.put("tests",versioningModel);
+		return new ResponseEntity(response, HttpStatus.OK);
 
 	}
 
@@ -832,7 +863,7 @@ public class TestStrategyController {
 
 		JSONArray array;
 
-		mainList = dao.findByTestName(testNameUsed);
+		mainList = requestInfoDao.findByTestName(testNameUsed);
 
 		String isCheck = null, secondCheck = null;
 		int count = 0;
@@ -861,7 +892,7 @@ public class TestStrategyController {
 				array = new JSONArray();
 				arrayElementOneArrayElementOne.put("TestName", isCheck);
 
-				mainList2 = dao.findByTestName(testNameUsed.concat("_" + isCheck));
+				mainList2 = requestInfoDao.findByTestName(testNameUsed.concat("_" + isCheck));
 				for (int i1 = 0; i1 < mainList2.size(); i1++) {
 					array.add(mainList2.get(i1).getVersion());
 				}
@@ -873,7 +904,7 @@ public class TestStrategyController {
 				array = new JSONArray();
 				arrayElementOneArrayElementTwo.put("TestName", isCheck);
 
-				mainList1 = dao.findByTestName(testNameUsed.concat("_") + isCheck);
+				mainList1 = requestInfoDao.findByTestName(testNameUsed.concat("_") + isCheck);
 				for (int i1 = 0; i1 < mainList1.size(); i1++) {
 					array.add(mainList1.get(i1).getVersion());
 				}
@@ -926,22 +957,22 @@ public class TestStrategyController {
 		if (value != null && !value.isEmpty()) {
 
 			if (key.equalsIgnoreCase("Device Family")) {
-				mainList = dao.findByForSearch(key, value);
+				mainList = requestInfoDao.findByForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("Vendor")) {
-				mainList = dao.findByForSearch(key, value);
+				mainList = requestInfoDao.findByForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("OS")) {
-				mainList = dao.findByForSearch(key, value);
+				mainList = requestInfoDao.findByForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("Test Name")) {
-				mainList = dao.findByForSearch(key, value);
+				mainList = requestInfoDao.findByForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("OS Version")) {
-				mainList = dao.findByForSearch(key, value);
+				mainList = requestInfoDao.findByForSearch(key, value);
 
 			} else if (key.equalsIgnoreCase("Region")) {
-				mainList = dao.findByForSearch(key, value);
+				mainList = requestInfoDao.findByForSearch(key, value);
 
 			}
 
@@ -1159,7 +1190,7 @@ public class TestStrategyController {
 
 		vendorName = (String) json.get("vendor");
 
-		mainList = dao.findByVendorName(vendorName);
+		mainList = requestInfoDao.findByVendorName(vendorName);
 
 		for (int i = 0; i < mainList.size(); i++) {
 
@@ -1185,7 +1216,7 @@ public class TestStrategyController {
 
 				arrayElementOneArrayElementOne.put("Family", isFamily);
 
-				mainList1 = dao.findByFamily(isFamily, isVendor);
+				mainList1 = requestInfoDao.findByFamily(isFamily, isVendor);
 				for (int i2 = 0; i2 < mainList1.size(); i2++) {
 					isVersion = mainList1.get(i2).getOs_version();
 					arrayElementOneArrayElementOne.put(i2, isVersion);

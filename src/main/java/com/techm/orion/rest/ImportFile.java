@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FilenameUtils;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -31,13 +31,10 @@ import com.google.gson.Gson;
 import com.techm.orion.ValidatorConfigService.ExcelFileValidation;
 import com.techm.orion.entitybeans.CustomerStagingEntity;
 import com.techm.orion.entitybeans.ImportMasterStagingEntity;
-import com.techm.orion.entitybeans.RequestDetailsEntity;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ImportMasterStagingRepo;
-import com.techm.orion.repositories.RequestDetailsImportRepo;
 import com.techm.orion.service.CustomerStagingInteface;
-import com.techm.orion.service.ExcelReader;
 import com.techm.orion.service.StorageService;
 import com.techm.orion.utility.TSALabels;
 
@@ -46,15 +43,16 @@ import com.techm.orion.utility.TSALabels;
 @Controller
 @RequestMapping("/ImportFile")
 public class ImportFile {
+	
 	private static final Logger logger = LogManager.getLogger(ImportFile.class);
 	private List<String> files = new ArrayList<String>();
 
-	@Autowired
+	/*@Autowired
 	private RequestDetailsImportRepo requestDetailsImportRepo;
 
 	@Autowired
 	private ExcelReader excelReader;
-
+*/
 	@Autowired
 	private StorageService storageService;
 	
@@ -70,11 +68,7 @@ public class ImportFile {
 	@Autowired
 	private ImportMasterStagingRepo importMasterStagingRepo;
 
-	/* Web service to get all request on Import Dash Board */
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
-	@SuppressWarnings("unchecked")
+/*	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getAll", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
@@ -89,7 +83,7 @@ public class ImportFile {
 			List<RequestDetailsEntity> requestDetailFinal = new ArrayList<RequestDetailsEntity>();
 			List<RequestDetailsEntity> requestDetail = requestDetailsImportRepo.findAll();
 
-			/* Iterating loop for required UI field for each request */
+			 Iterating loop for required UI field for each request 
 			for (int i = 0; i < requestDetail.size(); i++) {
 				if (!(requestDetail.get(i).getImportid() == null)) {
 
@@ -129,10 +123,6 @@ public class ImportFile {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
-	/* Web service call to upload file on local storage and save in Database */
 	@POST
 	@RequestMapping(value = "/fileupload", method = RequestMethod.POST)
 	@ResponseBody
@@ -144,10 +134,6 @@ public class ImportFile {
 
 	}
 
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
-	/* Web service call to search request based on user input */
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, produces = "application/json")
@@ -173,10 +159,8 @@ public class ImportFile {
 			value = dto.getValue();
 
 			if (value != null && !value.isEmpty()) {
-				/*
-				 * Search request based on Region, Vendor, Status, Model, Import Id and
-				 * Management IP
-				 */
+				
+				 
 				if (key.equalsIgnoreCase("Region")) {
 					detailsList = requestDetailsImportRepo.findByRegion(value);
 
@@ -243,7 +227,6 @@ public class ImportFile {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
-	/* Method to iterate over all possible search result */
 	private List<RequestDetailsEntity> searchImportDashboard(List<RequestDetailsEntity> detailsList) {
 
 		List<RequestDetailsEntity> detailsListFinalAfterSave = new ArrayList<RequestDetailsEntity>();
@@ -271,12 +254,8 @@ public class ImportFile {
 
 		}
 		return detailsListFinalAfterSave;
-	}
-
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
-	/* Web service call to validate file against predefine set of rules */
+	} */
+	
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/fileValidation", method = RequestMethod.POST)
@@ -288,11 +267,11 @@ public class ImportFile {
 		try {
 
 			String FILE_NAME = file.getOriginalFilename();
-			/* Loading file path from properties file */
+			//Loading file path from properties file 
 			String fileNameAsImport = getAlphaNumericString(8);
-			/* Storing file on local system */
+			//Storing file on local system 
 			storageService.store(file, fileNameAsImport);
-			/* Updating file name with alphanumeric number */
+			//Updating file name with alphanumeric number 
 			String TOTAL_FILE_PATH = TSALabels.IMPORT_FILEPATH.getValue().concat(fileNameAsImport.concat("_").concat(FILE_NAME));
 
 			files.add(file.getOriginalFilename());
@@ -397,9 +376,6 @@ public class ImportFile {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-
-
-	/* Method to generate alphanumeric id for saving file on local storage */
 	static String getAlphaNumericString(int n) {
 
 		String AlphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789";
@@ -415,14 +391,6 @@ public class ImportFile {
 
 		return sb.toString().concat("-1");
 	}
-
-	/*
-	 * Web service call to validate file against predefine set of rules for
-	 * Customer OnBoarding process
-	 */
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/fileValidationCSVForCOB", method = RequestMethod.POST, produces = "application/json")
@@ -435,11 +403,11 @@ public class ImportFile {
 		boolean status = false;
 		try {
 			String FILE_NAME = file.getOriginalFilename();
-			/* Loading file path from properties file */
+			//Loading file path from properties file 
 			String fileNameAsImport = getAlphaNumericString(8);
-			/* Storing file on local system */
+			//Storing file on local system 
 			storageService.store(file, fileNameAsImport);
-			/* Updating file name with alphanumeric number */
+			//Updating file name with alphanumeric number 
 			String TOTAL_FILE_PATH = TSALabels.IMPORT_FILEPATH.getValue().concat(fileNameAsImport.concat("_").concat(FILE_NAME));
 			files.add(file.getOriginalFilename());
 			boolean flagCSV = false;
@@ -509,14 +477,6 @@ public class ImportFile {
 		}
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
-	
-	/*
-	 * Web service call to upload file on local storage and save in Database for
-	 * Customer OnBoarding process
-	 */
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/csvFileSaveInDB", method = RequestMethod.POST, produces = "application/json")
@@ -549,13 +509,6 @@ public class ImportFile {
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
 	
-	/*
-	 * Web service call to display Dashboard data on C3P inventory for
-	 * Customer OnBoarding process
-	 */
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
 	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getDashboardData", method = RequestMethod.GET, produces = "application/json")
@@ -600,13 +553,6 @@ public class ImportFile {
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
 	
-	/*
-	 * Web service call to get Mydashboard data for
-	 * Customer OnBoarding process
-	 */
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
 	@GET
 	@RequestMapping(value = "/getMyDashboardData", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
@@ -648,14 +594,6 @@ public class ImportFile {
 
 	}
 	
-	
-	/*
-	 * Web service call to generate report based on import id for
-	 * Customer OnBoarding process
-	 */
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
 	@GET
 	@RequestMapping(value = "/generateReport", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody

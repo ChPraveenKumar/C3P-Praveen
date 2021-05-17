@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,6 +40,8 @@ public class GetAllRequestDashboardViewService implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetAllRequestDashboardViewService.class);
 	List<ElapsedTimeFormatPojo> elapsedtimings;
 
+	@Autowired
+	private DcmConfigService dcmConfigService;
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -46,9 +49,9 @@ public class GetAllRequestDashboardViewService implements Observer {
 	@RequestMapping(value = "/GetAllDashboardViewJSON", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	public Response GetAllRequests() {
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
+		
 		String jsonArray = "";
 		int success = 0, failure = 0;
 
@@ -251,8 +254,7 @@ public class GetAllRequestDashboardViewService implements Observer {
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(templateFeatureRequest);
-			CreateConfigRequestDCM configReqToSendToC3pCode = new CreateConfigRequestDCM();
-			DcmConfigService dcmConfigService = new DcmConfigService();
+			CreateConfigRequestDCM configReqToSendToC3pCode = new CreateConfigRequestDCM();			
 			configReqToSendToC3pCode.setRegion(json.get("region").toString().toUpperCase());
 			configReqToSendToC3pCode.setVendor(json.get("vendor").toString().toUpperCase());
 			configReqToSendToC3pCode.setModel(json.get("model").toString());

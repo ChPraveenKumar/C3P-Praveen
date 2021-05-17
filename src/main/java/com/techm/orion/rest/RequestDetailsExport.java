@@ -1,58 +1,13 @@
 package com.techm.orion.rest;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.sql.Date;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-
-import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
-import javax.ws.rs.Produces;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.google.gson.Gson;
-import com.opencsv.CSVWriter;
-import com.techm.orion.entitybeans.DeviceInterfaceEntity;
-import com.techm.orion.entitybeans.InternetInfoEntity;
-import com.techm.orion.entitybeans.RequestDetailsEntity;
-import com.techm.orion.repositories.DeviceInterfaceRepo;
-import com.techm.orion.repositories.InternetInfoRepo;
-import com.techm.orion.repositories.RequestDetailsExportRepo;
-import com.techm.orion.service.DcmConfigService;
-import com.techm.orion.utility.TSALabels;
 
 @RestController
 @RequestMapping("/RequestDetailsExport")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
-public class RequestDetailsExport {
+public class RequestDetailsExport {/*
 	private static final Logger logger = LogManager.getLogger(RequestDetailsExport.class);
 
 	@Autowired
@@ -414,12 +369,12 @@ public class RequestDetailsExport {
 				String lanDesToTrim = ExportList.getLanDescription();
 				ExportList.setLanDescription(lanDesToTrim.trim());
 			}
-			/*
+			
 			 * if(ExportList3.getRoutingProtocol().equals("BGP")) { AsNumber =
 			 * ExportList3.getAsNumber();
 			 * 
 			 * }
-			 */
+			 
 
 			data.put("2", new Object[] { "1", ExportList.getAlphanumericReqId(), ExportList.getHostname(),
 					ExportList.getCustomer(), ExportList.getSiteid(), ExportList.getRegion(), ExportList.getVendor(),
@@ -658,4 +613,4 @@ public class RequestDetailsExport {
 
 	}
 
-}
+*/}

@@ -43,6 +43,9 @@ public class InvokeFtl {
 	private static final Logger logger = LogManager.getLogger(InvokeFtl.class);
 
 	@Autowired
+	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
 	public String getGeneratedConfigFile(String requestID, String version) throws Exception {
 		String content = "";
 		String filePath = "";
@@ -499,8 +502,7 @@ public class InvokeFtl {
 		return res;
 	}
 
-	public Map<String, String> getDileveryConfigFileIOS(String requestId, String version) throws Exception {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+	public Map<String, String> getDileveryConfigFileIOS(String requestId, String version) throws Exception {		
 
 		Map<String, String> dataList = new HashMap<String, String>();
 		ErrorValidationPojo errorValidationPojo = requestInfoDao.getErrordetailsForRequestId(requestId, version);
@@ -521,7 +523,7 @@ public class InvokeFtl {
 	}
 
 	public Map<String, String> getDileveryConfigFile(String requestId, String version) throws Exception {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		String content = "";
 		String filePath = "";
 		String contentPreviousVersion = "Not Completed";
@@ -1371,5 +1373,10 @@ public class InvokeFtl {
 			tree.put("preValidateTest", configRequest);
 			return freemarkerDo(tree, "ConnectionRefuse.ftl");
 	}
+	public String generateDeviceDecommissonedFileFalure(RequestInfoPojo configRequest) throws TemplateException, IOException {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", configRequest);
+		return freemarkerDo(tree, "DeviceDecommision.ftl");
+}
 		
 }

@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.ConfigurationDataValuePojo;
 import com.techm.orion.service.DcmConfigService;
 
@@ -29,8 +29,11 @@ import com.techm.orion.service.DcmConfigService;
 @RequestMapping("/GetConfigurationData")
 public class GetConfigurationDataValues implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetConfigurationDataValues.class);
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
+	
 
+	@Autowired
+	private DcmConfigService dcmConfigService ;
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -44,7 +47,7 @@ public class GetConfigurationDataValues implements Observer {
 		String jsonArray = "";
 
 		List<ConfigurationDataValuePojo> list = new ArrayList<ConfigurationDataValuePojo>();
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		JSONObject jsonObj;
 		try {
 			list = dcmConfigService.getVendorData();
@@ -88,7 +91,7 @@ public class GetConfigurationDataValues implements Observer {
 		String jsonArray = "";
 		String vendor="";
 		List<ConfigurationDataValuePojo> list = new ArrayList<ConfigurationDataValuePojo>();
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		JSONArray array=new JSONArray();
 		JSONObject jsonObj;
 		JSONParser parser = new JSONParser();
@@ -131,9 +134,9 @@ public class GetConfigurationDataValues implements Observer {
 	@RequestMapping(value = "/model", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getModel(@RequestBody String params){
-		DcmConfigService dcmConfigService=new DcmConfigService();
+	
 		JSONObject obj = new JSONObject();
-		String jsonMessage="";
+		
 		String requestIdForConfig="";
 		List<String>list=new ArrayList<String>();
 		String jsonArray = "";
@@ -173,9 +176,9 @@ public class GetConfigurationDataValues implements Observer {
 	@RequestMapping(value = "/os", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getOS(@RequestBody String params){
-		DcmConfigService dcmConfigService=new DcmConfigService();
+	
 		JSONObject obj = new JSONObject();
-		String jsonMessage="";
+	
 		String requestIdForConfig="";
 		List<String>list=new ArrayList<String>();
 		String jsonArray = "";
@@ -215,9 +218,9 @@ public class GetConfigurationDataValues implements Observer {
 	@RequestMapping(value = "/osVersion", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getOSVersion(@RequestBody String params){
-		DcmConfigService dcmConfigService=new DcmConfigService();
+		
 		JSONObject obj = new JSONObject();
-		String jsonMessage="";
+		
 		String requestIdForConfig="";
 		List<String>list=new ArrayList<String>();
 		String jsonArray = "";
@@ -260,11 +263,11 @@ public class GetConfigurationDataValues implements Observer {
 
 		JSONObject obj = new JSONObject();
 		JSONArray array=new JSONArray();
-		String jsonMessage = "";
+		
 		String jsonArray = "";
 
 		List<ConfigurationDataValuePojo> list = new ArrayList<ConfigurationDataValuePojo>();
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		JSONObject jsonObj;
 		try {
 			list = dcmConfigService.getRegionData();

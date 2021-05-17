@@ -27,6 +27,7 @@ import com.techm.orion.repositories.AlertInformationRepository;
 public class SearchAllAlertNotificationDataService implements Observer {
 	private static final Logger logger = LogManager.getLogger(SearchAllAlertNotificationDataService.class);
 	/* Autowired JPA Repository */
+	
 	@Autowired
 	public AlertInformationRepository alertInformationRepository;
 

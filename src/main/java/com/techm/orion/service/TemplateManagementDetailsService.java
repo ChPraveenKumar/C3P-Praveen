@@ -31,6 +31,9 @@ public class TemplateManagementDetailsService {
 	@Autowired
 	private TemplateConfigBasicDetailsRepository templateConfigBasicDetailsRepository;
 
+	@Autowired
+	private TemplateManagementDao templateManagementDao;
+	
 	public boolean addNewFeature(String comand_display_feature, String command_to_add, String command_type,
 			String templateId, int parentid, int save, int topLineNum, int bottomLineNum, boolean dragged,
 			int hasParent, String newFeature, String version, String lstCmdId) {
@@ -191,7 +194,7 @@ public class TemplateManagementDetailsService {
 	}
 
 	public List<TemplateBasicConfigurationPojo> getTemplateListData() {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+		//TemplateManagementDao templateManagementDao = new TemplateManagementDao();
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		list = templateManagementDao.getTemplateList();
 		return list;

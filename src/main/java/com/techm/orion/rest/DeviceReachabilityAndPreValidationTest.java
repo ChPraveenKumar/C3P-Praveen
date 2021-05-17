@@ -84,6 +84,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private PrevalidationTestServiceImpl prevalidationTestServiceImpl;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -101,7 +104,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 		String jsonArray = "";
 		// RequestInfoDao requestInfoDao = new RequestInfoDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
-		PrevalidationTestServiceImpl prevalidationTestServiceImpl = new PrevalidationTestServiceImpl();
+		//PrevalidationTestServiceImpl prevalidationTestServiceImpl = new PrevalidationTestServiceImpl();
 		Boolean value = false, isCheck = false;
 		String status = null, lockRequestId = null;
 		List deviceLocked;
@@ -479,7 +482,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						String responseDownloadPath = "";
 
 						try {
-							response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
+							response = invokeFtl.generateDeviceDecommissonedFileFalure(requestinfo);
 
 							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
 									.getProperty("responseDownloadPath");
@@ -837,6 +840,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				obj.put(new String("output"), jsonArray);
 				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2",
+						"Failure");
 				requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "2");
 				String response = "";

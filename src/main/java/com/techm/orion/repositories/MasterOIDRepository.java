@@ -22,7 +22,7 @@ public interface MasterOIDRepository extends JpaRepository<MasterOIDEntity, Long
 	List<MasterOIDEntity> findOidAndDisplayName(@Param("oidVendor") String oidVendor,
 			@Param("oidNetworkType") String oidNetworkType);	
 
-	@Query(value = "select oid_m_no from c3p_m_oid_master_info where oid_m_display_name = 'Interface Name' and oid_m_for_vendor=:oidVendor and oid_m_network_type=:oidNetworkType and oid_m_category ='Interface'", nativeQuery = true)
+	@Query(value = "select oid_m_no from c3p_m_oid_master_info where oid_m_display_name = 'Name' and oid_m_for_vendor=:oidVendor and oid_m_network_type=:oidNetworkType and oid_m_category ='Interface'", nativeQuery = true)
 	String findInterFaceOidAndDisplayName(@Param("oidVendor") String oidVendor,
 			@Param("oidNetworkType") String oidNetworkType);
 
@@ -35,4 +35,7 @@ public interface MasterOIDRepository extends JpaRepository<MasterOIDEntity, Long
 	List<MasterOIDEntity> findByOidNoAndOidCategoryAndOidScopeFlagAndOidVendorAndOidNetworkTypeAndOidDisplayName(
 			String oidNo, String oidCategory, String oidScopeFlag, String oidVendor, String oidNetworkType,
 			String oidDisplayName);
+	
+	List<MasterOIDEntity> findAllByOrderByOidCreatedDateDesc();
+	
 }

@@ -71,13 +71,13 @@ public class ConfigurationManagement {
 	private DcmConfigService dcmConfigService;
 
 	@Autowired
-	private SiteInfoRepository siteRepo;
+	private SiteInfoRepository siteInfoRepository;
 
 	@Autowired
-	private DeviceDiscoveryRepository deviceRepo;
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 
 	@Autowired
-	private MasterAttribRepository attribRepo;
+	private MasterAttribRepository masterAttribRepository;
 
 	private static DecimalFormat df2 = new DecimalFormat("#.##");
 
@@ -107,6 +107,9 @@ public class ConfigurationManagement {
 	
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+	
+	@Autowired
+	private TemplateManagementDao templateManagementDao ;
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -126,7 +129,7 @@ public class ConfigurationManagement {
 		String requestId = null;
 		String request_creator_name = null, userName = null, userRole = null;
 		List<String> templateList = null;
-		TemplateManagementDao dao = new TemplateManagementDao();
+		
 		List<RequestInfoPojo> configReqToSendToC3pCodeList = new ArrayList<RequestInfoPojo>();
 		List<String> configGenMtds = new ArrayList<String>();
 		InvokeFtl invokeFtl = new InvokeFtl();
@@ -134,7 +137,7 @@ public class ConfigurationManagement {
 
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
-
+			DeviceDiscoveryEntity device = null;
 			RequestInfoPojo configReqToSendToC3pCode = new RequestInfoPojo();
 
 			if (json.containsKey("userName"))
@@ -155,14 +158,14 @@ public class ConfigurationManagement {
 			} else {
 				configReqToSendToC3pCode.setRequestType("SLGC");
 			}
+			 device = deviceDiscoveryRepository
+						.findByDHostName(json.get("hostname").toString().toUpperCase());
 
 			if (json.get("networkType") != null && !json.get("networkType").toString().isEmpty()) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equals("VNF")) {
 					if (!requestType.equalsIgnoreCase("Test") && !requestType.equalsIgnoreCase("SNAI")) {
-						DeviceDiscoveryEntity device = deviceRepo
-								.findByDHostName(json.get("hostname").toString().toUpperCase());
-						requestType = device.getdConnect();
+												requestType = device.getdConnect();
 						configReqToSendToC3pCode.setRequestType(requestType);
 					}
 
@@ -193,7 +196,7 @@ public class ConfigurationManagement {
 			configReqToSendToC3pCode.setCustomer(json.get("customer").toString());
 			configReqToSendToC3pCode.setManagementIp(json.get("managementIp").toString());
 			configReqToSendToC3pCode.setSiteName(json.get("siteName").toString());
-			SiteInfoEntity siteId = siteRepo.findCSiteIdByCSiteName(configReqToSendToC3pCode.getSiteName());
+			SiteInfoEntity siteId = siteInfoRepository.findCSiteIdByCSiteName(configReqToSendToC3pCode.getSiteName());
 			configReqToSendToC3pCode.setSiteid(siteId.getcSiteId());
 
 			configReqToSendToC3pCode.setDeviceType(json.get("deviceType").toString());
@@ -440,7 +443,7 @@ public class ConfigurationManagement {
 						}
 						featureList.add(featureid);
 						// Fetch commands only in case of external api
-						List<CommandPojo> listToSent = dao.getCammandByTemplateAndfeatureId(Integer.parseInt(featureid),
+						List<CommandPojo> listToSent = templateManagementDao.getCammandByTemplateAndfeatureId(Integer.parseInt(featureid),
 								templateid);
 						cammandByTemplate.addAll(listToSent);
 					}
@@ -615,7 +618,7 @@ public class ConfigurationManagement {
 										// will get charachteristic id here instead of
 										// name in case of external api
 
-										MasterAttributes attribute = attribRepo
+										MasterAttributes attribute = masterAttribRepository
 												.findByCharacteristicIdAndTemplateId(attib, template);
 
 										if (attribute != null) {
@@ -792,7 +795,7 @@ public class ConfigurationManagement {
 									{
 										if(type.equalsIgnoreCase("Template"))
 										{
-											MasterAttributes masterAttribData = attribRepo.findByTemplateIdAndMasterFIDAndLabel(templateid, featureId,
+											MasterAttributes masterAttribData = masterAttribRepository.findByTemplateIdAndMasterFIDAndLabel(templateid, featureId,
 													attribLabel);
 											createConfigList.add(setConfigData(masterAttribData.getId(), attriValue, templateid));
 										}
@@ -806,7 +809,7 @@ public class ConfigurationManagement {
 									else
 									{
 										if(templateid!=null) {
-									MasterAttributes masterAttribData = attribRepo.findByTemplateIdAndMasterFIDAndLabel(templateid, featureId,
+									MasterAttributes masterAttribData = masterAttribRepository.findByTemplateIdAndMasterFIDAndLabel(templateid, featureId,
 											attribLabel);
 									createConfigList.add(setConfigData(masterAttribData.getId(), attriValue, templateid));}
 										else {
@@ -946,6 +949,7 @@ public class ConfigurationManagement {
 					res = entry.getValue();
 					if (res.equalsIgnoreCase("true")) {
 						data = "Submitted";
+						dcmConfigService.updateRequestCount(device);						
 					}
 
 				}
@@ -1051,7 +1055,7 @@ public class ConfigurationManagement {
 				keyValue = (String) validateIdentifier.get("attribValue");
 			if (validateIdentifier.containsKey("attribName") && validateIdentifier.get("attribName") != null)
 				attribName = (String) validateIdentifier.get("attribName");
-			List<DeviceDiscoveryEntity> deviceInfo = deviceRepo.findByDHostNameAndDMgmtIp(hostName, ipAddress);
+			List<DeviceDiscoveryEntity> deviceInfo = deviceDiscoveryRepository.findByDHostNameAndDMgmtIp(hostName, ipAddress);
 			for (DeviceDiscoveryEntity deviceEntity : deviceInfo) {
 				ResourceCharacteristicsEntity resourceCharEntity = resourceCharacteristicsRepository
 						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicNameAndRcKeyValue(deviceEntity.getdId(), featureId, attribName, keyValue);
@@ -1090,7 +1094,7 @@ public class ConfigurationManagement {
 				ipAddress = (String) validateIdentifier.get("ipaddress");
 			if (validateIdentifier.containsKey("features") && validateIdentifier.get("features") != null)
 				featuresList = (JSONArray) validateIdentifier.get("features");
-			List<DeviceDiscoveryEntity> deviceInfo = deviceRepo.findByDHostNameAndDMgmtIp(hostName, ipAddress);
+			List<DeviceDiscoveryEntity> deviceInfo = deviceDiscoveryRepository.findByDHostNameAndDMgmtIp(hostName, ipAddress);
 			if (featuresList != null && !featuresList.isEmpty()) {
 				for (int i = 0; i < featuresList.size(); i++) {
 					JSONObject json = (JSONObject) featuresList.get(i);

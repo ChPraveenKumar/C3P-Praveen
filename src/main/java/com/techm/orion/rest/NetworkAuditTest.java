@@ -59,6 +59,7 @@ public class NetworkAuditTest extends Thread {
 
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
 
 	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;
@@ -146,13 +147,13 @@ public class NetworkAuditTest extends Thread {
 							InputStream input = channel.getInputStream();
 							/* Logic to collect number of select test out of all */
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							RequestInfoDao dao = new RequestInfoDao();
+							
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							TestDetail test = new TestDetail();
-							listOfTests = dao.findTestFromTestStrategyDB(
+							listOfTests = requestInfoDao.findTestFromTestStrategyDB(
 									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Network Audit");
-							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Network Audit",version);
 							List<Boolean> results = null;
 							if (selectedTests.size() > 0) {

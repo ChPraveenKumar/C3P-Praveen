@@ -84,6 +84,7 @@ import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.CertificationTestResultService;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.UtilityMethods;
+import com.techm.orion.utility.WAFADateUtil;
 import com.techm.orion.webService.GetAllDetailsService;
 
 @Controller
@@ -92,17 +93,27 @@ public class RequestInfoDao {
 			.getLogger(RequestInfoDao.class);
 	@Autowired
 	private RequestInfoDetailsRepositories reository;
+	
 	@Autowired
 	private BatchInfoRepo batchInfoRepo;
+	
 	@Inject
 	private CertificationTestResultService certificationTestService;
+	
 	@Autowired
 	private ServiceOrderRepo serviceOrderRepo;
+	
 	@Autowired
 	private UserManagementRepository userManagementRepository;
 	
 	@Autowired
 	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
+	
+	@Autowired 
+	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private RequestDetails requestDetails;	
 
 	/* SQL information */
 	private static final String INSERT_REQUEST_INFOSO = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
@@ -5515,10 +5526,9 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject res = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
 		try {
-			JSONParser parser = new JSONParser();
-			RequestDetails dao = new RequestDetails();
+			JSONParser parser = new JSONParser();			
 			Double requestVersion = Double.valueOf(version);
-			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId,
+			String testAndDiagnosis = requestDetails.getTestAndDiagnosisDetails(requestId,
 					requestVersion);
 			logger.info("testAndDiagnosis ->"+testAndDiagnosis);
 			if(testAndDiagnosis !=null && !testAndDiagnosis.isEmpty()) {
@@ -6819,7 +6829,7 @@ public class RequestInfoDao {
 	}
 
 	public List<FirmwareUpgradeDetail> findByVendorName(String vendor) {
-		String query = "SELECT * FROM firmware_upgrade_single_device where vendor LIKE ?";
+		String query = "SELECT * FROM c3p_m_imagemanagement where im_vendor LIKE ?";
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
@@ -6833,11 +6843,11 @@ public class RequestInfoDao {
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				request = new FirmwareUpgradeDetail();
-				request.setFamily(rs.getString("family"));
-				request.setOs_version(rs.getString("os_version"));
-				request.setCreate_date(rs.getString("create_date"));
-				request.setImage_filename(rs.getString("image_filename"));
-				request.setVendor(rs.getString("vendor"));
+				request.setFamily(rs.getString("im_family"));
+				request.setOs_version(rs.getString("im_os_version"));
+				request.setCreate_date(rs.getString("im_created_date"));
+				request.setImage_filename(rs.getString("im_image_filename"));
+				request.setVendor(rs.getString("im_vendor"));
 
 				requestInfoList.add(request);
 			}
@@ -6912,7 +6922,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject backUpStatus = new org.json.simple.JSONObject();
 		String requestId = null, deliveryStatus = null;
-		certificationTestService = new CertificationTestResultService();
+		
 		resultEnt = certificationTestService.getRecordByRequestId(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()));
@@ -7073,8 +7083,7 @@ public class RequestInfoDao {
 		certificationTestPojo1 = getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "preValidate");
-
-		certificationTestService = new CertificationTestResultService();
+		
 		resultEnt = certificationTestService.getRecordByRequestId(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()));
@@ -7175,10 +7184,10 @@ public class RequestInfoDao {
 			vendorTest.put("CollectedValue", "N/A");
 			vendorTest.put("EvaluationCriteria", "N/A");
 		}
+		prevalidationArray.add(reachabilityObj);
 		prevalidationArray.add(vendorTest);
 		prevalidationArray.add(deviceModel);
 		prevalidationArray.add(iosVersion);
-		prevalidationArray.add(reachabilityObj);
 
 		org.json.simple.JSONArray networkArray = new org.json.simple.JSONArray();
 
@@ -7489,7 +7498,7 @@ public class RequestInfoDao {
 
 	public List<FirmwareUpgradeDetail> findByFamily(String isFamily,
 			String isVendor) {
-		String query = "SELECT * FROM firmware_upgrade_single_device where family LIKE ? AND vendor LIKE ?";
+		String query = "SELECT * FROM c3p_m_imagemanagement where im_family LIKE ? AND im_vendor LIKE ?";
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
@@ -7502,11 +7511,11 @@ public class RequestInfoDao {
 			rs = pst.executeQuery();
 			while (rs.next()) {
 				request = new FirmwareUpgradeDetail();
-				request.setFamily(rs.getString("family"));
-				request.setOs_version(rs.getString("os_version"));
-				request.setCreate_date(rs.getString("create_date"));
-				request.setImage_filename(rs.getString("image_filename"));
-				request.setVendor(rs.getString("vendor"));
+				request.setFamily(rs.getString("im_family"));
+				request.setOs_version(rs.getString("im_os_version"));
+				request.setCreate_date(rs.getString("im_created_date"));
+				request.setImage_filename(rs.getString("im_image_filename"));
+				request.setVendor(rs.getString("im_vendor"));
 
 				requestInfoList.add(request);
 			}
@@ -8329,14 +8338,13 @@ public class RequestInfoDao {
 				request.setVendor(rs.getString("vendor"));
 				request.setDeviceFamily(rs.getString("device_family"));
 				request.setDeviceModel(rs.getString("device_model"));
-
 				request.setTest_category(rs.getString("test_category"));
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
 				request.setRegion(rs.getString("region"));
-				request.setCreatedDate(rs.getString("created_on"));
+				if(rs.getString("created_on")!=null)
+					request.setCreatedDate(dateUtil.convertStringToTimestampInSTDFormat(rs.getString("created_on")));
 				request.setCreatedBy(rs.getString("created_by"));
-
 				request.setEnabled(rs.getBoolean("is_enabled"));
 
 				list.add(request);
@@ -8404,7 +8412,8 @@ public class RequestInfoDao {
 				request.setOs(rs.getString("os"));
 				request.setOsVersion(rs.getString("os_version"));
 				request.setRegion(rs.getString("region"));
-				request.setCreatedDate(rs.getString("created_on"));
+				if(rs.getString("created_on")!=null)
+					request.setCreatedDate(dateUtil.convertStringToTimestampInSTDFormat(rs.getString("created_on")));
 				request.setCreatedBy(rs.getString("created_by"));
 
 				request.setEnabled(rs.getBoolean("is_enabled"));
