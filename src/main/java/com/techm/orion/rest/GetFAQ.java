@@ -8,6 +8,7 @@ import javax.ws.rs.GET;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -21,7 +22,8 @@ import com.techm.orion.dao.RequestInfoDao;
 @RequestMapping("/faq")
 public class GetFAQ implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetFAQ.class);
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
+	@Autowired
+	private RequestInfoDao requestInfoDao;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************

@@ -19,13 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.techm.orion.dao.RequestInfoDetailsDao;
-import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.UserManagementEntity;
-import com.techm.orion.repositories.MasterCommandsRepository;
-import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.NotificationRepo;
-import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.UserManagementRepository;
 
 @Controller
@@ -33,24 +28,14 @@ import com.techm.orion.repositories.UserManagementRepository;
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 public class GetDataOnRefresh {
 	private static final Logger logger = LogManager.getLogger(GetDataOnRefresh.class);
-	TemplateManagementDao templateManagementDao = new TemplateManagementDao();
 
-	@Autowired
-	MasterFeatureRepository masterFeatureRepository;
-
-	@Autowired
-	RequestInfoDetailsDao requestInfoDao;
-
-	@Autowired
-	MasterCommandsRepository masterCommandsRepo;
-
-	@Autowired
-	TemplateFeatureRepo templateFeatureRepo;
 	@Autowired
 	private NotificationRepo notificationRepo;
+	
 	@Autowired
 	private UserManagementRepository userManagementRepository;
 
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/

@@ -93,19 +93,27 @@ public class RequestInfoDao {
 			.getLogger(RequestInfoDao.class);
 	@Autowired
 	private RequestInfoDetailsRepositories reository;
+	
 	@Autowired
 	private BatchInfoRepo batchInfoRepo;
+	
 	@Inject
 	private CertificationTestResultService certificationTestService;
+	
 	@Autowired
 	private ServiceOrderRepo serviceOrderRepo;
+	
 	@Autowired
 	private UserManagementRepository userManagementRepository;
 	
 	@Autowired
 	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
+	
 	@Autowired 
 	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private RequestDetails requestDetails;	
 
 	/* SQL information */
 	private static final String INSERT_REQUEST_INFOSO = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
@@ -5518,10 +5526,9 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject res = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
 		try {
-			JSONParser parser = new JSONParser();
-			RequestDetails dao = new RequestDetails();
+			JSONParser parser = new JSONParser();			
 			Double requestVersion = Double.valueOf(version);
-			String testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId,
+			String testAndDiagnosis = requestDetails.getTestAndDiagnosisDetails(requestId,
 					requestVersion);
 			logger.info("testAndDiagnosis ->"+testAndDiagnosis);
 			if(testAndDiagnosis !=null && !testAndDiagnosis.isEmpty()) {
@@ -6915,7 +6922,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject backUpStatus = new org.json.simple.JSONObject();
 		String requestId = null, deliveryStatus = null;
-		certificationTestService = new CertificationTestResultService();
+		
 		resultEnt = certificationTestService.getRecordByRequestId(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()));
@@ -7076,8 +7083,7 @@ public class RequestInfoDao {
 		certificationTestPojo1 = getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "preValidate");
-
-		certificationTestService = new CertificationTestResultService();
+		
 		resultEnt = certificationTestService.getRecordByRequestId(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()));

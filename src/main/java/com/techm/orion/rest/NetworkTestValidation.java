@@ -133,13 +133,13 @@ public class NetworkTestValidation extends Thread {
 							channel.connect();
 							InputStream input = channel.getInputStream();							
 							List<Boolean> results = null;
-							RequestInfoDao dao = new RequestInfoDao();
+							
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							listOfTests = dao.findTestFromTestStrategyDB(
+							listOfTests = requestInfoDao.findTestFromTestStrategyDB(
 									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Network Test");
-							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Network Test",version);
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {

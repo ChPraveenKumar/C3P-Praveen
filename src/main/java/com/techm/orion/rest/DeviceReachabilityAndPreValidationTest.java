@@ -84,6 +84,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private PrevalidationTestServiceImpl prevalidationTestServiceImpl;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -101,7 +104,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 		String jsonArray = "";
 		// RequestInfoDao requestInfoDao = new RequestInfoDao();
 		InvokeFtl invokeFtl = new InvokeFtl();
-		PrevalidationTestServiceImpl prevalidationTestServiceImpl = new PrevalidationTestServiceImpl();
+		//PrevalidationTestServiceImpl prevalidationTestServiceImpl = new PrevalidationTestServiceImpl();
 		Boolean value = false, isCheck = false;
 		String status = null, lockRequestId = null;
 		List deviceLocked;

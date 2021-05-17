@@ -75,10 +75,10 @@ public class DcmConfigService {
 			.getLogger(DcmConfigService.class);
 
 	@Autowired
-	CreateConfigRepo repo;
+	private CreateConfigRepo repo;
 
 	@Autowired
-	RequestInfoDao dao;
+	private RequestInfoDao requestInfoDao;
 
 	@Autowired
 	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
@@ -114,14 +114,17 @@ public class DcmConfigService {
 	private MasterCharacteristicsRepository masterCharacteristicsRepository;
 	
 	@Autowired
-	TemplateSuggestionDao templateSuggestionDao ;
+	private TemplateSuggestionDao templateSuggestionDao ;
+	
+	@Autowired
+	private TemplateManagementDao templateManagementDao;
 	
 	public Map<String, String> updateAlldetails(
 			CreateConfigRequestDCM configRequest,
 			List<CreateConfigPojo> pojoList) throws IOException {
 
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		// CamundaServiceCreateReq camundaServiceCreateReq = new
 		// CamundaServiceCreateReq();
 		
@@ -434,7 +437,7 @@ public class DcmConfigService {
 
 					requestInfoPojo.setStatus("In Progress");
 
-					result = dao.insertRequestInDB(requestInfoPojo);
+					result = requestInfoDao.insertRequestInDB(requestInfoPojo);
 
 					hostName = configRequest.getHostname();
 					managementIp = configRequest.getManagementIp();
@@ -571,7 +574,7 @@ public class DcmConfigService {
 
 					requestInfoPojo.setStatus("Scheduled");
 
-					result = dao.insertRequestInDB(requestInfoPojo);
+					result = requestInfoDao.insertRequestInDB(requestInfoPojo);
 
 					hostName = configRequest.getHostname();
 					managementIp = configRequest.getManagementIp();
@@ -1204,7 +1207,7 @@ public class DcmConfigService {
 
 		boolean isTemplateAvailable = false;
 		boolean isTemplateApproved = false;
-		TemplateManagementDao templateDao = new TemplateManagementDao();
+		
 		List<String> listOfTemplatesAvailable = new ArrayList<String>();
 		List<String> featureList = new ArrayList<String>();
 		try {
@@ -1212,7 +1215,7 @@ public class DcmConfigService {
 					+ vendor.substring(0, 2).toUpperCase()
 					+ model.toUpperCase() + os.substring(0, 2).toUpperCase()
 					+ osVersion;
-			TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+		
 			final File folder = new File(getTemplateCreationPathForFolder());
 			listOfTemplatesAvailable = listFilesForFolder(folder);
 			if (listOfTemplatesAvailable.size() > 0) {
@@ -1262,7 +1265,7 @@ public class DcmConfigService {
 						}
 					}
 					templateToUse = templateid + "_V" + highestVersion;
-					isTemplateApproved = templateDao.getTemplateStatus(
+					isTemplateApproved = templateManagementDao.getTemplateStatus(
 							templateid, Float.toString(highestVersion));
 
 				}
@@ -1495,7 +1498,7 @@ public class DcmConfigService {
 			if (requestInfoSO.getSceheduledTime().isEmpty()) {
 				requestInfoSO.setStatus("In Progress");
 				// validateMessage=validatorConfigManagement.validate(configRequest);
-				result = dao.insertRequestInDB(requestInfoSO);
+				result = requestInfoDao.insertRequestInDB(requestInfoSO);
 				// update template
 
 				requestType = requestInfoSO.getRequestType();
@@ -1523,7 +1526,7 @@ public class DcmConfigService {
 					}
 
 				}
-				int testStrategyDBUpdate = dao.insertTestRecordInDB(
+				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
 						requestInfoSO.getAlphanumericReqId(),
 						requestInfoSO.getTestsSelected(),
 						requestInfoSO.getRequestType(),
@@ -1710,7 +1713,7 @@ public class DcmConfigService {
 
 				} else {
 					requestInfoSO.setStatus("Scheduled");
-					result = dao.insertRequestInDB(requestInfoSO);
+					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					for (Map.Entry<String, String> entry : result.entrySet()) {
 						if (entry.getKey() == "requestID") {
@@ -1831,7 +1834,7 @@ public class DcmConfigService {
 			} else {
 
 				requestInfoSO.setStatus("Scheduled");
-				result = dao.insertRequestInDB(requestInfoSO);
+				result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
@@ -1858,7 +1861,7 @@ public class DcmConfigService {
 					}
 
 				}
-				int testStrategyDBUpdate = dao.insertTestRecordInDB(
+				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
 						requestInfoSO.getAlphanumericReqId(),
 						requestInfoSO.getTestsSelected(),
 						requestInfoSO.getRequestType(),
@@ -2134,7 +2137,7 @@ public class DcmConfigService {
 				//
 				// } else {
 				if (requestInfoSO.getBatchSize().equals("1")) {
-					result = dao.insertRequestInDB(requestInfoSO);
+					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 					for (Map.Entry<String, String> entry : result.entrySet()) {
 						if (entry.getKey() == "requestID") {
 
@@ -2150,7 +2153,7 @@ public class DcmConfigService {
 
 					if (requestType.equals("Test")
 							|| requestType.equals("Audit")) {
-						int testStrategyDBUpdate = dao.insertTestRecordInDB(
+						int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
 								requestInfoSO.getAlphanumericReqId(),
 								requestInfoSO.getTestsSelected(),
 								requestInfoSO.getRequestType(),
@@ -2250,7 +2253,7 @@ public class DcmConfigService {
 					telnetCommunicationSSH.setDaemon(true);
 					telnetCommunicationSSH.start();
 				} else {
-					result = dao.insertBatchConfigRequestInDB(requestInfoSO);
+					result = requestInfoDao.insertBatchConfigRequestInDB(requestInfoSO);
 
 					requestType = requestInfoSO.getRequestType();
 					if (!(requestType.equals("Test"))
@@ -2276,7 +2279,7 @@ public class DcmConfigService {
 
 					if (requestType.equals("Test")
 							|| requestType.equals("Audit")) {
-						int testStrategyDBUpdate = dao.insertTestRecordInDB(
+						int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
 								requestInfoSO.getAlphanumericReqId(),
 								requestInfoSO.getTestsSelected(),
 								requestInfoSO.getRequestType(),
@@ -2436,7 +2439,7 @@ public class DcmConfigService {
 	private String getAvailableHighestVersion(
 			List<String> listOfTemplatesAvailable,
 			RequestInfoPojo configRequest, String templateID) {
-		TemplateManagementDao templateDao = new TemplateManagementDao();
+		
 		String tempString = null, fileToUse = null;
 		float highestVersion = 0, tempVersion = 0;
 		boolean isTemplateAvailable = false, isTemplateApproved = false;
@@ -2479,7 +2482,7 @@ public class DcmConfigService {
 				}
 
 			}
-			isTemplateApproved = templateDao.getTemplateStatus(tempString,
+			isTemplateApproved = templateManagementDao.getTemplateStatus(tempString,
 					Float.toString(highestVersion));
 			if (isTemplateApproved) {
 				fileToUse = tempString + "_V" + highestVersion;
@@ -2493,7 +2496,7 @@ public class DcmConfigService {
 	private String getAvailableHighestVersion(
 			List<String> listOfTemplatesAvailable,
 			CreateConfigRequestDCM configRequest, String templateID) {
-		TemplateManagementDao templateDao = new TemplateManagementDao();
+		
 		String tempString = null, fileToUse = null;
 		float highestVersion = 0, tempVersion = 0;
 		boolean isTemplateAvailable = false, isTemplateApproved = false;
@@ -2536,7 +2539,7 @@ public class DcmConfigService {
 				}
 
 			}
-			isTemplateApproved = templateDao.getTemplateStatus(tempString,
+			isTemplateApproved = templateManagementDao.getTemplateStatus(tempString,
 					Float.toString(highestVersion));
 			if (isTemplateApproved) {
 				fileToUse = tempString + "_V" + highestVersion;
@@ -2564,7 +2567,7 @@ public class DcmConfigService {
 			throws IOException {
 
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 		// CamundaServiceCreateReq camundaServiceCreateReq = new
 		// CamundaServiceCreateReq();		
 		String validateMessage = "", requestType = "";
@@ -2876,7 +2879,7 @@ public class DcmConfigService {
 
 					requestInfoPojo.setStatus("In Progress");
 
-					result = dao.insertRequestInDB(requestInfoPojo);
+					result = requestInfoDao.insertRequestInDB(requestInfoPojo);
 
 					hostName = configRequest.getHostname();
 					managementIp = configRequest.getManagementIp();
@@ -3013,7 +3016,7 @@ public class DcmConfigService {
 
 					requestInfoPojo.setStatus("Scheduled");
 
-					result = dao.insertRequestInDB(requestInfoPojo);
+					result = requestInfoDao.insertRequestInDB(requestInfoPojo);
 
 					hostName = configRequest.getHostname();
 					managementIp = configRequest.getManagementIp();
@@ -3063,7 +3066,6 @@ public class DcmConfigService {
 		List<String> configGenMtds = new ArrayList<String>();
 
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
-		// RequestInfoDao requestInfoDao = new RequestInfoDao();
 		
 		String validateMessage = "";
 		// TelnetCommunicationSSH telnetCommunicationSSH=new
@@ -3103,7 +3105,7 @@ public class DcmConfigService {
 			if (requestInfoSO.getSceheduledTime().isEmpty()) {
 				requestInfoSO.setStatus("In Progress");
 				// validateMessage=validatorConfigManagement.validate(configRequest);
-				result = dao.insertRequestInDB(requestInfoSO);
+				result = requestInfoDao.insertRequestInDB(requestInfoSO);
 				// update template
 
 				requestType = requestInfoSO.getRequestType();
@@ -3131,7 +3133,7 @@ public class DcmConfigService {
 					}
 
 				}
-				int testStrategyDBUpdate = dao.insertTestRecordInDB(
+				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
 						requestInfoSO.getAlphanumericReqId(),
 						requestInfoSO.getTestsSelected(),
 						requestInfoSO.getRequestType(),
@@ -3353,7 +3355,7 @@ public class DcmConfigService {
 
 				} else {
 					requestInfoSO.setStatus("Scheduled");
-					result = dao.insertRequestInDB(requestInfoSO);
+					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					for (Map.Entry<String, String> entry : result.entrySet()) {
 						if (entry.getKey() == "requestID") {
@@ -3474,7 +3476,7 @@ public class DcmConfigService {
 			} else {
 
 				requestInfoSO.setStatus("Scheduled");
-				result = dao.insertRequestInDB(requestInfoSO);
+				result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
@@ -3501,7 +3503,7 @@ public class DcmConfigService {
 					}
 
 				}
-				int testStrategyDBUpdate = dao.insertTestRecordInDB(
+				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
 						requestInfoSO.getAlphanumericReqId(),
 						requestInfoSO.getTestsSelected(),
 						requestInfoSO.getRequestType(),

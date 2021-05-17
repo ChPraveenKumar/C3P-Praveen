@@ -30,7 +30,6 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.TemplateAttribPojo;
-import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.TemplateManagementNewService;
@@ -41,17 +40,19 @@ public class TemplateSuggestionService implements Observer {
 	private static final Logger logger = LogManager
 			.getLogger(TemplateSuggestionService.class);
 	@Autowired
-	TemplateSuggestionDao templateSuggestionDao;
+	private TemplateSuggestionDao templateSuggestionDao;
 	
 	@Autowired
-	TemplateManagementNewService templateManagementNewService;
+	private TemplateManagementNewService templateManagementNewService;
 
 	@Autowired
-	AttribCreateConfigService service;
+	private AttribCreateConfigService service;
+	
+	@Autowired
+	private TemplateManagementDao templateManagementDao;
 
 	@Autowired
-	TemplateFeatureRepo templatefeatureRepo;
-
+	private DcmConfigService dcmConfigService;
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
@@ -76,9 +77,7 @@ public class TemplateSuggestionService implements Observer {
 	@ResponseBody
 	public Response getFeaturesForSelectedTemplate(
 			@RequestBody String templateDetails) {
-		DcmConfigService dcmConfigService = new DcmConfigService();
-		// TemplateSuggestionDao templateSuggestionDao = new
-		// TemplateSuggestionDao();
+		
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 
@@ -211,7 +210,7 @@ public class TemplateSuggestionService implements Observer {
 					.get("featureList");
 
 			List<String> list = new ArrayList<String>();
-			TemplateManagementDao dao = new TemplateManagementDao();
+			
 			String templateId = json.get("templateId").toString();
 			String vendor = json.get("vendor").toString();
 			String deviceType = json.get("deviceType").toString();
@@ -222,7 +221,7 @@ public class TemplateSuggestionService implements Observer {
 				if (arrObj.get("value").toString()
 						.contains("Basic Configuration")) {
 					if (templateId != null && !templateId.equals("")) {
-						seriesName = dao.getSeriesId(templateId, null);
+						seriesName = templateManagementDao.getSeriesId(templateId, null);
 						String seriesId = StringUtils.substringAfter(
 								seriesName, "Generic_");
 						seriesName = arrObj.get("value").toString() + seriesId;
@@ -304,9 +303,7 @@ public class TemplateSuggestionService implements Observer {
 	@ResponseBody
 	public Response getFeaturesForDeviceDetailDynamic(
 			@RequestBody String configRequest) {
-		DcmConfigService dcmConfigService = new DcmConfigService();
-		// TemplateSuggestionDao templateSuggestionDao=new
-		// TemplateSuggestionDao();
+		
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 		String networkType = null, requestType = null;
@@ -424,8 +421,7 @@ public class TemplateSuggestionService implements Observer {
 	@RequestMapping(value = "/getFeaturesForTS", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getFeaturesForTS(@RequestBody String configRequest) {
-		DcmConfigService dcmConfigService = new DcmConfigService();
-
+		
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 

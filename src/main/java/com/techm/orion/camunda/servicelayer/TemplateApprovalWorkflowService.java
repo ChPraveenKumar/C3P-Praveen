@@ -59,11 +59,17 @@ public class TemplateApprovalWorkflowService implements Observer {
 	@Autowired
 	private WAFADateUtil timeUtil;
 	
+	@Autowired
+	private GetTemplateConfigurationData getTemplateConfigurationData;
+	
+	@Autowired
+	private TemplateManagementDao templateManagementDao ;
+	
+	
 	@POST
 	@RequestMapping(value = "/saveTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> saveTemplate(@RequestBody String string) {
-		GetTemplateConfigurationData templateSaveFlowService = new GetTemplateConfigurationData();
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONParser parser = new JSONParser();
 		String templateId = null, templateVersion = null;
@@ -80,7 +86,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 				templateVersion = templateId.substring(templateId.indexOf("_V")+2, templateId.length());
 				templateId = templateId.substring(0, templateId.indexOf("_V"));
 			}
-			response = templateSaveFlowService.saveConfigurationTemplate(string, templateId, templateVersion);
+			response = getTemplateConfigurationData.saveConfigurationTemplate(string, templateId, templateVersion);
 			camundaService.initiateApprovalFlow(templateId, templateVersion, "Admin");
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -100,9 +106,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 	@RequestMapping(value = "/updateTemplateStatus", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response updateTemplateStatus(@RequestBody String string) {
-		JSONObject obj = new JSONObject();
-
-		TemplateManagementDao templateSaveFlowService = new TemplateManagementDao();
+		JSONObject obj = new JSONObject();		
 		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONParser parser = new JSONParser();
 		String templateId = null, templateVersion = null, status = null, approverComment = null,featureID=null, featureVersion=null;
@@ -178,9 +182,9 @@ public class TemplateApprovalWorkflowService implements Observer {
 								Timestamp.valueOf(LocalDateTime.now()), feature.getMasterFId(), "1.0");
 					}
 				}
-				response = templateSaveFlowService.updateTemplateStatus(templateId, templateVersion, status,
+				response = templateManagementDao.updateTemplateStatus(templateId, templateVersion, status,
 						approverComment);
-				userTaskId = templateSaveFlowService
+				userTaskId = templateManagementDao
 						.getUserTaskIdForTemplate(json.get("templateid").toString().replace("-", "_"), templateVersion);
 				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
 			}
@@ -205,7 +209,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 				
 				response=masterFeatureRepository.updateMasterFeatureStatus(status, comment , notificationData.getNotifFromUser(), userName,Timestamp.valueOf(LocalDateTime.now()), featureID, featureVersion);
 				
-				userTaskId = templateSaveFlowService.getUserTaskIdForTemplate(featureID, featureVersion);
+				userTaskId = templateManagementDao.getUserTaskIdForTemplate(featureID, featureVersion);
 				
 				
 				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
@@ -259,8 +263,6 @@ public class TemplateApprovalWorkflowService implements Observer {
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
 		String key = null, value = null;
-		TemplateManagementDao templateSaveFlowService = new TemplateManagementDao();
-
 		try {
 			Gson gson = new Gson();
 			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
@@ -271,7 +273,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 				try {
 					// quick fix for json not getting serialized
 
-					detailsList = templateSaveFlowService.searchResults(key, value);
+					detailsList = templateManagementDao.searchResults(key, value);
 
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);

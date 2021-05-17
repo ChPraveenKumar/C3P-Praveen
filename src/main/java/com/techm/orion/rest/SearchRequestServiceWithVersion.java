@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,8 +40,11 @@ import com.techm.orion.pojo.SearchParamPojo;
 @RequestMapping("/SearchRequestServiceWithVersion")
 public class SearchRequestServiceWithVersion implements Observer {
 	private static final Logger logger = LogManager.getLogger(SearchRequestServiceWithVersion.class);
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
+	@Autowired
+	private RequestInfoDao requestInfoDao;
 
+	@Autowired
+	private RequestDetails requestDetails;
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -61,8 +65,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 
 		JSONObject jsonobjectForTest = null;
 		ReoprtFlags selected;
-		RequestInfoSO tests;
-		RequestInfoDao dao = new RequestInfoDao();
+		RequestInfoSO tests;		
 		try {
 			JSONArray jsonArrayForTest = new JSONArray();
 
@@ -85,9 +88,9 @@ public class SearchRequestServiceWithVersion implements Observer {
 				df.setMaximumFractionDigits(1);
 				String versionSEFE = df.format(v);
 				if (inputjson.get("readFlag").toString().equalsIgnoreCase("1")) {
-					dao.setReadFlagFESE(value, versionSEFE, 1, "SE");
+					requestInfoDao.setReadFlagFESE(value, versionSEFE, 1, "SE");
 				} else {
-					dao.setReadFlagFESE(value, versionSEFE, 0, "SE");
+					requestInfoDao.setReadFlagFESE(value, versionSEFE, 0, "SE");
 
 				}
 			}
@@ -394,7 +397,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 		JSONObject jsonobjectForTest = null;
 		ReoprtFlags selected;
 		RequestInfoSO tests;
-		RequestInfoDao dao = new RequestInfoDao();
+		
 		try {
 			JSONArray jsonArrayForTest = new JSONArray();
 
@@ -418,9 +421,9 @@ public class SearchRequestServiceWithVersion implements Observer {
 				df.setMaximumFractionDigits(1);
 				String versionSEFE = df.format(v);
 				if (inputjson.get("readFlag").toString().equalsIgnoreCase("1")) {
-					dao.setReadFlagFESE(value, versionSEFE, 1, "SE");
+					requestInfoDao.setReadFlagFESE(value, versionSEFE, 1, "SE");
 				} else {
-					dao.setReadFlagFESE(value, versionSEFE, 0, "SE");
+					requestInfoDao.setReadFlagFESE(value, versionSEFE, 0, "SE");
 
 				}
 			}
@@ -744,12 +747,12 @@ public class SearchRequestServiceWithVersion implements Observer {
 			// list for return test name and version
 			List<String> list = new ArrayList<String>();
 			// For fetching data from database query
-			RequestDetails dao = new RequestDetails();
+			
 			StringBuilder builderTestName = new StringBuilder();
 			StringBuilder builderVersion = new StringBuilder();
 			StringBuilder builder = new StringBuilder();
 			String testAndDiagnosis = null;
-			testAndDiagnosis = dao.getTestAndDiagnosisDetails(requestId,requestVersion);
+			testAndDiagnosis = requestDetails.getTestAndDiagnosisDetails(requestId,requestVersion);
 
 			// Split test details with comma separator
 			String splitTestAndDiagnosis[] = testAndDiagnosis.toString().split(",");

@@ -161,11 +161,11 @@ public class OthersCheckTestValidation extends Thread {
 							 */
 							// fetch extra health test added
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-							RequestInfoDao dao = new RequestInfoDao();
+							
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-							listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
+							listOfTests = requestInfoDao.findTestFromTestStrategyDB(requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Others");
-							List<TestDetail> selectedTests = dao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Others",version);
 							List<Boolean> results = null;
 							if (selectedTests.size() > 0) {

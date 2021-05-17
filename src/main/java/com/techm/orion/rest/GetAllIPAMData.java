@@ -19,10 +19,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.EIPAMEntity;
 import com.techm.orion.repositories.EIPAMEntityRepository;
-import com.techm.orion.service.DcmConfigService;
 
 @Controller
 @RequestMapping("/GetAllIpamData")
@@ -30,9 +28,7 @@ import com.techm.orion.service.DcmConfigService;
 public class GetAllIPAMData implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetAllIPAMData.class);
 	@Autowired
-	EIPAMEntityRepository eipamEntityRepository;
-
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
+	private EIPAMEntityRepository eipamEntityRepository;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -42,13 +38,12 @@ public class GetAllIPAMData implements Observer {
 	@ResponseBody
 	public Response getAll() {
 
-		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
+		JSONObject obj = new JSONObject();		
 		String jsonArray = "";
 
 		EIPAMEntity entity = new EIPAMEntity();
 		List<EIPAMEntity> detailsList = new ArrayList<EIPAMEntity>();
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		boolean ipvalue;
 		try {
 			detailsList = eipamEntityRepository.findAll();

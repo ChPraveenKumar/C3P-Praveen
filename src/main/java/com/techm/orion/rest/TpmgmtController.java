@@ -34,14 +34,18 @@ import com.techm.orion.repositories.SeriesRepository;
 @RestController
 public class TpmgmtController {
 	private static final Logger logger = LogManager.getLogger(TpmgmtController.class);
+	
 	@Autowired
-	public BasicConfigurationRepository basicConfigurationRepository;
+	private  BasicConfigurationRepository basicConfigurationRepository;
 
 	@Autowired
-	public SeriesRepository seriesRepository;
+	private  SeriesRepository seriesRepository;
 
 	@Autowired
-	MasterAttribRepository masterAttrribRepository;
+	private MasterAttribRepository masterAttrribRepository;
+	
+	@Autowired
+	private CreateTemplateBasicConfigService addtemplatewithSeries;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -272,7 +276,7 @@ public class TpmgmtController {
 					
 					
 					/* create templaet with updated Basic configuration */
-					CreateTemplateBasicConfigService addtemplatewithSeries = new CreateTemplateBasicConfigService();
+					
 					Response createtemplateResponce = addtemplatewithSeries.add(createtemplateObject.toString());
 					return createtemplateResponce;
 				}

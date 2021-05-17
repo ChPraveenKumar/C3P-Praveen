@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,13 +28,17 @@ import com.techm.orion.service.DcmConfigService;
 @RequestMapping("/ModifyConfiguration")
 public class ModifyConfigurationService implements Observer {
 	private static final Logger logger = LogManager.getLogger(ModifyConfigurationService.class);
+	
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	
 	@POST
 	@RequestMapping(value = "/modify", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public JSONObject createConfigurationDcm(@RequestBody String configRequest) {
-		DcmConfigService dcmConfigService = new DcmConfigService();
+		
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
+		
 		String requestIdForConfig = "";
 		String res = "false";
 		String data = "Failure";

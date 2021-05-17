@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.entitybeans.EIPAMEntity;
 import com.techm.orion.repositories.EIPAMEntityRepository;
 
@@ -27,9 +26,9 @@ import com.techm.orion.repositories.EIPAMEntityRepository;
 @RequestMapping("/GetIPfromEIPAM")
 public class GetIPfromEIPAM implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetIPfromEIPAM.class);
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
-	@Autowired
-	EIPAMEntityRepository eipamEntityRepository;
+	
+	@Autowired	
+	private EIPAMEntityRepository eipamEntityRepository;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************

@@ -10,22 +10,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.service.TemplateManagementDetailsService;
+
 
 @Controller
 @RequestMapping("/GetDraggedTemplateData")
 public class GetDraggedTemplateData implements Observer {
 	private static final Logger logger = LogManager.getLogger(GetDraggedTemplateData.class);
-	TemplateManagementDetailsService service = new TemplateManagementDetailsService();
-
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
+	
+	@Autowired
+	private TemplateManagementDetailsService service;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -36,8 +37,7 @@ public class GetDraggedTemplateData implements Observer {
 	public Response getAll(@RequestBody String response) {
 
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
-		String jsonArray = "";
+		
 		String confId=null,dragId=null,dragData=null,templateID=null;
 
 		try {

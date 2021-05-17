@@ -1,14 +1,18 @@
 package com.techm.orion.service;
 
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CertificationTestPojo;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 
-
+@Component
 public class CertificationTestFlagDetailsService {
 
-	
+	@Autowired
+	private RequestInfoDao requestInfoDao;
 	
 	public CertificationTestPojo getPrevalidationTestFlag(CreateConfigRequestDCM createConfigRequestDCM) throws Exception
 	{
@@ -19,9 +23,7 @@ public class CertificationTestFlagDetailsService {
 		
 		String version=createConfigRequestDCM.getVersion_report();
 		CertificationTestPojo certificationTestPojo=new CertificationTestPojo();
-		
-		RequestInfoDao requestInfoDao=new RequestInfoDao();
-		
+				
 		try{
 
 			if(!version.contains("."))

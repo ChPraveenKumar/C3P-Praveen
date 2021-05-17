@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.XML;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.collect.Maps;
 import com.hubspot.jinjava.Jinjava;
@@ -36,6 +37,8 @@ public class VNFHelper {
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
 
+	@Autowired
+	private RequestInfoDao requestInfoDao ;
 	public String saveXML(String data, String requestId, CreateConfigRequestDCM createConfigRequestDcm) {
 		boolean result = true;
 		String filepath = null, filepath2 = null;
@@ -466,7 +469,6 @@ public class VNFHelper {
 	}
 	public Boolean performTest(TestDetail test, RequestInfoPojo requestinfo, String user, String pwd) throws IOException
 	{
-		RequestInfoDao dao = new RequestInfoDao();
 		List<String>output=new ArrayList<String>();
 		boolean result = false;
 		File file=null;
@@ -538,7 +540,7 @@ public class VNFHelper {
 						// pass the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Passed", resultText, formattedOp, "Text starts with: " + value1, "N/A",
@@ -547,7 +549,7 @@ public class VNFHelper {
 						// fail the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, formattedOp, "Text starts with: " + value1,
@@ -559,7 +561,7 @@ public class VNFHelper {
 						// pass the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Passed", resultText, formattedOp, "Is equal to (=): " + value1, "N/A",
@@ -568,7 +570,7 @@ public class VNFHelper {
 						// fail the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, formattedOp, "Is equal to (=): " + value1,
@@ -586,7 +588,7 @@ public class VNFHelper {
 							// pass the test
 							
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Passed", resultText, formattedOp, "Between: " + value1 + " & " + value2,
@@ -596,7 +598,7 @@ public class VNFHelper {
 						
 
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Failed", resultText,formattedOp, "Between: " + value1 + " & " + value2,
@@ -606,7 +608,7 @@ public class VNFHelper {
 						// fail the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, "Unable to process the rule",
@@ -626,7 +628,7 @@ public class VNFHelper {
 							// pass the test
 							
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Passed", resultText, formattedOp, "Greater than (>): " + value1, "N/A",
@@ -635,7 +637,7 @@ public class VNFHelper {
 							// fail the test
 							
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Failed", resultText,formattedOp, "Greater than (>): " + value1,
@@ -645,7 +647,7 @@ public class VNFHelper {
 						// fail the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, "Unable to process the rule",
@@ -664,7 +666,7 @@ public class VNFHelper {
 							// pass the test
 							
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Passed", resultText, formattedOp, "Less than (<): " + value1, "N/A",
@@ -674,7 +676,7 @@ public class VNFHelper {
 							
 
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Failed", resultText, formattedOp, "Less than (<): " + value1,
@@ -684,7 +686,7 @@ public class VNFHelper {
 						// fail the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, "Unable to process the rule",
@@ -703,7 +705,7 @@ public class VNFHelper {
 							// pass the test
 							
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Passed", resultText, formattedOp,
@@ -713,7 +715,7 @@ public class VNFHelper {
 							// fail the test
 							
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Failed", resultText, formattedOp,
@@ -724,7 +726,7 @@ public class VNFHelper {
 						// fail the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, "Unable to process the rule",
@@ -743,7 +745,7 @@ public class VNFHelper {
 							// pass the test
 							
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Passed", resultText, formattedOp,
@@ -753,7 +755,7 @@ public class VNFHelper {
 							// fail the test
 						
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Failed", resultText, formattedOp,
@@ -764,7 +766,7 @@ public class VNFHelper {
 						// fail the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, "Unable to process the rule",
@@ -783,7 +785,7 @@ public class VNFHelper {
 							// pass the test
 							
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Passed", resultText, formattedOp, "Is not equal to  (<>): " + value1,
@@ -793,7 +795,7 @@ public class VNFHelper {
 							
 
 							resultText = rules.get(i).getReportedLabel();
-							result = dao.updateTestStrategeyConfigResultsTable(requestID,
+							result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 									test.getTestName(), test.getTestCategory(),
 
 									"Failed", resultText,formattedOp, "Is not equal to  (<>): " + value1,
@@ -804,7 +806,7 @@ public class VNFHelper {
 						
 
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, "Unable to process the rule",
@@ -817,7 +819,7 @@ public class VNFHelper {
 						// pass the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Passed", resultText, formattedOp, "Text matches excatly: " + value1, "N/A",
@@ -826,7 +828,7 @@ public class VNFHelper {
 						// fail the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, formattedOp, "Text matches excatly: " + value1,
@@ -838,7 +840,7 @@ public class VNFHelper {
 						// pass the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Passed", resultText, formattedOp, "Text ends with: " + value1, "N/A",
@@ -848,7 +850,7 @@ public class VNFHelper {
 						
 
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, formattedOp, "Text ends with: " + value1,
@@ -860,7 +862,7 @@ public class VNFHelper {
 						// pass the test
 						
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Passed", resultText, formattedOp, "Text contains: " + value1, "N/A",
@@ -869,7 +871,7 @@ public class VNFHelper {
 						// fail the test
 					
 						resultText = rules.get(i).getReportedLabel();
-						result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+						result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 								test.getTestCategory(),
 
 								"Failed", resultText, formattedOp, "Text contains: " + value1,
@@ -879,7 +881,7 @@ public class VNFHelper {
 					// Incorrect operator message fail the test
 					
 					resultText = rules.get(i).getReportedLabel();
-					result = dao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+					result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 							test.getTestCategory(),
 
 							"Failed", resultText, formattedOp, "Invalid operator", "Failed",
@@ -891,7 +893,7 @@ public class VNFHelper {
 			else
 			{
 				String resultText = rules.get(i).getReportedLabel();
-				result = dao.updateTestStrategeyConfigResultsTable(requestinfo.getAlphanumericReqId(), test.getTestName(),
+				result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestinfo.getAlphanumericReqId(), test.getTestName(),
 						test.getTestCategory(), "Passed", resultText, String.join(",", output), "N/A", "",
 						rules.get(i).getDataType(),requestinfo.getRequestVersion());
 			}

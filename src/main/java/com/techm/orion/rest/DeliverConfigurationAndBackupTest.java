@@ -80,6 +80,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	
 	@Autowired
 	private BackupCurrentRouterConfigurationService bckupConfigService;
+	
+	@Autowired
+	private ErrorCodeValidationDeliveryTest errorCodeValidationDeliveryTest;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -93,7 +96,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		String jsonArray = "";
 
 		InvokeFtl invokeFtl = new InvokeFtl();
-		ErrorCodeValidationDeliveryTest errorCodeValidationDeliveryTest = new ErrorCodeValidationDeliveryTest();
 		Boolean value = false;
 		List<RequestInfoEntity> requestDetailEntity = new ArrayList<RequestInfoEntity>();
 		long ftp_image_size = 0, available_flash_size = 0;

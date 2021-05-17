@@ -33,10 +33,13 @@ public class GetCertificationTestData {
 	private static final Logger logger = LogManager.getLogger(GetCertificationTestData.class);
 	@Autowired
 	private RfoDecomposedRepository rfoDecomposedRepo;
+	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
 	
-
+	@Autowired
+	private CertificationTestFlagDetailsService certificationTestFlagDetailsService;
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -45,7 +48,7 @@ public class GetCertificationTestData {
 	@RequestMapping(value = "/getPrevalidationTestData", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getPrevalidationTestData(@RequestBody String configRequest) {
-		CertificationTestFlagDetailsService flagDetailsService = new CertificationTestFlagDetailsService();
+		
 		JSONObject obj = new JSONObject();		
 		String jsonArray = "";
 		Response response = null;
@@ -56,7 +59,7 @@ public class GetCertificationTestData {
 			if(createConfigRequestDCM !=null && createConfigRequestDCM.getRequestId() !=null 
 					&& createConfigRequestDCM.getVersion_report() !=null && createConfigRequestDCM.getTestType() !=null) {
 
-				CertificationTestPojo certificationTestResultObject = flagDetailsService.getPrevalidationTestFlag(createConfigRequestDCM);
+				CertificationTestPojo certificationTestResultObject = certificationTestFlagDetailsService.getPrevalidationTestFlag(createConfigRequestDCM);
 				jsonArray = new Gson().toJson(certificationTestResultObject);
 				JSONObject resultObj = new JSONObject();
 				// Logic to add wrapper to jsonArray to set it to a specific form
