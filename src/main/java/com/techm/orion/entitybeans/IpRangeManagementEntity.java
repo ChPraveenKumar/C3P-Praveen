@@ -1,7 +1,6 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
-import java.sql.Timestamp;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -219,4 +218,27 @@ public class IpRangeManagementEntity implements Serializable {
 	public void setRangeRemarks(String rangeRemarks) {
 		this.rangeRemarks = rangeRemarks;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + rangePoolId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		IpRangeManagementEntity other = (IpRangeManagementEntity) obj;
+		if (rangePoolId != other.rangePoolId)
+			return false;
+		return true;
+	}
+	
 }

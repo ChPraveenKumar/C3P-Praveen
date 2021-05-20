@@ -3,15 +3,11 @@ package com.techm.orion.entitybeans;
 import java.io.Serializable;
 import java.sql.Timestamp;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 @Entity
@@ -106,5 +102,26 @@ public class RfoDecomposedEntity implements Serializable
 		this.odUpdatedDate = odUpdatedDate;
 	}
 
-	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + odRowId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RfoDecomposedEntity other = (RfoDecomposedEntity) obj;
+		if (odRowId != other.odRowId)
+			return false;
+		return true;
+	}
+
 }

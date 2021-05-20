@@ -20,9 +20,6 @@ public class VendorDetails implements Serializable
 
 {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 3381690641270278930L;
 
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -70,4 +67,25 @@ public class VendorDetails implements Serializable
 		this.priority = priority;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		VendorDetails other = (VendorDetails) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
 }

@@ -44,9 +44,9 @@ public class InvokeFtl {
 
 	@Autowired
 	private RequestInfoDao requestInfoDao;
-	
+
 	@Autowired
-	public String getGeneratedConfigFile(String requestID, String version) throws Exception {
+	public String getGeneratedConfigFile(String requestID, String version) {
 		String content = "";
 		String filePath = "";
 		String content1 = "";
@@ -71,6 +71,7 @@ public class InvokeFtl {
 					try {
 						contentNoCmd = new String(Files.readAllBytes(Paths.get(filePath)));
 					} catch (IOException e) {
+						logger.error("Exception Occured in getGeneratedConfigFile Methode : " + e.getMessage());
 						e.printStackTrace();
 					}
 				}
@@ -81,439 +82,220 @@ public class InvokeFtl {
 			} else {
 				filePath = responseDownloadPath + requestID + "V" + version + "_Header";
 				try {
-				content1 = new String(Files.readAllBytes(Paths.get(filePath)));
-				}catch (IOException e) {
+					content1 = new String(Files.readAllBytes(Paths.get(filePath)));
+				} catch (IOException e) {
+					logger.error("Exception Occured in getGeneratedConfigFile Methode : " + e.getMessage());
 				}
 				withHeader = content1 + "\r\n" + "<font color=\"red\">" + contentNoCmd + "</font>" + "\r\n" + content;
-//				withHeader = withHeader.replace("config t", "");
+				// withHeader = withHeader.replace("config t", "");
 			}
 
 		} catch (IOException e) {
+			logger.error("Exception Occured in getGeneratedConfigFile Methode : " + e.getMessage());
 			e.printStackTrace();
 		}
 		return withHeader;
 	}
 
 	@Autowired
-	public List<String> getGeneratedBasicConfigFile(String requestID, String version) throws Exception {
+	public List<String> getGeneratedBasicConfigFile(String requestID, String version) {
 		String filePath = "";
 		List<String> lines = new ArrayList<String>();
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_basicConfiguration.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
+					+ "_basicConfiguration.txt";
 			lines = Files.readAllLines(Paths.get(filePath));
 
 		} catch (IOException e) {
+			logger.error("Exception Occured in getGeneratedBasicConfigFile Methode : " + e.getMessage());
 			e.printStackTrace();
 		}
 		return lines;
 	}
 
-	public String getPreValidationTestResult(String requestID, String version) throws Exception {
+	public String getPreValidationTestResult(String requestID, String version) {
 		String content = "";
 		String filePath = "";
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_prevalidationTest.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
+					+ "_prevalidationTest.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 		} catch (IOException e) {
+			logger.error("Exception Occured in getPreValidationTestResult Methode : " + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;
 	}
 
 	// for mapping with json object
-	public String generateConfigurationToPush(CreateConfigRequestDCM configRequest, String filename) throws Exception {
+	public String generateConfigurationToPush(CreateConfigRequestDCM configRequest, String filename) {
 		String res = null;
-		try {
-			// CreateConfigRequest configRequest = (CreateConfigRequest)
-			// execution.getVariable("createConfigRequest");
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			if (filename == null) {
-				res = freemarkerDo(tree, "PushCommand.ftl");
-			} else {
-				res = freemarkerDoTemplate(tree, filename);
-			}
-			// execution.setVariable(outputVar, xmlRes);
-		} catch (Exception e) {
-
-			throw e;
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		if (filename == null) {
+			res = freemarkerDo(tree, "PushCommand.ftl");
+		} else {
+			res = freemarkerDoTemplate(tree, filename);
 		}
 		return res;
 	}
 
-	public String generateheader(CreateConfigRequestDCM configRequest) throws Exception {
-		String res = null;
-		try {
-			// CreateConfigRequest configRequest = (CreateConfigRequest)
-			// execution.getVariable("createConfigRequest");
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "templateheader.ftl");
-			// execution.setVariable(outputVar, xmlRes);
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateheader(CreateConfigRequestDCM configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "templateheader.ftl");
 	}
 
-	public String generateConfigurationForTemplate(CreateConfigRequestDCM configRequest) throws Exception {
-		String res = null;
-		try {
-			// CreateConfigRequest configRequest = (CreateConfigRequest)
-			// execution.getVariable("createConfigRequest");
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "GenerateFileCommand.ftl");
-			// execution.setVariable(outputVar, xmlRes);
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateDileveryConfigFile(RequestInfoPojo configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "DeliveryCongifurationTemplate.ftl.txt");
 	}
 
-	public String generateDileveryConfigFile(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "DeliveryCongifurationTemplate.ftl.txt");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	public String generateDeliveryConfigFileFailure(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "DeliveryCongifurationTemplateFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateDeliveryConfigFileFailure(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "DeliveryCongifurationTemplateFailure.ftl");
 	}
 
 	/* method overloadig for UIRevamp */
-	public String generateDeliveryConfigFileFailure(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "DeliveryCongifurationTemplateFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateDeliveryConfigFileFailure(RequestInfoPojo configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "DeliveryCongifurationTemplateFailure.ftl");
 	}
 
-	public String generateCustomerReportSuccess(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "CustomerReportSuccess.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateCustomerReportSuccess(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "CustomerReportSuccess.ftl");
 	}
 
 	/* Method overloding for UIRevamp */
-	public String generateCustomerReportSuccess(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
+	public String generateCustomerReportSuccess(RequestInfoPojo configRequest) {
 
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "CustomerReportSuccess.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "CustomerReportSuccess.ftl");
 	}
 
-	public String generateCustomerOSUpgrade(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "CustomerReportOSUpgrade.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateCustomerOSUpgrade(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "CustomerReportOSUpgrade.ftl");
 	}
 
-	public String generateCustomerReportDeviceLocked(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "CustomerReportDeviceLocked.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateCustomerReportDeviceLocked(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "CustomerReportDeviceLocked.ftl");
 	}
 
-	public String generateCustomerIOSHealthCheckFailedPost(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "CustomerReportIOSPostHealthCheckFailed.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateCustomerIOSHealthCheckFailedPost(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "CustomerReportIOSPostHealthCheckFailed.ftl");
 	}
 
-	public String generateCustomerIOSDilevaryFail(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "CustomerReportIOSDilevaryFailed.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateCustomerIOSDilevaryFail(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "CustomerReportIOSDilevaryFailed.ftl");
 	}
 
-	public String generateCustomerIOSHealthCheckFailed(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "CustomerReportIOSPreHealthCheckFailed.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateCustomerIOSHealthCheckFailed(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "CustomerReportIOSPreHealthCheckFailed.ftl");
 	}
 
-	public String generateCustomerReportFailure(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			if (null == configRequest.getSuggestion() || configRequest.getSuggestion().isEmpty()) {
-				if (configRequest.getHealth_checkup() == "Failed") {
-					configRequest.setSuggestion("Please check bandwidth parameter");
-				} else if (configRequest.getNetwork_test() == "Failed") {
-					configRequest.setSuggestion("Please check the connectivity.Issue while performing network test");
-				} else if (configRequest.getDeliever_config() == "Failed") {
-					configRequest.setSuggestion("Error occured while delivering the configuration");
-				} else {
-					configRequest
-							.setSuggestion("Please check the connectivity.Issue while performing reachability test");
-				}
-			}
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "CustomerReportFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	public String generatePrevalidationResultFile(PreValidateTest preValidateTest, String mountStatus)
-			throws Exception {
-		String res = null;
-		try {
-			if (mountStatus == null) {
-				Map<String, Object> tree = new HashMap<String, Object>();
-				tree.put("preValidateTest", preValidateTest);
-				res = freemarkerDo(tree, "PreValidationTemplate.ftl");
+	public String generateCustomerReportFailure(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		if (null == configRequest.getSuggestion() || configRequest.getSuggestion().isEmpty()) {
+			if (configRequest.getHealth_checkup() == "Failed") {
+				configRequest.setSuggestion("Please check bandwidth parameter");
+			} else if (configRequest.getNetwork_test() == "Failed") {
+				configRequest.setSuggestion("Please check the connectivity.Issue while performing network test");
+			} else if (configRequest.getDeliever_config() == "Failed") {
+				configRequest.setSuggestion("Error occured while delivering the configuration");
 			} else {
-				Map<String, Object> tree = new HashMap<String, Object>();
-				tree.put("preValidateTest", preValidateTest);
-				res = freemarkerDo(tree, "PreValidationTemplateODL.ftl");
+				configRequest.setSuggestion("Please check the connectivity.Issue while performing reachability test");
 			}
-
-		} catch (Exception e) {
-
-			throw e;
 		}
-		return res;
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "CustomerReportFailure.ftl");
 	}
 
-	public String generateDevicelockedFile(CreateConfigRequest configRequest) throws Exception {
+	public String generatePrevalidationResultFile(PreValidateTest preValidateTest, String mountStatus) {
 		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "DeviceLockedTemplate.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	public String generatePrevalidationResultFileForComparisonFailure(PreValidateTest preValidateTest)
-			throws Exception {
-		String res = null;
-		try {
-
+		if (mountStatus == null) {
 			Map<String, Object> tree = new HashMap<String, Object>();
 			tree.put("preValidateTest", preValidateTest);
 			res = freemarkerDo(tree, "PreValidationTemplate.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
+		} else {
+			Map<String, Object> tree = new HashMap<String, Object>();
+			tree.put("preValidateTest", preValidateTest);
+			res = freemarkerDo(tree, "PreValidationTemplateODL.ftl");
 		}
 		return res;
 	}
 
-	public String generatePrevalidationResultFileFailure(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", configRequest);
-			res = freemarkerDo(tree, "PreValidationTemplateFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generatePrevalidationResultFileForComparisonFailure(PreValidateTest preValidateTest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", preValidateTest);
+		return freemarkerDo(tree, "PreValidationTemplate.ftl");
 	}
 
-	public String generatePrevalidationResultFileFailureODLMount(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", configRequest);
-			res = freemarkerDo(tree, "PreValidationTemplateMountingFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generatePrevalidationResultFileFailure(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", configRequest);
+		return freemarkerDo(tree, "PreValidationTemplateFailure.ftl");
 	}
 
-	public String generateAuthenticationFailure(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
-		try {
+	public String generatePrevalidationResultFileFailureODLMount(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", configRequest);
+		return freemarkerDo(tree, "PreValidationTemplateMountingFailure.ftl");
+	}
 
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", configRequest);
-			res = freemarkerDo(tree, "RouterAuthenticationFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateAuthenticationFailure(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", configRequest);
+		return freemarkerDo(tree, "RouterAuthenticationFailure.ftl");
 	}
 
 	/* Method Overloading for UIRevamp */
-	public String generateAuthenticationFailure(RequestInfoPojo configRequest) throws TemplateException, IOException{
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", configRequest);
-			return freemarkerDo(tree, "RouterAuthenticationFailure.ftl");		
-	}
-	
-	public String generateNetworkTestResultFileFailure(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", configRequest);
-			res = freemarkerDo(tree, "NetworkTestTemplateFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateAuthenticationFailure(RequestInfoPojo configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", configRequest);
+		return freemarkerDo(tree, "RouterAuthenticationFailure.ftl");
 	}
 
-	public String generateHealthCheckTestResultFailure(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", configRequest);
-			res = freemarkerDo(tree, "HealthCheckTestTemplateFailure2.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateNetworkTestResultFileFailure(RequestInfoPojo configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", configRequest);
+		return freemarkerDo(tree, "NetworkTestTemplateFailure.ftl");
 	}
 
-	public String generateNetworkAuditTestResultFailure(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("networkAuditTest", configRequest);
-			res = freemarkerDo(tree, "NetworkAuditFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateHealthCheckTestResultFailure(RequestInfoPojo configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", configRequest);
+		return freemarkerDo(tree, "HealthCheckTestTemplateFailure2.ftl");
 	}
 
-	public Map<String, String> getDileveryConfigFileIOS(String requestId, String version) throws Exception {		
+	public String generateNetworkAuditTestResultFailure(RequestInfoPojo configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("networkAuditTest", configRequest);
+		return freemarkerDo(tree, "NetworkAuditFailure.ftl");
+	}
 
+	public Map<String, String> getDileveryConfigFileIOS(String requestId, String version) {
 		Map<String, String> dataList = new HashMap<String, String>();
 		ErrorValidationPojo errorValidationPojo = requestInfoDao.getErrordetailsForRequestId(requestId, version);
 		dataList.put("errorDesc", errorValidationPojo.getError_description());
 		dataList.put("errorType", errorValidationPojo.getError_type());
 		dataList.put("errorRouterMessage", errorValidationPojo.getRouter_error_message());
 
-		/*
-		 * dataList.put("errorDesc","Error Desc" ); dataList.put("errorType",
-		 * "Warning"); dataList.put("errorRouterMessage", "Message from rouetr");
-		 */
 		if (errorValidationPojo.getDelivery_status().equalsIgnoreCase("1")) {
 			dataList.put("status", "Success");
 		} else {
@@ -522,8 +304,7 @@ public class InvokeFtl {
 		return dataList;
 	}
 
-	public Map<String, String> getDileveryConfigFile(String requestId, String version) throws Exception {
-		
+	public Map<String, String> getDileveryConfigFile(String requestId, String version) {
 		String content = "";
 		String filePath = "";
 		String contentPreviousVersion = "Not Completed";
@@ -534,14 +315,16 @@ public class InvokeFtl {
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			dataList.put("content", content);
 
-			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
+			File file = new File(
+					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
 
 			if (file.exists()) {
 				contentPreviousVersion = "Completed";
 				dataList.put("contentPreviousVersion", contentPreviousVersion);
 			}
 
-			file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt");
+			file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+					+ "_CurrentVersionConfig.txt");
 			if (file.exists()) {
 				contentCurrentVersion = "Completed";
 				dataList.put("contentCurrentVersion", contentCurrentVersion);
@@ -563,12 +346,13 @@ public class InvokeFtl {
 			}
 
 		} catch (IOException e) {
+			logger.error("Exception Occured in getDileveryConfigFile Methode :" + e.getMessage());
 			e.printStackTrace();
 		}
 		return dataList;
 	}
 
-	public String getHealthCheckFile(String requestId, String version) throws Exception {
+	public String getHealthCheckFile(String requestId, String version) {
 		String content = "";
 		String filePath = "";
 
@@ -577,52 +361,54 @@ public class InvokeFtl {
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 
 		} catch (IOException e) {
+			logger.error("Exception Occured in getHealthCheckFile Methode :" + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;
 	}
 
-	public String iosHealthCheckFile(String requestId, String region, String step) throws Exception {
+	public String iosHealthCheckFile(String requestId, String region, String step) {
 		String content = "";
 		String filePath = "";
-
 		try {
-			filePath = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + step + "_" + requestId + "_" + region + "_HealthCheckReport.html";
+			filePath = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + step + "_" + requestId + "_"
+					+ region + "_HealthCheckReport.html";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
-
 		} catch (IOException e) {
+			logger.error("Exception Occured in iosHealthCheckFile Methode :" + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;
 	}
 
-	public String getOthersCheckFile(String requestId, String version) throws Exception {
+	public String getOthersCheckFile(String requestId, String version) {
 		String content = "";
 		String filePath = "";
-
 		try {
 			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CustomTests.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 
 		} catch (IOException e) {
+			logger.error("Exception Occured in getOthersCheckFile Methode :" + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;
 	}
 
-	public String getCustomerReport(String requestId, String version) throws Exception {
+	public String getCustomerReport(String requestId, String version) {
 		String content = "";
 		String filePath = "";
 		try {
 			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_customerReport.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 		} catch (IOException e) {
+			logger.error("Exception Occured in getCustomerReport Methode :" + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;
 	}
 
-	public String getNetworkTestFile(String requestId, String version) throws Exception {
+	public String getNetworkTestFile(String requestId, String version) {
 		String content = "";
 		String filePath = "";
 		try {
@@ -630,50 +416,58 @@ public class InvokeFtl {
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			content = content.replace("terminal length 0", "");
 		} catch (IOException e) {
+			logger.error("Exception Occured in getNetworkTestFile Methode :" + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;
 	}
 
-	public String getNetworkAuditFile(String requestId, String version) throws Exception {
+	public String getNetworkAuditFile(String requestId, String version) {
 		String content = "";
 		String filePath = "";
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt";
+			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+					+ "_CurrentVersionConfig.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			content = content.replace("terminal length 0", "");
 		} catch (IOException e) {
+			logger.error("Exception Occured in getNetworkAuditFile Methode :" + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;
 	}
 
-	public String getPreviousRouterVersion(String requestId, String version) throws Exception {
+	public String getPreviousRouterVersion(String requestId, String version) {
 		String content = "";
 		String filePath = "";
 		String newStr = "";
 		try {
-			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
+			File file = new File(
+					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
 			if (file.exists()) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt";
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+						+ "_PreviousConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				content = content.substring(content.indexOf("run\r\n") + 5);
 				newStr = content.substring(0, content.lastIndexOf("end") + 3);
 			}
 		} catch (IOException e) {
+			logger.error("Exception Occured in getPreviousRouterVersion Methode :" + e.getMessage());
 			e.printStackTrace();
 		}
 		return newStr;
 	}
 
-	public String getCurrentRouterVersion(String requestId, String version) throws Exception {
+	public String getCurrentRouterVersion(String requestId, String version) {
 		String content = "";
 		String filePath = "";
 		String newStr = "";
 		try {
-			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt");
+			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+					+ "_CurrentVersionConfig.txt");
 			if (file.exists()) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt";
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+						+ "_CurrentVersionConfig.txt";
 
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				/*
@@ -686,127 +480,109 @@ public class InvokeFtl {
 			}
 
 		} catch (IOException e) {
+			logger.error("Exception Occured in getCurrentRouterVersion Methode :" + e.getMessage());
 			e.printStackTrace();
 		}
 		return newStr;
 	}
 
 	public String generateModifyConfigurationToPushNoCmd(ChildVersionPojo latestVersion,
-			ParentVersionPojo compareVersion) throws Exception {
+			ParentVersionPojo compareVersion) {
 		String res = "";
-
-		try {
-			// CreateConfigRequest configRequest = (CreateConfigRequest)
-			// execution.getVariable("createConfigRequest");
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("latestVersion", latestVersion);
-			tree.put("compareVersion", compareVersion);
-			String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "noconfig.txt";
-			File file = new File(filepath);
-			if (file.exists()) {
-				res = freemarkerDoModify(tree, "noconfig.txt");
-
-			}
-			if (file.exists()) {
-				file.delete();
-			}
-		} catch (Exception e) {
-
-			throw e;
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("latestVersion", latestVersion);
+		tree.put("compareVersion", compareVersion);
+		String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "noconfig.txt";
+		File file = new File(filepath);
+		if (file.exists()) {
+			res = freemarkerDoModify(tree, "noconfig.txt");
+		}
+		if (file.exists()) {
+			file.delete();
 		}
 		return res;
 	}
 
-	public String generateModifyConfigurationToPush(ChildVersionPojo latestVersion, ParentVersionPojo compareVersion)
-			throws Exception {
+	public String generateModifyConfigurationToPush(ChildVersionPojo latestVersion, ParentVersionPojo compareVersion) {
 		String res = "";
-
-		try {
-			// CreateConfigRequest configRequest = (CreateConfigRequest)
-			// execution.getVariable("createConfigRequest");
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("latestVersion", latestVersion);
-			tree.put("compareVersion", compareVersion);
-			String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "createconfig.txt";
-			File file = new File(filepath);
-			if (file.exists()) {
-				res = freemarkerDoModify(tree, "createconfig.txt");
-			}
-			// once we get the response,delete the file
-			if (file.exists()) {
-				file.delete();
-			}
-		} catch (Exception e) {
-
-			throw e;
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("latestVersion", latestVersion);
+		tree.put("compareVersion", compareVersion);
+		String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "createconfig.txt";
+		File file = new File(filepath);
+		if (file.exists()) {
+			res = freemarkerDoModify(tree, "createconfig.txt");
+		}
+		// once we get the response,delete the file
+		if (file.exists()) {
+			file.delete();
 		}
 		return res;
 	}
 
-	static String freemarkerDoTemplate(Map<String, Object> datamodel, String template) throws Exception {
-		@SuppressWarnings("deprecation")
-		Configuration cfg = new Configuration();
-		cfg.setClassForTemplateLoading(InvokeFtl.class, "/");
-		FileTemplateLoader templateLoader = new FileTemplateLoader(new File(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue()));
-		cfg.setTemplateLoader(templateLoader);
-
-		/*
-		 * ClassTemplateLoader ctl = new ClassTemplateLoader(InvokeFtl.class,
-		 * "file:/"+path);
-		 */
-		// cfg.setTemplateLoader(ctl);
-		Template tpl = cfg.getTemplate(template);
-		OutputStream os = new ByteArrayOutputStream();
-
-		OutputStreamWriter output = new OutputStreamWriter(os);
-		tpl.process(datamodel, output);
-
-		return os.toString();
-	}
-
-	static String freemarkerDo(Map<String, Object> datamodel, String template) throws TemplateException, IOException {
-		@SuppressWarnings("deprecation")
-		Configuration cfg = new Configuration();
-		ClassTemplateLoader ctl = new ClassTemplateLoader(InvokeFtl.class, "/config");
-		cfg.setTemplateLoader(ctl);
-		Template tpl = cfg.getTemplate(template);
-		OutputStream os = new ByteArrayOutputStream();
-		OutputStreamWriter output = new OutputStreamWriter(os);
-		tpl.process(datamodel, output);
-
-		return os.toString();
-	}
-
-	static String freemarkerDoModify(Map<String, Object> datamodel, String template) throws Exception {
-		@SuppressWarnings("deprecation")
-		Configuration cfg = new Configuration();
-		cfg.setDirectoryForTemplateLoading(new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()));
-		/*
-		 * ClassTemplateLoader ctl = new ClassTemplateLoader(InvokeFtl.class,
-		 * "/config");
-		 */
-		// cfg.setTemplateLoader(ctl);
-		Template tpl = cfg.getTemplate(template);
-		OutputStream os = new ByteArrayOutputStream();
-		OutputStreamWriter output = new OutputStreamWriter(os);
-		tpl.process(datamodel, output);
-
-		return os.toString();
-	}
-
-	public String generateBasicConfigurationFile(CreateConfigRequest configRequest) throws Exception {
-		String res = null;
+	static String freemarkerDoTemplate(Map<String, Object> datamodel, String template) {
+		String osValue = null;
 		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("basicConfiguration", configRequest);
-			res = freemarkerDo(tree, "basicConfiguration.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
+			@SuppressWarnings("deprecation")
+			Configuration cfg = new Configuration();
+			cfg.setClassForTemplateLoading(InvokeFtl.class, "/");
+			FileTemplateLoader templateLoader = new FileTemplateLoader(
+					new File(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue()));
+			cfg.setTemplateLoader(templateLoader);
+			Template tpl = cfg.getTemplate(template);
+			OutputStream os = new ByteArrayOutputStream();
+			OutputStreamWriter output = new OutputStreamWriter(os);
+			tpl.process(datamodel, output);
+			osValue = os.toString();
+		} catch (TemplateException | IOException e) {
+			logger.error("Exception Occured in freemarkerDoTemplate Methode :" + e.getMessage());
+			e.printStackTrace();
 		}
-		return res;
+		return osValue;
+	}
+
+	static String freemarkerDo(Map<String, Object> datamodel, String template) {
+		String osValue = null;
+		try {
+			@SuppressWarnings("deprecation")
+			Configuration cfg = new Configuration();
+			ClassTemplateLoader ctl = new ClassTemplateLoader(InvokeFtl.class, "/config");
+			cfg.setTemplateLoader(ctl);
+			Template tpl = cfg.getTemplate(template);
+			OutputStream os = new ByteArrayOutputStream();
+			OutputStreamWriter output = new OutputStreamWriter(os);
+			tpl.process(datamodel, output);
+			osValue = os.toString();
+		} catch (TemplateException | IOException e) {
+			logger.error("Exception Occured in freemarkerDo Methode :" + e.getMessage());
+			e.printStackTrace();
+		}
+		return osValue;
+	}
+
+	static String freemarkerDoModify(Map<String, Object> datamodel, String template) {
+		String osValue = null;
+		try {
+			@SuppressWarnings("deprecation")
+			Configuration cfg = new Configuration();
+			cfg.setDirectoryForTemplateLoading(new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()));
+			Template tpl = cfg.getTemplate(template);
+			OutputStream os = new ByteArrayOutputStream();
+			OutputStreamWriter output = new OutputStreamWriter(os);
+			tpl.process(datamodel, output);
+			osValue = os.toString();
+		} catch (TemplateException | IOException e) {
+			logger.error("Exception Occured in freemarkerDoModify Methode :" + e.getMessage());
+			e.printStackTrace();
+		}
+		return osValue;
+	}
+
+	public String generateBasicConfigurationFile(CreateConfigRequest configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("basicConfiguration", configRequest);
+		return freemarkerDo(tree, "basicConfiguration.ftl");
+
 	}
 
 	public void createFinalTemplate(List<CommandPojo> cammandsBySeriesId, List<CommandPojo> cammandByTemplate,
@@ -840,8 +616,8 @@ public class InvokeFtl {
 		for (CommandPojo templateCammand : cammandByTemplate) {
 			for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
 				if (templateAttrib.getAttribType().equals("Template")) {
-					 String attribLabel = templateAttrib.getAttribLabel();
-					if (templateCammand.getCommandValue().contains("[" +attribLabel+ "]")) {
+					String attribLabel = templateAttrib.getAttribLabel();
+					if (templateCammand.getCommandValue().contains("[" + attribLabel + "]")) {
 						int id = Integer.parseInt(templateCammand.getId());
 						if (id == templateAttrib.getTemplateFeature().getId()) {
 							String Str = "[" + attribLabel + "]";
@@ -849,8 +625,8 @@ public class InvokeFtl {
 							String newAttribName = attribName.replace(" ", "");
 							attribName = newAttribName.substring(0, 1).toLowerCase() + newAttribName.substring(1);
 							Str = Str.replace(Str, "${(configRequest." + attribName + s);
-							templateCammand.setCommandValue(templateCammand.getCommandValue()
-									.replace("[" + attribLabel + "]", Str));
+							templateCammand.setCommandValue(
+									templateCammand.getCommandValue().replace("[" + attribLabel + "]", Str));
 							continue;
 						}
 					}
@@ -946,9 +722,8 @@ public class InvokeFtl {
 				for (CommandPojo templateCammand : cammandByTemplate) {
 					for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
 						if (templateAttrib.getAttribType().equals("Template")) {
-							 String attribLabel = templateAttrib.getAttribLabel();
-							if (templateCammand.getCommandValue()
-									.contains("[" + attribLabel + "]")) {
+							String attribLabel = templateAttrib.getAttribLabel();
+							if (templateCammand.getCommandValue().contains("[" + attribLabel + "]")) {
 								int id = Integer.parseInt(templateCammand.getId());
 								if (id == templateAttrib.getTemplateFeature().getId()) {
 									String Str = "[" + attribLabel + "]";
@@ -957,8 +732,8 @@ public class InvokeFtl {
 									attribName = newAttribName.substring(0, 1).toLowerCase()
 											+ newAttribName.substring(1);
 									Str = Str.replace(Str, "${(configRequest." + attribName + s);
-									templateCammand.setCommandValue(templateCammand.getCommandValue()
-											.replace("[" + attribLabel + "]", Str));
+									templateCammand.setCommandValue(
+											templateCammand.getCommandValue().replace("[" + attribLabel + "]", Str));
 									continue;
 								}
 							}
@@ -999,250 +774,135 @@ public class InvokeFtl {
 
 	// Method added to generate FTL file to be displayed while config generation.
 	// Ruchita Salvi
-	public String generateheaderVNF(CreateConfigRequestDCM configRequest) throws Exception {
-		String res = null;
-		try {
-			// CreateConfigRequest configRequest = (CreateConfigRequest)
-			// execution.getVariable("createConfigRequest");
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "templateheadervnf.ftl");
-			// execution.setVariable(outputVar, xmlRes);
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateheaderVNF(CreateConfigRequestDCM configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "templateheadervnf.ftl");
 	}
 
 	/* Dhanshri Mane */
 	// Method added for UIRevamp methodOverloading
-	public String generateheader(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
-			// CreateConfigRequest configRequest = (CreateConfigRequest)
-			// execution.getVariable("createConfigRequest");
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "templateheader.ftl");
-			// execution.setVariable(outputVar, xmlRes);
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateheader(RequestInfoPojo configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "templateheader.ftl");
 	}
 
 	// method overloading for UIRevamp
 	// for mapping with json object
-	public String generateConfigurationToPush(RequestInfoPojo configRequest, String filename) throws Exception {
+	public String generateConfigurationToPush(RequestInfoPojo configRequest, String filename) {
 		String res = null;
-		try {
-			// CreateConfigRequest configRequest = (CreateConfigRequest)
-			// execution.getVariable("createConfigRequest");
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			if (filename == null) {
-				res = freemarkerDo(tree, "PushCommand.ftl");
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		if (filename == null) {
+			res = freemarkerDo(tree, "PushCommand.ftl");
+		} else {
+			res = freemarkerDoTemplate(tree, filename);
+		}
+		return res;
+	}
+
+	public String generateDevicelockedFile(RequestInfoPojo configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", configRequest);
+		return freemarkerDo(tree, "DeviceLockedTemplate.ftl");
+	}
+
+	public String generateBasicConfigurationFile(RequestInfoPojo configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("basicConfiguration", configRequest);
+		return freemarkerDo(tree, "basicConfiguration.ftl");
+	}
+
+	public String generatePrevalidationResultFileFailure(RequestInfoPojo configRequest) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", configRequest);
+		return freemarkerDo(tree, "PreValidationTemplateFailure.ftl");
+	}
+
+	public String generateCustomerReportFailure(RequestInfoPojo requestinfo) {
+		String res = null;
+		Map<String, Object> tree = new HashMap<String, Object>();
+		if (null == requestinfo.getSuggestion() || requestinfo.getSuggestion().isEmpty()) {
+			if (requestinfo.getHealth_checkup() == "Failed") {
+				requestinfo.setSuggestion("Please check bandwidth parameter");
+			} else if (requestinfo.getNetwork_test() == "Failed") {
+				requestinfo.setSuggestion("Please check the connectivity.Issue while performing network test");
+			} else if (requestinfo.getDeliever_config() == "Failed") {
+				requestinfo.setSuggestion("Error occured while delivering the configuration");
 			} else {
-				res = freemarkerDoTemplate(tree, filename);
+				requestinfo.setSuggestion("Please check the connectivity.Issue while performing reachability test");
 			}
-			// execution.setVariable(outputVar, xmlRes);
-		} catch (Exception e) {
-
-			throw e;
 		}
+		tree.put("configRequest", requestinfo);
+		res = freemarkerDo(tree, "CustomerReportFailure.ftl");
 		return res;
-	}
-
-	public String generateDevicelockedFile(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", configRequest);
-			res = freemarkerDo(tree, "DeviceLockedTemplate.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	public String generateBasicConfigurationFile(RequestInfoPojo configRequest) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("basicConfiguration", configRequest);
-			res = freemarkerDo(tree, "basicConfiguration.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	public String generatePrevalidationResultFileFailure(RequestInfoPojo configRequest) throws TemplateException, IOException {	
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", configRequest);
-			return freemarkerDo(tree, "PreValidationTemplateFailure.ftl");
-		
-	}
-
-	public String generateCustomerReportFailure(RequestInfoPojo requestinfo) throws Exception {
-
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			if (null == requestinfo.getSuggestion() || requestinfo.getSuggestion().isEmpty()) {
-				if (requestinfo.getHealth_checkup() == "Failed") {
-					requestinfo.setSuggestion("Please check bandwidth parameter");
-				} else if (requestinfo.getNetwork_test() == "Failed") {
-					requestinfo.setSuggestion("Please check the connectivity.Issue while performing network test");
-				} else if (requestinfo.getDeliever_config() == "Failed") {
-					requestinfo.setSuggestion("Error occured while delivering the configuration");
-				} else {
-					requestinfo.setSuggestion("Please check the connectivity.Issue while performing reachability test");
-				}
-			}
-			tree.put("configRequest", requestinfo);
-			res = freemarkerDo(tree, "CustomerReportFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-
 	}
 
 	/* metgod overloadig for uiRevamp */
-	public String generateCustomerReportDeviceLocked(RequestInfoPojo requestinfo) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", requestinfo);
-			res = freemarkerDo(tree, "CustomerReportDeviceLocked.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateCustomerReportDeviceLocked(RequestInfoPojo requestinfo) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", requestinfo);
+		return freemarkerDo(tree, "CustomerReportDeviceLocked.ftl");
 	}
 
-	public String generateCustomerIOSHealthCheckFailed(RequestInfoPojo requestinfo) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", requestinfo);
-			res = freemarkerDo(tree, "CustomerReportIOSPreHealthCheckFailed.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateCustomerIOSHealthCheckFailed(RequestInfoPojo requestinfo) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", requestinfo);
+		return freemarkerDo(tree, "CustomerReportIOSPreHealthCheckFailed.ftl");
 	}
 
-	public String generateCustomerIOSHealthCheckFailedPost(RequestInfoPojo requestinfo) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", requestinfo);
-			res = freemarkerDo(tree, "CustomerReportIOSPostHealthCheckFailed.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateCustomerIOSHealthCheckFailedPost(RequestInfoPojo requestinfo) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", requestinfo);
+		return freemarkerDo(tree, "CustomerReportIOSPostHealthCheckFailed.ftl");
 	}
 
-	public String generateCustomerIOSDilevaryFail(RequestInfoPojo requestinfo) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", requestinfo);
-			res = freemarkerDo(tree, "CustomerReportIOSDilevaryFailed.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	public String generateCustomerOSUpgrade(RequestInfoPojo requestinfo) throws Exception {
-		String res = null;
-		try {
-
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", requestinfo);
-			res = freemarkerDo(tree, "CustomerReportOSUpgrade.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
-	}
-
-	public String generateheaderVNF(RequestInfoPojo requestInfoSO) throws Exception {
-		String res = null;
-		try {
-			// CreateConfigRequest configRequest = (CreateConfigRequest)
-			// execution.getVariable("createConfigRequest");
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("configRequest", requestInfoSO);
-			res = freemarkerDo(tree, "templateheadervnf.ftl");
-			// execution.setVariable(outputVar, xmlRes);
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+	public String generateCustomerIOSDilevaryFail(RequestInfoPojo requestinfo) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", requestinfo);
+		return freemarkerDo(tree, "CustomerReportIOSDilevaryFailed.ftl");
 
 	}
 
-	public String generatePrevalidationResultFileFailureODLMount(RequestInfoPojo requestinfo) throws Exception {
-		String res = null;
-		try {
+	public String generateCustomerOSUpgrade(RequestInfoPojo requestinfo) {
 
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", requestinfo);
-			res = freemarkerDo(tree, "PreValidationTemplateMountingFailure.ftl");
-
-		} catch (Exception e) {
-
-			throw e;
-		}
-		return res;
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", requestinfo);
+		return freemarkerDo(tree, "CustomerReportOSUpgrade.ftl");
 
 	}
 
-	public String getStartUpRouterVersion(String requestId, String version) throws Exception {
+	public String generateheaderVNF(RequestInfoPojo requestInfoSO) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("configRequest", requestInfoSO);
+		return freemarkerDo(tree, "templateheadervnf.ftl");
+
+	}
+
+	public String generatePrevalidationResultFileFailureODLMount(RequestInfoPojo requestinfo) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", requestinfo);
+		return freemarkerDo(tree, "PreValidationTemplateMountingFailure.ftl");
+
+	}
+
+	public String getStartUpRouterVersion(String requestId, String version) {
 		String content = "";
 		String filePath = "";
 		String newStr = "";
 		try {
-			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt");
+			File file = new File(
+					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt");
 			if (file.exists()) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt";
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+						+ "_StartupConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				content = content.substring(content.indexOf("run\r\n") + 5);
 				newStr = content.substring(0, content.lastIndexOf("end") + 3);
 			}
 		} catch (IOException e) {
+			logger.error("Exception occured in getStartUpRouterVersion " + e.getMessage());
 			e.printStackTrace();
 		}
 		return newStr;
@@ -1323,60 +983,71 @@ public class InvokeFtl {
 		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);
 
 	}
-	
-	public String getPreviousRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
+
+	public String getPreviousRouterVersionForVNF(String requestId, String version, String networkType) {
 		String content = "", filePath = null;
 		try {
-			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
-	
+			File file = new File(
+					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
+
 			if (file.exists() && "VNF".equalsIgnoreCase(networkType)) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt";
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+						+ "_PreviousConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 			}
 		} catch (Exception e) {
+			logger.error("Exception occured in getPreviousRouterVersionForVNF" + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;
 	}
 
-	public String getCurrentRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
+	public String getCurrentRouterVersionForVNF(String requestId, String version, String networkType) {
 		String content = "", filePath = null;
 		try {
-			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt");
+			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+					+ "_CurrentVersionConfig.txt");
 			if (file.exists() && "VNF".equalsIgnoreCase(networkType)) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CurrentVersionConfig.txt";
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+						+ "_CurrentVersionConfig.txt";
 
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 			}
 		} catch (Exception e) {
+			logger.error("Exception occured in getCurrentRouterVersionForVNF" + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;
 	}
-	
-	public String getStartUpRouterVersionForVNF(String requestId, String version, String networkType) throws Exception {
+
+	public String getStartUpRouterVersionForVNF(String requestId, String version, String networkType) {
 		String content = "", filePath = null;
 		try {
-			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt");
+			File file = new File(
+					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt");
 			if (file.exists()) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt";
+				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+						+ "_StartupConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 			}
 		} catch (IOException e) {
+			logger.error("Exception occured in getStartUpRouterVersionForVNF" + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;
 	}
-	
-	public String generateRouterLimitResultFileFailure(RequestInfoPojo configRequest) throws TemplateException, IOException {
-			Map<String, Object> tree = new HashMap<String, Object>();
-			tree.put("preValidateTest", configRequest);
-			return freemarkerDo(tree, "ConnectionRefuse.ftl");
+
+	public String generateRouterLimitResultFileFailure(RequestInfoPojo configRequest)
+			throws TemplateException, IOException {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("preValidateTest", configRequest);
+		return freemarkerDo(tree, "ConnectionRefuse.ftl");
 	}
-	public String generateDeviceDecommissonedFileFalure(RequestInfoPojo configRequest) throws TemplateException, IOException {
+
+	public String generateDeviceDecommissonedFileFalure(RequestInfoPojo configRequest)
+			throws TemplateException, IOException {
 		Map<String, Object> tree = new HashMap<String, Object>();
 		tree.put("preValidateTest", configRequest);
 		return freemarkerDo(tree, "DeviceDecommision.ftl");
-}
-		
+	}
 }

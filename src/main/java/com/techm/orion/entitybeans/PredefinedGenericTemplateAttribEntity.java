@@ -102,4 +102,26 @@ public class PredefinedGenericTemplateAttribEntity implements Serializable {
 	public void setCategoryMaster(CategoryMasterEntity categoryMaster) {
 		this.categoryMaster = categoryMaster;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PredefinedGenericTemplateAttribEntity other = (PredefinedGenericTemplateAttribEntity) obj;
+		if (Id != other.Id)
+			return false;
+		return true;
+	}
 }

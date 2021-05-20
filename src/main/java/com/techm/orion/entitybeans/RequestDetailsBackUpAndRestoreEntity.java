@@ -166,4 +166,26 @@ public class RequestDetailsBackUpAndRestoreEntity implements Serializable {
 		this.alphanumericReqId = alphanumericReqId;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + requestinfoid;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RequestDetailsBackUpAndRestoreEntity other = (RequestDetailsBackUpAndRestoreEntity) obj;
+		if (requestinfoid != other.requestinfoid)
+			return false;
+		return true;
+	}
+
 }

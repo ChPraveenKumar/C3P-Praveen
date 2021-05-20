@@ -516,12 +516,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						|| e1.getMessage().contains("Auth fail"))) {
 
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "2_Authentication");
-					try {
-						response = invokeFtl.generateAuthenticationFailure(requestinfo);
-					} catch (TemplateException | IOException e) {
-						logger.error(e);
-					}
+							Double.toString(requestinfo.getRequestVersion()), "2_Authentication");					
+						response = invokeFtl.generateAuthenticationFailure(requestinfo);			
 
 				} else if (e1.getMessage() != null && (e1.getMessage().contains("Connection refused"))) {
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
@@ -533,12 +529,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					}
 				} else {
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "2");
-					try {
-						response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
-					} catch (TemplateException | IOException e) {
-						logger.error(e);
-					}
+							Double.toString(requestinfo.getRequestVersion()), "2");					
+						response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);				
 
 				}
 				responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES

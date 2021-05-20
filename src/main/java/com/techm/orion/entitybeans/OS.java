@@ -16,7 +16,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 //test commit
 
@@ -85,6 +84,28 @@ public class OS implements Serializable {
 
 	public void setDeviceFamily(DeviceFamily deviceFamily) {
 		this.deviceFamily = deviceFamily;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		OS other = (OS) obj;
+		if (id != other.id)
+			return false;
+		return true;
 	}
 
 }
