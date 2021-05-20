@@ -286,8 +286,8 @@ public class DeviceDiscoveryController implements Observer {
 				{
 				inventoryList.get(j).setdLocation("Not Available");
 				}
-				inventoryList.get(j).setdEndOfSupportDate("Not Available");
-				inventoryList.get(j).setdEndOfLife("Not Available");
+				inventoryList.get(j).setdEndOfSupportDate(inventoryList.get(j).getdEndOfSupportDate());
+				inventoryList.get(j).setdEndOfLife(inventoryList.get(j).getdEndOfSaleDate());
 				inventoryList.get(j).setdPollUsing("IP Address");
 				inventoryList.get(j).setdLoginDetails(inventoryList.get(j).getdConnect());
 				inventoryList.get(j).setdStatus("Available");
