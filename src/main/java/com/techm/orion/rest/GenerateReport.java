@@ -50,7 +50,7 @@ public class GenerateReport {
 		//String pythonScriptFolder = "D:/PDF_Ptyhon_Folder/inputfile.py";
 
 		// Provide the path of html file location
-		String home = System.getProperty("user.home");
+		String home = TSALabels.DOWNLOAD_PATH.getValue();
 		File downloadHtmlFilePath = new File(home + "/Downloads/" + "report" + ".html");
 
 		// Provide the name of generated pdf file Name with request and version
@@ -79,18 +79,17 @@ public class GenerateReport {
 
 			// To Generate pdf file from html file using python with path from
 			// where we need to read html file and write PDF File
-			String[] cmd = { "python", pythonFileCheck.getPath(), downloadHtmlFilePath.getPath(),
-					home + "/" + "Downloads" + "/" + requestId + "_" + fileName + "_" + "V" + version + ".pdf" };
+			StringBuilder  stringbuilder = new StringBuilder();
+			stringbuilder.append(home).append("/" + "Downloads" + "/").append(requestId).append("_").append(fileName).append("_").append("V").append(version).append(".pdf");
+			String[] cmd = { "python", pythonFileCheck.getPath(), downloadHtmlFilePath.getPath(), stringbuilder.toString()};
 			Process processInstance = Runtime.getRuntime().exec(cmd);
 			Thread.sleep(1700);
 
-			File file = new File(
-					home + "/" + "Downloads" + "/" + requestId + "_" + fileName + "_" + "V" + version + ".pdf");
+			File file = new File(stringbuilder.toString());
 			if (!file.exists()) {
 				response.setHeader("error", "file not found");
-
 			} else {
-				// Donwload file using browse option
+				// Download file using browse option
 				response.setStatus(HttpServletResponse.SC_OK);
 				response.setHeader("Access-Control-Allow-Origin", "*");
 				response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
