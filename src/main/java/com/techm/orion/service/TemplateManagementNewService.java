@@ -660,9 +660,9 @@ public class TemplateManagementNewService {
 		JSONArray outputArray = new JSONArray();
 		if (deviceDetails != null) {
 			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository
-					.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(deviceDetails.getVendor(),
+					.getFeatureForTestDetails(deviceDetails.getVendor(),
 							deviceDetails.getDeviceFamily(), deviceDetails.getOs(), deviceDetails.getOsVersion(),
-							deviceDetails.getRegion(), deviceDetails.getNetworkType());
+							deviceDetails.getRegion());
 			masterFeatures.forEach(masterFeature -> {
 				JSONObject featureDetails = new JSONObject();
 				featureDetails.put("fId", masterFeature.getfId());

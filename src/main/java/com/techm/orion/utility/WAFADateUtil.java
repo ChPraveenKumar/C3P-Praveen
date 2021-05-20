@@ -253,4 +253,16 @@ public class WAFADateUtil {
 		}
 		return response;
 	}
+	
+	public String convertTimeStampInSDFFormat(Date timestampin)
+	{
+		String response=null;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		try {
+			response = dateFormat.format(timestampin);
+		} catch (Exception e) {
+			logger.error("Error in convertTimeStampInSDFFormat "+e);
+		}
+		return response;
+	}
 }
