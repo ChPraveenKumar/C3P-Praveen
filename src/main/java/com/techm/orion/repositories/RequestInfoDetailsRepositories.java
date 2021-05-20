@@ -4,6 +4,7 @@ package com.techm.orion.repositories;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -270,6 +271,8 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	
 	@Query(value = "select  count(r_status) from c3p_t_request_info where r_status=:status and r_request_creator_name like :creatorName and r_alphanumeric_req_id not like :requestId", nativeQuery = true)
 	int  getRequestFailuerStatusCount( @Param("status") String status,@Param("creatorName") String creatorName,@Param("requestId") String requestId);
+	
+	List<RequestInfoEntity> findByRequestCreatorNameOrderByDateofProcessingDesc(String userName, Pageable pageable );
 	
 }
 

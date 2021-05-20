@@ -3,6 +3,7 @@ package com.techm.orion.repositories;
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,4 +30,5 @@ public interface DiscoveryDashboardRepository extends JpaRepository<DiscoveryDas
 
 	Set<DiscoveryDashboardEntity> findAllByDisStatusIgnoreCaseOrderByDisCreatedDateDesc(String type);
 
+	List<DiscoveryDashboardEntity> findByDisCreatedByOrderByDisCreatedDateDesc(String userName, Pageable pageable);
 }
