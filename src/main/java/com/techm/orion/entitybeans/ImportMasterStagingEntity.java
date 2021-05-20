@@ -38,35 +38,35 @@ public class ImportMasterStagingEntity implements Serializable {
 	private int id;
 
 	@Column(name = "importid")
-	private String importId;	
+	private String importId;
 
 	@Column(name = "status")
 	private String status;
-	
+
 	@Column(name = "user_name")
 	private String userName;
-	
+
 	@Column(name = "total_devices")
 	private long totalDevices;
-	
-	@Column(name ="count_existing")
+
+	@Column(name = "count_existing")
 	private long countExisting;
-	
-	@Column(name ="count_new")
+
+	@Column(name = "count_new")
 	private long countNew;
-	
-	@Column(name ="count_success")
+
+	@Column(name = "count_success")
 	private long countSuccess;
-	
-	@Column(name ="count_exception")
+
+	@Column(name = "count_exception")
 	private long countException;
-	
+
 	@Column(name = "created_by")
 	private String createdBy;
 
 	@Transient
 	private MultipartFile file;
-	
+
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "execution_processing_date")
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Calcutta")
@@ -83,7 +83,7 @@ public class ImportMasterStagingEntity implements Serializable {
 		this.executionProcessDate = now;
 		this.executionDate = now;
 	}
-	
+
 	@PreUpdate
 	public void preUpdate() {
 		Date now = new Date();
@@ -211,4 +211,27 @@ public class ImportMasterStagingEntity implements Serializable {
 	public static long getSerialversionuid() {
 		return serialVersionUID;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ImportMasterStagingEntity other = (ImportMasterStagingEntity) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+
+}

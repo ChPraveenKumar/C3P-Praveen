@@ -18,7 +18,6 @@ import javax.persistence.UniqueConstraint;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 @Entity
 @Table(name = "c3p_t_glblist_m_device_family", uniqueConstraints = {
@@ -95,8 +94,27 @@ public class DeviceFamily implements Serializable {
 		this.vendor = vendor;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
 
-
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DeviceFamily other = (DeviceFamily) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
 	
-
+	
 }

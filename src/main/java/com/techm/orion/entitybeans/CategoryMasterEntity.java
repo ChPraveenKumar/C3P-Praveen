@@ -22,11 +22,6 @@ public class CategoryMasterEntity implements Serializable {
 	@Column(name = "category_name")
 	private String categoryName;
 
-	/*
-	 * @OneToMany(mappedBy = "categoryMaster") private
-	 * List<PredefinedGenericAttribEntity> predefinedGenericAttribEntity;
-	 */
-
 	public int getId() {
 		return id;
 	}
@@ -43,12 +38,26 @@ public class CategoryMasterEntity implements Serializable {
 		this.categoryName = categoryName;
 	}
 
-	/*
-	 * public List<PredefinedGenericAttribEntity> getPredefinedGenericAttribEntity()
-	 * { return predefinedGenericAttribEntity; }
-	 * 
-	 * public void setPredefinedGenericAttribEntity(
-	 * List<PredefinedGenericAttribEntity> predefinedGenericAttribEntity) {
-	 * this.predefinedGenericAttribEntity = predefinedGenericAttribEntity; }
-	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CategoryMasterEntity other = (CategoryMasterEntity) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+
 }
