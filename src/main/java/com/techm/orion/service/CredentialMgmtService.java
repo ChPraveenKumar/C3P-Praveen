@@ -236,24 +236,24 @@ public class CredentialMgmtService {
 	@SuppressWarnings("unchecked")
 	public JSONArray getAllUnAssociatedProfiles() {
 		JSONArray outputArray = new JSONArray();
-		List<DeviceDiscoveryEntity> deviceList = deviceDiscoveryRepository.findAll();
-		for(int i = 0; i<deviceList.size(); i++) {
+		List<DeviceDiscoveryEntity> devices = deviceDiscoveryRepository.findAll();
+		devices.forEach(deviceList -> {
 			JSONObject jsonObject = new JSONObject();
-			if ((deviceList.get(i).getdSshCredProfile() == null || deviceList.get(i).getdSshCredProfile().isEmpty())  
-					&& (deviceList.get(i).getdTelnetCredProfile() == null || deviceList.get(i).getdTelnetCredProfile().isEmpty())
-					|| (deviceList.get(i).getdSnmpCredProfile() == null || deviceList.get(i).getdSnmpCredProfile().isEmpty())){
-				jsonObject.put("hostName", deviceList.get(i).getdHostName());
-				if (deviceList.get(i).getdSshCredProfile() ==null || deviceList.get(i).getdSshCredProfile().isEmpty()) {
+			if ((deviceList.getdSshCredProfile() == null || deviceList.getdSshCredProfile().isEmpty())  
+					&& (deviceList.getdTelnetCredProfile() == null || deviceList.getdTelnetCredProfile().isEmpty())
+					|| (deviceList.getdSnmpCredProfile() == null || deviceList.getdSnmpCredProfile().isEmpty())){
+				jsonObject.put("hostName", deviceList.getdHostName());
+				if (deviceList.getdSshCredProfile() ==null || deviceList.getdSshCredProfile().isEmpty()) {
 					jsonObject.put("ssh", true);
 				} else {
 					jsonObject.put("ssh", false);
 				}
-				if (deviceList.get(i).getdTelnetCredProfile() == null || deviceList.get(i).getdTelnetCredProfile().isEmpty()) {
+				if (deviceList.getdTelnetCredProfile() == null || deviceList.getdTelnetCredProfile().isEmpty()) {
 					jsonObject.put("telnet", true);
 				} else {
 					jsonObject.put("telnet", false);
 				}
-				if (deviceList.get(i).getdSnmpCredProfile() == null || deviceList.get(i).getdSnmpCredProfile().isEmpty()) {
+				if (deviceList.getdSnmpCredProfile() == null || deviceList.getdSnmpCredProfile().isEmpty()) {
 					jsonObject.put("snmp", true);
 				} else {
 					jsonObject.put("snmp", false);
@@ -262,7 +262,7 @@ public class CredentialMgmtService {
 			if (!jsonObject.isEmpty()) {
 				outputArray.add(jsonObject);
 			}
-		}
+		});
 		return outputArray;
 	}
 
