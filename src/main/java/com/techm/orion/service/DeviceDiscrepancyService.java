@@ -106,22 +106,18 @@ public class DeviceDiscrepancyService {
 	private JSONObject getDiscrepancyBasicData(DiscoveryStatusEntity discoveryStatusEntity) {
 		JSONObject discrepencyObject = new JSONObject();
 		discrepencyObject.put("dsIpAddr", discoveryStatusEntity.getDsIpAddr());
-		if(discoveryStatusEntity.getDsCreatedDate()!=null)
-		{
-		discrepencyObject.put("dsCreatedDate", dateUtil.dateTimeInAppFormat(discoveryStatusEntity.getDsCreatedDate()));
-		}
-		else
-		{
-		discrepencyObject.put("dsCreatedDate", null);
+		if (discoveryStatusEntity.getDsCreatedDate() != null) {
+			discrepencyObject.put("dsCreatedDate",
+					dateUtil.dateTimeInAppFormat(discoveryStatusEntity.getDsCreatedDate()));
+		} else {
+			discrepencyObject.put("dsCreatedDate", null);
 		}
 		discrepencyObject.put("dsCreatedBy", discoveryStatusEntity.getDsCreatedBy());
-		if(discoveryStatusEntity.getDsUpdatedDate()!=null)
-		{
-		discrepencyObject.put("dsUpdatedDate", dateUtil.dateTimeInAppFormat(discoveryStatusEntity.getDsUpdatedDate()));
-		}
-		else
-		{
-		discrepencyObject.put("dsUpdatedDate", null);
+		if (discoveryStatusEntity.getDsUpdatedDate() != null) {
+			discrepencyObject.put("dsUpdatedDate",
+					dateUtil.dateTimeInAppFormat(discoveryStatusEntity.getDsUpdatedDate()));
+		} else {
+			discrepencyObject.put("dsUpdatedDate", null);
 		}
 		discrepencyObject.put("dsStatus", discoveryStatusEntity.getDsStatus());
 		discrepencyObject.put("dsComment", discoveryStatusEntity.getDsComment());
@@ -207,7 +203,7 @@ public class DeviceDiscrepancyService {
 			dicreapancyvalue = forkDiscrepancyResultRepository.findForkDiscrepancyValueByDeviceIdAndoidNo(finalOid,
 					String.valueOf(deviceId), discoveryId);
 			if (dicreapancyvalue != null) {
-				for (ForkDiscrepancyResultEntity forkDiscrepancy : findForkDiscrepancyValueByDeviceId) {					
+				for (ForkDiscrepancyResultEntity forkDiscrepancy : findForkDiscrepancyValueByDeviceId) {
 					String oidValue = forkDiscrepancy.getFidChildOIDNo();
 					oidValue = StringUtils.substringAfterLast(oidValue, ".");
 					if (oidValue.equals(fidChildOIDNo)) {
@@ -367,7 +363,7 @@ public class DeviceDiscrepancyService {
 		boolean flag = false;
 		for (int j = 1; j < discrepancyObject.size(); j++) {
 			JSONObject jObject = (JSONObject) discrepancyObject.get(j);
-			if (jObject.get("childOid")!= null) {
+			if (jObject.get("childOid") != null) {
 				if (discrepancy.get("discrepancyMsg").toString().equals(jObject.get("discrepancyMsg").toString())
 						&& discrepancy.get("childOid").toString().equals(jObject.get("childOid").toString())) {
 					flag = true;
@@ -402,22 +398,16 @@ public class DeviceDiscrepancyService {
 			details.put("discoveryNetworkMask", discoveryDetails.getDisNetworkMask());
 			details.put("discoveryProfileName", discoveryDetails.getDisProfileName());
 			details.put("discoveryScheduledId", discoveryDetails.getDisScheduleId());
-			if(discoveryDetails.getDisCreatedDate()!=null)
-			{
-			details.put("discoveryCreatedDate", dateUtil.dateTimeInAppFormat(discoveryDetails.getDisCreatedDate()));
-			}
-			else
-			{
-			details.put("discoveryCreatedDate", null);	
+			if (discoveryDetails.getDisCreatedDate() != null) {
+				details.put("discoveryCreatedDate", dateUtil.dateTimeInAppFormat(discoveryDetails.getDisCreatedDate()));
+			} else {
+				details.put("discoveryCreatedDate", null);
 			}
 			details.put("discoveryCreatedBy", discoveryDetails.getDisCreatedBy());
-			if(discoveryDetails.getDisUpdatedDate()!=null)
-			{
-			details.put("discoveryUpdatedDate", dateUtil.dateTimeInAppFormat(discoveryDetails.getDisUpdatedDate()));
-			}
-			else
-			{
-			details.put("discoveryUpdatedDate", null);
+			if (discoveryDetails.getDisUpdatedDate() != null) {
+				details.put("discoveryUpdatedDate", dateUtil.dateTimeInAppFormat(discoveryDetails.getDisUpdatedDate()));
+			} else {
+				details.put("discoveryUpdatedDate", null);
 			}
 			details.put("discoveryImportId", discoveryDetails.getDisImportId());
 		}
@@ -497,7 +487,7 @@ public class DeviceDiscrepancyService {
 			resultObj = new JSONObject();
 			if (isSucess) {
 				int discrepancys = deviceDiscovertEntity.getdDiscrepancy();
-				if (discrepancys >0) {
+				if (discrepancys > 0) {
 					discrepancys = discrepancys - 1;
 					deviceDiscovertEntity.setdDiscrepancy(discrepancys);
 					discoveryRepo.save(deviceDiscovertEntity);
@@ -553,6 +543,7 @@ public class DeviceDiscrepancyService {
 			object.put("sub", masterEntity.getOidForkFlag());
 			object.put("compare", masterEntity.getOidCompareFlag());
 			object.put("default", masterEntity.getOidDefaultFlag());
+			object.put("id", masterEntity.getOidId());
 			array.add(object);
 		});
 		masterOids.put("output", array);
@@ -566,73 +557,71 @@ public class DeviceDiscrepancyService {
 		json = (JSONObject) parser.parse(request);
 		JSONObject object = new JSONObject();
 		boolean isAdd = false;
-		String vendor = null, oid = null, category = null, rfAttrib = null, label = null, inScope = null,
-				networkType = null, sub = null, compare = null;
-		String defaultFlag = null, userName = null;
-
-		JSONArray jsonArray = (JSONArray) (json.get("oidDetails"));
+		String vendor = null, oid = null, category = null, label = null, inScope = null, networkType = null, sub = null,
+				compare = null, defaultFlag = null, userName = null;
 		if (json.containsKey("userName")) {
 			userName = json.get("userName").toString();
 		}
-		for (int i = 0; i < jsonArray.size(); i++) {
-			JSONObject oidObject = (JSONObject) jsonArray.get(i);
-			if (oidObject.get("vendor") != null) {
-				vendor = oidObject.get("vendor").toString();
+		if ("admin".equalsIgnoreCase(userName)) {
+			JSONArray jsonArray = (JSONArray) (json.get("oidDetails"));
+			for (int i = 0; i < jsonArray.size(); i++) {
+				JSONObject oidObject = (JSONObject) jsonArray.get(i);
+				if (oidObject.get("vendor") != null) {
+					vendor = oidObject.get("vendor").toString();
+				}
+				if (oidObject.get("oid") != null) {
+					oid = oidObject.get("oid").toString();
+				}
+				if (oidObject.get("category") != null) {
+					category = oidObject.get("category").toString();
+				}
+				if (oidObject.get("label") != null) {
+					label = oidObject.get("label").toString();
+				}
+				if (oidObject.get("inScope") != null) {
+					inScope = oidObject.get("inScope").toString();
+				}
+				if (oidObject.get("networkType") != null) {
+					networkType = oidObject.get("networkType").toString();
+				}
+				if (oidObject.get("sub") != null) {
+					sub = oidObject.get("sub").toString();
+				}
+				if (oidObject.get("compare") != null) {
+					compare = oidObject.get("compare").toString();
+				}
+				if (oidObject.get("default") != null) {
+					defaultFlag = oidObject.get("default").toString();
+				}
+				// Combination of oid, category, scope, vendor, networkType and displayName
+				// should not be get repeated
+				List<MasterOIDEntity> masterEntity = masterOIDRepository
+						.findByOidNoAndOidCategoryAndOidScopeFlagAndOidVendorAndOidNetworkTypeAndOidDisplayName(oid,
+								category, inScope, vendor, networkType, label);
+				if (masterEntity.isEmpty()) {
+					MasterOIDEntity masterOidsEntity = new MasterOIDEntity();
+					masterOidsEntity.setOidNo(oid);
+					masterOidsEntity.setOidVendor(vendor);
+					masterOidsEntity.setOidCategory(category);
+					masterOidsEntity.setOidDisplayName(label);
+					masterOidsEntity.setOidScopeFlag(inScope);
+					masterOidsEntity.setOidNetworkType(networkType);
+					masterOidsEntity.setOidForkFlag(sub);
+					masterOidsEntity.setOidCompareFlag(compare);
+					masterOidsEntity.setOidDefaultFlag(defaultFlag);
+					masterOidsEntity.setOidCreatedBy(userName);
+					masterOidsEntity.setOidCreatedDate(Timestamp.valueOf(LocalDateTime.now()));
+					masterOIDRepository.save(masterOidsEntity);
+					isAdd = true;
+				}
+				if (isAdd) {
+					object.put("output", "Oids added successfully");
+				} else {
+					object.put("output", "Oids is Duplicate");
+				}
 			}
-			if (oidObject.get("oid") != null) {
-				oid = oidObject.get("oid").toString();
-			}
-			if (oidObject.get("category") != null) {
-				category = oidObject.get("category").toString();
-			}
-			if (oidObject.get("rfAttrib") != null) {
-				rfAttrib = oidObject.get("rfAttrib").toString();
-			}
-			if (oidObject.get("label") != null) {
-				label = oidObject.get("label").toString();
-			}
-			if (oidObject.get("inScope") != null) {
-				inScope = oidObject.get("inScope").toString();
-			}
-			if (oidObject.get("networkType") != null) {
-				networkType = oidObject.get("networkType").toString();
-			}
-			if (oidObject.get("sub") != null) {
-				sub = oidObject.get("sub").toString();
-			}
-			if (oidObject.get("compare") != null) {
-				compare = oidObject.get("compare").toString();
-			}
-			if (oidObject.get("default") != null) {
-				defaultFlag = oidObject.get("default").toString();
-			}
-
-			// List<MasterOIDEntity> masterEntity = masterOIDRepository.findByOidNo(oid);
-			List<MasterOIDEntity> masterEntity = masterOIDRepository
-					.findByOidNoAndOidCategoryAndOidScopeFlagAndOidVendorAndOidNetworkTypeAndOidDisplayName(oid,
-							category, inScope, vendor, networkType, label);
-			if (masterEntity.isEmpty()) {
-				MasterOIDEntity masterOidsEntity = new MasterOIDEntity();
-				masterOidsEntity.setOidNo(oid);
-				masterOidsEntity.setOidVendor(vendor);
-				masterOidsEntity.setOidCategory(category);
-				// entity.setOidAttrib(masterOid.getOidAttrib());
-				masterOidsEntity.setOidDisplayName(label);
-				masterOidsEntity.setOidScopeFlag(inScope);
-				masterOidsEntity.setOidNetworkType(networkType);
-				masterOidsEntity.setOidForkFlag(sub);
-				masterOidsEntity.setOidCompareFlag(compare);
-				masterOidsEntity.setOidDefaultFlag(defaultFlag);
-				masterOidsEntity.setOidCreatedBy(userName);
-				masterOidsEntity.setOidCreatedDate(Timestamp.valueOf(LocalDateTime.now()));
-				masterOIDRepository.save(masterOidsEntity);
-				isAdd = true;
-			}
-		}
-		if (isAdd) {
-			object.put("output", "Oids added successfully");
 		} else {
-			object.put("output", "Oids is Duplicate");
+			object.put("output", "Only admin has the right to save the oids");
 		}
 		return object;
 	}
@@ -707,4 +696,80 @@ public class DeviceDiscrepancyService {
 		}
 		return outputArray;
 	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject editMasterOids(String request) throws ParseException {
+		JSONParser parser = new JSONParser();
+		JSONObject json = new JSONObject();
+		json = (JSONObject) parser.parse(request);
+		JSONObject object = new JSONObject();
+		boolean isEdit = false;
+		String vendor = null, oid = null, category = null, label = null, inScope = null, networkType = null, sub = null,
+				compare = null, defaultFlag = null, userName = null, id = null;
+		JSONArray jsonArray = (JSONArray) (json.get("oidDetails"));
+		if (json.containsKey("userName")) {
+			userName = json.get("userName").toString();
+		}
+		if ("admin".equalsIgnoreCase(userName)) {
+			for (int i = 0; i < jsonArray.size(); i++) {
+				JSONObject oidEditObject = (JSONObject) jsonArray.get(i);
+				if (oidEditObject.get("vendor") != null) {
+					vendor = oidEditObject.get("vendor").toString();
+				}
+				if (oidEditObject.get("oid") != null) {
+					oid = oidEditObject.get("oid").toString();
+				}
+				if (oidEditObject.get("category") != null) {
+					category = oidEditObject.get("category").toString();
+				}
+				if (oidEditObject.get("label") != null) {
+					label = oidEditObject.get("label").toString();
+				}
+				if (oidEditObject.get("inScope") != null) {
+					inScope = oidEditObject.get("inScope").toString();
+				}
+				if (oidEditObject.get("networkType") != null) {
+					networkType = oidEditObject.get("networkType").toString();
+				}
+				if (oidEditObject.get("sub") != null) {
+					sub = oidEditObject.get("sub").toString();
+				}
+				if (oidEditObject.get("compare") != null) {
+					compare = oidEditObject.get("compare").toString();
+				}
+				if (oidEditObject.get("default") != null) {
+					defaultFlag = oidEditObject.get("default").toString();
+				}
+				if (oidEditObject.get("id") != null) {
+					id = oidEditObject.get("id").toString();
+				}
+				int masterOid = Integer.parseInt(id);
+				MasterOIDEntity masterEntity = masterOIDRepository.findByOidId(masterOid);
+				if (masterEntity != null) {
+					masterEntity.setOidNo(oid);
+					masterEntity.setOidVendor(vendor);
+					masterEntity.setOidCategory(category);
+					masterEntity.setOidDisplayName(label);
+					masterEntity.setOidScopeFlag(inScope);
+					masterEntity.setOidNetworkType(networkType);
+					masterEntity.setOidForkFlag(sub);
+					masterEntity.setOidCompareFlag(compare);
+					masterEntity.setOidDefaultFlag(defaultFlag);
+					masterEntity.setOidCreatedBy(userName);
+					masterEntity.setOidUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
+					masterOIDRepository.save(masterEntity);
+					isEdit = true;
+				}
+				if (isEdit) {
+					object.put("output", "oid edited succesfully");
+				} else {
+					object.put("output", "Exception in editing oid");
+				}
+			}
+		} else {
+			object.put("output", "Only admin has the right to edit oids");
+		}
+		return object;
+	}
+
 }

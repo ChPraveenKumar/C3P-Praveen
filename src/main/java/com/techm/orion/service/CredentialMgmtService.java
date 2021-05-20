@@ -9,7 +9,6 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -130,6 +129,7 @@ public class CredentialMgmtService {
 		return responseJson;
 	}
 
+	@SuppressWarnings("unchecked")
 	public JSONObject editSshTelnetProfile(String request) {
 		JSONParser jsonParser = new JSONParser();
 		JSONObject response = new JSONObject();
@@ -186,7 +186,9 @@ public class CredentialMgmtService {
 		return response;
 	}
 
-	private JSONObject  updateCredProfileInDeviceDiscovery(JSONObject requestJson, String profileName, String profileType) {
+	@SuppressWarnings("unchecked")
+	private JSONObject updateCredProfileInDeviceDiscovery(JSONObject requestJson, String profileName,
+			String profileType) {
 		String hostName = null;
 		String managementIp = null;
 		String type = null;
@@ -226,38 +228,41 @@ public class CredentialMgmtService {
 		return json;
 	}
 
+	/**
+	 * Either of SSH or Telnet should be associated. If not then show as
+	 * Unassociated credentials. SNMP should be associated. If not then show under
+	 * Unassociated credentials.
+	 */
 	@SuppressWarnings("unchecked")
-	public JSONObject getAllUnAssociatedProfiles() {
-		List<CredentialManagementEntity> credentialManagementList = new ArrayList<CredentialManagementEntity>();
-		credentialManagementList = credentialManagementRepo.findAll();
-		JSONObject jsonObject = new JSONObject();
+	public JSONArray getAllUnAssociatedProfiles() {
 		JSONArray outputArray = new JSONArray();
-		credentialManagementList.forEach(refferedDevice -> {
-			if (refferedDevice.getRefDevice() == 0) {
-				JSONObject object = new JSONObject();
-				object.put("infoId", refferedDevice.getInfoId());
-				object.put("profileName", refferedDevice.getProfileName());
-				object.put("loginRead", refferedDevice.getLoginRead());
-				object.put("profileType", refferedDevice.getProfileType());
-				object.put("passwordWrite", refferedDevice.getPasswordWrite());
-				object.put("enablePassword", refferedDevice.getEnablePassword());
-				object.put("description", refferedDevice.getDescription());
-				object.put("refDevice", refferedDevice.getRefDevice());
-				object.put("port", refferedDevice.getPort());
-				object.put("version", refferedDevice.getVersion());
-				object.put("genric", refferedDevice.getGenric());
-				object.put("createdBy", refferedDevice.getCreatedBy());
-				object.put("updatedBy", refferedDevice.getUpdatedBy());
-				if (refferedDevice.getUpdatedDate() != null) {
-					object.put("updatedDate", refferedDevice.getUpdatedDate().toString());
+		List<DeviceDiscoveryEntity> entity = deviceDiscoveryRepository.findAll();
+		entity.forEach(deviceList -> {
+			JSONObject jsonObject = new JSONObject();
+			if (deviceList.getdSnmpCredProfile() == null || (deviceList.getdSshCredProfile() == null 
+					&& deviceList.getdTelnetCredProfile() == null)){
+				jsonObject.put("hostName", deviceList.getdHostName());
+				if (deviceList.getdSshCredProfile() != null) {
+					jsonObject.put("ssh", true);
+				} else {
+					jsonObject.put("ssh", false);
 				}
-				if (refferedDevice.getCreatedDate() != null) {
-					object.put("createdDate", refferedDevice.getCreatedDate().toString());
+				if (deviceList.getdTelnetCredProfile() != null) {
+					jsonObject.put("telnet", true);
+				} else {
+					jsonObject.put("telnet", false);
 				}
-				outputArray.add(object);
+				if (deviceList.getdSnmpCredProfile() != null) {
+					jsonObject.put("snmp", true);
+				} else {
+					jsonObject.put("snmp", false);
+				}
+			}
+			if (!jsonObject.isEmpty()) {
+				outputArray.add(jsonObject);
 			}
 		});
-		jsonObject.put("output", outputArray);
-		return jsonObject;
+		return outputArray;
 	}
+
 }
