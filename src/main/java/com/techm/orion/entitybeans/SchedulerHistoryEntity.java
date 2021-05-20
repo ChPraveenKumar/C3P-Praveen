@@ -37,38 +37,37 @@ public class SchedulerHistoryEntity implements Serializable {
 
 	@Column(name = "sh_status", length = 25)
 	private String shStatus;
-	
+
 	@Column(name = "sh_execute_datetime")
 	private Date shExecuteDatetime;
 
 	@Column(name = "sh_next_execute_datetime")
 	private Date shNextExecuteDatetime;
-	
+
 	@Column(name = "sh_create_datetime")
 	private Date shCreateDatetime;
-	
+
 	@Column(name = "sh_update_datetime")
 	private Date shUpdateDatetime;
-	
+
 	@Column(name = "sh_end_datetime")
 	private Date shEndDatetime;
-	
+
 	@Column(name = "sh_created_by", length = 15)
 	private String shCreatedBy;
 
 	@Column(name = "sh_update_by", length = 15)
 	private String shUpdateBy;
 
-
 	@Column(name = "sh_create_json")
 	private String shCreateJson;
-	
+
 	@Column(name = "sh_create_url")
 	private String shCreateUrl;
-	
+
 	@Column(name = "sh_request_id")
 	private String shRequestId;
-	
+
 	public String getShRequestId() {
 		return shRequestId;
 	}
@@ -165,7 +164,6 @@ public class SchedulerHistoryEntity implements Serializable {
 		this.shUpdateBy = shUpdateBy;
 	}
 
-
 	public String getShCreateJson() {
 		return shCreateJson;
 	}
@@ -181,6 +179,27 @@ public class SchedulerHistoryEntity implements Serializable {
 	public void setShCreateUrl(String shCreateUrl) {
 		this.shCreateUrl = shCreateUrl;
 	}
-	
-	
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + shRowid;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SchedulerHistoryEntity other = (SchedulerHistoryEntity) obj;
+		if (shRowid != other.shRowid)
+			return false;
+		return true;
+	}
+
 }

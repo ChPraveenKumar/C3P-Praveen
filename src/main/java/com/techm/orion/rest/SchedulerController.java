@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
+
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
@@ -27,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 import com.techm.orion.entitybeans.SchedulerHistoryEntity;
 import com.techm.orion.repositories.SchedulerHistoryRepository;
 import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.WAFADateUtil;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
@@ -41,10 +43,13 @@ public class SchedulerController {
 	private ConfigurationManagement configurationManagement;
 
 	@Autowired
-	RestTemplate restTemplate;
+	private RestTemplate restTemplate;
+	
+	@Autowired
+	private WAFADateUtil dateUtil;
 
 	@POST
-	@RequestMapping(value = "/", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@RequestMapping(value = "/setSchedule", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response scheduleRequest(@RequestBody String request) {
 		JSONObject obj = new JSONObject();
@@ -55,71 +60,99 @@ public class SchedulerController {
 			SchedulerHistoryEntity schedulerEntityInstance = new SchedulerHistoryEntity();
 			JSONObject createJson = (JSONObject) json.get("createJson");
 			String requestType = json.get("requestType").toString();
-			if (requestType.equalsIgnoreCase("SLGC")
-					|| requestType.equalsIgnoreCase("SLGT")
-					|| requestType.equalsIgnoreCase("SLGF")
-					|| requestType.equalsIgnoreCase("SLGA")) {
-				createJson.put("isScheduled", true);
-				response = configurationManagement
-						.createConfigurationDcm(createJson.toJSONString());
-				schedulerEntityInstance
-						.setShCreateUrl(TSALabels.SINGLE_REQUEST_CREATE
-								.getValue());
-			} else if (requestType.equalsIgnoreCase("SLGB")) {
-				schedulerEntityInstance
-						.setShCreateUrl(TSALabels.SINGLE_REQUEST_CREATE_BACKUP
-								.getValue());
-			}
-			// Logic to save entry in scheduler history table
-			if (response.containsKey("requestId")) {
-				schedulerEntityInstance.setShRequestId(response
-						.get("requestId").toString());
-				createJson.put("isScheduled", false);
-				schedulerEntityInstance.setShCreateJson(createJson.toJSONString());
-				String scheduleID = getRandomScheduleID();
-				schedulerEntityInstance.setShScheduleId(scheduleID);
-
-				if (json.get("trigger").toString()
-						.equalsIgnoreCase("combination")
-						|| json.get("trigger").toString()
-								.equalsIgnoreCase("interval")) {
-					schedulerEntityInstance.setShSchType("R");
-				} else {
-					schedulerEntityInstance.setShSchType("O");
+			if (requestType != null) {
+				if (requestType.equalsIgnoreCase("SLGC")
+						|| requestType.equalsIgnoreCase("SLGT")
+						|| requestType.equalsIgnoreCase("SLGF")
+						|| requestType.equalsIgnoreCase("SLGA")) {
+					createJson.put("isScheduled", true);
+					response = configurationManagement
+							.createConfigurationDcm(createJson.toJSONString());
+					schedulerEntityInstance
+							.setShCreateUrl(TSALabels.SINGLE_REQUEST_CREATE
+									.getValue());
+				} else if (requestType.equalsIgnoreCase("SLGB")) {
+					schedulerEntityInstance
+							.setShCreateUrl(TSALabels.SINGLE_REQUEST_CREATE_BACKUP
+									.getValue());
 				}
-				schedulerEntityInstance.setShStatus("Scheduled");
-				if (json.get("startDate").toString().length() > 0)
-					schedulerEntityInstance
-							.setShExecuteDatetime(dateFromJsonString(json.get(
-									"startDate").toString()));
-				if (json.get("endDate").toString().length() > 0)
-					schedulerEntityInstance
-							.setShEndDatetime(dateFromJsonString(json.get(
-									"endDate").toString()));
-				schedulerEntityInstance.setShCreateDatetime(Date.from(Instant
-						.now()));
-				schedulerEntityInstance.setShCreatedBy(createJson.get(
-						"userRole").toString());
-				schedulerHistoryRepo.save(schedulerEntityInstance);
+				// Logic to save entry in scheduler history table
+				if (response.containsKey("requestId")) {
+					schedulerEntityInstance.setShRequestId(response.get(
+							"requestId").toString());
+					createJson.put("isScheduled", false);
+					schedulerEntityInstance.setShCreateJson(createJson
+							.toJSONString());
+					String scheduleID = dateUtil.getRandomScheduleID();
+					schedulerEntityInstance.setShScheduleId(scheduleID);
+					if (json.get("trigger") != null) {
+						String trigger = json.get("trigger").toString();
+						if ("combination"
+								.equalsIgnoreCase(trigger)
+								|| "interval".toString()
+										.equalsIgnoreCase(trigger)) {
+							schedulerEntityInstance.setShSchType("R");
+						} else {
+							schedulerEntityInstance.setShSchType("O");
+						}
+						schedulerEntityInstance.setShStatus("Scheduled");
+						if(json.get("startDate")!=null)
+						{
+						if (json.get("startDate").toString().length() > 0)
+							schedulerEntityInstance
+									.setShExecuteDatetime(dateFromJsonString(json
+											.get("startDate").toString()));
+						if(json.get("endDate")!=null)
+						{
+						if (json.get("endDate").toString().length() > 0)
+							schedulerEntityInstance
+									.setShEndDatetime(dateFromJsonString(json
+											.get("endDate").toString()));
+						}
+						schedulerEntityInstance.setShCreateDatetime(Date
+								.from(Instant.now()));
+						schedulerEntityInstance.setShCreatedBy(createJson.get(
+								"userRole").toString());
+						schedulerHistoryRepo.save(schedulerEntityInstance);
 
-				// Form python json and python service call
-				JSONObject pythonInputJson = getPythonJSON(json, scheduleID,
-						response.get("requestId").toString());
+						// Form python json and python service call
+						JSONObject pythonInputJson = getPythonJSON(json,
+								scheduleID, response.get("requestId")
+										.toString());
+						if(pythonInputJson!=null)
+						{
+						// Python call
+						HttpHeaders headers = new HttpHeaders();
+						headers.setAccept(Arrays
+								.asList(MediaType.APPLICATION_JSON));
+						HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(
+								pythonInputJson, headers);
+						String url = TSALabels.PYTHON_SERVICES.getValue()
+								+ TSALabels.PYTHON_SCHEDULER.getValue();
+						String pythonAPIResponse = restTemplate.exchange(url,
+								HttpMethod.POST, entity, String.class)
+								.getBody();
 
-				// Python call
-				HttpHeaders headers = new HttpHeaders();
-				headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-				HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(
-						pythonInputJson, headers);
-				String url = TSALabels.PYTHON_SERVICES.getValue()
-						+ TSALabels.PYTHON_SCHEDULER.getValue();
-				String pythonAPIResponse = restTemplate.exchange(url,
-						HttpMethod.POST, entity, String.class).getBody();
-
-				obj = (JSONObject) parser.parse(pythonAPIResponse);
-
+						obj = (JSONObject) parser.parse(pythonAPIResponse);
+						}
+						else
+						{
+							obj.put("Error", "Start date missing in input");
+						}
+						}
+						else
+						{
+							obj.put("Error", "Start date missing in input");
+						}
+					} else {
+						obj.put("Error", "Trigger missing in input");
+					}
+				} else {
+					obj.put("Error", "Error saving request in DB");
+				}
 			} else {
-				obj.put("Error", "Error saving request in DB");
+				obj.put("Error", "Request type missing in input");
+
 			}
 		} catch (Exception e) {
 			logger.error(e);
@@ -128,13 +161,7 @@ public class SchedulerController {
 		return Response.status(200).entity(obj).build();
 	}
 
-	private String getRandomScheduleID() {
-		String scheduleID = null;
-		Date date = new Date();
-		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
-		scheduleID = "SH" + formatter.format(date);
-		return scheduleID;
-	}
+	
 
 	private Date dateFromJsonString(String date) {
 		Date responsedate = null;
@@ -151,6 +178,8 @@ public class SchedulerController {
 		response.remove("createJson");
 		response.put("scheduleID", schdId);
 		response.put("requestID", requestId);
+		if(response.get("startDate")!=null)
+		{
 		if (response.get("startDate").toString().length() > 0)
 			response.put(
 					"startDate",
@@ -170,7 +199,7 @@ public class SchedulerController {
 									response.get("endDate").toString().length() - 4));
 		response.put("timezone",
 				TSALabels.C3P_APPLICATION_SERVER_TIMEZONE.getValue());
-
+		}
 		return response;
 	}
 }

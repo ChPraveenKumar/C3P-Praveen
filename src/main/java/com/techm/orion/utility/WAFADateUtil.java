@@ -253,4 +253,12 @@ public class WAFADateUtil {
 		}
 		return response;
 	}
+	
+	public String getRandomScheduleID() {
+		String scheduleID = null;
+		Date date = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+		scheduleID = "SH" + formatter.format(date);
+		return scheduleID;
+	}
 }
