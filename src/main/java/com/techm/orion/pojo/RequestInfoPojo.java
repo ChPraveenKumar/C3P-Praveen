@@ -313,6 +313,16 @@ public class RequestInfoPojo {
 	
 	private String instantiation;
 	private String instantiation_failure_reason; 
+	
+	private Boolean isScheduled;
+
+	public Boolean getIsScheduled() {
+		return isScheduled;
+	}
+
+	public void setIsScheduled(Boolean isScheduled) {
+		this.isScheduled = isScheduled;
+	}
 
 	public String getInstantiation() {
 		return instantiation;

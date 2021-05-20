@@ -28,6 +28,7 @@ import com.techm.orion.entitybeans.MasterOIDEntity;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DiscoveryDashboardRepository;
 import com.techm.orion.repositories.DiscoveryStatusEntityRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ForkDiscoveryResultRepository;
 import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
 import com.techm.orion.repositories.HostDiscoveryResultRepository;
@@ -58,6 +59,9 @@ public class DeviceDiscrepancyService {
 	@Autowired
 	private WAFADateUtil dateUtil;
 
+	@Autowired
+	private ErrorValidationRepository errorValidationRepo;
+	
 	@SuppressWarnings("unchecked")
 	public JSONObject discripancyService(String discoveryId) {
 		JSONObject finalObject = new JSONObject();
@@ -123,7 +127,12 @@ public class DeviceDiscrepancyService {
 		{
 		discrepencyObject.put("dsUpdatedDate", null);
 		}
-		discrepencyObject.put("dsStatus", discoveryStatusEntity.getDsStatus());
+		String status=null;
+		if(discoveryStatusEntity.getDsStatus()!=null)
+		{
+			status=errorValidationRepo.findDescriptionByErrorIdandErrorType(discoveryStatusEntity.getDsStatus(), "Discovery");
+		}
+		discrepencyObject.put("dsStatus", status);
 		discrepencyObject.put("dsComment", discoveryStatusEntity.getDsComment());
 		discrepencyObject.put("dsDeviceId", discoveryStatusEntity.getDsDeviceId());
 		discrepencyObject.put("dsHostName", discoveryStatusEntity.getDsHostName());
