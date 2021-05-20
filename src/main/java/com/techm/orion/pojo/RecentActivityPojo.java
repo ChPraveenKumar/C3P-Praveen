@@ -3,7 +3,7 @@ package com.techm.orion.pojo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-public class RecentActivityPojo implements Comparable {
+public class RecentActivityPojo implements Comparable<RecentActivityPojo> {
 
 	private String createdDate;
 	
@@ -37,7 +37,12 @@ public class RecentActivityPojo implements Comparable {
 	}
 
 	@Override
-	public int compareTo(Object o) {
-		return 0;
+	public int compareTo(RecentActivityPojo o) {
+		if(createdDate.equals(o.getCreatedDate()))  
+			return 0;  
+		else if(createdDate.compareTo(o.getCreatedDate())<0)  
+			return 1;  
+		else  
+			return -1;  
 	}
 }
