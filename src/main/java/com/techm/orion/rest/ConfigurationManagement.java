@@ -490,6 +490,14 @@ public class ConfigurationManagement {
 					}
 				}
 
+				if(json.containsKey("isScheduled"))
+				{
+				configReqToSendToC3pCode.setIsScheduled(Boolean.valueOf(json.get("isScheduled").toString()));
+				}
+				else
+				{
+				configReqToSendToC3pCode.setIsScheduled(false);
+				}
 				/*--------------------------------------------------------------------------------------------*/
 
 				/*
