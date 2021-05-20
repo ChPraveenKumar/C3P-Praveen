@@ -118,4 +118,27 @@ public class SubSlotEntity implements Serializable {
 	public void setSubSlotName(String subSlotName) {
 		this.subSlotName = subSlotName;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + subSlotId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		SubSlotEntity other = (SubSlotEntity) obj;
+		if (subSlotId != other.subSlotId)
+			return false;
+		return true;
+	}
+
 }

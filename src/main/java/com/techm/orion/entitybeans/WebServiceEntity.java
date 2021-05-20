@@ -16,9 +16,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class WebServiceEntity implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -4804628823147479921L;
 
 	@Id
@@ -186,6 +183,28 @@ public class WebServiceEntity implements Serializable {
 
 	public void setErrorDescriptionDeliveryTest(String errorDescriptionDeliveryTest) {
 		ErrorDescriptionDeliveryTest = errorDescriptionDeliveryTest;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + requestInfoId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		WebServiceEntity other = (WebServiceEntity) obj;
+		if (requestInfoId != other.requestInfoId)
+			return false;
+		return true;
 	}
 
 }

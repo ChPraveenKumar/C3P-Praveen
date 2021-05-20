@@ -177,4 +177,27 @@ public class ResourceCharacteristicsEntity implements Serializable
 	public void setRcKeyValue(String rcKeyValue) {
 		this.rcKeyValue = rcKeyValue;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + rcId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ResourceCharacteristicsEntity other = (ResourceCharacteristicsEntity) obj;
+		if (rcId != other.rcId)
+			return false;
+		return true;
+	}
+	
 }

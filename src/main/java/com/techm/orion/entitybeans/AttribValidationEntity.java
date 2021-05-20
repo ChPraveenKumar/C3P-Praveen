@@ -43,4 +43,26 @@ public class AttribValidationEntity implements Serializable {
 	public void setValidationName(String validationName) {
 		this.validationName = validationName;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AttribValidationEntity other = (AttribValidationEntity) obj;
+		if (Id != other.Id)
+			return false;
+		return true;
+	}	
 }

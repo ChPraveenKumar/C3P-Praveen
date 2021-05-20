@@ -89,14 +89,14 @@ public class UserManagementEntity implements Serializable {
 	private Date attemptsLastModified;
 
 	@Lob
-	@Column(name = "moduleInfo", columnDefinition="LONGTEXT")
+	@Column(name = "moduleInfo", columnDefinition = "LONGTEXT")
 	private String moduleInfo;
 
 	@Column(name = "device_group")
 	private String deviceGroup;
 
 	@Lob
-	@Column(name = "customer_sites", columnDefinition="LONGTEXT")
+	@Column(name = "customer_sites", columnDefinition = "LONGTEXT")
 	private String customerSites;
 
 	@JsonInclude(Include.NON_NULL)
@@ -114,7 +114,7 @@ public class UserManagementEntity implements Serializable {
 
 	@Column(name = "base_location")
 	private String baseLocation;
-	
+
 	@Column(name = "user_status")
 	private String userStatus;
 
@@ -362,12 +362,11 @@ public class UserManagementEntity implements Serializable {
 		this.createdDate = now;
 		this.updatedDate = now;
 	}
-	
 
 	public UserManagementEntity(long id, String role, String firstName, String lastName, String email, String phone,
 			String mobile, String userName, String timeZone, String status, String managerName,
 			boolean accountNonLocked, int attempts, Date attemptsLastModified, String subOrdinate, String workGroup,
-			Date createdDate, Date updatedDate, String address, String authentication, String baseLocation ) {
+			Date createdDate, Date updatedDate, String address, String authentication, String baseLocation) {
 		super();
 		this.id = id;
 		this.role = role;
@@ -387,9 +386,9 @@ public class UserManagementEntity implements Serializable {
 		this.workGroup = workGroup;
 		this.createdDate = createdDate;
 		this.updatedDate = updatedDate;
-		this.address= address;
-		this.authentication= authentication;
-		this.baseLocation= baseLocation;
+		this.address = address;
+		this.authentication = authentication;
+		this.baseLocation = baseLocation;
 	}
 
 	public UserManagementEntity(String userName, String name) {
@@ -415,5 +414,27 @@ public class UserManagementEntity implements Serializable {
 
 	public void setUserStatus(String userStatus) {
 		this.userStatus = userStatus;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + (int) (id ^ (id >>> 32));
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		UserManagementEntity other = (UserManagementEntity) obj;
+		if (id != other.id)
+			return false;
+		return true;
 	}
 }

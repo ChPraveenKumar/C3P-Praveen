@@ -623,5 +623,26 @@ public class DeviceDiscoveryEntity {
 	public void setdReqCount(int dReqCount) {
 		this.dReqCount = dReqCount;
 	}
-		
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + dId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		DeviceDiscoveryEntity other = (DeviceDiscoveryEntity) obj;
+		if (dId != other.dId)
+			return false;
+		return true;
+	}
 }
