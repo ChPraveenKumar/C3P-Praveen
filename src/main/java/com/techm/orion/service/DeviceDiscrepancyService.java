@@ -25,6 +25,7 @@ import com.techm.orion.entitybeans.ForkDiscrepancyResultEntity;
 import com.techm.orion.entitybeans.HostDiscoveryResultEntity;
 import com.techm.orion.entitybeans.HostDiscrepancyResultEntity;
 import com.techm.orion.entitybeans.MasterOIDEntity;
+import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DiscoveryDashboardRepository;
 import com.techm.orion.repositories.DiscoveryStatusEntityRepository;
@@ -33,6 +34,7 @@ import com.techm.orion.repositories.ForkDiscrepancyResultRepository;
 import com.techm.orion.repositories.HostDiscoveryResultRepository;
 import com.techm.orion.repositories.HostDiscrepancyResultRepository;
 import com.techm.orion.repositories.MasterOIDRepository;
+import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.utility.WAFADateUtil;
 
 @Service
@@ -57,6 +59,8 @@ public class DeviceDiscrepancyService {
 	private DiscoveryStatusEntityRepository discoveryStatusEntityRepository;
 	@Autowired
 	private WAFADateUtil dateUtil;
+	@Autowired
+	private UserManagementRepository userManagementRepository;
 
 	@SuppressWarnings("unchecked")
 	public JSONObject discripancyService(String discoveryId) {
@@ -551,82 +555,6 @@ public class DeviceDiscrepancyService {
 	}
 
 	@SuppressWarnings({ "unchecked" })
-	public JSONObject saveMasterOids(String request) throws ParseException {
-		JSONParser parser = new JSONParser();
-		JSONObject json = new JSONObject();
-		json = (JSONObject) parser.parse(request);
-		JSONObject object = new JSONObject();
-		boolean isAdd = false;
-		String vendor = null, oid = null, category = null, label = null, inScope = null, networkType = null, sub = null,
-				compare = null, defaultFlag = null, userName = null;
-		if (json.containsKey("userName")) {
-			userName = json.get("userName").toString();
-		}
-		if ("admin".equalsIgnoreCase(userName)) {
-			JSONArray jsonArray = (JSONArray) (json.get("oidDetails"));
-			for (int i = 0; i < jsonArray.size(); i++) {
-				JSONObject oidObject = (JSONObject) jsonArray.get(i);
-				if (oidObject.get("vendor") != null) {
-					vendor = oidObject.get("vendor").toString();
-				}
-				if (oidObject.get("oid") != null) {
-					oid = oidObject.get("oid").toString();
-				}
-				if (oidObject.get("category") != null) {
-					category = oidObject.get("category").toString();
-				}
-				if (oidObject.get("label") != null) {
-					label = oidObject.get("label").toString();
-				}
-				if (oidObject.get("inScope") != null) {
-					inScope = oidObject.get("inScope").toString();
-				}
-				if (oidObject.get("networkType") != null) {
-					networkType = oidObject.get("networkType").toString();
-				}
-				if (oidObject.get("sub") != null) {
-					sub = oidObject.get("sub").toString();
-				}
-				if (oidObject.get("compare") != null) {
-					compare = oidObject.get("compare").toString();
-				}
-				if (oidObject.get("default") != null) {
-					defaultFlag = oidObject.get("default").toString();
-				}
-				// Combination of oid, category, scope, vendor, networkType and displayName
-				// should not be get repeated
-				List<MasterOIDEntity> masterEntity = masterOIDRepository
-						.findByOidNoAndOidCategoryAndOidScopeFlagAndOidVendorAndOidNetworkTypeAndOidDisplayName(oid,
-								category, inScope, vendor, networkType, label);
-				if (masterEntity.isEmpty()) {
-					MasterOIDEntity masterOidsEntity = new MasterOIDEntity();
-					masterOidsEntity.setOidNo(oid);
-					masterOidsEntity.setOidVendor(vendor);
-					masterOidsEntity.setOidCategory(category);
-					masterOidsEntity.setOidDisplayName(label);
-					masterOidsEntity.setOidScopeFlag(inScope);
-					masterOidsEntity.setOidNetworkType(networkType);
-					masterOidsEntity.setOidForkFlag(sub);
-					masterOidsEntity.setOidCompareFlag(compare);
-					masterOidsEntity.setOidDefaultFlag(defaultFlag);
-					masterOidsEntity.setOidCreatedBy(userName);
-					masterOidsEntity.setOidCreatedDate(Timestamp.valueOf(LocalDateTime.now()));
-					masterOIDRepository.save(masterOidsEntity);
-					isAdd = true;
-				}
-				if (isAdd) {
-					object.put("output", "Oids added successfully");
-				} else {
-					object.put("output", "Oids is Duplicate");
-				}
-			}
-		} else {
-			object.put("output", "Only admin has the right to save the oids");
-		}
-		return object;
-	}
-
-	@SuppressWarnings({ "unchecked" })
 	private JSONArray getInterfaceData(List<MasterOIDEntity> masterOidEntities,
 			List<ForkDiscrepancyResultEntity> childOids, String ipAddress, String deviceId) {
 		JSONArray outputArray = new JSONArray();
@@ -697,79 +625,141 @@ public class DeviceDiscrepancyService {
 		return outputArray;
 	}
 
-	@SuppressWarnings("unchecked")
-	public JSONObject editMasterOids(String request) throws ParseException {
-		JSONParser parser = new JSONParser();
-		JSONObject json = new JSONObject();
-		json = (JSONObject) parser.parse(request);
-		JSONObject object = new JSONObject();
-		boolean isEdit = false;
-		String vendor = null, oid = null, category = null, label = null, inScope = null, networkType = null, sub = null,
-				compare = null, defaultFlag = null, userName = null, id = null;
+	private MasterOIDEntity setData(JSONObject json) {
+		MasterOIDEntity entity = new MasterOIDEntity();
 		JSONArray jsonArray = (JSONArray) (json.get("oidDetails"));
-		if (json.containsKey("userName")) {
-			userName = json.get("userName").toString();
-		}
-		if ("admin".equalsIgnoreCase(userName)) {
-			for (int i = 0; i < jsonArray.size(); i++) {
-				JSONObject oidEditObject = (JSONObject) jsonArray.get(i);
-				if (oidEditObject.get("vendor") != null) {
-					vendor = oidEditObject.get("vendor").toString();
-				}
-				if (oidEditObject.get("oid") != null) {
-					oid = oidEditObject.get("oid").toString();
-				}
-				if (oidEditObject.get("category") != null) {
-					category = oidEditObject.get("category").toString();
-				}
-				if (oidEditObject.get("label") != null) {
-					label = oidEditObject.get("label").toString();
-				}
-				if (oidEditObject.get("inScope") != null) {
-					inScope = oidEditObject.get("inScope").toString();
-				}
-				if (oidEditObject.get("networkType") != null) {
-					networkType = oidEditObject.get("networkType").toString();
-				}
-				if (oidEditObject.get("sub") != null) {
-					sub = oidEditObject.get("sub").toString();
-				}
-				if (oidEditObject.get("compare") != null) {
-					compare = oidEditObject.get("compare").toString();
-				}
-				if (oidEditObject.get("default") != null) {
-					defaultFlag = oidEditObject.get("default").toString();
-				}
-				if (oidEditObject.get("id") != null) {
-					id = oidEditObject.get("id").toString();
-				}
+		for (int i = 0; i < jsonArray.size(); i++) {
+			JSONObject oidObject = (JSONObject) jsonArray.get(i);
+			if (oidObject.get("vendor") != null) {
+				entity.setOidVendor(oidObject.get("vendor").toString());
+			}
+			if (oidObject.get("oid") != null) {
+				entity.setOidNo(oidObject.get("oid").toString());
+			}
+			if (oidObject.get("category") != null) {
+				entity.setOidCategory(oidObject.get("category").toString());
+			}
+			if (oidObject.get("label") != null) {
+				entity.setOidDisplayName(oidObject.get("label").toString());
+			}
+			if (oidObject.get("inScope") != null) {
+				entity.setOidScopeFlag(oidObject.get("inScope").toString());
+			}
+			if (oidObject.get("networkType") != null) {
+				entity.setOidNetworkType(oidObject.get("networkType").toString());
+			}
+			if (oidObject.get("sub") != null) {
+				entity.setOidForkFlag(oidObject.get("sub").toString());
+			}
+			if (oidObject.get("compare") != null) {
+				entity.setOidCompareFlag(oidObject.get("compare").toString());
+			}
+			if (oidObject.get("default") != null) {
+				entity.setOidDefaultFlag(oidObject.get("default").toString());
+			}
+			if (oidObject.get("id") != null) {
+				String id = oidObject.get("id").toString();
 				int masterOid = Integer.parseInt(id);
-				MasterOIDEntity masterEntity = masterOIDRepository.findByOidId(masterOid);
+				entity.setOidId(masterOid);
+			}
+		}
+		return entity;
+	}
+
+	@SuppressWarnings({ "unchecked" })
+	public JSONObject saveMasterOids(String request) {
+		JSONObject json = new JSONObject();
+		JSONObject reponseJson = new JSONObject();
+		JSONParser parser = new JSONParser();
+		try {
+			json = (JSONObject) parser.parse(request);
+			String userName = null;
+			boolean isAdd = false;
+			if (json.containsKey("userName")) {
+				userName = json.get("userName").toString();
+			}
+			UserManagementEntity userEntity = userManagementRepository.findOneByUserName(userName);
+			if ("admin".equalsIgnoreCase(userEntity.getRole())) {
+				MasterOIDEntity masterEntities = setData(json);
+				// combination of oid, category, scope, vendor, networkType, displayName should not be repeated
+				List<MasterOIDEntity> masterEntity = masterOIDRepository
+						.findByOidNoAndOidCategoryAndOidScopeFlagAndOidVendorAndOidNetworkTypeAndOidDisplayName(
+								masterEntities.getOidNo(), masterEntities.getOidCategory(),
+								masterEntities.getOidScopeFlag(), masterEntities.getOidVendor(),
+								masterEntities.getOidNetworkType(), masterEntities.getOidDisplayName());
+				if (masterEntity.isEmpty()) {
+					MasterOIDEntity masterOidsEntity = new MasterOIDEntity();
+					masterOidsEntity.setOidNo(masterEntities.getOidNo());
+					masterOidsEntity.setOidVendor(masterEntities.getOidVendor());
+					masterOidsEntity.setOidCategory(masterEntities.getOidCategory());
+					masterOidsEntity.setOidDisplayName(masterEntities.getOidDisplayName());
+					masterOidsEntity.setOidScopeFlag(masterEntities.getOidScopeFlag());
+					masterOidsEntity.setOidNetworkType(masterEntities.getOidNetworkType());
+					masterOidsEntity.setOidForkFlag(masterEntities.getOidForkFlag());
+					masterOidsEntity.setOidCompareFlag(masterEntities.getOidCompareFlag());
+					masterOidsEntity.setOidDefaultFlag(masterEntities.getOidDefaultFlag());
+					masterOidsEntity.setOidCreatedBy(userName);
+					masterOidsEntity.setOidCreatedDate(Timestamp.valueOf(LocalDateTime.now()));
+					masterOIDRepository.save(masterOidsEntity);
+					isAdd = true;
+				}
+				if (isAdd) {
+					reponseJson.put("output", "Oids added successfully");
+				} else {
+					reponseJson.put("output", "Oids is Duplicate");
+				}
+			} else {
+				reponseJson.put("output", "Only admin has the right to edit oids");
+			}
+		} catch (ParseException e) {
+			logger.error("Error in saveMasterOids() method: " + e);
+		}
+		return reponseJson;
+	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject editMasterOids(String request) {
+		JSONObject json = new JSONObject();
+		JSONObject reponseJson = new JSONObject();
+		JSONParser parser = new JSONParser();
+		try {
+			json = (JSONObject) parser.parse(request);
+			String userName = null;
+			boolean isEdit = false;
+			if (json.containsKey("userName")) {
+				userName = json.get("userName").toString();
+			}
+			UserManagementEntity userEntity = userManagementRepository.findOneByUserName(userName);
+			if ("admin".equalsIgnoreCase(userEntity.getRole())) {
+				MasterOIDEntity editEntities = setData(json);
+				MasterOIDEntity masterEntity = masterOIDRepository.findByOidId(editEntities.getOidId());
 				if (masterEntity != null) {
-					masterEntity.setOidNo(oid);
-					masterEntity.setOidVendor(vendor);
-					masterEntity.setOidCategory(category);
-					masterEntity.setOidDisplayName(label);
-					masterEntity.setOidScopeFlag(inScope);
-					masterEntity.setOidNetworkType(networkType);
-					masterEntity.setOidForkFlag(sub);
-					masterEntity.setOidCompareFlag(compare);
-					masterEntity.setOidDefaultFlag(defaultFlag);
+					masterEntity.setOidNo(editEntities.getOidNo());
+					masterEntity.setOidVendor(editEntities.getOidVendor());
+					masterEntity.setOidCategory(editEntities.getOidCategory());
+					masterEntity.setOidDisplayName(editEntities.getOidDisplayName());
+					masterEntity.setOidScopeFlag(editEntities.getOidScopeFlag());
+					masterEntity.setOidNetworkType(editEntities.getOidNetworkType());
+					masterEntity.setOidForkFlag(editEntities.getOidForkFlag());
+					masterEntity.setOidCompareFlag(editEntities.getOidCompareFlag());
+					masterEntity.setOidDefaultFlag(editEntities.getOidDefaultFlag());
 					masterEntity.setOidCreatedBy(userName);
 					masterEntity.setOidUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
 					masterOIDRepository.save(masterEntity);
 					isEdit = true;
 				}
 				if (isEdit) {
-					object.put("output", "oid edited succesfully");
+					reponseJson.put("output", "oid edited succesfully");
 				} else {
-					object.put("output", "Exception in editing oid");
+					reponseJson.put("output", "Exception in editing oid");
 				}
+			} else {
+				reponseJson.put("output", "Only admin has the right to edit oids");
 			}
-		} else {
-			object.put("output", "Only admin has the right to edit oids");
+		} catch (ParseException e) {
+			logger.error("Error in editMasterOids() method: " + e);
 		}
-		return object;
+		return reponseJson;
 	}
 
 }

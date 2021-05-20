@@ -236,23 +236,24 @@ public class CredentialMgmtService {
 	@SuppressWarnings("unchecked")
 	public JSONArray getAllUnAssociatedProfiles() {
 		JSONArray outputArray = new JSONArray();
-		List<DeviceDiscoveryEntity> entity = deviceDiscoveryRepository.findAll();
-		entity.forEach(deviceList -> {
+		List<DeviceDiscoveryEntity> deviceList = deviceDiscoveryRepository.findAll();
+		for(int i = 0; i<deviceList.size(); i++) {
 			JSONObject jsonObject = new JSONObject();
-			if (deviceList.getdSnmpCredProfile() == null || (deviceList.getdSshCredProfile() == null 
-					&& deviceList.getdTelnetCredProfile() == null)){
-				jsonObject.put("hostName", deviceList.getdHostName());
-				if (deviceList.getdSshCredProfile() != null) {
+			if ((deviceList.get(i).getdSshCredProfile() == null || deviceList.get(i).getdSshCredProfile().isEmpty())  
+					&& (deviceList.get(i).getdTelnetCredProfile() == null || deviceList.get(i).getdTelnetCredProfile().isEmpty())
+					|| (deviceList.get(i).getdSnmpCredProfile() == null || deviceList.get(i).getdSnmpCredProfile().isEmpty())){
+				jsonObject.put("hostName", deviceList.get(i).getdHostName());
+				if (deviceList.get(i).getdSshCredProfile() ==null || deviceList.get(i).getdSshCredProfile().isEmpty()) {
 					jsonObject.put("ssh", true);
 				} else {
 					jsonObject.put("ssh", false);
 				}
-				if (deviceList.getdTelnetCredProfile() != null) {
+				if (deviceList.get(i).getdTelnetCredProfile() == null || deviceList.get(i).getdTelnetCredProfile().isEmpty()) {
 					jsonObject.put("telnet", true);
 				} else {
 					jsonObject.put("telnet", false);
 				}
-				if (deviceList.getdSnmpCredProfile() != null) {
+				if (deviceList.get(i).getdSnmpCredProfile() == null || deviceList.get(i).getdSnmpCredProfile().isEmpty()) {
 					jsonObject.put("snmp", true);
 				} else {
 					jsonObject.put("snmp", false);
@@ -261,7 +262,7 @@ public class CredentialMgmtService {
 			if (!jsonObject.isEmpty()) {
 				outputArray.add(jsonObject);
 			}
-		});
+		}
 		return outputArray;
 	}
 

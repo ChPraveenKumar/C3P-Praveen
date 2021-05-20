@@ -128,8 +128,8 @@ public class CredentialMgmtController {
 		CredentialManagementEntity credentialEntity = new CredentialManagementEntity();
 		Date date = new Date();
 		if (credentailManagement == null) {
-			if (profileType.equalsIgnoreCase("SNMP") || profileType.equalsIgnoreCase("SSH")
-					|| profileType.equalsIgnoreCase("TELNET")) {
+			if ("SNMP".equalsIgnoreCase(profileType) || "SSH".equalsIgnoreCase(profileType)
+					|| "TELNET".equalsIgnoreCase(profileType)) {
 				credentialEntity.setProfileName(profileName);
 				credentialEntity.setProfileType(profileType);
 				credentialEntity.setLoginRead(loginRead);
