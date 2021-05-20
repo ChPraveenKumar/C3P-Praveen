@@ -212,11 +212,11 @@ public class InvokeFtl {
 	public String generateCustomerReportFailure(CreateConfigRequest configRequest) {
 		Map<String, Object> tree = new HashMap<String, Object>();
 		if (null == configRequest.getSuggestion() || configRequest.getSuggestion().isEmpty()) {
-			if (configRequest.getHealth_checkup() == "Failed") {
+			if ("Failed".equals(configRequest.getHealth_checkup())) {
 				configRequest.setSuggestion("Please check bandwidth parameter");
-			} else if (configRequest.getNetwork_test() == "Failed") {
+			} else if ("Failed".equals(configRequest.getNetwork_test())) {
 				configRequest.setSuggestion("Please check the connectivity.Issue while performing network test");
-			} else if (configRequest.getDeliever_config() == "Failed") {
+			} else if ("Failed".equals(configRequest.getDeliever_config())) {
 				configRequest.setSuggestion("Error occured while delivering the configuration");
 			} else {
 				configRequest.setSuggestion("Please check the connectivity.Issue while performing reachability test");
@@ -824,11 +824,11 @@ public class InvokeFtl {
 		String res = null;
 		Map<String, Object> tree = new HashMap<String, Object>();
 		if (null == requestinfo.getSuggestion() || requestinfo.getSuggestion().isEmpty()) {
-			if (requestinfo.getHealth_checkup() == "Failed") {
+			if ("Failed".equals(requestinfo.getHealth_checkup())) {
 				requestinfo.setSuggestion("Please check bandwidth parameter");
-			} else if (requestinfo.getNetwork_test() == "Failed") {
+			} else if ("Failed".equals(requestinfo.getNetwork_test())) {
 				requestinfo.setSuggestion("Please check the connectivity.Issue while performing network test");
-			} else if (requestinfo.getDeliever_config() == "Failed") {
+			} else if ("Failed".equals(requestinfo.getDeliever_config())) {
 				requestinfo.setSuggestion("Error occured while delivering the configuration");
 			} else {
 				requestinfo.setSuggestion("Please check the connectivity.Issue while performing reachability test");
