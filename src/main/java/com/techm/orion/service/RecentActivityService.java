@@ -233,7 +233,7 @@ public class RecentActivityService {
 		discoveryId = ddEentity.getDisDashId();
 		msg = "Device discovery performed for device " + discoveryId;
 		recentActivity
-				.setCreatedDate(dateUtil.convertStringToTimestampInSTDFormat(ddEentity.getDisCreatedDate().toString()));
+				.setCreatedDate(ddEentity.getDisCreatedDate().toString());
 		recentActivity.setMessage(msg);
 		recentActivityList.add(recentActivity);
 		return recentActivityList;
