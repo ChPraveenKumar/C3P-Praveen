@@ -3102,7 +3102,7 @@ public class DcmConfigService {
 			 */
 			// requestInfoSO.setTestsSelected(configRequest.getTestsSelected());
 			// variables.put("createConfigRequest", requestInfoSO);
-			if (requestInfoSO.getIsScheduled()!=null && requestInfoSO.getIsScheduled()!=true) {
+			if (requestInfoSO.getIsScheduled()==null || requestInfoSO.getIsScheduled()!=true) {
 				requestInfoSO.setStatus("In Progress");
 				// validateMessage=validatorConfigManagement.validate(configRequest);
 				result = requestInfoDao.insertRequestInDB(requestInfoSO);
