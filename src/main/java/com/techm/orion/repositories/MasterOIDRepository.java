@@ -37,5 +37,7 @@ public interface MasterOIDRepository extends JpaRepository<MasterOIDEntity, Long
 			String oidDisplayName);
 	
 	List<MasterOIDEntity> findAllByOrderByOidCreatedDateDesc();
+
+	MasterOIDEntity findByOidId(int masterOid);
 	
 }

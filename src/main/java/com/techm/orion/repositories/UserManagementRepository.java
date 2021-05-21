@@ -34,8 +34,6 @@ public interface UserManagementRepository extends JpaRepository<UserManagementEn
 	@Query("SELECT u FROM UserManagementEntity u where userName=:userName")
 	List<UserManagementEntity> findUserDetails(@Param("userName") String userName );
 	
-	List<UserManagementEntity>  findOneByUserName(String userName);
-	
 	UserManagementEntity findById(long id);
 	
 	@Query("SELECT managerName FROM UserManagementEntity where userName=:userName")
@@ -138,4 +136,6 @@ public interface UserManagementRepository extends JpaRepository<UserManagementEn
 	List<UserManagementEntity> findByWorkGroupAndRole(String workGroup, String role);
 	
 	List<UserManagementEntity> findOneByWorkGroup(String workGroup);
+	
+	UserManagementEntity findOneByUserName(String userName);
 }

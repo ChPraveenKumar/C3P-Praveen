@@ -47,6 +47,105 @@ public class GenerateReport {
 			throws IOException, ParseException {
 		Response build = null;
 		// Provide the path of python script file location
+		// String pythonScriptFolder = "D:/PDF_Ptyhon_Folder/inputfile.py";
+
+		// Provide the path of html file location
+		String home = TSALabels.DOWNLOAD_PATH.getValue();
+		File downloadHtmlFilePath = new File(home + "/Downloads/" + "report" + ".html");
+
+		// Provide the name of generated pdf file Name with request and version
+		String fileName = "Certification_Test_Report";
+		String requestData = null;
+		String requestId = null;
+		String version = null;
+		String pythonScriptFolder = TSALabels.PYTHON_SCRIPT_PATH.getValue() + "pdfConverter.py";
+
+		File pythonFileCheck = new File(pythonScriptFolder);
+		try {
+			if (pythonFileCheck.exists()) {
+
+				JSONParser parser = new JSONParser();
+				JSONObject json = (JSONObject) parser.parse(requestInfo);
+
+				if (json != null) {
+					requestData = (String) json.get("requestData");
+					requestId = (String) json.get("requestId");
+					version = (String) json.get("version");
+				}
+
+				// Write json(requestData) data into HTML File
+				FileUtils.writeStringToFile(downloadHtmlFilePath, requestData);
+
+				// To Generate pdf file from html file using python with path from
+				// where we need to read html file and write PDF File
+				StringBuilder stringbuilder = new StringBuilder();
+				stringbuilder.append(home).append("/" + "Downloads" + "/").append(requestId).append("_")
+						.append(fileName).append("_").append("V").append(version).append(".pdf");
+				String[] cmd = { "python", pythonFileCheck.getPath(), downloadHtmlFilePath.getPath(),
+						stringbuilder.toString() };
+				Process processInstance = Runtime.getRuntime().exec(cmd);
+				Thread.sleep(1700);
+
+				File file = new File(stringbuilder.toString());
+				if (!file.exists()) {
+					response.setHeader("error", "file not found");
+				} else {
+					// Download file using browse option
+					response.setStatus(HttpServletResponse.SC_OK);
+					response.setHeader("Access-Control-Allow-Origin", "*");
+					response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
+					response.setCharacterEncoding("UTF-8");
+					response.setContentType("application/pdf");
+					FileInputStream fileIn = new FileInputStream(file);
+					IOUtils.copy(fileIn, response.getOutputStream());
+					fileIn.close();
+					// logger.info("\n" + "end of displayFile Service ");
+				}
+
+				BufferedReader reader = new BufferedReader(new InputStreamReader(processInstance.getErrorStream()));
+				String err = reader.readLine();
+				while ((err = reader.readLine()) != null) {
+					logger.info(err);
+				}
+			}else {
+				build = Response.status(404).entity("file is not found!").build();
+			}
+		} catch (Exception e) {
+			String cause = e.getMessage();
+			if (cause.equals("python: not found"))
+				logger.info("No python interpreter found.");
+			logger.info("file is not found!");
+			build = Response.status(404).entity(e.getMessage()).build();
+		}
+		return build;
+	}
+	
+	@GET
+	@RequestMapping(value = "/downloadCOBTemplate", method = RequestMethod.GET, produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<FileSystemResource> downloadTemplateCOB() {
+		String customerOnBoardingFileFolder = TSALabels.COBTemplate.getValue() + "CustomerOnboardTemplate.csv";
+		File templateFile = null;
+		try {
+			templateFile = new File(customerOnBoardingFileFolder);
+
+		} catch (Exception e) {
+			logger.error("Error occurred while downloading file {}", e);
+		}
+		return ResponseEntity.ok()
+				.header("Content-Disposition", "attachment; filename=" + templateFile.getName() + ".csv")
+				.contentLength(templateFile.length()).contentType(MediaType.parseMediaType("text/csv"))
+				.body(new FileSystemResource(templateFile));
+	}
+	
+	// Endpoint for discrepancy report
+	/*@POST
+	@RequestMapping(value = "/generateDiscrepancyPdf", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response generateDiscrepancyPdf(HttpServletResponse response, @RequestBody String requestInfo)
+			throws IOException, ParseException {
+		Response build = null;
+		// Provide the path of python script file location
 		//String pythonScriptFolder = "D:/PDF_Ptyhon_Folder/inputfile.py";
 
 		// Provide the path of html file location
@@ -114,23 +213,6 @@ public class GenerateReport {
 			build = Response.status(404).entity(e.getMessage()).build();
 		}
 		return build;
-	}
+	}*/
 	
-	@GET
-	@RequestMapping(value = "/downloadCOBTemplate", method = RequestMethod.GET, produces = "application/json")
-	@ResponseBody
-	public ResponseEntity<FileSystemResource> downloadTemplateCOB() {
-		String customerOnBoardingFileFolder = TSALabels.COBTemplate.getValue() + "CustomerOnboardTemplate.csv";
-		File templateFile = null;
-		try {
-			templateFile = new File(customerOnBoardingFileFolder);
-
-		} catch (Exception e) {
-			logger.error("Error occurred while downloading file {}", e);
-		}
-		return ResponseEntity.ok()
-				.header("Content-Disposition", "attachment; filename=" + templateFile.getName() + ".csv")
-				.contentLength(templateFile.length()).contentType(MediaType.parseMediaType("text/csv"))
-				.body(new FileSystemResource(templateFile));
-	}
 }

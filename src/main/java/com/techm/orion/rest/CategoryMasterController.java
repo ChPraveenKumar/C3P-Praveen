@@ -109,4 +109,18 @@ public class CategoryMasterController {
 		}
 		return responseEntity;
 	}
+	
+	@POST
+	@RequestMapping(value = "/editMasterOids", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JSONObject> editMasterOidsInfo(@RequestBody String request) throws ParseException {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject json = deviceDiscrepancyService.editMasterOids(request);
+		if (json != null) {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+	
 }
