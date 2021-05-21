@@ -51,7 +51,7 @@ public class GenerateReport {
 
 		// Provide the path of html file location
 		String home = TSALabels.DOWNLOAD_PATH.getValue();
-		File downloadHtmlFilePath = new File(home + "/Downloads/" + "report" + ".html");
+		File downloadHtmlFilePath = new File(home + "report" + ".html");
 
 		// Provide the name of generated pdf file Name with request and version
 		String fileName = "Certification_Test_Report";
@@ -79,7 +79,7 @@ public class GenerateReport {
 				// To Generate pdf file from html file using python with path from
 				// where we need to read html file and write PDF File
 				StringBuilder stringbuilder = new StringBuilder();
-				stringbuilder.append(home).append("/" + "Downloads" + "/").append(requestId).append("_")
+				stringbuilder.append(home).append(requestId).append("_")
 						.append(fileName).append("_").append("V").append(version).append(".pdf");
 				String[] cmd = { "python", pythonFileCheck.getPath(), downloadHtmlFilePath.getPath(),
 						stringbuilder.toString() };

@@ -37,9 +37,10 @@ public enum TSALabels {
 	C3P_APPLICATION_SERVER_TIMEZONE,
 	
 	//C3P Services
-	SINGLE_REQUEST_CREATE,SINGLE_REQUEST_CREATE_BACKUP;
+	SINGLE_REQUEST_CREATE,SINGLE_REQUEST_CREATE_BACKUP,
 	
-	
+	/*Download files*/
+	DOWNLOAD_PATH;
 
 
 	private static final Logger logger = LogManager.getLogger(TSALabels.class);
