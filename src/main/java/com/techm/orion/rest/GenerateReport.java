@@ -47,7 +47,7 @@ public class GenerateReport {
 			throws IOException, ParseException {
 		Response build = null;
 		// Provide the path of python script file location
-		//String pythonScriptFolder = "D:/PDF_Ptyhon_Folder/inputfile.py";
+		// String pythonScriptFolder = "D:/PDF_Ptyhon_Folder/inputfile.py";
 
 		// Provide the path of html file location
 		String home = TSALabels.DOWNLOAD_PATH.getValue();
@@ -59,57 +59,62 @@ public class GenerateReport {
 		String requestId = null;
 		String version = null;
 		String pythonScriptFolder = TSALabels.PYTHON_SCRIPT_PATH.getValue() + "pdfConverter.py";
-		
+
 		File pythonFileCheck = new File(pythonScriptFolder);
 		try {
-			if (!pythonFileCheck.exists()) {
-				throw new Exception("file is not found!");
-			}
-			JSONParser parser = new JSONParser();
-			JSONObject json = (JSONObject) parser.parse(requestInfo);
+			if (pythonFileCheck.exists()) {
 
-			if (json != null) {
-				requestData = (String) json.get("requestData");
-				requestId = (String) json.get("requestId");
-				version = (String) json.get("version");
-			}
+				JSONParser parser = new JSONParser();
+				JSONObject json = (JSONObject) parser.parse(requestInfo);
 
-			// Write json(requestData) data into HTML File
-			FileUtils.writeStringToFile(downloadHtmlFilePath, requestData);
+				if (json != null) {
+					requestData = (String) json.get("requestData");
+					requestId = (String) json.get("requestId");
+					version = (String) json.get("version");
+				}
 
-			// To Generate pdf file from html file using python with path from
-			// where we need to read html file and write PDF File
-			StringBuilder  stringbuilder = new StringBuilder();
-			stringbuilder.append(home).append("/" + "Downloads" + "/").append(requestId).append("_").append(fileName).append("_").append("V").append(version).append(".pdf");
-			String[] cmd = { "python", pythonFileCheck.getPath(), downloadHtmlFilePath.getPath(), stringbuilder.toString()};
-			Process processInstance = Runtime.getRuntime().exec(cmd);
-			Thread.sleep(1700);
+				// Write json(requestData) data into HTML File
+				FileUtils.writeStringToFile(downloadHtmlFilePath, requestData);
 
-			File file = new File(stringbuilder.toString());
-			if (!file.exists()) {
-				response.setHeader("error", "file not found");
-			} else {
-				// Download file using browse option
-				response.setStatus(HttpServletResponse.SC_OK);
-				response.setHeader("Access-Control-Allow-Origin", "*");
-				response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
-				response.setCharacterEncoding("UTF-8");
-				response.setContentType("application/pdf");
-				FileInputStream fileIn = new FileInputStream(file);
-				IOUtils.copy(fileIn, response.getOutputStream());
-				fileIn.close();
-				// logger.info("\n" + "end of displayFile Service ");
-			}
+				// To Generate pdf file from html file using python with path from
+				// where we need to read html file and write PDF File
+				StringBuilder stringbuilder = new StringBuilder();
+				stringbuilder.append(home).append("/" + "Downloads" + "/").append(requestId).append("_")
+						.append(fileName).append("_").append("V").append(version).append(".pdf");
+				String[] cmd = { "python", pythonFileCheck.getPath(), downloadHtmlFilePath.getPath(),
+						stringbuilder.toString() };
+				Process processInstance = Runtime.getRuntime().exec(cmd);
+				Thread.sleep(1700);
 
-			BufferedReader reader = new BufferedReader(new InputStreamReader(processInstance.getErrorStream()));
-			String err = reader.readLine();
-			while ((err = reader.readLine()) != null) {
-				logger.info(err);
+				File file = new File(stringbuilder.toString());
+				if (!file.exists()) {
+					response.setHeader("error", "file not found");
+				} else {
+					// Download file using browse option
+					response.setStatus(HttpServletResponse.SC_OK);
+					response.setHeader("Access-Control-Allow-Origin", "*");
+					response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
+					response.setCharacterEncoding("UTF-8");
+					response.setContentType("application/pdf");
+					FileInputStream fileIn = new FileInputStream(file);
+					IOUtils.copy(fileIn, response.getOutputStream());
+					fileIn.close();
+					// logger.info("\n" + "end of displayFile Service ");
+				}
+
+				BufferedReader reader = new BufferedReader(new InputStreamReader(processInstance.getErrorStream()));
+				String err = reader.readLine();
+				while ((err = reader.readLine()) != null) {
+					logger.info(err);
+				}
+			}else {
+				build = Response.status(404).entity("file is not found!").build();
 			}
 		} catch (Exception e) {
 			String cause = e.getMessage();
 			if (cause.equals("python: not found"))
 				logger.info("No python interpreter found.");
+			logger.info("file is not found!");
 			build = Response.status(404).entity(e.getMessage()).build();
 		}
 		return build;
