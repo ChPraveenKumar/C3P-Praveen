@@ -545,12 +545,12 @@ public class DcmConfigService {
 						createTemplate(configRequest);
 
 						// update the scheduler history
-						requestSchedulerDao
+						/*requestSchedulerDao
 								.updateScheduledRequest(configRequest);
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								configRequest);
 						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
+						telnetCommunicationSSH.start();*/
 					} else if (configRequest.getNetworkType().equalsIgnoreCase(
 							"VNF")) {/*
 									 * VNFHelper helper = new VNFHelper(); if
@@ -866,22 +866,22 @@ public class DcmConfigService {
 										+ configRequest.getRequest_version()
 										+ "_Header", responseHeader,
 								"headerGeneration");
-						requestSchedulerDao
+						/*requestSchedulerDao
 								.updateScheduledRequest(configRequest);
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								configRequest);
 						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
+						telnetCommunicationSSH.start();*/
 					}
 
 					else {
 						createTemplate(configRequest);
-						requestSchedulerDao
+						/*requestSchedulerDao
 								.updateScheduledRequest(configRequest);
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								configRequest);
 						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
+						telnetCommunicationSSH.start();*/
 					}
 				} else {
 					validateMessage = "Failure";
@@ -1802,17 +1802,17 @@ public class DcmConfigService {
 						createTemplateAndHeader(request, requestInfoSOList);
 					}
 					// update the scheduler history
-					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+					/*requestSchedulerDao.updateScheduledRequest(requestInfoSO);*/
 					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 						// createTemplate(requestInfoSO);
 
 						// update the scheduler history
-						requestSchedulerDao
+						/*requestSchedulerDao
 								.updateScheduledRequest(requestInfoSO);
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								requestInfoSO);
 						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
+						telnetCommunicationSSH.start();*/
 					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
 							"VNF")) {
 						/*
@@ -1956,16 +1956,16 @@ public class DcmConfigService {
 					}
 				}
 				// update the scheduler history
-				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
-				if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+/*				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+*/				if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 					// createTemplate(requestInfoSO);
 
 					// update the scheduler history
-					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+					/*requestSchedulerDao.updateScheduledRequest(requestInfoSO);
 					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 							requestInfoSO);
 					telnetCommunicationSSH.setDaemon(true);
-					telnetCommunicationSSH.start();
+					telnetCommunicationSSH.start();*/
 				} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
 						"VNF")) {
 					/*
@@ -2987,12 +2987,12 @@ public class DcmConfigService {
 						createTemplate(configRequest);
 
 						// update the scheduler history
-						requestSchedulerDao
+						/*requestSchedulerDao
 								.updateScheduledRequest(configRequest);
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								configRequest, userName);
 						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
+						telnetCommunicationSSH.start();*/
 					} else if (configRequest.getNetworkType().equalsIgnoreCase(
 							"VNF")) {/*
 									 * VNFHelper helper = new VNFHelper(); if
@@ -3603,7 +3603,7 @@ public class DcmConfigService {
 					// createTemplate(requestInfoSO);
 
 					// update the scheduler history
-					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+					/*requestSchedulerDao.updateScheduledRequest(requestInfoSO);*/
 					/*TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 							requestInfoSO, userName);
 					telnetCommunicationSSH.setDaemon(true);

@@ -133,7 +133,7 @@ public class SchedulerController {
 								HttpMethod.POST, entity, String.class)
 								.getBody();
 
-						obj = (JSONObject) parser.parse(pythonAPIResponse);
+						obj.put("Response", pythonAPIResponse);
 						}
 						else
 						{
