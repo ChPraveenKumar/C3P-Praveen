@@ -132,7 +132,7 @@ public class UserManagementImpl implements UserManagementInterface {
 				userManagementEntity.setWorkGroup(workGroup.toString());
 
 			String isUserExist = userManagementRepository.isUserNameExist(userName);
-			userManager = userManagementRepository.findOneByUserName(manager);
+			userManager = userManagementRepository.findByUserName(manager);
 			if (!userManager.isEmpty()) {
 				userCreate2 = userManager.get(0);
 				if (userCreate2 != null) {

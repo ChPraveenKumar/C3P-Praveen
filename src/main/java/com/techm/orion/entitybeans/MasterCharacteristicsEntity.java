@@ -236,4 +236,26 @@ public class MasterCharacteristicsEntity implements Serializable
 		this.labelValue = labelValue;
 		this.cIsKey = cIsKey;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + cRowid;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		MasterCharacteristicsEntity other = (MasterCharacteristicsEntity) obj;
+		if (cRowid != other.cRowid)
+			return false;
+		return true;
+	}
 }

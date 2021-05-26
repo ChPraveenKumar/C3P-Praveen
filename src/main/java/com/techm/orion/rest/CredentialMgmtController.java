@@ -42,15 +42,15 @@ public class CredentialMgmtController {
 
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
-	
+
 	@Autowired
 	private DeviceDiscoveryRepository deviceInforepo;
-	
+
 	@Autowired
 	private CredentialMgmtService credentialMgmtService;
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@POST
 	@RequestMapping(value = "/getProfileNameValidation", method = RequestMethod.POST, produces = "application/json")
@@ -83,7 +83,7 @@ public class CredentialMgmtController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unused")
 	@POST
@@ -128,27 +128,27 @@ public class CredentialMgmtController {
 		CredentialManagementEntity credentialEntity = new CredentialManagementEntity();
 		Date date = new Date();
 		if (credentailManagement == null) {
-			if (profileType.equalsIgnoreCase("SNMP") || profileType.equalsIgnoreCase("SSH") || profileType.equalsIgnoreCase("TELNET")) {
-				//if (version.equalsIgnoreCase("SNMP V1C/V2C")) {
-					credentialEntity.setProfileName(profileName);
-					credentialEntity.setProfileType(profileType);
-					credentialEntity.setLoginRead(loginRead);
-					credentialEntity.setPasswordWrite(pwdWrite);
-					credentialEntity.setDescription(description);
-					credentialEntity.setCreatedDate(date);
-					credentialEntity.setVersion(version);
-					credentialEntity.setGenric(genric);
-					credentialEntity.setVersion(version);
-					credentialEntity.setEnablePassword(enablePassword);
-					if (!port.isEmpty()) {
-						credentialEntity.setPort(port);
-					} else {
-						credentialEntity.setPort("161");
-					}
+			if ("SNMP".equalsIgnoreCase(profileType) || "SSH".equalsIgnoreCase(profileType)
+					|| "TELNET".equalsIgnoreCase(profileType)) {
+				credentialEntity.setProfileName(profileName);
+				credentialEntity.setProfileType(profileType);
+				credentialEntity.setLoginRead(loginRead);
+				credentialEntity.setPasswordWrite(pwdWrite);
+				credentialEntity.setDescription(description);
+				credentialEntity.setCreatedDate(date);
+				credentialEntity.setVersion(version);
+				credentialEntity.setGenric(genric);
+				credentialEntity.setVersion(version);
+				credentialEntity.setEnablePassword(enablePassword);
+				if (!port.isEmpty()) {
+					credentialEntity.setPort(port);
+				} else {
+					credentialEntity.setPort("161");
+				}
 			}
 			saveDetail = credentialManagementRepo.save(credentialEntity);
 			isAdd = true;
-			}
+		}
 		if (isAdd) {
 			message = "Credential saved successfully";
 		} else {
@@ -156,9 +156,9 @@ public class CredentialMgmtController {
 		}
 		return Response.status(200).entity(message).build();
 	}
-	
+
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@RequestMapping(value = "/deleteCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public Response deleteCredentialProfile(@RequestBody String request) throws ParseException {
@@ -166,72 +166,70 @@ public class CredentialMgmtController {
 		CredentialManagementEntity entity = new CredentialManagementEntity();
 		Gson gson = new Gson();
 		CredentialManagementEntity[] deleteList = gson.fromJson(request, CredentialManagementEntity[].class);
-		JSONObject json;
 		String profileName = null, profileType = null;
-		int infoId ;
+		int infoId;
 		String msg = null;
-		if(deleteList != null) {
-		for (int i = 0; i < deleteList.length; i++) {
-			json = new JSONObject();
-			profileName = deleteList[i].getProfileName();
-			profileType = deleteList[i].getProfileType();
-			infoId = deleteList[i].getInfoId();
-			if (profileName != null) {
-				entity.setProfileName(profileName);
-			}
-			if (profileType != null) {
-				entity.setProfileType(profileType);
-			}
-			if (infoId != 0) {
-				entity.setInfoId(infoId);
-			}
-			CredentialManagementEntity credential = credentialManagementRepo
-					.findOneByProfileNameAndProfileTypeAndInfoId(entity.getProfileName(), entity.getProfileType(),
-							entity.getInfoId());
-			if (credential != null) {
-				credentialManagementRepo.delete(credential);
-				isDelete = true;
-			}
-			if (isDelete) {
-				msg = "Profile deleted succesfully";
-				if (entity.getProfileType().equalsIgnoreCase("SNMP")) {
-					List<DeviceDiscoveryEntity> deviceEntity = deviceDiscoveryRepository
-							.findByDSnmpCredProfile(entity.getProfileName());
-					for (DeviceDiscoveryEntity entities : deviceEntity) {
-						if (!entities.getdSnmpCredProfile().isEmpty()) {
-							entities.setdSnmpCredProfile("");
-							deviceDiscoveryRepository.save(entities);
+		if (deleteList != null) {
+			for (int i = 0; i < deleteList.length; i++) {
+				profileName = deleteList[i].getProfileName();
+				profileType = deleteList[i].getProfileType();
+				infoId = deleteList[i].getInfoId();
+				if (profileName != null) {
+					entity.setProfileName(profileName);
+				}
+				if (profileType != null) {
+					entity.setProfileType(profileType);
+				}
+				if (infoId != 0) {
+					entity.setInfoId(infoId);
+				}
+				CredentialManagementEntity credential = credentialManagementRepo
+						.findOneByProfileNameAndProfileTypeAndInfoId(entity.getProfileName(), entity.getProfileType(),
+								entity.getInfoId());
+				if (credential != null) {
+					credentialManagementRepo.delete(credential);
+					isDelete = true;
+				}
+				if (isDelete) {
+					msg = "Profile deleted succesfully";
+					if (entity.getProfileType().equalsIgnoreCase("SNMP")) {
+						List<DeviceDiscoveryEntity> deviceEntity = deviceDiscoveryRepository
+								.findByDSnmpCredProfile(entity.getProfileName());
+						for (DeviceDiscoveryEntity entities : deviceEntity) {
+							if (!entities.getdSnmpCredProfile().isEmpty()) {
+								entities.setdSnmpCredProfile("");
+								deviceDiscoveryRepository.save(entities);
+							}
 						}
-					}
-				} else if (entity.getProfileType().equalsIgnoreCase("SSH")) {
-					List<DeviceDiscoveryEntity> deviceEntity = deviceDiscoveryRepository
-							.findByDSshCredProfile(entity.getProfileName());
-					for (DeviceDiscoveryEntity entities : deviceEntity) {
-						if (!entities.getdSshCredProfile().isEmpty()) {
-							entities.setdSshCredProfile("");
-							deviceDiscoveryRepository.save(entities);
+					} else if (entity.getProfileType().equalsIgnoreCase("SSH")) {
+						List<DeviceDiscoveryEntity> deviceEntity = deviceDiscoveryRepository
+								.findByDSshCredProfile(entity.getProfileName());
+						for (DeviceDiscoveryEntity entities : deviceEntity) {
+							if (!entities.getdSshCredProfile().isEmpty()) {
+								entities.setdSshCredProfile("");
+								deviceDiscoveryRepository.save(entities);
+							}
+						}
+					} else {
+						List<DeviceDiscoveryEntity> deviceEntity = deviceDiscoveryRepository
+								.findByDTelnetCredProfile(entity.getProfileName());
+						for (DeviceDiscoveryEntity entities : deviceEntity) {
+							if (!entities.getdTelnetCredProfile().isEmpty()) {
+								entities.setdTelnetCredProfile("");
+								deviceDiscoveryRepository.save(entities);
+							}
 						}
 					}
 				} else {
-					List<DeviceDiscoveryEntity> deviceEntity = deviceDiscoveryRepository
-							.findByDTelnetCredProfile(entity.getProfileName());
-					for (DeviceDiscoveryEntity entities : deviceEntity) {
-						if (!entities.getdTelnetCredProfile().isEmpty()) {
-							entities.setdTelnetCredProfile("");
-							deviceDiscoveryRepository.save(entities);
-						}
-					}
+					msg = "Profile is not deleted";
 				}
-			} else {
-				msg = "Profile is not deleted";
 			}
 		}
-		}
 		return Response.status(200).entity(msg).build();
-	} 
+	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@GET
 	@RequestMapping(value = "/getAllCredential", method = RequestMethod.GET, produces = "application/json")
@@ -273,7 +271,7 @@ public class CredentialMgmtController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
@@ -373,7 +371,7 @@ public class CredentialMgmtController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@GET
 	@RequestMapping(value = "/profiles", method = RequestMethod.GET, produces = "application/json")
@@ -386,7 +384,7 @@ public class CredentialMgmtController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
@@ -422,12 +420,14 @@ public class CredentialMgmtController {
 							.findByDHostName(deviceName.get("hostName").toString());
 					if (deviceInfo != null) {
 
-						if ((deviceInfo.getdSshCredProfile() != null 
-								&& !deviceInfo.getdSshCredProfile().isEmpty() && "SSH".equalsIgnoreCase(profileType))
+						if ((deviceInfo.getdSshCredProfile() != null && !deviceInfo.getdSshCredProfile().isEmpty()
+								&& "SSH".equalsIgnoreCase(profileType))
 								|| (deviceInfo.getdSnmpCredProfile() != null
-								&& !deviceInfo.getdSnmpCredProfile().isEmpty() && "SNMP".equalsIgnoreCase(profileType))
+										&& !deviceInfo.getdSnmpCredProfile().isEmpty()
+										&& "SNMP".equalsIgnoreCase(profileType))
 								|| (deviceInfo.getdTelnetCredProfile() != null
-								&& !deviceInfo.getdTelnetCredProfile().isEmpty() && "Telnet".equalsIgnoreCase(profileType)))
+										&& !deviceInfo.getdTelnetCredProfile().isEmpty()
+										&& "Telnet".equalsIgnoreCase(profileType)))
 							isProfileTypePresent = true;
 						else
 							isProfileTypePresent = false;
@@ -470,7 +470,7 @@ public class CredentialMgmtController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
@@ -507,9 +507,9 @@ public class CredentialMgmtController {
 		}
 		return new ResponseEntity<JSONObject>(reffredDevicesJson, HttpStatus.OK);
 	}
-	
+
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
@@ -551,7 +551,7 @@ public class CredentialMgmtController {
 			if (region != null && !"All".equals(region)) {
 				nonMandatoryfiltersbits = "110";
 			}
-			
+
 			if (siteName != null && !siteName.isEmpty() && !"All".equals(siteName)) {
 				nonMandatoryfiltersbits = "311";
 			}
@@ -562,69 +562,71 @@ public class CredentialMgmtController {
 			}
 			if ("100".equals(nonMandatoryfiltersbits)) {
 				// find with customer
-				if("SSH".equalsIgnoreCase(profileType))
-					getAllDevice = deviceInforepo
-						.findAllByCustSiteIdCCustNameAndDSshCredProfileNotInOrIsNull(customer, profileName);
-				else if("SNMP".equalsIgnoreCase(profileType))
-					getAllDevice = deviceInforepo
-						.findAllByCustSiteIdCCustNameAndDSnmpCredProfileNotInOrIsNull(customer, profileName);
+				if ("SSH".equalsIgnoreCase(profileType))
+					getAllDevice = deviceInforepo.findAllByCustSiteIdCCustNameAndDSshCredProfileNotInOrIsNull(customer,
+							profileName);
+				else if ("SNMP".equalsIgnoreCase(profileType))
+					getAllDevice = deviceInforepo.findAllByCustSiteIdCCustNameAndDSnmpCredProfileNotInOrIsNull(customer,
+							profileName);
 				else
-					getAllDevice = deviceInforepo.findAllByCustSiteIdCCustNameAndDTelnetCredProfileNotInOrIsNull(customer, profileName);
+					getAllDevice = deviceInforepo
+							.findAllByCustSiteIdCCustNameAndDTelnetCredProfileNotInOrIsNull(customer, profileName);
 			}
 			if ("110".equals(nonMandatoryfiltersbits)) {
 				// find with customer and region
-				if("SSH".equalsIgnoreCase(profileType))
+				if ("SSH".equalsIgnoreCase(profileType))
 					getAllDevice = deviceInforepo
-						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDSshCredProfileNotInOrIsNull(customer, region, profileName);
-				else if("SNMP".equalsIgnoreCase(profileType))
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDSshCredProfileNotInOrIsNull(customer,
+									region, profileName);
+				else if ("SNMP".equalsIgnoreCase(profileType))
 					getAllDevice = deviceInforepo
-					.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDSnmpCredProfileNotInOrIsNull(customer, region, profileName);
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDSnmpCredProfileNotInOrIsNull(customer,
+									region, profileName);
 				else
 					getAllDevice = deviceInforepo
-							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDTelnetCredProfileNotInOrIsNull(customer, region, profileName);
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDTelnetCredProfileNotInOrIsNull(
+									customer, region, profileName);
 			}
-			
+
 			if ("311".equals(nonMandatoryfiltersbits)) {
 				// find with customer and region and site
-				if("SSH".equalsIgnoreCase(profileType))
+				if ("SSH".equalsIgnoreCase(profileType))
 					getAllDevice = deviceInforepo
-						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDSshCredProfileNotInOrIsNull(customer, region, siteName, profileName);
-				else if("SNMP".equalsIgnoreCase(profileType))
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDSshCredProfileNotInOrIsNull(
+									customer, region, siteName, profileName);
+				else if ("SNMP".equalsIgnoreCase(profileType))
 					getAllDevice = deviceInforepo
-					.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDSnmpCredProfileNotInOrIsNull(customer, region, siteName, profileName);
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDSnmpCredProfileNotInOrIsNull(
+									customer, region, siteName, profileName);
 				else
 					getAllDevice = deviceInforepo
-							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDTelnetCredProfileNotInOrIsNull(customer, region, siteName, profileName);
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDTelnetCredProfileNotInOrIsNull(
+									customer, region, siteName, profileName);
 			}
 			JSONArray outputArray = new JSONArray();
-			
-			for (DeviceDiscoveryEntity deviceDetails: getAllDevice) {
+
+			for (DeviceDiscoveryEntity deviceDetails : getAllDevice) {
 
 				searchObject = new JSONObject();
 				searchObject.put("hostName", deviceDetails.getdHostName());
 				searchObject.put("managementIp", deviceDetails.getdMgmtIp());
 				searchObject.put("type", "Router");
-				searchObject.put("deviceFamily", deviceDetails
-						.getdDeviceFamily());
+				searchObject.put("deviceFamily", deviceDetails.getdDeviceFamily());
 				searchObject.put("model", deviceDetails.getdModel());
 				searchObject.put("os", deviceDetails.getdOs());
 				searchObject.put("osVersion", deviceDetails.getdOsVersion());
 				searchObject.put("vendor", deviceDetails.getdVendor());
 				searchObject.put("status", "Available");
-				searchObject.put("customer", deviceDetails.getCustSiteId()
-						.getcCustName());
+				searchObject.put("customer", deviceDetails.getCustSiteId().getcCustName());
 				if (deviceDetails.getdEndOfSupportDate() != null
-						&& !deviceDetails.getdEndOfSupportDate()
-								.equalsIgnoreCase("Not Available")) {
-					searchObject.put("eos", deviceDetails
-							.getdEndOfSupportDate());
+						&& !deviceDetails.getdEndOfSupportDate().equalsIgnoreCase("Not Available")) {
+					searchObject.put("eos", deviceDetails.getdEndOfSupportDate());
 				} else {
 					searchObject.put("eos", "");
 
 				}
 				if (deviceDetails.getdEndOfSaleDate() != null
-						&& !deviceDetails.getdEndOfSaleDate()
-								.equalsIgnoreCase("Not Available")) {
+						&& !deviceDetails.getdEndOfSaleDate().equalsIgnoreCase("Not Available")) {
 					searchObject.put("eol", deviceDetails.getdEndOfSaleDate());
 				} else {
 					searchObject.put("eol", "");
@@ -639,24 +641,19 @@ public class CredentialMgmtController {
 			searchObj.put("data", outputArray);
 
 		} catch (Exception e) {
-			logger.error("exception in searchReffredDevices service is" +e.getMessage());
+			logger.error("exception in searchReffredDevices service is" + e.getMessage());
 			searchObj.put("data", e.getMessage());
 		}
 
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(searchObj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(searchObj).build();
 	}
-	
+
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@POST
 	@RequestMapping(value = "/viewCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -667,17 +664,17 @@ public class CredentialMgmtController {
 		JSONParser parser = new JSONParser();
 		json = (JSONObject) parser.parse(request);
 		infoId = json.get("infoId").toString();
-		if(infoId != null) {
-		JSONObject jsonResult = credentialMgmtService.viewCredentialProfile(infoId);
-		if (jsonResult != null) {
-			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
-		} else {
-			responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
+		if (infoId != null) {
+			JSONObject jsonResult = credentialMgmtService.viewCredentialProfile(infoId);
+			if (jsonResult != null) {
+				responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.OK);
+			} else {
+				responseEntity = new ResponseEntity<JSONObject>(jsonResult, HttpStatus.BAD_REQUEST);
+			}
 		}
-	}
 		return responseEntity;
 	}
-	
+
 	@POST
 	@RequestMapping(value = "/editSnmpProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public ResponseEntity<JSONObject> editSnmpProfiles(@RequestBody String request) {
@@ -690,7 +687,7 @@ public class CredentialMgmtController {
 		}
 		return responseEntity;
 	}
-	
+
 	@POST
 	@RequestMapping(value = "/editSshAndTelentProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
 	public ResponseEntity<JSONObject> editSshAndTelentProfiles(@RequestBody String request) {
@@ -703,16 +700,19 @@ public class CredentialMgmtController {
 		}
 		return responseEntity;
 	}
-	
+
+	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getAllUnAssociatedProfiles", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<JSONObject> getAllIps() {
 		ResponseEntity<JSONObject> responseEntity = null;
-		JSONObject json = credentialMgmtService.getAllUnAssociatedProfiles();
-		if (json != null) {
-			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
+		JSONObject responseJson = new JSONObject();
+		JSONArray jsonArray = credentialMgmtService.getAllUnAssociatedProfiles();
+		responseJson.put("output", jsonArray);
+		if (responseJson != null) {
+			responseEntity = new ResponseEntity<JSONObject>(responseJson, HttpStatus.OK);
 		} else {
-			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
+			responseEntity = new ResponseEntity<JSONObject>(responseJson, HttpStatus.BAD_REQUEST);
 		}
 		return responseEntity;
 	}

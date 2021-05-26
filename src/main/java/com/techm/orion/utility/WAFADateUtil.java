@@ -253,4 +253,24 @@ public class WAFADateUtil {
 		}
 		return response;
 	}
+	
+	public String getRandomScheduleID() {
+		String scheduleID = null;
+		Date date = new Date();
+		SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+		scheduleID = "SH" + formatter.format(date);
+		return scheduleID;
+	}
+	
+	public String convertTimeStampInSDFFormat(Date timestampin)
+	{
+		String response=null;
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		try {
+			response = dateFormat.format(timestampin);
+		} catch (Exception e) {
+			logger.error("Error in convertTimeStampInSDFFormat "+e);
+		}
+		return response;
+	}
 }

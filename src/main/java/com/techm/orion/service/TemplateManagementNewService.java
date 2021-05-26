@@ -118,7 +118,12 @@ public class TemplateManagementNewService {
 					if (Integer.parseInt(tempNumber) > 99) {
 						tempNumber = "T" + tempNumber;
 						finalTempId = tempId.replace(tempId.substring(tempId.length() - 3), tempNumber);
-						throw new Exception(errorValidationRepository.findByErrorId("C3P_TM_001"));
+						result.put("status", "failure");
+						result.put("errorCode", null);
+						result.put("errorType", null);
+						result.put("errorDescription", errorValidationRepository.findByErrorId("C3P_TM_001"));
+						result.put("version", "1.0");
+						result.put("tempid", finalTempId);
 					} else {
 						tempNumber = "T" + tempNumber;
 						finalTempId = tempId.replace(tempId.substring(tempId.length() - 3), tempNumber);
@@ -660,9 +665,9 @@ public class TemplateManagementNewService {
 		JSONArray outputArray = new JSONArray();
 		if (deviceDetails != null) {
 			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository
-					.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(deviceDetails.getVendor(),
+					.getFeatureForTestDetails(deviceDetails.getVendor(),
 							deviceDetails.getDeviceFamily(), deviceDetails.getOs(), deviceDetails.getOsVersion(),
-							deviceDetails.getRegion(), deviceDetails.getNetworkType());
+							deviceDetails.getRegion());
 			masterFeatures.forEach(masterFeature -> {
 				JSONObject featureDetails = new JSONObject();
 				featureDetails.put("fId", masterFeature.getfId());

@@ -234,8 +234,8 @@ public class LandingPageController {
 				}
 
 				object.put("reqFailCount", reqFailCount);
-				object.put("passwordChangeCount", getpreviousMonthsData.size());
-				object.put("criticalDeviceCount", deviceCount);
+				object.put("passwordChangeCount", deviceCount);
+				object.put("criticalDeviceCount", 0);
 			}
 		} catch (ParseException e) {
 			logger.error(e);

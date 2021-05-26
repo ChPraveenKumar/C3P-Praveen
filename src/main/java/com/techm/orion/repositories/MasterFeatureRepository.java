@@ -3,6 +3,7 @@ package com.techm.orion.repositories;
 import java.sql.Timestamp;
 import java.util.List;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -68,4 +69,14 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 
 	@Query(value = "select f_name from c3p_m_features where f_id = :f_id", nativeQuery = true)
 	String findNameByFeatureid(@Param("f_id") String f_id);
+	
+	List<MasterFeatureEntity> findByFCreatedByOrderByFCreatedDateDesc(String userName, Pageable pageable);
+
+	@Query(value = "select * from c3p_m_features features where f_vendor = :vendor and  f_family =:deviceFamily"
+			+ " and f_os =:os and  f_osversion =:osVersion "
+			+ "and f_region =:region and  (f_networkfun = 'All' or f_networkfun ='PNF') and f_status ='Approved'"
+			+ " and f_version = (select max(f_version) from c3p_m_features fversion where features.f_name=fversion.f_name);", nativeQuery = true)
+	List<MasterFeatureEntity> getFeatureForTestDetails(@Param("vendor") String vendor,
+			@Param("deviceFamily") String deviceFamily, @Param("os") String os, @Param("osVersion") String osVersion,
+			@Param("region") String region);
 }

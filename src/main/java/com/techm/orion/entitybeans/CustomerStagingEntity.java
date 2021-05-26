@@ -660,5 +660,27 @@ public class CustomerStagingEntity implements Serializable {
 	public CustomerStagingEntity() {
 		super();
 		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + stagingId;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CustomerStagingEntity other = (CustomerStagingEntity) obj;
+		if (stagingId != other.stagingId)
+			return false;
+		return true;
 	}	
 }

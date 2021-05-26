@@ -545,12 +545,12 @@ public class DcmConfigService {
 						createTemplate(configRequest);
 
 						// update the scheduler history
-						requestSchedulerDao
+						/*requestSchedulerDao
 								.updateScheduledRequest(configRequest);
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								configRequest);
 						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
+						telnetCommunicationSSH.start();*/
 					} else if (configRequest.getNetworkType().equalsIgnoreCase(
 							"VNF")) {/*
 									 * VNFHelper helper = new VNFHelper(); if
@@ -866,22 +866,22 @@ public class DcmConfigService {
 										+ configRequest.getRequest_version()
 										+ "_Header", responseHeader,
 								"headerGeneration");
-						requestSchedulerDao
+						/*requestSchedulerDao
 								.updateScheduledRequest(configRequest);
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								configRequest);
 						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
+						telnetCommunicationSSH.start();*/
 					}
 
 					else {
 						createTemplate(configRequest);
-						requestSchedulerDao
+						/*requestSchedulerDao
 								.updateScheduledRequest(configRequest);
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								configRequest);
 						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
+						telnetCommunicationSSH.start();*/
 					}
 				} else {
 					validateMessage = "Failure";
@@ -1802,17 +1802,17 @@ public class DcmConfigService {
 						createTemplateAndHeader(request, requestInfoSOList);
 					}
 					// update the scheduler history
-					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+					/*requestSchedulerDao.updateScheduledRequest(requestInfoSO);*/
 					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 						// createTemplate(requestInfoSO);
 
 						// update the scheduler history
-						requestSchedulerDao
+						/*requestSchedulerDao
 								.updateScheduledRequest(requestInfoSO);
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								requestInfoSO);
 						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
+						telnetCommunicationSSH.start();*/
 					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
 							"VNF")) {
 						/*
@@ -1956,16 +1956,16 @@ public class DcmConfigService {
 					}
 				}
 				// update the scheduler history
-				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
-				if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+/*				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+*/				if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 					// createTemplate(requestInfoSO);
 
 					// update the scheduler history
-					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+					/*requestSchedulerDao.updateScheduledRequest(requestInfoSO);
 					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 							requestInfoSO);
 					telnetCommunicationSSH.setDaemon(true);
-					telnetCommunicationSSH.start();
+					telnetCommunicationSSH.start();*/
 				} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
 						"VNF")) {
 					/*
@@ -2987,12 +2987,12 @@ public class DcmConfigService {
 						createTemplate(configRequest);
 
 						// update the scheduler history
-						requestSchedulerDao
+						/*requestSchedulerDao
 								.updateScheduledRequest(configRequest);
 						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 								configRequest, userName);
 						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
+						telnetCommunicationSSH.start();*/
 					} else if (configRequest.getNetworkType().equalsIgnoreCase(
 							"VNF")) {/*
 									 * VNFHelper helper = new VNFHelper(); if
@@ -3102,7 +3102,7 @@ public class DcmConfigService {
 			 */
 			// requestInfoSO.setTestsSelected(configRequest.getTestsSelected());
 			// variables.put("createConfigRequest", requestInfoSO);
-			if (requestInfoSO.getSceheduledTime().isEmpty()) {
+			if (requestInfoSO.getIsScheduled()==null || requestInfoSO.getIsScheduled()!=true) {
 				requestInfoSO.setStatus("In Progress");
 				// validateMessage=validatorConfigManagement.validate(configRequest);
 				result = requestInfoDao.insertRequestInDB(requestInfoSO);
@@ -3354,124 +3354,124 @@ public class DcmConfigService {
 					 */
 
 				} else {
-					requestInfoSO.setStatus("Scheduled");
-					result = requestInfoDao.insertRequestInDB(requestInfoSO);
-
-					for (Map.Entry<String, String> entry : result.entrySet()) {
-						if (entry.getKey() == "requestID") {
-
-							requestIdForConfig = entry.getValue();
-							requestInfoSO
-									.setAlphanumericReqId(requestIdForConfig);
-						}
-						if (entry.getKey() == "result") {
-							res = entry.getValue();
-						}
-
-					}
-					if (pojoList != null) {
-						if (pojoList.isEmpty()) {
-						}
-						// Save the Data in t_create_config_m_attrib_info Table
-						else {
-							for (CreateConfigPojo pojo : pojoList) {
-								pojo.setRequestId(requestInfoSO
-										.getAlphanumericReqId());
-								pojo.setRequestVersion(requestInfoSO
-										.getRequestVersion());
-								saveDynamicAttribValue(pojo);
-							}
-						}
-					}
-
-					if (requestInfoSO.getApiCallType().equalsIgnoreCase(
-							"external")) {
-
-						if (featureList != null && !featureList.isEmpty()) {
-							featureList
-									.forEach(feature -> {
-
-										TemplateFeatureEntity featureid = templateFeatureRepo
-												.findById(Integer
-														.parseInt(feature));
-
-										RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
-										requestFeatureEntity
-												.settFeatureId(featureid);
-										requestFeatureEntity.settRequestId(requestInfoSO
-												.getAlphanumericReqId());
-										requestFeatureEntity
-												.settHostName(requestInfoSO
-														.getHostname());
-										requestFeatureEntity
-												.settRequestVersion(requestInfoSO
-														.getRequestVersion());
-										requestFeatureRepo
-												.save(requestFeatureEntity);
-									});
-
-						}
-					} else {
-						if (featureList != null && !featureList.isEmpty()) {
-							featureList
-									.forEach(feature -> {
-										TemplateFeatureEntity featureId = templateFeatureRepo
-												.findByCommandAndComandDisplayFeature(
-														requestInfoSO
-																.getTemplateID(),
-														feature);
-										if (featureId != null) {
-
-											RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
-											requestFeatureEntity
-													.settFeatureId(featureId);
-											requestFeatureEntity
-													.settRequestId(requestInfoSO
-															.getAlphanumericReqId());
-											requestFeatureEntity
-													.settHostName(requestInfoSO
-															.getHostname());
-											requestFeatureEntity
-													.settRequestVersion(requestInfoSO
-															.getRequestVersion());
-											requestFeatureRepo
-													.save(requestFeatureEntity);
-										}
-									});
-						}
-					}
-					for (RequestInfoPojo request : requestInfoSOList) {
-						createTemplateAndHeader(request, requestInfoSOList);
-					}
-					// update the scheduler history
-					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
-					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
-						// createTemplate(requestInfoSO);
-
-						// update the scheduler history
-						requestSchedulerDao
-								.updateScheduledRequest(requestInfoSO);
-						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-								requestInfoSO, userName);
-						telnetCommunicationSSH.setDaemon(true);
-						telnetCommunicationSSH.start();
-					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
-							"VNF")) {
-						/*
-						 * VNFHelper helper = new VNFHelper(); if
-						 * (requestInfoSO.getVnfConfig() != null) { String
-						 * filepath =
-						 * helper.saveXML(requestInfoSO.getVnfConfig(),
-						 * requestIdForConfig, requestInfoSO); if (filepath !=
-						 * null) {
-						 * 
-						 * TelnetCommunicationSSH telnetCommunicationSSH = new
-						 * TelnetCommunicationSSH( requestInfoSO);
-						 * telnetCommunicationSSH.setDaemon(true);
-						 * telnetCommunicationSSH.start();
-						 * 
-						 * } }
-						 */}
+//					requestInfoSO.setStatus("Scheduled");
+//					result = requestInfoDao.insertRequestInDB(requestInfoSO);
+//
+//					for (Map.Entry<String, String> entry : result.entrySet()) {
+//						if (entry.getKey() == "requestID") {
+//
+//							requestIdForConfig = entry.getValue();
+//							requestInfoSO
+//									.setAlphanumericReqId(requestIdForConfig);
+//						}
+//						if (entry.getKey() == "result") {
+//							res = entry.getValue();
+//						}
+//
+//					}
+//					if (pojoList != null) {
+//						if (pojoList.isEmpty()) {
+//						}
+//						// Save the Data in t_create_config_m_attrib_info Table
+//						else {
+//							for (CreateConfigPojo pojo : pojoList) {
+//								pojo.setRequestId(requestInfoSO
+//										.getAlphanumericReqId());
+//								pojo.setRequestVersion(requestInfoSO
+//										.getRequestVersion());
+//								saveDynamicAttribValue(pojo);
+//							}
+//						}
+//					}
+//
+//					if (requestInfoSO.getApiCallType().equalsIgnoreCase(
+//							"external")) {
+//
+//						if (featureList != null && !featureList.isEmpty()) {
+//							featureList
+//									.forEach(feature -> {
+//
+//										TemplateFeatureEntity featureid = templateFeatureRepo
+//												.findById(Integer
+//														.parseInt(feature));
+//
+//										RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+//										requestFeatureEntity
+//												.settFeatureId(featureid);
+//										requestFeatureEntity.settRequestId(requestInfoSO
+//												.getAlphanumericReqId());
+//										requestFeatureEntity
+//												.settHostName(requestInfoSO
+//														.getHostname());
+//										requestFeatureEntity
+//												.settRequestVersion(requestInfoSO
+//														.getRequestVersion());
+//										requestFeatureRepo
+//												.save(requestFeatureEntity);
+//									});
+//
+//						}
+//					} else {
+//						if (featureList != null && !featureList.isEmpty()) {
+//							featureList
+//									.forEach(feature -> {
+//										TemplateFeatureEntity featureId = templateFeatureRepo
+//												.findByCommandAndComandDisplayFeature(
+//														requestInfoSO
+//																.getTemplateID(),
+//														feature);
+//										if (featureId != null) {
+//
+//											RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+//											requestFeatureEntity
+//													.settFeatureId(featureId);
+//											requestFeatureEntity
+//													.settRequestId(requestInfoSO
+//															.getAlphanumericReqId());
+//											requestFeatureEntity
+//													.settHostName(requestInfoSO
+//															.getHostname());
+//											requestFeatureEntity
+//													.settRequestVersion(requestInfoSO
+//															.getRequestVersion());
+//											requestFeatureRepo
+//													.save(requestFeatureEntity);
+//										}
+//									});
+//						}
+//					}
+//					for (RequestInfoPojo request : requestInfoSOList) {
+//						createTemplateAndHeader(request, requestInfoSOList);
+//					}
+//					// update the scheduler history
+//					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+//					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+//						// createTemplate(requestInfoSO);
+//
+//						// update the scheduler history
+//						requestSchedulerDao
+//								.updateScheduledRequest(requestInfoSO);
+//						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+//								requestInfoSO, userName);
+//						telnetCommunicationSSH.setDaemon(true);
+//						telnetCommunicationSSH.start();
+//					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
+//							"VNF")) {
+//						/*
+//						 * VNFHelper helper = new VNFHelper(); if
+//						 * (requestInfoSO.getVnfConfig() != null) { String
+//						 * filepath =
+//						 * helper.saveXML(requestInfoSO.getVnfConfig(),
+//						 * requestIdForConfig, requestInfoSO); if (filepath !=
+//						 * null) {
+//						 * 
+//						 * TelnetCommunicationSSH telnetCommunicationSSH = new
+//						 * TelnetCommunicationSSH( requestInfoSO);
+//						 * telnetCommunicationSSH.setDaemon(true);
+//						 * telnetCommunicationSSH.start();
+//						 * 
+//						 * } }
+//						 */}
 				}
 			} else {
 
@@ -3598,16 +3598,16 @@ public class DcmConfigService {
 					}
 				}
 				// update the scheduler history
-				requestSchedulerDao.updateScheduledRequest(requestInfoSO);
+				//requestSchedulerDao.updateScheduledRequest(requestInfoSO);
 				if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 					// createTemplate(requestInfoSO);
 
 					// update the scheduler history
-					requestSchedulerDao.updateScheduledRequest(requestInfoSO);
-					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
+					/*requestSchedulerDao.updateScheduledRequest(requestInfoSO);*/
+					/*TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
 							requestInfoSO, userName);
 					telnetCommunicationSSH.setDaemon(true);
-					telnetCommunicationSSH.start();
+					telnetCommunicationSSH.start();*/
 				} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
 						"VNF")) {
 					/*

@@ -15,7 +15,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -24,9 +23,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 @JsonIgnoreProperties(ignoreUnknown = false)
 public class Vendors implements Serializable {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1025953642944910291L;
 
 	@GeneratedValue(strategy = GenerationType.AUTO)
@@ -108,5 +104,28 @@ public class Vendors implements Serializable {
 	public void setVendor(String vendor) {
 		this.vendor = vendor;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Vendors other = (Vendors) obj;
+		if (id != other.id)
+			return false;
+		return true;
+	}
+	
 
 }

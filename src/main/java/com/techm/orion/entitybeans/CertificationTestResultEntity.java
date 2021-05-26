@@ -328,4 +328,25 @@ public class CertificationTestResultEntity implements Serializable {
 		this.guiOsVersion = guiOsVersion;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + config_id;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		CertificationTestResultEntity other = (CertificationTestResultEntity) obj;
+		if (config_id != other.config_id)
+			return false;
+		return true;
+	}
 }
