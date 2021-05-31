@@ -75,6 +75,9 @@ public class MasterCharacteristicsEntity implements Serializable
 	
 	@Transient
 	private String labelValue;
+	
+	@Column(name = "c_replicationind",columnDefinition="TINYINT(1)")
+	private boolean cReplicationind;
 
 	public String getcValidations() {
 		return cValidations;
@@ -222,6 +225,15 @@ public class MasterCharacteristicsEntity implements Serializable
 
 	public void setLabelValue(String labelValue) {
 		this.labelValue = labelValue;
+	}
+	
+
+	public boolean getcReplicationind() {
+		return cReplicationind;
+	}
+
+	public void setcReplicationind(boolean cReplicationind) {
+		this.cReplicationind = cReplicationind;
 	}
 
 	public MasterCharacteristicsEntity() {

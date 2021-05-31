@@ -497,4 +497,31 @@ public class TemplateSuggestionService implements Observer {
 				.build();
 
 	}
+	
+	@POST
+	@RequestMapping(value = "/getVnfTemplates", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JSONObject> getVnfTemplates(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		  JSONObject vnfTemplates = templateManagementNewService.getVnfTemplates(request);
+		if (vnfTemplates != null) {
+			responseEntity = new ResponseEntity<JSONObject>(vnfTemplates, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(vnfTemplates, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+	
+	@POST
+	@RequestMapping(value = "/getVnfFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JSONObject> getVnfFeatures(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject vnfFeature = templateManagementNewService.getVnfFeatures(request);
+		if (vnfFeature != null) {
+			responseEntity = new ResponseEntity<JSONObject>(vnfFeature, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(vnfFeature, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+	
 }

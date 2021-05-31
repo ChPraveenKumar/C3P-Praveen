@@ -98,6 +98,7 @@ public class AttribCreateConfigResponceMapper {
 				attribJson.setCharacteriscticsId("");
 			}
 			attribJson.setKey(entity.iscIsKey());
+			attribJson.setReplicationFalg(entity.getcReplicationind());
 			jsonList.add(attribJson);
 		}
 		return jsonList;
