@@ -14,6 +14,7 @@ import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,6 +40,7 @@ public class AttributeFeatureServiceTM implements Observer {
 	 * This Api is marked as ***************External Api Impacted****************
 	 **/
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/getFeaturesForAttributes", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getFeaturesForAttributes(@RequestBody String configRequest) {
@@ -92,6 +94,7 @@ public class AttributeFeatureServiceTM implements Observer {
 	 * This Api is marked as ***************External Api Impacted****************
 	 **/
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/getFeaturesForSelectedTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getFeaturesForSelectedTemplate(
@@ -160,6 +163,7 @@ public class AttributeFeatureServiceTM implements Observer {
 	 * This Api is marked as ***************External Api Impacted****************
 	 **/
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/getTemplateDetailsForSelectedFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getTemplateDetailsForSelectedFeatures(
