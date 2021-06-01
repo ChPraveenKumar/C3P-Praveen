@@ -657,8 +657,8 @@ public class DeviceDiscrepancyService {
 			if (oidObject.get("networkType") != null) {
 				entity.setOidNetworkType(oidObject.get("networkType").toString());
 			}
-			if (oidObject.get("sub") != null) {
-				entity.setOidForkFlag(oidObject.get("sub").toString());
+			if (oidObject.get("forkFlag") != null) {
+				entity.setOidForkFlag(oidObject.get("forkFlag").toString());
 			}
 			if (oidObject.get("compare") != null) {
 				entity.setOidCompareFlag(oidObject.get("compare").toString());

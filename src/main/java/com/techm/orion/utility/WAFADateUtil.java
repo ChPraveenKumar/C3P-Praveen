@@ -159,7 +159,7 @@ public class WAFADateUtil {
 	public String currentDateTime()
 	{
 		String response=null;
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy hh:mm:ss");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
 		LocalDateTime datetime = LocalDateTime.now();
 		response = datetime.format(formatter);
 		return response;
@@ -175,7 +175,7 @@ public class WAFADateUtil {
 		ZoneId clientZoneID = ZoneId.of(timezone);
 		ZonedDateTime clientDateTime = currentDateTime.withZoneSameInstant(clientZoneID);
 		ZonedDateTime applicationDateTime = clientDateTime.withZoneSameInstant(applicationServerZoneId);
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy hh:mm:ss");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
 		response = applicationDateTime.format(formatter);
 		return response;
 	}
@@ -183,7 +183,7 @@ public class WAFADateUtil {
 	public String dateTimeInAppFormat(String time)
 	{
 		String response=null;
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy hh:mm:ss");
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd-yyyy HH:mm:ss");
 		LocalDateTime dateTime= Timestamp.valueOf(time).toLocalDateTime();
 		//LocalDateTime dateTime = LocalDateTime.parse(time);
 		response = dateTime.format(formatter);
@@ -194,7 +194,7 @@ public class WAFADateUtil {
 	{
 		Timestamp timestamp=null;
 		try {
-			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy hh:mm:ss");
+			SimpleDateFormat dateFormat = new SimpleDateFormat("MM-dd-yyyy HH:mm:ss");
 		    Date parsedDate = dateFormat.parse(time);
 		     timestamp = new java.sql.Timestamp(parsedDate.getTime());;
 		   
@@ -206,12 +206,12 @@ public class WAFADateUtil {
 	public String convertTimeStampfromDBToParsableDate(String timestampin)
 	{
 		String response=null;
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		Date parsedDate;
 		try {
 		parsedDate = dateFormat.parse(timestampin);
 		Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
-		SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss");
+		SimpleDateFormat dateFormat1 = new SimpleDateFormat("yyyy-mm-dd HH:mm:ss");
 		Date parsedDate1 = dateFormat1.parse(timestamp.toString());
 		Timestamp timestamp1 = new java.sql.Timestamp(parsedDate1.getTime());
 		response= timestamp1.toString();
@@ -224,7 +224,7 @@ public class WAFADateUtil {
 	public String convertTimestampFormat(Timestamp tmpsmp)
 	{
 		String response=null;
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		Date parsedDate;
 		try {
 			parsedDate = dateFormat.parse(tmpsmp.toString());
@@ -240,7 +240,7 @@ public class WAFADateUtil {
 	public String convertStringToTimestampInSTDFormat(String tmstmp)
 	{
 		String response=null;
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/mm/dd hh:mm:ss");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/mm/dd HH:mm:ss");
 		Date parsedDate;
 		try {
 			parsedDate = dateFormat.parse(tmstmp);
