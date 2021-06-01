@@ -957,7 +957,8 @@ public class ConfigurationManagement {
 					res = entry.getValue();
 					if (res.equalsIgnoreCase("true")) {
 						data = "Submitted";
-						dcmConfigService.updateRequestCount(device);						
+						if(device != null)
+						    dcmConfigService.updateRequestCount(device);						
 					}
 
 				}
