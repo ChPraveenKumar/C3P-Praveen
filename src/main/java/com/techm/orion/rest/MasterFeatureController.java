@@ -709,6 +709,7 @@ public class MasterFeatureController {
 		JSONObject masterJson = null;
 		JSONObject childJson = null;
 		JSONArray childList = null;
+		int count=0;
 		String vendor = null, deviceFamily = null, os = null, osVersion = null, region = null, networkFunction = null;
 		try {
 			masterJson = new JSONObject();
@@ -748,16 +749,18 @@ public class MasterFeatureController {
 				childJson.put("createdBy", entity.getfCreatedBy());
 				childJson.put("featureId", entity.getfId());
 				childJson.put("isEditable", entity.getfIsenabled());
+				count++;
 				childList.add(childJson);
 			}
 			masterJson.put("childList", childList);
 			masterJson.put("vendor", vendor);
 			outputArray.add(masterJson);
-			objInterfaces.put("entity", outputArray);
 		} catch (Exception exe) {
 			logger.error("SQL Exception in searchFeaturesForRPC method "
 					+ exe.getMessage());
 		}
+		objInterfaces.put("entity", outputArray);
+		objInterfaces.put("featureCount", count);
 		return new ResponseEntity<JSONObject>(objInterfaces, HttpStatus.OK);
 	}
 	

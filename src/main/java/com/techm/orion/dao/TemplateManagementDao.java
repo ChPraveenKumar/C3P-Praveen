@@ -1821,14 +1821,20 @@ public class TemplateManagementDao {
 				template.setOsVersion(rs.getString("temp_os_version"));
 				template.setRegion(rs.getString("temp_region"));
 				Timestamp d = rs.getTimestamp("temp_created_date");
-				template.setDate(covnertTStoString(d));
+				if (d != null) {
+					template.setDate(covnertTStoString(d));
+				}
 				template.setVersion(rs.getString("temp_version"));
 				Timestamp d1 = rs.getTimestamp("temp_updated_date");
-				template.setUpdatedDate(covnertTStoString(d1));
+				if (d1 != null) {
+					template.setUpdatedDate(covnertTStoString(d1));
+				}
 				template.setStatus(rs.getString("temp_status"));
 				template.setApprover(rs.getString("temp_approver"));
 				template.setCreatedBy(rs.getString("temp_created_by"));
-				template.setComment(rs.getString("temp_comment_section"));
+				if (rs.getString("temp_comment_section") != null) {
+					template.setComment(rs.getString("temp_comment_section"));
+				}
 				if (template.getStatus().equalsIgnoreCase("Approved")
 						|| template.getStatus().equalsIgnoreCase("approved")) {
 					template.setEditable(true);

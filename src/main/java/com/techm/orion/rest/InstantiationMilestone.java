@@ -97,6 +97,23 @@ public class InstantiationMilestone extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "instantiation", "2", "Failure");
 						}
 					}
+				} else if("SNAD".equalsIgnoreCase(type)){
+					requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
+					if(requestinfo != null) {
+						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "instantiation", "4", "In Progress");
+						if(requestinfo.getConfigurationGenerationMethods().equalsIgnoreCase("[\"DeleteInstance\"]")) {
+							outputStatus = vnfInstantiationMilestoneService.vnfDeleteInstantiation(requestId, version);
+						}
+						if (outputStatus) {
+							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "instantiation", "1",
+									"In Progress");
+						} else {
+							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "instantiation", "2", "Failure");
+						}
+					}
 				} else {
 					logger.info("performInstantiation - type (" + type + ") is not valid for performInstantiation");
 					outputStatus = true;
