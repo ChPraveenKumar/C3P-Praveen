@@ -18,7 +18,7 @@ import com.techm.orion.service.CategoryDropDownService;
 public class AttribCreateConfigResponceMapper {
 
 	@Autowired
-	CategoryDropDownService categoryDropDownservice;
+	private CategoryDropDownService categoryDropDownservice;
 
 	public AttribCreateConfigPojo getAttribTemplateSuggestionMapper(MasterAttributes entity) {
 		AttribCreateConfigPojo pojo = new AttribCreateConfigPojo();
