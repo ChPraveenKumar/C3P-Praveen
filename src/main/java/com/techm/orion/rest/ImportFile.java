@@ -530,7 +530,9 @@ public class ImportFile {
 			for (ImportMasterStagingEntity entity : importMasterData) {
 				object = new JSONObject();
 				object.put("importId", entity.getImportId());
-				object.put("executionDate", dateUtil.convertTimeStampInSDFFormat(entity.getExecutionDate()));
+				if (entity.getExecutionDate() != null) {
+					object.put("executionDate", dateUtil.convertTimeStampInSDFFormat(entity.getExecutionDate()));
+				}
 				object.put("status", entity.getStatus());
 				object.put("totalDevices", entity.getTotalDevices());
 				object.put("successORexception", entity.getCountSuccess() + " / " + entity.getCountException());

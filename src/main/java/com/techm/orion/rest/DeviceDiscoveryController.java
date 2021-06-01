@@ -291,10 +291,10 @@ public class DeviceDiscoveryController implements Observer {
 				inventoryList.get(j).setdPollUsing("IP Address");
 				inventoryList.get(j).setdLoginDetails(inventoryList.get(j).getdConnect());
 				inventoryList.get(j).setdStatus("Available");
-				inventoryList.get(j).setdManagedBy(inventoryList.get(j).getdManagedBy());
-				inventoryList.get(j).setdManagedServicesType(inventoryList.get(j).getdManagedServicesType());
-				inventoryList.get(j).setdLifeCycleState(inventoryList.get(j).getdLifeCycleState());
-				inventoryList.get(j).setdRole(inventoryList.get(j).getdRole());
+				inventoryList.get(j).getdManagedBy();
+				inventoryList.get(j).getdManagedServicesType();
+				inventoryList.get(j).getdLifeCycleState();
+				inventoryList.get(j).getdRole();
 
 				/* Update IsNewFlag */
 				int isNewDevice = inventoryList.get(j).getdNewDevice();

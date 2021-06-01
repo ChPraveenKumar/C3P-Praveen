@@ -102,7 +102,9 @@ public class InstantiationMilestone extends Thread {
 					if(requestinfo != null) {
 						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "instantiation", "4", "In Progress");
-						outputStatus = vnfInstantiationMilestoneService.vnfDeleteInstantiation(requestId, version);
+						if(requestinfo.getConfigurationGenerationMethods().equalsIgnoreCase("[\"DeleteInstance\"]")) {
+							outputStatus = vnfInstantiationMilestoneService.vnfDeleteInstantiation(requestId, version);
+						}
 						if (outputStatus) {
 							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "instantiation", "1",
