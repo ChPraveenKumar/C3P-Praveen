@@ -279,7 +279,13 @@ public class ConfigurationManagmentService {
 		}
 		createConfigRequest.setCustomer(json.get("customer").toString());
 		createConfigRequest.setSiteName(json.get("siteName").toString().toUpperCase());
-		SiteInfoEntity siteId = siteInfoRepository.findCSiteIdByCSiteName(createConfigRequest.getSiteName());
+		String hostName = null, mgtIp = null;
+		if (json.get("hostname") != null)
+			hostName = json.get("hostname").toString().toUpperCase();
+		if (json.get("managementIp") != null)
+			mgtIp = json.get("managementIp").toString().toUpperCase();
+		DeviceDiscoveryEntity deviceDetails  = deviceDiscoveryRepository.findHostNameAndMgmtip(mgtIp, hostName);
+		SiteInfoEntity siteId = deviceDetails.getCustSiteId();
 		createConfigRequest.setSiteid(siteId.getcSiteId());
 		if (json.get("deviceType") != null) {
 			createConfigRequest.setDeviceType(json.get("deviceType").toString());
@@ -301,9 +307,7 @@ public class ConfigurationManagmentService {
 		if (json.get("networkType") != null && json.get("networkType").toString().isEmpty()) {
 			createConfigRequest.setNetworkType(json.get("networkType").toString());
 		} else {
-			DeviceDiscoveryEntity networkfunctio = deviceDiscoveryRepository
-					.findDVNFSupportByDHostName(createConfigRequest.getHostname());
-			createConfigRequest.setNetworkType(networkfunctio.getdVNFSupport());
+			createConfigRequest.setNetworkType(deviceDetails.getdVNFSupport());
 		}
 		return createConfigRequest;
 	}

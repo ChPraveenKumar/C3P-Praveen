@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
@@ -19,6 +20,9 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -27,6 +31,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import com.techm.orion.utility.TSALabels;
 
@@ -58,57 +64,43 @@ public class GenerateReport {
 		String requestData = null;
 		String requestId = null;
 		String version = null;
-		String pythonScriptFolder = TSALabels.PYTHON_SCRIPT_PATH.getValue() + "pdfConverter.py";
+		boolean isReportGenerated = false;
 
-		File pythonFileCheck = new File(pythonScriptFolder);
 		try {
-			if (pythonFileCheck.exists()) {
 
-				JSONParser parser = new JSONParser();
-				JSONObject json = (JSONObject) parser.parse(requestInfo);
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(requestInfo);
 
-				if (json != null) {
-					requestData = (String) json.get("requestData");
-					requestId = (String) json.get("requestId");
-					version = (String) json.get("version");
-				}
+			if (json != null) {
+				requestData = (String) json.get("requestData");
+				requestId = (String) json.get("requestId");
+				version = (String) json.get("version");
+			}
 
-				// Write json(requestData) data into HTML File
-				FileUtils.writeStringToFile(downloadHtmlFilePath, requestData);
+			// Write json(requestData) data into HTML File
+			FileUtils.writeStringToFile(downloadHtmlFilePath, requestData);
 
-				// To Generate pdf file from html file using python with path from
-				// where we need to read html file and write PDF File
-				StringBuilder stringbuilder = new StringBuilder();
-				stringbuilder.append(home).append(requestId).append("_")
-						.append(fileName).append("_").append("V").append(version).append(".pdf");
-				String[] cmd = { "python", pythonFileCheck.getPath(), downloadHtmlFilePath.getPath(),
-						stringbuilder.toString() };
-				Process processInstance = Runtime.getRuntime().exec(cmd);
-				Thread.sleep(1700);
-
-				File file = new File(stringbuilder.toString());
-				if (!file.exists()) {
-					response.setHeader("error", "file not found");
-				} else {
-					// Download file using browse option
-					response.setStatus(HttpServletResponse.SC_OK);
-					response.setHeader("Access-Control-Allow-Origin", "*");
-					response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
-					response.setCharacterEncoding("UTF-8");
-					response.setContentType("application/pdf");
-					FileInputStream fileIn = new FileInputStream(file);
-					IOUtils.copy(fileIn, response.getOutputStream());
-					fileIn.close();
-					// logger.info("\n" + "end of displayFile Service ");
-				}
-
-				BufferedReader reader = new BufferedReader(new InputStreamReader(processInstance.getErrorStream()));
-				String err = reader.readLine();
-				while ((err = reader.readLine()) != null) {
-					logger.info(err);
-				}
-			}else {
-				build = Response.status(404).entity("file is not found!").build();
+			// To Generate pdf file from html file using python with path from
+			// where we need to read html file and write PDF File
+			StringBuilder stringbuilder = new StringBuilder();
+			stringbuilder.append(home).append(requestId).append("_").append(fileName).append("_").append("V")
+					.append(version).append(".pdf");
+			isReportGenerated = generateReport(requestData, stringbuilder.toString());
+			File file = new File(stringbuilder.toString());
+			if (!file.exists()) {
+				response.setHeader("error", "file not found");
+				isReportGenerated = false;
+			} else {
+				// Download file using browse option
+				response.setStatus(HttpServletResponse.SC_OK);
+				response.setHeader("Access-Control-Allow-Origin", "*");
+				response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
+				response.setCharacterEncoding("UTF-8");
+				response.setContentType("application/pdf");
+				FileInputStream fileIn = new FileInputStream(file);
+				IOUtils.copy(fileIn, response.getOutputStream());
+				fileIn.close();
+				isReportGenerated =true;
 			}
 		} catch (Exception e) {
 			String cause = e.getMessage();
@@ -117,6 +109,7 @@ public class GenerateReport {
 			logger.info("file is not found!");
 			build = Response.status(404).entity(e.getMessage()).build();
 		}
+		build = Response.status(200).entity(isReportGenerated).build();
 		return build;
 	}
 	
@@ -215,4 +208,31 @@ public class GenerateReport {
 		return build;
 	}*/
 	
+	@SuppressWarnings({ "unchecked", "unused" })
+	private boolean generateReport(String input, String output) {
+		boolean isReportGenerated = false;
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			JSONObject request = new JSONObject();
+			request.put(new String("input"), input);
+			request.put(new String("output"), output);
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_REPORT.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			logger.info("response of generateReport is " + response);
+
+			if (response.contains("Success")) {
+				isReportGenerated = true;
+			}
+		} catch (HttpClientErrorException exe) {
+			logger.error("HttpClientErrorException - generateReport -> " + exe.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - generateReport->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		logger.info("End - generateReport ->" + isReportGenerated);
+		return isReportGenerated;
+	}
 }
