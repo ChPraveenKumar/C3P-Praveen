@@ -497,4 +497,39 @@ public class TemplateSuggestionService implements Observer {
 				.build();
 
 	}
+	
+	@POST
+	@RequestMapping(value = "/getVnfTemplates", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JSONObject> getVnfTemplates(@RequestBody String request)  {
+		ResponseEntity<JSONObject> responseEntity = null;
+		try {
+		JSONObject vnfTemplates = templateManagementNewService.getVnfTemplates(request);
+		if (vnfTemplates != null) {
+			responseEntity = new ResponseEntity<JSONObject>(vnfTemplates, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(vnfTemplates, HttpStatus.BAD_REQUEST);
+		}
+		}catch(Exception e) {
+			logger.info("Exception Occer in VnfTemplate Service "+e);
+		}
+		return responseEntity;
+	}
+	
+	@POST
+	@RequestMapping(value = "/getVnfFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JSONObject> getVnfFeatures(@RequestBody String request) {
+		ResponseEntity<JSONObject> responseEntity = null;
+		try {
+		JSONObject vnfFeature = templateManagementNewService.getVnfFeatures(request);
+		if (vnfFeature != null) {
+			responseEntity = new ResponseEntity<JSONObject>(vnfFeature, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(vnfFeature, HttpStatus.BAD_REQUEST);
+		}
+		}catch (Exception e) {
+			logger.info("Exception Occer in getVnfFeatures Service "+e);
+		}
+		return responseEntity;
+	}
+	
 }

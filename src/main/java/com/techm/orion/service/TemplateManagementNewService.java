@@ -83,10 +83,9 @@ public class TemplateManagementNewService {
 
 	@Autowired
 	private AttribCreateConfigResponceMapper attribCreateConfigResponceMapper;
-	
+
 	@Autowired
 	private TemplateManagementDao templateManagementDao;
-
 
 	@Autowired
 	private GetTemplateConfigurationData templateSaveFlowService;
@@ -346,7 +345,7 @@ public class TemplateManagementNewService {
 
 	}
 
-	public String setCommandList(List<String> featureList, String finaltemplate) {		
+	public String setCommandList(List<String> featureList, String finaltemplate) {
 		List<CommandPojo> cammands = new ArrayList<>();
 		for (String feature : featureList) {
 			TemplateFeatureEntity findIdByfeatureAndCammand = templatefeatureRepo
@@ -360,7 +359,7 @@ public class TemplateManagementNewService {
 		cammands.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
 		String finalCammands = "";
 		for (CommandPojo cammand : cammands) {
-			finalCammands = finalCammands + cammand.getCommandValue()+"\n";
+			finalCammands = finalCammands + cammand.getCommandValue() + "\n";
 		}
 
 		return finalCammands;
@@ -373,7 +372,7 @@ public class TemplateManagementNewService {
 		json = (JSONObject) parser.parse(request);
 		DeviceDetailsPojo deviceDeatils = setDeviceDeatils(json);
 		JSONObject features = new JSONObject();
-		if (deviceDeatils != null) {			
+		if (deviceDeatils != null) {
 			features.put("output", setFeatureData(getFeatureOnPriority(deviceDeatils)));
 		}
 		return features;
@@ -392,41 +391,40 @@ public class TemplateManagementNewService {
 							&& feature.getfOs().equals(featureValue.getfOs())
 							&& feature.getfOsversion().equals(featureValue.getfOsversion()))
 					.collect(Collectors.toSet());
-			if(featureList!=null && featureList.size()>=2) {
+			if (featureList != null && featureList.size() >= 2) {
 				Set<MasterFeatureEntity> faetureData = null;
-				if(faetureData==null || faetureData.isEmpty()) {
+				if (faetureData == null || faetureData.isEmpty()) {
 					faetureData = featureList.stream()
-						.filter(feature -> feature.getfRegion().equals(deviceDeatils.getRegion())
-								&& feature.getfNetworkfun().equals(deviceDeatils.getNetworkType()))
-						.collect(Collectors.toSet());
-				}
-				if(faetureData==null || faetureData.isEmpty()) {
-					faetureData = featureList.stream()
-							.filter(feature -> feature.getfRegion().equals("All")
-									&& feature.getfNetworkfun().equals("All"))
+							.filter(feature -> feature.getfRegion().equals(deviceDeatils.getRegion())
+									&& feature.getfNetworkfun().equals(deviceDeatils.getNetworkType()))
 							.collect(Collectors.toSet());
-					}
-				if(faetureData==null || faetureData.isEmpty()) {
+				}
+				if (faetureData == null || faetureData.isEmpty()) {
+					faetureData = featureList.stream().filter(
+							feature -> feature.getfRegion().equals("All") && feature.getfNetworkfun().equals("All"))
+							.collect(Collectors.toSet());
+				}
+				if (faetureData == null || faetureData.isEmpty()) {
 					faetureData = featureList.stream()
 							.filter(feature -> feature.getfRegion().equals(deviceDeatils.getRegion())
 									&& feature.getfNetworkfun().equals("All"))
 							.collect(Collectors.toSet());
-					}
-				if(faetureData==null || faetureData.isEmpty()) {
+				}
+				if (faetureData == null || faetureData.isEmpty()) {
 					faetureData = featureList.stream()
 							.filter(feature -> feature.getfRegion().equals("All")
 									&& feature.getfNetworkfun().equals(deviceDeatils.getNetworkType()))
 							.collect(Collectors.toSet());
-					}
-				if(faetureData!=null) {
+				}
+				if (faetureData != null) {
 					featureArray.addAll(faetureData);
 				}
-				
-			}else if(featureList!=null &&featureList.size()== 1) {
+
+			} else if (featureList != null && featureList.size() == 1) {
 				featureArray.addAll(featureList);
 			}
 		}
-		return featureArray;		
+		return featureArray;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -664,10 +662,9 @@ public class TemplateManagementNewService {
 		JSONObject features = new JSONObject();
 		JSONArray outputArray = new JSONArray();
 		if (deviceDetails != null) {
-			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository
-					.getFeatureForTestDetails(deviceDetails.getVendor(),
-							deviceDetails.getDeviceFamily(), deviceDetails.getOs(), deviceDetails.getOsVersion(),
-							deviceDetails.getRegion());
+			List<MasterFeatureEntity> masterFeatures = masterFeatureRepository.getFeatureForTestDetails(
+					deviceDetails.getVendor(), deviceDetails.getDeviceFamily(), deviceDetails.getOs(),
+					deviceDetails.getOsVersion(), deviceDetails.getRegion());
 			masterFeatures.forEach(masterFeature -> {
 				JSONObject featureDetails = new JSONObject();
 				featureDetails.put("fId", masterFeature.getfId());
@@ -702,14 +699,116 @@ public class TemplateManagementNewService {
 		}
 		return deviceDetails;
 	}
-	
-	public String getCommands(String finaltemplate) {				
-		List<CommandPojo> cammands = templateManagementDao
-				.getCammandByTemplateId(finaltemplate);
+
+	public String getCommands(String finaltemplate) {
+		List<CommandPojo> cammands = templateManagementDao.getCammandByTemplateId(finaltemplate);
 		String finalCammands = "";
 		for (CommandPojo cammand : cammands) {
 			finalCammands = finalCammands + cammand.getCommandValue();
 		}
 		return finalCammands;
-}
+	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject getVnfTemplates(String request) {
+		JSONObject templateData = null;
+		try {
+			JSONObject json = new JSONObject();
+			JSONParser parser = new JSONParser();
+			json = (JSONObject) parser.parse(request);
+			JSONArray templateJson = new JSONArray();
+			DeviceDetailsPojo deviceDeatils = setDeviceDeatils(json);
+			templateConfigBasicDetailsRepository
+					.findAllByTempVendorAndTempDeviceFamilyAndTempDeviceOsAndTempOsVersionAndTempNetworkType(
+							deviceDeatils.getVendor(), "All", deviceDeatils.getOs(), deviceDeatils.getOsVersion(),
+							deviceDeatils.getNetworkType())
+					.forEach(template -> {
+						JSONObject templateObject = new JSONObject();
+						templateObject.put("alias", template.getTempAlias());
+						templateObject.put("templateId", template.getTempId());
+						templateJson.add(templateObject);
+					});
+			templateData = new JSONObject();
+			templateData.put("yangTemplates", templateJson);
+		} catch (ParseException e) {
+			logger.info("Exception occures in JSON Data" + e);
+		}
+		return templateData;
+	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject getVnfFeatures(String request) {
+		JSONObject featurebject = new JSONObject();
+		try {
+			JSONObject json = new JSONObject();
+			JSONParser parser = new JSONParser();
+			json = (JSONObject) parser.parse(request);
+			DeviceDetailsPojo deviceDeatils = setDeviceDeatils(json);
+			JSONArray featureDataList = new JSONArray();
+			if (json != null && json.containsKey("templateId")) {
+				if (json.get("templateId") != null) {
+					String templateId = json.get("templateId").toString();
+					List<MasterFeatureEntity> featureList = masterFeatureRepository
+							.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfunAndFNameContains(
+									deviceDeatils.getVendor(), "All", deviceDeatils.getOs(),
+									deviceDeatils.getOsVersion(), "All", deviceDeatils.getNetworkType(), templateId);
+
+					featureList.forEach(feature -> {
+						JSONObject featureJsonObject = new JSONObject();
+						if (feature.getfId().startsWith("F")) {
+							if (feature.getfParentId() != null) {
+								if (feature.getfParentId().startsWith("T")) {
+									MasterFeatureEntity parentId = getParentId(feature.getfParentId());
+									if (parentId != null) {
+										featureJsonObject = createFeatureJson(feature, parentId.getfParentId());
+									} else {
+										featureJsonObject = createFeatureJson(feature, null);
+									}
+								} else {
+									featureJsonObject = createFeatureJson(feature, feature.getfParentId());
+								}
+							}
+							featureDataList.add(featureJsonObject);
+						}
+
+					});
+				}
+			}
+			featurebject.put("featureData", featureDataList);
+		} catch (ParseException e) {
+			logger.info("Exception occures in JSON Data" + e);
+		}
+		return featurebject;
+	}
+
+	private MasterFeatureEntity getParentId(String getfParentId) {
+		MasterFeatureEntity parentFID = null;
+		MasterFeatureEntity featureData = masterFeatureRepository.findByFId(getfParentId);
+		if (featureData != null && featureData.getfParentId() != null) {
+			if (featureData.getfParentId().startsWith("T")) {
+				parentFID = getParentId(featureData.getfParentId());
+			} else {
+				parentFID = featureData;
+			}
+		}
+		return parentFID;
+	}
+
+	@SuppressWarnings("unchecked")
+	private JSONObject createFeatureJson(MasterFeatureEntity feature, String getfParentId) {
+		JSONObject featureJsonObject = new JSONObject();
+		featureJsonObject.put("fName", feature.getfName());
+		featureJsonObject.put("fReplicationFlag", feature.getfReplicationind());
+		featureJsonObject.put("fId", feature.getfId());
+		if (getfParentId != null) {
+			featureJsonObject.put("parentId", getfParentId);
+		} else {
+			featureJsonObject.put("parentId", "");
+		}
+		List<MasterCharacteristicsEntity> characterData = masterCharacteristicsRepository
+				.findAllByCFId(feature.getfId());
+		featureJsonObject.put("attribData",
+				attribCreateConfigResponceMapper.convertCharacteristicsAttribPojoToJson(characterData));
+		return featureJsonObject;
+	}
 }

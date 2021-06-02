@@ -31,4 +31,7 @@ public interface TemplateConfigBasicDetailsRepository extends JpaRepository<Temp
 	TemplateConfigBasicDetailsEntity findByTempIdAndTempVersion(String tempId, String tempVersion);
 	
 	List<TemplateConfigBasicDetailsEntity> findByTempCreatedByOrderByTempCreatedDateDesc(String userName, Pageable pageable);
+	
+	List<TemplateConfigBasicDetailsEntity> findAllByTempVendorAndTempDeviceFamilyAndTempDeviceOsAndTempOsVersionAndTempNetworkType(
+			String vendor, String family, String os, String osVersion, String networkType);
 }
