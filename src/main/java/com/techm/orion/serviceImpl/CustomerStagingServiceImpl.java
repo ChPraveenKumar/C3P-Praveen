@@ -231,7 +231,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 					// Check Hostname is supporting or not
 					hostName = data.getHostname();
 					if (!supportedHostName.isEmpty() && hostName != null
-							&& supportedHostName.contains(hostName.toUpperCase())) {
+							&& supportedHostName.toString().toUpperCase().contains(hostName.toUpperCase())) {
 						isFlag = true;
 
 					} else {
