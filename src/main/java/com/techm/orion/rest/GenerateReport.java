@@ -87,32 +87,36 @@ public class GenerateReport {
 					.append(version).append(".pdf");
 			isReportGenerated = generateReport(requestData, stringbuilder.toString());
 			File file = new File(stringbuilder.toString());
-			if (!file.exists()) {
-				response.setHeader("error", "file not found");
-				isReportGenerated = false;
-			} else {
-				// Download file using browse option
-				response.setStatus(HttpServletResponse.SC_OK);
-				response.setHeader("Access-Control-Allow-Origin", "*");
-				response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
-				response.setCharacterEncoding("UTF-8");
-				response.setContentType("application/pdf");
-				FileInputStream fileIn = new FileInputStream(file);
-				IOUtils.copy(fileIn, response.getOutputStream());
-				fileIn.close();
-				isReportGenerated =true;
+			try (FileInputStream fileIn = new FileInputStream(file);) {
+				if (!file.exists()) {
+					response.setHeader("error", "file not found");
+					isReportGenerated = false;
+				} else {
+					// Download file using browse option
+					response.setStatus(HttpServletResponse.SC_OK);
+					response.setHeader("Access-Control-Allow-Origin", "*");
+					response.setHeader("Content-Disposition", "attachment; filename=" + file.getName());
+					response.setCharacterEncoding("UTF-8");
+					response.setContentType("application/pdf");
+					IOUtils.copy(fileIn, response.getOutputStream());
+					fileIn.close();
+					isReportGenerated = true;
+				}
+			} catch (IOException e1) {
+				logger.error("Exception in generatePdf service is ! " + e1);
+				build = Response.status(404).entity(e1.getMessage()).build();
 			}
 		} catch (Exception e) {
 			String cause = e.getMessage();
 			if (cause.equals("python: not found"))
-				logger.info("No python interpreter found.");
-			logger.info("file is not found!");
+				logger.error("No python interpreter found.");
+			logger.error("file is not found!" + e);
 			build = Response.status(404).entity(e.getMessage()).build();
 		}
 		build = Response.status(200).entity(isReportGenerated).build();
 		return build;
 	}
-	
+
 	@GET
 	@RequestMapping(value = "/downloadCOBTemplate", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
