@@ -904,10 +904,12 @@ public class MasterFeatureController {
 				templateId = StringUtils.substringBefore(templateId,".yang");
 			}
 			
-			List<MasterFeatureEntity> featureEntinty = masterFeatureRepository
+			/*List<MasterFeatureEntity> featureEntinty = masterFeatureRepository
 					.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(
 							vendor, "All", os, osVersion, "All",
-							"VNF");
+							"VNF");*/
+			List<MasterFeatureEntity> featureEntinty = masterFeatureRepository
+					.findAllByFNameContains(templateId);
 			for(MasterFeatureEntity feature :featureEntinty) {
 				if(feature.getfName().contains(templateId)){
 					String featureName = StringUtils.substringAfter(

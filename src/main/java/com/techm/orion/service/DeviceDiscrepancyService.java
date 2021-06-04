@@ -483,6 +483,14 @@ public class DeviceDiscrepancyService {
 									.setHidPreviousValue(hostDiscrepancyResultEntity.getHidExistingValue());
 							hostDiscrepancyResultEntity
 									.setHidExistingValue(hostDiscrepancyResultEntity.getHidDiscoverValue());
+							
+							MasterOIDEntity oidData = masterOIDRepository
+									.findByOidNoAndOidVendorAndOidNetworkTypeAndOidCategory(
+											hostDiscrepancyResultEntity.getHidOIDNo(),
+											deviceDiscovertEntity.getdVendor(), deviceDiscovertEntity.getdVNFSupport(),
+											"Host");
+							deviceDiscovertEntity = setDeviceData(oidData.getOidAttrib(), deviceDiscovertEntity,
+									hostDiscrepancyResultEntity.getHidDiscoverValue());
 						}
 						hostDiscrepancyResultEntity.setHidDiscrepancyFalg("0");
 						hostDiscrepancyResultEntity.setHidResolvedFalg("Y");
@@ -525,6 +533,31 @@ public class DeviceDiscrepancyService {
 		return resultObj;
 	}
 
+	
+	private DeviceDiscoveryEntity setDeviceData(String oidAttribName, DeviceDiscoveryEntity deviceDiscovertEntity,
+			String discoverdValue) {
+		
+		if ("d_device_family".equals(oidAttribName)) {
+			deviceDiscovertEntity.setdDeviceFamily(discoverdValue);
+		} else if ("d_model".equals(oidAttribName)) {
+			deviceDiscovertEntity.setdModel(discoverdValue);
+		} else if ("d_os".equals(oidAttribName)) {
+			deviceDiscovertEntity.setdOs(discoverdValue);
+		} else if ("d_os_version".equals(oidAttribName)) {
+			deviceDiscovertEntity.setdOsVersion(discoverdValue);
+		} else if ("d_hostname".equals(oidAttribName)) {
+			deviceDiscovertEntity.setdHostName(discoverdValue);
+		} else if ("d_macaddress".equals(oidAttribName)) {
+			deviceDiscovertEntity.setdMACAddress(discoverdValue);
+		} else if ("d_serial_number".equals(oidAttribName)) {
+			deviceDiscovertEntity.setdSerialNumber(discoverdValue);
+		} else if ("d_sries".equals(oidAttribName)) {
+			deviceDiscovertEntity.setdSerialNumber(discoverdValue);
+		}
+		
+		return deviceDiscovertEntity;
+	}
+	
 	/*
 	 * Get the master table information based on category, vendor and networ_type
 	 * and child information based on ip_address, device_id and OID
@@ -602,7 +635,7 @@ public class DeviceDiscrepancyService {
 								isSuffixMatch = false;
 								childJson = new JSONObject();
 								childJson.put("id", childOid.getFidChildOIDNo());
-								childJson.put("discoveredValue", childOid.getFidDiscoverValue());
+								childJson.put("discoveredValue", childOid.getFidExistingValue());
 								childList.add(childJson);
 								break;
 							}
@@ -623,7 +656,7 @@ public class DeviceDiscrepancyService {
 					for (ForkDiscrepancyResultEntity childOid : childOids) {
 						childJson = new JSONObject();
 						childJson.put("id", childOid.getFidChildOIDNo());
-						childJson.put("discoveredValue", childOid.getFidDiscoverValue());
+						childJson.put("discoveredValue", childOid.getFidExistingValue());
 						childList.add(childJson);
 					}
 				}
