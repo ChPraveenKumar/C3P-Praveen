@@ -82,7 +82,7 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	
 	List<MasterFeatureEntity> findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfunAndFNameContains(String vendor,
 			String family, String os, String osVersion, String region, String networkType,String featureName);
+
 	
 	List<MasterFeatureEntity> findAllByFNameContains(String featureName);
-	
 }

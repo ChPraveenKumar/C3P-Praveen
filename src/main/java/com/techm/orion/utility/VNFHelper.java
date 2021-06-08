@@ -21,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.XML;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Maps;
 import com.hubspot.jinjava.Jinjava;
@@ -31,6 +32,7 @@ import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.rest.VnfConfigService;
 
+@Component
 public class VNFHelper {
 	private static final Logger logger = LogManager.getLogger(VNFHelper.class);
 
