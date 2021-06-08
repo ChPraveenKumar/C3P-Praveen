@@ -711,7 +711,7 @@ public class RequestInfoDetailsDao {
 	}
 	
 	public void saveInDeviceExtension(String deviceId, String modelDescription) {
-		String sqlQuery = "INSERT INTO `c3pdbschema`.`c3p_deviceinfo_ext` (`r_device_id`, `r_description`) "
+		String sqlQuery = "INSERT INTO c3p_deviceinfo_ext(r_device_id, r_description) "
 				+ "VALUES (?,?)";
 		try (Connection connection = ConnectionFactory.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
