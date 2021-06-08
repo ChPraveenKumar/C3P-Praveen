@@ -2,8 +2,6 @@ package com.techm.orion.rest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -18,6 +16,7 @@ import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +38,7 @@ import com.techm.orion.service.TemplateManagementNewService;
 
 @Controller
 @RequestMapping("/TemplateManagementService")
-public class TemplateManagementService implements Observer {
+public class TemplateManagementService {
 	private static final Logger logger = LogManager.getLogger(TemplateManagementService.class);
 
 	@Autowired
@@ -64,6 +63,7 @@ public class TemplateManagementService implements Observer {
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/addNewFeatureForTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> addNewFeatureForTemplate(@RequestBody String newFeature) {
@@ -92,6 +92,7 @@ public class TemplateManagementService implements Observer {
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/onNextToGetRightPanel", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> onNextToGetRightPanel(@RequestBody String templateFeatureRequest) {
@@ -126,6 +127,7 @@ public class TemplateManagementService implements Observer {
 	 *This Api is marked as ***************External Api Impacted****************
 	 **/
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/saveFinalTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> saveFinalTemplate(@RequestBody String newFeature) {
@@ -145,6 +147,7 @@ public class TemplateManagementService implements Observer {
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/getRightPanelOnEditTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getRightPanelOnEditTemplate(@RequestBody String templateId) {
@@ -173,6 +176,7 @@ public class TemplateManagementService implements Observer {
 	/* method added for view template Details */
 	@SuppressWarnings({ "unchecked", "null" })
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/viewTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> viewTemplate(@RequestBody String request) {
@@ -252,6 +256,7 @@ public class TemplateManagementService implements Observer {
 		return new ResponseEntity<JSONObject>(object, HttpStatus.OK);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/getVFNDashboard", method = RequestMethod.GET)
 	@ResponseBody
@@ -264,11 +269,5 @@ public class TemplateManagementService implements Observer {
 		}
 		return new ResponseEntity<JSONArray>(array, HttpStatus.OK);
 	}	
-
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-
-	}
 
 }
