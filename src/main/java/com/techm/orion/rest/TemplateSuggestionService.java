@@ -19,6 +19,7 @@ import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,6 +58,7 @@ public class TemplateSuggestionService implements Observer {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read')")
 	@RequestMapping(value = "/getFeaturesForDeviceDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getFeaturesForDeviceDetail(@RequestBody String request) throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
@@ -73,6 +75,7 @@ public class TemplateSuggestionService implements Observer {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
+	//@PreAuthorize("#oauth2.hasScope('read')")
 	@RequestMapping(value = "/getFeaturesForSelectedTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getFeaturesForSelectedTemplate(
@@ -141,6 +144,7 @@ public class TemplateSuggestionService implements Observer {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read')")
 	@RequestMapping(value = "/getTemplateDetailsForSelectedFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getTemplateDetailsForSelectedFeatures(@RequestBody String request)
 			throws Exception {

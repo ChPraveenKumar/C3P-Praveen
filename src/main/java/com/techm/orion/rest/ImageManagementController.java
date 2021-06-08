@@ -1,7 +1,5 @@
 package com.techm.orion.rest;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.CannotCreateTransactionException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +28,6 @@ import com.techm.orion.entitybeans.ImageManagementEntity;
 import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ImageManagementRepository;
 import com.techm.orion.service.ImageManagementService;
-import com.techm.orion.utility.TSALabels;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -161,6 +158,7 @@ public class ImageManagementController {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read')")
 	@RequestMapping(value = "/highestAvailableOsVersionForSingleDevice", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity highestAvailableOsVersionForSingleDevice(@RequestBody String searchParameters) {
