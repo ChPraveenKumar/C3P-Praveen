@@ -164,7 +164,7 @@ public class ConfigurationManagement {
 			if (json.get("networkType") != null && !json.get("networkType").toString().isEmpty()) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equals("VNF")) {
-					if (!requestType.equalsIgnoreCase("Test") && !requestType.equalsIgnoreCase("SNAI")) {
+					if (!requestType.equalsIgnoreCase("Test") && !requestType.equalsIgnoreCase("SNAI")&& !requestType.equalsIgnoreCase("SNAD")) {
 												requestType = device.getdConnect();
 						configReqToSendToC3pCode.setRequestType(requestType);
 					}
@@ -957,7 +957,8 @@ public class ConfigurationManagement {
 					res = entry.getValue();
 					if (res.equalsIgnoreCase("true")) {
 						data = "Submitted";
-						dcmConfigService.updateRequestCount(device);						
+						if(device != null)
+							dcmConfigService.updateRequestCount(device);						
 					}
 
 				}

@@ -3295,7 +3295,8 @@ public class DcmConfigService {
 					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
 							"VNF")) {
 						if (requestInfoSO.getRequestType().equalsIgnoreCase(
-								"SNAI")) {
+								"SNAI") || requestInfoSO.getRequestType().equalsIgnoreCase(
+										"SNAD")) {
 
 							for (RequestInfoPojo request : requestInfoSOList) {
 								createTemplateAndHeader(request,
