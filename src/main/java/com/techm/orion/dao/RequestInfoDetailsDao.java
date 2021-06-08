@@ -292,9 +292,10 @@ public class RequestInfoDetailsDao {
 				pojo.setNetworkType(entity.getNetworkType());
 				pojo.setRequestCreatorName(entity.getRequestCreatorName());
 				pojo.setStartUp(entity.getStartUp());
+				pojo.setConfigurationGenerationMethods(entity.getrConfigGenerationMethod());
 			}
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getRequestDetailTRequestInfoDBForVersion method " +e);
 		}
 		return pojo;
 	}

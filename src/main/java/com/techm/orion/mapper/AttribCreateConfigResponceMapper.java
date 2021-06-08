@@ -18,7 +18,7 @@ import com.techm.orion.service.CategoryDropDownService;
 public class AttribCreateConfigResponceMapper {
 
 	@Autowired
-	CategoryDropDownService categoryDropDownservice;
+	private CategoryDropDownService categoryDropDownservice;
 
 	public AttribCreateConfigPojo getAttribTemplateSuggestionMapper(MasterAttributes entity) {
 		AttribCreateConfigPojo pojo = new AttribCreateConfigPojo();
@@ -98,6 +98,7 @@ public class AttribCreateConfigResponceMapper {
 				attribJson.setCharacteriscticsId("");
 			}
 			attribJson.setKey(entity.iscIsKey());
+			attribJson.setReplicationFalg(entity.getcReplicationind());
 			jsonList.add(attribJson);
 		}
 		return jsonList;

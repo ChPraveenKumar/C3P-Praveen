@@ -176,6 +176,50 @@ public class DeviceDiscoveryEntity {
 	@Column(name = "d_req_count",length = 10)
 	private int dReqCount;
 	
+	@Column(name = "d_managed_by", length = 100)
+	private String dManagedBy;
+	
+	@Column(name = "d_managed_services_type", length = 100)
+	private String dManagedServicesType;
+	
+	@Column(name = "d_lifecycle_state", length = 50)
+	private String dLifeCycleState;
+	
+	@Column(name = "d_role", length = 100)
+	private String dRole;
+	
+	public String getdManagedBy() {
+		return dManagedBy;
+	}
+
+	public void setdManagedBy(String dManagedBy) {
+		this.dManagedBy = dManagedBy;
+	}
+
+	public String getdManagedServicesType() {
+		return dManagedServicesType;
+	}
+
+	public void setdManagedServicesType(String dManagedServicesType) {
+		this.dManagedServicesType = dManagedServicesType;
+	}
+
+	public String getdLifeCycleState() {
+		return dLifeCycleState;
+	}
+
+	public void setdLifeCycleState(String dLifeCycleState) {
+		this.dLifeCycleState = dLifeCycleState;
+	}
+
+	public String getdRole() {
+		return dRole;
+	}
+
+	public void setdRole(String dRole) {
+		this.dRole = dRole;
+	}
+
 	public JSONArray getContactDetails() {
 		return contactDetails;
 	}

@@ -87,9 +87,8 @@ public class SearchTemplateListService implements Observer {
 								versioningModelObject.setDeviceFamily(objToAdd.getDeviceFamily());
 								versioningModelObject.setDeviceOsVersion(objToAdd.getOsVersion());
 								versioningModelObject.setDeviceOs(objToAdd.getDeviceOs());
-								if (objToAdd.getComment().equalsIgnoreCase("undefined")) {
+								if (objToAdd.getComment() == null) {
 									versioningModelObject.setComment("");
-
 								} else {
 									versioningModelObject.setComment(objToAdd.getComment());
 								}
@@ -113,10 +112,12 @@ public class SearchTemplateListService implements Observer {
 						}
 						jsonArray = new Gson().toJson(versioningModel);
 						obj.put(new String("output"), jsonArray);
+						obj.put(new String("templateCount"), versioningModel.size());
 						obj.put(new String("Result"), "success");
 
 					} else {
 						obj.put(new String("output"), jsonArray);
+						obj.put(new String("templateCount"), detailsList.size());
 						obj.put(new String("Result"), "failure");
 
 					}

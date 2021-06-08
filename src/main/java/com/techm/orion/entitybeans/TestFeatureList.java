@@ -67,6 +67,8 @@ public class TestFeatureList implements Serializable
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + id;
+		result = prime * result + ((testDetail == null) ? 0 : testDetail.hashCode());
+		result = prime * result + ((testFeature == null) ? 0 : testFeature.hashCode());
 		return result;
 	}
 
@@ -81,6 +83,16 @@ public class TestFeatureList implements Serializable
 		TestFeatureList other = (TestFeatureList) obj;
 		if (id != other.id)
 			return false;
+		if (testDetail == null) {
+			if (other.testDetail != null)
+				return false;
+		} else if (!testDetail.equals(other.testDetail))
+			return false;
+		if (testFeature == null) {
+			if (other.testFeature != null)
+				return false;
+		} else if (!testFeature.equals(other.testFeature))
+			return false;
 		return true;
-	}	
+	}
 }
