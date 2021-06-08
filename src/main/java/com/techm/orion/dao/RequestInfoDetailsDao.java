@@ -709,4 +709,18 @@ public class RequestInfoDetailsDao {
 		}
 		return response;
 	}
+	
+	public void saveInDeviceExtension(String deviceId, String modelDescription) {
+		String sqlQuery = "INSERT INTO c3p_deviceinfo_ext(r_device_id, r_description) "
+				+ "VALUES (?,?)";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
+			preparedStmt.setString(1, deviceId);
+			preparedStmt.setString(2, modelDescription);
+			preparedStmt.executeUpdate();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in saveInDeviceExtension method " + exe.getMessage());
+		}
+	}
+	
 }

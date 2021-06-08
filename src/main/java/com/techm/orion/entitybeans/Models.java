@@ -49,6 +49,17 @@ public class Models implements Serializable{
 	private boolean multi_model_value;
 	@Transient
 	private String multi_model_text;
+	
+	@Column(name = "model_description", length = 255)
+	private String modelDescription;
+
+	public String getModelDescription() {
+		return modelDescription;
+	}
+
+	public void setModelDescription(String modelDescription) {
+		this.modelDescription = modelDescription;
+	}
 
 	public boolean getMulti_model_value() {
 		return multi_model_value;
