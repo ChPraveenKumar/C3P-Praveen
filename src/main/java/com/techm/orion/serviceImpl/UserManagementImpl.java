@@ -16,10 +16,12 @@ import com.techm.orion.entitybeans.PasswordPolicy;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.entitybeans.UserRole;
+import com.techm.orion.entitybeans.WorkGroup;
 import com.techm.orion.exception.GenericResponse;
 import com.techm.orion.pojo.UserManagementResulltDetailPojo;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.UserManagementRepository;
+import com.techm.orion.repositories.WorkGroupRepository;
 import com.techm.orion.service.UserManagementInterface;
 import com.techm.orion.utility.PasswordEncryption;
 
@@ -39,6 +41,9 @@ public class UserManagementImpl implements UserManagementInterface {
 
 	@Autowired
 	private PasswordEncryption passEncrypt;
+	
+	@Autowired
+	private WorkGroupRepository workGroupRepository;
 
 	/*
 	 * Create service for create user for user management
@@ -65,26 +70,22 @@ public class UserManagementImpl implements UserManagementInterface {
 		try {
 			JSONObject json = (JSONObject) parser.parse(userData);
 			customerAndSites = new JSONObject();
+			if(json !=null && json.get("role") !=null)
+				role = (String) json.get("role");
+			WorkGroup workGroupEntity = workGroupRepository.findByDefaultRole(role);
 			/*
 			 * Logic for enoc_user when no work group is selected if workgroup
 			 * json will be empty It will work when
 			 * "workGroup":{"workgroupname":""},
 			 */
 			workGroup = (String) json.get("workGroup");
-			if (workGroup.isEmpty()) {
-				if (json.get("role").equals("enoc_user"))
-					workGroupName = "ENOC_USERS_ALL";
-				else if (json.get("role").equals("seuser"))
-					workGroupName = "SEUSER_ALL";
-				else if (json.get("role").equals("suser"))
-					workGroupName = "SUSER_ALL";
-				else if (json.get("role").equals("feuser"))
-					workGroupName = "FEUSER_ALL";
-				else if (json.get("role").toString().equalsIgnoreCase("admin"))
-					workGroupName = "ADMIN_ALL";
-			} else
+			if (workGroup.isEmpty() && workGroupEntity !=null) {
+				workGroupName = workGroupEntity.getWorkGroupName();
+			} 
+			else if(workGroup.isEmpty())
+				workGroupName = "";
+			else
 				workGroup = (String) json.get("workGroup");
-
 			module = (JSONObject) json.get("module");
 			role = (String) json.get("role");
 			userName = (String) json.get("userName");
@@ -291,7 +292,10 @@ public class UserManagementImpl implements UserManagementInterface {
 
 		try {
 			JSONObject json = (JSONObject) parser.parse(userData);
-
+			if(json !=null && json.get("role") !=null)
+				role = (String) json.get("role");
+			WorkGroup workGroupEntity = workGroupRepository.findByDefaultRole(role);
+			
 			workGroup = (String) json.get("workGroup");
 			module = (JSONObject) json.get("module");
 			role = (String) json.get("role");
@@ -357,6 +361,10 @@ public class UserManagementImpl implements UserManagementInterface {
 
 			if (!workGroup.isEmpty())
 				userDetails.setWorkGroup(workGroup.toString());
+			else if(workGroup.isEmpty() && workGroupEntity !=null)
+				userDetails.setWorkGroup(workGroupEntity.getWorkGroupName());
+			else
+				userDetails.setWorkGroup("");
 			
 			if (!authentication.isEmpty())
 				userDetails.setAuthentication(authentication);

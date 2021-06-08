@@ -95,6 +95,7 @@ public class WorkGroupController {
 		JSONParser parser = new JSONParser();
 		String workGroupName = null, defaultRole = null, createdBy = null, description = null, sourcesystem = null, apicalltype = null;
 		try {
+			WorkGroup workGroupEntity =null;
 			Date date = new Date();
 			JSONObject json = (JSONObject) parser.parse(request);
 			if (json.get("workGroupName") != null)
@@ -109,8 +110,13 @@ public class WorkGroupController {
 				sourcesystem = (String) json.get("sourcesystem");
 			if (json.get("apicalltype") != null)
 				apicalltype = (String) json.get("apicalltype");
-
-				WorkGroup workGroupEntity = new WorkGroup();
+			if (!defaultRole.isEmpty())
+				workGroupEntity = workGroupRepository.findByDefaultRole(defaultRole);
+			if (workGroupEntity != null) {
+				workGroupResObj.put("output",
+						"Role " + defaultRole + " is already associacted with other work group, Please add other role");
+			} else {
+				workGroupEntity = new WorkGroup();
 				workGroupEntity.setCreatedBy(createdBy);
 				workGroupEntity.setCreatedDate(date);
 				workGroupEntity.setDefaultRole(defaultRole);
@@ -119,8 +125,9 @@ public class WorkGroupController {
 				workGroupEntity.setSourcesystem(sourcesystem);
 				workGroupEntity.setApicalltype(apicalltype);
 				WorkGroup savedWorkGroupData = workGroupRepository.save(workGroupEntity);
-				if(savedWorkGroupData !=null)
-					workGroupResObj.put("output", "work group added successfully");
+				if (savedWorkGroupData != null)
+					workGroupResObj.put("output", "Workgroup added successfully.");
+			}
 		} catch (Exception e) {
 			logger.error("exception in addWorkGroup" + e.getMessage());
 			workGroupResObj.put("output", e.getMessage());
@@ -138,6 +145,7 @@ public class WorkGroupController {
 		JSONObject roleResObj = new JSONObject();
 		JSONParser roleParser = new JSONParser();
 		String updatedBy = null, defaultRole = null , workGroupName = null, sourcesystem = null, apicalltype = null;
+		WorkGroup workGroupEntity = null;
 		try {
 			Date date = new Date();
 			JSONObject json = (JSONObject) roleParser.parse(request);
@@ -153,9 +161,13 @@ public class WorkGroupController {
 				apicalltype = (String) json.get("apicalltype");
 			
 			WorkGroup workGroupDetails = workGroupRepository.findByWorkGroupName(workGroupName);
-			if (workGroupDetails ==null)
-				roleResObj.put("output", "role not exist");
-			else {
+			if (!defaultRole.isEmpty())
+				workGroupEntity = workGroupRepository.findByDefaultRole(defaultRole);
+			if(workGroupEntity !=null && workGroupDetails !=null && !workGroupDetails.getDefaultRole().equals(defaultRole))
+			{
+				roleResObj.put("output", "Role "+defaultRole +" is already associacted with other work group, Please update other role");
+			}
+			else if(workGroupDetails !=null){
 				workGroupDetails.setUpdatedBy(updatedBy);
 				workGroupDetails.setUpdatedDate(date);
 				workGroupDetails.setDefaultRole(defaultRole);
@@ -163,8 +175,10 @@ public class WorkGroupController {
 				workGroupDetails.setApicalltype(apicalltype);
 				WorkGroup savedWorkGroupData = workGroupRepository.save(workGroupDetails);
 				if(savedWorkGroupData !=null)
-					roleResObj.put("output", "role updated successfully");
+					roleResObj.put("output", "Default Role for Workgroup updated successfully.");
 			}
+			else
+				roleResObj.put("output", "role not exist");
 		} catch (Exception e) {
 			logger.error("exception in editRole" + e.getMessage());
 			roleResObj.put("output", e.getMessage());
