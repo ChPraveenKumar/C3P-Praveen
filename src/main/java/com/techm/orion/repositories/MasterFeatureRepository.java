@@ -79,9 +79,10 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	List<MasterFeatureEntity> getFeatureForTestDetails(@Param("vendor") String vendor,
 			@Param("deviceFamily") String deviceFamily, @Param("os") String os, @Param("osVersion") String osVersion,
 			@Param("region") String region);
-
-	List<MasterFeatureEntity> findAllByFNameContains(String featureName);
 	
 	List<MasterFeatureEntity> findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfunAndFNameContains(String vendor,
 			String family, String os, String osVersion, String region, String networkType,String featureName);
+
+	
+	List<MasterFeatureEntity> findAllByFNameContains(String featureName);
 }

@@ -711,6 +711,16 @@ public class TemplateManagementNewService {
 	        return finalCammands;
 	    }
 
+	public String getCommands(String finaltemplate) {
+		List<CommandPojo> cammands = templateManagementDao.getCammandByTemplateId(finaltemplate);
+		String finalCammands = "<?xml version='1.0' encoding='UTF-8'?><data xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">";
+		
+		for (CommandPojo cammand : cammands) {
+			finalCammands = finalCammands + cammand.getCommandValue();
+		}
+		finalCammands = finalCammands +"</data>";
+		return finalCammands;
+	}
 
 	@SuppressWarnings("unchecked")
 	public JSONObject getVnfTemplates(String request) {
