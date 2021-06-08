@@ -278,7 +278,7 @@ public class DeviceDiscoveryController implements Observer {
 				{
 				inventoryList.get(j).setdSystemDescription("Not Available");
 				}
-				if(extObj!=null && extObj.containsKey("lat") && extObj.containsKey("long"))
+				if(extObj!=null && extObj.containsKey("lat") && (extObj.get("lat") != null) && extObj.containsKey("long") && (extObj.get("long") != null))
 				{
 				inventoryList.get(j).setdLocation("Lat: "+extObj.get("lat").toString()+", Long: "+extObj.get("long").toString());
 				}

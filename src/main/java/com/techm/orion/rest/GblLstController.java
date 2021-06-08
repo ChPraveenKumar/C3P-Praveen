@@ -619,6 +619,7 @@ public class GblLstController {
 				savemodels.setDeviceFamily(savedevicetype);
 				savemodels.setVendor(existingvendor);
 				savemodels.setModel(model.getModel());
+				savemodels.setModelDescription(model.getModelDescription());
 				modelsRepository.save(savemodels);
 				isAdd = true;
 			}

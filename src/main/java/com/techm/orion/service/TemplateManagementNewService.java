@@ -700,7 +700,7 @@ public class TemplateManagementNewService {
 		return deviceDetails;
 	}
 			
-		public String getCommands(String finaltemplate) {
+		/*public String getCommands(String finaltemplate) {
 	        List<CommandPojo> cammands = templateManagementDao.getCammandByTemplateId(finaltemplate);
 	        String finalCammands = "<?xml version='1.0' encoding='UTF-8'?><data xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">";
 	       
@@ -709,7 +709,7 @@ public class TemplateManagementNewService {
 	        }
 	        finalCammands = finalCammands +"</data>";
 	        return finalCammands;
-	    }
+	    }*/
 
 	public String getCommands(String finaltemplate) {
 		List<CommandPojo> cammands = templateManagementDao.getCammandByTemplateId(finaltemplate);

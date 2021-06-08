@@ -4,18 +4,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.CustomerStagingEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.ImportMasterStagingEntity;
+import com.techm.orion.entitybeans.Models;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.repositories.CustomerStagingImportRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.ImportMasterStagingRepo;
+import com.techm.orion.repositories.ModelsRepository;
 import com.techm.orion.service.CustomerStagingInteface;
 
 @Service
@@ -34,6 +39,12 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 
 	@Autowired
 	private ImportMasterStagingRepo importMasterStagingRepo;
+	
+	@Autowired
+	private RequestInfoDetailsDao requestInfoDetailsDao;
+	
+	@Autowired
+	private ModelsRepository modelsRepository;
 
 	public boolean saveDataFromUploadFile(List<Map<String, String>> consCSVData, String userName) {
 		logger.info("\n" + "Inside saveDataFromUploadFile method");	
@@ -482,6 +493,9 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 				deviceEntity.setCustSiteId(siteEntity);
 				
 				deviceDiscoveryRepository.saveAndFlush(deviceEntity);
+				Models modelsEntity = modelsRepository.findOneByModel(deviceEntity.getdModel());
+				String id = String.valueOf(deviceEntity.getdId());
+				requestInfoDetailsDao.saveInDeviceExtension(id, modelsEntity.getModelDescription());
 			}
 			
 			if (importStagging != null) {
