@@ -6474,6 +6474,12 @@ public class RequestInfoDao {
 							+ UUID.randomUUID().toString().toUpperCase();
 
 				}
+				else if (requestInfoSO.getRequestType().equalsIgnoreCase(
+						"SNAD")) {
+					alphaneumeric_req_id = "SNAD-"
+							+ UUID.randomUUID().toString().toUpperCase();
+
+				}
 
 				else {
 					alphaneumeric_req_id = "SLGC-"
