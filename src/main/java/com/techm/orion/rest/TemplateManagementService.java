@@ -147,7 +147,7 @@ public class TemplateManagementService {
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
-	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
+	//@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/getRightPanelOnEditTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getRightPanelOnEditTemplate(@RequestBody String templateId) {
@@ -176,7 +176,7 @@ public class TemplateManagementService {
 	/* method added for view template Details */
 	@SuppressWarnings({ "unchecked", "null" })
 	@POST
-	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
+	//@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/viewTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> viewTemplate(@RequestBody String request) {

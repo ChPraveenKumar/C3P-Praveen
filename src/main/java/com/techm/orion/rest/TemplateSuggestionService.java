@@ -3,8 +3,6 @@ package com.techm.orion.rest;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 
 import javax.ws.rs.POST;
@@ -37,7 +35,7 @@ import com.techm.orion.service.TemplateManagementNewService;
 
 @Controller
 @RequestMapping("/TemplateSuggestionService")
-public class TemplateSuggestionService implements Observer {
+public class TemplateSuggestionService {
 	private static final Logger logger = LogManager
 			.getLogger(TemplateSuggestionService.class);
 	@Autowired
@@ -58,7 +56,7 @@ public class TemplateSuggestionService implements Observer {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
-	@PreAuthorize("#oauth2.hasScope('read')")
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/getFeaturesForDeviceDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getFeaturesForDeviceDetail(@RequestBody String request) throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
@@ -144,7 +142,7 @@ public class TemplateSuggestionService implements Observer {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
-	@PreAuthorize("#oauth2.hasScope('read')")
+	//@PreAuthorize("#oauth2.hasScope('read')")
 	@RequestMapping(value = "/getTemplateDetailsForSelectedFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getTemplateDetailsForSelectedFeatures(@RequestBody String request)
 			throws Exception {
@@ -183,11 +181,6 @@ public class TemplateSuggestionService implements Observer {
 		return responseEntity;
 	}
 	
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
-
-	}
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************

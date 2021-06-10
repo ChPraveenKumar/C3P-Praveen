@@ -158,7 +158,7 @@ public class ImageManagementController {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
-	@PreAuthorize("#oauth2.hasScope('read')")
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/highestAvailableOsVersionForSingleDevice", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity highestAvailableOsVersionForSingleDevice(@RequestBody String searchParameters) {
