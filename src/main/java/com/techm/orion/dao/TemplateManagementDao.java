@@ -2416,4 +2416,32 @@ public class TemplateManagementDao {
 		}
 		return cammandPojo;
 	}
+	
+	public List<CommandPojo> getCammandByMasterFId(String master_f_id) {
+		connection = ConnectionFactory.getConnection();
+		String query1 = "SELECT * FROM c3p_template_master_command_list where master_f_id =?";
+		PreparedStatement pst;
+		ResultSet res;
+
+		List<CommandPojo> cammandList = new ArrayList<>();
+		try {
+				pst = connection.prepareStatement(query1);				
+				pst.setString(1, master_f_id);
+				res = pst.executeQuery();
+				CommandPojo cammand = null;
+					while (res.next()) {
+					cammand = new CommandPojo();
+					cammand.setCommandValue(res.getString("command_value"));
+					cammand.setCommandSequenceId(res.getInt("command_sequence_id"));
+					cammand.setPosition(res.getInt("command_sequence_id"));
+					cammand.setMaster_f_id(res.getString("master_f_id"));
+					cammandList.add(cammand);				
+			}
+		} catch (SQLException e) {	
+			e.printStackTrace();
+		} finally {
+			DBUtil.close(connection);
+		}
+		return cammandList;
+	}
 }

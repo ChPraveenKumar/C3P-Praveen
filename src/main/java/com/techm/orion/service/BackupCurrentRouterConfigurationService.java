@@ -593,6 +593,8 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				fileName = "PreviousConfig.txt";
 			} else if ("startup".equals(stage)) {
 				fileName = "StartupConfig.txt";
+			} else if ("current".equals(stage)) {
+				fileName = "CurrentVersionConfig.txt";
 			} else {
 				fileName = "PreviousConfig.txt";
 			}

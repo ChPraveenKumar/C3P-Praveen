@@ -23,4 +23,7 @@ public interface MasterCharacteristicsRepository extends JpaRepository<MasterCha
 			+ " info.masterLabelValue as labelValue, att.cIsKey) from MasterCharacteristicsEntity att,"
 			+" CreateConfigEntity info where info.masterCharachteristicId=att.cId and info.requestId=:requestId") 
 	List<MasterCharacteristicsEntity> findfeatureCharIdAndLabel(@Param("requestId") String requestId);	
+	
+	@Query(value = "select c_f_id from c3p_m_characteristics where c_id = :c_id", nativeQuery = true)
+	String findByCId(@Param("c_id") String c_id);
 }

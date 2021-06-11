@@ -125,6 +125,13 @@ public class VNFHelper {
 				logger.info("" + ret);
 			} else {
 				logger.info("" + bre.readLine());
+				StringBuffer sb=new StringBuffer();
+				while((line=bre.readLine())!=null)  
+				{  
+				sb.append(line);      //appends line to string buffer  
+				sb.append("\n");     //line feed   
+				}  
+				System.out.println(sb.toString());  
 				if (bre.readLine().contains("File exists") || bre.readLine().contains("File exist")) {
 					result = true;
 				} else {
@@ -424,7 +431,7 @@ public class VNFHelper {
 			// first we generate header
 			InvokeFtl invokeftl = new InvokeFtl();
 			String header = invokeftl.generateheaderVNF(requestInfoSO);
-			String finalData = header.concat(data);
+			String finalData = header+"\n".concat(data);
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
 				file.createNewFile();

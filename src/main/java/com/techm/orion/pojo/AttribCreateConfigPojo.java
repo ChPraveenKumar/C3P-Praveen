@@ -8,35 +8,36 @@ public class AttribCreateConfigPojo {
 	private int id;
 
 	private String attribName;
-	
+
 	private String attribLabel;
 
-	private String attribUIComponent; 
-	
+	private String attribUIComponent;
+
 	private String[] attribValidations;
 
 	private String attribType;
 
 	@JsonInclude(Include.NON_NULL)
 	private String attribTemplateId;
-	
-	@JsonInclude(Include.NON_NULL)
-	private String attribSeriesId; 
 
-	
+	@JsonInclude(Include.NON_NULL)
+	private String attribSeriesId;
+
 	private String attribCategoty;
-	
+
 	private TemplateFeatureEntity templateFeature;
-	
+
 	private boolean isKey;
-	
+
+	private String attribValue;
+
 	public int getId() {
 		return id;
 	}
 
 	public void setId(int id) {
 		this.id = id;
-	} 
+	}
 
 	public String getAttribName() {
 		return attribName;
@@ -109,7 +110,7 @@ public class AttribCreateConfigPojo {
 	public void setTemplateFeature(TemplateFeatureEntity templateFeature) {
 		this.templateFeature = templateFeature;
 	}
-	
+
 	public boolean isKey() {
 		return isKey;
 	}
@@ -117,4 +118,13 @@ public class AttribCreateConfigPojo {
 	public void setKey(boolean isKey) {
 		this.isKey = isKey;
 	}
+
+	public String getAttribValue() {
+		return attribValue;
+	}
+
+	public void setAttribValue(String attribValue) {
+		this.attribValue = attribValue;
+	}
+
 }
