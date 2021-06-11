@@ -125,13 +125,6 @@ public class VNFHelper {
 				logger.info("" + ret);
 			} else {
 				logger.info("" + bre.readLine());
-				StringBuffer sb=new StringBuffer();
-				while((line=bre.readLine())!=null)  
-				{  
-				sb.append(line);      //appends line to string buffer  
-				sb.append("\n");     //line feed   
-				}  
-				System.out.println(sb.toString());  
 				if (bre.readLine().contains("File exists") || bre.readLine().contains("File exist")) {
 					result = true;
 				} else {
