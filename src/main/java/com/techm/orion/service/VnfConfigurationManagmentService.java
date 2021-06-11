@@ -169,17 +169,6 @@ public class VnfConfigurationManagmentService {
 		return distinctCommandList;
 	}
 
-	public void stringToDom(String xmlSource, String requestId) {
-		try {
-			String filePath = TSALabels.VNF_CONFIG_CREATION_PATH.getValue() + requestId + "_Configuration.xml";
-			FileWriter fw = new FileWriter(filePath);
-			fw.write(xmlSource);
-			fw.close();
-		} catch (IOException e) {
-			logger.info("Xml File Creation Error" + e);
-		}
-	}
-
 	private int getFeatureMaxPosition(List<CommandPojo> cammandByTemplate, TemplateFeatureEntity featureData) {
 		int position = 0;
 		for (CommandPojo command : cammandByTemplate) {
