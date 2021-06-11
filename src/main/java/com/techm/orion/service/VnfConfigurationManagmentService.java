@@ -183,10 +183,8 @@ public class VnfConfigurationManagmentService {
 	private int getFeatureMaxPosition(List<CommandPojo> cammandByTemplate, TemplateFeatureEntity featureData) {
 		int position = 0;
 		for (CommandPojo command : cammandByTemplate) {
-			if (command.getMasterFId().equals(featureData.getMasterFId())) {
-				if (position < command.getPosition()) {
+			if (command.getMasterFId().equals(featureData.getMasterFId()) && position < command.getPosition()) {				
 					position = command.getPosition();
-				}
 			}
 		}
 		return position+1;
