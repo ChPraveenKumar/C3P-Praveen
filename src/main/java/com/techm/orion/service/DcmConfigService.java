@@ -3107,10 +3107,8 @@ public class DcmConfigService {
 				// validateMessage=validatorConfigManagement.validate(configRequest);
 				result = requestInfoDao.insertRequestInDB(requestInfoSO);
 				// update template
-				 if (requestInfoSO.getRequestType().equalsIgnoreCase(
-							"NETCONF")
-							&& requestInfoSO.getNetworkType().equalsIgnoreCase(
-									"VNF")) {
+				 if ("NETCONF".equalsIgnoreCase(requestInfoSO.getRequestType())
+							&& "VNF".equalsIgnoreCase(requestInfoSO.getNetworkType())) {
 					 requestInfoSO.setTemplateID("");
 				 }
 

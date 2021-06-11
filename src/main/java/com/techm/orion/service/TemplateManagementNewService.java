@@ -555,10 +555,8 @@ public class TemplateManagementNewService {
 		json = (JSONObject) parser.parse(request);
 		jsonArray = (JSONArray) json.get("features");
 		templateId = json.get("templateId").toString();
-		if (templateId != null && !templateId.isEmpty()) {
-			if(!templateId.contains("_v")) {
-				templateId="";
-			}
+		if (templateId != null && !templateId.isEmpty() && !templateId.contains("_v")) {			
+				templateId="";			
 		}
 		try {
 			if (templateId != null && !templateId.isEmpty()) {

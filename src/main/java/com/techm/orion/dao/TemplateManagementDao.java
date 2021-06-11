@@ -2437,8 +2437,6 @@ public class TemplateManagementDao {
 			}
 		} catch (SQLException e) {	
 			e.printStackTrace();
-		} finally {
-			DBUtil.close(connection);
 		}
 		return cammandList;
 	}

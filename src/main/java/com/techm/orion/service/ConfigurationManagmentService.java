@@ -90,10 +90,10 @@ public class ConfigurationManagmentService {
 			attribJson = (org.json.simple.JSONArray) requestJson.get("dynamicAttribs");
 		}
 		JSONArray replicationArray = null;
-		if (requestJson.containsKey("replication")) {
+		if (requestJson.containsKey("replication") && requestJson.get("replication")!=null) {
 			replicationArray = (JSONArray) requestJson.get("replication");
 		}
-		if (requestJson.get("networkType").toString().equals("VNF")) {			
+		if (requestJson.get("networkType")!=null && requestJson.get("networkType").toString().equals("VNF")) {			
 			String configuration = vnfConfigurationManagmentService.genereateVnfConfiguration(features,attribJson,replicationArray);
 			obj.put(new String("output"),configuration);			
 			
