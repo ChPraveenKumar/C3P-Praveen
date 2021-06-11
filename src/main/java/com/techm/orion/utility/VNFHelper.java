@@ -424,7 +424,7 @@ public class VNFHelper {
 			// first we generate header
 			InvokeFtl invokeftl = new InvokeFtl();
 			String header = invokeftl.generateheaderVNF(requestInfoSO);
-			String finalData = header.concat(data);
+			String finalData = header+"\n".concat(data);
 			// if file doesnt exists, then create it
 			if (!file.exists()) {
 				file.createNewFile();

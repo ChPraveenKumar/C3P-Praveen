@@ -463,7 +463,14 @@ public class RequestDetailsServiceWithVersion {
 					JSONObject attribJson = new JSONObject();
 				//	List<MasterFeatureEntity> masterAttribute = masterFeatureRepository.findByFeatureId(feature.gettMasterFeatureId().getfId());
 					List<MasterCharacteristicsEntity>masterAttribute=masterCharachteristicsRepository.findAllByCFId(feature.gettMasterFeatureId().getfId());
-					attribJson.put("featureName", feature.gettMasterFeatureId().getfName());
+					
+					if(feature.gettMasterFeatureId().getfName().contains("::")) {
+						String featureName = StringUtils.substringAfter(
+								feature.gettMasterFeatureId().getfName(),"::");
+						attribJson.put("featureName", featureName);
+					}else {
+						attribJson.put("featureName", feature.gettMasterFeatureId().getfName());	
+					}					
 					attribJson.put("noOfFields", masterAttribute.size());
 
 					JSONArray masterAttrib = new JSONArray();

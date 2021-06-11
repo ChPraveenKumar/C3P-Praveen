@@ -3107,6 +3107,10 @@ public class DcmConfigService {
 				// validateMessage=validatorConfigManagement.validate(configRequest);
 				result = requestInfoDao.insertRequestInDB(requestInfoSO);
 				// update template
+				 if ("NETCONF".equalsIgnoreCase(requestInfoSO.getRequestType())
+							&& "VNF".equalsIgnoreCase(requestInfoSO.getNetworkType())) {
+					 requestInfoSO.setTemplateID("");
+				 }
 
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
@@ -3665,6 +3669,11 @@ public class DcmConfigService {
 		String profileType = null;
 		String connectType = deviceDetails.getdConnect();
 		if (deviceDetails.getdConnect() != null) {
+			if("SSH".equals(connectType.toUpperCase()) && "VNF".equals(deviceDetails.getdConnect())) {
+				credentialDetails = new CredentialManagementEntity();
+				credentialDetails.setProfileName("c3pteam");
+				credentialDetails.setPasswordWrite("csr1000v");
+			}else {
 			switch (connectType.toUpperCase()) {
 			case "TELNET":
 				profileName = deviceDetails.getdTelnetCredProfile();
@@ -3677,6 +3686,7 @@ public class DcmConfigService {
 				break;
 			}
 			profileType = deviceDetails.getdConnect();
+			}
 		} else {
 			profileType = "SSH";
 			profileName = deviceDetails.getdSshCredProfile();
@@ -3684,6 +3694,7 @@ public class DcmConfigService {
 		if (profileName != null && profileType != null) {
 			credentialDetails = credentialManagementRepo.findOneByProfileNameAndProfileType(profileName, profileType);
 		}
+		
 		return credentialDetails;
 	}
 	

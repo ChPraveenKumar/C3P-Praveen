@@ -5,8 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.core.Response;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -26,10 +24,8 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
-import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.VendorCommandRepository;
-import com.techm.orion.rest.VnfConfigService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
@@ -40,10 +36,7 @@ public class ConfigurationManagmentService {
 
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
-
-	@Autowired
-	private SiteInfoRepository siteInfoRepository;
-
+	
 	@Autowired
 	private AttribCreateConfigService attribCreateConfigService;
 
@@ -58,6 +51,9 @@ public class ConfigurationManagmentService {
 
 	@Autowired
 	private VendorCommandRepository vendorCommandRepository;
+	
+	@Autowired
+	private VnfConfigurationManagmentService vnfConfigurationManagmentService;
 
 	InvokeFtl invokeFtl = new InvokeFtl();
 
@@ -93,35 +89,21 @@ public class ConfigurationManagmentService {
 		if (requestJson.containsKey("dynamicAttribs")) {
 			attribJson = (org.json.simple.JSONArray) requestJson.get("dynamicAttribs");
 		}
-
-		if (requestJson.get("networkType").toString().equals("VNF")) {
-			JSONObject vnfFinalObject = new JSONObject();
-			String templateId = requestInfoData.getTemplateID();
-			JSONArray fianlJson = vnfFeatureData(features, templateId, attribJson);
-			vnfFinalObject.put("dynamicAttribs", fianlJson);
-			VnfConfigService vnfService = new VnfConfigService();
-			Response generateConfiguration = vnfService.generateConfiguration(vnfFinalObject.toString());
-			JSONObject entity = (JSONObject) generateConfiguration.getEntity();
-			Object object = entity.get("data");
-			obj.put(new String("output"), new String(object.toString()));
+		JSONArray replicationArray = null;
+		if (requestJson.containsKey("replication") && requestJson.get("replication")!=null) {
+			replicationArray = (JSONArray) requestJson.get("replication");
+		}
+		if (requestJson.get("networkType")!=null && requestJson.get("networkType").toString().equals("VNF")) {			
+			String configuration = vnfConfigurationManagmentService.genereateVnfConfiguration(features,attribJson,replicationArray);
+			obj.put(new String("output"),configuration);			
+			
 		} else {
 			// commented code is to check duplicate label values.
 			/*
 			 * List<AttribCreateConfigJson> attribList = new ArrayList<>(); if (attribJson
 			 * != null) { attribList.addAll(addAttribDataintoList(attribJson)); }
 			 */
-			JSONArray replicationArray = null;
-			if (requestJson.containsKey("replication")) {
-				replicationArray = (JSONArray) requestJson.get("replication");
-				/*
-				 * if (replicationArray != null && !replicationArray.isEmpty()) { for (int i =
-				 * 0; i < replicationArray.size(); i++) { JSONObject featureDetails =
-				 * (JSONObject) replicationArray.get(i); JSONArray featureAttribArray =
-				 * (JSONArray) featureDetails.get("featureAttribDetails"); if
-				 * (featureAttribArray != null) {
-				 * attribList.addAll(addAttribDataintoList(featureAttribArray)); } } }
-				 */
-			}
+			
 			/*
 			 * boolean flag = false;
 			 * 
@@ -760,7 +742,7 @@ public class ConfigurationManagmentService {
 		return cammandByTemplate;
 	}
 
-	private List<CommandPojo> setFeatureFinalCommands(List<CommandPojo> cammandByTemplate, int position,
+	public List<CommandPojo> setFeatureFinalCommands(List<CommandPojo> cammandByTemplate, int position,
 			List<CommandPojo> commandsByFeatureData) {
 		int assignPosition = 1;
 		List<CommandPojo> finalCommandList = new ArrayList<>();
@@ -784,7 +766,7 @@ public class ConfigurationManagmentService {
 		return finalCommandList;
 	}
 
-	private List<CommandPojo> setFinalCommands(List<CommandPojo> cammandByTemplate, int position,
+	public List<CommandPojo> setFinalCommands(List<CommandPojo> cammandByTemplate, int position,
 			List<CommandPojo> commandsByFeatureData) {
 		int assignPosition = 1;
 		List<CommandPojo> finalCommandList = new ArrayList<>();
