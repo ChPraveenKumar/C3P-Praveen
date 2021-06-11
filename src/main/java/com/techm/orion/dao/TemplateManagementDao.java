@@ -2417,17 +2417,15 @@ public class TemplateManagementDao {
 		return cammandPojo;
 	}
 	
-	public List<CommandPojo> getCammandByMasterFId(String master_f_id) {
-		connection = ConnectionFactory.getConnection();
-		String query1 = "SELECT * FROM c3p_template_master_command_list where master_f_id =?";
-		PreparedStatement pst;
+	public List<CommandPojo> getCammandByMasterFId(String master_f_id) {		
+		String query1 = "SELECT * FROM c3p_template_master_command_list where master_f_id =?";		
 		ResultSet res;
 
 		List<CommandPojo> cammandList = new ArrayList<>();
-		try {
-				pst = connection.prepareStatement(query1);				
-				pst.setString(1, master_f_id);
-				res = pst.executeQuery();
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query1);) {								
+				preparedStmt.setString(1, master_f_id);
+				res = preparedStmt.executeQuery();
 				CommandPojo cammand = null;
 					while (res.next()) {
 					cammand = new CommandPojo();

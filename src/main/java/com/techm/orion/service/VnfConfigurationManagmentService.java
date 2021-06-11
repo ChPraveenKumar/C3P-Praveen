@@ -1,4 +1,4 @@
-package com.techm.orion.rest;
+package com.techm.orion.service;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -21,7 +21,7 @@ import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
-import com.techm.orion.service.ConfigurationManagmentService;
+import com.techm.orion.rest.VnfConfigService;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.UtilityMethods;
 
@@ -118,6 +118,7 @@ public class VnfConfigurationManagmentService {
 		return distinctCommandList;
 	}
 
+	
 	private List<CommandPojo> setReplicationData(List<CommandPojo> distinctCommandList, JSONArray replicationArray,
 			List<AttribCreateConfigPojo> attribCreateConfigList) {
 		int position = 0;

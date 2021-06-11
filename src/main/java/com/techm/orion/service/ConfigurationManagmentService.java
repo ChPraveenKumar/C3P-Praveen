@@ -26,7 +26,6 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.VendorCommandRepository;
-import com.techm.orion.rest.VnfConfigurationManagmentService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
