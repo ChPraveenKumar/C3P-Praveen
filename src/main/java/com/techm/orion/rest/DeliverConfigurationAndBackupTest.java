@@ -1060,7 +1060,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						// method.
 						bckupConfigService.getRouterConfig(requestinfo, "previous");
 
-						boolean result = helper.pushOnVnfDevice(path);
+						boolean result = helper.pushOnVnfDevice(path,routerCredential,requestinfo.getManagementIp());
 						if (result) {
 							value = true;
 

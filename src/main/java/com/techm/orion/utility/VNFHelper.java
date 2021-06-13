@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -20,12 +21,21 @@ import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.XML;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import com.google.common.collect.Maps;
 import com.hubspot.jinjava.Jinjava;
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestRules;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
@@ -107,34 +117,37 @@ public class VNFHelper {
 
 	}
 
-	public boolean pushOnVnfDevice(String file) {
-		boolean result = true;
-		String[] cmd = { "python", TSALabels.PYTHON_SCRIPT_PATH.getValue()+"\\editscript.py", file };
-		Process p;
+	public boolean pushOnVnfDevice(String file, CredentialManagementEntity routerCredential, String managmentIp) {
+		boolean result = false;
+		
 		try {
-			p = Runtime.getRuntime().exec(cmd);
-
-			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			String ret = in.readLine();
-
-			BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			String line;
-			if (bre.readLine() == null) {
-
-				// success
-				logger.info("" + ret);
-			} else {
-				logger.info("" + bre.readLine());
-				if (bre.readLine().contains("File exists") || bre.readLine().contains("File exist")) {
-					result = true;
-				} else {
-					result = false;
-				}
+			RestTemplate restTemplate = new RestTemplate();
+			JSONObject request = new JSONObject();
+			request.put("username",routerCredential.getLoginRead());			
+			request.put("password",routerCredential.getPasswordWrite());
+			request.put("managementip",managmentIp);
+			request.put("filepath",file);
+			
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_EDIT_NETCONF.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			logger.info("response of getConfig is " + response);
+			JSONParser parser = new JSONParser();
+			JSONObject responseJson = (JSONObject) parser.parse(response);
+			if(responseJson.containsKey("Error")&& responseJson.get("Error")!=null && !responseJson.get("Error").toString().isEmpty()) {
+				result = false;
 			}
-			bre.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			if(responseJson.containsKey("Result")&& responseJson.get("Result")!=null && !responseJson.get("Result").toString().isEmpty()) {
+				result = true;
+			}
+			
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - vnfBackup -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - vnfBackup->" + exe.getMessage());
+			exe.printStackTrace();
 		}
 		return result;
 	}
