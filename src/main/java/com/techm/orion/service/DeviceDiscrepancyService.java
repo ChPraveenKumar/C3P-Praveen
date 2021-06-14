@@ -222,10 +222,14 @@ public class DeviceDiscrepancyService {
 					if (oidValue.equals(fidChildOIDNo)) {
 						String displayName = masterOIDRepository.findOidDisplayName(forkDiscrepancy.getFidOIDNo(),
 								vendor);
+						String existanceValue = "";
+						if(forkDiscrepancy.getFidExistingValue()!=null) {
+							existanceValue = forkDiscrepancy.getFidExistingValue();
+						}
 						JSONObject discrepancy = discrepancyStatusForLatestDiscover(
 								forkDiscrepancy.getFidDiscrepancyFalg(),
 								displayName + " for Interface" + " '" + dicreapancyvalue + "'",
-								forkDiscrepancy.getFidExistingValue(), forkDiscrepancy.getFidDiscoverValue(), true);
+								existanceValue, forkDiscrepancy.getFidDiscoverValue(), true);
 						discrepancy.put("oid", forkDiscrepancy.getFidOIDNo());
 						discrepancy.put("childOid", forkDiscrepancy.getFidChildOIDNo());
 						boolean flag = getFlag(discrepancyObject, discrepancy);
@@ -376,7 +380,7 @@ public class DeviceDiscrepancyService {
 		boolean flag = false;
 		for (int j = 1; j < discrepancyObject.size(); j++) {
 			JSONObject jObject = (JSONObject) discrepancyObject.get(j);
-			if (jObject.get("childOid") != null) {
+			if (jObject.get("childOid") != null && jObject.get("discrepancyMsg")!=null) {
 				if (discrepancy.get("discrepancyMsg").toString().equals(jObject.get("discrepancyMsg").toString())
 						&& discrepancy.get("childOid").toString().equals(jObject.get("childOid").toString())) {
 					flag = true;
