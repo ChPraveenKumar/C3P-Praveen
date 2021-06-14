@@ -56,7 +56,7 @@ public class TemplateSuggestionService {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
-	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
+	//@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/getFeaturesForDeviceDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getFeaturesForDeviceDetail(@RequestBody String request) throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;

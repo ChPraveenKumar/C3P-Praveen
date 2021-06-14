@@ -85,4 +85,8 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 
 	
 	List<MasterFeatureEntity> findAllByFNameContains(String featureName);
+	
+	@Query(value = "Select count(f_id) from c3p_m_features where f_name like :templateId and f_id like \'F%\'" ,nativeQuery = true)
+	int featureCount (@Param("templateId") String templateId);
+	
 }

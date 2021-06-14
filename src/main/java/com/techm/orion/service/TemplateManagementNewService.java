@@ -555,8 +555,10 @@ public class TemplateManagementNewService {
 		json = (JSONObject) parser.parse(request);
 		jsonArray = (JSONArray) json.get("features");
 		templateId = json.get("templateId").toString();
-		if (templateId != null && !templateId.isEmpty() && !templateId.contains("_v")) {			
+		if (templateId != null && !templateId.isEmpty() ) {			
+			if(!templateId.contains("_V")) {
 				templateId="";			
+			}
 		}
 		try {
 			if (templateId != null && !templateId.isEmpty()) {
@@ -735,10 +737,13 @@ public class TemplateManagementNewService {
 							deviceDeatils.getVendor(), "All", deviceDeatils.getOs(), deviceDeatils.getOsVersion(),
 							deviceDeatils.getNetworkType())
 					.forEach(template -> {
+						int featureCount = masterFeatureRepository.featureCount("%"+template.getTempId()+"%");
+						if(featureCount>0) {
 						JSONObject templateObject = new JSONObject();
 						templateObject.put("alias", template.getTempAlias());
 						templateObject.put("templateId", template.getTempId());
 						templateJson.add(templateObject);
+						}
 					});
 			templateData = new JSONObject();
 			templateData.put("yangTemplates", templateJson);
