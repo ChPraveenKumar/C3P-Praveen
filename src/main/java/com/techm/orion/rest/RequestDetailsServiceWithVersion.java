@@ -120,7 +120,7 @@ public class RequestDetailsServiceWithVersion {
 					requestType = value.substring(0, 4);
 					MileStones showMilestone = reportMileStones.getMileStones(requestType);
 					detailsList = requestRedao.getRequestWithVersion(key, value, version, userName, userRole);
-					if(!requestType.equalsIgnoreCase("SNAI"))//This is bec after SNAI request the VM will be instantiated and then information will be added to device info table
+					if(!requestType.equalsIgnoreCase("SNAI") && !requestType.equalsIgnoreCase("SNAD"))//This is bec after SNAI request the VM will be instantiated and then information will be added to device info table
 					{
 					for (RequestInfoCreateConfig request : detailsList) {
 

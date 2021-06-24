@@ -1,10 +1,7 @@
 package com.techm.orion.rest;
 
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -78,7 +75,7 @@ public class TestBundlingController {
 	private static final Logger logger = LogManager.getLogger(TestBundlingController.class);
 
 	@Autowired
-	RequestInfoDao dao;
+	private RequestInfoDao dao;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -167,30 +164,21 @@ public class TestBundlingController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
 	@RequestMapping(value = "/osversionForBundling", method = RequestMethod.POST, produces = "application/json")
 	public ResponseEntity getOsversionForBundling(@RequestBody String request) {
-
-		Set<OS> setos = new HashSet<OS>();
-
 		JSONParser parser = new JSONParser();
 		JSONObject obj = new JSONObject();
 		JSONObject object = null;
 		JSONArray outputArray = new JSONArray();
-		Set<OS> familyList = null;
-
-		Set<OSversion> setosversion = new HashSet<OSversion>();
-
 		List<OSversion> osversionlst = new ArrayList<OSversion>();
-
 		try {
-
 			obj = (JSONObject) parser.parse(request);
 			String os = obj.get("os").toString();
-
+			String os_id = obj.get("os_id").toString();
 			if ("All".equals(os)) {
 				osversionlst = (List<OSversion>) osversionRepository.findAll();
 				for (OSversion i : osversionlst) {
@@ -200,25 +188,21 @@ public class TestBundlingController {
 					outputArray.add(0, object);
 				}
 			} else {
-
-				familyList = osRepository.findByOs(os);
-				Set<OSversion> osVersionFamily = null;
-				for (OS operatingSystem : familyList) {
-				osVersionFamily = osversionRepository.findByOs(operatingSystem);
-				List<OSversion> list = new ArrayList<>(osVersionFamily);
-				list.forEach(action -> {
+				int id = Integer.parseInt(os_id);
+				OS osFamily = osRepository.findByOsAndId(os, id);
+				Set<OSversion> osVersionList = null;
+				osVersionList = osversionRepository.findByOs(osFamily);
+				osVersionList.forEach(osversion -> {
 					JSONObject objectJson = new JSONObject();
-					objectJson.put("Id", action.getId());
-					objectJson.put("Os", action.getOsversion());
+					objectJson.put("Id", osversion.getId());
+					objectJson.put("Os", osversion.getOsversion());
 					outputArray.add(objectJson);
 				});
-				}
 			}
 		} catch (Exception exe) {
 			logger.error("Exception occurred while fetching the data object" + exe.getMessage());
 		}
 		return new ResponseEntity(outputArray, HttpStatus.OK);
-
 	}
 
 	/**

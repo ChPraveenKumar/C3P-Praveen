@@ -114,7 +114,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
 					RequestId, version);
 
-			if (!RequestId.contains("SNAI-")) {
+			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")) {
 				requestDetailEntity = requestInfoDetailsRepositories
 						.findAllByAlphanumericReqId(RequestId);
 

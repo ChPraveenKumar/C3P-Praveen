@@ -38,4 +38,7 @@ public interface OSRepository extends JpaRepository<OS, Integer> {
 	OS findById(int id);
 	
 	Set<OS> findOneById(int id);
+	
+	OS findByOsAndId(String os, int id);
+	
 }
