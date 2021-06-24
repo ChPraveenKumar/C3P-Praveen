@@ -7380,7 +7380,7 @@ public class RequestInfoDao {
 				networkAuditArray.add(dynamicTestResultArray4.get(i));
 			}
 		}
-		if(request.getAlphanumericReqId().startsWith("SNAI"))
+		if(request.getAlphanumericReqId().startsWith("SNAI") || request.getAlphanumericReqId().startsWith("SNAD"))
 		{
 			org.json.simple.JSONObject itemObject=null;
 			List<ResourceCharacteristicsHistoryEntity>list=resourceCharHistoryRepo.findBySoRequestId(request.getAlphanumericReqId());
@@ -7394,12 +7394,12 @@ public class RequestInfoDao {
 		}
 	
 		if (request.getAlphanumericReqId() != null
-				&& !request.getAlphanumericReqId().startsWith("SLGA") && !request.getAlphanumericReqId().startsWith("SNAI")) {
+				&& !request.getAlphanumericReqId().startsWith("SLGA") && !request.getAlphanumericReqId().startsWith("SNAI") && !request.getAlphanumericReqId().startsWith("SNAD")) {
 			obj.put("Network", networkArray);
 			obj.put("Health_Check", healthArray);
 		}
 		if(request.getAlphanumericReqId() != null
-				 && !request.getAlphanumericReqId().startsWith("SNAI"))
+				 && !request.getAlphanumericReqId().startsWith("SNAI") && !request.getAlphanumericReqId().startsWith("SNAD"))
 		{
 		obj.put("Prevalidation", prevalidationArray);
 		obj.put("Others", othersArray);
