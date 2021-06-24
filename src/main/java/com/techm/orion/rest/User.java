@@ -27,6 +27,7 @@ import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.exception.GenericResponse;
 import com.techm.orion.pojo.UserManagementResulltDetailPojo;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.ModuleInterface;
 import com.techm.orion.service.UserManagementInterface;
 import com.techm.orion.service.WorkGroupInterface;
@@ -49,6 +50,9 @@ public class User {
 
 	@Autowired
 	private WorkGroupInterface workGroupInterface;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	/*
 	 * Create service for create user for user management
@@ -70,7 +74,7 @@ public class User {
 			}
 			else {
 				obj.put("error", "");
-				obj.put("data", "Added User Successfully");
+				obj.put("data", errorValidationRepository.findByErrorId("C3P_UM_002"));
 			}
 		} catch (Exception e) {
 		    logger.error("\n" + "exception in createUser" + e.getMessage());
@@ -260,7 +264,7 @@ public class User {
 			GenericResponse viewResult = userCreateInterface.getUserView(name);
 			if (viewResult.isEmpty()) {
 				obj.put("error",
-						"No record found, Please contact your Administrator");
+						errorValidationRepository.findByErrorId("C3P_UM_001"));
 				obj.put("data", "");
 			} else {
 				obj.put("error", "");
@@ -462,7 +466,7 @@ public class User {
 	@RequestMapping(value = "/viewAllUser", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<JSONObject> viewAllUser() {
 		
-		logger.info("\n" + "Inside getiing all user details in viewAllUser Service");
+		logger.info("Inside getiing all user details in viewAllUser Service");
 		GenericResponse res = new GenericResponse();
 		JSONObject obj = new JSONObject();
 		JSONObject resObj = new JSONObject();
@@ -472,7 +476,7 @@ public class User {
 			List<UserManagementEntity>  viewResult = userCreateInterface.getAllUserView();
 			if (viewResult.isEmpty()) {
 				obj.put("error",
-						"No record found, Please contact your Administrator");
+						errorValidationRepository.findByErrorId("C3P_UM_001"));
 				obj.put("data", "");
 			} else {
 				for(UserManagementEntity activeUser: viewResult)
@@ -488,7 +492,7 @@ public class User {
 				obj.put("inActiveUser", inActiveUserList);
 			}
 		} catch (Exception e) {
-			logger.error("\n" + "exception in all user details in viewAllUser Service" + e.getMessage());
+			logger.error("exception in all user details in viewAllUser Service" + e.getMessage());
 			obj.put("error", e.getMessage());
 			obj.put("data", "");
 		}
@@ -506,7 +510,7 @@ public class User {
 	@ResponseBody
 	public ResponseEntity login(@RequestBody String searchParameters) {
 
-		logger.info("\n" + "Inside Login and locked user account if 3 invalid attempts in Login Service");
+		logger.info("Inside Login and locked user account if 3 invalid attempts in Login Service");
 		JSONObject obj = new JSONObject();
 		String jsonMessage = "";
 		String jsonArray = "";
@@ -524,14 +528,14 @@ public class User {
 
 			if (viewResult !=null) {
 				obj.put("error",
-						"No record found, Please contact your Administrator");
+						errorValidationRepository.findByErrorId("C3P_UM_001"));
 				obj.put("data", "");
 			} else {
 				obj.put("error", "");
 				obj.put("data", viewResult);
 			}
 		} catch (Exception e) {
-			logger.error("\n" + "exception in Login and locked user account if 3 invalid attempts in Login Service" 
+			logger.error("exception in Login and locked user account if 3 invalid attempts in Login Service" 
 					+ e.getMessage());
 			obj.put("error", e.getMessage());
 			obj.put("data", "");
@@ -549,7 +553,7 @@ public class User {
 	// public Response login(@RequestBody String searchParameters) {
 	public ResponseEntity unlockUser(@RequestBody String searchParameters) {
 
-		logger.info("\n" + "Inside Unlock user based on user name in unlock Service");
+		logger.info("Inside Unlock user based on user name in unlock Service");
 		JSONObject obj = new JSONObject();
 		String jsonMessage = "";
 		String jsonArray = "";
@@ -566,14 +570,14 @@ public class User {
 			// String message = (String) res.get("responseResult");
 			if (success == 0) {
 				obj.put("error",
-						"No record found, Please contact your Administrator");
+						errorValidationRepository.findByErrorId("C3P_UM_001"));
 				obj.put("data", "");
 			} else {
 				obj.put("error", "");
-				obj.put("data", "user account successfully reset");
+				obj.put("data", errorValidationRepository.findByErrorId("C3P_UM_003"));
 			}
 		} catch (Exception e) {
-			logger.error("\n" + "exception in Unlock user based on user name in unlock Service" 
+			logger.error("exception in Unlock user based on user name in unlock Service" 
 					+ e.getMessage());
 			obj.put("error", e.getMessage());
 			obj.put("data", "");
@@ -590,7 +594,7 @@ public class User {
 	@ResponseBody
 	public ResponseEntity activeUser(@RequestBody String searchParameters) {
 
-		logger.info("\n" + "Inside activeUser Service");
+		logger.info("Inside activeUser Service");
 		JSONObject obj = new JSONObject();
 		JSONParser parser = new JSONParser();
 		JSONObject json = new JSONObject();
@@ -604,14 +608,14 @@ public class User {
 			int success = userCreateInterface.activeDeletedUser(status, userName);
 			if (success == 0) {
 				obj.put("error",
-						"No record found, Please contact your Administrator");
+						errorValidationRepository.findByErrorId("C3P_UM_001"));
 				obj.put("data", "");
 			} else {
 				obj.put("error", "");
-				obj.put("data", "user account successfully active");
+				obj.put("data", errorValidationRepository.findByErrorId("C3P_UM_004"));
 			}
 		} catch (Exception e) {
-			logger.error("\n" + "exception in activeUser Service" 
+			logger.error("exception in activeUser Service" 
 					+ e.getMessage());
 			obj.put("error", e.getMessage());
 			obj.put("data", "");
@@ -626,7 +630,7 @@ public class User {
 	@RequestMapping(value = "/countActiveInActiveUser", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity<JSONObject> countActiveInActive() {
 		
-		logger.info("\n" + "Inside countActiveInActiveUser Service");
+		logger.info("Inside countActiveInActiveUser Service");
 		JSONObject obj = new JSONObject();
 		try {		
 			int activeUserCount = userCreateInterface.countActiveUser();
@@ -634,7 +638,7 @@ public class User {
 			int newUserRequest =0, incompleteProfile=0;
 			if (activeUserCount == 0 && inActiveUserCount ==0) {
 				obj.put("status",
-						"No Active/In Active User ");
+						errorValidationRepository.findByErrorId("C3P_UM_005"));
 				obj.put("data", "");
 			} else {
 				obj.put("error", "");
@@ -644,7 +648,7 @@ public class User {
                 obj.put("incompleteProfile", incompleteProfile);
 			}
 		} catch (Exception e) {
-			logger.error("\n" + "exception in countActiveInActiveUser Service" 
+			logger.error("exception in countActiveInActiveUser Service" 
 					+ e.getMessage());
 			obj.put("error", e.getMessage());
 			obj.put("data", "");
@@ -673,17 +677,17 @@ public class User {
 					action);
 			if (success == 0) {
 				obj.put("error",
-						"No record found, Please contact your Administrator");
+						errorValidationRepository.findByErrorId("C3P_UM_001"));
 				obj.put("data", "");
 			} else if (action.equalsIgnoreCase("active")) {
 				obj.put("error", "");
-				obj.put("data", "user account successfully unlock");
+				obj.put("data", errorValidationRepository.findByErrorId("C3P_WM_006"));
 			} else {
 				obj.put("error", "");
-				obj.put("data", "user account successfully locked");
+				obj.put("data", errorValidationRepository.findByErrorId("C3P_UM_007"));
 			}
 		} catch (Exception e) {
-			logger.error("\n" + "exception in lockAndunlock Service" 
+			logger.error("exception in lockAndunlock Service" 
 					+ e.getMessage());
 			obj.put("error", e.getMessage());
 			obj.put("data", "");

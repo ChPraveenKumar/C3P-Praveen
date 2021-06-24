@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.orion.entitybeans.AlertInformation;
 import com.techm.orion.repositories.AlertInformationRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 
 @Controller
 @RequestMapping("/AddNewAlertNotificationService")
@@ -28,6 +29,9 @@ public class AddNewAlertNotificationService implements Observer {
 	/* Autowired JPA Repository */
 	@Autowired
 	public AlertInformationRepository alertInformationRepository;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -62,7 +66,7 @@ public class AddNewAlertNotificationService implements Observer {
 				} else {
 
 					obj.put(new String("status"),
-							"Error while adding the record.");
+							errorValidationRepository.findDescriptionByErrorIdandErrorType("C3P_AN_001", "Notification"));
 
 				}
 

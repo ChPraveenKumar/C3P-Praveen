@@ -50,6 +50,7 @@ import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.GenericAtrribPojo;
 import com.techm.orion.pojo.PredefinedAtrribPojo;
 import com.techm.orion.pojo.PredefinedMappedAtrribPojo;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
@@ -93,6 +94,10 @@ public class MasterFeatureController {
 	
 	@Autowired
 	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
+
 	/*
 	 * To get Validation, Category and UI component list.
 	 */
@@ -577,7 +582,7 @@ public class MasterFeatureController {
 				Set<Series> seriesSet = masterSeriesRepo.findBySeries(series);
 				if (null != seriesSet && !seriesSet.isEmpty()) {
 					obj.put("output",
-							"Basic configuration for this series already exist");
+							errorValidationRepository.findByErrorId("C3P_TM_013"));
 
 				} else {
 					String featurId = saveconfiguartionData(json, masterFeature, series);
@@ -595,7 +600,7 @@ public class MasterFeatureController {
 				    timestampValue = new Timestamp(cal.getTime().getTime());
 					notificationEntity.setNotifExpiryDate(timestampValue);
 					notificationRepo.save(notificationEntity);
-					obj.put("output", "Feature Created");
+					obj.put("output", errorValidationRepository.findByErrorId("C3P_TM_014"));
 				}
 
 			} else {

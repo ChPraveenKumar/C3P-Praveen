@@ -273,4 +273,11 @@ public class WAFADateUtil {
 		}
 		return response;
 	}
+	
+	public Timestamp currentTimeStamp()
+	{
+		LocalDateTime nowDate = LocalDateTime.now();
+		Timestamp timestamp = Timestamp.valueOf(nowDate);
+		return timestamp;		
+	}
 }

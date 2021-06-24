@@ -29,6 +29,7 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.TemplateAttribPojo;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.TemplateManagementNewService;
@@ -52,6 +53,10 @@ public class TemplateSuggestionService {
 
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
+	
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
@@ -118,7 +123,7 @@ public class TemplateSuggestionService {
 			} else {
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
-						"No features Present.Create the template first");
+						errorValidationRepository.findByErrorId("C3P_TM_002"));
 				obj.put(new String("featureList"), null);
 			}
 
@@ -174,7 +179,7 @@ public class TemplateSuggestionService {
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 		} else {
 			obj.put(new String("Result"), "Failure");
-			obj.put(new String("Message"), "No Data.Create the template first");
+			obj.put(new String("Message"), errorValidationRepository.findByErrorId("C3P_TM_003"));
 			obj.put(new String("TemplateDetailList"), null);
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.BAD_REQUEST);
 		}
@@ -249,7 +254,7 @@ public class TemplateSuggestionService {
 			else {
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
-						"No Data.Create the template first");
+						errorValidationRepository.findByErrorId("C3P_TM_003"));
 				obj.put(new String("TemplateDetailList"), null);
 			}
 
@@ -286,7 +291,7 @@ public class TemplateSuggestionService {
 			responseEntity = new ResponseEntity<JSONObject>(jsonAttrib, HttpStatus.OK);
 		} else {
 			obj.put(new String("Result"), "Failure");
-			obj.put(new String("Message"), "No Data.Create the template first");
+			obj.put(new String("Message"), errorValidationRepository.findByErrorId("C3P_TM_003"));
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.BAD_REQUEST);
 		}
 		return responseEntity;
@@ -391,7 +396,7 @@ public class TemplateSuggestionService {
 			} else {
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
-						"No features Present.Create the template first");
+						errorValidationRepository.findByErrorId("C3P_TM_002"));
 				obj.put(new String("featureList"), null);
 			}
 
@@ -475,7 +480,7 @@ public class TemplateSuggestionService {
 			} else {
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
-						"No features Present.Create the template first");
+						errorValidationRepository.findByErrorId("C3P_TM_002"));
 				obj.put(new String("featureList"), null);
 			}
 

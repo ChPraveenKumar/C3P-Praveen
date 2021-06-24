@@ -306,28 +306,28 @@ public class ImportFile {
 					if (validateNoOfRequest.equals("Valid Single Request")) {
 
 						obj.put(new String("response"), "True");
-						obj.put(new String("message"), "Valid Single Request");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_005"));
 
 					} else if (validateNoOfRequest.equals("Invalid Single Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 					} else if (validateNoOfRequest.equals("Valid Multiple Request")) {
 
 						obj.put(new String("response"), "True");
-						obj.put(new String("message"), "Valid Multiple Request");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_006"));
 					} else if (validateNoOfRequest.equals("Invalid Multiple Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 					}
 
 				} else {
 
 					obj.put(new String("response"), "False");
-					obj.put(new String("message"), "Invalid file format detected");
+					obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 				}
 			} else if (flagCSV) {
@@ -337,28 +337,28 @@ public class ImportFile {
 					if (validateNoOfRequest.equals("Valid Single Request")) {
 
 						obj.put(new String("response"), "True");
-						obj.put(new String("message"), "Valid Single Request");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_005"));
 
 					} else if (validateNoOfRequest.equals("Invalid Single Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 					} else if (validateNoOfRequest.equals("Valid Multiple Request")) {
 
 						obj.put(new String("response"), "True");
-						obj.put(new String("message"), "Valid Multiple Request");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_006"));
 					} else if (validateNoOfRequest.equals("Invalid Multiple Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 					}
 
 				} else {
 
 					obj.put(new String("response"), "False");
-					obj.put(new String("message"), "Invalid file format detected");
+					obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 				}
 			}
@@ -366,7 +366,7 @@ public class ImportFile {
 		} catch (Exception e) {
 
 			obj.put(new String("response"), "False");
-			obj.put(new String("message"), "Invalid file type detected");
+			obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 		}
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")

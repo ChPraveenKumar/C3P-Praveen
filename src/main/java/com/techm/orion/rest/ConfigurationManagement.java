@@ -43,6 +43,7 @@ import com.techm.orion.pojo.CreateConfigPojo;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.MasterAttribRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
@@ -78,6 +79,9 @@ public class ConfigurationManagement {
 
 	@Autowired
 	private MasterAttribRepository masterAttribRepository;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	private static DecimalFormat df2 = new DecimalFormat("#.##");
 
@@ -1027,9 +1031,9 @@ public class ConfigurationManagement {
 				keyResponse.put("featureId", featureId);
 				keyResponse.put("attribName", attribName);
 				if (resourceCharEntity != null) {
-					keyResponse.put("msg", "Duplicate record found");
+					keyResponse.put("msg", errorValidationRepository.findByErrorId("C3P_KV_001"));
 				} else
-					keyResponse.put("msg", "Duplicate record not found");
+					keyResponse.put("msg", errorValidationRepository.findByErrorId("C3P_KV_002"));
 				validateKeyResponse.add(keyResponse);
 			}
 		} catch (Exception e) {
@@ -1071,12 +1075,12 @@ public class ConfigurationManagement {
 								.findByDeviceIdAndRcFeatureIdAndRcKeyValueIsNotNull(deviceEntity.getdId(), featureId);
 
 						if (resourceCharEntity == null) {
-							message = "match not found";
+							message = errorValidationRepository.findByErrorId("C3P_KV_003");
 							responseOutput.put("attribName", "");
 							responseOutput.put("attribValue", "");
 
 						} else {
-							message = "match found";
+							message = errorValidationRepository.findByErrorId("C3P_KV_004");
 							responseOutput.put("attribName", resourceCharEntity.getRcCharacteristicName());
 							responseOutput.put("attribValue", resourceCharEntity.getRcCharacteristicValue());
 						}

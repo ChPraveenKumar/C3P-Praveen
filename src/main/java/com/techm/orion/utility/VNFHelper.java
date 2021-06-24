@@ -500,44 +500,16 @@ public class VNFHelper {
 		
 		List<TestRules> rules = new ArrayList<TestRules>();
 		rules = test.getListRules();
+		String response = null;
 		for (int i = 0; i < rules.size(); i++) {
 			if (rules.get(i).getDataType().equalsIgnoreCase("Text"))
 			{
 				output=new ArrayList<String>();
 				String filtertosearch = rules.get(i).getBeforeText();
 				//python netconf_get_rpc.py -a 10.62.0.27 -u c3pteam -p csr1000v -k enabled -f 
-				String[] cmd = { "python", TSALabels.PYTHON_SCRIPT_PATH.getValue()+"\\netconf_get_rpc.py ","-a" ,requestinfo.getManagementIp(),"-u",user,"-p",pwd,"-k",filtertosearch,"-f",pathxml };
-				Process p;
-				try {
-					p = Runtime.getRuntime().exec(cmd);
-
-					BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-					//String ret = in.readLine();
-
-					BufferedReader bre = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-					String line;
-					if (bre.readLine() == null) {
-
-						while ((line = in.readLine()) != null) {
-				            output.add(line);
-				        }
-						
-					} else {
-						logger.info("" + bre.readLine());
-			            output.add("Error");
-
-						if (bre.readLine().contains("File exists") || bre.readLine().contains("File exist")) {
-							//result = true;
-							
-						} else {
-							//result = false;
-						}
-					}
-					bre.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				response = performTestVnfDevice(user, pwd, 
+						requestinfo.getManagementIp(),  filtertosearch, pathxml);
+				output.add(response);		
 			}
 			
 			String isEvaluationRequired = rules.get(i).getEvaluation();
@@ -917,5 +889,42 @@ public class VNFHelper {
 		
 		return result;
 		
+	}
+
+	@SuppressWarnings("unchecked")
+	private String performTestVnfDevice(String user, String pass, String managementIp, String filtertosearch,
+			String pathxml) {
+		String result = null;
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			JSONObject request = new JSONObject();
+			request.put("username", user);
+			request.put("password", pass);
+			request.put("managementip", managementIp);
+			request.put("filtertosearch", filtertosearch);
+			request.put("filepath", pathxml);
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_TEST_NETCONF.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			logger.info("response of netconfgetRPC is " + response);
+			JSONParser parser = new JSONParser();
+			JSONObject responseJson = (JSONObject) parser.parse(response);
+			if (responseJson.containsKey("Error") && responseJson.get("Error") != null
+					&& !responseJson.get("Error").toString().isEmpty()) {
+				result = responseJson.get("Error").toString();
+			}
+			if (responseJson.containsKey("Result") && responseJson.get("Result") != null
+					&& !responseJson.get("Result").toString().isEmpty()) {
+				result = responseJson.get("Result").toString();
+			}
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - performTestVnfDevice -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - performTestVnfDevice->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		return result;
 	}
 }

@@ -25,6 +25,7 @@ import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.models.TemplateAttributeJSONModel;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.AttributeFeatureNewService;
 
 @Controller
@@ -35,6 +36,9 @@ public class AttributeFeatureServiceTM implements Observer {
 	
 	@Autowired
 	private TemplateSuggestionDao templateSuggestionDao ;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 	
 	/**
 	 * This Api is marked as ***************External Api Impacted****************
@@ -139,7 +143,7 @@ public class AttributeFeatureServiceTM implements Observer {
 			} else {
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
-						"No features Present.Create the template first");
+						errorValidationRepository.findByErrorId("C3P_TM_002"));
 				obj.put(new String("featureList"), null);
 			}
 
@@ -203,7 +207,7 @@ public class AttributeFeatureServiceTM implements Observer {
 			else {
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
-						"No Data.Create the template first");
+						errorValidationRepository.findByErrorId("C3P_TM_003"));
 				obj.put(new String("TemplateDetailList"), null);
 			}
 

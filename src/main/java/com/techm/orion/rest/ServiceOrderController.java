@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.techm.orion.entitybeans.ServiceOrderEntity;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.utility.WAFADateUtil;
 
@@ -36,6 +37,10 @@ public class ServiceOrderController {
 
 	@Autowired
 	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
+
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -105,9 +110,9 @@ public class ServiceOrderController {
 				int updatedRecord = serviceOrderRepo.updateStatusAndRequestId(requestId, status, orderid, updatedBy,
 						Timestamp.valueOf(LocalDateTime.now()));
 				if (updatedRecord > 0)
-					obj.put("Status", "Updated successfully");
+					obj.put("Status", errorValidationRepository.findByErrorId("C3P_SO_001"));
 			} else
-				obj.put("Status", "Error updating the Service order");
+				obj.put("Status", errorValidationRepository.findByErrorId("C3P_SO_002"));
 
 		} catch (Exception e) {
 			logger.error("\n" + "exception in updateserviceorder service" + e.getMessage());

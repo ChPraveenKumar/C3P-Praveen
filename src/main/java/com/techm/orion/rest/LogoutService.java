@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.UserManagementInterface;
 
 @Controller
@@ -26,6 +27,9 @@ public class LogoutService implements Observer {
 	
 	@Autowired
 	private UserManagementInterface userCreateInterface;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -46,10 +50,10 @@ public class LogoutService implements Observer {
 				loggedInUserName= json.get("userName").toString();
 			isSuccess =userCreateInterface.resetUsersDB(loggedInUserName);
 			if (isSuccess) {
-				obj.put(new String("Message"), "Success");
+				obj.put(new String("Message"), errorValidationRepository.findByErrorId("C3P_UM_009"));
 				//Global.loggedInUser = null;
 			} else {
-				obj.put(new String("Message"), "Failure");
+				obj.put(new String("Message"), errorValidationRepository.findByErrorId("C3P_UM_008"));
 			}
 
 		} catch (Exception e) {
