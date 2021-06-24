@@ -24,6 +24,7 @@ import com.google.gson.Gson;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.TemplateManagementDetailsService;
 import com.techm.orion.service.TemplateManagementNewService;
 
@@ -42,7 +43,9 @@ public class CreateTemplateBasicConfigService implements Observer {
 	@Autowired
 	private TemplateManagementDao templateManagementDao;
 
-
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -95,7 +98,7 @@ public class CreateTemplateBasicConfigService implements Observer {
 					}
 					boolean result = templateManagementDao.updateMasterFeatureAndCommandTable(tempserieskey);
 					if (result) {
-						obj.put(new String("output"), "Added Successfully");
+						obj.put(new String("output"), errorValidationRepository.findByErrorId("C3P_TM_005"));
 						obj.put("series", tempserieskey);
 						obj.put(new String("templateID"), tempIDafterSaveBasicDetails.get("tempid"));
 						obj.put(new String("version"), tempIDafterSaveBasicDetails.get("version"));
@@ -103,7 +106,7 @@ public class CreateTemplateBasicConfigService implements Observer {
 						obj.put("errorCode", "");
 					} else {
 						obj.put(new String("output"),
-								"Error Fetching Basic Configuration Feature Set Data For Selected Device");
+								errorValidationRepository.findByErrorId("C3P_TM_004"));
 						obj.put(new String("templateID"), tempIDafterSaveBasicDetails.get("tempid"));
 						obj.put(new String("version"), tempIDafterSaveBasicDetails.get("version"));
 						obj.put("error", "");
@@ -111,14 +114,14 @@ public class CreateTemplateBasicConfigService implements Observer {
 					}
 
 				} else {
-					obj.put(new String("output"), "Error Saving Data");
+					obj.put(new String("output"), errorValidationRepository.findByErrorId("C3P_TM_006"));
 					obj.put(new String("templateID"), tempIDafterSaveBasicDetails.get("tempid"));
 					obj.put(new String("version"), tempIDafterSaveBasicDetails.get("version"));
 					obj.put("error", "");
 					obj.put("errorCode", "");
 				}
 			} else {
-				obj.put(new String("output"), "Error Saving Data");
+				obj.put(new String("output"), errorValidationRepository.findByErrorId("C3P_TM_006"));
 				obj.put(new String("templateID"), tempIDafterSaveBasicDetails.get("tempid"));
 				obj.put("error", tempIDafterSaveBasicDetails.get("errorDescription"));
 				obj.put("errorCode", tempIDafterSaveBasicDetails.get("errorCode"));

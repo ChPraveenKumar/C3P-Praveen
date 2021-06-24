@@ -28,6 +28,7 @@ import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.Series;
 import com.techm.orion.pojo.MasterAttribPojo;
 import com.techm.orion.repositories.BasicConfigurationRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.MasterAttribRepository;
 import com.techm.orion.repositories.SeriesRepository;
 
@@ -46,6 +47,9 @@ public class TpmgmtController {
 	
 	@Autowired
 	private CreateTemplateBasicConfigService addtemplatewithSeries;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -77,7 +81,7 @@ public class TpmgmtController {
 			bscCongifLst.addAll(basicconfigurationset);
 			return Response.status(200).entity(bscCongifLst).build();
 		} else {
-			return Response.status(200).entity("Basic configuration for this series does not exist").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_TM_007")).build();
 		}
 
 	}
@@ -162,9 +166,9 @@ public class TpmgmtController {
 		JSONObject responce = new JSONObject();
 		if (result) {
 			responce.put("series", saveseries.getSeries());
-			responce.put("message", "Basic configuration saved successfully");
+			responce.put("message", errorValidationRepository.findByErrorId("C3P_TM_008"));
 		} else {
-			responce.put("message", "Error is saving basic configguration");
+			responce.put("message", errorValidationRepository.findByErrorId("C3P_TM_009"));
 		}
 		return Response.status(200).entity(responce).build();
 	}
@@ -285,7 +289,7 @@ public class TpmgmtController {
 		} catch (Exception e) {
 			logger.error(e);
 		}
-		return Response.status(200).entity("Data Not Save").build();
+		return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_TM_010")).build();
 	}
 
 }

@@ -26,6 +26,8 @@ public class ServiceRequestPojo {
 	private String lastExecution;
 	private String nextExecution;
 	private String templateId;
+	private boolean baselinedFlag;
+	private String baselinedDate;
 
 	public String getCustomer() {
 		return customer;
@@ -178,6 +180,22 @@ public class ServiceRequestPojo {
 
 	public void setTemplateId(String templateId) {
 		this.templateId = templateId;
+	}
+
+	public boolean isBaselinedFlag() {
+		return baselinedFlag;
+	}
+
+	public void setBaselinedFlag(boolean baselinedFlag) {
+		this.baselinedFlag = baselinedFlag;
+	}
+
+	public String getBaselinedDate() {
+		return baselinedDate;
+	}
+
+	public void setBaselinedDate(String baselinedDate) {
+		this.baselinedDate = baselinedDate;
 	}
 
 }

@@ -15,6 +15,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.net.ntp.TimeStamp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -51,6 +52,7 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ImageManagementRepository;
 import com.techm.orion.repositories.RequestDetailsBackUpAndRestoreRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
@@ -96,6 +98,9 @@ public class BackUpAndRestoreController {
 
 	@Autowired
 	DeviceDiscoveryRepository deviceInforepo;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -273,31 +278,34 @@ public class BackUpAndRestoreController {
 		JSONParser parser = new JSONParser();
 		String hostName = null, requestId = null, requestIdToCheck = null, str = null;
 
-		List<RequestDetailsBackUpAndRestoreEntity> baseLineVersionList = new ArrayList<RequestDetailsBackUpAndRestoreEntity>();
-
+		List<RequestInfoEntity> baseLineVersionList = new ArrayList<RequestInfoEntity>();
+		LocalDateTime nowDate = LocalDateTime.now();
+		Timestamp timestamp = Timestamp.valueOf(nowDate);
 		try {
 			obj = (JSONObject) parser.parse(request);
 
 			hostName = obj.get("hostname").toString();
 			requestId = obj.get("alphanumericReqId").toString();
 
-			baseLineVersionList = requestDetailsBackUpAndRestoreRepo.findByHostname(hostName);
+			baseLineVersionList = requestInfoDetailsRepositories.findAllByHostName(hostName);
 			for (int i = 0; i < baseLineVersionList.size(); i++) {
 
 				requestIdToCheck = baseLineVersionList.get(i).getAlphanumericReqId();
 
 				if (requestIdToCheck.equals(requestId)) {
-					baseLineVersionList.get(i).setBaselinedFlag(true);
+					baseLineVersionList.get(i).setBaselineFlag(true);
+					baseLineVersionList.get(i).setBaselinedDate(timestamp);
 				} else
 
 				{
 
-					baseLineVersionList.get(i).setBaselinedFlag(false);
+					baseLineVersionList.get(i).setBaselineFlag(false);
+					baseLineVersionList.get(i).setBaselinedDate(null);
 				}
 			}
 
-			requestDetailsBackUpAndRestoreRepo.save(baseLineVersionList);
-			str = "Baseline version reset successfully";
+			requestInfoDetailsRepositories.save(baseLineVersionList);
+			str = errorValidationRepository.findByErrorId("C3P_BR_001");
 
 		} catch (Exception e) {
 			logger.error(e);
@@ -400,7 +408,7 @@ public class BackUpAndRestoreController {
 				if (obj.get("output").toString().equals("Submitted")) {
 					dcmConfigService.updateRequestCount(requestDetail.get(i));
 				}
-				obj.put("output", "Backup Request created successfully");
+				obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_002"));
 			}
 		}
 
@@ -734,7 +742,7 @@ public class BackUpAndRestoreController {
 			}
 
 			obj.put("batchId", batchId);
-			obj.put("output", "Batch Request created successfully");
+			obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_003"));
 		}
 
 		catch (Exception e) {
@@ -992,15 +1000,15 @@ public class BackUpAndRestoreController {
 			}
 
 			if (k == 1) {
-				obj.put("output", "Request created successfully");
+				obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_004"));
 				obj.put(new String("requestId"), requestId.get("key").toString());
 				obj.put(new String("version"), "1.0");
 			} else if (k > 1) {
 				obj.put("batchId", batchId);
-				obj.put("output", "Batch Request created successfully");
+				obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_003"));
 
 			} else {
-				obj.put("output", "Request not created successfully");
+				obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_005"));
 				obj.put(new String("requestId"), requestId.get("key").toString());
 
 			}
@@ -1160,12 +1168,12 @@ public class BackUpAndRestoreController {
 			}
 			if (j == 1) {
 
-				obj.put("output", "Request created successfully");
+				obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_004"));
 				obj.put(new String("requestId"), requestId.get("key").toString());
 				obj.put(new String("version"), "1.0");
 			} else {
 				obj.put("batchId", batchId);
-				obj.put("output", "Batch Request created successfully");
+				obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_003"));
 			}
 		}
 
@@ -1331,12 +1339,12 @@ public class BackUpAndRestoreController {
 
 			}
 			if (j == 1) {
-				obj.put("output", "Request created successfully");
+				obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_004"));
 				obj.put(new String("requestId"), requestId.get("key").toString());
 				obj.put(new String("version"), "1.0");
 			} else {
 				obj.put("batchId", batchId);
-				obj.put("output", "Batch Request created successfully");
+				obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_003"));
 			}
 		}
 
@@ -1503,7 +1511,7 @@ public class BackUpAndRestoreController {
 
 		} catch (Exception e) {
 			logger.error(e);
-			obj.put("data", "Bad Request");
+			obj.put("data", errorValidationRepository.findByErrorId("400"));
 		}
 		return new ResponseEntity(obj, HttpStatus.OK);
 	}
@@ -1627,7 +1635,7 @@ public class BackUpAndRestoreController {
 
 		} catch (Exception e) {
 			logger.error(e);
-			obj.put("data", "Bad Request");
+			obj.put("data", errorValidationRepository.findByErrorId("400"));
 		}
 
 		return new ResponseEntity(obj, HttpStatus.OK);

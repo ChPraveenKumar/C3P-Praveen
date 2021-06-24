@@ -30,6 +30,7 @@ import com.techm.orion.entitybeans.VNFTemplateEntity;
 import com.techm.orion.models.TemplateCommandJSONModel;
 import com.techm.orion.pojo.DeviceDetailsPojo;
 import com.techm.orion.pojo.GetTemplateMngmntActiveDataPojo;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.VNFTemplateRepository;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
@@ -58,6 +59,10 @@ public class TemplateManagementService {
 	
 	@Autowired
 	private BackupCurrentRouterConfigurationService backupCurrentRouterConfigurationService;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
+	
 	/**
 	 *This Api is marked as ***************External Api Impacted****************
 	 **/
@@ -78,7 +83,7 @@ public class TemplateManagementService {
 				finalJsonArray = new Gson().toJson(templateCommandJSONModel);
 				obj.put(new String("output"), finalJsonArray);
 			} else {
-				obj.put(new String("output"), "Missing mandatory data in the service Request");
+				obj.put(new String("output"), errorValidationRepository.findByErrorId("C3P_TM_011"));
 			}
 
 		} catch (Exception e) {
@@ -111,9 +116,9 @@ public class TemplateManagementService {
 				List<GetTemplateMngmntActiveDataPojo> activeTemplates = masterFeatureService
 						.getActiveTemplates(deviceDetails, templateId, templateVersion);
 				obj.put(new String("output"), activeTemplates != null && activeTemplates.size() > 0 ? activeTemplates
-						: "No matching record find for exact match case and neareat match case");
+						: errorValidationRepository.findByErrorId("C3P_TM_012"));
 			} else {
-				obj.put(new String("output"), "Missing mandatory data in the service Request");
+				obj.put(new String("output"), errorValidationRepository.findByErrorId("C3P_TM_011"));
 			}
 
 		} catch (Exception exe) {
@@ -225,7 +230,7 @@ public class TemplateManagementService {
 					notificationRepo.save(notificationData);
 				}
 			} else {
-				basicDeatilsOfTemplate.put(new String("output"), "Missing mandatory data in the service Request");
+				basicDeatilsOfTemplate.put(new String("output"), errorValidationRepository.findByErrorId("C3P_TM_011"));
 			}
 		} catch (Exception e) {
 			logger.error(e);

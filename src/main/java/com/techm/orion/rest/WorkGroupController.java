@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.entitybeans.WorkGroup;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.repositories.WorkGroupRepository;
 
@@ -36,6 +37,9 @@ public class WorkGroupController {
 
 	@Autowired
 	private UserManagementRepository userManagementRepository;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -114,7 +118,7 @@ public class WorkGroupController {
 				workGroupEntity = workGroupRepository.findByDefaultRole(defaultRole);
 			if (workGroupEntity != null) {
 				workGroupResObj.put("output",
-						"Role " + defaultRole + " is already associacted with other work group, Please add other role");
+						"Role " + defaultRole + errorValidationRepository.findByErrorId("C3P_WM_001"));
 			} else {
 				workGroupEntity = new WorkGroup();
 				workGroupEntity.setCreatedBy(createdBy);
@@ -126,7 +130,7 @@ public class WorkGroupController {
 				workGroupEntity.setApicalltype(apicalltype);
 				WorkGroup savedWorkGroupData = workGroupRepository.save(workGroupEntity);
 				if (savedWorkGroupData != null)
-					workGroupResObj.put("output", "Workgroup added successfully.");
+					workGroupResObj.put("output", errorValidationRepository.findByErrorId("C3P_WM_002"));
 			}
 		} catch (Exception e) {
 			logger.error("exception in addWorkGroup" + e.getMessage());
@@ -165,7 +169,7 @@ public class WorkGroupController {
 				workGroupEntity = workGroupRepository.findByDefaultRole(defaultRole);
 			if(workGroupEntity !=null && workGroupDetails !=null && !workGroupDetails.getDefaultRole().equals(defaultRole))
 			{
-				roleResObj.put("output", "Role "+defaultRole +" is already associacted with other work group, Please update other role");
+				roleResObj.put("output", "Role "+defaultRole + errorValidationRepository.findByErrorId("C3P_WM_001"));
 			}
 			else if(workGroupDetails !=null){
 				workGroupDetails.setUpdatedBy(updatedBy);
@@ -175,10 +179,10 @@ public class WorkGroupController {
 				workGroupDetails.setApicalltype(apicalltype);
 				WorkGroup savedWorkGroupData = workGroupRepository.save(workGroupDetails);
 				if(savedWorkGroupData !=null)
-					roleResObj.put("output", "Default Role for Workgroup updated successfully.");
+					roleResObj.put("output", errorValidationRepository.findByErrorId("C3P_WM_003"));
 			}
 			else
-				roleResObj.put("output", "role not exist");
+				roleResObj.put("output", errorValidationRepository.findByErrorId("C3P_WM_004"));
 		} catch (Exception e) {
 			logger.error("exception in editRole" + e.getMessage());
 			roleResObj.put("output", e.getMessage());
@@ -218,7 +222,7 @@ public class WorkGroupController {
 							createdBy);
 
 			if (workGroupDetails == null)
-				workGroup.put("object", "work group details not exists");
+				workGroup.put("object", errorValidationRepository.findByErrorId("C3P_WM_005"));
 			else {
 				for (WorkGroup workGroupEntity : workGroupDetails) {
 					List<UserManagementEntity> countUser = userManagementRepository
@@ -268,9 +272,9 @@ public class WorkGroupController {
 			
 			WorkGroup workGroupDetails = workGroupRepository.findByWorkGroupName(workGroupName);
 			if (workGroupDetails !=null && workGroupDetails.getWorkGroupName().equalsIgnoreCase(workGroupName))
-				resObj.put("output", "work group already exists");
+				resObj.put("output", errorValidationRepository.findByErrorId("C3P_WM_006"));
 			else
-				resObj.put("output", "work group not exists");
+				resObj.put("output", errorValidationRepository.findByErrorId("C3P_WM_007"));
 		} catch (Exception e) {
 			logger.error("exception in getWorkGroupValidation" + e.getMessage());
 			resObj.put("output", e.getMessage());

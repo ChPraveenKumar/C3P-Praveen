@@ -330,7 +330,7 @@ public class DcmConfigService {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					if (!(requestType.equals("SLGT"))) {
-						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("MACD_Feature"))
+						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("Feature"))
 							templateSuggestionDao
 									.insertTemplateUsageData(requestInfoSO
 											.getTemplateId());
@@ -488,7 +488,7 @@ public class DcmConfigService {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					if (!(requestType.equals("SLGT"))) {
-						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("MACD_Feature"))
+						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("Feature"))
 							templateSuggestionDao
 									.insertTemplateUsageData(requestInfoSO
 											.getTemplateId());
@@ -737,7 +737,7 @@ public class DcmConfigService {
 				requestInfoSO.setStatus("In Progress");
 				result = requestInfoDao
 						.insertRequestInDBForNewVersion(requestInfoSO);
-				if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("MACD_Feature"))
+				if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("Feature"))
 				templateSuggestionDao.insertTemplateUsageData(requestInfoSO
 						.getTemplateId());
 
@@ -1504,7 +1504,7 @@ public class DcmConfigService {
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
 						&& !(requestType.equals("Audit"))) {
-					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
+					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao
 								.insertTemplateUsageData(requestInfoSO
 										.getTemplateID());
@@ -1839,7 +1839,7 @@ public class DcmConfigService {
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
 						&& !(requestType.equals("Audit"))) {
-					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
+					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao
 								.insertTemplateUsageData(requestInfoSO
 										.getTemplateID());
@@ -2258,7 +2258,7 @@ public class DcmConfigService {
 					requestType = requestInfoSO.getRequestType();
 					if (!(requestType.equals("Test"))
 							&& !(requestType.equals("Audit"))) {
-						if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
+						if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 							templateSuggestionDao
 									.insertTemplateUsageData(requestInfoSO
 											.getTemplateID());
@@ -2772,7 +2772,7 @@ public class DcmConfigService {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					if (!(requestType.equals("SLGT"))) {
-						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("MACD_Feature"))
+						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("Feature"))
 							templateSuggestionDao
 									.insertTemplateUsageData(requestInfoSO
 											.getTemplateId());
@@ -2930,7 +2930,7 @@ public class DcmConfigService {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					if (!(requestType.equals("SLGT"))) {
-						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("MACD_Feature"))
+						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("Feature"))
 							templateSuggestionDao
 									.insertTemplateUsageData(requestInfoSO
 											.getTemplateId());
@@ -3115,7 +3115,7 @@ public class DcmConfigService {
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
 						&& !(requestType.equals("Audit"))) {
-					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
+					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao
 								.insertTemplateUsageData(requestInfoSO
 										.getTemplateID());
@@ -3486,7 +3486,7 @@ public class DcmConfigService {
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
 						&& !(requestType.equals("Audit"))) {
-					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
+					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao
 								.insertTemplateUsageData(requestInfoSO
 										.getTemplateID());

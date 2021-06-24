@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.DeviceDiscrepancyService;
 
 /*Added Dhanshri Mane: Device Discrepancy*/
@@ -28,6 +29,9 @@ public class DeviceDiscrepancyController {
 	@Autowired
 	DeviceDiscrepancyService service;
 
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -120,7 +124,7 @@ public class DeviceDiscrepancyController {
 		if(resultJson !=null) {
 			responseEntity = new ResponseEntity<JSONObject>(resultJson, HttpStatus.OK);
 		}else {
-			resultJson.put("Error","Dicreapncy Not Resolved Successfully");
+			resultJson.put("Error", errorValidationRepository.findByErrorId("C3P_DD_001"));
 			responseEntity = new ResponseEntity<JSONObject>(resultJson, HttpStatus.BAD_REQUEST);
 		}
 	    
@@ -165,7 +169,7 @@ public class DeviceDiscrepancyController {
 				responseEntity = new ResponseEntity<JSONObject>(interfaces, HttpStatus.OK);
 			}else {
 				interfaces = new JSONObject();
-				interfaces.put("Error", "Missing mandatory input parameters in the request");
+				interfaces.put("Error", errorValidationRepository.findByErrorId("C3P_DD_002"));
 				responseEntity = new ResponseEntity<JSONObject>(interfaces, HttpStatus.BAD_REQUEST);
 			}
 			

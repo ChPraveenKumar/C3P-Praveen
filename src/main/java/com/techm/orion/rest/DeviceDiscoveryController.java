@@ -270,7 +270,7 @@ public class DeviceDiscoveryController implements Observer {
 				JSONObject extObj=requestInfoDetailsDao.fetchFromDeviceExtLocationDescription(String.valueOf(inventoryList.get(j).getdId()));
 				inventoryList.get(j).setInterfaces(null);
 				inventoryList.get(j).setUsers(null);
-				if(extObj!=null && extObj.containsKey("description"))
+				if(extObj!=null && extObj.get("description") != null && extObj.containsKey("description"))
 				{
 				inventoryList.get(j).setdSystemDescription(extObj.get("description").toString());
 				}
