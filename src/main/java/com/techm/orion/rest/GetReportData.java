@@ -15,6 +15,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+//import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -37,6 +38,7 @@ import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
+import com.techm.orion.pojo.PreValidateTest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
@@ -85,6 +87,7 @@ public class GetReportData implements Observer {
 
 		
 		JSONObject obj = new JSONObject();
+		JSONArray jsonArray = new JSONArray();
 		String jsonMessage = "";
 		String format = "false";
 		String formatColor = "false";
@@ -98,6 +101,7 @@ public class GetReportData implements Observer {
 		boolean isCheck = false;
 		JSONObject dilevaryMilestonesforOSupgrade = new JSONObject();
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
+		PreValidateTest preValidateTest = new PreValidateTest();
 
 		try {
 			JSONParser parser = new JSONParser();
@@ -200,6 +204,55 @@ public class GetReportData implements Observer {
 					jsonMessage=jsonMessage+item.getRcName()+" :"+item.getRcValue()+"\n";
 				}
 				
+			}
+			else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")) {
+				List<PreValidateTest> preValidateTestList = requestInfoDao.getPreValidateTestData(requestinfo.getAlphanumericReqId(),requestinfo.getRequestVersion().toString());
+				org.json.simple.JSONArray prevalidateArray = new org.json.simple.JSONArray();
+				//for(int i=0;i<preValidateTestList.size();i++) { This is a temporary fix as entries in certificationtestvalidation table are duplicated because of a bug, need to fix in upcoming release.
+					JSONObject vendorObj = new JSONObject();
+					JSONObject modelObj = new JSONObject();
+					JSONObject iosversionObj = new JSONObject();
+					if (preValidateTestList.get(1).getVendorTestStatus().equalsIgnoreCase("1")) {
+						vendorObj.put("status", "Passed");
+					}
+					else if(preValidateTestList.get(1).getVendorTestStatus().equalsIgnoreCase("2")) {
+						vendorObj.put("status", "Failed");	
+					}
+					else {
+						vendorObj.put("status", "Not Conducted");
+					}
+					if (preValidateTestList.get(1).getModelTestStatus().equalsIgnoreCase("1")) {
+						modelObj.put("status", "Passed");
+					}
+					else if(preValidateTestList.get(1).getModelTestStatus().equalsIgnoreCase("2")) {
+						modelObj.put("status", "Failed");	
+					}
+					else {
+						modelObj.put("status", "Not Conducted");
+					}
+					if (preValidateTestList.get(1).getOsVersionTestStatus().equalsIgnoreCase("1")) {
+						iosversionObj.put("status", "Passed");
+					}
+					else if(preValidateTestList.get(1).getOsVersionTestStatus().equalsIgnoreCase("2")) {
+						iosversionObj.put("status", "Failed");	
+					}
+					else {
+						iosversionObj.put("status", "Not Conducted");
+					}
+					vendorObj.put("testName", "vendor");
+					vendorObj.put("userInput", preValidateTestList.get(1).getVendorGUIValue());
+					vendorObj.put("cpeValue", preValidateTestList.get(1).getVendorActualValue());
+					modelObj.put("testName", "model");
+					modelObj.put("userInput", preValidateTestList.get(1).getModelGUIValue());
+					modelObj.put("cpeValue", preValidateTestList.get(1).getModelActualValue());
+					iosversionObj.put("testName", "iosovaersion");
+					iosversionObj.put("userInput", preValidateTestList.get(1).getOsVersionGUIValue());
+					iosversionObj.put("cpeValue", preValidateTestList.get(1).getOsVersionActualValue());
+					prevalidateArray.add(vendorObj);
+					prevalidateArray.add(modelObj);
+					prevalidateArray.add(iosversionObj);
+				//}
+				jsonMessage = prevalidateArray.toString();
 			}
 			else {
 				jsonMessage = reportDetailsService.getDetailsForReport(createConfigRequestDCM, requestinfo);
@@ -977,6 +1030,7 @@ public class GetReportData implements Observer {
 		testType = json.get("testType").toString();
 		version = json.get("version").toString();
 		JSONObject jsonObject = requestDetails.customerReportUIRevamp(requestID, testType, version);
+		System.out.println("json object returned is "+jsonObject);
 		if (jsonObject != null) {
 			responseEntity = new ResponseEntity<JSONObject>(jsonObject, HttpStatus.OK);
 		} else {
