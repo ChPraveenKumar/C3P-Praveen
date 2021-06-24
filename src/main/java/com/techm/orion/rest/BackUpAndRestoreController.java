@@ -47,7 +47,6 @@ import com.techm.orion.entitybeans.VendorDetails;
 import com.techm.orion.models.BackUpRequestVersioningJSONModel;
 import com.techm.orion.pojo.BatchPojo;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
-import com.techm.orion.pojo.FirmwareUpgradeDetail;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.BatchInfoRepo;
@@ -59,6 +58,7 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.RouterVfRepo;
 import com.techm.orion.repositories.VendorDetailsRepository;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.utility.WAFADateUtil;
 
 @Controller
 @RequestMapping("/BackUpConfigurationAndTest")
@@ -101,6 +101,9 @@ public class BackUpAndRestoreController {
 	
 	@Autowired
 	private ErrorValidationRepository errorValidationRepository;
+	
+	@Autowired
+	private WAFADateUtil dateUtil;	
 
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -279,13 +282,13 @@ public class BackUpAndRestoreController {
 		String hostName = null, requestId = null, requestIdToCheck = null, str = null;
 
 		List<RequestInfoEntity> baseLineVersionList = new ArrayList<RequestInfoEntity>();
-		LocalDateTime nowDate = LocalDateTime.now();
-		Timestamp timestamp = Timestamp.valueOf(nowDate);
+		
 		try {
 			obj = (JSONObject) parser.parse(request);
 
 			hostName = obj.get("hostname").toString();
 			requestId = obj.get("alphanumericReqId").toString();
+			Timestamp timestamp = dateUtil.currentTimeStamp();
 
 			baseLineVersionList = requestInfoDetailsRepositories.findAllByHostName(hostName);
 			for (int i = 0; i < baseLineVersionList.size(); i++) {
