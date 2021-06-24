@@ -161,7 +161,7 @@ public class NetworkTestValidation extends Thread {
 
 										// conduct and analyse the tests
 										
-										if(deviceDetails.getdConnect().equalsIgnoreCase("NETCONF"))
+										if(deviceDetails.getdVNFSupport().equalsIgnoreCase("VNF"))
 										{
 											VNFHelper helper=new VNFHelper();
 											helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
