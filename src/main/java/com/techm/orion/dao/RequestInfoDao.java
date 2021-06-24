@@ -69,6 +69,7 @@ import com.techm.orion.pojo.InternetLcVrfSO;
 import com.techm.orion.pojo.MISARPEType;
 import com.techm.orion.pojo.MisArPeSO;
 import com.techm.orion.pojo.ModifyConfigResultPojo;
+import com.techm.orion.pojo.PreValidateTest;
 import com.techm.orion.pojo.ReoprtFlags;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.RequestInfoSO;
@@ -8796,5 +8797,49 @@ public class RequestInfoDao {
 
 		return requestInfoList;
 
+	}
+	
+	public List<PreValidateTest> getPreValidateTestData(String requestId,
+			String version) {
+		PreValidateTest preValidateTest = new PreValidateTest();
+		String query = "select * from  certificationtestvalidation where alphanumeric_req_id = ? and version = ? ";
+		ResultSet rs = null;
+		List<PreValidateTest> list = null;
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection
+						.prepareStatement(query);) {
+			preparedStmt.setString(1, requestId);
+			preparedStmt.setString(2, version);
+			rs = preparedStmt.executeQuery();
+			list = new ArrayList<PreValidateTest>();
+			while (rs.next()) {
+				preValidateTest.setModelActualValue(rs
+						.getString("actual_model"));
+				preValidateTest.setModelGUIValue(rs
+						.getString("gui_model"));
+				preValidateTest.setOsVersionActualValue(rs
+						.getString("actual_os_version"));
+				preValidateTest.setOsVersionGUIValue(rs
+						.getString("gui_os_version"));
+				preValidateTest.setVendorActualValue(rs
+						.getString("actual_vendor"));
+				preValidateTest.setVendorGUIValue(rs
+						.getString("gui_vendor"));
+				preValidateTest.setModelTestStatus(rs
+						.getString("Device_Model_Test"));
+				preValidateTest.setOsVersionTestStatus(rs
+						.getString("IOSVersion_Test"));
+				preValidateTest.setVendorTestStatus(rs
+						.getString("Vendor_Test"));
+				list.add(preValidateTest);
+				
+			}
+		}catch (SQLException exe) {
+			logger.error("SQL Exception in getPreValidateTestData method "
+					+ exe.getMessage());
+		} finally {
+			DBUtil.close(rs);
+		}
+			return list;
 	}
 }
