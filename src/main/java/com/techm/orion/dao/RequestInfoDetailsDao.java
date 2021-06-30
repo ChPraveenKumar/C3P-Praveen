@@ -292,9 +292,10 @@ public class RequestInfoDetailsDao {
 				pojo.setNetworkType(entity.getNetworkType());
 				pojo.setRequestCreatorName(entity.getRequestCreatorName());
 				pojo.setStartUp(entity.getStartUp());
+				pojo.setConfigurationGenerationMethods(entity.getrConfigGenerationMethod());
 			}
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getRequestDetailTRequestInfoDBForVersion method " +e);
 		}
 		return pojo;
 	}
@@ -708,4 +709,18 @@ public class RequestInfoDetailsDao {
 		}
 		return response;
 	}
+	
+	public void saveInDeviceExtension(String deviceId, String modelDescription) {
+		String sqlQuery = "INSERT INTO c3p_deviceinfo_ext(r_device_id, r_description) "
+				+ "VALUES (?,?)";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
+			preparedStmt.setString(1, deviceId);
+			preparedStmt.setString(2, modelDescription);
+			preparedStmt.executeUpdate();
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in saveInDeviceExtension method " + exe.getMessage());
+		}
+	}
+	
 }

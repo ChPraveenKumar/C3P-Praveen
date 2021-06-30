@@ -21,13 +21,14 @@ public class ReportMileStones {
 		} else if ("SLGT".equals(requestType)) {
 			mileStone = new MileStones(true, false, false,true, false, false, true, false, true, false, true, true);
 		} else if ("SLGA".equals(requestType)) {
-			mileStone = new MileStones(true, false,false, true, false, false, false, false, false, true, false, true);
+			mileStone = new MileStones(true, false, false, true, false, false, false, false, false, true, false, true);
 		} else if ("SLGB".equals(requestType)) {
-			mileStone = new MileStones(true, false,false, true, true, false, false, false, false, false, false, true);
+			mileStone = new MileStones(true, false, false, true, true, false, false, false, false, false, false, true);
 		} else if ("SLGF".equals(requestType)) {
-			mileStone = new MileStones(true, true,false, false, false, true, false, true, true, false, false, true);
-		}
-		else if ("SNAI".equals(requestType)) {
+			mileStone = new MileStones(true, true, false, false, false, true, false, true, true, false, false, true);
+		} else if ("SNAI".equals(requestType)) {
+			mileStone = new MileStones(true, true, true, false, false, false, false, false, false, false, false, true);
+		} else if ("SNAD".equals(requestType)) {
 			mileStone = new MileStones(true, true, true, false, false, false, false, false, false, false, false, true);
 		}
 		return mileStone;

@@ -24,5 +24,7 @@ public interface ModelsRepository extends JpaRepository<Models, Integer> {
 	public List<String> findModel();
 	
 	Models findById(int id);
+	
+	Models findOneByModel(String model);
 
 }

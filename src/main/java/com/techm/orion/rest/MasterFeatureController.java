@@ -50,6 +50,7 @@ import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.pojo.GenericAtrribPojo;
 import com.techm.orion.pojo.PredefinedAtrribPojo;
 import com.techm.orion.pojo.PredefinedMappedAtrribPojo;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
@@ -93,6 +94,10 @@ public class MasterFeatureController {
 	
 	@Autowired
 	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
+
 	/*
 	 * To get Validation, Category and UI component list.
 	 */
@@ -577,7 +582,7 @@ public class MasterFeatureController {
 				Set<Series> seriesSet = masterSeriesRepo.findBySeries(series);
 				if (null != seriesSet && !seriesSet.isEmpty()) {
 					obj.put("output",
-							"Basic configuration for this series already exist");
+							errorValidationRepository.findByErrorId("C3P_TM_013"));
 
 				} else {
 					String featurId = saveconfiguartionData(json, masterFeature, series);
@@ -595,7 +600,7 @@ public class MasterFeatureController {
 				    timestampValue = new Timestamp(cal.getTime().getTime());
 					notificationEntity.setNotifExpiryDate(timestampValue);
 					notificationRepo.save(notificationEntity);
-					obj.put("output", "Feature Created");
+					obj.put("output", errorValidationRepository.findByErrorId("C3P_TM_014"));
 				}
 
 			} else {
@@ -709,6 +714,7 @@ public class MasterFeatureController {
 		JSONObject masterJson = null;
 		JSONObject childJson = null;
 		JSONArray childList = null;
+		int count=0;
 		String vendor = null, deviceFamily = null, os = null, osVersion = null, region = null, networkFunction = null;
 		try {
 			masterJson = new JSONObject();
@@ -748,16 +754,18 @@ public class MasterFeatureController {
 				childJson.put("createdBy", entity.getfCreatedBy());
 				childJson.put("featureId", entity.getfId());
 				childJson.put("isEditable", entity.getfIsenabled());
+				count++;
 				childList.add(childJson);
 			}
 			masterJson.put("childList", childList);
 			masterJson.put("vendor", vendor);
 			outputArray.add(masterJson);
-			objInterfaces.put("entity", outputArray);
 		} catch (Exception exe) {
 			logger.error("SQL Exception in searchFeaturesForRPC method "
 					+ exe.getMessage());
 		}
+		objInterfaces.put("entity", outputArray);
+		objInterfaces.put("featureCount", count);
 		return new ResponseEntity<JSONObject>(objInterfaces, HttpStatus.OK);
 	}
 	
@@ -901,10 +909,12 @@ public class MasterFeatureController {
 				templateId = StringUtils.substringBefore(templateId,".yang");
 			}
 			
-			List<MasterFeatureEntity> featureEntinty = masterFeatureRepository
+			/*List<MasterFeatureEntity> featureEntinty = masterFeatureRepository
 					.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(
 							vendor, "All", os, osVersion, "All",
-							"VNF");
+							"VNF");*/
+			List<MasterFeatureEntity> featureEntinty = masterFeatureRepository
+					.findAllByFNameContains(templateId);
 			for(MasterFeatureEntity feature :featureEntinty) {
 				if(feature.getfName().contains(templateId)){
 					String featureName = StringUtils.substringAfter(

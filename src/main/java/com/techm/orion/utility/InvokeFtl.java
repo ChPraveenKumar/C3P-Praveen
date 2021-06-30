@@ -16,6 +16,7 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
@@ -42,8 +43,6 @@ import freemarker.template.TemplateException;
 public class InvokeFtl {
 	private static final Logger logger = LogManager.getLogger(InvokeFtl.class);
 
-	@Autowired
-	private RequestInfoDao requestInfoDao;
 
 	@Autowired
 	public String getGeneratedConfigFile(String requestID, String version) {
@@ -290,6 +289,7 @@ public class InvokeFtl {
 	}
 
 	public Map<String, String> getDileveryConfigFileIOS(String requestId, String version) {
+		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		Map<String, String> dataList = new HashMap<String, String>();
 		ErrorValidationPojo errorValidationPojo = requestInfoDao.getErrordetailsForRequestId(requestId, version);
 		dataList.put("errorDesc", errorValidationPojo.getError_description());
@@ -329,7 +329,7 @@ public class InvokeFtl {
 				contentCurrentVersion = "Completed";
 				dataList.put("contentCurrentVersion", contentCurrentVersion);
 			}
-
+			RequestInfoDao requestInfoDao = new RequestInfoDao();
 			ErrorValidationPojo errorValidationPojo = requestInfoDao.getErrordetailsForRequestId(requestId, version);
 			dataList.put("errorDesc", errorValidationPojo.getError_description());
 			dataList.put("errorType", errorValidationPojo.getError_type());

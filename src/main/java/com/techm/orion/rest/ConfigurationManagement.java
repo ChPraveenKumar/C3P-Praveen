@@ -43,6 +43,7 @@ import com.techm.orion.pojo.CreateConfigPojo;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.MasterAttribRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
@@ -78,6 +79,9 @@ public class ConfigurationManagement {
 
 	@Autowired
 	private MasterAttribRepository masterAttribRepository;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	private static DecimalFormat df2 = new DecimalFormat("#.##");
 
@@ -116,6 +120,7 @@ public class ConfigurationManagement {
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
+	//@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public JSONObject createConfigurationDcm(@RequestBody String configRequest) {
@@ -164,7 +169,8 @@ public class ConfigurationManagement {
 			if (json.get("networkType") != null && !json.get("networkType").toString().isEmpty()) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType").toString());
 				if (configReqToSendToC3pCode.getNetworkType().equals("VNF")) {
-					if (!requestType.equalsIgnoreCase("Test") && !requestType.equalsIgnoreCase("SNAI")) {
+					if (!requestType.equalsIgnoreCase("Test") && !requestType.equalsIgnoreCase("SNAI")&& !requestType.equalsIgnoreCase("SNAD") 
+							&& !requestType.equalsIgnoreCase("NETCONF")&&!requestType.equalsIgnoreCase("RESTCONF")) {
 												requestType = device.getdConnect();
 						configReqToSendToC3pCode.setRequestType(requestType);
 					}
@@ -847,34 +853,6 @@ public class ConfigurationManagement {
 					&& configReqToSendToC3pCode.getNetworkType().equals("VNF")
 					|| configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("RESTCONF")
 							&& configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase("VNF")) {
-
-				/*
-				 * create SeriesId for getting master configuration Commands and master
-				 * Atrribute
-				 */
-				// String seriesId =
-				// dcmConfigService.getSeriesId(configReqToSendToC3pCode.getVendor(),
-				// configReqToSendToC3pCode.getDeviceType(),
-				// configReqToSendToC3pCode.getModel());
-				// /* Get Series according to template id */
-				// TemplateManagementDao templatemanagementDao = new
-				// TemplateManagementDao();
-				// seriesId =
-				// templatemanagementDao.getSeriesId(configReqToSendToC3pCode.getTemplateID(),
-				// seriesId);
-				// seriesId = StringUtils.substringAfter(seriesId, "Generic_");
-				//
-				// List<AttribCreateConfigPojo> masterAttribute = new
-				// ArrayList<>();
-				// /*
-				// * List<AttribCreateConfigPojo> byAttribSeriesId = service
-				// * .getByAttribSeriesId(seriesId); if (byAttribSeriesId !=
-				// null &&
-				// * !byAttribSeriesId.isEmpty()) {
-				// masterAttribute.addAll(byAttribSeriesId); }/*
-				// * /* Extract dynamicAttribs Json Value and map it to
-				// MasteAtrribute List
-				// */
 				JSONArray attribJson = null;
 				if (json.containsKey("dynamicAttribs")) {
 					attribJson = (JSONArray) json.get("dynamicAttribs");
@@ -884,49 +862,32 @@ public class ConfigurationManagement {
 					featureListJson = (JSONArray) json.get("selectedFeatures");
 				}
 				List<String> featureList = new ArrayList<String>();
+				List<TemplateFeaturePojo> features = null;
 				if (featureListJson != null && !featureListJson.isEmpty()) {
+					features = new ArrayList<TemplateFeaturePojo>();
 					for (int i = 0; i < featureListJson.size(); i++) {
-						featureList.add((String) featureListJson.get(i));
-					}
-				}
-				List<AttribCreateConfigPojo> templateAttribute = new ArrayList<>();
-				for (String feature : featureList) {
-					String templateId = configReqToSendToC3pCode.getTemplateID();
-					List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = service
-							.getByAttribTemplateAndFeatureName(templateId, feature);
-					if (byAttribTemplateAndFeatureName != null && !byAttribTemplateAndFeatureName.isEmpty()) {
-						templateAttribute.addAll(byAttribTemplateAndFeatureName);
+						JSONObject featureJson = (JSONObject) featureListJson.get(i);
+						TemplateFeaturePojo setTemplateFeatureData = configurationManagmentService
+								.setTemplateFeatureData(featureJson);
+						features.add(setTemplateFeatureData);
+						featureList.add(setTemplateFeatureData.getfName());
 					}
 				}
 				List<CreateConfigPojo> createConfigList = new ArrayList<>();
 				if (attribJson != null) {
 					for (int i = 0; i < attribJson.size(); i++) {
 						JSONObject object = (JSONObject) attribJson.get(i);
-						String attribLabel = object.get("label").toString();
-						String attriValue = object.get("value").toString();
-						String attribType = object.get("type").toString();
-						String attib = object.get("name").toString();
-						for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
-							if (attribLabel.contains(templateAttrib.getAttribLabel())) {
-								String attribName = templateAttrib.getAttribName();
-								if (templateAttrib.getAttribType().equals("Template")) {
-									if (attribType.equals("Template")) {
-										if (attib.equals(attribName)) {
-											createConfigList.add(setConfigData(templateAttrib.getId(), attriValue,
-													configReqToSendToC3pCode.getTemplateID()));
-											configReqToSendToC3pCode = configurationManagmentService
-													.setAttribValue(attribName, configReqToSendToC3pCode, attriValue);
-										}
-
-									} else if (attribType == null || attribType.equalsIgnoreCase("Non-Template")) {
-										if (attib.equals(attribName)) {
-											createConfigList.add(setConfigData(templateAttrib.getId(), attriValue, ""));
-											configReqToSendToC3pCode = configurationManagmentService
-													.setAttribValue(attribName, configReqToSendToC3pCode, attriValue);
-										}
-									}
-								}
-							}
+						String attriValue=null,attribCharacteristics = null;						
+						if(object.containsKey("value") && object.get("value")!=null) {
+							 attriValue = object.get("value").toString();	
+						}										
+						if(object.containsKey("characteriscticsId") && object.get("characteriscticsId")!=null) {
+							 attribCharacteristics = object.get("characteriscticsId").toString();	
+						}	
+						if(attribCharacteristics!=null) {
+						String masterFId = masterCharacteristicRepository.findByCId(attribCharacteristics);								
+						createConfigList.add(
+								setConfigData(0, attriValue, "", masterFId, attribCharacteristics));
 						}
 					}
 				}
@@ -934,11 +895,8 @@ public class ConfigurationManagement {
 					configReqToSendToC3pCode.setTestsSelected(toSaveArray.toString());
 				}
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
-				// Passing Extra parameter createConfigList for saving master
-				// attribute data
-				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList,
-						userName, null);
-
+				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, null,
+						userName, features);			
 			} else {
 				if (toSaveArray != null && !toSaveArray.isEmpty()) {
 					configReqToSendToC3pCode.setTestsSelected(toSaveArray.toString());
@@ -958,7 +916,7 @@ public class ConfigurationManagement {
 					if (res.equalsIgnoreCase("true")) {
 						data = "Submitted";
 						if(device != null)
-						    dcmConfigService.updateRequestCount(device);						
+							dcmConfigService.updateRequestCount(device);						
 					}
 
 				}
@@ -1073,9 +1031,9 @@ public class ConfigurationManagement {
 				keyResponse.put("featureId", featureId);
 				keyResponse.put("attribName", attribName);
 				if (resourceCharEntity != null) {
-					keyResponse.put("msg", "Duplicate record found");
+					keyResponse.put("msg", errorValidationRepository.findByErrorId("C3P_KV_001"));
 				} else
-					keyResponse.put("msg", "Duplicate record not found");
+					keyResponse.put("msg", errorValidationRepository.findByErrorId("C3P_KV_002"));
 				validateKeyResponse.add(keyResponse);
 			}
 		} catch (Exception e) {
@@ -1117,12 +1075,12 @@ public class ConfigurationManagement {
 								.findByDeviceIdAndRcFeatureIdAndRcKeyValueIsNotNull(deviceEntity.getdId(), featureId);
 
 						if (resourceCharEntity == null) {
-							message = "match not found";
+							message = errorValidationRepository.findByErrorId("C3P_KV_003");
 							responseOutput.put("attribName", "");
 							responseOutput.put("attribValue", "");
 
 						} else {
-							message = "match found";
+							message = errorValidationRepository.findByErrorId("C3P_KV_004");
 							responseOutput.put("attribName", resourceCharEntity.getRcCharacteristicName());
 							responseOutput.put("attribValue", resourceCharEntity.getRcCharacteristicValue());
 						}

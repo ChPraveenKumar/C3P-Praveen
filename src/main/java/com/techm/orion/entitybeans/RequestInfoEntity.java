@@ -162,7 +162,7 @@ public class RequestInfoEntity implements Serializable {
 	private Boolean isEditable;
 
 	@Column(name = "r_baselined_flag")
-	private Boolean isBaselineFlag;
+	private boolean isBaselineFlag;
 
 	@Column(name = "r_recurring_flag")
 	private Boolean recurringFlag;
@@ -209,6 +209,9 @@ public class RequestInfoEntity implements Serializable {
 
 	@Transient
 	private Object replicationAttrib;
+	
+	@Column(name = "r_baselined_date")
+	private Timestamp baselinedDate;
 	
 	public Object getBatchSize() {
 		return batchSize;
@@ -549,11 +552,11 @@ public class RequestInfoEntity implements Serializable {
 		this.isEditable = isEditable;
 	}
 
-	public Boolean getIsBaselineFlag() {
+	public boolean isBaselineFlag() {
 		return isBaselineFlag;
 	}
 
-	public void setIsBaselineFlag(Boolean isBaselineFlag) {
+	public void setBaselineFlag(boolean isBaselineFlag) {
 		this.isBaselineFlag = isBaselineFlag;
 	}
 
@@ -659,6 +662,14 @@ public class RequestInfoEntity implements Serializable {
 
 	public void setReplicationAttrib(Object replicationAttrib) {
 		this.replicationAttrib = replicationAttrib;
+	}
+
+	public Timestamp getBaselinedDate() {
+		return baselinedDate;
+	}
+
+	public void setBaselinedDate(Timestamp baselinedDate) {
+		this.baselinedDate = baselinedDate;
 	}
 
 	@Override

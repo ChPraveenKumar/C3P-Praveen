@@ -36,6 +36,8 @@ public class AttribCreateConfigJson {
 	@JsonInclude(Include.NON_NULL)
 	private String value;
 	
+	private boolean replicationFalg;
+	
 	public String getValue() {
 		return value;
 	}
@@ -152,4 +154,13 @@ public class AttribCreateConfigJson {
 	public void setKey(boolean key) {
 		this.key = key;
 	}
+
+	public boolean isReplicationFalg() {
+		return replicationFalg;
+	}
+
+	public void setReplicationFalg(boolean replicationFalg) {
+		this.replicationFalg = replicationFalg;
+	}
+	
 }

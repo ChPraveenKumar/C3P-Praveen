@@ -3,8 +3,6 @@ package com.techm.orion.rest;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 
 import javax.ws.rs.POST;
@@ -19,6 +17,7 @@ import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,13 +29,14 @@ import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.TemplateAttribPojo;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.TemplateManagementNewService;
 
 @Controller
 @RequestMapping("/TemplateSuggestionService")
-public class TemplateSuggestionService implements Observer {
+public class TemplateSuggestionService {
 	private static final Logger logger = LogManager
 			.getLogger(TemplateSuggestionService.class);
 	@Autowired
@@ -53,10 +53,15 @@ public class TemplateSuggestionService implements Observer {
 
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
+	
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
+	//@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/getFeaturesForDeviceDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getFeaturesForDeviceDetail(@RequestBody String request) throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
@@ -73,6 +78,7 @@ public class TemplateSuggestionService implements Observer {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
+	//@PreAuthorize("#oauth2.hasScope('read')")
 	@RequestMapping(value = "/getFeaturesForSelectedTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response getFeaturesForSelectedTemplate(
@@ -117,7 +123,7 @@ public class TemplateSuggestionService implements Observer {
 			} else {
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
-						"No features Present.Create the template first");
+						errorValidationRepository.findByErrorId("C3P_TM_002"));
 				obj.put(new String("featureList"), null);
 			}
 
@@ -141,6 +147,7 @@ public class TemplateSuggestionService implements Observer {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
+	//@PreAuthorize("#oauth2.hasScope('read')")
 	@RequestMapping(value = "/getTemplateDetailsForSelectedFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	public ResponseEntity<JSONObject> getTemplateDetailsForSelectedFeatures(@RequestBody String request)
 			throws Exception {
@@ -172,18 +179,13 @@ public class TemplateSuggestionService implements Observer {
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 		} else {
 			obj.put(new String("Result"), "Failure");
-			obj.put(new String("Message"), "No Data.Create the template first");
+			obj.put(new String("Message"), errorValidationRepository.findByErrorId("C3P_TM_003"));
 			obj.put(new String("TemplateDetailList"), null);
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.BAD_REQUEST);
 		}
 		return responseEntity;
 	}
 	
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
-
-	}
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -252,7 +254,7 @@ public class TemplateSuggestionService implements Observer {
 			else {
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
-						"No Data.Create the template first");
+						errorValidationRepository.findByErrorId("C3P_TM_003"));
 				obj.put(new String("TemplateDetailList"), null);
 			}
 
@@ -289,7 +291,7 @@ public class TemplateSuggestionService implements Observer {
 			responseEntity = new ResponseEntity<JSONObject>(jsonAttrib, HttpStatus.OK);
 		} else {
 			obj.put(new String("Result"), "Failure");
-			obj.put(new String("Message"), "No Data.Create the template first");
+			obj.put(new String("Message"), errorValidationRepository.findByErrorId("C3P_TM_003"));
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.BAD_REQUEST);
 		}
 		return responseEntity;
@@ -394,7 +396,7 @@ public class TemplateSuggestionService implements Observer {
 			} else {
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
-						"No features Present.Create the template first");
+						errorValidationRepository.findByErrorId("C3P_TM_002"));
 				obj.put(new String("featureList"), null);
 			}
 
@@ -478,7 +480,7 @@ public class TemplateSuggestionService implements Observer {
 			} else {
 				obj.put(new String("Result"), "Failure");
 				obj.put(new String("Message"),
-						"No features Present.Create the template first");
+						errorValidationRepository.findByErrorId("C3P_TM_002"));
 				obj.put(new String("featureList"), null);
 			}
 
@@ -497,4 +499,39 @@ public class TemplateSuggestionService implements Observer {
 				.build();
 
 	}
+	
+	@POST
+	@RequestMapping(value = "/getVnfTemplates", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JSONObject> getVnfTemplates(@RequestBody String request)  {
+		ResponseEntity<JSONObject> responseEntity = null;
+		try {
+		JSONObject vnfTemplates = templateManagementNewService.getVnfTemplates(request);
+		if (vnfTemplates != null) {
+			responseEntity = new ResponseEntity<JSONObject>(vnfTemplates, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(vnfTemplates, HttpStatus.BAD_REQUEST);
+		}
+		}catch(Exception e) {
+			logger.info("Exception Occer in VnfTemplate Service "+e);
+		}
+		return responseEntity;
+	}
+	
+	@POST
+	@RequestMapping(value = "/getVnfFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	public ResponseEntity<JSONObject> getVnfFeatures(@RequestBody String request) {
+		ResponseEntity<JSONObject> responseEntity = null;
+		try {
+		JSONObject vnfFeature = templateManagementNewService.getVnfFeatures(request);
+		if (vnfFeature != null) {
+			responseEntity = new ResponseEntity<JSONObject>(vnfFeature, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(vnfFeature, HttpStatus.BAD_REQUEST);
+		}
+		}catch (Exception e) {
+			logger.info("Exception Occer in getVnfFeatures Service "+e);
+		}
+		return responseEntity;
+	}
+	
 }

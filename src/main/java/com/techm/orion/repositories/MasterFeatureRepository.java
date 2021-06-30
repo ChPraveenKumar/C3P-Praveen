@@ -79,4 +79,14 @@ public interface MasterFeatureRepository extends JpaRepository<MasterFeatureEnti
 	List<MasterFeatureEntity> getFeatureForTestDetails(@Param("vendor") String vendor,
 			@Param("deviceFamily") String deviceFamily, @Param("os") String os, @Param("osVersion") String osVersion,
 			@Param("region") String region);
+	
+	List<MasterFeatureEntity> findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfunAndFNameContains(String vendor,
+			String family, String os, String osVersion, String region, String networkType,String featureName);
+
+	
+	List<MasterFeatureEntity> findAllByFNameContains(String featureName);
+	
+	@Query(value = "Select count(f_id) from c3p_m_features where f_name like :templateId and f_id like \'F%\'" ,nativeQuery = true)
+	int featureCount (@Param("templateId") String templateId);
+	
 }

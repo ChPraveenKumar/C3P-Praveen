@@ -37,6 +37,11 @@ public class RequestDetailsResponseMapper {
 			}
 			req.setStartup(request.getStartUp());
 			req.setExecutionMode(request.getRequestTypeFlag());
+			req.setBaselinedFlag(request.isBaselineFlag());
+			if(request.getBaselinedDate()!=null)
+			{
+				req.setBaselinedDate(dateutil.dateTimeInAppFormat(request.getBaselinedDate().toString()));
+			}
 			serviceRequest.add(req);
 		});
 		}

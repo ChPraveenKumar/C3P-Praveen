@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.FilenameUtils;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -19,24 +19,21 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.gson.Gson;
 import com.techm.orion.ValidatorConfigService.ExcelFileValidation;
 import com.techm.orion.entitybeans.CustomerStagingEntity;
 import com.techm.orion.entitybeans.ImportMasterStagingEntity;
-import com.techm.orion.pojo.SearchParamPojo;
 import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ImportMasterStagingRepo;
 import com.techm.orion.service.CustomerStagingInteface;
 import com.techm.orion.service.StorageService;
 import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.WAFADateUtil;
 
 /*Class to handle import service(single and bulk) request with other functionality*/
 
@@ -67,6 +64,9 @@ public class ImportFile {
 	
 	@Autowired
 	private ImportMasterStagingRepo importMasterStagingRepo;
+	
+	@Autowired
+	private WAFADateUtil dateUtil;
 
 /*	@SuppressWarnings("unchecked")
 	@GET
@@ -306,28 +306,28 @@ public class ImportFile {
 					if (validateNoOfRequest.equals("Valid Single Request")) {
 
 						obj.put(new String("response"), "True");
-						obj.put(new String("message"), "Valid Single Request");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_005"));
 
 					} else if (validateNoOfRequest.equals("Invalid Single Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 					} else if (validateNoOfRequest.equals("Valid Multiple Request")) {
 
 						obj.put(new String("response"), "True");
-						obj.put(new String("message"), "Valid Multiple Request");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_006"));
 					} else if (validateNoOfRequest.equals("Invalid Multiple Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 					}
 
 				} else {
 
 					obj.put(new String("response"), "False");
-					obj.put(new String("message"), "Invalid file format detected");
+					obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 				}
 			} else if (flagCSV) {
@@ -337,28 +337,28 @@ public class ImportFile {
 					if (validateNoOfRequest.equals("Valid Single Request")) {
 
 						obj.put(new String("response"), "True");
-						obj.put(new String("message"), "Valid Single Request");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_005"));
 
 					} else if (validateNoOfRequest.equals("Invalid Single Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 					} else if (validateNoOfRequest.equals("Valid Multiple Request")) {
 
 						obj.put(new String("response"), "True");
-						obj.put(new String("message"), "Valid Multiple Request");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_006"));
 					} else if (validateNoOfRequest.equals("Invalid Multiple Request")) {
 
 						obj.put(new String("response"), "False");
-						obj.put(new String("message"), "Invalid file format detected");
+						obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 					}
 
 				} else {
 
 					obj.put(new String("response"), "False");
-					obj.put(new String("message"), "Invalid file format detected");
+					obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 				}
 			}
@@ -366,7 +366,7 @@ public class ImportFile {
 		} catch (Exception e) {
 
 			obj.put(new String("response"), "False");
-			obj.put(new String("message"), "Invalid file type detected");
+			obj.put(new String("message"), errorValidationRepository.findByErrorId("C3P_CB_015"));
 
 		}
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -530,7 +530,9 @@ public class ImportFile {
 			for (ImportMasterStagingEntity entity : importMasterData) {
 				object = new JSONObject();
 				object.put("importId", entity.getImportId());
-				object.put("executionDate", entity.getExecutionDate().toString());
+				if (entity.getExecutionDate() != null) {
+					object.put("executionDate", dateUtil.convertTimeStampInSDFFormat(entity.getExecutionDate()));
+				}
 				object.put("status", entity.getStatus());
 				object.put("totalDevices", entity.getTotalDevices());
 				object.put("successORexception", entity.getCountSuccess() + " / " + entity.getCountException());

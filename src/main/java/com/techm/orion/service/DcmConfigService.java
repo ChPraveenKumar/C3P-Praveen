@@ -330,7 +330,7 @@ public class DcmConfigService {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					if (!(requestType.equals("SLGT"))) {
-						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("MACD_Feature"))
+						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("Feature"))
 							templateSuggestionDao
 									.insertTemplateUsageData(requestInfoSO
 											.getTemplateId());
@@ -488,7 +488,7 @@ public class DcmConfigService {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					if (!(requestType.equals("SLGT"))) {
-						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("MACD_Feature"))
+						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("Feature"))
 							templateSuggestionDao
 									.insertTemplateUsageData(requestInfoSO
 											.getTemplateId());
@@ -737,7 +737,7 @@ public class DcmConfigService {
 				requestInfoSO.setStatus("In Progress");
 				result = requestInfoDao
 						.insertRequestInDBForNewVersion(requestInfoSO);
-				if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("MACD_Feature"))
+				if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("Feature"))
 				templateSuggestionDao.insertTemplateUsageData(requestInfoSO
 						.getTemplateId());
 
@@ -1504,7 +1504,7 @@ public class DcmConfigService {
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
 						&& !(requestType.equals("Audit"))) {
-					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
+					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao
 								.insertTemplateUsageData(requestInfoSO
 										.getTemplateID());
@@ -1839,7 +1839,7 @@ public class DcmConfigService {
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
 						&& !(requestType.equals("Audit"))) {
-					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
+					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao
 								.insertTemplateUsageData(requestInfoSO
 										.getTemplateID());
@@ -2258,7 +2258,7 @@ public class DcmConfigService {
 					requestType = requestInfoSO.getRequestType();
 					if (!(requestType.equals("Test"))
 							&& !(requestType.equals("Audit"))) {
-						if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
+						if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 							templateSuggestionDao
 									.insertTemplateUsageData(requestInfoSO
 											.getTemplateID());
@@ -2772,7 +2772,7 @@ public class DcmConfigService {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					if (!(requestType.equals("SLGT"))) {
-						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("MACD_Feature"))
+						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("Feature"))
 							templateSuggestionDao
 									.insertTemplateUsageData(requestInfoSO
 											.getTemplateId());
@@ -2930,7 +2930,7 @@ public class DcmConfigService {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 					if (!(requestType.equals("SLGT"))) {
-						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("MACD_Feature"))
+						if (!requestInfoSO.getTemplateId().isEmpty() && !requestInfoSO.getTemplateId().contains("Feature"))
 							templateSuggestionDao
 									.insertTemplateUsageData(requestInfoSO
 											.getTemplateId());
@@ -3107,11 +3107,15 @@ public class DcmConfigService {
 				// validateMessage=validatorConfigManagement.validate(configRequest);
 				result = requestInfoDao.insertRequestInDB(requestInfoSO);
 				// update template
+				 if ("NETCONF".equalsIgnoreCase(requestInfoSO.getRequestType())
+							&& "VNF".equalsIgnoreCase(requestInfoSO.getNetworkType())) {
+					 requestInfoSO.setTemplateID("");
+				 }
 
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
 						&& !(requestType.equals("Audit"))) {
-					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
+					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao
 								.insertTemplateUsageData(requestInfoSO
 										.getTemplateID());
@@ -3295,7 +3299,8 @@ public class DcmConfigService {
 					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
 							"VNF")) {
 						if (requestInfoSO.getRequestType().equalsIgnoreCase(
-								"SNAI")) {
+								"SNAI") || requestInfoSO.getRequestType().equalsIgnoreCase(
+										"SNAD")) {
 
 							for (RequestInfoPojo request : requestInfoSOList) {
 								createTemplateAndHeader(request,
@@ -3481,7 +3486,7 @@ public class DcmConfigService {
 				requestType = requestInfoSO.getRequestType();
 				if (!(requestType.equals("Test"))
 						&& !(requestType.equals("Audit"))) {
-					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("MACD_Feature"))
+					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao
 								.insertTemplateUsageData(requestInfoSO
 										.getTemplateID());
@@ -3663,7 +3668,7 @@ public class DcmConfigService {
 		String profileName = null;
 		String profileType = null;
 		String connectType = deviceDetails.getdConnect();
-		if (deviceDetails.getdConnect() != null) {
+		if (deviceDetails.getdConnect() != null) {			
 			switch (connectType.toUpperCase()) {
 			case "TELNET":
 				profileName = deviceDetails.getdTelnetCredProfile();
@@ -3675,14 +3680,14 @@ public class DcmConfigService {
 				profileName = deviceDetails.getdSshCredProfile();
 				break;
 			}
-			profileType = deviceDetails.getdConnect();
+			profileType = deviceDetails.getdConnect();			
 		} else {
 			profileType = "SSH";
 			profileName = deviceDetails.getdSshCredProfile();
 		}
 		if (profileName != null && profileType != null) {
 			credentialDetails = credentialManagementRepo.findOneByProfileNameAndProfileType(profileName, profileType);
-		}
+		}		
 		return credentialDetails;
 	}
 	

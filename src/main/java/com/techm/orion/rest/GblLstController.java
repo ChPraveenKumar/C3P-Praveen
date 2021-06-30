@@ -31,6 +31,7 @@ import com.techm.orion.entitybeans.Regions;
 import com.techm.orion.entitybeans.Services;
 import com.techm.orion.entitybeans.Vendors;
 import com.techm.orion.repositories.DeviceFamilyRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ModelsRepository;
 import com.techm.orion.repositories.OSRepository;
 import com.techm.orion.repositories.OSversionRepository;
@@ -55,6 +56,8 @@ public class GblLstController {
 	private ServicesRepository servicesRepository;
 	@Autowired
 	private RegionsRepository regionsRepository;
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -65,11 +68,11 @@ public class GblLstController {
 		try {
 			servicesRepository.save(services);
 		} catch (DataIntegrityViolationException e) {
-			return Response.status(409).entity("Service is Duplicate").build();
+			return Response.status(409).entity(errorValidationRepository.findByErrorId("C3P_GM_001")).build();
 		} catch (Exception e) {
-			return Response.status(422).entity("Could not save service").build();
+			return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_002")).build();
 		}
-		return Response.status(200).entity("Service added successfully").build();
+		return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_003")).build();
 	}
 
 	/**
@@ -86,12 +89,12 @@ public class GblLstController {
 			try {
 				servicesRepository.delete(existingservices);
 			} catch (NoSuchElementException e) {
-				return Response.status(200).entity("Servie cannot be Deleted").build();
+				return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_004")).build();
 			}
 		} else {
-			return Response.status(200).entity("Service does not exist so cannot Delete").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_005")).build();
 		}
-		return Response.status(200).entity("Service deleted successfully").build();
+		return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_006")).build();
 	}
 
 	/**
@@ -112,11 +115,11 @@ public class GblLstController {
 		try {
 			regionsRepository.save(regions);
 		} catch (DataIntegrityViolationException e) {
-			return Response.status(409).entity("Region is Duplicate").build();
+			return Response.status(409).entity(errorValidationRepository.findByErrorId("C3P_GM_007")).build();
 		} catch (Exception e) {
-			return Response.status(422).entity("Could not save Region").build();
+			return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_008")).build();
 		}
-		return Response.status(200).entity("Region added successfully").build();
+		return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_009")).build();
 	}
 
 	/**
@@ -133,12 +136,12 @@ public class GblLstController {
 			try {
 				regionsRepository.delete(existingregions);
 			} catch (NoSuchElementException e) {
-				return Response.status(200).entity("Region cannot be Deleted").build();
+				return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_010")).build();
 			}
 		} else {
-			return Response.status(200).entity("Region does not exist so cannott Delete").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_011")).build();
 		}
-		return Response.status(200).entity("Region deleted successfully").build();
+		return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_012")).build();
 	}
 
 	/**
@@ -159,12 +162,12 @@ public class GblLstController {
 		try {
 			vendorRepository.save(vendors);
 		} catch (DataIntegrityViolationException e) {
-			return Response.status(409).entity("Vendor is Duplicate").build();
+			return Response.status(409).entity(errorValidationRepository.findByErrorId("C3P_GM_013")).build();
 		} catch (Exception e) {
-			return Response.status(422).entity("Could not save Vendor").build();
+			return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_014")).build();
 		}
 
-		return Response.status(200).entity("Vendor added successfully").build();
+		return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_015")).build();
 	}
 
 	/**
@@ -182,12 +185,12 @@ public class GblLstController {
 			try {
 				vendorRepository.delete(vendors);
 			} catch (NoSuchElementException e) {
-				return Response.status(200).entity("Vendor does not exist so cannot Delete").build();
+				return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_016")).build();
 			}
 		} else {
-			return Response.status(200).entity("Vendor does not exist so cannot Delete").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_016")).build();
 		}
-		return Response.status(200).entity("Vendor deleted successfully").build();
+		return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_017")).build();
 
 	}
 
@@ -255,9 +258,9 @@ public class GblLstController {
 		existingosversion = osversionRepository.findById(osversion_id);
 		if (existingosversion != null) {
 			osversionRepository.delete(existingosversion);
-			return Response.status(200).entity("OS Version deleted successfully").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_018")).build();
 		} else {
-			return Response.status(200).entity("OS Version does not exist so cant Delete").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_019")).build();
 		}
 	}
 
@@ -289,7 +292,7 @@ public class GblLstController {
 				OSversion osVerByOS = osversionRepository.findByOsversionOs(osversion.getOsversion(), os.getId());
 				logger.info("osVerByOS - " + osVerByOS);
 				if (osVerByOS != null) {
-					return Response.status(422).entity("OS & OS Version exists").build();
+					return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_020")).build();
 				} else {
 					OSversion saveOsVer = new OSversion();
 					saveOsVer.setOsversion(osversion.getOsversion());
@@ -297,7 +300,7 @@ public class GblLstController {
 					osvers.add(saveOsVer);
 				}
 			} else {
-				return Response.status(422).entity("OS does not exist").build();
+				return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_021")).build();
 			}
 		}
 
@@ -307,7 +310,7 @@ public class GblLstController {
 				osversionRepository.save(osversion);
 			}
 		} catch (Exception e1) {
-			return Response.status(422).entity("Error in saving OS Verion and mapping with OS").build();
+			return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_022")).build();
 		}
 
 		String resstr = null;
@@ -349,10 +352,10 @@ public class GblLstController {
 					existingosversion.setOs(os);
 					osvers.add(existingosversion);
 				} else {
-					return Response.status(422).entity("OS does not exist").build();
+					return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_021")).build();
 				}
 			} else {
-				return Response.status(422).entity("OS Version does not existing").build();
+				return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_023")).build();
 			}
 		}
 
@@ -360,10 +363,10 @@ public class GblLstController {
 		try {
 			os = osRepository.save(os);
 		} catch (Exception e1) {
-			return Response.status(422).entity("Error in Saving OS Verion and mapping with OS").build();
+			return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_022")).build();
 		}
 
-		return Response.status(200).entity("OS Version updated successfully").build();
+		return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_024")).build();
 
 	}
 	
@@ -390,7 +393,7 @@ public class GblLstController {
 			return Response.status(200).entity(oslist).build();
 
 		} else {
-			return Response.status(422).entity("There is no os for this family").build();
+			return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_025")).build();
 		}
 	}
 
@@ -404,9 +407,9 @@ public class GblLstController {
 		osset = osRepository.findById(id);
 		if (osset != null) {
 			osRepository.delete(osset);
-			return Response.status(200).entity("OS deleted successfully").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_026")).build();
 		} else
-			return Response.status(200).entity("OS does not exist so cannot delete").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_027")).build();
 	}
 
 	/**
@@ -429,23 +432,23 @@ public class GblLstController {
 				if (null != osset && !osset.isEmpty()) {
 					osset.iterator().next();
 				} else {
-					return Response.status(422).entity("OS should be existing").build();
+					return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_028")).build();
 				}
 
 				try {
 
 					vendorRepository.save(existingvendor);
 				} catch (DataIntegrityViolationException e) {
-					return Response.status(409).entity("Add new OS for " + existingvendor.getVendor()).build();
+					return Response.status(409).entity(errorValidationRepository.findByErrorId("C3P_GM_029") + existingvendor.getVendor()).build();
 				} catch (Exception e) {
-					return Response.status(422).entity("Could not save OS").build();
+					return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_030")).build();
 				}
 			}
 		} else {
-			return Response.status(422).entity("Vendor should be existing").build();
+			return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_031")).build();
 		}
 
-		return Response.status(200).entity("OS updated successfully").build();
+		return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_032")).build();
 
 	}
 
@@ -497,11 +500,11 @@ public class GblLstController {
 						osRepository.save(newOS);
 						isAdd = true;
 					} else {
-						msg ="OS is present for same device family";
+						msg =errorValidationRepository.findByErrorId("C3P_GM_033");
 					}
 				}
 			} else {
-				msg="OS is present for another vendor";
+				msg=errorValidationRepository.findByErrorId("C3P_GM_034");
 			}
 		}	
 		}else {
@@ -512,7 +515,7 @@ public class GblLstController {
 			isAdd = true;
 		}		
 		if (isAdd) {
-			msg = "Os added successfully";
+			msg = errorValidationRepository.findByErrorId("C3P_GM_035");
 		} 		
 		return Response.status(200).entity(msg).build();
 	}
@@ -551,11 +554,11 @@ public class GblLstController {
 				Modelslst = modelsRepository.findByDeviceFamilyAndVendor(existingdeviceType, vendors);
 				return Response.status(200).entity(Modelslst).build();
 			} else {
-				return Response.status(200).entity("Device Family does not exist").build();
+				return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_036")).build();
 			}
 
 		} else {
-			return Response.status(200).entity("Vendor does not exist").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_037")).build();
 		}
 
 	}
@@ -571,9 +574,9 @@ public class GblLstController {
 		existingmodel = modelsRepository.findById(model_Id);
 		if (existingmodel != null) {
 			modelsRepository.delete(existingmodel);
-			return Response.status(200).entity("Model deleted successfully").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_038")).build();
 		} else {
-			return Response.status(200).entity("Model does not exist so cannot delete").build();
+			return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_039")).build();
 		}
 	}
 
@@ -597,7 +600,7 @@ public class GblLstController {
 		for (Models model : modelsreq) {
 			existingmodels = modelsRepository.findByModel(model.getModel());
 			if (null != existingmodels && !existingmodels.isEmpty()) {
-				return Response.status(422).entity("Model is duplicate").build();
+				return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_040")).build();
 			} else {
 				modelstobesaved.add(model);
 				existingdeviceTypesset = deviceFamilyRepository
@@ -605,20 +608,21 @@ public class GblLstController {
 				if (existingdeviceTypesset != null && existingdeviceTypesset.size() > 0) {
 					savedevicetype = existingdeviceTypesset.iterator().next();
 				} else {
-					return Response.status(422).entity("Device Family does not exist").build();
+					return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_036")).build();
 				}
 
 				vendorset = vendorRepository.findByVendor(model.getVendor().getVendor());
 				if (null != vendorset && !vendorset.isEmpty()) {
 					existingvendor = vendorset.iterator().next();
 				} else {
-					return Response.status(422).entity("Vendor is not existing").build();
+					return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_041")).build();
 
 				}
 				savemodels = new Models();
 				savemodels.setDeviceFamily(savedevicetype);
 				savemodels.setVendor(existingvendor);
 				savemodels.setModel(model.getModel());
+				savemodels.setModelDescription(model.getModelDescription());
 				modelsRepository.save(savemodels);
 				isAdd = true;
 			}
@@ -654,7 +658,7 @@ public class GblLstController {
 			for (Models model : modelsreq) {
 				existingmodels = modelsRepository.findByModel(model.getModel());
 				if (null != existingmodels && !existingmodels.isEmpty()) {
-					return Response.status(422).entity("Model is existing and associated to other vendor.").build();
+					return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_042")).build();
 				} else {
 					modelstobesaved.add(model);
 				}
@@ -685,7 +689,7 @@ public class GblLstController {
 					&& osVersionforcheck.containsAll(requestOsVersion);
 
 			if (interfaceCheck && osversioncheck) {
-				return Response.status(409).entity("No Modification performed").build();
+				return Response.status(409).entity(errorValidationRepository.findByErrorId("C3P_GM_043")).build();
 			}
 		}
 
@@ -707,12 +711,12 @@ public class GblLstController {
 						modelsave1.setVendor(existingvendor);
 
 					} else {
-						return Response.status(422).entity("Vendor is not existing").build();
+						return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_041")).build();
 
 					}
 					if (existingmodelset.contains(modelsave1)) {
 						if (globalLstReq.getModels().get(0).isValue()) {
-							return Response.status(409).entity("Model is Duplicate").build();
+							return Response.status(409).entity(errorValidationRepository.findByErrorId("C3P_GM_040")).build();
 						}
 					}
 
@@ -728,17 +732,17 @@ public class GblLstController {
 						isModify = true;
 					}
 				} catch (DataIntegrityViolationException e) {
-					return Response.status(409).entity("Model is Duplicate").build();
+					return Response.status(409).entity(errorValidationRepository.findByErrorId("C3P_GM_040")).build();
 				} catch (Exception e) {
-					return Response.status(422).entity("Could not save Model").build();
+					return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_044")).build();
 				}
 
 			} else {
-				return Response.status(422).entity("Device Family does not exist").build();
+				return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_036")).build();
 			}
 
 		} else {
-			return Response.status(422).entity("Device Family is not set").build();
+			return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_045")).build();
 		}
 		String res = null;
 		if (isAdd && !isModify) {
@@ -766,10 +770,10 @@ public class GblLstController {
 			try {
 				deviceFamilyRepository.delete(existingdevicetype);
 			} catch (NoSuchElementException e) {
-				return Response.status(200).entity("deviceFamily does not exist so cannot Delete").build();
+				return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_046")).build();
 			}
 		}
-		return Response.status(200).entity("deviceFamily deleted successfully").build();
+		return Response.status(200).entity(errorValidationRepository.findByErrorId("C3P_GM_058")).build();
 
 	}
 
@@ -795,7 +799,7 @@ public class GblLstController {
 			List<DeviceFamily> deviceFamilyList = deviceFamilyRepository.findByVendor(list.get(0));
 			return Response.status(200).entity(deviceFamilyList).build();
 		} else {
-			return Response.status(422).entity("Vendor is not existing").build();
+			return Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_GM_041")).build();
 		}
 	}
 
@@ -830,7 +834,7 @@ public class GblLstController {
 		if (isAdd) {
 			resstr = "added";
 		} else {
-			return Response.status(409).entity("Device Family is duplicate").build();
+			return Response.status(409).entity(errorValidationRepository.findByErrorId("C3P_GM_047")).build();
 		}
 		return Response.status(200).entity("Device Family " + resstr + " succesfully").build();
 	}
@@ -872,7 +876,7 @@ public class GblLstController {
 		if (isModify) {
 			resstr = "modified";
 		} else {
-			return Response.status(409).entity("No Modification took place").build();
+			return Response.status(409).entity(errorValidationRepository.findByErrorId("C3P_GM_048")).build();
 		}
 		return Response.status(200).entity("Device Family " + resstr + " succesfully").build();
 
@@ -970,28 +974,28 @@ public class GblLstController {
 				if (modDeviceFamily != null && extDeviceFamily != null) {
 					if (model.getDeviceFamily().getId() == modDeviceFamily.getId()) {
 						resStatus = 409;
-						message.append("No Modification took place");
+						message.append(errorValidationRepository.findByErrorId("C3P_GM_048"));
 					} else if (modDeviceFamily.getId() == extDeviceFamily.getId()) {
 						resStatus = 409;
-						message.append("Both existing and modify Device Family details are same");
+						message.append(errorValidationRepository.findByErrorId("C3P_GM_049"));
 					} else {
 						model.setVendor(vendor);
 						model.setDeviceFamily(modDeviceFamily);
 						modelsRepository.save(model);
 						resStatus = 200;
-						message.append("Model modified successfully");
+						message.append(errorValidationRepository.findByErrorId("C3P_GM_050"));
 					}
 				} else {
 					resStatus = 409;
-					message.append("Missing Device Family in DB for modify/existing Device Family details");
+					message.append(errorValidationRepository.findByErrorId("C3P_GM_051"));
 				}
 			} else {
 				resStatus = 409;
-				message.append("Missing Vendor in DB for the input Vendor");
+				message.append(errorValidationRepository.findByErrorId("C3P_GM_052"));
 			}
 		} else {
 			resStatus = 409;
-			message.append("Missing Model in DB for the input Model name");
+			message.append(errorValidationRepository.findByErrorId("C3P_GM_053"));
 		}
 
 		return Response.status(resStatus).entity(message.toString()).build();
@@ -1033,23 +1037,23 @@ public class GblLstController {
 			if (modifyOs != null && existingOs != null) {
 				if (osVersion.getOs().getId() == modifyOs.getId()) {
 					resStatus = 409;
-					message.append("No Modification took place");
+					message.append(errorValidationRepository.findByErrorId("C3P_GM_048"));
 				} else if (modifyOs.getId() == existingOs.getId()) {
 					resStatus = 409;
-					message.append("Both existing and modify os details are same");
+					message.append(errorValidationRepository.findByErrorId("C3P_GM_054"));
 				} else {
 					osVersion.setOs(modifyOs);
 					osversionRepository.save(osVersion);
 					resStatus = 200;
-					message.append("OS Version modified successfully");
+					message.append(errorValidationRepository.findByErrorId("C3P_GM_055"));
 				}
 			} else {
 				resStatus = 409;
-				message.append("Missing OS in DB for modify/existing OS details");
+				message.append(errorValidationRepository.findByErrorId("C3P_GM_056"));
 			}
 		} else {
 			resStatus = 409;
-			message.append("Missing OS Version in DB for the input OS version");
+			message.append(errorValidationRepository.findByErrorId("C3P_GM_057"));
 		}
 
 		return Response.status(resStatus).entity(message.toString()).build();

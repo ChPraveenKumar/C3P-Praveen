@@ -85,7 +85,7 @@ public class NetworkTestValidation extends Thread {
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
-	    if (!((type.equals("SLGB") || (type.equals("SNAI") )))){
+	    if (!((type.equals("SLGB") || (type.equals("SNAI") || (type.equals("SNAD")))))){
 
 			try {				
 				logger.info("Request ID in network test validation" + RequestId);
@@ -161,7 +161,7 @@ public class NetworkTestValidation extends Thread {
 
 										// conduct and analyse the tests
 										
-										if(deviceDetails.getdConnect().equalsIgnoreCase("NETCONF"))
+										if(deviceDetails.getdVNFSupport().equalsIgnoreCase("VNF"))
 										{
 											VNFHelper helper=new VNFHelper();
 											helper.performTest(finallistOfTests.get(i),requestinfo, user, password);

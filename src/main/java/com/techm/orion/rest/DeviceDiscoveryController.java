@@ -270,7 +270,7 @@ public class DeviceDiscoveryController implements Observer {
 				JSONObject extObj=requestInfoDetailsDao.fetchFromDeviceExtLocationDescription(String.valueOf(inventoryList.get(j).getdId()));
 				inventoryList.get(j).setInterfaces(null);
 				inventoryList.get(j).setUsers(null);
-				if(extObj!=null && extObj.containsKey("description"))
+				if(extObj!=null && extObj.get("description") != null && extObj.containsKey("description"))
 				{
 				inventoryList.get(j).setdSystemDescription(extObj.get("description").toString());
 				}
@@ -278,7 +278,7 @@ public class DeviceDiscoveryController implements Observer {
 				{
 				inventoryList.get(j).setdSystemDescription("Not Available");
 				}
-				if(extObj!=null && extObj.containsKey("lat") && extObj.containsKey("long"))
+				if(extObj!=null && extObj.containsKey("lat") && (extObj.get("lat") != null) && extObj.containsKey("long") && (extObj.get("long") != null))
 				{
 				inventoryList.get(j).setdLocation("Lat: "+extObj.get("lat").toString()+", Long: "+extObj.get("long").toString());
 				}
@@ -291,6 +291,10 @@ public class DeviceDiscoveryController implements Observer {
 				inventoryList.get(j).setdPollUsing("IP Address");
 				inventoryList.get(j).setdLoginDetails(inventoryList.get(j).getdConnect());
 				inventoryList.get(j).setdStatus("Available");
+				inventoryList.get(j).getdManagedBy();
+				inventoryList.get(j).getdManagedServicesType();
+				inventoryList.get(j).getdLifeCycleState();
+				inventoryList.get(j).getdRole();
 
 				/* Update IsNewFlag */
 				int isNewDevice = inventoryList.get(j).getdNewDevice();

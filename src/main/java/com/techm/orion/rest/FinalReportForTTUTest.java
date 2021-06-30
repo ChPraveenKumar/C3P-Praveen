@@ -93,7 +93,7 @@ public class FinalReportForTTUTest extends Thread {
 
 			createConfigRequest = requestInfoDao.getRequestDetailFromDBForVersion(RequestId, version);
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if(!type.equalsIgnoreCase("SNAI"))
+			if(!type.equalsIgnoreCase("SNAI") && !type.equalsIgnoreCase("SNAD"))
 			{
 			if (createConfigRequest.getManagementIp() != null && !createConfigRequest.getManagementIp().equals("")) {
 

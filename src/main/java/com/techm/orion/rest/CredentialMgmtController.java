@@ -30,6 +30,7 @@ import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.repositories.CredentialManagementRepo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.CredentialMgmtService;
 
 @RestController
@@ -49,6 +50,9 @@ public class CredentialMgmtController {
 	@Autowired
 	private CredentialMgmtService credentialMgmtService;
 
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
+	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -70,9 +74,9 @@ public class CredentialMgmtController {
 			profileNameList = credentialManagementRepo.findByProfileName(profileName);
 
 			if (profileNameList.isEmpty()) {
-				str = "Profile Name does not exsit";
+				str = errorValidationRepository.findByErrorId("C3P_CM_001");
 			} else {
-				str = "Profile Name does exsit";
+				str = errorValidationRepository.findByErrorId("C3P_CM_002");
 			}
 
 		} catch (Exception e) {
@@ -150,9 +154,9 @@ public class CredentialMgmtController {
 			isAdd = true;
 		}
 		if (isAdd) {
-			message = "Credential saved successfully";
+			message = errorValidationRepository.findByErrorId("C3P_CM_003");
 		} else {
-			message = "Credential is Duplicate";
+			message = errorValidationRepository.findByErrorId("C3P_CM_004");
 		}
 		return Response.status(200).entity(message).build();
 	}
@@ -221,7 +225,7 @@ public class CredentialMgmtController {
 						}
 					}
 				} else {
-					msg = "Profile is not deleted";
+					msg = errorValidationRepository.findByErrorId("C3P_CM_005");
 				}
 			}
 		}
@@ -458,11 +462,11 @@ public class CredentialMgmtController {
 			}
 			reffredDevicesJson.put("devices", devices);
 			if (!isDeviceAlreadyExist && "Yes".equalsIgnoreCase(overwrite))
-				reffredDevicesJson.put("output", "Devices added successfully");
+				reffredDevicesJson.put("output", errorValidationRepository.findByErrorId("C3P_CM_006"));
 			else if (isDeviceAlreadyExist)
-				reffredDevicesJson.put("output", "Devices already assigned");
+				reffredDevicesJson.put("output", errorValidationRepository.findByErrorId("C3P_CM_007"));
 			else
-				reffredDevicesJson.put("output", "Devices added successfully");
+				reffredDevicesJson.put("output", errorValidationRepository.findByErrorId("C3P_CM_006"));
 		} catch (Exception e) {
 			logger.error("exception in addRefferedDevices service " + e);
 		}
@@ -501,7 +505,7 @@ public class CredentialMgmtController {
 					deviceDiscoveryRepository.save(deviceInfo);
 				}
 			}
-			reffredDevicesJson.put("output", "Devices deleted successfully");
+			reffredDevicesJson.put("output", errorValidationRepository.findByErrorId("C3P_CM_008"));
 		} catch (Exception e) {
 			logger.error("exception in deleteRefferedDevices service is " + e);
 		}

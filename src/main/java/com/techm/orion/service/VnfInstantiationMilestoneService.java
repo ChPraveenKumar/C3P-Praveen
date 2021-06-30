@@ -302,4 +302,33 @@ public class VnfInstantiationMilestoneService {
 			logger.error("InterruptedException - threadSleep - " + exe.getMessage());
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	public boolean vnfDeleteInstantiation(String requestId, String version) {
+		boolean vnfDeleteInstantiated = false;
+		HttpHeaders headers = null;
+		JSONObject reqInstatiation = null;
+		JSONParser jsonParser = null;
+		try {
+			headers = new HttpHeaders();
+			reqInstatiation = new JSONObject();
+			jsonParser = new JSONParser();
+			reqInstatiation.put(new String("requestId"), requestId);
+			reqInstatiation.put(new String("version"), version);
+			HttpEntity<JSONObject> httpEntity = new HttpEntity<JSONObject>(reqInstatiation, headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue() + "/C3P/api/ResourceFunction/GCP/delete/instances/";
+			String response = restTemplate.exchange(url, HttpMethod.DELETE, httpEntity, String.class).getBody();
+			JSONObject responseJson = (JSONObject) jsonParser.parse(response);
+			if (responseJson.containsKey("workflow_status") && responseJson.get("workflow_status") != null
+					&& "true".equalsIgnoreCase(responseJson.get("workflow_status").toString())) {
+				vnfDeleteInstantiated = true;
+			}
+		} catch (HttpClientErrorException err) {
+			logger.error("HttpClientErrorException - vnfDeleteInstantiation -> " + err.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - vnfDeleteInstantiation->" + exe.getMessage());
+		}
+		return vnfDeleteInstantiated;
+	}
+	
 }

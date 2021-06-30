@@ -124,7 +124,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					+ DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("responseDownloadPath"));
 			DeviceReachabilityAndPreValidationTest.loadProperties();
 			// TODO: We need to remove ROUTER_IP_TEMP later or while on GCP
-			if (!RequestId.contains("SNAI-")
+			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
 					&& !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) // Temperory
 			{
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
@@ -588,7 +588,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 			/* Temporary hard coding ROUTER_IP_TEMP router */
-			if (!RequestId.contains("SNAI-")
+			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
 					&& !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) {
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),

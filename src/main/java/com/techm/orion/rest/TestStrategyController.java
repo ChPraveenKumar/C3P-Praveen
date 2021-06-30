@@ -50,6 +50,7 @@ import com.techm.orion.entitybeans.TestStrategeyVersioningJsonModel;
 import com.techm.orion.pojo.FirmwareUpgradeDetail;
 import com.techm.orion.pojo.TestStrategyPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.TestBundlingRepository;
@@ -95,6 +96,9 @@ public class TestStrategyController {
 	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -229,14 +233,14 @@ public class TestStrategyController {
 				}
 
 				else {
-					response = "Records not found";
+					response = errorValidationRepository.findByErrorId("C3P_TS_001");
 					return Response.status(200).entity(response).build();
 				}
 			}
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			response = "Unable read GUI input";
+			response = errorValidationRepository.findByErrorId("C3P_TM_002");
 			return Response.status(200).entity(response).build();
 		}
 
@@ -373,7 +377,7 @@ public class TestStrategyController {
 			return new ResponseEntity(detail, HttpStatus.OK);
 		} else {
 
-			return new ResponseEntity("Unable to fetch data for the test.", HttpStatus.OK);
+			return new ResponseEntity(errorValidationRepository.findByErrorId("C3P_TS_003"), HttpStatus.OK);
 
 		}
 
@@ -421,9 +425,9 @@ public class TestStrategyController {
 			}
 			response = Response.status(200).entity(str).build();
 		} catch (DataIntegrityViolationException e) {
-			response =  Response.status(409).entity("Test is Duplicate").build();
+			response =  Response.status(409).entity(errorValidationRepository.findByErrorId("C3P_TS_004")).build();
 		} catch (Exception e) {
-			response = Response.status(422).entity("Could not save service").build();
+			response = Response.status(422).entity(errorValidationRepository.findByErrorId("C3P_TS_005")).build();
 		}
 		return response;
 		
@@ -1162,7 +1166,7 @@ public class TestStrategyController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			JSONObject testDetails = new JSONObject();
-			testDetails.put("msg", "Unable read GUI input");
+			testDetails.put("msg", errorValidationRepository.findByErrorId("C3P_TS_002"));
 			testDetailsValue.add(testDetails);
 			return testDetailsValue;
 		}
@@ -1385,7 +1389,7 @@ public class TestStrategyController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			JSONObject testDetails = new JSONObject();
-			testDetails.put("msg", "Unable read GUI input");
+			testDetails.put("msg", errorValidationRepository.findByErrorId("C3P_TS_002"));
 			testDetailsValue.add(testDetails);
 			return testDetailsValue;
 		}

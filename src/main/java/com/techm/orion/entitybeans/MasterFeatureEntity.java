@@ -108,6 +108,8 @@ public class MasterFeatureEntity implements Serializable
 	@Column(name = "f_owner")
 	private String fOwner;
 
+	@Column(name = "f_parent_id", length = 20)
+	private String fParentId;
 	
 	public String getfStatus() {
 		return fStatus;
@@ -323,6 +325,15 @@ public class MasterFeatureEntity implements Serializable
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+	
+
+	public String getfParentId() {
+		return fParentId;
+	}
+
+	public void setfParentId(String fParentId) {
+		this.fParentId = fParentId;
 	}
 
 	@Override

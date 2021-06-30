@@ -114,7 +114,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
 					RequestId, version);
 
-			if (!RequestId.contains("SNAI-")) {
+			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")) {
 				requestDetailEntity = requestInfoDetailsRepositories
 						.findAllByAlphanumericReqId(RequestId);
 
@@ -1058,9 +1058,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						// get file from vnf config requests folder
 						// pass file path to vnf helper class push on device
 						// method.
-						requestInfoDetailsDao.getRouterConfig(requestinfo, "previous");
+						bckupConfigService.getRouterConfig(requestinfo, "previous");
 
-						boolean result = helper.pushOnVnfDevice(path);
+						boolean result = helper.pushOnVnfDevice(path,routerCredential,requestinfo.getManagementIp());
 						if (result) {
 							value = true;
 
@@ -1076,7 +1076,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 													.getRequestVersion())
 											+ "_deliveredConfig.txt", response);
 
-							requestInfoDetailsDao.getRouterConfig(requestinfo, "current");
+							bckupConfigService.getRouterConfig(requestinfo, "current");
 
 							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double
@@ -1429,7 +1429,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			String user, String password, String stage)
 			throws NumberFormatException, JSchException {
 		logger.info("Inside Backup method for ios upgrade");
-		BackupCurrentRouterConfigurationService bckupConfigService = new BackupCurrentRouterConfigurationService();
 		boolean isSuccess = false;
 		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 				.getProperty("portSSH");

@@ -1821,14 +1821,20 @@ public class TemplateManagementDao {
 				template.setOsVersion(rs.getString("temp_os_version"));
 				template.setRegion(rs.getString("temp_region"));
 				Timestamp d = rs.getTimestamp("temp_created_date");
-				template.setDate(covnertTStoString(d));
+				if (d != null) {
+					template.setDate(covnertTStoString(d));
+				}
 				template.setVersion(rs.getString("temp_version"));
 				Timestamp d1 = rs.getTimestamp("temp_updated_date");
-				template.setUpdatedDate(covnertTStoString(d1));
+				if (d1 != null) {
+					template.setUpdatedDate(covnertTStoString(d1));
+				}
 				template.setStatus(rs.getString("temp_status"));
 				template.setApprover(rs.getString("temp_approver"));
 				template.setCreatedBy(rs.getString("temp_created_by"));
-				template.setComment(rs.getString("temp_comment_section"));
+				if (rs.getString("temp_comment_section") != null) {
+					template.setComment(rs.getString("temp_comment_section"));
+				}
 				if (template.getStatus().equalsIgnoreCase("Approved")
 						|| template.getStatus().equalsIgnoreCase("approved")) {
 					template.setEditable(true);
@@ -2409,5 +2415,29 @@ public class TemplateManagementDao {
 			DBUtil.close(connection);
 		}
 		return cammandPojo;
+	}
+	
+	public List<CommandPojo> getCammandByMasterFId(String master_f_id) {		
+		String query1 = "SELECT * FROM c3p_template_master_command_list where master_f_id =?";		
+		ResultSet res;
+
+		List<CommandPojo> cammandList = new ArrayList<>();
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query1);) {								
+				preparedStmt.setString(1, master_f_id);
+				res = preparedStmt.executeQuery();
+				CommandPojo cammand = null;
+					while (res.next()) {
+					cammand = new CommandPojo();
+					cammand.setCommandValue(res.getString("command_value"));
+					cammand.setCommandSequenceId(res.getInt("command_sequence_id"));
+					cammand.setPosition(res.getInt("command_sequence_id"));
+					cammand.setMaster_f_id(res.getString("master_f_id"));
+					cammandList.add(cammand);				
+			}
+		} catch (SQLException e) {	
+			e.printStackTrace();
+		}
+		return cammandList;
 	}
 }

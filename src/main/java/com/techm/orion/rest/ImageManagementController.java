@@ -1,7 +1,5 @@
 package com.techm.orion.rest;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.CannotCreateTransactionException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,7 +28,6 @@ import com.techm.orion.entitybeans.ImageManagementEntity;
 import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ImageManagementRepository;
 import com.techm.orion.service.ImageManagementService;
-import com.techm.orion.utility.TSALabels;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -79,19 +76,19 @@ public class ImageManagementController {
 			displayName = (String) json.get("displayName");
 			Map<String, String> success = imageManagementService.addFirmWare(searchParameters);
 			if (success.toString().contains("Image already exists")) {
-				obj.put("errorMsg", "Image already exists");
-				obj.put("errorType", "Duplicate Image filename");
+				obj.put("errorMsg", errorValidationRepository.findByErrorId("C3P_IM_004"));
+				obj.put("errorType", errorValidationRepository.findByErrorId("C3P_IM_001"));
 				obj.put("currentOS", "");
 				obj.put("upgradableOS", "");
 			} else if (success.toString().contains("Display Name already exists")) {
-				obj.put("errorMsg", "Display Name already exists");
-				obj.put("errorType", "Duplicate Display Name");
+				obj.put("errorMsg", errorValidationRepository.findByErrorId("C3P_IM_005"));
+				obj.put("errorType", errorValidationRepository.findByErrorId("C3P_IM_002"));
 				obj.put("currentOS", "");
 				obj.put("upgradableOS", "");
 			} else if (success.containsKey("HigherVersionExist")) {
 				obj.put("errorMsg",
-						"A higher version already exists. Are you sure to add you want to add this version ?");
-				obj.put("errorType", "Lower Image");
+						errorValidationRepository.findByErrorId("C3P_IM_003"));
+				obj.put("errorType", errorValidationRepository.findByErrorId("C3P_IM_006"));
 				obj.put("currentOS", displayName);
 				obj.put("upgradableOS", success.get("HigherVersionExist"));
 			} else if (success.containsKey("error")) {
@@ -104,7 +101,7 @@ public class ImageManagementController {
 				obj.put("errorType", "");
 				obj.put("currentOS", "");
 				obj.put("upgradableOS", "");
-				obj.put("status", "Added record successfully");
+				obj.put("status", errorValidationRepository.findByErrorId("C3P_IM_007"));
 			}
 		} catch (Exception e) {
 			obj.put("errorMsg", e.getMessage());
@@ -140,7 +137,7 @@ public class ImageManagementController {
 				obj.put("errorType", "");
 				obj.put("currentOS", "");
 				obj.put("upgradableOS", "");
-				obj.put("status", "Added Lower Image successfully");
+				obj.put("status", errorValidationRepository.findByErrorId("C3P_IM_008"));
 			}
 		} catch (Exception e) {
 			obj.put("errorMsg", e.getMessage());
@@ -161,6 +158,7 @@ public class ImageManagementController {
 	 *This Api is marked as ***************Both Api Impacted****************
 	 **/
 	@POST
+	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/highestAvailableOsVersionForSingleDevice", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity highestAvailableOsVersionForSingleDevice(@RequestBody String searchParameters) {
@@ -182,18 +180,18 @@ public class ImageManagementController {
 				obj.put("upgradableOS", "");
 
 			} else if (success.containsKey("statusMsg")) {
-				obj.put("statusMsg", "No record found");
-				obj.put("statusType", "Not found");
+				obj.put("statusMsg", errorValidationRepository.findByErrorId("C3P_IM_009"));
+				obj.put("statusType", errorValidationRepository.findByErrorId("C3P_IM_010"));
 				obj.put("currentOS", "");
 				obj.put("upgradableOS", "");
 			} else if (success.containsKey("alreadyHigherVersionExist")) {
-				obj.put("statusMsg", "Already Higher Version Exist");
-				obj.put("statusType", "Higher Version");
+				obj.put("statusMsg", errorValidationRepository.findByErrorId("C3P_IM_011"));
+				obj.put("statusType", errorValidationRepository.findByErrorId("C3P_IM_012"));
 				obj.put("currentOS", "");
 				obj.put("upgradableOS", "");
 			} else {
 				obj.put("statusMsg",
-						"A higher version already exists. Are you sure to add you want to add this version ?");
+						errorValidationRepository.findByErrorId("C3P_IM_003"));
 				obj.put("statusType", "Lower Image");
 				obj.put("currentOS", displayName);
 				obj.put("upgradableOS", success.get("highestOsVersion"));
@@ -288,7 +286,7 @@ public class ImageManagementController {
 				imageJson.put("result", imgJson);
 			}
 			else
-				imageJson.put("result", "No record found");
+				imageJson.put("result", errorValidationRepository.findByErrorId("C3P_IM_013"));
 		} catch (ParseException e) {
 			logger.error("Exception occrued in viewBinaryImage" + e.getMessage());
 		} catch (Exception e) {
@@ -375,7 +373,7 @@ public class ImageManagementController {
 			if(imageMgtDetails !=null)
 				imageJson  = imageManagementService.editBinaryImage(imageMgtDetails, vendor, family, imageName, displayName, status, userName);
 			else
-				imageJson.put("response", "No record found for an update");
+				imageJson.put("response", errorValidationRepository.findByErrorId("C3P_IM_014"));
 			
 		} catch (ParseException e) {
 			logger.error("Exception occrued in validateImage" + e.getMessage());

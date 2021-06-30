@@ -24,6 +24,7 @@ import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.service.ConfigurationManagmentService;
+import org.json.simple.JSONArray;
 
 @RestController
 public class RequestCreatorController {
@@ -141,7 +142,9 @@ public class RequestCreatorController {
 	@ResponseBody
 	public Response getHostName(@RequestBody String request) {
 		Set<String> hostNameList = new HashSet<>();
+		JSONArray array = new JSONArray();
 		try {
+			
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 			String customer = json.get("customerName").toString();
@@ -153,14 +156,20 @@ public class RequestCreatorController {
 			siteList.forEach(site -> {
 				List<DeviceDiscoveryEntity> device = deviceRepo.findByCustSiteIdId(site.getId());
 				device.forEach(item -> {
+					JSONObject obj = new JSONObject();
+					obj.put("hostName",item.getdHostName());
+					obj.put("status",item.getdLifeCycleState());
+					array.add(obj);
 					hostNameList.add(item.getdHostName());
+					
+					
 				});
 
 			});
 		} catch (Exception e) {
 			logger.error(e);
 		}
-		return Response.status(200).entity(hostNameList).build();
+		return Response.status(200).entity(array).build();
 	}
 
 	/**
