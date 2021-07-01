@@ -1643,5 +1643,40 @@ public class BackUpAndRestoreController {
 
 		return new ResponseEntity(obj, HttpStatus.OK);
 	}
+	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
+	@POST
+	@RequestMapping(value = "/clearBaselineVersion", method = RequestMethod.POST, produces = "application/json")
+	@ResponseBody
+	public Response clearBaselineVersion(@RequestBody String request) {
 
+		JSONObject obj = new JSONObject();
+		JSONParser parser = new JSONParser();
+		String hostName = null, str = null;
+
+		List<RequestInfoEntity> baseLineVersionList = new ArrayList<RequestInfoEntity>();
+		
+		try {
+			obj = (JSONObject) parser.parse(request);
+
+			hostName = obj.get("hostname").toString();
+
+			baseLineVersionList = requestInfoDetailsRepositories.findAllByHostName(hostName);
+			for (int i = 0; i < baseLineVersionList.size(); i++) {
+
+				baseLineVersionList.get(i).setBaselineFlag(false);
+				baseLineVersionList.get(i).setBaselinedDate(null);		
+			}
+
+			requestInfoDetailsRepositories.save(baseLineVersionList);
+			str = errorValidationRepository.findByErrorId("C3P_BR_001");
+
+		} catch (Exception e) {
+			logger.error("Exception in clearBaselineVersion " +e);
+		}
+
+		return Response.status(200).entity(str).build();
+	}
 }
