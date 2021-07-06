@@ -1,5 +1,7 @@
 package com.techm.orion.authconfig;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,23 +16,29 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
+/**
+ * 
+ * @author AR115998
+ *
+ */
 @Configuration
 @EnableResourceServer
 public class OAuth2ResourceServerConfigJwt extends ResourceServerConfigurerAdapter {
 
+	private static final Logger logger = LogManager.getLogger(OAuth2ResourceServerConfigJwt.class);
 	@Autowired
 	private CustomAccessTokenConverter customAccessTokenConverter;
 
 	@Override
 	public void configure(final HttpSecurity http) throws Exception {
-		System.out.println("OAuth2ResourceServerConfigJwt http-->"+http);
+		logger.info("OAuth2ResourceServerConfigJwt http-->" + http);
 		http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED).and().authorizeRequests()
-				.anyRequest().permitAll();	
+				.anyRequest().permitAll();
 	}
 
 	@Override
 	public void configure(final ResourceServerSecurityConfigurer config) {
-		System.out.println("OAuth2ResourceServerConfigJwt configure-->"+config);
+		logger.info("OAuth2ResourceServerConfigJwt configure-->" + config);
 		config.tokenServices(tokenServices());
 	}
 
@@ -42,7 +50,7 @@ public class OAuth2ResourceServerConfigJwt extends ResourceServerConfigurerAdapt
 	@Bean
 	public JwtAccessTokenConverter accessTokenConverter() {
 		final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-		converter.setAccessTokenConverter(customAccessTokenConverter);		
+		converter.setAccessTokenConverter(customAccessTokenConverter);
 		converter.setSigningKey("c3papplicationkey");
 		// final Resource resource = new ClassPathResource("public.txt");
 		// String publicKey = null;
