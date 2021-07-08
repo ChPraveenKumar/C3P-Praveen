@@ -35,6 +35,7 @@ public class ShowVersionTest {
 			PROPERTIES.load(PropFile);
 		} catch (IOException exc) {
 			exc.printStackTrace();
+			logger.error("Exception in loadProperties method "+exc.getMessage());
 			return false;
 		}
 		return false;
@@ -103,7 +104,7 @@ public class ShowVersionTest {
 			}
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in getVersion method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return version;
@@ -129,6 +130,7 @@ public class ShowVersionTest {
 			try {
 				Thread.sleep(10000);
 			} catch (Exception ee) {
+				logger.error("Exception in versionInfo method "+ee.getMessage());
 			}
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
@@ -141,6 +143,7 @@ public class ShowVersionTest {
 			try {
 				Thread.sleep(5000);
 			} catch (Exception ee) {
+				logger.error("Exception in versionInfo method "+ee.getMessage());
 			}
 			osversionOnDevice = printVersionversionInfo(input, channel, routername, region, type);
 			result = true;

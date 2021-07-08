@@ -425,7 +425,7 @@ public class NetworkTestValidation extends Thread {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in validateNetworkTest method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return content;

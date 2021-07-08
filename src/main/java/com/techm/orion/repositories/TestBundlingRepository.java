@@ -22,7 +22,7 @@ public interface TestBundlingRepository extends JpaRepository<TestBundling, Long
 	@Query(value = bundleNameList, nativeQuery = true)
 	List<String> findBundleName();
 
-	@Query(value = "select * from t_tststrategy_m_testbundling where (region like :region or region like '%All') and (os like :os or os like '%All') and (os_version like :osVersion or os_version like '%All') and (device_family like :devicefamily or device_family like '%All') and vendor = :vendor  and network_function = :networkfunction ", nativeQuery = true)
+	@Query(value = "select * from t_tststrategy_m_testbundling where (region like :region or region like '%All') and (os like :os or os like '%All') and (os_version like :osVersion or os_version like '%All') and (device_family like :devicefamily or device_family like '%All') and vendor = :vendor  and network_function = :networkfunction AND NOT (test_bundle='System Prevalidation' AND updated_by = 'C3PADMIN')", nativeQuery = true)
 	List<TestBundling> getTestBundleData(@Param("devicefamily") String devicefamily, @Param("os") String os,
 			@Param("region") String region, @Param("osVersion") String osVersion, @Param("vendor") String vendor,
 			@Param("networkfunction") String networkfunction);

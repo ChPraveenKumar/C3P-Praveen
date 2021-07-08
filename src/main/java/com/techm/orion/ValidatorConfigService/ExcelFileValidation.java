@@ -211,7 +211,7 @@ public class ExcelFileValidation {
 
 		} catch (IOException e) {
 
-			e.printStackTrace();
+			logger.error("Exception in validateColumnXLSX method "+e.getMessage());
 		}
 
 		return jsonArray;
@@ -519,6 +519,7 @@ public class ExcelFileValidation {
 
 				} catch (Exception e) {
 					isFlag = false;
+					logger.error("Exception in validateNoOfRequestXLSX method "+e.getMessage());
 				}
 				if (isFlag == true && noOfRows == 1) {
 					jsonArray = "Valid Single Request";
@@ -535,6 +536,7 @@ public class ExcelFileValidation {
 				isCheck = false;
 			}
 		} catch (Exception e) {
+			logger.error("Exception in validateNoOfRequestXLSX method "+e.getMessage());
 		}
 		return jsonArray;
 	}
@@ -826,6 +828,7 @@ public class ExcelFileValidation {
 			}
 
 		} catch (Exception e) {
+			logger.error("Exception in validateNoOfRequestCSV method "+e.getMessage());
 		}
 		return jsonarray;
 

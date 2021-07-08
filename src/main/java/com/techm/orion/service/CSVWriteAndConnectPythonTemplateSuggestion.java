@@ -71,7 +71,7 @@ public class CSVWriteAndConnectPythonTemplateSuggestion {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Exception in ReadWriteAndAnalyseSuggestion method "+e.getMessage());
 		}
 
 		return result;

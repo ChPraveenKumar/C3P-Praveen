@@ -84,7 +84,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 
 			logger.info(textFound);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in checkErrorCode method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return errorType;
@@ -551,6 +551,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 		try {
 			Thread.sleep(1000);
 		} catch (Exception ee) {
+			logger.error("Exception in printResult method "+ee.getMessage());
 		}
 
 	}
