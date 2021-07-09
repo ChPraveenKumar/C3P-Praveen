@@ -7,6 +7,7 @@ import org.springframework.security.config.annotation.method.configuration.Globa
 import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;
 
 /**
+ * Method security configuration for enabling global method security
  * 
  * @author AR115998
  *

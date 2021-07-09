@@ -17,6 +17,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
 /**
+ * A CorsFilter is an object that performs Cors filtering tasks on either the
+ * request to a resource (a ServletResponse), or on the response from a
+ * resource, or both. This is an Authentication Filter
  * 
  * @author AR115998
  *

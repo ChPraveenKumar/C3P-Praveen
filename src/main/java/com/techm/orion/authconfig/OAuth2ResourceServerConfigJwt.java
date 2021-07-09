@@ -3,6 +3,7 @@ package com.techm.orion.authconfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -17,6 +18,12 @@ import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenCo
 import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 /**
+ * OAuth2ResourceServerConfigJwt configures the
+ * <code>@EnableResourceServer</code> class and provide the access rules and
+ * paths that are protected by OAuth2 security. Applications may provide
+ * multiple instances of this interface, and in general (like with other
+ * Security configures), if more than one configures the same property, then
+ * the last one wins.
  * 
  * @author AR115998
  *
@@ -28,6 +35,8 @@ public class OAuth2ResourceServerConfigJwt extends ResourceServerConfigurerAdapt
 	private static final Logger logger = LogManager.getLogger(OAuth2ResourceServerConfigJwt.class);
 	@Autowired
 	private CustomAccessTokenConverter customAccessTokenConverter;
+	@Value("${spring.oauth2.resourceserver.jwt-token-key}")
+	private String jwtSigningKey;
 
 	@Override
 	public void configure(final HttpSecurity http) throws Exception {
@@ -51,7 +60,7 @@ public class OAuth2ResourceServerConfigJwt extends ResourceServerConfigurerAdapt
 	public JwtAccessTokenConverter accessTokenConverter() {
 		final JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
 		converter.setAccessTokenConverter(customAccessTokenConverter);
-		converter.setSigningKey("c3papplicationkey");
+		converter.setSigningKey(jwtSigningKey);
 		// final Resource resource = new ClassPathResource("public.txt");
 		// String publicKey = null;
 		// try {
