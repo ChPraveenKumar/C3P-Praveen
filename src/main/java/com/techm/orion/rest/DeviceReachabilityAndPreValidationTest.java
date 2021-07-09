@@ -45,9 +45,9 @@ import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.service.PingService;
 import com.techm.orion.service.PrevalidationTestServiceImpl;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.PingTest;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
@@ -87,10 +87,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	
 	@Autowired
 	private PrevalidationTestServiceImpl prevalidationTestServiceImpl;
+	@Autowired
+	private PingService pingService;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
-	PingTest pingHelper = new PingTest();
+	//PingTest pingHelper = new PingTest();
 
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -610,7 +612,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					// requestinfo.getAlphanumericReqId(),
 					// Double.toString(requestinfo.getRequestVersion()));
 					boolean reachabilityTest = false;
-					JSONArray pingResults = pingHelper.pingResults(requestinfo.getManagementIp());
+					JSONArray pingResults = pingService.pingResults(requestinfo.getManagementIp());
 					if (pingResults != null) {
 						if (pingResults.contains("Error") || pingResults.contains("Destination host unreachable")
 								|| pingResults.contains("Request timed out")

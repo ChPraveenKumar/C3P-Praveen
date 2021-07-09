@@ -10,11 +10,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.LineNumberReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Scanner;
 
 import javax.ws.rs.POST;
 
@@ -38,15 +36,13 @@ import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.pojo.HealthCheckComponent;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.service.PingService;
 import com.techm.orion.utility.HealthCheckReport;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.PingTest;
 import com.techm.orion.utility.ShowCPUUsage;
 import com.techm.orion.utility.ShowMemoryTest;
-import com.techm.orion.utility.ShowPowerTest;
 import com.techm.orion.utility.ShowVersionTest;
 import com.techm.orion.utility.TextReport;
 
@@ -68,10 +64,13 @@ public class PostUpgradeHealthCheck extends Thread {
 	
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	@Autowired
+	private PingService pingService;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/HealthCheck", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -106,15 +105,12 @@ public class PostUpgradeHealthCheck extends Thread {
 						deviceDetails);
 				String user = routerCredential.getLoginRead();
 				String password = routerCredential.getPasswordWrite();	
-				//String port = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("portSSH");
-				String port="22";
-				PingTest pingClass = new PingTest();
 				if (type.equalsIgnoreCase("Pre")) {
 					testToFail = "pre_health_checkup";
 				} else {
 					testToFail = "health_check";
 				}
-				boolean reachability = pingClass.pingResults(host, requestinfo.getHostname(), requestinfo.getRegion());
+				boolean reachability = pingService.pingResults(host, requestinfo.getHostname(), requestinfo.getRegion());
 				if (reachability) {
 					rechabilityTst = 1;
 				} else {
@@ -128,7 +124,7 @@ public class PostUpgradeHealthCheck extends Thread {
 					OsversionOnDevice = versionTest.versionInfo(host, user, password, requestinfo.getHostname(),
 							requestinfo.getRegion(), type);
 
-					String memoryResult = null, powerResult = null, cpu_usage_result = null;
+					String memoryResult = null, cpu_usage_result = null;
 
 					if (OsversionOnDevice.equalsIgnoreCase("JSchException")) {
 						value = false;
@@ -150,7 +146,6 @@ public class PostUpgradeHealthCheck extends Thread {
 					} else {
 
 						ShowMemoryTest memoryTest = new ShowMemoryTest();
-						ShowPowerTest powerTest = new ShowPowerTest();
 						ShowCPUUsage cpu_usage = new ShowCPUUsage();
 						memoryResult = memoryTest.memoryInfo(host, user, password, requestinfo.getHostname(),
 								requestinfo.getRegion(), type);
@@ -224,7 +219,6 @@ public class PostUpgradeHealthCheck extends Thread {
 							} else {
 
 							}
-							HealthCheckReport healthCheckReportfailure = new HealthCheckReport();
 							resultList = null;
 							healthCheckReport.createReport(resultList, requestinfo.getHostname(),
 									requestinfo.getRegion(), type);
@@ -344,7 +338,6 @@ public class PostUpgradeHealthCheck extends Thread {
 			ArrayList<String> ar = new ArrayList<String>();
 			if (f.exists()) {
 
-				StringBuffer send = null;
 				StringBuilder sb2 = new StringBuilder();
 
 				rdr = new LineNumberReader(new FileReader(filePath));
@@ -353,9 +346,7 @@ public class PostUpgradeHealthCheck extends Thread {
 				byte[] c = new byte[1024];
 				int count = 0;
 				int readChars = 0;
-				boolean empty = true;
 				while ((readChars = is.read(c)) != -1) {
-					empty = false;
 					for (int i = 0; i < readChars; ++i) {
 						if (c[i] == '\n') {
 							++count;
@@ -469,9 +460,7 @@ public class PostUpgradeHealthCheck extends Thread {
 			byte[] c = new byte[1024];
 			int count = 0;
 			int readChars = 0;
-			boolean empty = true;
 			while ((readChars = is.read(c)) != -1) {
-				empty = false;
 				for (int i = 0; i < readChars; ++i) {
 					if (c[i] == '\n') {
 						++count;
@@ -516,142 +505,5 @@ public class PostUpgradeHealthCheck extends Thread {
 		}
 	}
 
-	private static void cmdCall(String requestId, String version, String managementIp) throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe");
-		Process p = null;
-		try {
-			p = builder.start();
-			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
-			String filepath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("analyserPath");
-			/*
-			 * for (int i=0; i<2; i++) { p_stdin.write("cd..");
-			 * 
-			 * p_stdin.newLine(); p_stdin.flush(); }
-			 */
-			p_stdin.write("cd " + filepath);
-			p_stdin.newLine();
-			p_stdin.flush();
-			p_stdin.write("ttcp -t nbufs 1 verbose host " + managementIp);
-			p_stdin.newLine();
-			p_stdin.flush();
-
-			try {
-				Thread.sleep(150000);
-			} catch (Exception ee) {
-			}
-			InputStream input = p.getInputStream();
-			printResult(input, requestId, version);
-			p_stdin.write("exit");
-			p_stdin.newLine();
-			p_stdin.flush();
-		}
-
-		catch (IOException e) {
-			logger.error("Exception in cmdCall method "+e.getMessage());
-			e.printStackTrace();
-		}
-
-	}
-
-	private static void cmdPingCall(String requestId, String version) throws Exception {
-		ProcessBuilder builder = new ProcessBuilder("cmd.exe");
-		Process p = null;
-		try {
-			p = builder.start();
-			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
-
-			p_stdin.write("ping 30.0.0.2 -n 20");
-			p_stdin.newLine();
-			p_stdin.flush();
-			try {
-				Thread.sleep(21000);
-			} catch (Exception ee) {
-			}
-			p_stdin.write("exit");
-			p_stdin.newLine();
-			p_stdin.flush();
-		}
-
-		catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		Scanner s = new Scanner(p.getInputStream());
-
-		InputStream input = p.getInputStream();
-		printResult(input, requestId, version);
-
-		while (s.hasNext()) {
-			logger.info(s.nextLine());
-		}
-		s.close();
-	}
-
-	private static void printResult(InputStream input, String requestID, String version) throws Exception {
-		BufferedWriter bw = null;
-		FileWriter fw = null;
-		int SIZE = 1024;
-		byte[] tmp = new byte[SIZE];
-
-		while (input.available() > 0) {
-			int i = input.read(tmp, 0, SIZE);
-			if (i < 0)
-				break;
-			/* logger.info(new String(tmp, 0, i)); */
-			String s = new String(tmp, 0, i);
-			if (!(s.equals(""))) {
-				logger.info(s);
-				String filepath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath")
-						+ requestID + "V" + version + "_HealthCheck.txt";
-				File file = new File(filepath);
-
-				// if file doesnt exists, then create it
-				if (!file.exists()) {
-					file.createNewFile();
-
-					fw = new FileWriter(file, true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				} else {
-					fw = new FileWriter(file.getAbsoluteFile(), true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				}
-			}
-
-		}
-		/*
-		 * if (channel.isClosed()) { logger.info("exit-status: " +
-		 * channel.getExitStatus());
-		 * 
-		 * }
-		 */
-
-	}
-
-	private static String readFile() throws IOException {
-		String responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath");
-
-		BufferedReader br = new BufferedReader(
-				new FileReader(responseDownloadPath + "HealthcheckTestCommand.txt"));
-
-		// BufferedReader br = new BufferedReader(new FileReader("D:/C3P/New
-		// folder/HealthcheckTestCommand.txt"));
-		try {
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
-
-			while (line != null) {
-				sb.append(line);
-				sb.append("\n");
-				line = br.readLine();
-			}
-			return sb.toString();
-		} finally {
-			br.close();
-		}
-	}
 
 }
