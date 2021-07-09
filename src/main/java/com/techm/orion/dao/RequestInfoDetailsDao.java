@@ -53,12 +53,16 @@ import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
+import com.techm.orion.utility.PingTest;
 import com.techm.orion.utility.PythonServices;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
 @Component
 public class RequestInfoDetailsDao {
+	public static String PROPERTIES_FILE = "TSA.properties";
+	public static final Properties PROPERTIES = new Properties();
+	
 	private static final Logger logger = LogManager.getLogger(RequestInfoDetailsDao.class);
 	@Autowired
 	private RequestInfoDetailsRepositories reository;
@@ -80,6 +84,8 @@ public class RequestInfoDetailsDao {
 	private WebServiceRepo webservicerepo;	
 	@Autowired
 	private BackupCurrentRouterConfigurationService backupCurrentRouterConfigurationService;	
+	@Autowired
+	private PythonServices pythonService;
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
@@ -203,6 +209,56 @@ public class RequestInfoDetailsDao {
 				resourceCharEntity.setRcKeyValue(attributes.getRcKeyValue());
 				resourceCharRepo.save(resourceCharEntity);
 			}
+			
+			if(request.getAlphanumericReqId().substring(0, Math.min(request.getAlphanumericReqId().length(), 4)).equalsIgnoreCase("SLGB"))
+			{
+				//If request is back up and is successful then only execute this block.
+				//Find the baseline version for this hostname
+				RequestInfoEntity entity = reository.findByHostnameAndIsBaseline(request.getHostName(), "1");
+				//fetch the running configuration for this request.
+				if(entity!=null)
+				{
+				String baseLineFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
+						entity.getAlphanumericReqId() + "V"
+								+ Double.toString(entity.getRequestVersion())
+								+ "_CurrentVersionConfig.txt";
+				String currentRunningFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
+						request.getAlphanumericReqId() + "V"
+						+ Double.toString(request.getRequestVersion())
+						+ "_CurrentVersionConfig.txt";
+				if(baseLineFilePath!=null && currentRunningFilePath!=null)
+				{
+					//Call python service to fetch delta between two files
+					Boolean resp=pythonService.pythonDeltaCompute(baseLineFilePath, currentRunningFilePath);
+					//If resp is true update request info r_has_delta_with_baseline flag for this request to 1
+					if(resp == true)
+					{
+						int res=reository.updatehasdeltawithbaseline(true, request.getAlphanumericReqId(), request.getRequestVersion());
+						if(res==0)
+						{
+							logger.error("Could not update the record for has delta flag for request id:::",request.getAlphanumericReqId());	
+						}
+					}
+					else
+					{
+						logger.error("No delta found for request id::::",request.getAlphanumericReqId());	
+
+					}
+					
+				}
+				else
+				{
+					logger.error("Backup files not found",baseLineFilePath);	
+					logger.error("Backup files not found::: baseline path %s",baseLineFilePath);	
+					logger.error("Backup files not found::: currentRunning path %s",currentRunningFilePath);	
+				}
+				}
+				else
+				{
+					logger.error("No backup baselined for this version");
+				}
+				System.out.println("");
+			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
@@ -251,6 +307,7 @@ public class RequestInfoDetailsDao {
 				entity.setRcRequestStatus("Failure");
 				resourceCharHistoryRepo.save(entity);
 			});
+			
 		} else {
 			try {
 				Double finalVersion = Double.valueOf(version);

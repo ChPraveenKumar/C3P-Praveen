@@ -1667,11 +1667,15 @@ public class BackUpAndRestoreController {
 			for (int i = 0; i < baseLineVersionList.size(); i++) {
 
 				baseLineVersionList.get(i).setBaselineFlag(false);
-				baseLineVersionList.get(i).setBaselinedDate(null);		
+				baseLineVersionList.get(i).setBaselinedDate(null);
+				//Logic to clear has delta flag for all previous requests
+				baseLineVersionList.get(i).setrHasDeltaWithBaseline(false);
 			}
 
 			requestInfoDetailsRepositories.save(baseLineVersionList);
 			str = errorValidationRepository.findByErrorId("C3P_BR_001");
+			
+			
 
 		} catch (Exception e) {
 			logger.error("Exception in clearBaselineVersion " +e);
