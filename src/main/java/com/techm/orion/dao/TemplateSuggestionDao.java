@@ -334,7 +334,7 @@ public class TemplateSuggestionDao {
 				ps.executeUpdate();
 			}
 		} catch (SQLException e) {
-
+			logger.error("SQLException in insertTemplateUsageData method "+e.getMessage());
 		}
 
 	}
@@ -398,6 +398,7 @@ public class TemplateSuggestionDao {
 				}
 			}
 		} catch (SQLException e) {
+			logger.error("Exception in updateTemplateUsageData method "+e.getMessage());
 			e.printStackTrace();
 		}
 
@@ -423,7 +424,7 @@ public class TemplateSuggestionDao {
 				category = rs.getString("category");
 			}
 		} catch (SQLException e) {
-
+			logger.error("Exception in getFailureIssueType method "+e.getMessage());
 		}
 		return category;
 	}
@@ -457,7 +458,7 @@ public class TemplateSuggestionDao {
 			}
 
 		} catch (SQLException e) {
-
+			logger.error("Exception in getBestTemplate method "+e.getMessage());
 		}
 
 		return templateId + "_V" + versionWithTemplate;
@@ -527,6 +528,7 @@ public class TemplateSuggestionDao {
 			}
 
 		} catch (Exception e) {
+			logger.error("Exception in getDynamicAttribDataGrid method "+e.getMessage());
 			e.printStackTrace();
 		} finally {
 
@@ -588,6 +590,7 @@ public class TemplateSuggestionDao {
 			}
 
 		} catch (Exception e) {
+			logger.error("Exception in getDynamicAttribDataGridForUI method "+e.getMessage());
 			e.printStackTrace();
 		} finally {
 
@@ -647,7 +650,7 @@ public class TemplateSuggestionDao {
 			basicDetails.put("verionsList", versionList);
 
 		} catch (SQLException e) {
-
+			logger.error("Exception in getBasicDeatilsOfTemplate method "+e.getMessage());
 		}
 		return basicDetails;
 	}

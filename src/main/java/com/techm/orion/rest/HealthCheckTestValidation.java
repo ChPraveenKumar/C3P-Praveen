@@ -268,7 +268,7 @@ public class HealthCheckTestValidation extends Thread {
 							 * Owner: Ruchita Salvi Module: Test Strategey Logic: To find and run and
 							 * analyse custom tests
 							 */
-							// fetch extra health test added
+							// fetch extra health test added //351
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
 							
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
@@ -577,6 +577,7 @@ public class HealthCheckTestValidation extends Thread {
 		try {
 			TSA_PROPERTIES.load(tsaPropFile);
 		} catch (IOException exc) {
+			logger.error("IOException in createNoconfigFile method "+exc.getMessage());
 			exc.printStackTrace();
 			return false;
 		}
@@ -801,7 +802,7 @@ public class HealthCheckTestValidation extends Thread {
 		}
 
 		catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Exception in cmdCall method "+e.getMessage());
 		}
 
 	}
