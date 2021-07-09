@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.techm.orion.dao.RequestSchedulerDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.SchedulerListPojo;
 
 public class RequestSchedulerForNewAndModify {
+	private static final Logger logger = LogManager.getLogger(RequestSchedulerForNewAndModify.class);
 
 	public List<SchedulerListPojo> getScheduledHistoryDB(String requestId, String version) {
 
@@ -21,6 +25,7 @@ public class RequestSchedulerForNewAndModify {
 			}
 			scheduledList = requestSchedulerDao.getScheduledHistoryForRequest(requestId, version);
 		} catch (Exception e) {
+			logger.error("Exception in getScheduledHistoryDB method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return scheduledList;
@@ -37,6 +42,7 @@ public class RequestSchedulerForNewAndModify {
 			}
 			result = requestSchedulerDao.updateRescheduledRequest(requestId, version, scheduledTime);
 		} catch (Exception e) {
+			logger.error("Exception in rescheduleRequestDB method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return result;
@@ -51,6 +57,7 @@ public class RequestSchedulerForNewAndModify {
 
 			result = requestSchedulerDao.cancelScheduledRequest(requestId, version);
 		} catch (Exception e) {
+			logger.error("Exception in cancelRequestDB method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return result;
@@ -76,7 +83,7 @@ public class RequestSchedulerForNewAndModify {
 			// requestSchedulerDao.updateScheduledRequest(configRequest);
 
 		} catch (Exception e) {
-
+			logger.error("Exception in runScheduledRequestService method "+e.getMessage());
 		}
 		return "Request submitted Sucessfully";
 
@@ -104,7 +111,7 @@ public class RequestSchedulerForNewAndModify {
 			// requestSchedulerDao.updateScheduledRequest(configRequest);
 
 		} catch (Exception e) {
-
+			logger.error("Exception in createNewReScheduledRequestService method "+e.getMessage());
 		}
 		return "Request submitted Sucessfully";
 
@@ -119,6 +126,7 @@ public class RequestSchedulerForNewAndModify {
 
 			result = requestSchedulerDao.abortScheduledRequest(requestId, version);
 		} catch (Exception e) {
+			logger.error("Exception in abortScheduledRequestDB method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return result;

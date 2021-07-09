@@ -614,6 +614,7 @@ public class UserManagementImpl implements UserManagementInterface {
 			userAttempts = u1.get(0);
 			return userAttempts;
 		} catch (Exception e) {
+			logger.error("Exception in getUserAttempts method "+e.getMessage());
 		}
 		return userAttempts;
 	}

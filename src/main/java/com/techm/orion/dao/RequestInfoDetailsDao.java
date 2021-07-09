@@ -376,7 +376,7 @@ public class RequestInfoDetailsDao {
 			}
 
 		} catch (Exception e) {
-
+			logger.error("Exception in changeRequestInRequestInfoStatus method " +e);
 		}
 
 		return result;
@@ -424,6 +424,7 @@ public class RequestInfoDetailsDao {
 				result = false;
 			}
 		} catch (Exception e) {
+			logger.error("Exception in changeRequestOwner method " +e);
 			e.printStackTrace();
 		}
 		return result;
@@ -443,6 +444,7 @@ public class RequestInfoDetailsDao {
 				result = false;
 			}
 		} catch (Exception e) {
+			logger.error("Exception in changeRequestStatus method " +e);
 			e.printStackTrace();
 		}
 		return result;
@@ -460,6 +462,7 @@ public class RequestInfoDetailsDao {
 				}
 			}
 		} catch (Exception e) {
+			logger.error("Exception in getOwnerAssignedRequestList method " +e);
 			e.printStackTrace();
 		}
 		return list;

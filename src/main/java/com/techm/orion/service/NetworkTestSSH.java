@@ -194,6 +194,7 @@ public class NetworkTestSSH {
 		try {
 			Thread.sleep(1000);
 		} catch (Exception ee) {
+			logger.error("Exception in printResult method "+ee.getMessage());
 		}
 
 	}
@@ -220,7 +221,7 @@ public class NetworkTestSSH {
 			}
 
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in validateNetworkTest method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return content;

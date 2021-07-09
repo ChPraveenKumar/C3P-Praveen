@@ -297,7 +297,7 @@ public class HealthCheckTestSSH {
 			logger.info("commandToPing -"+commadBuilder);	
 			process = Runtime.getRuntime().exec(commadBuilder.toString());			
 		}catch(IOException exe) {
-			logger.error("Exception in pingResults - "+exe.getMessage());
+			logger.error("Exception in cmdPingCall method "+exe.getMessage());
 		}
 
 		Scanner s = new Scanner(process.getInputStream());

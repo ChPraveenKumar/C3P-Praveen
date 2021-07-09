@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +26,7 @@ import com.techm.orion.utility.TextReport;
 
 @Component
 public class CreateAndCompareModifyVersion {
+	private static final Logger logger = LogManager.getLogger(CreateAndCompareModifyVersion.class);
 
 	@Autowired
 	private RequestInfoDao requestInfoDao;
@@ -351,7 +354,7 @@ public class CreateAndCompareModifyVersion {
 
 			}
 		} catch (IOException ex) {
-
+			logger.error("Exception in createNoconfigFile method "+ex.getMessage());
 		}
 	}
 
@@ -393,7 +396,7 @@ public class CreateAndCompareModifyVersion {
 
 			}
 		} catch (IOException ex) {
-
+			logger.error("Exception in createconfigFile method "+ex.getMessage());
 		}
 	}
 
