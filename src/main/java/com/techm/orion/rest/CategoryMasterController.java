@@ -77,8 +77,12 @@ public class CategoryMasterController {
 		String userName = null, userRole = null, category = null;
 		JSONParser parser = new JSONParser();
 		json = (JSONObject) parser.parse(request);
-		userName = json.get("userName").toString();
-		userRole = json.get("userRole").toString();
+		if(json.containsKey(userName)) {
+			userName = json.get("userName").toString();
+		}
+		if(json.containsKey(userRole)) {
+			userRole = json.get("userRole").toString();
+		}
 		category = json.get("category").toString();
 		CategoryMasterEntity categoryMasterEntity = categoryMasterDao.findByCategoryName(category);
 		List<CategoryDropDownEntity> categoryDropDownEntity = categoryDropDownDao

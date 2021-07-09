@@ -615,7 +615,7 @@ public class DcmConfigService {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in updateAlldetails method "+e.getMessage());
 		}
 		return result;
 
@@ -890,6 +890,7 @@ public class DcmConfigService {
 			}
 
 		} catch (Exception e) {
+			logger.error("Exception in updateAlldetailsOnModify method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return result;
@@ -1096,7 +1097,7 @@ public class DcmConfigService {
 		try {
 			list = requestInfoDao.getALLModelData(vendor, deviceType);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in getModelData method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return list;
@@ -1108,7 +1109,7 @@ public class DcmConfigService {
 		try {
 			list = requestInfoDao.getALLOSData(make, deviceType);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in getOSData method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return list;
@@ -1120,7 +1121,7 @@ public class DcmConfigService {
 		try {
 			list = requestInfoDao.getALLOSVersionData(os, model);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in getOSVersionData method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return list;
@@ -1139,7 +1140,7 @@ public class DcmConfigService {
 		try {
 			list = requestInfoDao.getALLRegionData();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in getRegionData method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return list;
@@ -1293,7 +1294,7 @@ public class DcmConfigService {
 
 			return featureList;
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in getConfigurationFeature method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return featureList;
@@ -1382,6 +1383,7 @@ public class DcmConfigService {
 		}
 
 		catch (Exception e) {
+			logger.error("Exception in searchAllAlertNotificationData method "+e.getMessage());
 			e.printStackTrace();
 
 		}
@@ -1407,7 +1409,7 @@ public class DcmConfigService {
 		try {
 			repo.save(setRequestMapper);
 		} catch (Exception e) {
-			logger.info(e.toString());
+			logger.error("Exception in saveDynamicAttribValue method "+e.getMessage());
 		}
 		return responceMapper;
 
@@ -1986,7 +1988,7 @@ public class DcmConfigService {
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in updateAlldetails method "+e.getMessage());
 		}
 		return result;
 	}
@@ -2002,7 +2004,7 @@ public class DcmConfigService {
 							+ configRequest.getRequestVersion() + "_Header",
 					responseHeader, "headerGeneration");
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in createHeader method "+e.getMessage());
 			e.printStackTrace();
 		}
 
@@ -2084,7 +2086,7 @@ public class DcmConfigService {
 
 			return timeStampDate;
 		} catch (ParseException e) {
-			logger.info("Exception :" + e);
+			logger.error("Exception in convertStringToTimestamp method "+e.getMessage());
 			return null;
 		}
 	}
@@ -2378,7 +2380,7 @@ public class DcmConfigService {
 			}
 			// }
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in updateBatchConfig method "+e.getMessage());
 		}
 		return result;
 	}
@@ -3053,7 +3055,7 @@ public class DcmConfigService {
 				}
 			}
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in updateAlldetails method "+e.getMessage());
 		}
 		return result;
 	}
@@ -3631,7 +3633,7 @@ public class DcmConfigService {
 					 */}
 			}
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in updateAlldetails method "+e.getMessage());
 		}
 		return result;
 	}

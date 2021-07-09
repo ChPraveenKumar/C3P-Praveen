@@ -317,6 +317,7 @@ public class PostUpgradeHealthCheck extends Thread {
 		try {
 			TSA_PROPERTIES.load(tsaPropFile);
 		} catch (IOException exc) {
+			logger.error("Exception in loadProperties method "+exc.getMessage());
 			exc.printStackTrace();
 			return false;
 		}

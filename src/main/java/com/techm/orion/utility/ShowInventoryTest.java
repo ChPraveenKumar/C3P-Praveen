@@ -32,6 +32,7 @@ public class ShowInventoryTest {
 		try {
 			PROPERTIES.load(PropFile);
 		} catch (IOException exc) {
+			logger.error("Exception in loadProperties method "+exc.getMessage());
 			exc.printStackTrace();
 			return false;
 		}
@@ -173,8 +174,9 @@ public class ShowInventoryTest {
 		try {
 			Thread.sleep(1000);
 		} catch (Exception ee) {
+			logger.error("Exception in printInventoryInfo method "+ee.getMessage());
 		}
-
+		
 		return osversionOnDevice;
 
 	}

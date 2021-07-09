@@ -138,7 +138,7 @@ public class BackUpAndRestoreController {
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getVendorStatus method "+e.getMessage());
 		}
 
 		return Response.status(200).entity(str).build();
@@ -257,7 +257,7 @@ public class BackUpAndRestoreController {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getBackUpSRList method "+e.getMessage());
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -311,7 +311,7 @@ public class BackUpAndRestoreController {
 			str = errorValidationRepository.findByErrorId("C3P_BR_001");
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getBaselineData method "+e.getMessage());
 		}
 
 		return Response.status(200).entity(str).build();
@@ -416,6 +416,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
+			logger.error("Exception in createConfigurationDcmBackUpAndRestore method "+e.getMessage());
 		}
 		return obj;
 
@@ -509,7 +510,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getAllBackUpRequest method "+e.getMessage());
 
 		}
 
@@ -590,7 +591,7 @@ public class BackUpAndRestoreController {
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in searchImportDashboard method "+e.getMessage());
 		}
 
 		return versioningModel;
@@ -750,7 +751,7 @@ public class BackUpAndRestoreController {
 
 		catch (Exception e) {
 			e.getStackTrace();
-			logger.error(e);
+			logger.error("Exception in batchBackUpAndRestore method "+e.getMessage());
 		}
 		return obj;
 
@@ -838,7 +839,7 @@ public class BackUpAndRestoreController {
 			detailsList = requestInfoDetailsRepositories.findByBatchId(batchId);
 
 		} catch (Exception e) {
-
+			logger.error("Exception in getSingleBatchRequest method "+e.getMessage());
 		}
 		jsonArray = new Gson().toJson(detailsList);
 		obj.put(new String("output"), jsonArray);
@@ -1018,7 +1019,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in batchConfig method "+e.getMessage());
 		}
 		return obj;
 
@@ -1181,7 +1182,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in batchTest method "+e.getMessage());
 		}
 		return obj;
 
@@ -1352,7 +1353,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in batchOsUpgradeRequest method "+e.getMessage());
 		}
 		return obj;
 
@@ -1374,7 +1375,7 @@ public class BackUpAndRestoreController {
 				model.add(site.getFamily());
 			});
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getAllFamily method "+e.getMessage());
 		}
 		return new ResponseEntity(model, HttpStatus.OK);
 	}
@@ -1399,7 +1400,7 @@ public class BackUpAndRestoreController {
 				model.add(site.getDisplayName());
 			});
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getAllOsToUpdate method "+e.getMessage());
 		}
 		return new ResponseEntity(model, HttpStatus.OK);
 	}
@@ -1513,7 +1514,7 @@ public class BackUpAndRestoreController {
 			obj.put("data", outputArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in searchOsUpgrade method "+e.getMessage());
 			obj.put("data", errorValidationRepository.findByErrorId("400"));
 		}
 		return new ResponseEntity(obj, HttpStatus.OK);
@@ -1637,7 +1638,7 @@ public class BackUpAndRestoreController {
 			obj.put("data", outputArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in filterOsUpgradeDashboard method "+e.getMessage());
 			obj.put("data", errorValidationRepository.findByErrorId("400"));
 		}
 
