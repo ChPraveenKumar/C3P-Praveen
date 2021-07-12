@@ -256,10 +256,12 @@ public class DeviceDiscrepancyService {
 			discrepancy.put("discrepancyType", "New");
 		}
 		discrepancy.put("discrepancyMsg", oidDisplayName);
-		if (action) {
+		
+		if (action) { 
 			discrepancy.put("action1", "Ignore");
-			discrepancy.put("action2", "Overwrite");
+			discrepancy.put("action2", "Overwrite"); 
 		}
+		 
 		JSONArray valueArray = new JSONArray();
 		JSONObject oldValueObject = new JSONObject();
 		oldValueObject.put("key", "Existing");
@@ -459,7 +461,7 @@ public class DeviceDiscrepancyService {
 					if (forkDiscrepancyResultEntity != null) {
 						logger.info(" forkDiscrepancyResultEntity.getFidChildOIDNo() ->"
 								+ forkDiscrepancyResultEntity.getFidChildOIDNo());
-						if ("Overwrite".equals(obj.get("Action"))) {
+						if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
 							forkDiscrepancyResultEntity
 									.setFidPreviousValue(forkDiscrepancyResultEntity.getFidExistingValue());
 							forkDiscrepancyResultEntity
@@ -475,37 +477,36 @@ public class DeviceDiscrepancyService {
 						isSucess = true;
 					}
 
-				} else {
+				} else if((obj.get("oid") != null && !obj.get("oid").equals(""))) {
 					// if child oid is null and empty fetch data from host tables
 					hostDiscrepancyResultEntity = hostDiscrepancyResultRepository.findDeviceHostDiscrepancy(
 							String.valueOf(deviceDiscovertEntity.getdId()), obj.get("oid").toString(), ipAddress);
 					if (hostDiscrepancyResultEntity != null) {
 						logger.info(" hostDiscrepancyResultEntity.getHidOIDNo() ->"
 								+ hostDiscrepancyResultEntity.getHidOIDNo());
-						if ("Overwrite".equals(obj.get("Action"))) {
-							hostDiscrepancyResultEntity
-									.setHidPreviousValue(hostDiscrepancyResultEntity.getHidExistingValue());
-							hostDiscrepancyResultEntity
-									.setHidExistingValue(hostDiscrepancyResultEntity.getHidDiscoverValue());
-							
-							MasterOIDEntity oidData = masterOIDRepository
-									.findByOidNoAndOidVendorAndOidNetworkTypeAndOidCategory(
-											hostDiscrepancyResultEntity.getHidOIDNo(),
-											deviceDiscovertEntity.getdVendor(), deviceDiscovertEntity.getdVNFSupport(),
-											"Host");
-							deviceDiscovertEntity = setDeviceData(oidData.getOidAttrib(), deviceDiscovertEntity,
-									hostDiscrepancyResultEntity.getHidDiscoverValue());
+						if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
+							setHostIdAndDeviceData(hostDiscrepancyResultEntity, deviceDiscovertEntity);
 						}
-						hostDiscrepancyResultEntity.setHidDiscrepancyFalg("0");
-						hostDiscrepancyResultEntity.setHidResolvedFalg("Y");
-						hostDiscrepancyResultEntity.setHidResolvedBy(logedInUserName);
-						hostDiscrepancyResultEntity.setHidUpdatedBy(logedInUserName);
-						hostDiscrepancyResultEntity.setHidResolvedTimestamp(Timestamp.valueOf(LocalDateTime.now()));
-						hostDiscrepancyResultEntity.setHidUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
-						hostDiscrepancyResultRepository.save(hostDiscrepancyResultEntity);
+						setHostDiscrepancyResult(hostDiscrepancyResultEntity, logedInUserName);
 						isSucess = true;
 					}
 
+				} else {
+					List<HostDiscrepancyResultEntity> listOfHostDiscrepancyResultEntity = hostDiscrepancyResultRepository
+							.findListOfDeviceHostDiscrepancy(String.valueOf(deviceDiscovertEntity.getdId()), ipAddress);
+					if (listOfHostDiscrepancyResultEntity != null) {
+						for (HostDiscrepancyResultEntity hostDiscrepancyResult : listOfHostDiscrepancyResultEntity) {
+							if ("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
+								setHostIdAndDeviceData(hostDiscrepancyResult, deviceDiscovertEntity);
+							} else if ("RejectAll".equalsIgnoreCase(obj.get("Action").toString())) {
+								deviceDiscovertEntity.setdDeComm("8");
+							}
+							setHostDiscrepancyResult(hostDiscrepancyResult, logedInUserName);
+							deviceDiscovertEntity.setdNewDevice(1);
+							isSucess = true;
+						}
+
+					}
 				}
 			}
 
@@ -517,14 +518,22 @@ public class DeviceDiscrepancyService {
 					deviceDiscovertEntity.setdDiscrepancy(discrepancys);
 					discoveryRepo.save(deviceDiscovertEntity);
 				}
-				if ("Overwrite".equals(obj.get("Action"))) {
+				if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
 					resultObj.put("msg", "Discrepancy overwritten successfully");
+				} else if("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
+					resultObj.put("msg", "Device is successfully inventorised");
+				} else if("RejectAll".equalsIgnoreCase(obj.get("Action").toString())) {
+					resultObj.put("msg", "This network element is marked as Rejected");
 				} else {
 					resultObj.put("msg", "Discrepancy ignored successfully");
 				}
 			} else {
-				if ("Overwrite".equals(obj.get("Action"))) {
+				if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
 					resultObj.put("msg", "Discrepancy overwritten is failed");
+				} else if("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
+					resultObj.put("msg", "Device is inventorisation failed");
+				} else if("RejectAll".equalsIgnoreCase(obj.get("Action").toString())) {
+					resultObj.put("msg", "Device Rejection failed");
 				} else {
 					resultObj.put("msg", "Discrepancy ignore is failed");
 				}
@@ -808,4 +817,28 @@ public class DeviceDiscrepancyService {
 		return reponseJson;
 	}
 
+	
+	private void setHostDiscrepancyResult(HostDiscrepancyResultEntity hostDiscrepancyResultEntity,
+			String logedInUserName) {
+		hostDiscrepancyResultEntity.setHidDiscrepancyFalg("0");
+		hostDiscrepancyResultEntity.setHidResolvedFalg("Y");
+		hostDiscrepancyResultEntity.setHidResolvedBy(logedInUserName);
+		hostDiscrepancyResultEntity.setHidUpdatedBy(logedInUserName);
+		hostDiscrepancyResultEntity.setHidResolvedTimestamp(Timestamp.valueOf(LocalDateTime.now()));
+		hostDiscrepancyResultEntity.setHidUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
+		hostDiscrepancyResultRepository.save(hostDiscrepancyResultEntity);
+	}
+	
+	private void setHostIdAndDeviceData(HostDiscrepancyResultEntity hostDiscrepancyResult,
+			DeviceDiscoveryEntity deviceDiscovertEntity) {
+		hostDiscrepancyResult.setHidPreviousValue(hostDiscrepancyResult.getHidExistingValue());
+		hostDiscrepancyResult.setHidExistingValue(hostDiscrepancyResult.getHidDiscoverValue());
+
+		MasterOIDEntity oidData = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkTypeAndOidCategory(
+				hostDiscrepancyResult.getHidOIDNo(), deviceDiscovertEntity.getdVendor(),
+				deviceDiscovertEntity.getdVNFSupport(), "Host");
+		deviceDiscovertEntity = setDeviceData(oidData.getOidAttrib(), deviceDiscovertEntity,
+				hostDiscrepancyResult.getHidDiscoverValue());
+	}
+	 
 }
