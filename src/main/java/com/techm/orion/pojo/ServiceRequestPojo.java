@@ -28,6 +28,14 @@ public class ServiceRequestPojo {
 	private String templateId;
 	private boolean baselinedFlag;
 	private String baselinedDate;
+	private boolean hasDeltaFlag;
+	public boolean isHasDeltaFlag() {
+		return hasDeltaFlag;
+	}
+
+	public void setHasDeltaFlag(boolean hasDeltaFlag) {
+		this.hasDeltaFlag = hasDeltaFlag;
+	}
 
 	public String getCustomer() {
 		return customer;

@@ -182,7 +182,16 @@ public class RequestInfoEntity implements Serializable {
 	@Column(name = "r_selected_file_features", nullable = false)
 	private String rSelectedFileFeatures;
 	
+	@Column(name = "r_has_delta_with_baseline")
+	private boolean rHasDeltaWithBaseline;
 
+	public boolean isrHasDeltaWithBaseline() {
+		return rHasDeltaWithBaseline;
+	}
+
+	public void setrHasDeltaWithBaseline(boolean rHasDeltaWithBaseline) {
+		this.rHasDeltaWithBaseline = rHasDeltaWithBaseline;
+	}
 
 	@Transient
 	private String backUpScheduleTime;
