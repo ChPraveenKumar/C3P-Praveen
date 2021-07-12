@@ -260,9 +260,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								OutputStream ops = channel.getOutputStream();
 
 								PrintStream ps = new PrintStream(ops, true);
-								logger.info("Channel Connected to machine " + host + " server");
-								channel.connect();
 								InputStream input = channel.getInputStream();
+								/*logger.info("Channel Connected to machine " + host + " server");
+								channel.connect();
+								
 								ps.println("show version");
 								try {
 									Thread.sleep(1000);
@@ -274,15 +275,15 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								 * 
 								 */
 
-								requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+								/*requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "1");
 								printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()));
 
-								value = prevalidationTestServiceImpl.PreValidation(requestinfo,
-										Double.toString(requestinfo.getRequestVersion()), null);
+								/*value = prevalidationTestServiceImpl.PreValidation(requestinfo,
+										Double.toString(requestinfo.getRequestVersion()), null);*/
 
-								if (value) {
+								//if (value) {
 									// changes for testing strategy
 									List<Boolean> results = null;
 									RequestInfoDao dao = new RequestInfoDao();
@@ -309,7 +310,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										for (int i = 0; i < finallistOfTests.size(); i++) {
 
 											// conduct and analyse the tests
-											ps.println("terminal length 0");
+											if("Cisco".equalsIgnoreCase(requestinfo.getVendor()))
+												ps.println("terminal length 0");
+											else if("Juniper".equalsIgnoreCase(requestinfo.getVendor()))
+												ps.println("cli");
 											ps.println(finallistOfTests.get(i).getTestCommand());
 											try {
 												Thread.sleep(6000);
@@ -332,9 +336,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 												}
 											}
 										}
-									} else {
+									/*} else {
 										// No new device prevalidation test added
-									}
+									}*/
 
 									/*
 									 * END
