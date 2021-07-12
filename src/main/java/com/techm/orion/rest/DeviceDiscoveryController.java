@@ -297,11 +297,11 @@ public class DeviceDiscoveryController implements Observer {
 				inventoryList.get(j).getdRole();
 
 				/* Update IsNewFlag */
-				int isNewDevice = inventoryList.get(j).getdNewDevice();
-				if (isNewDevice == 0) {
-					inventoryList.get(j).setdNewDevice(1);
-					deviceDiscoveryRepo.save(inventoryList.get(j));
-				}
+				//int isNewDevice = inventoryList.get(j).getdNewDevice();
+				/*
+				 * if (isNewDevice == 0) { inventoryList.get(j).setdNewDevice(1);
+				 * deviceDiscoveryRepo.save(inventoryList.get(j)); }
+				 */
 
 				JSONArray contactDetails = new JSONArray();
 				JSONObject detail = new JSONObject();
