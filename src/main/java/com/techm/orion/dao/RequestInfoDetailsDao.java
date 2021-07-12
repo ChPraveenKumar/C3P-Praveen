@@ -221,11 +221,11 @@ public class RequestInfoDetailsDao {
 				String baseLineFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
 						entity.getAlphanumericReqId() + "V"
 								+ Double.toString(entity.getRequestVersion())
-								+ "_CurrentVersionConfig.txt";
+								+ "_PreviousConfig.txt";
 				String currentRunningFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
 						request.getAlphanumericReqId() + "V"
 						+ Double.toString(request.getRequestVersion())
-						+ "_CurrentVersionConfig.txt";
+						+ "_PreviousConfig.txt";
 				if(baseLineFilePath!=null && currentRunningFilePath!=null)
 				{
 					//Call python service to fetch delta between two files
