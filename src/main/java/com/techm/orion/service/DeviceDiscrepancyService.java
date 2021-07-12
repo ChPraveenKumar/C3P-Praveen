@@ -461,7 +461,7 @@ public class DeviceDiscrepancyService {
 					if (forkDiscrepancyResultEntity != null) {
 						logger.info(" forkDiscrepancyResultEntity.getFidChildOIDNo() ->"
 								+ forkDiscrepancyResultEntity.getFidChildOIDNo());
-						if ("Overwrite".equals(obj.get("Action"))) {
+						if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
 							forkDiscrepancyResultEntity
 									.setFidPreviousValue(forkDiscrepancyResultEntity.getFidExistingValue());
 							forkDiscrepancyResultEntity
@@ -484,29 +484,29 @@ public class DeviceDiscrepancyService {
 					if (hostDiscrepancyResultEntity != null) {
 						logger.info(" hostDiscrepancyResultEntity.getHidOIDNo() ->"
 								+ hostDiscrepancyResultEntity.getHidOIDNo());
-						if ("Overwrite".equals(obj.get("Action"))) {
+						if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
 							setHostIdAndDeviceData(hostDiscrepancyResultEntity, deviceDiscovertEntity);
 						}
 						setHostDiscrepancyResult(hostDiscrepancyResultEntity, logedInUserName);
 						isSucess = true;
 					}
 
-				}else {
-					List<HostDiscrepancyResultEntity> listOfHostDiscrepancyResultEntity= hostDiscrepancyResultRepository.findListOfDeviceHostDiscrepancy(
-							String.valueOf(deviceDiscovertEntity.getdId()), ipAddress);
-					for (HostDiscrepancyResultEntity hostDiscrepancyResult : listOfHostDiscrepancyResultEntity) {
-						if ("AcceptAll".equals(obj.get("Action"))) {
-							setHostIdAndDeviceData(hostDiscrepancyResult, deviceDiscovertEntity);
-						} else if("RejectAll".equals(obj.get("Action"))) {
-							deviceDiscovertEntity.setdDeComm("8");
+				} else {
+					List<HostDiscrepancyResultEntity> listOfHostDiscrepancyResultEntity = hostDiscrepancyResultRepository
+							.findListOfDeviceHostDiscrepancy(String.valueOf(deviceDiscovertEntity.getdId()), ipAddress);
+					if (listOfHostDiscrepancyResultEntity != null) {
+						for (HostDiscrepancyResultEntity hostDiscrepancyResult : listOfHostDiscrepancyResultEntity) {
+							if ("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
+								setHostIdAndDeviceData(hostDiscrepancyResult, deviceDiscovertEntity);
+							} else if ("RejectAll".equalsIgnoreCase(obj.get("Action").toString())) {
+								deviceDiscovertEntity.setdDeComm("8");
+							}
+							setHostDiscrepancyResult(hostDiscrepancyResult, logedInUserName);
+							deviceDiscovertEntity.setdNewDevice(1);
+							isSucess = true;
 						}
-						setHostDiscrepancyResult(hostDiscrepancyResult, logedInUserName);
-						deviceDiscovertEntity.setdNewDevice(1);
-						//discoveryRepo.save(deviceDiscovertEntity);
-						
-						isSucess = true;
+
 					}
-					
 				}
 			}
 
@@ -518,21 +518,21 @@ public class DeviceDiscrepancyService {
 					deviceDiscovertEntity.setdDiscrepancy(discrepancys);
 					discoveryRepo.save(deviceDiscovertEntity);
 				}
-				if ("Overwrite".equals(obj.get("Action"))) {
+				if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
 					resultObj.put("msg", "Discrepancy overwritten successfully");
-				} else if("AcceptAll".equals(obj.get("Action"))) {
+				} else if("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
 					resultObj.put("msg", "Device is successfully inventorised");
-				} else if("RejectAll".equals(obj.get("Action"))) {
+				} else if("RejectAll".equalsIgnoreCase(obj.get("Action").toString())) {
 					resultObj.put("msg", "This network element is marked as Rejected");
 				} else {
 					resultObj.put("msg", "Discrepancy ignored successfully");
 				}
 			} else {
-				if ("Overwrite".equals(obj.get("Action"))) {
+				if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
 					resultObj.put("msg", "Discrepancy overwritten is failed");
-				} else if("AcceptAll".equals(obj.get("Action"))) {
+				} else if("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
 					resultObj.put("msg", "Device is inventorisation failed");
-				} else if("RejectAll".equals(obj.get("Action"))) {
+				} else if("RejectAll".equalsIgnoreCase(obj.get("Action").toString())) {
 					resultObj.put("msg", "Device Rejection failed");
 				} else {
 					resultObj.put("msg", "Discrepancy ignore is failed");
