@@ -74,7 +74,7 @@ public class GetCertificationTestData {
 					subObj.put("value", "");
 					subObjArray.add(subObj);
 				}
-				if (json2.containsKey("vendorTest")) {
+				/*if (json2.containsKey("vendorTest")) {
 					subObj = new JSONObject();
 					subObj.put("testName", "Vendor Test");
 					subObj.put("status", json2.get("vendorTest"));
@@ -153,7 +153,7 @@ public class GetCertificationTestData {
 					subObj.put("value", "");
 					subObjArray.add(subObj);
 	
-				}
+				}*/
 				if (json2.containsKey("throughputTest")) {
 					subObj = new JSONObject();
 					subObj.put("testName", "Throughput Test");

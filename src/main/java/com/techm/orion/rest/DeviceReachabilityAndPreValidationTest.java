@@ -242,25 +242,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								 * "c3pteam"; password = "csr1000v"; } else { user = userPojo.getUsername();
 								 * password = userPojo.getPassword(); }
 								 */
-								String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("portSSH");
-
-								// port="22";
-								session = jsch.getSession(user, host, Integer.parseInt(port));
-								Properties config = new Properties();
-								config.put("StrictHostKeyChecking", "no");
-								session.setConfig(config);
-								session.setPassword(password);
-								session.connect();
-								try {
-									Thread.sleep(10000);
-								} catch (Exception ee) {
-								}
-								channel = session.openChannel("shell");
-								OutputStream ops = channel.getOutputStream();
-
-								PrintStream ps = new PrintStream(ops, true);
-								InputStream input = channel.getInputStream();
+								
 								/*logger.info("Channel Connected to machine " + host + " server");
 								channel.connect();
 								
@@ -293,8 +275,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(),
 											requestinfo.getOs(), requestinfo.getOsVersion(), requestinfo.getVendor(),
 											requestinfo.getRegion(), "Device Prevalidation");
-									List<TestDetail> selectedTests = dao.findSelectedTests(
-											requestinfo.getAlphanumericReqId(), "Device Prevalidation", version);
+									List<TestDetail> selectedTests = listOfTests;
 									if (selectedTests.size() > 0) {
 										for (int i = 0; i < listOfTests.size(); i++) {
 											for (int j = 0; j < selectedTests.size(); j++) {
@@ -306,15 +287,40 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										}
 									}
 									if (finallistOfTests.size() > 0) {
+										value=true;
 										results = new ArrayList<Boolean>();
 										for (int i = 0; i < finallistOfTests.size(); i++) {
 
+											String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+													.getProperty("portSSH");
+
+											// port="22";
+											session = jsch.getSession(user, host, Integer.parseInt(port));
+											Properties config = new Properties();
+											config.put("StrictHostKeyChecking", "no");
+											session.setConfig(config);
+											session.setPassword(password);
+											session.connect();
+											try {
+												Thread.sleep(10000);
+											} catch (Exception ee) {
+											}
+											channel = session.openChannel("shell");
+											OutputStream ops = channel.getOutputStream();
+
+											PrintStream ps = new PrintStream(ops, true);
+											InputStream input = channel.getInputStream();
+											channel.connect();
 											// conduct and analyse the tests
 											if("Cisco".equalsIgnoreCase(requestinfo.getVendor()))
 												ps.println("terminal length 0");
 											else if("Juniper".equalsIgnoreCase(requestinfo.getVendor()))
 												ps.println("cli");
 											ps.println(finallistOfTests.get(i).getTestCommand());
+											try {
+												Thread.sleep(1000);
+											} catch (Exception ee) {
+											}
 											try {
 												Thread.sleep(6000);
 											} catch (Exception ee) {
@@ -327,14 +333,31 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 													Double.toString(requestinfo.getRequestVersion()),
 													finallistOfTests.get(i), "Device Prevalidation");
 											results.add(res);
+											input.close();
 										}
 										if (results != null) {
 											for (int i = 0; i < results.size(); i++) {
-												if (!results.get(i)) {
+												if (results.get(i)== false) {
 													value = false;
 													break;
 												}
+										
 											}
+										}
+										if(value == true)
+										{
+											requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()), "1");
+											requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()), "Application_test", "1", "Success");
+											
+										}
+										else
+										{
+											requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+											requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+													Double.toString(requestinfo.getRequestVersion()), "2");
 										}
 									/*} else {
 										// No new device prevalidation test added
@@ -346,7 +369,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									 */
 								}
 								// value=true;
-								input.close();
+								
 								channel.disconnect();
 								session.disconnect();
 
@@ -642,6 +665,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 						}
 
+						requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "1");
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 
