@@ -51,6 +51,7 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
+import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.ConfigurationManagmentService;
@@ -114,6 +115,9 @@ public class ConfigurationManagement {
 	
 	@Autowired
 	private TemplateManagementDao templateManagementDao ;
+	
+	@Autowired
+	private TestDetailsRepository testDetailsRepository;
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -370,7 +374,24 @@ public class ConfigurationManagement {
 					
 				}
 			}
-
+			//Logic to save system prevalidation tests which will not come from ui
+			
+			List<TestDetail> systprevaltests= testDetailsRepository.getC3PAdminTesListData(configReqToSendToC3pCode.getFamily(), configReqToSendToC3pCode.getOs(), configReqToSendToC3pCode.getRegion(), configReqToSendToC3pCode.getOsVersion(), configReqToSendToC3pCode.getVendor(),
+					configReqToSendToC3pCode.getNetworkType());
+			for(TestDetail tst:systprevaltests)
+			{
+				JSONObject prevaljsonobj=new JSONObject();
+				JSONArray bundleArray= new JSONArray();
+				prevaljsonobj.put("testCategory", tst.getTestCategory());
+				prevaljsonobj.put("selected", 1);
+				prevaljsonobj.put("testName", tst.getTestName());
+				String testBundle="System Prevalidation";
+				bundleArray.add(testBundle);
+				prevaljsonobj.put("bundleName",bundleArray);
+				toSaveArray.add(prevaljsonobj);
+			}
+			
+			System.out.println(""+systprevaltests);
 			// to get the scheduled time for the requestID
 			if (json.containsKey("scheduledTime")) {
 				configReqToSendToC3pCode.setSceheduledTime(json.get("scheduledTime").toString());

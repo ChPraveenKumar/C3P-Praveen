@@ -206,9 +206,41 @@ public class GetReportData implements Observer {
 				
 			}
 			else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")) {
-				List<PreValidateTest> preValidateTestList = requestInfoDao.getPreValidateTestData(requestinfo.getAlphanumericReqId(),requestinfo.getRequestVersion().toString());
 				org.json.simple.JSONArray prevalidateArray = new org.json.simple.JSONArray();
-				//for(int i=0;i<preValidateTestList.size();i++) { This is a temporary fix as entries in certificationtestvalidation table are duplicated because of a bug, need to fix in upcoming release.
+				org.json.simple.JSONArray outArray = requestInfoDao.getDynamicTestResultCustomerReport(createConfigRequestDCM.getRequestId(), createConfigRequestDCM.getVersion_report(),"Device Prevalidation"); 
+				JSONObject vendorObj = new JSONObject();
+				JSONObject modelObj = new JSONObject();
+				JSONObject iosversionObj = new JSONObject();
+				for(int i=0;i<outArray.size();i++)
+				{
+					JSONObject obj1=(JSONObject) outArray.get(i);
+					if(obj1.get("testname").toString().contains("vendor"))
+					{
+						vendorObj.put("testName", "vendor");
+						vendorObj.put("userInput", requestinfo.getVendor());
+						vendorObj.put("cpeValue", obj1.get("CollectedValue").toString());
+					}
+					else if(obj1.get("testname").toString().contains("model"))
+					{
+						modelObj.put("testName", "model");
+						modelObj.put("userInput", requestinfo.getModel());
+						modelObj.put("cpeValue", obj1.get("CollectedValue").toString());
+					}
+					else if(obj1.get("testname").toString().contains("osversion"))
+					{
+						iosversionObj.put("testName", "osversion");
+						iosversionObj.put("userInput", requestinfo.getOsVersion());
+						iosversionObj.put("cpeValue", obj1.get("CollectedValue").toString());
+					}
+				}
+				
+				prevalidateArray.add(vendorObj);
+				prevalidateArray.add(modelObj);
+				prevalidateArray.add(iosversionObj);
+			
+			jsonMessage = prevalidateArray.toString();
+				/*List<PreValidateTest> preValidateTestList = requestInfoDao.getPreValidateTestData(requestinfo.getAlphanumericReqId(),requestinfo.getRequestVersion().toString());
+				org.json.simple.JSONArray prevalidateArray = new org.json.simple.JSONArray();
 					JSONObject vendorObj = new JSONObject();
 					JSONObject modelObj = new JSONObject();
 					JSONObject iosversionObj = new JSONObject();
@@ -251,8 +283,8 @@ public class GetReportData implements Observer {
 					prevalidateArray.add(vendorObj);
 					prevalidateArray.add(modelObj);
 					prevalidateArray.add(iosversionObj);
-				//}
-				jsonMessage = prevalidateArray.toString();
+				
+				jsonMessage = prevalidateArray.toString();*/
 			}
 			else {
 				jsonMessage = reportDetailsService.getDetailsForReport(createConfigRequestDCM, requestinfo);

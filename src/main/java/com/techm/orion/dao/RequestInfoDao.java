@@ -7117,7 +7117,7 @@ public class RequestInfoDao {
 			reachabilityObj.put("outcome", "N/A");
 			reachabilityObj.put("notes", "N/A");
 		}
-		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
+		/*if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
 			iosVersion.put("testname", "OS Version");
 			iosVersion.put("status", "Failed");
 			iosVersion.put("outcome", "");
@@ -7190,11 +7190,11 @@ public class RequestInfoDao {
 			vendorTest.put("notes", "N/A");
 			vendorTest.put("CollectedValue", "N/A");
 			vendorTest.put("EvaluationCriteria", "N/A");
-		}
+		}*/
 		prevalidationArray.add(reachabilityObj);
-		prevalidationArray.add(vendorTest);
-		prevalidationArray.add(deviceModel);
-		prevalidationArray.add(iosVersion);
+		//prevalidationArray.add(vendorTest);
+		//prevalidationArray.add(deviceModel);
+		//prevalidationArray.add(iosVersion);
 
 		org.json.simple.JSONArray networkArray = new org.json.simple.JSONArray();
 
@@ -7206,51 +7206,7 @@ public class RequestInfoDao {
 		certificationTestPojo2 = getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "networkTest");
-		if (certificationTestPojo2.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
-			networkIfObj.put("testname", "Network Interface Status");
-			networkIfObj.put("status", "Passed");
-			networkIfObj.put("outcome", "");
-			networkIfObj.put("notes", "N/A");
-		} else {
-			networkIfObj = null;
-		}
-		if (certificationTestPojo2.getShowInterfaceCmd().equalsIgnoreCase("1")) {
-			waninterface.put("testname", "Wan Interface");
-			waninterface.put("status", "Passed");
-			waninterface.put("outcome", "");
-			waninterface.put("notes", "N/A");
-		} else {
-			waninterface = null;
-		}
-		if (certificationTestPojo2.getShowVersionCmd().equalsIgnoreCase("1")) {
-			networkPlatformIOS.put("testname", "Network Platform IOS");
-			networkPlatformIOS.put("status", "Passed");
-			networkPlatformIOS.put("outcome", "");
-			networkPlatformIOS.put("notes", "N/A");
-		} else {
-			networkPlatformIOS = null;
-		}
-		if (certificationTestPojo2.getShowIpBgpSummaryCmd().equalsIgnoreCase(
-				"1")) {
-			bgpneighbour.put("testname", "BGP Neighbour");
-			bgpneighbour.put("status", "Passed");
-			bgpneighbour.put("outcome", "");
-			bgpneighbour.put("notes", "N/A");
-		} else {
-			bgpneighbour = null;
-		}
-		/*if (bgpneighbour != null) {
-			networkArray.add(bgpneighbour);
-		}
-		if (waninterface != null) {
-			networkArray.add(waninterface);
-		}
-		if (networkPlatformIOS != null) {
-			networkArray.add(networkPlatformIOS);
-		}
-		if (networkIfObj != null) {
-			networkArray.add(networkIfObj);
-		}*/
+		
 		org.json.simple.JSONArray healthArray = new org.json.simple.JSONArray();
 
 		org.json.simple.JSONObject throughputObj = new org.json.simple.JSONObject();
