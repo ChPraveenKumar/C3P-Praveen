@@ -30,9 +30,7 @@ public interface HostDiscrepancyResultRepository extends JpaRepository<HostDiscr
 	@Query(value = "SELECT * FROM c3p_t_host_inv_discrepancy where device_id =:deviceId And hid_oid_no =:odNo And hid_ip_address =:ipAddress", nativeQuery = true)
 	HostDiscrepancyResultEntity findDeviceHostDiscrepancy(@Param("deviceId") String deviceId,
 			@Param("odNo") String odNo, @Param("ipAddress") String ipAddress);
-	
-	@Query(value = "SELECT * FROM c3p_t_host_inv_discrepancy where device_id =:deviceId And hid_ip_address =:ipAddress", nativeQuery = true)
-	List<HostDiscrepancyResultEntity> findListOfDeviceHostDiscrepancy(@Param("deviceId") String deviceId,
-			@Param("ipAddress") String ipAddress);
 
+	@Query(value = "SELECT * FROM c3p_t_host_inv_discrepancy where hid_discrepancy_flag between '1' and '3' and hid_resolved_flag='N' and device_id =:deviceId and hid_in_scope ='Y'", nativeQuery = true)
+	List<HostDiscrepancyResultEntity> findListOfHostDiscrepancyValueByDeviceId(@Param("deviceId") String deviceId);
 }

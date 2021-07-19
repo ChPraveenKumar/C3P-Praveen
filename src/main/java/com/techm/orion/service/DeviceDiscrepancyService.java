@@ -462,18 +462,9 @@ public class DeviceDiscrepancyService {
 						logger.info(" forkDiscrepancyResultEntity.getFidChildOIDNo() ->"
 								+ forkDiscrepancyResultEntity.getFidChildOIDNo());
 						if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
-							forkDiscrepancyResultEntity
-									.setFidPreviousValue(forkDiscrepancyResultEntity.getFidExistingValue());
-							forkDiscrepancyResultEntity
-									.setFidExistingValue(forkDiscrepancyResultEntity.getFidDiscoverValue());
+							setForkIdAndDeviceData(forkDiscrepancyResultEntity, deviceDiscovertEntity);
 						}
-						forkDiscrepancyResultEntity.setFidDiscrepancyFalg("0");
-						forkDiscrepancyResultEntity.setFidResolvedFalg("Y");
-						forkDiscrepancyResultEntity.setFidResolvedTimestamp(Timestamp.valueOf(LocalDateTime.now()));
-						forkDiscrepancyResultEntity.setFidResolvedBy(logedInUserName);
-						forkDiscrepancyResultEntity.setFidUpdatedBy(logedInUserName);
-						forkDiscrepancyResultEntity.setFidUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
-						forkDiscrepancyResultRepository.save(forkDiscrepancyResultEntity);
+						setForkDiscrepancyResult(forkDiscrepancyResultEntity, logedInUserName);
 						isSucess = true;
 					}
 
@@ -493,7 +484,7 @@ public class DeviceDiscrepancyService {
 
 				} else {
 					List<HostDiscrepancyResultEntity> listOfHostDiscrepancyResultEntity = hostDiscrepancyResultRepository
-							.findListOfDeviceHostDiscrepancy(String.valueOf(deviceDiscovertEntity.getdId()), ipAddress);
+							.findListOfHostDiscrepancyValueByDeviceId(String.valueOf(deviceDiscovertEntity.getdId()));
 					if (listOfHostDiscrepancyResultEntity != null) {
 						for (HostDiscrepancyResultEntity hostDiscrepancyResult : listOfHostDiscrepancyResultEntity) {
 							if ("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
@@ -502,11 +493,23 @@ public class DeviceDiscrepancyService {
 								deviceDiscovertEntity.setdDeComm("8");
 							}
 							setHostDiscrepancyResult(hostDiscrepancyResult, logedInUserName);
-							deviceDiscovertEntity.setdNewDevice(1);
-							isSucess = true;
 						}
-
 					}
+
+					List<ForkDiscrepancyResultEntity> listOfForkDiscrepancyResultEntity = forkDiscrepancyResultRepository
+							.findListOfHostDiscrepancyValueByDeviceId(String.valueOf(deviceDiscovertEntity.getdId()));
+					if (listOfForkDiscrepancyResultEntity != null) {
+						for (ForkDiscrepancyResultEntity forkDiscrepancyResult : listOfForkDiscrepancyResultEntity) {
+							if ("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
+								setForkIdAndDeviceData(forkDiscrepancyResult, deviceDiscovertEntity);
+							} else if ("RejectAll".equalsIgnoreCase(obj.get("Action").toString())) {
+								deviceDiscovertEntity.setdDeComm("8");
+							}
+							setForkDiscrepancyResult(forkDiscrepancyResult, logedInUserName);
+						}
+					}
+					deviceDiscovertEntity.setdNewDevice(1);
+					isSucess = true;
 				}
 			}
 
@@ -514,19 +517,23 @@ public class DeviceDiscrepancyService {
 			if (isSucess) {
 				int discrepancys = deviceDiscovertEntity.getdDiscrepancy();
 				if (discrepancys > 0) {
-					discrepancys = discrepancys - 1;
+					if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
+						discrepancys = discrepancys - 1;
+						resultObj.put("msg", "Discrepancy overwritten successfully");
+					} else if("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
+						discrepancys = 0;
+						resultObj.put("msg", "Device is successfully inventorised");
+					} else if("RejectAll".equalsIgnoreCase(obj.get("Action").toString())) {
+						discrepancys = 0;
+						resultObj.put("msg", "This network element is marked as Rejected");
+					} else {
+						discrepancys = discrepancys - 1;
+						resultObj.put("msg", "Discrepancy ignored successfully");
+					}
 					deviceDiscovertEntity.setdDiscrepancy(discrepancys);
 					discoveryRepo.save(deviceDiscovertEntity);
 				}
-				if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
-					resultObj.put("msg", "Discrepancy overwritten successfully");
-				} else if("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
-					resultObj.put("msg", "Device is successfully inventorised");
-				} else if("RejectAll".equalsIgnoreCase(obj.get("Action").toString())) {
-					resultObj.put("msg", "This network element is marked as Rejected");
-				} else {
-					resultObj.put("msg", "Discrepancy ignored successfully");
-				}
+				
 			} else {
 				if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
 					resultObj.put("msg", "Discrepancy overwritten is failed");
@@ -828,7 +835,18 @@ public class DeviceDiscrepancyService {
 		hostDiscrepancyResultEntity.setHidUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
 		hostDiscrepancyResultRepository.save(hostDiscrepancyResultEntity);
 	}
-	
+
+	private void setForkDiscrepancyResult(ForkDiscrepancyResultEntity forkDiscrepancyResultEntity,
+			String logedInUserName) {
+		forkDiscrepancyResultEntity.setFidDiscrepancyFalg("0");
+		forkDiscrepancyResultEntity.setFidResolvedFalg("Y");
+		forkDiscrepancyResultEntity.setFidResolvedTimestamp(Timestamp.valueOf(LocalDateTime.now()));
+		forkDiscrepancyResultEntity.setFidResolvedBy(logedInUserName);
+		forkDiscrepancyResultEntity.setFidUpdatedBy(logedInUserName);
+		forkDiscrepancyResultEntity.setFidUpdateDate(Timestamp.valueOf(LocalDateTime.now()));
+		forkDiscrepancyResultRepository.save(forkDiscrepancyResultEntity);
+	}
+
 	private void setHostIdAndDeviceData(HostDiscrepancyResultEntity hostDiscrepancyResult,
 			DeviceDiscoveryEntity deviceDiscovertEntity) {
 		hostDiscrepancyResult.setHidPreviousValue(hostDiscrepancyResult.getHidExistingValue());
@@ -840,5 +858,12 @@ public class DeviceDiscrepancyService {
 		deviceDiscovertEntity = setDeviceData(oidData.getOidAttrib(), deviceDiscovertEntity,
 				hostDiscrepancyResult.getHidDiscoverValue());
 	}
-	 
+
+	private void setForkIdAndDeviceData(ForkDiscrepancyResultEntity forkDiscrepancyResult,
+			DeviceDiscoveryEntity deviceDiscovertEntity) {
+		forkDiscrepancyResult.setFidPreviousValue(forkDiscrepancyResult.getFidExistingValue());
+		forkDiscrepancyResult.setFidExistingValue(forkDiscrepancyResult.getFidDiscoverValue());
+
+	}
+
 }
