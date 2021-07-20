@@ -196,7 +196,8 @@ public class OthersCheckTestValidation extends Thread {
 											else
 											{
 												// conduct and analyse the tests
-												ps.println("terminal length 0");
+												ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
+//												ps.println("terminal length 0");
 												ps.println(finallistOfTests.get(i).getTestCommand());
 												try {
 													Thread.sleep(8000);

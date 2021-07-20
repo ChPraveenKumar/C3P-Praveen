@@ -2085,7 +2085,7 @@ public class ConfigMngmntService implements Observer {
 						cammandByTemplate = configurationManagmentService
 								.setReplicationFeatureData(cammandByTemplate,
 										replicationArray,
-										requestInfoPojo.getVendor());
+										requestInfoPojo);
 
 					} else {
 						// No TemplateId and No Feature Replication
@@ -2094,13 +2094,11 @@ public class ConfigMngmntService implements Observer {
 										requestInfoPojo.getVendor(), features);
 						cammandByTemplate = configurationManagmentService
 								.setFeatureData(cammandByTemplate, attribJson);
-						List<VendorCommandEntity> vendorComandList = vendorCommandRepository
-								.findAllByVcVendorName(requestInfoPojo
-										.getVendor());
+						List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestInfoPojo.getVendor(),requestInfoPojo.getNetworkType(),requestInfoPojo.getOs(),"CC");
 						if (!vendorComandList.isEmpty()) {
-							vendorComandList.sort((VendorCommandEntity c1,
-									VendorCommandEntity c2) -> c2
-									.getVcParentId() - c1.getVcParentId());
+//							vendorComandList.sort((VendorCommandEntity c1,
+//									VendorCommandEntity c2) -> c2
+//									.getVcParentId() - c1.getVcParentId());
 							String previous = null;
 							for (VendorCommandEntity vendorComand : vendorComandList) {
 								if (vendorComand.getVcRepetition() != null) {

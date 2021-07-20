@@ -38,6 +38,7 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.pojo.CreateConfigRequest;
@@ -60,6 +61,9 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 	@Autowired
 	private RequestInfoDao requestInfoDao ;
 	
+	@Autowired
+	private RequestInfoDetailsDao requestInfoDetailsDao;
+		
 	public boolean getRouterConfig(CreateConfigRequest configRequest, String routerVersionType) throws IOException {
 		
 		InvokeFtl invokeFtl = new InvokeFtl();
@@ -380,7 +384,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 	}
 
-	public boolean getRouterConfig(RequestInfoPojo configRequest, String routerVersionType) {
+	public boolean getRouterConfig(RequestInfoPojo configRequest, String routerVersionType,Boolean isStartUp) {
 		
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
@@ -422,8 +426,9 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				logger.info("Channel Connected to machine " + host + " server");
 				channel.connect();
 				InputStream input = channel.getInputStream();
-				ps.println("terminal length 0");
-				ps.println("show run");
+				ps = requestInfoDetailsDao.setCommandStream(ps,configRequest,"backup",isStartUp);
+//				ps.println("terminal length 0");
+//				ps.println("show run");
 				try {
 					Thread.sleep(3000);
 				} catch (Exception ee) {
@@ -464,7 +469,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 	}
 
 	
-	public boolean getRouterConfigStartUp(RequestInfoPojo configRequest, String routerVersionType) {
+	public boolean getRouterConfigStartUp(RequestInfoPojo configRequest, String routerVersionType,Boolean isStartUp) {
 		
 		InvokeFtl invokeFtl = new InvokeFtl();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
@@ -505,8 +510,9 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 					logger.info("Channel Connected to machine " + host + " server");
 					channel.connect();
 					InputStream input = channel.getInputStream();
-					ps.println("terminal length 0");
-					ps.println("show start");
+					ps = requestInfoDetailsDao.setCommandStream(ps,configRequest,"backup",isStartUp);
+//					ps.println("terminal length 0");
+//					ps.println("show start");
 					try {
 						Thread.sleep(3000);
 					} catch (Exception ee) {

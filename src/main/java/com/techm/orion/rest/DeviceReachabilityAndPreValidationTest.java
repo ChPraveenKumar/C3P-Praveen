@@ -314,10 +314,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 											InputStream input = channel.getInputStream();
 											channel.connect();
 											// conduct and analyse the tests
-											if("Cisco".equalsIgnoreCase(requestinfo.getVendor()))
-												ps.println("terminal length 0");
-											else if("Juniper".equalsIgnoreCase(requestinfo.getVendor()))
-												ps.println("cli");
+											ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 											ps.println(finallistOfTests.get(i).getTestCommand());
 											try {
 												Thread.sleep(1000);
@@ -351,7 +348,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 											requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 													Double.toString(requestinfo.getRequestVersion()), "1");
 											requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-													Double.toString(requestinfo.getRequestVersion()), "Application_test", "1", "Success");
+													Double.toString(requestinfo.getRequestVersion()), "Application_test", "1", "In Progress");
 											
 										}
 										else

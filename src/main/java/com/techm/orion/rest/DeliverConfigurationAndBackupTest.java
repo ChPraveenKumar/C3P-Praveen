@@ -558,7 +558,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							// to save the backup and deliver the
 							// configuration(configuration in the router)
 							boolean isCheck = bckupConfigService
-									.getRouterConfig(requestinfo, "previous");
+									.getRouterConfig(requestinfo, "previous",false);
 							boolean isCheck1 = false;
 							String flag ="2", status ="Failure";
 
@@ -568,7 +568,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 									isCheck1 = bckupConfigService
 											.getRouterConfigStartUp(
-													requestinfo, "startup");
+													requestinfo, "startup",isStartUp);
 
 								} catch (Exception ee) {
 								}
@@ -1058,7 +1058,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						// get file from vnf config requests folder
 						// pass file path to vnf helper class push on device
 						// method.
-						bckupConfigService.getRouterConfig(requestinfo, "previous");
+						bckupConfigService.getRouterConfig(requestinfo, "previous",isStartUp);
 
 						boolean result = helper.pushOnVnfDevice(path,routerCredential,requestinfo.getManagementIp());
 						if (result) {
@@ -1076,7 +1076,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 													.getRequestVersion())
 											+ "_deliveredConfig.txt", response);
 
-							bckupConfigService.getRouterConfig(requestinfo, "current");
+							bckupConfigService.getRouterConfig(requestinfo, "current",isStartUp);
 
 							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double

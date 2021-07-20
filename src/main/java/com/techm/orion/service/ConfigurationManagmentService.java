@@ -140,11 +140,11 @@ public class ConfigurationManagmentService {
 					if (requestJson.get("replication") != null) {
 						createReplicationFinalTemplate(cammandByTemplate, templateAttribute,
 								requestInfoData.getTemplateID(), (JSONArray) requestJson.get("replication"),
-								requestInfoData.getVendor());
+								requestInfoData);
 					}
 				} else {
 					// TemplateId without feature Replication
-					cammandByTemplate = setcammandByTemplate(cammandByTemplate, requestInfoData.getVendor());
+					cammandByTemplate = setcammandByTemplate(cammandByTemplate, requestInfoData);
 					invokeFtl.createFinalTemplate(null, cammandByTemplate, null, templateAttribute,
 							requestInfoData.getTemplateID());
 				}
@@ -159,17 +159,16 @@ public class ConfigurationManagmentService {
 					cammandByTemplate = getCommandsByMasterFeature(requestInfoData.getVendor(), features);
 					cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
 					cammandByTemplate = setReplicationFeatureData(cammandByTemplate,
-							(JSONArray) requestJson.get("replication"), requestInfoData.getVendor());
+							(JSONArray) requestJson.get("replication"), requestInfoData);
 
 				} else {
 					// No TemplateId and No Feature Replication
 					cammandByTemplate = getCommandsByMasterFeature(requestInfoData.getVendor(), features);
 					cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
-					List<VendorCommandEntity> vendorComandList = vendorCommandRepository
-							.findAllByVcVendorName(requestInfoData.getVendor());
+					List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestInfoData.getVendor(),requestInfoData.getNetworkType(),requestInfoData.getOs(),"CC");
 					if (!vendorComandList.isEmpty()) {
-						vendorComandList.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId()
-								- c1.getVcParentId());
+//						vendorComandList.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId()
+//								- c1.getVcParentId());
 						String previous = null;
 						for (VendorCommandEntity vendorComand : vendorComandList) {
 							if (vendorComand.getVcRepetition() != null) {
@@ -584,7 +583,7 @@ public class ConfigurationManagmentService {
 
 	public void createReplicationFinalTemplate(List<CommandPojo> cammandByTemplate,
 			List<AttribCreateConfigPojo> templateAttribute, String templateID, JSONArray featureReplactionArray,
-			String vendor) {
+			RequestInfoPojo requestInfoData) {
 		// set Template attribute and sort with position
 		String s = ")!" + '"' + '"' + "}";
 		if(templateID.contains("[")|| templateID.contains("]"))
@@ -619,7 +618,7 @@ public class ConfigurationManagmentService {
 				}
 			}
 		}
-		cammandByTemplate = setcammandByTemplate(cammandByTemplate, vendor);
+		cammandByTemplate = setcammandByTemplate(cammandByTemplate, requestInfoData);
 		logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
 		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateID,
 				invokeFtl.setCommandPosition(null, cammandByTemplate));
@@ -662,15 +661,15 @@ public class ConfigurationManagmentService {
 
 	// set Replicate Feature
 	public List<CommandPojo> setReplicationFeatureData(List<CommandPojo> cammandByTemplate,
-			JSONArray featureReplactionArray, String vendor) {
+			JSONArray featureReplactionArray, RequestInfoPojo requestInfoData) {
 
 		int position = 0;
 		int tempCount = 1;
 		String preValue = null;
-		List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorName(vendor);
+		List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestInfoData.getVendor(),requestInfoData.getNetworkType(),requestInfoData.getOs(),"CC");
 		if (!vendorComandList.isEmpty()) {
-			vendorComandList
-					.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId() - c1.getVcParentId());
+//			vendorComandList
+//					.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId() - c1.getVcParentId());
 		}
 		if (featureReplactionArray != null && !featureReplactionArray.isEmpty()) {
 			for (int i = 0; i < featureReplactionArray.size(); i++) {
@@ -810,14 +809,14 @@ public class ConfigurationManagmentService {
 		return commandsByFeatureData;
 	}
 
-	public List<CommandPojo> setcammandByTemplate(List<CommandPojo> cammandByTemplate, String vendor) {
+	public List<CommandPojo> setcammandByTemplate(List<CommandPojo> cammandByTemplate, RequestInfoPojo requestInfoData) {
 		List<CommandPojo> finalCommandList = new ArrayList<>();
 		cammandByTemplate.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
-		List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorName(vendor);
+		List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestInfoData.getVendor(),requestInfoData.getNetworkType(),requestInfoData.getOs(),"CC");
 		if (!vendorComandList.isEmpty()) {
 			int count = 1;
-			vendorComandList
-					.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId() - c1.getVcParentId());
+//			vendorComandList
+//					.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId() - c1.getVcParentId());
 			for (VendorCommandEntity vendorComand : vendorComandList) {
 				if (vendorComandList.size() == 1) {
 					finalCommandList.addAll(setSpecifcComandForTemplate(vendorComand, cammandByTemplate));
