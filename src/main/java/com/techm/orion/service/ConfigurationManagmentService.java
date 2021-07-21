@@ -3,6 +3,7 @@ package com.techm.orion.service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
@@ -167,6 +168,7 @@ public class ConfigurationManagmentService {
 					cammandByTemplate = setFeatureData(cammandByTemplate, attribJson);
 					List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestInfoData.getVendor(),requestInfoData.getNetworkType(),requestInfoData.getOs(),"CC");
 					if (!vendorComandList.isEmpty()) {
+						vendorComandList.sort(Comparator.comparing(VendorCommandEntity::getVcParentId).reversed());
 //						vendorComandList.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId()
 //								- c1.getVcParentId());
 						String previous = null;
@@ -668,8 +670,8 @@ public class ConfigurationManagmentService {
 		String preValue = null;
 		List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestInfoData.getVendor(),requestInfoData.getNetworkType(),requestInfoData.getOs(),"CC");
 		if (!vendorComandList.isEmpty()) {
-//			vendorComandList
-//					.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId() - c1.getVcParentId());
+			vendorComandList.sort(Comparator.comparing(VendorCommandEntity::getVcParentId).reversed());
+					
 		}
 		if (featureReplactionArray != null && !featureReplactionArray.isEmpty()) {
 			for (int i = 0; i < featureReplactionArray.size(); i++) {
@@ -725,7 +727,7 @@ public class ConfigurationManagmentService {
 			}
 			for (VendorCommandEntity vendorComand : vendorComandList) {
 				if (vendorComandList.size() > 1) {
-					if (vendorComand.getVcRepetition() != null) {
+					if (vendorComand.getVcRepetition() != null && !vendorComand.getVcRepetition().isEmpty()) {
 						preValue = vendorComand.getVcEnd();
 					}
 					if (vendorComand.getVcRepetition() != null && !"RBEF".equals(vendorComand.getVcRepetition())
@@ -815,6 +817,7 @@ public class ConfigurationManagmentService {
 		List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestInfoData.getVendor(),requestInfoData.getNetworkType(),requestInfoData.getOs(),"CC");
 		if (!vendorComandList.isEmpty()) {
 			int count = 1;
+			vendorComandList.sort(Comparator.comparing(VendorCommandEntity::getVcParentId).reversed());
 //			vendorComandList
 //					.sort((VendorCommandEntity c1, VendorCommandEntity c2) -> c2.getVcParentId() - c1.getVcParentId());
 			for (VendorCommandEntity vendorComand : vendorComandList) {

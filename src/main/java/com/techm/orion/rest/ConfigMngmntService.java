@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -2096,9 +2097,7 @@ public class ConfigMngmntService implements Observer {
 								.setFeatureData(cammandByTemplate, attribJson);
 						List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestInfoPojo.getVendor(),requestInfoPojo.getNetworkType(),requestInfoPojo.getOs(),"CC");
 						if (!vendorComandList.isEmpty()) {
-//							vendorComandList.sort((VendorCommandEntity c1,
-//									VendorCommandEntity c2) -> c2
-//									.getVcParentId() - c1.getVcParentId());
+							vendorComandList.sort(Comparator.comparing(VendorCommandEntity::getVcParentId).reversed());
 							String previous = null;
 							for (VendorCommandEntity vendorComand : vendorComandList) {
 								if (vendorComand.getVcRepetition() != null) {
