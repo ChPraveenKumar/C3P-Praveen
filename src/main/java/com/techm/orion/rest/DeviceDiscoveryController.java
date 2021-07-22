@@ -304,7 +304,9 @@ public class DeviceDiscoveryController implements Observer {
 				inventoryList.get(j).getdManagedBy();
 				inventoryList.get(j).getdManagedServicesType();
 				inventoryList.get(j).getdLifeCycleState();
-				inventoryList.get(j).getdRole();
+				if(inventoryList.get(j).getdRole()==null) {
+					inventoryList.get(j).setdRole("Not Available");
+				}
 				inventoryList.get(j).getdPowerSupply();
 				inventoryList.get(j).getCustSiteId().getcSiteAddressLine1();
 				inventoryList.get(j).getCustSiteId().getcSIteAddressLine2();
