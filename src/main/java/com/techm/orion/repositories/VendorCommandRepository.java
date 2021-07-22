@@ -11,9 +11,5 @@ import com.techm.orion.entitybeans.VendorCommandEntity;
 public interface VendorCommandRepository extends JpaRepository<VendorCommandEntity, Long> {
 	
 	List<VendorCommandEntity> findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(String vendor,String networkType,String os,String commandType);
-	
-//	@Query(value = "SELECT * FROM c3pdbschema.c3p_m_vendor_specific_command where  vc_parent_id = :id;", nativeQuery = true)
-//	VendorCommandEntity findParentId(@Param("id") int id);
-	
 	VendorCommandEntity findByVcRecordId(String recordId);
 }

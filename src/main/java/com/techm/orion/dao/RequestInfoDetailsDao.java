@@ -786,49 +786,47 @@ public class RequestInfoDetailsDao {
 		}
 	}
 	
-	public PrintStream setCommandStream(PrintStream ps, RequestInfoPojo requestinfo, String commandType,
+	public PrintStream setCommandStream(PrintStream printStream, RequestInfoPojo requestinfo, String commandType,
 			Boolean isStartUp) {
 		List<VendorCommandEntity> vcCommandTypes = vendorCommandRepository
 				.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestinfo.getVendor(),requestinfo.getNetworkType(),requestinfo.getOs(), "CB");
 		for (VendorCommandEntity cmd : vcCommandTypes) {
 			if (commandType.equals("Test")) {
-				ps = setModeData(cmd.getVcParentId(), ps);
+				printStream = setModeData(cmd.getVcParentId(), printStream);
 			} else {
-				ps = setModeData(cmd.getVcParentId(), ps);
+				printStream = setModeData(cmd.getVcParentId(), printStream);
 				if (cmd.getVcStart().contains("::")) {
-					if (isStartUp) {
-						String startup = StringUtils.substringAfter(cmd.getVcStart(), "::");
-						ps.println(startup);
-					}else {
-						String runningConfig = StringUtils.substringBefore(cmd.getVcStart(), "::");
-						ps.println(runningConfig);
+					if (isStartUp) {						
+						printStream.println(StringUtils.substringAfter(cmd.getVcStart(), "::"));
+					}else {						
+						printStream.println(StringUtils.substringBefore(cmd.getVcStart(), "::"));
 					}
 				} else {
-					ps.println(cmd.getVcStart());
+					printStream.println(cmd.getVcStart());
 				}
 			}
 		}
-		return ps;
+		return printStream;
 	}
 
-	private PrintStream setModeData(String parentId, PrintStream ps) {
+	private PrintStream setModeData(String parentId, PrintStream printStream) {
 		if (parentId.contains("::")) {
 			String startParentId = StringUtils.substringBefore(parentId, "::");
-			VendorCommandEntity startMode = vendorCommandRepository.findByVcRecordId(startParentId);
-			if (!startMode.getVcParentId().contains("000")) {
-				ps = setModeData(startMode.getVcParentId(), ps);
+			VendorCommandEntity startParentModeCommand = vendorCommandRepository.findByVcRecordId(startParentId);
+			if (startParentModeCommand!=null && !startParentModeCommand.getVcParentId().contains("000")) {
+				printStream = setModeData(startParentModeCommand.getVcParentId(), printStream);
 			}
-			ps.println(startMode.getVcStart());			
+			printStream.println(startParentModeCommand.getVcStart());			
 			String endParentId = StringUtils.substringAfter(parentId, "::");
-			VendorCommandEntity endPMode = vendorCommandRepository.findByVcRecordId(endParentId);
-			ps.println(endPMode.getVcStart());
+			VendorCommandEntity endParentMode = vendorCommandRepository.findByVcRecordId(endParentId);
+			printStream.println(endParentMode.getVcStart());
 		}else {
-			VendorCommandEntity modeData = vendorCommandRepository.findByVcRecordId(parentId);
-			if (!modeData.getVcParentId().contains("000")) {
-				ps = setModeData(modeData.getVcParentId(), ps);
+			VendorCommandEntity startModeCommand = vendorCommandRepository.findByVcRecordId(parentId);
+			if (startModeCommand!=null && !startModeCommand.getVcParentId().contains("000")) {
+				printStream = setModeData(startModeCommand.getVcParentId(), printStream);
 			}
-			ps.println(modeData.getVcStart());			
+			printStream.println(startModeCommand.getVcStart());			
 		}
-		return ps;
+		return printStream;
 	}
 }
