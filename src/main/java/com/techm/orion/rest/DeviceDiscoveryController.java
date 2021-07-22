@@ -187,11 +187,17 @@ public class DeviceDiscoveryController implements Observer {
 				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
 				object.put("vendor", getAllDevice.get(i).getdVendor());
 				object.put("status", "Available");
+				object.put("role", getAllDevice.get(i).getdRole());
+				object.put("powerSupply", getAllDevice.get(i).getdPowerSupply());
 				if (getAllDevice.get(i).getCustSiteId() != null) {
 					object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
 					SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
 					object.put("site", site.getcSiteName());
 					object.put("region", site.getcSiteRegion());
+					object.put("addressline1", site.getcSiteAddressLine1());
+					object.put("addressline2", site.getcSIteAddressLine2());
+					object.put("addressline3", site.getcSiteAddressLine3());
+					object.put("Location", site.getcSiteRegion()+"/"+site.getcSiteAddressLine1()+"/"+site.getcSIteAddressLine2()+"/"+site.getcSiteAddressLine3()+"-"+getAllDevice.get(i).getdPowerSupply());
 
 				}
 				if (getAllDevice.get(i).getdEndOfSupportDate() != null
@@ -295,6 +301,11 @@ public class DeviceDiscoveryController implements Observer {
 				inventoryList.get(j).getdManagedServicesType();
 				inventoryList.get(j).getdLifeCycleState();
 				inventoryList.get(j).getdRole();
+				inventoryList.get(j).getdPowerSupply();
+				inventoryList.get(j).getCustSiteId().getcSiteAddressLine1();
+				inventoryList.get(j).getCustSiteId().getcSIteAddressLine2();
+				inventoryList.get(j).getCustSiteId().getcSiteAddressLine3();
+				inventoryList.get(j).getCustSiteId().getcSiteName();
 
 				JSONArray contactDetails = new JSONArray();
 				JSONObject detail = new JSONObject();

@@ -51,6 +51,9 @@ public class SiteInfoEntity {
 
 	@Column(name = "c_site_addressline2")
 	private String cSIteAddressLine2;
+	
+	@Column(name = "c_site_addressline3")
+	private String cSiteAddressLine3;
 
 	@Column(name = "c_site_city")
 	private String cSiteCity;
@@ -163,6 +166,14 @@ public class SiteInfoEntity {
 		this.cSIteAddressLine2 = cSIteAddressLine2;
 	}
 
+	public String getcSiteAddressLine3() {
+		return cSiteAddressLine3;
+	}
+
+	public void setcSiteAddressLine3(String cSiteAddressLine3) {
+		this.cSiteAddressLine3 = cSiteAddressLine3;
+	}
+	
 	public String getcSiteCity() {
 		return cSiteCity;
 	}

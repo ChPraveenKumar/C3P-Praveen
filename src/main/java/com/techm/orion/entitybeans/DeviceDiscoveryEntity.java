@@ -188,6 +188,9 @@ public class DeviceDiscoveryEntity {
 	@Column(name = "d_role", length = 100)
 	private String dRole;
 	
+	@Column(name = "d_power_supply", length = 45)
+	private String dPowerSupply;
+	
 	public String getdManagedBy() {
 		return dManagedBy;
 	}
@@ -220,6 +223,14 @@ public class DeviceDiscoveryEntity {
 		this.dRole = dRole;
 	}
 
+	public String getdPowerSupply() {
+		return dPowerSupply;
+	}
+
+	public void setdPowerSupply(String dPowerSupply) {
+		this.dPowerSupply = dPowerSupply;
+	}
+	
 	public JSONArray getContactDetails() {
 		return contactDetails;
 	}
