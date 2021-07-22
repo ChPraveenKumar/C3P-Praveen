@@ -315,7 +315,8 @@ public class HealthCheckTestValidation extends Thread {
 									logger.info("Channel Connected to machine " + host + " server");
 									channel.connect();
 									InputStream input = channel.getInputStream();
-									ps.println("terminal length 0");
+									ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
+//									ps.println("terminal length 0");
 									
 									for (int i = 0; i < finallistOfTests.size(); i++) {
 									
