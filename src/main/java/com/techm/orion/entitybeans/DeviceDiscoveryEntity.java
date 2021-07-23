@@ -156,8 +156,9 @@ public class DeviceDiscoveryEntity {
 	@Transient
 	private String dSystemDescription;
 
-	@Transient
-	private String dLocation;
+	/*
+	 * @Transient private String dLocation;
+	 */
 
 	@Transient
 	private String dEndOfLife;
@@ -169,6 +170,9 @@ public class DeviceDiscoveryEntity {
 
 	@Transient
 	private JSONArray contactDetails;
+	
+	@Transient
+	private JSONArray locationDetails;
 
 	@Column(name = "d_discrepancy",length = 2)
 	private int dDiscrepancy;
@@ -187,6 +191,9 @@ public class DeviceDiscoveryEntity {
 	
 	@Column(name = "d_role", length = 100)
 	private String dRole;
+	
+	@Column(name = "d_power_supply", length = 45)
+	private String dPowerSupply;
 	
 	public String getdManagedBy() {
 		return dManagedBy;
@@ -220,12 +227,28 @@ public class DeviceDiscoveryEntity {
 		this.dRole = dRole;
 	}
 
+	public String getdPowerSupply() {
+		return dPowerSupply;
+	}
+
+	public void setdPowerSupply(String dPowerSupply) {
+		this.dPowerSupply = dPowerSupply;
+	}
+	
 	public JSONArray getContactDetails() {
 		return contactDetails;
 	}
 
 	public void setContactDetails(JSONArray contactDetails) {
 		this.contactDetails = contactDetails;
+	}
+
+	public JSONArray getLocationDetails() {
+		return locationDetails;
+	}
+
+	public void setLocationDetails(JSONArray locationDetails) {
+		this.locationDetails = locationDetails;
 	}
 
 	public String getdStatus() {
@@ -287,13 +310,11 @@ public class DeviceDiscoveryEntity {
 		this.dEndOfLife = dEndOfLife;
 	}
 
-	public String getdLocation() {
-		return dLocation;
-	}
-
-	public void setdLocation(String dLocation) {
-		this.dLocation = dLocation;
-	}
+	/*
+	 * public String getdLocation() { return dLocation; }
+	 * 
+	 * public void setdLocation(String dLocation) { this.dLocation = dLocation; }
+	 */
 
 	public String getdSystemDescription() {
 		return dSystemDescription;
