@@ -45,6 +45,9 @@ public class VendorCommandEntity {
 
 	@Column(name = "vc_os", length = 100)
 	private String vcOs;
+	
+	@Column(name = "vc_is_applicable")
+	private boolean vCisApplicable;
 
 	public int getVcRowid() {
 		return vcRowid;
@@ -132,6 +135,14 @@ public class VendorCommandEntity {
 
 	public void setVcOs(String vcOs) {
 		this.vcOs = vcOs;
+	}
+	
+	public boolean isvCisApplicable() {
+		return vCisApplicable;
+	}
+
+	public void setvCisApplicable(boolean vCisApplicable) {
+		this.vCisApplicable = vCisApplicable;
 	}
 
 	@Override
