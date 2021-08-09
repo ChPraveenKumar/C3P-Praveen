@@ -163,9 +163,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 					if (json.get("requestType").toString()
 							.equalsIgnoreCase("SLGF")) {
-
-						String query = TSALabels.FW_UPGADE.getValue()
-								+ "/engine-rest/process-definition/key/C3P_FWUpgrade_workflow/start";
+						
+						String query = TSALabels.WEB_SERVICE_URI.getValue()
+								+ TSALabels.FW_UPGADE.getValue();
 						JSONObject obj1 = new JSONObject();
 						JSONObject obj2 = new JSONObject();
 						
