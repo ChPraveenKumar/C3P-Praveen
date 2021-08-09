@@ -109,7 +109,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	public JSONObject deliverConfigurationTest(@RequestBody String request) {
 
 		JSONObject obj = new JSONObject();
-		String jsonArray = "";
+		String jsonArray = "", reqType = null;
 
 		InvokeFtl invokeFtl = new InvokeFtl();
 		Boolean value = false;
@@ -164,6 +164,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					if (json.get("requestType").toString()
 							.equalsIgnoreCase("SLGF")) {
 						
+						reqType = json.get("requestType").toString();
 						String query = TSALabels.WEB_SERVICE_URI.getValue()
 								+ TSALabels.FW_UPGADE.getValue();
 						JSONObject obj1 = new JSONObject();
@@ -853,9 +854,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 			}
 		}
-
+		if ("SLGF".equalsIgnoreCase(reqType)) {
+			value = true;
+			jsonArray = new Gson().toJson(value);
+			obj.put(new String("output"), jsonArray);
+		}
 		return obj;
-
 	}
 
 	/* method overloading for UIRevamp */
