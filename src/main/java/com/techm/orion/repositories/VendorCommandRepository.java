@@ -12,4 +12,6 @@ public interface VendorCommandRepository extends JpaRepository<VendorCommandEnti
 	
 	List<VendorCommandEntity> findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(String vendor,String networkType,String os,String commandType);
 	VendorCommandEntity findByVcRecordId(String recordId);
+	VendorCommandEntity findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRepetition(String vendor, String networkType, String os, String repetitionCode);
+
 }
