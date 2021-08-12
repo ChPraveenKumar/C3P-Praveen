@@ -216,21 +216,26 @@ public class GetReportData implements Observer {
 					JSONObject obj1=(JSONObject) outArray.get(i);
 					if(obj1.get("testname").toString().contains("vendor"))
 					{
-						vendorObj.put("testName", "vendor");
+						vendorObj.put("testName", "Vendor");
 						vendorObj.put("userInput", requestinfo.getVendor());
 						vendorObj.put("cpeValue", obj1.get("CollectedValue").toString());
+						vendorObj.put("status", obj1.get("status").toString());
 					}
 					else if(obj1.get("testname").toString().contains("model"))
 					{
-						modelObj.put("testName", "model");
+						modelObj.put("testName", "Model");
 						modelObj.put("userInput", requestinfo.getModel());
 						modelObj.put("cpeValue", obj1.get("CollectedValue").toString());
+						modelObj.put("status", obj1.get("status").toString());
+
 					}
-					else if(obj1.get("testname").toString().contains("osversion"))
+					else if(obj1.get("testname").toString().contains("version"))
 					{
-						iosversionObj.put("testName", "osversion");
+						iosversionObj.put("testName", "Os");
 						iosversionObj.put("userInput", requestinfo.getOsVersion());
 						iosversionObj.put("cpeValue", obj1.get("CollectedValue").toString());
+						iosversionObj.put("status", obj1.get("status").toString());
+
 					}
 				}
 				

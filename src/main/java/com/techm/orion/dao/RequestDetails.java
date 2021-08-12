@@ -389,4 +389,24 @@ public class RequestDetails {
 		object.put("entity", array);
 		return object;
 	}
+	public String getTestAndDiagnosisDetailsWithStatus(String requestId,double requestVersion) throws SQLException {
+		StringBuilder builder = new StringBuilder();
+		ResultSet resultSet = null;
+		String query = "SELECT RequestId,TestsSelected FROM t_tststrategy_m_config_results where RequestId= ? and request_version =?";
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
+			preparedStmt.setString(1, requestId);
+			preparedStmt.setDouble(2, requestVersion);
+			resultSet = preparedStmt.executeQuery();
+			while (resultSet.next()) {
+				builder.append(resultSet.getString("TestsSelected"));
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getTestAndDiagnosisDetails method "+exe.getMessage());
+		} finally {
+			DBUtil.close(resultSet);
+		}
+		return builder.toString();
+	}
+	
 }

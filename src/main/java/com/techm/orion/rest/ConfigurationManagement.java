@@ -384,7 +384,7 @@ public class ConfigurationManagement {
 				JSONArray bundleArray= new JSONArray();
 				prevaljsonobj.put("testCategory", tst.getTestCategory());
 				prevaljsonobj.put("selected", 1);
-				prevaljsonobj.put("testName", tst.getTestName());
+				prevaljsonobj.put("testName", tst.getTestName()+"_"+tst.getVersion());
 				String testBundle="System Prevalidation";
 				bundleArray.add(testBundle);
 				prevaljsonobj.put("bundleName",bundleArray);
