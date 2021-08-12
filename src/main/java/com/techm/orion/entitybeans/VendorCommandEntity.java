@@ -10,29 +10,44 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "c3p_m_vendor_specific_command")
 public class VendorCommandEntity {
-	
+
 	@Id
 	@Column(name = "vc_row_id")
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int vcRowid;
 
-	@Column(name = "vc_parent_id")
-	private Integer vcParentId;
+	@Column(name = "vc_record_id", length = 30)
+	private String vcRecordId;
+
+	@Column(name = "vc_append", length = 100)
+	private String vcAppend;
+
+	@Column(name = "vc_end", length = 100)
+	private String vcEnd;
+
+	@Column(name = "vc_parent_id", length = 30)
+	private String vcParentId;
+
+	@Column(name = "vc_repetition", length = 20)
+	private String vcRepetition;
 
 	@Column(name = "vc_start", length = 100)
 	private String vcStart;
-	
-	@Column(name = "vc_end", length = 100)
-	private String vcEnd;
-	
-	@Column(name = "vc_append", length = 100)
-	private String vcAppend;
-	
+
 	@Column(name = "vc_vendor_name", length = 100)
 	private String vcVendorName;
+
+	@Column(name = "vc_extetced_response", length = 100)
+	private String vcExtetcedResponse;
+
+	@Column(name = "vc_network_type", length = 40)
+	private String vcNetworkType;
+
+	@Column(name = "vc_os", length = 100)
+	private String vcOs;
 	
-	@Column(name = "vc_repetition", length = 100)
-	private String vcRepetition;
+	@Column(name = "vc_is_applicable")
+	private boolean vCisApplicable;
 
 	public int getVcRowid() {
 		return vcRowid;
@@ -42,11 +57,11 @@ public class VendorCommandEntity {
 		this.vcRowid = vcRowid;
 	}
 
-	public Integer getVcParentId() {
+	public String getVcParentId() {
 		return vcParentId;
 	}
 
-	public void setVcParentId(Integer vcParentId) {
+	public void setVcParentId(String vcParentId) {
 		this.vcParentId = vcParentId;
 	}
 
@@ -88,6 +103,46 @@ public class VendorCommandEntity {
 
 	public void setVcRepetition(String vcRepetition) {
 		this.vcRepetition = vcRepetition;
+	}
+
+	public String getVcRecordId() {
+		return vcRecordId;
+	}
+
+	public void setVcRecordId(String vcRecordId) {
+		this.vcRecordId = vcRecordId;
+	}
+
+	public String getVcExtetcedResponse() {
+		return vcExtetcedResponse;
+	}
+
+	public void setVcExtetcedResponse(String vcExtetcedResponse) {
+		this.vcExtetcedResponse = vcExtetcedResponse;
+	}
+
+	public String getVcNetworkType() {
+		return vcNetworkType;
+	}
+
+	public void setVcNetworkType(String vcNetworkType) {
+		this.vcNetworkType = vcNetworkType;
+	}
+
+	public String getVcOs() {
+		return vcOs;
+	}
+
+	public void setVcOs(String vcOs) {
+		this.vcOs = vcOs;
+	}
+	
+	public boolean isvCisApplicable() {
+		return vCisApplicable;
+	}
+
+	public void setvCisApplicable(boolean vCisApplicable) {
+		this.vCisApplicable = vCisApplicable;
 	}
 
 	@Override

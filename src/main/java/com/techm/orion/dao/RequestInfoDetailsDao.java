@@ -38,6 +38,7 @@ import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
+import com.techm.orion.entitybeans.VendorCommandEntity;
 import com.techm.orion.entitybeans.WebServiceEntity;
 import com.techm.orion.mapper.RequestInfoMappper;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
@@ -49,11 +50,11 @@ import com.techm.orion.repositories.ResourceCharacteristicsRepository;
 import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.repositories.UserManagementRepository;
+import com.techm.orion.repositories.VendorCommandRepository;
 import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.PingTest;
 import com.techm.orion.utility.PythonServices;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
@@ -86,6 +87,8 @@ public class RequestInfoDetailsDao {
 	private BackupCurrentRouterConfigurationService backupCurrentRouterConfigurationService;	
 	@Autowired
 	private PythonServices pythonService;
+	@Autowired
+	private VendorCommandRepository vendorCommandRepository;
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
@@ -609,12 +612,13 @@ public class RequestInfoDetailsDao {
 				channel = session.openChannel("shell");
 				OutputStream ops = channel.getOutputStream();
 
-				PrintStream ps = new PrintStream(ops, true);
+				PrintStream printStream = new PrintStream(ops, true);
 				logger.info("Channel Connected to machine " + host + " server");
 				channel.connect();
 				InputStream input = channel.getInputStream();
-				ps.println("terminal length 0");
-				ps.println("show run");
+				//ps.println("terminal length 0");
+				//ps.println("show run");
+				printStream = setCommandStream(printStream, requestinfo, "backup", false);
 				try {
 					Thread.sleep(3000);
 				} catch (Exception ee) {
@@ -783,4 +787,47 @@ public class RequestInfoDetailsDao {
 		}
 	}
 	
+	public PrintStream setCommandStream(PrintStream printStream, RequestInfoPojo requestinfo, String commandType,
+			Boolean isStartUp) {
+		List<VendorCommandEntity> vcCommandTypes = vendorCommandRepository
+				.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestinfo.getVendor(),requestinfo.getNetworkType(),requestinfo.getOs(), "CB");
+		for (VendorCommandEntity cmd : vcCommandTypes) {
+			if (commandType.equals("Test")) {
+				printStream = setModeData(cmd.getVcParentId(), printStream);
+			} else {
+				printStream = setModeData(cmd.getVcParentId(), printStream);
+				if (cmd.getVcStart().contains("::")) {
+					if (isStartUp) {						
+						printStream.println(StringUtils.substringAfter(cmd.getVcStart(), "::"));
+					}else {						
+						printStream.println(StringUtils.substringBefore(cmd.getVcStart(), "::"));
+					}
+				} else {
+					printStream.println(cmd.getVcStart());
+				}
+			}
+		}
+		return printStream;
+	}
+
+	private PrintStream setModeData(String parentId, PrintStream printStream) {
+		if (parentId.contains("::")) {
+			String startParentId = StringUtils.substringBefore(parentId, "::");
+			VendorCommandEntity startParentModeCommand = vendorCommandRepository.findByVcRecordId(startParentId);
+			if (startParentModeCommand!=null && !startParentModeCommand.getVcParentId().contains("000")) {
+				printStream = setModeData(startParentModeCommand.getVcParentId(), printStream);
+			}
+			printStream.println(startParentModeCommand.getVcStart());			
+			String endParentId = StringUtils.substringAfter(parentId, "::");
+			VendorCommandEntity endParentMode = vendorCommandRepository.findByVcRecordId(endParentId);
+			printStream.println(endParentMode.getVcStart());
+		}else {
+			VendorCommandEntity startModeCommand = vendorCommandRepository.findByVcRecordId(parentId);
+			if (startModeCommand!=null && !startModeCommand.getVcParentId().contains("000")) {
+				printStream = setModeData(startModeCommand.getVcParentId(), printStream);
+			}
+			printStream.println(startModeCommand.getVcStart());			
+		}
+		return printStream;
+	}
 }
