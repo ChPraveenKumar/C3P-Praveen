@@ -1726,9 +1726,15 @@ public class TestStrategeyAnalyser {
 				if (resultVar == false) {
 					// RequestInfoDao requestInfoDao = new RequestInfoDao();
 					// Update main request status to partial success
-					requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag,
-							"3", "Partial Success");
-					res = true;
+				
+					if(testIdentifier.equalsIgnoreCase("Device Prevalidation"))
+						res = false;
+					else
+					{
+						res=true;
+						requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag,
+								"3", "Partial Success");
+					}
 				} else {
 					res = true;
 				}
