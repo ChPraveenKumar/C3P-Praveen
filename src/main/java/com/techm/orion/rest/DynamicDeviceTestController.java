@@ -1,8 +1,5 @@
 package com.techm.orion.rest;
 
-import java.util.Observable;
-import java.util.Observer;
-
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
@@ -10,7 +7,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,21 +15,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.techm.orion.utility.PingTest;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.service.PingService;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/dynamictest")
-public class DynamicDeviceTestController implements Observer {
-	
+public class DynamicDeviceTestController {
 	private static final Logger logger = LogManager.getLogger(DynamicDeviceTestController.class);
-	
-	PingTest pingHelper=new PingTest();
-	
+
+	@Autowired
+	private PingService pingService;
+
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/ping", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -42,67 +39,16 @@ public class DynamicDeviceTestController implements Observer {
 		JSONObject json;
 		try {
 			json = (JSONObject) parser.parse(request);
-			String mgmtIp = json.get("managementIp") !=null ? json.get("managementIp").toString() : "";			
-			obj.put("data", pingHelper.pingResults(mgmtIp));
-		} catch (ParseException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
+			String mgmtIp = json.get("managementIp") != null ? json.get("managementIp").toString() : "";
+			obj.put("data", pingService.pingResults(mgmtIp));
+		} catch (Exception exe) {
+			logger.error("Exception in ping service ->" + exe.getMessage());
 		}
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
+		return Response.status(200).header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
-	}
-	
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
-	@POST
-	@RequestMapping(value = "/traceroute", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	@ResponseBody
-	public Response traceroute(@RequestBody String request) {
-		JSONObject obj = new JSONObject();
-		JSONParser parser = new JSONParser();
-		//StringBuilder sb =null; 
-		JSONObject json;
-		try {
-			json = (JSONObject) parser.parse(request);
-		
-			String mgmtIp = json.get("managementIp").toString();
-			//String siteId= json.get("siteId").toString();
-			//String region=json.get("region").toString();
-			
-			String[] cmd = {"python", TSALabels.PYTHON_SCRIPT_PATH.getValue()+"nativeTraceroute.py",mgmtIp};
-			logger.info("traceroute - commandToPing -"+cmd.toString());
-			Process process = Runtime.getRuntime().exec(cmd);
-			obj.put("data", pingHelper.getPingResults(process));		
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return Response
-				.status(200)
-				.header("Access-Control-Allow-Origin", "*")
-				.header("Access-Control-Allow-Headers",
-						"origin, content-type, accept, authorization")
-				.header("Access-Control-Allow-Credentials", "true")
-				.header("Access-Control-Allow-Methods",
-						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
-				.header("Access-Control-Max-Age", "1209600").entity(obj)
-				.build();
+				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
-	
-	
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-		
-	}	
 }

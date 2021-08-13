@@ -706,7 +706,7 @@ public class ConfigurationManagement {
 												attribJson);
 										createConfigurationService.createReplicationFinalTemplate(cammandByTemplate, templateAttribute,
 												template, replication,
-												configReqToSendToC3pCode.getVendor());
+												configReqToSendToC3pCode);
 									}
 								} else {
 									// TemplateId without feature Replication
@@ -722,7 +722,7 @@ public class ConfigurationManagement {
 											attribToSend.add(attrib);
 										}
 									}
-									toSend =configurationManagmentService.setcammandByTemplate(toSend, configReqToSendToC3pCode.getVendor());
+									toSend =configurationManagmentService.setcammandByTemplate(toSend, configReqToSendToC3pCode);
 									invokeFtl.createFinalTemplate(null, toSend, null, attribToSend, template);
 								}
 								}
@@ -771,7 +771,7 @@ public class ConfigurationManagement {
 								cammandByTemplate = configurationManagmentService.setFeatureData(cammandByTemplate,
 										attribJson);
 								cammandByTemplate = configurationManagmentService.setReplicationFeatureData(
-										cammandByTemplate, replication, configReqToSendToC3pCode.getVendor());
+										cammandByTemplate, replication, configReqToSendToC3pCode);
 
 							}
 							else
@@ -780,7 +780,7 @@ public class ConfigurationManagement {
 										.getCommandsByMasterFeature(configReqToSendToC3pCode.getVendor(), features);
 								cammandByTemplate = configurationManagmentService.setFeatureData(cammandByTemplate,
 										attribJson);
-								cammandByTemplate =configurationManagmentService.setcammandByTemplate(cammandByTemplate, configReqToSendToC3pCode.getVendor());
+								cammandByTemplate =configurationManagmentService.setcammandByTemplate(cammandByTemplate, configReqToSendToC3pCode);
 							}
 
 							logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));

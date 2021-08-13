@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,10 +23,13 @@ import java.util.Properties;
 
 import javax.ws.rs.POST;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -41,11 +46,16 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.entitybeans.ImageManagementEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
+import com.techm.orion.entitybeans.VendorCommandEntity;
 import com.techm.orion.pojo.CreateConfigRequest;
+import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.ImageManagementRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
+import com.techm.orion.repositories.VendorCommandRepository;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.ErrorCodeValidationDeliveryTest;
@@ -83,7 +93,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	
 	@Autowired
 	private ErrorCodeValidationDeliveryTest errorCodeValidationDeliveryTest;
+	
+	@Autowired
+	private ImageManagementRepository imageMangemntRepository;
 
+	@Autowired
+	private VendorCommandRepository vendorCommandRepository;
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -93,7 +109,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	public JSONObject deliverConfigurationTest(@RequestBody String request) {
 
 		JSONObject obj = new JSONObject();
-		String jsonArray = "";
+		String jsonArray = "", reqType = null;
 
 		InvokeFtl invokeFtl = new InvokeFtl();
 		Boolean value = false;
@@ -147,379 +163,51 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 					if (json.get("requestType").toString()
 							.equalsIgnoreCase("SLGF")) {
+						
+						reqType = json.get("requestType").toString();
+						String query = TSALabels.WEB_SERVICE_URI.getValue()
+								+ TSALabels.FW_UPGADE.getValue();
+						JSONObject obj1 = new JSONObject();
+						JSONObject obj2 = new JSONObject();
+						
+						JSONObject variableObj = new JSONObject();
+						JSONObject usernameValueObj = new JSONObject();
+						
+						usernameValueObj.put(new String("value"), Global.loggedInUser);
+						obj1.put(new String("value"), json.get("version").toString());
+						
+						variableObj.put(new String("version"), obj1);
+						variableObj.put(new String("user"), usernameValueObj);
+						
+						obj2.put(new String("businessKey"), RequestId);
+						obj2.put(new String("variables"), variableObj);
+						
+						URL url = new URL(query);
+						HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+						conn.setConnectTimeout(5000);
+						conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+						conn.setDoOutput(true);
+						conn.setDoInput(true);
+						conn.setRequestMethod("POST");
+						
+						OutputStream os = conn.getOutputStream();
+						os.write(obj2.toString().getBytes("UTF-8"));
+						os.close();
+						
+						// read the response
+						InputStream in = new BufferedInputStream(conn.getInputStream());
+						String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
+						JSONObject jsonObject = new JSONObject();
+						
+						in.close();
+						conn.disconnect();
+						
+						value = false;
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
 
-						boolean isBackUpSccessful = false, isFlashSizeAvailable = false, copyFtpStatus = false, isBootSystemFlashSuccessful = false;
 
-						// Verify flash size needs to be done
-						// available_flash_size=getAvailableFlashSizeOnDevice(user,password,host);
-
-						// ftp_image_size=getFTPImageSize();
-						// String ftp_image_name=getFTPImageName();
-						String ftp_image_name = "test2.bin";
-						available_flash_size = 9;
-						ftp_image_size = 4;
-						// set login to csr flag in DB to 1
-						String key = "login_flag";
-						requestInfoDao.update_dilevary_step_flag_in_db(key, 1,
-								RequestId, version);
-						if (available_flash_size > ftp_image_size) {
-							// free size in flash and then go to back up and
-							// dilevary to be
-							// done!!!!!!!!!!!!!!!!!!!
-
-							// if flash sized freed successfully
-							isFlashSizeAvailable = true;
-
-							if (isFlashSizeAvailable) {
-								// flash size available flag in DB to 1
-								key = "flash_size_flag";
-								requestInfoDao.update_dilevary_step_flag_in_db(
-										key, 1, RequestId, version);
-
-								isBackUpSccessful = BackUp(requestinfo, user,
-										password, "previous");
-
-								// isBackUpSccessful=true;
-								if (isBackUpSccessful) {
-									// back up flag in DB to 1
-									key = "back_up_flag";
-									requestInfoDao
-											.update_dilevary_step_flag_in_db(
-													key, 1, RequestId, version);
-
-									// issue copy ftp flash command on csr
-									ArrayList<String> commandToPush = new ArrayList<String>();
-									commandToPush.add("copy ftp: flash:");
-									commandToPush.add("127.0.0.1");
-									commandToPush.add("soucename");
-									commandToPush.add("destinationname");
-
-									// Erase flash: before copying? [confirm]n
-									// one param is skipped as gns has no
-									// flash
-									String cmd = "copy ftp: flash:" + "\n"
-											+ "127.0.0.1" + "\n" + "soucename"
-											+ "\n" + "destination";
-
-									String port1 = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-											.getProperty("portSSH");
-									session = jsch.getSession(user, host,
-											Integer.parseInt(port1));
-									Properties config = new Properties();
-									config.put("StrictHostKeyChecking", "no");
-									session.setConfig(config);
-									session.setPassword(password);
-
-									session.connect();
-									try {
-										Thread.sleep(5000);
-									} catch (Exception ee) {
-									}
-									channel = session.openChannel("shell");
-									OutputStream ops = channel
-											.getOutputStream();
-									PrintStream ps = new PrintStream(ops, true);
-									logger.info("Channel Connected to machine "
-											+ host
-											+ " server for copy ftp flash");
-									channel.connect();
-									InputStream input = channel
-											.getInputStream();
-
-									ps.println(cmd);
-
-									try {
-										// change this sleep in case of longer
-										// wait
-										Thread.sleep(1000);
-									} catch (Exception ee) {
-									}
-									BufferedWriter bw = null;
-									FileWriter fw = null;
-									int SIZE = 1024;
-									byte[] tmp = new byte[SIZE];
-									while (input.available() > 0) {
-										int i = input.read(tmp, 0, SIZE);
-										if (i < 0)
-											break;
-										// we will get response from router here
-										// String s = new String(tmp, 0, i);
-										// Hardcoding it for time being
-										String s = "Loading c7200-a3js-mz.122-15.T16.bin from 172.22.1.84 (via GigabitEthernet0/1):/n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!/n[OK - 19187152 bytes]/n/nVerifying checksum...  OK (0x15C1)19187152 bytes/ncopied in 482.920 secs (39732 bytes/sec)";
-										logger.info("EOSubBlock");
-										List<String> outList = new ArrayList<String>();
-										String str[] = s.split("/n");
-										outList = Arrays.asList(str);
-										int size = outList.size();
-										if (outList.get(size - 1).indexOf("OK") != 0) {
-											copyFtpStatus = true;
-										}
-
-									}
-									if (channel != null) {
-										try {
-											session = channel.getSession();
-
-											if (channel.getExitStatus() == -1) {
-
-												Thread.sleep(5000);
-
-											}
-										} catch (Exception e) {
-											System.out.println(e);
-										}
-									}
-									channel.disconnect();
-									session.disconnect();
-									// requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"deliever_config","2","Failure");
-									logger.info("EOBlock");
-									if (copyFtpStatus) {
-										// set copy ftp flag in DB to 1
-										key = "os_download_flag";
-										requestInfoDao
-												.update_dilevary_step_flag_in_db(
-														key, 1, RequestId,
-														version);
-
-										// Do boot system flash to copy latest
-										// image on top
-
-										// 1. Do show run on router and get boot
-										// commands and append no to them
-
-										List<String> exsistingBootCmdsOnRouter = getExsistingBootCmds(
-												user, password, host);
-
-										// append no commands to exsisting boot
-										// commands and add to cmds array to be
-										// pushed
-
-										List<String> cmdsToPushInorder = new ArrayList<String>();
-
-										for (int i = 0; i < exsistingBootCmdsOnRouter
-												.size(); i++) {
-											cmdsToPushInorder.add("no "
-													+ exsistingBootCmdsOnRouter
-															.get(i) + "\r\n");
-										}
-
-										// cmdsToPushInorder.add(1,"boot system flash ");
-										cmdsToPushInorder.add(0,
-												"conf t\r\nboot system flash "
-														+ ftp_image_name);
-
-										// cmdsToPushInorder.add(cmdsToPushInorder.size()+1,"exit");
-
-										isBootSystemFlashSuccessful = pushOnRouter(
-												user, password, host,
-												cmdsToPushInorder);
-										// push the array on router
-
-										if (isBootSystemFlashSuccessful) {
-											// set
-											// bootsystemflash,reload,postloginflag
-											// in DB to 1
-											key = "boot_system_flash_flag";
-											requestInfoDao
-													.update_dilevary_step_flag_in_db(
-															key, 1, RequestId,
-															version);
-											key = "reload_flag";
-											requestInfoDao
-													.update_dilevary_step_flag_in_db(
-															key, 1, RequestId,
-															version);
-											key = "post_login_flag";
-											requestInfoDao
-													.update_dilevary_step_flag_in_db(
-															key, 1, RequestId,
-															version);
-
-											// value = true;
-
-											requestInfoDetailsDao
-													.editRequestforReportWebserviceInfo(
-															requestinfo
-																	.getAlphanumericReqId(),
-															Double.toString(requestinfo
-																	.getRequestVersion()),
-															"deliever_config",
-															"1", "In Progress");
-											// requestInfoDao.editRequestForReportIOSWebserviceInfo(createConfigRequest.getRequestId(),Double.toString(createConfigRequest.getRequest_version()),"Boot
-											// System Flash","Failure","Could
-											// not load image on top on boot
-											// commands.");
-											// CODE for write and reload to be
-											// done!!!!!
-											boolean isCurrentConf = BackUp(
-													requestinfo, user,
-													password, "current");
-											if (isCurrentConf) {
-												value = true;
-
-											} else {
-												value = false;
-												key = "reload_flag";
-												requestInfoDao
-														.update_dilevary_step_flag_in_db(
-																key, 2,
-																RequestId,
-																version);
-												key = "post_login_flag";
-												requestInfoDao
-														.update_dilevary_step_flag_in_db(
-																key, 2,
-																RequestId,
-																version);
-												requestInfoDetailsDao
-														.editRequestforReportWebserviceInfo(
-																requestinfo
-																		.getAlphanumericReqId(),
-																Double.toString(requestinfo
-																		.getRequestVersion()),
-																"deliever_config",
-																"2", "Failure");
-												requestInfoDao
-														.editRequestForReportIOSWebserviceInfo(
-																requestinfo
-																		.getAlphanumericReqId(),
-																Double.toString(requestinfo
-																		.getRequestVersion()),
-																"Current config",
-																"Failure",
-																"Could not get current config.");
-
-											}
-											jsonArray = new Gson()
-													.toJson(value);
-											obj.put(new String("output"),
-													jsonArray);
-										} else {
-											value = false;
-											key = "boot_system_flash_flag";
-											requestInfoDao
-													.update_dilevary_step_flag_in_db(
-															key, 2, RequestId,
-															version);
-											key = "reload_flag";
-											requestInfoDao
-													.update_dilevary_step_flag_in_db(
-															key, 2, RequestId,
-															version);
-											key = "post_login_flag";
-											requestInfoDao
-													.update_dilevary_step_flag_in_db(
-															key, 2, RequestId,
-															version);
-											requestInfoDetailsDao
-													.editRequestforReportWebserviceInfo(
-															requestinfo
-																	.getAlphanumericReqId(),
-															Double.toString(requestinfo
-																	.getRequestVersion()),
-															"deliever_config",
-															"2", "Failure");
-											requestInfoDao
-													.editRequestForReportIOSWebserviceInfo(
-															requestinfo
-																	.getAlphanumericReqId(),
-															Double.toString(requestinfo
-																	.getRequestVersion()),
-															"Boot System Flash",
-															"Failure",
-															"Could not load image on top on boot commands.");
-											jsonArray = new Gson()
-													.toJson(value);
-											BackUp(requestinfo, user, password,
-													"current");
-											obj.put(new String("output"),
-													jsonArray);
-										}
-
-									} else {
-										value = false;
-										key = "os_download_flag";
-										requestInfoDao
-												.update_dilevary_step_flag_in_db(
-														key, 2, RequestId,
-														version);
-										// could not copy image to csr
-										// return error String s,output
-										requestInfoDetailsDao
-												.editRequestforReportWebserviceInfo(
-														requestinfo
-																.getAlphanumericReqId(),
-														Double.toString(requestinfo
-																.getRequestVersion()),
-														"deliever_config", "2",
-														"Failure");
-										requestInfoDao
-												.editRequestForReportIOSWebserviceInfo(
-														requestinfo
-																.getAlphanumericReqId(),
-														Double.toString(requestinfo
-																.getRequestVersion()),
-														"Copy FTP to CSR",
-														"Failure",
-														"Could not copy image from FTP to CSR.");
-										jsonArray = new Gson().toJson(value);
-										obj.put(new String("output"), jsonArray);
-									}
-
-								} else {
-									value = false;
-									isBackUpSccessful = false;
-									key = "back_up_flag";
-									requestInfoDao
-											.update_dilevary_step_flag_in_db(
-													key, 2, RequestId, version);
-									// throw corresponding error from router on
-									// screen
-									requestInfoDetailsDao
-											.editRequestforReportWebserviceInfo(
-													requestinfo
-															.getAlphanumericReqId(),
-													Double.toString(requestinfo
-															.getRequestVersion()),
-													"deliever_config", "2",
-													"Failure");
-									requestInfoDao
-											.editRequestForReportIOSWebserviceInfo(
-													requestinfo
-															.getAlphanumericReqId(),
-													Double.toString(requestinfo
-															.getRequestVersion()),
-													"Back up", "Failure",
-													"Back up unsuccessful.");
-									jsonArray = new Gson().toJson(value);
-									obj.put(new String("output"), jsonArray);
-								}
-							}
-						} else {
-							isFlashSizeAvailable = false;
-							key = "flash_size_flag";
-							requestInfoDao.update_dilevary_step_flag_in_db(key,
-									2, RequestId, version);
-							// throw error
-							value = false;
-							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
-									requestinfo.getAlphanumericReqId(), Double
-											.toString(requestinfo
-													.getRequestVersion()),
-									"deliever_config", "2", "Failure");
-							requestInfoDao
-									.editRequestForReportIOSWebserviceInfo(
-											requestinfo.getAlphanumericReqId(),
-											Double.toString(requestinfo
-													.getRequestVersion()),
-											"Flash Size", "Failure",
-											"No enough flash size available, flash could not be cleared");
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-						}
-						session.disconnect();
-						channel.disconnect();
-					} else if (json.get("requestType").toString()
+											} else if (json.get("requestType").toString()
 							.equalsIgnoreCase("SLGT")
 							|| json.get("requestType").toString()
 									.equalsIgnoreCase("SLGA")) {
@@ -558,7 +246,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							// to save the backup and deliver the
 							// configuration(configuration in the router)
 							boolean isCheck = bckupConfigService
-									.getRouterConfig(requestinfo, "previous");
+									.getRouterConfig(requestinfo, "previous",false);
 							boolean isCheck1 = false;
 							String flag ="2", status ="Failure";
 
@@ -568,7 +256,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 									isCheck1 = bckupConfigService
 											.getRouterConfigStartUp(
-													requestinfo, "startup");
+													requestinfo, "startup",isStartUp);
 
 								} catch (Exception ee) {
 								}
@@ -1058,7 +746,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						// get file from vnf config requests folder
 						// pass file path to vnf helper class push on device
 						// method.
-						bckupConfigService.getRouterConfig(requestinfo, "previous");
+						bckupConfigService.getRouterConfig(requestinfo, "previous",isStartUp);
 
 						boolean result = helper.pushOnVnfDevice(path,routerCredential,requestinfo.getManagementIp());
 						if (result) {
@@ -1076,7 +764,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 													.getRequestVersion())
 											+ "_deliveredConfig.txt", response);
 
-							bckupConfigService.getRouterConfig(requestinfo, "current");
+							bckupConfigService.getRouterConfig(requestinfo, "current",isStartUp);
 
 							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double
@@ -1166,9 +854,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 			}
 		}
-
+		if ("SLGF".equalsIgnoreCase(reqType)) {
+			value = true;
+			jsonArray = new Gson().toJson(value);
+			obj.put(new String("output"), jsonArray);
+		}
 		return obj;
-
 	}
 
 	/* method overloading for UIRevamp */
@@ -1464,40 +1155,72 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		return isSuccess;
 	}
 
-	List<String> getExsistingBootCmds(String user, String password, String host) {
+	List<String> getExsistingBootCmds(String user, String password, String host, String command) {
+		logger.info("Inside getExsistingBootCmds method user " + user + "password "+ password + "host " + host + "command " + command);
 		List<String> array = new ArrayList<String>();
 		List<String> array1 = new ArrayList<String>();
 
 		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 				.getProperty("portSSH");
+		logger.info("Value of port inside getExsistingBootCmds method port " + port);
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
+		List<String> notPresent = new ArrayList<String>();
+		List<String> cmdCheck = new ArrayList<String>();
 		try {
 			session = jsch.getSession(user, host, Integer.parseInt(port));
 
+			logger.info("Inside try block value of session details in getExsistingBootCmds is " + session);
 			Properties config = new Properties();
+			logger.info("Creating properties object");
 			config.put("StrictHostKeyChecking", "no");
+			logger.info("setting StrictHostKeyChecking");
+			logger.info("session setConfig is " + config);
 			session.setConfig(config);
+			logger.info("session setPassword is " + password);
 			session.setPassword(password);
+			logger.info("Going to connect session");
 			session.connect();
 			try {
 				Thread.sleep(10000);
 			} catch (Exception ee) {
+				logger.error("Exception in getExsistingBootCmds after session connect " + ee);
 			}
 			channel = session.openChannel("shell");
+			logger.info("After opening channel in getExsistingBootCmds " + channel);
 			OutputStream ops = channel.getOutputStream();
 			PrintStream ps = new PrintStream(ops, true);
+			logger.info("After OutputStream  in getExsistingBootCmds method -> " + ops);
 			logger.info("Channel Connected to machine " + host
 					+ " show run to copy boot cmds");
 			channel.connect();
+			logger.info("Channel Connected Successfully");
 			InputStream input = channel.getInputStream();
-			ps.println("show run | i boot");
+			logger.info("Value of command is " + command);
+			String firstCmd = null;
+			List<String> cmdRes = modifyCmd(command);
+			firstCmd = cmdRes.get(0);
+			logger.info("Value of command response is " + cmdRes);
+			for(String cmd : cmdRes) {
+				logger.info("Value of command response inside for loop is " + cmd);
+				if (cmdRes.indexOf(cmd) == cmdRes.size() - 1) {
+					logger.info("Value of command response inside if loop if it is last element " + cmd);
+					ps.println(cmd);
+				} else {
+					logger.info("Value of command response inside else loop if it is not last element " + cmd);
+					ps.print(cmd);
+				}
+			}
 			try {
 				// change this sleep in case of longer wait
 				Thread.sleep(5000);
 			} catch (Exception ee) {
+				logger.error("Exception in getExsistingBootCmds method after sleep " +ee);
 			}
+			logger.info("Value of command in getExsistingBootCmds method is " +command);
+			cmdCheck = notPresentCmdRes(command);
+			logger.info("Value of not presnt command in getExsistingBootCmds method is " +cmdCheck);
 			BufferedWriter bw = null;
 			FileWriter fw = null;
 			int SIZE = 1024;
@@ -1508,23 +1231,28 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					break;
 				// we will get response from router here
 				String s = new String(tmp, 0, i);
+				s= StringUtils.substringAfter(s, firstCmd);
+				logger.info("Value of command and its response in getExsistingBootCmds method is " +s);
 				s = s.replaceAll("\r", "");
+				logger.info("Value of command and its response after repace /r in getExsistingBootCmds method is " +s);
 				List<String> outList = new ArrayList<String>();
 				String str[] = s.split("\n");
+				logger.info("Value of command and its response after split \n in getExsistingBootCmds method is " +str);
 				outList = Arrays.asList(str);
-				for (int j = 1; j < outList.size() - 2; j++) {
-					if (!outList.get(j).isEmpty())
-						array.add(outList.get(j));
-
+				logger.info("Value of command and its response after converting into array in getExsistingBootCmds method is " +outList);
+				for(String cmdList :outList)
+				{
+					logger.info("Value of command list in getExsistingBootCmds method is " +cmdList);
+						if(!cmdCheck.toString().contains(cmdList)) {
+							notPresent.add(cmdList);
+						}
 				}
-				for (int k = 0; k < array.size(); k++) {
-					if (array.get(k).contains("show")) {
-
-					} else {
-						array1.add(array.get(k));
-					}
+				logger.info("Value of response command, notpresnt in getExsistingBootCmds method notPresent is " +notPresent);
+				for (int j = 1; j < notPresent.size() - 2; j++) {
+					if (!notPresent.get(j).isEmpty())
+						array.add(notPresent.get(j));
 				}
-
+				logger.info("Value of final response command in getExsistingBootCmds method array is " +array);
 			}
 			if (channel != null) {
 				try {
@@ -1536,64 +1264,73 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 					}
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error("Exception in getExsistingBootCmds method is-> " +e);
 				}
 			}
 			input.close();
 			channel.disconnect();
 			session.disconnect();
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
+			logger.error("NumberFormatException in getExsistingBootCmds method is-> " +e);
 			e.printStackTrace();
 		} catch (JSchException e) {
-			// TODO Auto-generated catch block
+			logger.error("JSchException in getExsistingBootCmds method is-> " +e);
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.error("IOException in getExsistingBootCmds method is-> " +e);
 			e.printStackTrace();
 		} finally {
-
+			logger.info("Inside the finally block to close the resouces getExsistingBootCmds method");
 			if (channel != null) {
+				logger.info("Inside the finally if channel still open then going to disconnect session and channel");
 				try {
 					session = channel.getSession();
-
+					logger.info("Inside the finally try block if channel still open then going to disconnect session " +session);
 					if (channel.getExitStatus() == -1) {
-
+						logger.info("Inside the finally try block channel.getExitStatus() " +channel.getExitStatus());
 						Thread.sleep(5000);
-
 					}
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error("Inside the finally block of catch " + e);
 				}
+				logger.info("Inside the finally block going to disconnect channel and session");
 				channel.disconnect();
 				session.disconnect();
-
+				logger.info("Inside the finally block session and channel disconnect successfully");
 			}
 		}
 		channel.disconnect();
 		session.disconnect();
-		return array1;
+		return array;
 	}
 
 	boolean pushOnRouter(String user, String password, String host,
 			List<String> cmdToPush) {
+		logger.info("Inside pushOnRouter method user " + user + "password "+ password + "host " + host + "command " + cmdToPush);
 		boolean isSuccess = false;
 		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 				.getProperty("portSSH");
+		logger.info("Inside pushOnRouter method port " + port);
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
 		try {
 			session = jsch.getSession(user, host, Integer.parseInt(port));
+			logger.info("Inside pushOnRouter method session is -> " + session);
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			logger.info("Inside pushOnRouter method setting setconfig ->");
 			session.setConfig(config);
+			logger.info("Inside pushOnRouter method config is -> " + config);
 			session.setPassword(password);
+			logger.info("Inside pushOnRouter method going to connect session with password -> "+password);
 			session.connect();
+			logger.info("Inside pushOnRouter method session connected successfully  ->");
 			try {
 				Thread.sleep(10000);
 			} catch (Exception ee) {
+				logger.error("Exception inside the pushOnRouter method -> " + ee);
 			}
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
@@ -1613,38 +1350,40 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			ps.println("exit");
 
 			logger.info("Done pushing flash commands on" + host);
-			isSuccess = checkIdLoadedProperly(user, password, host);
+			isSuccess = true;
 			input.close();
 			session.disconnect();
 			channel.disconnect();
+			logger.info("Session disconnected scuccessfully inside the pushOnRouter method with isSuccess- >" +isSuccess);
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
+			logger.error("NumberFormatException inside the pushOnRouter method " + e);
 			e.printStackTrace();
 		} catch (JSchException e) {
-			// TODO Auto-generated catch block
+			logger.error("JSchException inside the pushOnRouter method " + e);
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			logger.error("IOException inside the pushOnRouter method " + e);
 			e.printStackTrace();
 		} finally {
-
-			if (channel != null) {
-				try {
-					session = channel.getSession();
-
-					if (channel.getExitStatus() == -1) {
-
-						Thread.sleep(5000);
-
+				logger.info("Inside the finally block to close the resouces in pushOnRouter method");
+				if (channel != null) {
+					logger.info("Inside the finally if channel still open then going to disconnect session and channel");
+					try {
+						session = channel.getSession();
+						logger.info("Inside the finally try block if channel still open then going to disconnect session " +session);
+						if (channel.getExitStatus() == -1) {
+							logger.info("Inside the finally try block channel.getExitStatus() " +channel.getExitStatus());
+							Thread.sleep(5000);
+						}
+					} catch (Exception e) {
+						logger.error("Inside the finally block of catchin pushOnRouter method -> " + e);
 					}
-				} catch (Exception e) {
-					System.out.println(e);
+					logger.info("Inside the finally block going to disconnect channel and session in pushOnRouter method");
+					channel.disconnect();
+					session.disconnect();
+					logger.info("Inside the finally block session and channel disconnect successfully in pushOnRouter method");
 				}
-				channel.disconnect();
-				session.disconnect();
-
 			}
-		}
 		return isSuccess;
 	}
 
@@ -1731,5 +1470,1354 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		channel.disconnect();
 		session.disconnect();
 		return isRes;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/c3pCheckAvailableFlashSizeOnDevice", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject c3pCheckAvailableFlashSizeOnDevice(@RequestBody String request) {
+		logger.info("Inside c3pCheckAvailableFlashSizeOnDevice service with request ->" + request);
+		JSONObject json = new JSONObject();
+		JSONObject obj = new JSONObject();
+		String cmdResponse = null, requestId = null, version = null, imageName = null, key = null;
+		JSONParser parser = new JSONParser();
+		boolean isCommandExcecute = false;
+		RequestInfoPojo requestinfo = new RequestInfoPojo();
+		DeviceDiscoveryEntity deviceDetails = null;
+		long imageSize = 0;
+		try {
+			logger.info("Inside c3pCheckAvailableFlashSizeOnDevice request-> " + request);
+			json = (JSONObject) parser.parse(request);
+			logger.info("Inside c3pCheckAvailableFlashSizeOnDevice json " + json);
+			DeliverConfigurationAndBackupTest.loadProperties();
+			logger.info("Loading the properties file in c3pCheckAvailableFlashSizeOnDevice service ");
+		} catch (ParseException e) {
+			logger.error("ParseException in c3pCheckAvailableFlashSizeOnDevice is " + e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			logger.error("IOException in c3pCheckAvailableFlashSizeOnDevice is " + e);
+			e.printStackTrace();
+		}
+		if (json.get("requestId") != null && json.containsKey("requestId")) {
+			logger.info("checking requestId not null and key is requestId");
+			requestId = json.get("requestId").toString();
+			logger.info("Value of requestId in c3pCheckAvailableFlashSizeOnDevice is " + requestId);
+		}
+		if (json.get("version") != null && json.containsKey("version")) {
+			logger.info("checking version not null and key is version");
+			version = json.get("version").toString();
+			logger.info("Value of version in c3pCheckAvailableFlashSizeOnDevice is " + version);
+		}
+
+		requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
+		logger.info("Value of requestinfo in c3pCheckAvailableFlashSizeOnDevice is " + requestinfo);
+		if (requestinfo != null && requestinfo.getVendor() != null && requestinfo.getNetworkType() != null
+				&& requestinfo.getOs() != null && requestinfo.getHostname() != null
+				&& requestinfo.getManagementIp() != null) {
+			logger.info(
+					"Checking requestinfo not null and its information inside if c3pCheckAvailableFlashSizeOnDevice is ");
+			deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),
+					requestinfo.getManagementIp(), "0");
+			logger.info("Checking deviceDetails in c3pCheckAvailableFlashSizeOnDevice is " + deviceDetails);
+			cmdResponse = getCommand(requestinfo.getVendor(), requestinfo.getNetworkType(), requestinfo.getOs(),
+					"FMEM");
+			logger.info("Checking cmdResponse in c3pCheckAvailableFlashSizeOnDevice is " + cmdResponse);
+			if (cmdResponse.contains("not applicable")) {
+				logger.info("This c3pCheckAvailableFlashSizeOnDevice milestone is not applicable " + cmdResponse);
+				isCommandExcecute = true;
+				key = "flash_size_flag";
+				requestInfoDao.update_dilevary_step_flag_in_db(key, 0, requestId, version);
+				logger.info("update the flag with key flash_size_flag in request in c3pCopyImageOnDevice is");
+				obj.put(new String("output"), isCommandExcecute);
+				logger.info("End of c3pCheckAvailableFlashSizeOnDevice milestone which is not applicable " + obj);
+				return obj;
+			}
+			imageName = getImageName(requestinfo.getVendor(), requestinfo.getFamily(), requestinfo.getOsVersion());
+			logger.info("imageName in c3pCheckAvailableFlashSizeOnDevice is " + imageName);
+			imageSize = getImageSize(requestinfo.getVendor(), requestinfo.getFamily(), requestinfo.getOsVersion(),
+					imageName);
+			logger.info("imageSize in c3pCheckAvailableFlashSizeOnDevice is " + imageSize);
+		}
+		String host = requestinfo.getManagementIp();
+		logger.info("Value of host in c3pCheckAvailableFlashSizeOnDevice is " + host);
+		CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
+		logger.info(
+				"Getting  CredentialManagement details in c3pCheckAvailableFlashSizeOnDevice is " + routerCredential);
+		String user = routerCredential.getLoginRead();
+		logger.info("Value of user in c3pCheckAvailableFlashSizeOnDevice is " + user);
+		String password = routerCredential.getPasswordWrite();
+		logger.info("Value of password in c3pCheckAvailableFlashSizeOnDevice is " + password);
+		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
+		logger.info("Value of port in c3pCheckAvailableFlashSizeOnDevice is " + port);
+		long sizeAvailable = 0;
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
+		try {
+			logger.info("Inside try block for getting session details in c3pCheckAvailableFlashSizeOnDevice");
+			session = jsch.getSession(user, host, Integer.parseInt(port));
+			logger.info(
+					"Inside try block valoe of session details in c3pCheckAvailableFlashSizeOnDevice is " + session);
+			Properties config = new Properties();
+			logger.info("Creating properties object");
+			config.put("StrictHostKeyChecking", "no");
+			logger.info("setting StrictHostKeyChecking");
+			logger.info("sessing setConfig is " + config);
+			session.setConfig(config);
+			logger.info("sessing setPassword is " + password);
+			session.setPassword(password);
+			logger.info("Going to connect sessing ");
+			session.connect();
+			logger.info("session Connect successfully ");
+			try {
+				Thread.sleep(10000);
+			} catch (Exception ee) {
+				logger.error("Exception in c3pCheckAvailableFlashSizeOnDevice after session connect");
+			}
+			try {
+				channel = session.openChannel("shell");
+				logger.info("After opening channel in c3pCheckAvailableFlashSizeOnDevice " + channel);
+				OutputStream ops = channel.getOutputStream();
+				logger.info("After OutputStream  in c3pCheckAvailableFlashSizeOnDevice" + ops);
+				PrintStream ps = new PrintStream(ops, true);
+				logger.info("After PrintStream in c3pCheckAvailableFlashSizeOnDevice " + ps);
+				logger.info("Before Channel Connected to machine " + host + " server to check flash size");
+				channel.connect();
+				logger.info("Channel Connected Successfully");
+				InputStream input = channel.getInputStream();
+				logger.info("Value of cmdResponse in c3pCheckAvailableFlashSizeOnDevice " + cmdResponse);
+				logger.info("After InputStream in  c3pCheckAvailableFlashSizeOnDevice " + input);
+				ps.println(cmdResponse);
+				logger.info("after ps.println c3pCheckAvailableFlashSizeOnDevice");
+				try {
+					Thread.sleep(5000);
+				} catch (Exception ee) {
+					logger.error("Exception in c3pCheckAvailableFlashSizeOnDevice after ps.println ");
+				}
+				int SIZE = 1024;
+				String availableSize[] = null;
+				byte[] tmp = new byte[SIZE];
+				logger.info("Value of tmp in c3pCheckAvailableFlashSizeOnDevice " + tmp);
+				while (input.available() > 0) {
+					logger.info("inside while loop in c3pCheckAvailableFlashSizeOnDevice ");
+					int i = input.read(tmp, 0, SIZE);
+					if (i < 0)
+						break;
+					String s = new String(tmp, 0, i);
+					logger.info("Value of command output in c3pCheckAvailableFlashSizeOnDevice " + s);
+					if (!(s.equals(""))) {
+						List<String> outputList = new ArrayList<String>(Arrays.asList(s.split("\n")));
+						for (int j = 0; j < outputList.size(); j++) {
+							if (outputList.get(j).toLowerCase().indexOf("used") != -1
+									&& outputList.get(j).toLowerCase().indexOf("available") != -1) {
+								List<String> sublist1 = new ArrayList<String>(
+										Arrays.asList(outputList.get(j).split(",")));
+
+								for (int k = 0; k < sublist1.size(); k++) {
+									logger.info(
+											"To get available free size from command output in c3pCheckAvailableFlashSizeOnDevice ");
+									String fw_mem = TSALabels.REGEX_FILTER_FW_MEM.getValue();
+									availableSize = fw_mem.split("\\|");
+									for (String searchKey : availableSize) {
+										if (sublist1.get(k).toLowerCase().indexOf("available") != -1
+												&& sublist1.get(k).toLowerCase().contains(searchKey)) {
+											sizeAvailable = Long.valueOf(StringUtils
+													.substringBefore(sublist1.get(k).toLowerCase(), searchKey).trim()
+													.toString());
+											logger.info("Available free size in c3pCheckAvailableFlashSizeOnDevice is "
+													+ sizeAvailable);
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+				if (sizeAvailable > 0 && sizeAvailable > imageSize) {
+					logger.info("Available free size is " + sizeAvailable);
+					// flash sized freed successfully, flash size available flag
+					// in DB to 1
+					key = "flash_size_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 1, requestId, version);
+					logger.info(
+							"update the flag with key flash_size_flag in request in c3pCheckAvailableFlashSizeOnDevice is");
+					isCommandExcecute = true;
+				} else {
+					isCommandExcecute = false;
+					key = "flash_size_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 2, requestId, version);
+					logger.info(
+							"update the flag with key flash_size_flag in request in c3pCheckAvailableFlashSizeOnDevice is");
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
+					requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "Flash Size", "Failure",
+							"No enough flash size available, flash could not be cleared");
+				}
+				if (channel.isClosed()) {
+					logger.info("exit-status in c3pCheckAvailableFlashSizeOnDevice: " + channel.getExitStatus());
+				}
+				try {
+					Thread.sleep(1000);
+				} catch (Exception ee) {
+					logger.error("Exception in in c3pCheckAvailableFlashSizeOnDevice: " + ee);
+				}
+			} catch (Exception e) {
+				logger.error("Exception in in c3pCheckAvailableFlashSizeOnDevice: " + e);
+			}
+		} catch (NumberFormatException e1) {
+			logger.error("NumberFormatException in c3pCheckAvailableFlashSizeOnDevice" + e1);
+			e1.printStackTrace();
+		} catch (JSchException e1) {
+			logger.error("JSchException in c3pCheckAvailableFlashSizeOnDevice" + e1);
+			e1.printStackTrace();
+		} finally {
+			logger.info("Inside the finally block to close the resouces");
+			if (channel != null) {
+				logger.info("Inside the finally if channel still open then going to disconnect session and channel");
+				try {
+					session = channel.getSession();
+					logger.info("Inside the finally try block if channel still open then going to disconnect session "
+							+ session);
+					if (channel.getExitStatus() == -1) {
+						logger.info("Inside the finally try block channel.getExitStatus() " + channel.getExitStatus());
+						Thread.sleep(5000);
+					}
+				} catch (Exception e) {
+					logger.error("Inside the finally block of catch " + e);
+				}
+				logger.info("Inside the finally block going to disconnect channel and session");
+				channel.disconnect();
+				session.disconnect();
+				logger.info("Inside the finally block session and channel disconnect successfully");
+			}
+		}
+		logger.info("Inside c3pCheckAvailableFlashSizeOnDevice service isCommandExcecute" + isCommandExcecute);
+		obj.put(new String("output"), isCommandExcecute);
+		return obj;
+	}
+
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/c3pCopyImageOnDevice", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject c3pCopyImageOnDevice(@RequestBody String request) {
+		logger.info("Inside c3pCopyImageOnDevice service with request " + request);
+		JSONObject obj = new JSONObject();
+		String cmdResponse = null, commandOutput = null, ftpImageName = null, osVersion = null, key = null;
+		boolean isStartUp = false, copyFtpStatus = false;
+		List<RequestInfoEntity> requestDetailEntity = new ArrayList<RequestInfoEntity>();
+		long ftpImageSize = 0;
+		RequestInfoPojo requestinfo = new RequestInfoPojo();
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
+		try {
+			logger.info("Inside try block in c3pCopyImageOnDevice service with input request " + request);
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(request);
+			logger.info("Value of json after parsing in c3pCopyImageOnDevice service " + json);
+			// Require requestId and version from camunda
+			String requestId = null, version = null;
+			if (json.get("requestId") != null && json.containsKey("requestId")) {
+				logger.info("checking requestId not null and key is requestId");
+				requestId = json.get("requestId").toString();
+				logger.info("Value of requestId in c3pCopyImageOnDevice is " + requestId);
+			}
+			if (json.get("version") != null && json.containsKey("version")) {
+				logger.info("checking version not null and key is version");
+				version = json.get("version").toString();
+				logger.info("Value of version in c3pCopyImageOnDevice is " + version);
+			}
+
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
+			logger.info("Value of requestinfo in c3pCopyImageOnDevice is " + requestinfo);
+
+			cmdResponse = getCommand(requestinfo.getVendor(), requestinfo.getNetworkType(), requestinfo.getOs(),
+					"CIMG");
+			osVersion = imageMangemntRepository.fetchingDisplayNamesByVendorAndFamily(requestinfo.getVendor(),
+					requestinfo.getFamily());
+
+			logger.info("Value of cmdResponse in c3pCopyImageOnDevice is " + cmdResponse);
+			if (cmdResponse.contains("not applicable")) {
+				logger.info("This c3pCopyImageOnDevice milestone is not applicable " + cmdResponse);
+				copyFtpStatus = true;
+				// set copy ftp flag in DB to 1
+				key = "os_download_flag";
+				requestInfoDao.update_dilevary_step_flag_in_db(key, 0, requestId, version);
+				logger.info("update the flag with key os_download_flag in request in c3pCopyImageOnDevice is");
+				obj.put(new String("output"), copyFtpStatus);
+				logger.info("End of c3pCopyImageOnDevice milestone which is not applicable " + obj);
+				return obj;
+			}
+			if (!requestId.contains("SNAI-") && !requestId.contains("SNAD-")) {
+				logger.info("checking request type in c3pCopyImageOnDevice is with requestid " + requestId);
+				requestDetailEntity = requestInfoDetailsRepositories.findAllByAlphanumericReqId(requestId);
+				logger.info("getting request deatils information based on requestid in c3pCopyImageOnDevice is "
+						+ requestDetailEntity);
+
+				for (int i = 0; i < requestDetailEntity.size(); i++) {
+					isStartUp = requestDetailEntity.get(i).getStartUp();
+				}
+				logger.info("value of isStartUp in c3pCopyImageOnDevice is " + isStartUp);
+
+				if (requestinfo != null && requestinfo.getManagementIp() != null
+						&& !requestinfo.getManagementIp().equals("")) {
+					logger.info("Checking requestinfo not null and its information inside if c3pCopyImageOnDevice is ");
+					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
+							requestinfo.getHostname(), requestinfo.getManagementIp(), "0");
+					logger.info("Checking deviceDetails in c3pCopyImageOnDevice is " + deviceDetails);
+
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "deliever_config", "4", "In Progress");
+					logger.info("changing status in WebserviceInfo table in c3pCopyImageOnDevice");
+
+					DeliverConfigurationAndBackupTest.loadProperties();
+					logger.info("Loading the properties file in c3pCopyImageOnDevice service ");
+					String host = requestinfo.getManagementIp();
+					logger.info("Value of host in c3pCopyImageOnDevice is " + host);
+					CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
+					logger.info("Getting  CredentialManagement details in c3pCopyImageOnDevice is " + routerCredential);
+					String user = routerCredential.getLoginRead();
+					logger.info("Value of user in c3pCopyImageOnDevice is " + user);
+					String password = routerCredential.getPasswordWrite();
+					logger.info("Value of password in c3pCopyImageOnDevice is " + password);
+					String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
+					logger.info("Value of port in c3pCopyImageOnDevice is " + port);
+					String source = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("SOURCE");
+					logger.info(
+							"Value of source after getting value from property in c3pCopyImageOnDevice is " + source);
+					source = source + requestinfo.getVendor() + TSALabels.FOLDER_SEPARATOR.getValue()
+							+ requestinfo.getFamily() + TSALabels.FOLDER_SEPARATOR.getValue() + requestinfo.getOs()
+							+ "-" + requestinfo.getOsVersion() + TSALabels.FOLDER_SEPARATOR.getValue();
+					logger.info("final Value of source in c3pCopyImageOnDevice is " + source);
+					commandOutput = modifyCommand(cmdResponse, source, requestinfo.getVendor(),
+							requestinfo.getOsVersion());
+					logger.info("Value of commandOutput in c3pCopyImageOnDevice is " + commandOutput);
+					if (osVersion != null
+							&& osVersion.toString().compareToIgnoreCase(requestinfo.getOsVersion()) >= 1) {
+						ftpImageName = getImageName(requestinfo.getVendor(), requestinfo.getFamily(), osVersion);
+						logger.info("Value of ftpImageName in c3pCopyImageOnDevice is " + ftpImageName);
+						ftpImageSize = getImageSize(requestinfo.getVendor(), requestinfo.getFamily(), osVersion,
+								ftpImageName);
+						logger.info("Value of ftpImageSize in c3pCopyImageOnDevice is " + ftpImageSize);
+					}
+					String type = checkType(requestId);
+					logger.info("Checking type in c3pCopyImageOnDevice is " + type);
+					if ("SLGF".equalsIgnoreCase(type)) {
+
+						// commandOutput = "copy ftp: flash:" + "\n" +
+						// "127.0.0.1" + "\n" + "soucename"
+						// + "\n"
+						// + "destination";
+
+						logger.info("Inside try block for getting session details in c3pCopyImageOnDevice");
+						session = jsch.getSession(user, host, Integer.parseInt(port));
+						logger.info("Inside try block value of session details in c3pCopyImageOnDevice is " + session);
+						Properties config = new Properties();
+						logger.info("Creating properties object");
+						config.put("StrictHostKeyChecking", "no");
+						logger.info("setting StrictHostKeyChecking");
+						logger.info("sessing setConfig is " + config);
+						session.setConfig(config);
+						logger.info("sessing setPassword is " + password);
+						session.setPassword(password);
+						logger.info("Going to connect session ");
+						session.connect();
+						logger.info("session Connect successfully");
+						try {
+							Thread.sleep(5000);
+						} catch (Exception ee) {
+							logger.error("Exception in c3pCopyImageOnDevice after session connect");
+						}
+						channel = session.openChannel("shell");
+						logger.info("After opening channel in c3pCopyImageOnDevice " + channel);
+						OutputStream ops = channel.getOutputStream();
+						logger.info("After OutputStream  in c3pCopyImageOnDevice" + ops);
+						PrintStream ps = new PrintStream(ops, true);
+						logger.info("After PrintStream in c3pCopyImageOnDevice " + ps);
+						logger.info("Before Channel Connected to machine " + host + " server to check flash size");
+						channel.connect();
+						logger.info("Channel Connected Successfully");
+						InputStream input = channel.getInputStream();
+						logger.info("Value of cmdResponse in c3pCopyImageOnDevice " + cmdResponse);
+						logger.info("After InputStream in c3pCopyImageOnDevice " + input);
+						ps.println(commandOutput);
+						logger.info("Inside ps.print c3pCopyImageOnDevice");
+
+						try {
+							// change this sleep in case of longer
+							// wait
+							Thread.sleep(Integer.parseInt(TSALabels.REQ_TIME.getValue()));
+						} catch (Exception ee) {
+							logger.error("Exception in c3pCopyImageOnDevice after ps.println ");
+						}
+						BufferedWriter bw = null;
+						FileWriter fw = null;
+						int SIZE = 1024;
+						byte[] tmp = new byte[SIZE];
+						logger.info("Value of tmp in c3pCopyImageOnDevice " + tmp);
+						while (input.available() > 0) {
+							logger.info("inside while loop in c3pCopyImageOnDevice ");
+							int i = input.read(tmp, 0, SIZE);
+							if (i < 0)
+								break;
+							// we will get response from router here
+							String s = new String(tmp, 0, i);
+							// Hardcoding it for time being
+							// String s = "Loading c7200-a3js-mz.122-15.T16.bin
+							// from 172.22.1.84 (via
+							// GigabitEthernet0/1):/n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!/n[OK
+							// - 19187152 bytes]/n/nVerifying checksum... OK
+							// (0x15C1)19187152 bytes/ncopied
+							// in 482.920 secs (39732 bytes/sec)";
+							logger.info("EOSubBlock");
+							List<String> outList = new ArrayList<String>();
+							logger.info("Value of outList in c3pCopyImageOnDevice is " + outList);
+							String str[] = s.split("/n");
+							outList = Arrays.asList(str);
+							logger.info("After split Value of outList in c3pCopyImageOnDevice is " + outList);
+							int size = outList.size();
+							logger.info("size of outList in c3pCopyImageOnDevice is " + size);
+							if (outList.get(size - 1).indexOf("OK") != 0) {
+								copyFtpStatus = true;
+							}
+						}
+						if (channel != null) {
+							try {
+								session = channel.getSession();
+								if (channel.getExitStatus() == -1) {
+									Thread.sleep(5000);
+								}
+							} catch (Exception e) {
+								logger.error("Exception in c3pCopyImageOnDevice" + e);
+							}
+						}
+						channel.disconnect();
+						session.disconnect();
+						if (copyFtpStatus) {
+							// set copy ftp flag in DB to 1
+							key = "os_download_flag";
+							requestInfoDao.update_dilevary_step_flag_in_db(key, 1, requestId, version);
+							logger.info(
+									"update the flag with key os_download_flag in request in c3pCopyImageOnDevice is");
+						} else {
+							key = "os_download_flag";
+							requestInfoDao.update_dilevary_step_flag_in_db(key, 2, requestId, version);
+							// could not copy image to csr
+							// return error String s,output
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2",
+									"Failure");
+							requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "Copy FTP to CSR", "Failure",
+									"Could not copy image from FTP to CSR.");
+						}
+						logger.info("EOBlock");
+					}
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Exception in end of c3pCopyImageOnDevice service" + e);
+		} finally {
+			logger.info("Inside the finally block to close the resouces");
+			if (channel != null) {
+				logger.info("Inside the finally if channel still open then going to disconnect session and channel");
+				try {
+					session = channel.getSession();
+					logger.info("Inside the finally try block if channel still open then going to disconnect session "
+							+ session);
+					if (channel.getExitStatus() == -1) {
+						logger.info("Inside the finally try block channel.getExitStatus() " + channel.getExitStatus());
+						Thread.sleep(5000);
+					}
+				} catch (Exception e) {
+					logger.error("Inside the finally block of catch in c3pCopyImageOnDevice service is -> " + e);
+				}
+				logger.info("Inside the finally block going to disconnect channel and session");
+				channel.disconnect();
+				session.disconnect();
+				logger.info("Inside the finally block session and channel disconnect successfully");
+			}
+		}
+		logger.info("Inside c3pCopyImageOnDevice service isCommandExcecute " + copyFtpStatus);
+		obj.put(new String("output"), copyFtpStatus);
+		return obj;
+	}
+
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/c3pBootSystemFlash", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject c3pBootSystemFlash(@RequestBody String request) {
+
+		JSONObject obj = new JSONObject();
+		logger.info("Inside c3pBootSystemFlash with request " + request);
+		String jsonArray = "", requestId = null, version = null;
+		String key = null, ftpImageName = null, cmdResponse = null, appendCmd = null, command = null;
+		long ftpImageSize = 0;
+		RequestInfoPojo requestinfo = new RequestInfoPojo();
+		boolean isBootSystemFlashSuccessful = false;
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(request);
+
+			// Require requestId and version from camunda
+			if (json.get("requestId") != null && json.containsKey("requestId")) {
+				logger.info("checking requestId not null and key is requestId");
+				requestId = json.get("requestId").toString();
+				logger.info("Value of requestId in c3pBootSystemFlash is " + requestId);
+			}
+			if (json.get("version") != null && json.containsKey("version")) {
+				logger.info("checking version not null and key is version");
+				version = json.get("version").toString();
+				logger.info("Value of version in c3pBootSystemFlash is " + version);
+			}
+
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
+			logger.info("Value of requestinfo in c3pBootSystemFlash is " + requestinfo);
+
+			command = getCommand(requestinfo.getVendor(), requestinfo.getNetworkType(), requestinfo.getOs(), "BOSF");
+
+			logger.info("Value of command in c3pBootSystemFlash is " + command);
+			if (command.contains("not applicable")) {
+				logger.info("This c3pBootSystemFlash milestone is not applicable " + command);
+				isBootSystemFlashSuccessful = true;
+				key = "boot_system_flash_flag";
+				requestInfoDao.update_dilevary_step_flag_in_db(key, 0, requestId, version);
+				logger.info("update the flag with key back_up_flag in request in c3pBootSystemFlash");
+				obj.put(new String("output"), isBootSystemFlashSuccessful);
+				logger.info("End of c3pBootSystemFlash milestone which is not applicable " + obj);
+				return obj;
+			}
+
+			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				logger.info("Checking requestinfo not null and its information inside if c3pBootSystemFlash is ");
+				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
+						requestinfo.getHostname(), requestinfo.getManagementIp(), "0");
+				logger.info("Checking deviceDetails in c3pBootSystemFlash is " + deviceDetails);
+				try {
+					DeliverConfigurationAndBackupTest.loadProperties();
+					logger.info("Loading the properties file in c3pBootSystemFlash service ");
+				} catch (IOException e1) {
+					logger.error("IOException inside c3pBootSystemFlash service is-> " + e1);
+					e1.printStackTrace();
+				}
+				String host = requestinfo.getManagementIp();
+				logger.info("Value of host in c3pBootSystemFlash is " + host);
+				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
+				logger.info("Getting  CredentialManagement details in c3pBootSystemFlash is " + routerCredential);
+				String user = routerCredential.getLoginRead();
+				logger.info("Value of user in c3pBootSystemFlash is " + user);
+				String password = routerCredential.getPasswordWrite();
+				logger.info("Value of password in c3pBootSystemFlash is " + password);
+				String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
+				logger.info("Value of port in c3pBootSystemFlash is " + port);
+				ftpImageName = getImageName(requestinfo.getVendor(), requestinfo.getFamily(),
+						requestinfo.getOsVersion());
+				logger.info("Value of ftp_image_name in c3pBootSystemFlash is " + ftpImageName);
+				ftpImageSize = getImageSize(requestinfo.getVendor(), requestinfo.getFamily(),
+						requestinfo.getOsVersion(), ftpImageName);
+				logger.info("Value of ftp_image_size in c3pBootSystemFlash is " + ftpImageSize);
+				cmdResponse = getCommand(requestinfo.getVendor(), requestinfo.getNetworkType(), requestinfo.getOs(),
+						"BSEQ");
+				logger.info("Value of cmdResponse in c3pBootSystemFlash is " + cmdResponse);
+				appendCmd = getAppendCommand(requestinfo.getVendor(), requestinfo.getNetworkType(), requestinfo.getOs(),
+						"BSEQ");
+				logger.info("Value of appendCmd in c3pBootSystemFlash is " + appendCmd);
+
+				// Do boot system flash to copy latest
+				// image on top
+
+				// 1. Do show run on router and get boot
+				// commands and append no to them
+
+				List<String> exsistingBootCmdsOnRouter = getExsistingBootCmds(user, password, host, cmdResponse);
+				logger.info("Value of exsistingBootCmdsOnRouter in c3pBootSystemFlash" + exsistingBootCmdsOnRouter);
+
+				// append no commands to exsisting boot
+				// commands and add to cmds array to be
+				// pushed
+
+				List<String> cmdsToPushInorder = new ArrayList<String>();
+
+				logger.info(
+						"Append no command in the begining of exsistingBootCmdsOnRouter in c3pBootSystemFlash with command "
+								+ command);
+				for (int i = 0; i < exsistingBootCmdsOnRouter.size(); i++) {
+					cmdsToPushInorder.add(appendCmd + " " + exsistingBootCmdsOnRouter.get(i) + "\r\n");
+				}
+				logger.info(
+						"After Append no command in the begining of exsistingBootCmdsOnRouter in c3pBootSystemFlash "
+								+ cmdsToPushInorder);
+
+				// cmdsToPushInorder.add(1,"boot system flash ");
+				cmdsToPushInorder.add(0, command + " " + ftpImageName);
+				logger.info("Inside cmdsToPushInorder c3pBootSystemFlash" + command + ftpImageName);
+
+				for (int i = 0; i < exsistingBootCmdsOnRouter.size(); i++) {
+					cmdsToPushInorder.add(exsistingBootCmdsOnRouter.get(i) + "\r\n");
+				}
+
+				// cmdsToPushInorder.add(cmdsToPushInorder.size()+1,"exit");
+
+				isBootSystemFlashSuccessful = pushOnRouter(user, password, host, cmdsToPushInorder);
+				logger.info("Inside isBootSystemFlashSuccessful c3pBootSystemFlash" + isBootSystemFlashSuccessful);
+				// push the array on router
+
+				if (isBootSystemFlashSuccessful) {
+					// set
+					// bootsystemflash,reload,postloginflag
+					// in DB to 1
+					key = "boot_system_flash_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 1, requestId, version);
+					logger.info("update the flag with key back_up_flag in request in c3pBootSystemFlash");
+
+					key = "post_login_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 1, requestId, version);
+					logger.info("update the flag with key post_login_flag in request in c3pBootSystemFlash");
+
+					// value = true;
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "deliever_config", "1", "In Progress");
+
+					jsonArray = new Gson().toJson(isBootSystemFlashSuccessful);
+					obj.put(new String("output"), jsonArray);
+					logger.info("jsonArray in c3pBootSystemFlash" + jsonArray);
+				} else {
+					key = "boot_system_flash_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 2, requestId, version);
+					key = "reload_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 2, requestId, version);
+					key = "post_login_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 2, requestId, version);
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
+					requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "Boot System Flash", "Failure",
+							"Could not load image on top on boot commands.");
+					jsonArray = new Gson().toJson(isBootSystemFlashSuccessful);
+					logger.info("isBootSystemFlashSuccessful jsonArray in c3pBootSystemFlash" + jsonArray);
+					obj.put(new String("output"), jsonArray);
+					logger.info("end copysystemFlashSuccessful jsonArray in c3pBootSystemFlash" + jsonArray);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Exception in c3pBootSystemFlash is - > " + e);
+		}
+		logger.info("End of c3pBootSystemFlash service is  - > " + obj);
+		return obj;
+	}
+
+	private String getparentCmd(String command) {
+		logger.info("Inside getparentCmd method, command value is -> " + command);
+		String parentId = StringUtils.substringAfterLast(command, "-");
+		logger.info("End of getparentCmd method, parentId value is -> " + parentId);
+		return parentId;
+	}
+
+	private String getCommand(String vendor, String networkType, String os, String repetition) {
+		logger.info("inside getCommand method -> vendor -> " + vendor + "networkType ->" + networkType + " os-> " + os
+				+ " repetition ->" + repetition);
+		String pId = null, recordId = null, command = null, parentCmd = null, commandData = "";
+		StringBuilder builder = new StringBuilder();
+		boolean isParentCmd = false;
+		VendorCommandEntity vendorComandList = vendorCommandRepository
+				.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRepetition(vendor, networkType, os, repetition);
+		logger.info("Getting inforamation of Vendor in getCommand is " + vendorComandList);
+		if (vendorComandList != null && vendorComandList.isvCisApplicable()) {
+			pId = getparentCmd(vendorComandList.getVcParentId());
+			logger.info("Value of Parent id in getCommand" + pId);
+			recordId = vendorComandList.getVcParentId();
+			logger.info("Value of recordId id in getCommand" + recordId);
+			while (!pId.equals("000")) {
+				VendorCommandEntity vendorComandDetails = vendorCommandRepository.findByVcRecordId(recordId);
+				logger.info(
+						"Getting inforamation of Vendor in getCommand based on record id is " + vendorComandDetails);
+				if (vendorComandDetails != null) {
+					parentCmd = vendorComandDetails.getVcStart();
+					logger.info("Value of parent command id in getCommand" + parentCmd);
+					if (builder.length() != 0) {
+						builder.append("\r\n");
+						logger.info("Value of string builder in getCommand" + builder);
+					}
+					logger.info("Value of parent command id vefore adding in string builder in getCommand" + parentCmd);
+					builder.append(parentCmd);
+					logger.info("Value of string builder after append parent command in getCommand" + builder);
+				}
+				command = vendorComandList.getVcStart();
+				logger.info("Value of command after while loop in getCommand" + command);
+				recordId = vendorComandDetails.getVcParentId();
+				logger.info("Value of recordId after while loop in getCommand" + builder);
+				pId = getparentCmd(vendorComandDetails.getVcParentId());
+				logger.info("Value of Parent id after while loop in getCommand" + builder);
+				isParentCmd = true;
+				logger.info("Value of isParentCmd after while loop in getCommand" + builder);
+			}
+			if (isParentCmd) {
+				logger.info("Value of isParentCmd inside if loop in getCommand" + isParentCmd);
+				logger.info("Value of string builder inside if loop before splitting  in getCommand" + builder);
+				String cmd[] = builder.toString().split("\r\n");
+				logger.info("Value of string builder inside if loop after splitting  in getCommand" + cmd);
+				for (String cmdResult : cmd) {
+					logger.info("Value of command result inside for loop in getCommand" + cmdResult);
+					if (cmdResult.length() - 1 == 0) {
+						logger.info("Value of cmdResult inside if loop in getCommand" + cmdResult + "commandData"
+								+ commandData);
+						commandData = cmdResult + commandData;
+						logger.info(
+								"Value of commandData inside if loop after concat cmdResult and commandData in getCommand"
+										+ commandData);
+					} else {
+						logger.info("Value of cmdResult inside else loop in getCommand" + cmdResult + "commandData"
+								+ commandData);
+						commandData = cmdResult + "\r\n" + commandData;
+						logger.info(
+								"Value of commandData inside else loop after concat cmdResult and commandData in getCommand"
+										+ commandData);
+					}
+				}
+				command = commandData + command;
+				logger.info("final Value of command inside if loop after concat commandData and command in getCommand"
+						+ command);
+			} else {
+				command = vendorComandList.getVcStart();
+				logger.info(
+						"Value of command inside else loop after getting start command value in getCommand" + command);
+			}
+
+		} else if (vendorComandList != null && !vendorComandList.isvCisApplicable())
+			command = "not applicable";
+		logger.info("inside the end getCommand method -> " + command);
+		return command;
+	}
+
+	private String modifyCommand(String command, String source, String vendor, String osVersion) {
+		logger.info("inside modifyCommand  method " + "command" + command + "source" + source + "vendor" + vendor
+				+ "osVersion" + osVersion);
+		String command1 = "", tempcmd = null, cmd = null, vendorOS = null, cmdResponse = null, isSlashN = null;
+		String test[] = command.split("\n");
+		isSlashN = TSALabels.REQ_SLASHN.getValue();
+		logger.info("Value of test inside modifyCommand " + test);
+		for (String cmdResult : test) {
+			logger.info("Value of cmdResult inside modifyCommand " + cmdResult);
+			if (cmdResult.contains("<vendor>") && cmdResult.contains("<os_version>")) {
+				cmdResponse = cmdResult.replace("<vendor>", vendor).replace("<os_version>", osVersion);
+				if ("1".equals(isSlashN)) {
+					cmd = StringUtils.substringBefore(cmdResult, "/");
+					vendorOS = StringUtils.substringAfter(cmdResult, "/");
+					cmd = cmd + "\n";
+					vendorOS = vendorOS.replace("<vendor>", vendor).replace("<os_version>", osVersion);
+					cmdResult = cmd + vendorOS;
+				} else
+					cmdResult = cmdResult.replace("<vendor>", vendor).replace("<os_version>", osVersion);
+				logger.info(
+						"Value of cmdResult after replacing <> with dynamic value inside modifyCommand " + cmdResult);
+				if (cmdResponse.contains("mkdir")) {
+					tempcmd = cmdResponse.replace("mkdir", "");
+					logger.info("Value of tempcmd if cmdResult contails mkdir inside modifyCommand " + tempcmd);
+				} else {
+					tempcmd = cmdResponse;
+					logger.info(
+							"Value of tempcmd if cmdResult does not contails mkdir inside modifyCommand " + tempcmd);
+				}
+			}
+			if (cmdResult.contains("<destination>")) {
+				cmdResult = cmdResult.replace("<destination>", tempcmd);
+				logger.info("Value of cmdResult after replacing <destination> with dynamic value inside modifyCommand  "
+						+ cmdResult);
+			}
+			if (cmdResult.contains("<source>")) {
+				cmdResult = cmdResult.replace("<source>", source);
+				logger.info("Value of cmdResult after replacing <source> with dynamic value inside modifyCommand  "
+						+ cmdResult);
+			}
+			logger.info("Value of command1 inside modifyCommand  " + command1 + "and  cmdResult" + cmdResult);
+			command1 = command1 + cmdResult;
+		}
+		logger.info("inside end modifyCommand command1 " + command1);
+		return command1;
+	}
+
+	private String getAppendCommand(String vendor, String networkType, String os, String repetition) {
+		logger.info("inside getAppendCommand method -> vendor ->" + vendor + "networkType ->" + networkType + " os-> "
+				+ os + " repetition ->" + repetition);
+		String appendCmd = null;
+		VendorCommandEntity vendorComandList = vendorCommandRepository
+				.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRepetition(vendor, networkType, os, repetition);
+		logger.info("inside getAppendCommand method  value of  vendorComandList is -> " + vendorComandList);
+		if (vendorComandList != null) {
+			appendCmd = vendorComandList.getVcAppend();
+		}
+		logger.info("inside end getAppendCommand method -> " + appendCmd);
+		return appendCmd;
+	}
+
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/firmwareupgradeLogin", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject firmwareupgradeLogin(@RequestBody String request) throws ParseException {
+
+		logger.info("inside  firmwareupgradeLogin servive with request -> " + request);
+		JSONObject obj = new JSONObject();
+		RequestInfoPojo requestinfo = new RequestInfoPojo();
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(request);
+		String requestId = null, version = null;
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
+		boolean isLogin = false;
+		try {
+			logger.info("firmwareupgradeLogin service with request" + request);
+			if (json.get("requestId") != null && json.containsKey("requestId")) {
+				logger.info("checking requestId not null and key is requestId");
+				requestId = json.get("requestId").toString();
+				logger.info("Value of requestId in firmwareupgradeLogin is " + requestId);
+			}
+			if (json.get("version") != null && json.containsKey("version")) {
+				logger.info("checking version not null and key is version");
+				version = json.get("version").toString();
+				logger.info("Value of version in firmwareupgradeLogin is " + version);
+			}
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
+			logger.info("Value of requestinfo in firmwareupgradeLogin is " + requestinfo);
+			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				logger.info("Checking requestinfo not null and its information inside if firmwareupgradeLogin");
+				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
+						requestinfo.getHostname(), requestinfo.getManagementIp(), "0");
+				logger.info("Value of deviceDetails in firmwareupgradeLogin is " + deviceDetails);
+				String host = requestinfo.getManagementIp();
+				logger.info("Value of host in firmwareupgradeLogin is " + host);
+				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
+				logger.info("Getting CredentialManagement details in firmwareupgradeLogin is " + routerCredential);
+				String user = routerCredential.getLoginRead();
+				logger.info("Value of user in firmwareupgradeLogin is " + user);
+				String password = routerCredential.getPasswordWrite();
+				logger.info("Value of password in firmwareupgradeLogin is " + password);
+				logger.info("Getting session details in firmwareupgradeLogin");
+				session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+				Properties config = new Properties();
+				logger.info("Creating properties object");
+				config.put("StrictHostKeyChecking", "no");
+				logger.info("setting StrictHostKeyChecking");
+				logger.info("sessing setConfig is " + config);
+				session.setConfig(config);
+				logger.info("sessing setPassword is " + password);
+				session.setPassword(password);
+				logger.info("Before session.connet in firmwareupgradeLogin Username" + user + " Password " + password
+						+ " host" + host);
+				session.connect();
+				logger.info("session Connect successfully ");
+				try {
+					Thread.sleep(5000);
+				} catch (Exception ee) {
+					logger.error("Exception in firmwareupgradeLogin after session connect");
+				}
+				try {
+					channel = session.openChannel("shell");
+					logger.info("After opening channel in firmwareupgradeLogin " + channel);
+					OutputStream ops = channel.getOutputStream();
+					logger.info("After OutputStream  in firmwareupgradeLogin" + ops);
+					PrintStream ps = new PrintStream(ops, true);
+					logger.info("Channel Connected to machine " + host + " server");
+					channel.connect();
+					logger.info("Channel Connected Successfully");
+					isLogin = true;
+					InputStream input = channel.getInputStream();
+					logger.info("inside  input firmwareupgradeLogin is" + input);
+					// set login to csr flag in DB to 1
+					String key = "login_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 1, requestId, version);
+					logger.info("update the flag with key login_flag in request in firmwareupgradeLogin is");
+					input.close();
+					logger.info("input closed in firmwareupgradeLogin");
+					session.disconnect();
+					logger.info("session closed in firmwareupgradeLogin");
+					channel.disconnect();
+					logger.info("channel closed in firmwareupgradeLogin");
+				} catch (NumberFormatException e) {
+					logger.error("NumberFormatException in firmwareupgradeLogin: " + e);
+					e.printStackTrace();
+				} catch (JSchException e) {
+					logger.error("JSchException in firmwareupgradeLogin: " + e);
+					e.printStackTrace();
+				} catch (IOException e) {
+					logger.error("IOException in firmwareupgradeLogin: " + e);
+					e.printStackTrace();
+				} catch (Exception e) {
+					logger.error("Exception in firmwareupgradeLogin: " + e);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Exception in firmwareupgradeLogin service : " + e);
+		} finally {
+			logger.info("Inside the finally block to close the resouces");
+			if (channel != null) {
+				logger.info("Inside the finally if channel still open then going to disconnect session and channel");
+				try {
+					session = channel.getSession();
+					logger.info("Inside the finally try block if channel still open then going to disconnect session "
+							+ session);
+					if (channel.getExitStatus() == -1) {
+						logger.info("Inside the finally try block channel.getExitStatus() " + channel.getExitStatus());
+						Thread.sleep(5000);
+					}
+				} catch (Exception e) {
+					logger.error("Inside the finally block of catch in firmwareupgradeLogin service is - > " + e);
+				}
+				logger.info("Inside the finally block going to disconnect channel and session");
+				channel.disconnect();
+				session.disconnect();
+				logger.info("Inside the finally block session and channel disconnect successfully");
+			}
+		}
+		obj.put(new String("output"), isLogin);
+		logger.info("End of firmwareupgradeLogin service ->: " + isLogin);
+		return obj;
+	}
+
+	private String getImageName(String vendor, String family, String osVersion) {
+		logger.info("inside getImageName  method " + "vendor-> " + vendor + "family -> " + family + "osVersion -> "
+				+ osVersion);
+		ImageManagementEntity imageMgtDetails = imageMangemntRepository.findByVendorAndFamilyAndDisplayName(vendor,
+				family, osVersion);
+		logger.info("Value of imagedetails inside getImageName methos is ->: " + imageMgtDetails);
+		File imageDir = new File(TSALabels.IMAGE_FILE_PATH.getValue() + vendor + TSALabels.FOLDER_SEPARATOR.getValue()
+				+ family + TSALabels.FOLDER_SEPARATOR.getValue() + osVersion);
+		logger.info("Value of imageDir inside getImageName methos is ->: " + imageDir);
+		String imageName = "";
+		boolean isImagePathExist = imageDir.exists();
+		logger.info("Checking of image path is exist or not isImagePathExist ->: " + isImagePathExist);
+		if (isImagePathExist && imageMgtDetails != null) {
+			File[] files = imageDir.listFiles();
+			for (File fileList : files) {
+				if (imageMgtDetails.getImageFilename().equalsIgnoreCase(fileList.getName()))
+					imageName = fileList.getName();
+			}
+		}
+		logger.info("End of getImageName method, image name ->" + imageName);
+		return imageName;
+	}
+
+	private long getImageSize(String vendor, String family, String osVersion, String imageName) {
+		logger.info("inside getImageSize  method " + "vendor-> " + vendor + "family -> " + family + "osVersion -> "
+				+ osVersion);
+		ImageManagementEntity imageMgtDetails = imageMangemntRepository.findByVendorAndFamilyAndDisplayName(vendor,
+				family, osVersion);
+		logger.info("Value of imagedetails inside getImageSize methos is ->: " + imageMgtDetails);
+		File imageDir = new File(TSALabels.IMAGE_FILE_PATH.getValue() + vendor + TSALabels.FOLDER_SEPARATOR.getValue()
+				+ family + TSALabels.FOLDER_SEPARATOR.getValue() + osVersion);
+		logger.info("Value of imageDir inside getImageSize methos is ->: " + imageDir);
+		long size = 0;
+		boolean isImageExist = imageDir.exists();
+		logger.info("Checking of Image is exist or not getImageSize isImageExist ->: " + isImageExist);
+		if (isImageExist) {
+			File[] files = imageDir.listFiles();
+			for (File fileList : files) {
+				if (imageMgtDetails.getImageFilename().equalsIgnoreCase(fileList.getName()))
+					size = FileUtils.sizeOf(fileList);
+			}
+		}
+		logger.info("End of getImageSize method, size is -> " + size);
+		return size;
+	}
+
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/firmwareBackup", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject firmwareBackup(@RequestBody String request) throws ParseException {
+
+		logger.info("Indise firmwareBackup service with request ->" + request);
+		JSONObject obj = new JSONObject();
+		RequestInfoPojo requestinfo = new RequestInfoPojo();
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(request);
+		String requestId = null, version = null, key = null;
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
+		boolean isBackUpSccessful = false;
+		try {
+			logger.info("firmware backup " + requestId);
+			if (json.get("requestId") != null && json.containsKey("requestId")) {
+				logger.info("checking requestId not null and key is requestId");
+				requestId = json.get("requestId").toString();
+				logger.info("Value of requestId in firmwareBackup is " + requestId);
+			}
+			if (json.get("version") != null && json.containsKey("version")) {
+				logger.info("checking version not null and key is version");
+				version = json.get("version").toString();
+				logger.info("Value of version in firmwareBackup is " + version);
+			}
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
+			logger.info("Value of requestinfo in firmwareBackup is " + requestinfo);
+
+			VendorCommandEntity vendorComandList = vendorCommandRepository
+					.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRepetition(requestinfo.getVendor(),
+							requestinfo.getNetworkType(), requestinfo.getOs(), "FBCK");
+
+			logger.info("Getting inforamation of Vendor in getCommand is " + vendorComandList);
+			if (vendorComandList != null && !vendorComandList.isvCisApplicable()) {
+				logger.info("This firmwareBackup milestone is not applicable " + !vendorComandList.isvCisApplicable());
+				isBackUpSccessful = true;
+				key = "back_up_flag";
+				requestInfoDao.update_dilevary_step_flag_in_db(key, 0, requestId, version);
+				logger.info("update the flag with key back_up_flag in request in firmwareBackup is");
+				obj.put(new String("output"), isBackUpSccessful);
+				logger.info("End of firmwareBackup milestone which is not applicable " + obj);
+				return obj;
+			}
+
+			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				logger.info("Checking requestinfo not null and its information inside if firmwareBackup is ");
+				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
+						requestinfo.getHostname(), requestinfo.getManagementIp(), "0");
+				logger.info("Checking deviceDetails in firmwareBackup is " + deviceDetails);
+				String host = requestinfo.getManagementIp();
+				logger.info("Value of host in firmwareBackup is " + host);
+				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
+				logger.info("Getting  CredentialManagement details in firmwareBackup is " + routerCredential);
+				String user = routerCredential.getLoginRead();
+				logger.info("Value of user in firmwareBackup is " + user);
+				String password = routerCredential.getPasswordWrite();
+				logger.info("Value of password in firmwareBackup is " + password);
+				logger.info("Getting session details in firmwareBackup");
+				session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+				Properties config = new Properties();
+				config.put("StrictHostKeyChecking", "no");
+				logger.info("setting StrictHostKeyChecking");
+				logger.info("sessing setConfig is " + config);
+				session.setConfig(config);
+				logger.info("sessing setPassword is " + password);
+				session.setPassword(password);
+				logger.info("Before session.connet in firmwareBackup Username" + user + " Password " + password
+						+ " host" + host);
+				session.connect();
+				logger.info("firmwareBackup after session connect");
+				isBackUpSccessful = BackUp(requestinfo, user, password, "previous");
+				logger.info("firmwareBackup after session connect" + isBackUpSccessful);
+				if (isBackUpSccessful) {
+					// BackUp successfully, back up flag in DB to 1
+					key = "back_up_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 1, requestId, version);
+					logger.info("update the flag with key back_up_flag in request in firmwareBackup is");
+				} else {
+					key = "back_up_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 2, requestId, version);
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
+					requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "Back up", "Failure",
+							"Back up unsuccessful.");
+				}
+				try {
+					Thread.sleep(5000);
+				} catch (Exception ee) {
+					logger.error("Exception in firmwareBackup after session connect");
+				}
+				try {
+					channel = session.openChannel("shell");
+					logger.info("After opening channel in firmwareBackup " + channel);
+					OutputStream ops = channel.getOutputStream();
+					logger.info("After OutputStream  in firmwareBackup" + ops);
+					PrintStream ps = new PrintStream(ops, true);
+					logger.info("Channel Connected to machine " + host + " server");
+					channel.connect();
+					logger.info("Channel Connected Successfully");
+					InputStream input = channel.getInputStream();
+					logger.info("Value of cmdResponse in firmwareBackup ");
+					logger.info("After InputStream in  firmwareBackup " + input);
+				} catch (Exception e) {
+					logger.error("Exception in firmwareBackup: " + e);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Exception in firmwareBackup service is: " + e);
+		} finally {
+			logger.info("Inside the finally block to close the resouces");
+			if (channel != null) {
+				logger.info("Inside the finally if channel still open then going to disconnect session and channel");
+				try {
+					logger.info(
+							"Inside the finally if channel still open then going to disconnect session and channel");
+					session = channel.getSession();
+					logger.info(
+							"Inside the finally if channel still open then going to disconnect session and channel");
+					if (channel.getExitStatus() == -1) {
+						logger.info(
+								"Inside the finally if channel still open then going to disconnect session and channel");
+						Thread.sleep(5000);
+					}
+				} catch (Exception e) {
+					logger.error("Inside the finally block of catch in firmwareBackup service" + e);
+				}
+				logger.info("Inside the finally block going to disconnect channel and session");
+				channel.disconnect();
+				session.disconnect();
+				logger.info("Inside the finally block session and channel disconnect successfully");
+			}
+		}
+		obj.put(new String("output"), isBackUpSccessful);
+		logger.info("End of firmwareBackup service ->" + isBackUpSccessful);
+		return obj;
+	}
+
+	private String checkType(String requestId) {
+		logger.info("Inside checkType method" + requestId);
+		String type = "";
+		type = StringUtils.substringBeforeLast(requestId, "-");
+		logger.info("End of checkType method is -> " + type);
+		return type;
+	}
+
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/firmwareReload", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject firmwareReload(@RequestBody String request) throws ParseException {
+
+		logger.info("firmwareReload after session connect -> " + request);
+		JSONObject obj = new JSONObject();
+		RequestInfoPojo requestinfo = new RequestInfoPojo();
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(request);
+		String requestId = null, version = null, command = null, key = null, saveCmd = null;
+		boolean isBackUpSccessful = false, isReload = false, value = false, isSaveConfig = false;
+		try {
+			logger.info("firmwareReload service request" + request);
+			if (json.get("requestId") != null && json.containsKey("requestId")) {
+				logger.info("checking requestId not null and key is requestId");
+				requestId = json.get("requestId").toString();
+				logger.info("Value of requestId in firmwareReload is " + requestId);
+			}
+			if (json.get("version") != null && json.containsKey("version")) {
+				logger.info("checking version not null and key is version");
+				version = json.get("version").toString();
+				logger.info("Value of version in firmwareReload is " + version);
+			}
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
+			logger.info("Value of requestinfo in firmwareReload is " + requestinfo);
+
+			command = getCommand(requestinfo.getVendor(), requestinfo.getNetworkType(), requestinfo.getOs(), "RLDR");
+			saveCmd = getCommand(requestinfo.getVendor(), requestinfo.getNetworkType(), requestinfo.getOs(), "WRTE");
+			logger.info("Value of command response is " + command);
+			if (command.contains("not applicable")) {
+				logger.info("This firmwareReload milestone is not applicable " + command);
+				isBackUpSccessful = true;
+				key = "reload_flag";
+				requestInfoDao.update_dilevary_step_flag_in_db(key, 0, requestId, version);
+				logger.info("update the flag with key reload_flag in request in c3pBootSystemFlash");
+				obj.put(new String("output"), isBackUpSccessful);
+				logger.info("End of firmwareReload milestone which is not applicable " + obj);
+				return obj;
+			}
+			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+				logger.info("Checking requestinfo not null and its information inside if firmwareReload");
+				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
+						requestinfo.getHostname(), requestinfo.getManagementIp(), "0");
+				logger.info("Checking deviceDetails in firmwareReload is " + deviceDetails);
+				String host = requestinfo.getManagementIp();
+				logger.info("Value of host in firmwareBackup is " + host);
+				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
+				logger.info("Getting  CredentialManagement details in firmwareBackup is " + routerCredential);
+				String user = routerCredential.getLoginRead();
+				logger.info("Value of user in firmwareBackup is " + user);
+				String password = routerCredential.getPasswordWrite();
+				logger.info("Value of password in firmwareReload is " + password);
+				logger.info("Getting session details in firmwareReload");
+
+				isSaveConfig = saveConfiguration(user, password, host, saveCmd);
+				logger.info("Inside firmwareReload, going to saveConfiguration - > +isSaveConfig ");
+
+				isBackUpSccessful = BackUp(requestinfo, user, password, "current");
+				logger.info("After Successful backup isBackUpSccessful in firmwareReload is " + isBackUpSccessful);
+
+				if (isSaveConfig && isBackUpSccessful)
+					isReload = firmwareReload(user, password, host, command);
+				logger.info("Response of isRelaod command is " + isReload);
+
+				if (isReload) {
+					logger.info("After reload going to take backup  " + isReload);
+					key = "reload_flag";
+					requestInfoDao.update_dilevary_step_flag_in_db(key, 1, requestId, version);
+					logger.info("update the flag with key reload_flag in request in firmwareReload");
+					value = true;
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Exception in firmwareReload service is -> " + e);
+		}
+		obj.put(new String("output"), value);
+		logger.info("end firmwareReload after session connect" + value);
+		return obj;
+	}
+
+	private boolean saveConfiguration(String user, String password, String host, String command) {
+		boolean isSuccess = false;
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
+		try {
+			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+
+			Properties config = new Properties();
+			config.put("StrictHostKeyChecking", "no");
+			session.setConfig(config);
+			session.setPassword(password);
+			session.connect();
+			try {
+				Thread.sleep(10000);
+			} catch (Exception ee) {
+			}
+			channel = session.openChannel("shell");
+			OutputStream ops = channel.getOutputStream();
+			PrintStream ps = new PrintStream(ops, true);
+			logger.info("Channel Connected to machine " + host + " to save the configuration on the router");
+			channel.connect();
+			InputStream input = channel.getInputStream();
+			ps.println(command);
+			try {
+				Thread.sleep(3000);
+			} catch (Exception ee) {
+				logger.error("Exception in the saveConfiguration method after ps.println is-> " + ee);
+			}
+			isSuccess = true;
+			logger.info("Save the configuration on" + host);
+			input.close();
+			session.disconnect();
+			channel.disconnect();
+		} catch (NumberFormatException e) {
+			logger.error("NumberFormatException in the saveConfiguration method is-> " + e);
+			e.printStackTrace();
+		} catch (JSchException e) {
+			logger.error("JSchException in the saveConfiguration method is->  " + e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			logger.error("IOException in the saveConfiguration method is-> " + e);
+			e.printStackTrace();
+		} finally {
+			logger.info("Inside the finally block to close the resouces in saveConfiguration method");
+			if (channel != null) {
+				logger.info("Inside the finally if channel still open then going to disconnect session and channel");
+				try {
+					logger.info(
+							"Inside the finally if channel still open then going to disconnect session and channel");
+					session = channel.getSession();
+					logger.info(
+							"Inside the finally if channel still open then going to disconnect session and channel");
+					if (channel.getExitStatus() == -1) {
+						logger.info(
+								"Inside the finally if channel still open then going to disconnect session and channel");
+						Thread.sleep(5000);
+					}
+				} catch (Exception e) {
+					logger.error("Inside the finally block of catch in saveConfiguration method -> " + e);
+				}
+				logger.info("Inside the finally block going to disconnect channel and session");
+				channel.disconnect();
+				session.disconnect();
+				logger.info("Inside the finally block session and channel disconnect successfully");
+			}
+		}
+		return isSuccess;
+	}
+
+	private boolean firmwareReload(String user, String password, String host, String command) {
+		boolean isSuccess = false;
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
+		try {
+			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+
+			Properties config = new Properties();
+			config.put("StrictHostKeyChecking", "no");
+			session.setConfig(config);
+			session.setPassword(password);
+			session.connect();
+			try {
+				Thread.sleep(10000);
+			} catch (Exception ee) {
+			}
+			channel = session.openChannel("shell");
+			OutputStream ops = channel.getOutputStream();
+			PrintStream ps = new PrintStream(ops, true);
+			logger.info("Channel Connected to machine " + host + " to push load command on the router");
+			channel.connect();
+			InputStream input = channel.getInputStream();
+			ps.println(command);
+			try {
+				Thread.sleep(Integer.parseInt(TSALabels.REQ_TIME.getValue()));
+			} catch (Exception ee) {
+				logger.error("Exception in the firmwareReload method after ps.println is-> " + ee);
+			}
+			logger.info("Reload the Router on" + host);
+			isSuccess = true;
+			input.close();
+			session.disconnect();
+			channel.disconnect();
+		} catch (NumberFormatException e) {
+			logger.error("NumberFormatException in the firmwareReload method is-> " + e);
+			e.printStackTrace();
+		} catch (JSchException e) {
+			logger.error("JSchException in the firmwareReload method is-> " + e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			logger.error("IOException in the firmwareReload method is-> " + e);
+			e.printStackTrace();
+		} finally {
+			logger.info("Inside the finally block to close the resouces in firmwareReload method");
+			if (channel != null) {
+				logger.info("Inside the finally if channel still open then going to disconnect session and channel");
+				try {
+					logger.info(
+							"Inside the finally if channel still open then going to disconnect session and channel");
+					session = channel.getSession();
+					logger.info(
+							"Inside the finally if channel still open then going to disconnect session and channel");
+					if (channel.getExitStatus() == -1) {
+						logger.info(
+								"Inside the finally if channel still open then going to disconnect session and channel");
+						Thread.sleep(5000);
+					}
+				} catch (Exception e) {
+					logger.error("Inside the finally block of catch in the firmwareReload method -> " + e);
+				}
+				logger.info("Inside the finally block going to disconnect channel and session");
+				channel.disconnect();
+				session.disconnect();
+				logger.info("Inside the finally block session and channel disconnect successfully and isSuccess -> "
+						+ isSuccess);
+			}
+		}
+		return isSuccess;
+	}
+
+	private List<String> modifyCmd(String command) {
+		logger.info("Inside the modifyCmd method, command is - > " + command);
+		List<String> cmdRes = new ArrayList<String>();
+		String cmd[] = command.split("\n");
+		logger.info("Inside the modifyCmd method, after split using \n cmd is - > " + cmd);
+		for (String cmdVal : cmd) {
+			cmdRes.add(cmdVal);
+		}
+		logger.info("End of the modifyCmd method, command Response cmdRes is - > " + cmdRes);
+		return cmdRes;
+	}
+	
+	private List<String> notPresentCmdRes(String command) {
+		logger.info("Inside the notPresentCmdRes method, command is - > " + command);
+		List<String> cmdRes = new ArrayList<String>();
+		String cmd[] = command.split("\r\n");
+		logger.info("Inside the notPresentCmdRes method, after split using \r\n cmd is - > " + cmd);
+		for (String cmdVal : cmd) {
+			cmdRes.add(cmdVal);
+		}
+		logger.info("End of the notPresentCmdRes method, command Response cmdRes is - > " + cmdRes);
+		return cmdRes;
 	}
 }

@@ -173,6 +173,7 @@ public class NetworkTestValidation extends Thread {
 										}
 										else
 										{
+											ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 											ps.println(finallistOfTests.get(i).getTestCommand());
 											try {
 												Thread.sleep(6000);
