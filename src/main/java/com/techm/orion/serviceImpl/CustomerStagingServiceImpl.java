@@ -1,6 +1,7 @@
 package com.techm.orion.serviceImpl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,8 +9,15 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.CustomerStagingEntity;
@@ -22,6 +30,7 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.ImportMasterStagingRepo;
 import com.techm.orion.repositories.ModelsRepository;
 import com.techm.orion.service.CustomerStagingInteface;
+import com.techm.orion.utility.TSALabels;
 
 @Service
 public class CustomerStagingServiceImpl implements CustomerStagingInteface {
@@ -39,10 +48,10 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 
 	@Autowired
 	private ImportMasterStagingRepo importMasterStagingRepo;
-	
+
 	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;
-	
+
 	@Autowired
 	private ModelsRepository modelsRepository;
 
@@ -66,7 +75,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 				customerStagingEntity.setStagingId(countId + 1);
 				customerStagingEntity.setUserName(userName);
 				for (String keyMap : rowDataMap.keySet()) {
-					if(keyMap.contains("*"))
+					if (keyMap.contains("*"))
 						rowData.put(keyMap.replace("*", ""), rowDataMap.get(keyMap));
 					else
 						rowData.put(keyMap, rowDataMap.get(keyMap));
@@ -391,113 +400,113 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 
 	/* Method call to save/update data from into inventory */
 	public boolean saveOrUpdateInventory(String importId) {
-		
+
 		logger.info("Inside saveOrUpdateInventory method");
 		boolean isImportMasterUpdated = false;
 		ImportMasterStagingEntity importStagging = new ImportMasterStagingEntity();
 		List<CustomerStagingEntity> deviceInfo = customerStagingImportRepo.getStaggingData(importId);
 		List<CustomerStagingEntity> dashboardStatus = customerStagingImportRepo.generateReportStatus(importId);
-		JSONObject object = new JSONObject();
-		ImportMasterStagingEntity master =null;
-		DeviceDiscoveryEntity deviceEntity =null;
-		SiteInfoEntity siteEntity =null;
+		ImportMasterStagingEntity master = null;
+		DeviceDiscoveryEntity deviceEntity = null;
+		SiteInfoEntity siteEntity = null;
+		boolean updateDeviceType = false;
 		try {
 
 			for (Object deviceData : deviceInfo) {
-				object = new JSONObject();
 				Object[] col = (Object[]) deviceData;
-				if (col[15].toString().equalsIgnoreCase("existing")  && col[0] !=null && !col[0].toString().isEmpty()) {
+				if (col[15].toString().equalsIgnoreCase("existing") && col[0] != null && !col[0].toString().isEmpty()) {
 					List<DeviceDiscoveryEntity> existIp = deviceDiscoveryRepository
 							.existingDeviceInfoIpV4(col[0].toString());
-					if(existIp.isEmpty())
-					{
-						existIp = deviceDiscoveryRepository
-								.existingDeviceInfoIpV6(col[1].toString());	
+					if (existIp.isEmpty()) {
+						existIp = deviceDiscoveryRepository.existingDeviceInfoIpV6(col[1].toString());
 					}
 					deviceEntity = existIp.get(0);
 					siteEntity = existIp.get(0).getCustSiteId();
-				} else if (col[15].toString().equalsIgnoreCase("existing") && col[1] !=null) {
+				} else if (col[15].toString().equalsIgnoreCase("existing") && col[1] != null) {
 					List<DeviceDiscoveryEntity> existIp = deviceDiscoveryRepository
 							.existingDeviceInfoIpV6(col[1].toString());
 					deviceEntity = existIp.get(0);
 					siteEntity = existIp.get(0).getCustSiteId();
-				} else{
+				} else {
 					deviceEntity = new DeviceDiscoveryEntity();
 					siteEntity = new SiteInfoEntity();
 				}
-				
-				if(col[0] !=null)
+
+				if (col[0] != null)
 					deviceEntity.setdMgmtIp(col[0].toString());
-				if(col[1] !=null)
+				if (col[1] != null)
 					deviceEntity.setdIPAddrSix(col[1].toString());
-				if(col[2] !=null)
+				if (col[2] != null)
 					deviceEntity.setdHostName(col[2].toString());
-				if(col[3] !=null)
+				if (col[3] != null)
 					deviceEntity.setdVendor(col[3].toString());
-				if(col[4] !=null)
+				if (col[4] != null)
 					deviceEntity.setdDeviceFamily(col[4].toString());
-				if(col[5] !=null)
+				if (col[5] != null)
 					deviceEntity.setdModel(col[5].toString());
-				if(col[6] !=null)
+				if (col[6] != null)
 					deviceEntity.setdOs(col[6].toString());
-				if(col[7] !=null)
+				if (col[7] != null)
 					deviceEntity.setdOsVersion(col[7].toString());
-				if(col[8] !=null)
+				if (col[8] != null)
 					deviceEntity.setdCPU(col[8].toString());
-				if(col[9] !=null)
+				if (col[9] != null)
 					deviceEntity.setdCPURevision(col[9].toString());
-				if(col[10] !=null)
+				if (col[10] != null)
 					deviceEntity.setdDRAMSize(col[10].toString());
-				if(col[11] !=null)
+				if (col[11] != null)
 					deviceEntity.setdFlashSize(col[11].toString());
-				if(col[12] !=null)
+				if (col[12] != null)
 					deviceEntity.setdImageFileName(col[12].toString());
-				if(col[13] !=null)
+				if (col[13] != null)
 					deviceEntity.setdMACAddress(col[13].toString());
-				if(col[14] !=null)
-				deviceEntity.setdSerialNumber(col[14].toString());	
+				if (col[14] != null)
+					deviceEntity.setdSerialNumber(col[14].toString());
 				deviceEntity.setdDeComm("0");
-				
-				if(col[16] !=null)
+
+				if (col[16] != null)
 					siteEntity.setcCustName(col[16].toString());
-				if(col[17] !=null)
+				if (col[17] != null)
 					siteEntity.setcCustId(col[17].toString());
-				if(col[18] !=null)
+				if (col[18] != null)
 					siteEntity.setcSiteName(col[18].toString());
-				if(col[19] !=null)
+				if (col[19] != null)
 					siteEntity.setcSiteId(col[19].toString());
-				if(col[20] !=null)
+				if (col[20] != null)
 					siteEntity.setcSiteAddressLine1(col[20].toString());
-				if(col[21] !=null)
+				if (col[21] != null)
 					siteEntity.setcSIteAddressLine2(col[21].toString());
-				if(col[22] !=null)
+				if (col[22] != null)
 					siteEntity.setcSiteCity(col[22].toString());
-				if(col[23] !=null)
+				if (col[23] != null)
 					siteEntity.setcSiteContact(col[23].toString());
-				if(col[24] !=null)
+				if (col[24] != null)
 					siteEntity.setcSiteContactEmail(col[24].toString());
-				if(col[25] !=null)
+				if (col[25] != null)
 					siteEntity.setcSiteContactPhone(col[25].toString());
-				if(col[26] !=null)
+				if (col[26] != null)
 					siteEntity.setcSiteCountry(col[26].toString());
-				if(col[27] !=null)
+				if (col[27] != null)
 					siteEntity.setcSiteMarket(col[27].toString());
-				if(col[28] !=null)
+				if (col[28] != null)
 					siteEntity.setcSiteRegion(col[28].toString());
-				if(col[29] !=null)
+				if (col[29] != null)
 					siteEntity.setcSiteState(col[29].toString());
-				if(col[30] !=null)
+				if (col[30] != null)
 					siteEntity.setcSiteStatus(col[30].toString());
-				if(col[31] !=null)
+				if (col[31] != null)
 					siteEntity.setcSiteSubRegion(col[31].toString());
 				deviceEntity.setCustSiteId(siteEntity);
-				
-				deviceDiscoveryRepository.saveAndFlush(deviceEntity);
+
+				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.saveAndFlush(deviceEntity);
 				Models modelsEntity = modelsRepository.findOneByModel(deviceEntity.getdModel());
 				String id = String.valueOf(deviceEntity.getdId());
 				requestInfoDetailsDao.saveInDeviceExtension(id, modelsEntity.getModelDescription());
+				if (deviceDetails != null) {
+					updateDeviceType = updateDeviceRole(deviceDetails);
+				}
 			}
-			
+
 			if (importStagging != null) {
 				importStagging.setCreatedBy(dashboardStatus.get(0).getUserName());
 				importStagging.setExecutionDate(dashboardStatus.get(0).getExecutionProcessDate());
@@ -511,12 +520,41 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 				importStagging.setImportId(importId);
 				master = importMasterStagingRepo.saveAndFlush(importStagging);
 			}
-			
-			if(master !=null)
-				isImportMasterUpdated =true;
+
+			if (master != null)
+				isImportMasterUpdated = true;
 		} catch (Exception e) {
 			logger.error("\n" + "exception in saveOrUpdateInventory method" + e.getMessage());
 		}
 		return isImportMasterUpdated;
+	}
+
+	@SuppressWarnings("unchecked")
+	public boolean updateDeviceRole(DeviceDiscoveryEntity deviceDetails) {
+		boolean updateFlag = false;
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			JSONObject request = new JSONObject();
+			request.put(new String("hostName"), deviceDetails.getdHostName());
+			request.put(new String("ipAddress"), deviceDetails.getdMgmtIp());
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_DEVICE_DATA.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			JSONParser parser = new JSONParser();
+			JSONObject responseJson = (JSONObject) parser.parse(response);
+			if (responseJson.containsKey("message") && responseJson.get("message") != null) {
+				if (responseJson.get("message").toString().equals("Success")) {
+					updateFlag = true;
+				}
+			}
+		} catch (HttpClientErrorException exe) {
+			logger.error("HttpClientErrorException - generateReport -> " + exe.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - generateReport->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		return updateFlag;
 	}
 }
