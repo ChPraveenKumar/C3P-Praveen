@@ -491,7 +491,7 @@ public class VNFHelper {
 		String filterType=test.getTestCommand().replaceAll("\\s", "").toLowerCase();
 		ClassLoader classLoader = new VnfConfigService().getClass().getClassLoader();
 		
-			 file = new File(TSALabels.PYTHON_SCRIPT_PATH.getValue()+"/"+filterType+"filter.xml");
+			 file = new File(TSALabels.PYTHON_SCRIPT_PATH.getValue()+filterType+"filter.xml");
 			 pathxml=file.getPath();
 			//String output1 = new String(Files.readAllBytes(Paths.get(path)));			
 			logger.info(filterType+"filter.xml picked");
