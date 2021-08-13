@@ -612,12 +612,13 @@ public class RequestInfoDetailsDao {
 				channel = session.openChannel("shell");
 				OutputStream ops = channel.getOutputStream();
 
-				PrintStream ps = new PrintStream(ops, true);
+				PrintStream printStream = new PrintStream(ops, true);
 				logger.info("Channel Connected to machine " + host + " server");
 				channel.connect();
 				InputStream input = channel.getInputStream();
-				ps.println("terminal length 0");
-				ps.println("show run");
+				//ps.println("terminal length 0");
+				//ps.println("show run");
+				printStream = setCommandStream(printStream, requestinfo, "backup", false);
 				try {
 					Thread.sleep(3000);
 				} catch (Exception ee) {
