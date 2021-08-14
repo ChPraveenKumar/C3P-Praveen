@@ -42,7 +42,7 @@ public class RequestInfoPojo {
 
 	private String alphanumericReqId;
 
-	private String deviceType;
+	//private String deviceType;
 
 	private Timestamp endDateOfProcessing;
 
@@ -476,13 +476,13 @@ public class RequestInfoPojo {
 		this.alphanumericReqId = alphanumericReqId;
 	}
 
-	public String getDeviceType() {
+	/*public String getDeviceType() {
 		return deviceType;
 	}
 
 	public void setDeviceType(String deviceType) {
 		this.deviceType = deviceType;
-	}
+	}*/
 
 	public Double getRequestVersion() {
 		return requestVersion;

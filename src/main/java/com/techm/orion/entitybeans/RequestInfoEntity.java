@@ -89,7 +89,7 @@ public class RequestInfoEntity implements Serializable {
 	private String alphanumericReqId;
 
 	@Column(name = "r_device_type", length = 20, nullable = false)
-	@NotNull
+	//@NotNull
 	private String deviceType;
 
 	@Column(name = "r_end_date_of_processing")
@@ -409,13 +409,13 @@ public class RequestInfoEntity implements Serializable {
 		this.alphanumericReqId = alphanumericReqId;
 	}
 
-	public String getDeviceType() {
+	/*public String getDeviceType() {
 		return deviceType;
 	}
 
 	public void setDeviceType(String deviceType) {
 		this.deviceType = deviceType;
-	}
+	}*/
 
 	public Double getRequestVersion() {
 		return requestVersion;

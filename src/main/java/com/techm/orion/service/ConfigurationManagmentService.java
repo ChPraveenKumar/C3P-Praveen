@@ -271,7 +271,7 @@ public class ConfigurationManagmentService {
 		SiteInfoEntity siteId = deviceDetails.getCustSiteId();
 		createConfigRequest.setSiteid(siteId.getcSiteId());
 		if (json.get("deviceType") != null) {
-			createConfigRequest.setDeviceType(json.get("deviceType").toString());
+//			createConfigRequest.setDeviceType(json.get("deviceType").toString());
 		}
 		createConfigRequest.setFamily(json.get("deviceFamily").toString());
 		createConfigRequest.setModel(json.get("model").toString());

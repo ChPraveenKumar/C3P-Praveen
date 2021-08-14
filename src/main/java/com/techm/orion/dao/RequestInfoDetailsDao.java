@@ -341,7 +341,7 @@ public class RequestInfoDetailsDao {
 				pojo.setRequestParentVersion(entity.getRequestParentVersion());
 				pojo.setModel(entity.getModel());
 				pojo.setVendor(entity.getVendor());
-				pojo.setDeviceType(entity.getDeviceType());
+//				pojo.setDeviceType(entity.getDeviceType());
 				pojo.setFamily(entity.getFamily());
 				pojo.setOs(entity.getOs());
 				pojo.setOsVersion(entity.getOsVersion());

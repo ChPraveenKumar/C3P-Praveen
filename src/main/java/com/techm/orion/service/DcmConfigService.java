@@ -273,7 +273,7 @@ public class DcmConfigService {
 
 				requestInfoPojo.setCustomer(configRequest.getCustomer());
 				requestInfoPojo.setSiteid(configRequest.getSiteid());
-				requestInfoPojo.setDeviceType(configRequest.getDeviceType());
+//				requestInfoPojo.setDeviceType(configRequest.getDeviceType());
 				requestInfoPojo.setModel(configRequest.getModel());
 				requestInfoPojo.setOs(configRequest.getOs());
 				requestInfoPojo.setOsVersion(configRequest.getOsVersion());
@@ -2717,7 +2717,7 @@ public class DcmConfigService {
 
 				requestInfoPojo.setCustomer(configRequest.getCustomer());
 				requestInfoPojo.setSiteid(configRequest.getSiteid());
-				requestInfoPojo.setDeviceType(configRequest.getDeviceType());
+//				requestInfoPojo.setDeviceType(configRequest.getDeviceType());
 				requestInfoPojo.setModel(configRequest.getModel());
 				requestInfoPojo.setOs(configRequest.getOs());
 				requestInfoPojo.setOsVersion(configRequest.getOsVersion());

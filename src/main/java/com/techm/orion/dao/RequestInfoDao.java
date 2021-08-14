@@ -6538,10 +6538,10 @@ public class RequestInfoDao {
 					|| requestInfoSO.getManagementIp() != "") {
 				managementIP = requestInfoSO.getManagementIp();
 			}
-			if (requestInfoSO.getDeviceType() != null
+			/*if (requestInfoSO.getDeviceType() != null
 					|| requestInfoSO.getDeviceType() != "") {
 				deviceType = requestInfoSO.getDeviceType();
-			}
+			}*/
 
 			if (requestInfoSO.getRequestVersion() != 0) {
 				request_version = requestInfoSO.getRequestVersion();
@@ -6653,9 +6653,9 @@ public class RequestInfoDao {
 			if (managementIP != "") {
 				requestEntity.setManagmentIP(managementIP);
 			}
-			if (deviceType != "") {
+			/*if (deviceType != "") {
 				requestEntity.setDeviceType(deviceType);
-			}
+			}*/
 			if (alphaneumeric_req_id != "") {
 				requestEntity.setAlphanumericReqId(alphaneumeric_req_id);
 			}
@@ -7602,10 +7602,10 @@ public class RequestInfoDao {
 					|| requestInfoSO.getManagementIp() != "") {
 				managementIP = requestInfoSO.getManagementIp();
 			}
-			if (requestInfoSO.getDeviceType() != null
+			/*if (requestInfoSO.getDeviceType() != null
 					|| requestInfoSO.getDeviceType() != "") {
 				deviceType = requestInfoSO.getDeviceType();
-			}
+			}*/
 			if (requestInfoSO.getFamily() != null
 					|| requestInfoSO.getFamily() != "") {
 				deviceFamily = requestInfoSO.getFamily();
@@ -7686,9 +7686,9 @@ public class RequestInfoDao {
 			if (managementIP != "") {
 				requestEntity.setManagmentIP(managementIP);
 			}
-			if (deviceType != "") {
+			/*if (deviceType != "") {
 				requestEntity.setDeviceType(deviceType);
-			}
+			}*/
 			if (alphaneumeric_req_id != "") {
 				requestEntity.setAlphanumericReqId(alphaneumeric_req_id);
 			}

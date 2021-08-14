@@ -2337,7 +2337,7 @@ public class ConfigMngmntService implements Observer {
 				.findCSiteIdByCSiteName(requestInfoPojo.getSiteName());
 		requestInfoPojo.setSiteid(siteId.getcSiteId());
 
-		requestInfoPojo.setDeviceType(json.get("deviceType").toString());
+//		requestInfoPojo.setDeviceType(json.get("deviceType").toString());
 		requestInfoPojo.setModel(json.get("model").toString());
 		requestInfoPojo.setOs(json.get("os").toString());
 		if (json.containsKey("osVersion")) {

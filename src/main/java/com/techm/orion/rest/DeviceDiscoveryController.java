@@ -180,7 +180,7 @@ public class DeviceDiscoveryController implements Observer {
 				JSONObject object = new JSONObject();
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
-				object.put("type", "Router");
+				//object.put("type", "Router");
 				object.put("deviceFamily", getAllDevice.get(i).getdDeviceFamily());
 				object.put("model", getAllDevice.get(i).getdModel());
 				object.put("os", getAllDevice.get(i).getdOs());

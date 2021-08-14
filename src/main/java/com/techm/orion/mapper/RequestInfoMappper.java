@@ -38,7 +38,7 @@ public class RequestInfoMappper {
 			}
 			request.setReadFE(entity.getReadFE());
 			request.setReadSE(entity.getReadSE());
-			request.setDeviceType(entity.getDeviceType());
+//			request.setDeviceType(entity.getDeviceType());
 			request.setFamily(entity.getFamily());
 			request.setModel(entity.getModel());
 			request.setRequestType(entity.getRequestType());

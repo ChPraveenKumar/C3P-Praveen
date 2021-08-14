@@ -370,7 +370,7 @@ public class BackUpAndRestoreController {
 
 				requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-				requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+				//requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 				requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
@@ -682,7 +682,7 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+					//requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 					requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
@@ -946,7 +946,7 @@ public class BackUpAndRestoreController {
 
 						requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-						requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+						//requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 						requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
@@ -1122,7 +1122,7 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+//					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 					requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
@@ -1280,7 +1280,7 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+					//requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 					requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 

@@ -209,7 +209,7 @@ public class ConfigurationManagement {
 			SiteInfoEntity siteId = siteInfoRepository.findCSiteIdByCSiteName(configReqToSendToC3pCode.getSiteName());
 			configReqToSendToC3pCode.setSiteid(siteId.getcSiteId());
 
-			configReqToSendToC3pCode.setDeviceType(json.get("deviceType").toString());
+//			configReqToSendToC3pCode.setDeviceType(json.get("deviceType").toString());
 			configReqToSendToC3pCode.setModel(json.get("model").toString());
 			configReqToSendToC3pCode.setOs(json.get("os").toString());
 			if (json.containsKey("osVersion")) {
