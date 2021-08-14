@@ -36,6 +36,7 @@ import com.techm.orion.repositories.HostDiscoveryResultRepository;
 import com.techm.orion.repositories.HostDiscrepancyResultRepository;
 import com.techm.orion.repositories.MasterOIDRepository;
 import com.techm.orion.repositories.UserManagementRepository;
+import com.techm.orion.serviceImpl.CustomerStagingServiceImpl;
 import com.techm.orion.utility.WAFADateUtil;
 
 @Service
@@ -62,6 +63,8 @@ public class DeviceDiscrepancyService {
 	private WAFADateUtil dateUtil;
 	@Autowired
 	private UserManagementRepository userManagementRepository;
+	@Autowired
+	private CustomerStagingServiceImpl customerStagingServiceImpl;
 
 	@Autowired
 	private ErrorValidationRepository errorValidationRepo;
@@ -476,7 +479,7 @@ public class DeviceDiscrepancyService {
 						logger.info(" hostDiscrepancyResultEntity.getHidOIDNo() ->"
 								+ hostDiscrepancyResultEntity.getHidOIDNo());
 						if ("Overwrite".equalsIgnoreCase(obj.get("Action").toString())) {
-							setHostIdAndDeviceData(hostDiscrepancyResultEntity, deviceDiscoveryEntity);
+							deviceDiscoveryEntity = setHostIdAndDeviceData(hostDiscrepancyResultEntity, deviceDiscoveryEntity);
 						}
 						setHostDiscrepancyResult(hostDiscrepancyResultEntity, logedInUserName);
 						isSucess = true;
@@ -488,7 +491,7 @@ public class DeviceDiscrepancyService {
 					if (listOfHostDiscrepancyResultEntity != null) {
 						for (HostDiscrepancyResultEntity hostDiscrepancyResult : listOfHostDiscrepancyResultEntity) {
 							if ("AcceptAll".equalsIgnoreCase(obj.get("Action").toString())) {
-								setHostIdAndDeviceData(hostDiscrepancyResult, deviceDiscoveryEntity);
+								deviceDiscoveryEntity = setHostIdAndDeviceData(hostDiscrepancyResult, deviceDiscoveryEntity);
 							} else if ("RejectAll".equalsIgnoreCase(obj.get("Action").toString())) {
 								deviceDiscoveryEntity.setdDeComm("8");
 							}
@@ -531,7 +534,10 @@ public class DeviceDiscrepancyService {
 						resultObj.put("msg", "Discrepancy ignored successfully");
 					}
 					deviceDiscoveryEntity.setdDiscrepancy(discrepancys);
-					discoveryRepo.save(deviceDiscoveryEntity);
+					discoveryRepo.save(deviceDiscoveryEntity);					
+					if(deviceDiscoveryEntity.getdRole()==null || deviceDiscoveryEntity.getdHostName().equals(deviceDiscoveryEntity.getdRole())) {
+						customerStagingServiceImpl.updateDeviceRole(deviceDiscoveryEntity);
+					}
 				}
 				
 			} else {
@@ -567,6 +573,7 @@ public class DeviceDiscrepancyService {
 			deviceDiscoveryEntity.setdOsVersion(discoverdValue);
 		} else if ("d_hostname".equals(oidAttribName)) {
 			deviceDiscoveryEntity.setdHostName(discoverdValue);
+			deviceDiscoveryEntity.setdRole(discoverdValue);
 		} else if ("d_macaddress".equals(oidAttribName)) {
 			deviceDiscoveryEntity.setdMACAddress(discoverdValue);
 		} else if ("d_serial_number".equals(oidAttribName)) {
@@ -847,7 +854,7 @@ public class DeviceDiscrepancyService {
 		forkDiscrepancyResultRepository.save(forkDiscrepancyResultEntity);
 	}
 
-	private void setHostIdAndDeviceData(HostDiscrepancyResultEntity hostDiscrepancyResult,
+	private DeviceDiscoveryEntity setHostIdAndDeviceData(HostDiscrepancyResultEntity hostDiscrepancyResult,
 			DeviceDiscoveryEntity deviceDiscoveryEntity) {
 		hostDiscrepancyResult.setHidPreviousValue(hostDiscrepancyResult.getHidExistingValue());
 		hostDiscrepancyResult.setHidExistingValue(hostDiscrepancyResult.getHidDiscoverValue());
@@ -855,8 +862,12 @@ public class DeviceDiscrepancyService {
 		MasterOIDEntity oidData = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkTypeAndOidCategory(
 				hostDiscrepancyResult.getHidOIDNo(), deviceDiscoveryEntity.getdVendor(),
 				deviceDiscoveryEntity.getdVNFSupport(), "Host");
+		if(oidData!=null) {
 		deviceDiscoveryEntity = setDeviceData(oidData.getOidAttrib(), deviceDiscoveryEntity,
 				hostDiscrepancyResult.getHidDiscoverValue());
+		
+		}
+		return deviceDiscoveryEntity;
 	}
 
 	private void setForkIdAndDeviceData(ForkDiscrepancyResultEntity forkDiscrepancyResult,
