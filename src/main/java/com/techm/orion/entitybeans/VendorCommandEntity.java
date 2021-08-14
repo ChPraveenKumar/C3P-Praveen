@@ -47,7 +47,7 @@ public class VendorCommandEntity {
 	private String vcOs;
 	
 	@Column(name = "vc_is_applicable")
-	private boolean vCisApplicable;
+	private Boolean vCisApplicable;
 
 	public int getVcRowid() {
 		return vcRowid;
@@ -137,11 +137,11 @@ public class VendorCommandEntity {
 		this.vcOs = vcOs;
 	}
 	
-	public boolean isvCisApplicable() {
+	public Boolean isvCisApplicable() {
 		return vCisApplicable;
 	}
 
-	public void setvCisApplicable(boolean vCisApplicable) {
+	public void setvCisApplicable(Boolean vCisApplicable) {
 		this.vCisApplicable = vCisApplicable;
 	}
 

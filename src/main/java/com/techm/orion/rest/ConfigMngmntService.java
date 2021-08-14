@@ -165,13 +165,13 @@ public class ConfigMngmntService implements Observer {
 						.toString().toUpperCase());
 			}
 			// configReqToSendToC3pCode.setDeviceName(json.get("deviceName").toString());
-			if (!(json.get("requestType").equals("SLGB"))) {
+			/*if (!(json.get("requestType").equals("SLGB"))) {
 				configReqToSendToC3pCode.setDeviceType(json.get("deviceType")
 						.toString());
 			} else {
 				configReqToSendToC3pCode.setDeviceType(json.get("deviceType")
 						.toString());
-			}
+			}*/
 			configReqToSendToC3pCode.setModel(json.get("model").toString());
 			configReqToSendToC3pCode.setOs(json.get("os").toString());
 			if (json.containsKey("osVersion")) {
