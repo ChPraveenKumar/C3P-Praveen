@@ -75,7 +75,7 @@ public class NetworkTestValidation extends Thread {
 		String jsonArray = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
-		Boolean value = false;
+		Boolean value = true;
 
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(request);
@@ -166,7 +166,7 @@ public class NetworkTestValidation extends Thread {
 										if(deviceDetails.getdVNFSupport().equalsIgnoreCase("VNF"))
 										{
 											//VNFHelper helper=new VNFHelper();
-											boolean r = helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											Boolean r = helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
 											results.add(r);
 										}
 										else if(deviceDetails.getdConnect().equalsIgnoreCase("RESTCONF"))

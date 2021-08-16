@@ -911,14 +911,15 @@ public class VNFHelper {
 			logger.info("response of netconfgetRPC is " + response);
 			JSONParser parser = new JSONParser();
 			JSONObject responseJson = (JSONObject) parser.parse(response);
-			if (responseJson.containsKey("Error") && responseJson.get("Error") != null
-					&& !responseJson.get("Error").toString().isEmpty()) {
+			if (responseJson.get("Error").toString() != "") {
 				result = responseJson.get("Error").toString();
 			}
-			if (responseJson.containsKey("Result") && responseJson.get("Result") != null
-					&& !responseJson.get("Result").toString().isEmpty()) {
+			if (responseJson.get("Result").toString()!="") {
 				result = responseJson.get("Result").toString();
+			
 			}
+			
+			//result = 	"{\"Error\": \"\",\"Result\": \"GigabitEthernet1GigabitEthernet2GigabitEthernet3Loopback0Loopback2\"}";
 		} catch (HttpClientErrorException serviceErr) {
 			logger.error("HttpClientErrorException - performTestVnfDevice -> " + serviceErr.getMessage());
 		} catch (Exception exe) {
