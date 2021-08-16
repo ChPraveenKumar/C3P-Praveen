@@ -59,6 +59,8 @@ public class NetworkTestValidation extends Thread {
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;	
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	@Autowired
+	private VNFHelper helper;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -163,8 +165,9 @@ public class NetworkTestValidation extends Thread {
 										
 										if(deviceDetails.getdVNFSupport().equalsIgnoreCase("VNF"))
 										{
-											VNFHelper helper=new VNFHelper();
-											helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											//VNFHelper helper=new VNFHelper();
+											boolean r = helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											results.add(r);
 										}
 										else if(deviceDetails.getdConnect().equalsIgnoreCase("RESTCONF"))
 										{
