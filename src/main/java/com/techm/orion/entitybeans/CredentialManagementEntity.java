@@ -2,12 +2,16 @@ package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
@@ -67,6 +71,10 @@ public class CredentialManagementEntity implements Serializable {
 	
 	@Column(name = "cr_created_date")
 	private Date createdDate;
+	
+	@ManyToMany
+	@JoinTable(name = "c3p_device_credentials", joinColumns = @JoinColumn(name = "cr_info_id"), inverseJoinColumns = @JoinColumn(name = "device_id"))
+	List<DeviceDiscoveryEntity> dDiscoveryEntity;
 
 	public int getInfoId() {
 		return infoId;
@@ -193,6 +201,14 @@ public class CredentialManagementEntity implements Serializable {
 		this.createdDate = createdDate;
 	}
 
+	public List<DeviceDiscoveryEntity> getdDiscoveryEntity() {
+		return dDiscoveryEntity;
+	}
+
+	public void setdDiscoveryEntity(List<DeviceDiscoveryEntity> dDiscoveryEntity) {
+		this.dDiscoveryEntity = dDiscoveryEntity;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

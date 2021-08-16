@@ -189,6 +189,7 @@ public class DeviceDiscoveryController implements Observer {
 				object.put("status", "Available");
 				object.put("role", getAllDevice.get(i).getdRole());
 				object.put("powerSupply", getAllDevice.get(i).getdPowerSupply());
+				object.put("deviceId", getAllDevice.get(i).getdId());
 				if (getAllDevice.get(i).getCustSiteId() != null) {
 					object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
 					SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
@@ -198,6 +199,12 @@ public class DeviceDiscoveryController implements Observer {
 					object.put("addressline2", site.getcSIteAddressLine2());
 					object.put("addressline3", site.getcSiteAddressLine3());
 					object.put("location", setSiteDetails(site, getAllDevice.get(i)));
+					object.put("city", site.getcSiteCity());
+					object.put("country", site.getcSiteCountry());
+					object.put("market", site.getcSiteMarket());
+					object.put("state", site.getcSiteState());
+					object.put("subRegion", site.getcSiteSubRegion());
+					object.put("zip", site.getcSiteZip());
 
 				}
 				if (getAllDevice.get(i).getdEndOfSupportDate() != null
@@ -382,7 +389,7 @@ public class DeviceDiscoveryController implements Observer {
 	}
 	
 	private String setSiteDetails(SiteInfoEntity site, DeviceDiscoveryEntity getAllDevice) {
-		String[] strArr = new String[] { convertNull2ZeroString(site.getcSiteRegion()),
+		String[] strArr = new String[] { convertNull2ZeroString(site.getcSiteName()),
 				convertNull2ZeroString(site.getcSiteAddressLine1()),
 				convertNull2ZeroString(site.getcSIteAddressLine2()) };
 		StringBuilder sb = new StringBuilder();

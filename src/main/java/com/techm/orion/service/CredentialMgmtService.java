@@ -46,12 +46,12 @@ public class CredentialMgmtService {
 			credential.put("passwordwrite", credentialList.getPasswordWrite());
 			credential.put("enablePassword", credentialList.getEnablePassword());
 			List<DeviceDiscoveryEntity> hostNameList = new ArrayList<DeviceDiscoveryEntity>();
-			if ("SSH".equalsIgnoreCase(credentialList.getProfileType())) {
-				hostNameList = deviceDiscoveryRepository.findByDSshCredProfile(credentialList.getProfileName());
-			} else if ("TELNET".equalsIgnoreCase(credentialList.getProfileType())) {
-				hostNameList = deviceDiscoveryRepository.findByDTelnetCredProfile(credentialList.getProfileName());
-			} else if ("SNMP".equalsIgnoreCase(credentialList.getProfileType())) {
-				hostNameList = deviceDiscoveryRepository.findByDSnmpCredProfile(credentialList.getProfileName());
+			if (("SSH".equalsIgnoreCase(credentialList.getProfileType())) 
+					|| ("TELNET".equalsIgnoreCase(credentialList.getProfileType()))
+					|| ("SNMP".equalsIgnoreCase(credentialList.getProfileType()))) {
+				for(int i=0; i<credentialList.getdDiscoveryEntity().size();i++) {
+					hostNameList = credentialList.getdDiscoveryEntity();
+				}
 			}
 			JSONArray array = new JSONArray();
 			hostNameList.forEach(hostList -> {
@@ -208,15 +208,11 @@ public class CredentialMgmtService {
 			deviceInfoEntity.setdHostName(hostName);
 			deviceInfoEntity.setdMgmtIp(managementIp);
 			deviceInfoEntity.setdType(type);
-			if ("SSH".equalsIgnoreCase(profileType) && (deviceInfoEntity.getdSshCredProfile() == null
-					|| deviceInfoEntity.getdSshCredProfile().isEmpty())) {
-				deviceInfoEntity.setdSshCredProfile(profileName);
-			} else if ("SNMP".equalsIgnoreCase(profileType) && (deviceInfoEntity.getdSnmpCredProfile() == null
-					|| deviceInfoEntity.getdSnmpCredProfile().isEmpty())) {
-				deviceInfoEntity.setdSnmpCredProfile(profileName);
-			} else if ("TELNET".equalsIgnoreCase(profileType) && (deviceInfoEntity.getdTelnetCredProfile() == null
-					|| deviceInfoEntity.getdTelnetCredProfile().isEmpty())) {
-				deviceInfoEntity.setdTelnetCredProfile(profileName);
+			for (int i = 0; i < deviceInfoEntity.getCredMgmtEntity().size(); i++) {
+				if (deviceInfoEntity.getCredMgmtEntity().get(i).getProfileType().equalsIgnoreCase(profileType)
+						&& (deviceInfoEntity.getCredMgmtEntity().get(i).getProfileName() == null
+								|| deviceInfoEntity.getCredMgmtEntity().get(i).getProfileName().isEmpty()))
+					deviceInfoEntity.getCredMgmtEntity().get(i).setProfileName(profileName);
 			}
 			deviceDiscoveryRepository.save(deviceInfoEntity);
 			msg = "saved succesfully";
@@ -239,24 +235,25 @@ public class CredentialMgmtService {
 		List<DeviceDiscoveryEntity> devices = deviceDiscoveryRepository.findAll();
 		devices.forEach(deviceList -> {
 			JSONObject jsonObject = new JSONObject();
-			if ((deviceList.getdSshCredProfile() == null || deviceList.getdSshCredProfile().isEmpty())  
-					&& (deviceList.getdTelnetCredProfile() == null || deviceList.getdTelnetCredProfile().isEmpty())
-					|| (deviceList.getdSnmpCredProfile() == null || deviceList.getdSnmpCredProfile().isEmpty())){
-				jsonObject.put("hostName", deviceList.getdHostName());
-				if (deviceList.getdSshCredProfile() ==null || deviceList.getdSshCredProfile().isEmpty()) {
-					jsonObject.put("ssh", true);
-				} else {
-					jsonObject.put("ssh", false);
-				}
-				if (deviceList.getdTelnetCredProfile() == null || deviceList.getdTelnetCredProfile().isEmpty()) {
-					jsonObject.put("telnet", true);
-				} else {
-					jsonObject.put("telnet", false);
-				}
-				if (deviceList.getdSnmpCredProfile() == null || deviceList.getdSnmpCredProfile().isEmpty()) {
-					jsonObject.put("snmp", true);
-				} else {
-					jsonObject.put("snmp", false);
+			for(int i=0;i<deviceList.getCredMgmtEntity().size();i++) {
+				if(deviceList.getCredMgmtEntity().get(i).getProfileName() == null 
+						|| deviceList.getCredMgmtEntity().get(i).getProfileName().isEmpty()) {
+					jsonObject.put("hostName", deviceList.getdHostName());
+					if("SSH".equalsIgnoreCase(deviceList.getCredMgmtEntity().get(i).getProfileType())) {
+						jsonObject.put("ssh", false);
+					}else {
+						jsonObject.put("ssh", true);
+					}
+					if("TELNET".equalsIgnoreCase(deviceList.getCredMgmtEntity().get(i).getProfileType())) {
+						jsonObject.put("telnet", false);
+					}else {
+						jsonObject.put("telnet", true);
+					}
+					if("SNMP".equalsIgnoreCase(deviceList.getCredMgmtEntity().get(i).getProfileType())) {
+						jsonObject.put("snmp", false);
+					}else {
+						jsonObject.put("snmp", true);
+					}
 				}
 			}
 			if (!jsonObject.isEmpty()) {

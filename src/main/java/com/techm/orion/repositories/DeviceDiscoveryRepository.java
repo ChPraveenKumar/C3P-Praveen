@@ -199,12 +199,6 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 
 	List<DeviceDiscoveryEntity> findAllByDVendorAndDDeviceFamily(String vendor, String deviceFamily);
 
-	List<DeviceDiscoveryEntity> findByDSshCredProfile(String profileName);
-
-	List<DeviceDiscoveryEntity> findByDTelnetCredProfile(String profileName);
-
-	List<DeviceDiscoveryEntity> findByDSnmpCredProfile(String profileName);
-
 	/* Dhanshri Mane */
 	@Query(value = "select * from c3p_deviceinfo where d_mgmtip= :mgmtip and d_hostname= :hostName ", nativeQuery = true)
 	DeviceDiscoveryEntity findHostNameAndMgmtip(@Param("mgmtip") String mgmtip, @Param("hostName") String hostName);
@@ -276,68 +270,34 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	int findDid(@Param("d_hostname") String d_hostname);	
 	
 
-	@Query(value = "select * from c3p_deviceinfo deviceinfo left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
-			+ " where siteinfo.c_cust_name=:customerName  and (deviceinfo.d_ssh_cred_profile not in  (:profileName) "
-			+ "or  deviceinfo.d_ssh_cred_profile  is null)", nativeQuery = true)
-	List<DeviceDiscoveryEntity> findAllByCustSiteIdCCustNameAndDSshCredProfileNotInOrIsNull(@Param("customerName") String customerName,
-			@Param("profileName") String profileName);
+	@Query(value = "select distinct deviceinfo.* from c3p_deviceinfo deviceinfo left outer join c3p_device_credentials devicecred on deviceinfo.d_id=devicecred.device_id "
+			+ "left outer join c3p_t_credential_management credinfo on credinfo.cr_info_id=devicecred.cr_info_id "
+			+ "left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
+			+ "where siteinfo.c_cust_name=:customerName "
+			+ "and (credinfo.cr_profile_name not in (:profileName) or credinfo.cr_profile_name is null)", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findAllByCustSiteIdCCustNameAndCredMgmtEntityNotInOrIsNull(
+			@Param("customerName") String customerName, @Param("profileName") String profileName);
 	
-	@Query(value = "select * from c3p_deviceinfo deviceinfo left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
-			+ " where siteinfo.c_cust_name=:customerName  and (deviceinfo.d_snmp_cred_profile not in  (:profileName) "
-			+ "or  deviceinfo.d_snmp_cred_profile  is null)", nativeQuery = true)
-	List<DeviceDiscoveryEntity> findAllByCustSiteIdCCustNameAndDSnmpCredProfileNotInOrIsNull(@Param("customerName") String customerName,
-			@Param("profileName") String profileName);
-	
-	@Query(value = "select * from c3p_deviceinfo deviceinfo left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
-			+ " where siteinfo.c_cust_name=:customerName  and (deviceinfo.d_TELNET_cred_profile not in  (:profileName) "
-			+ "or  deviceinfo.d_TELNET_cred_profile  is null)", nativeQuery = true)
-	List<DeviceDiscoveryEntity> findAllByCustSiteIdCCustNameAndDTelnetCredProfileNotInOrIsNull(@Param("customerName") String customerName,
-			@Param("profileName") String profileName);
-	
-	@Query(value = "select * from c3p_deviceinfo deviceinfo left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
-			+ " where siteinfo.c_cust_name=:customerName and siteinfo.c_site_region=:region and (deviceinfo.d_ssh_cred_profile not in  (:profileName) "
-			+ "or  deviceinfo.d_ssh_cred_profile  is null)", nativeQuery = true)
-	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDSshCredProfileNotInOrIsNull(@Param("customerName") String customerName,
+	@Query(value = "select distinct deviceinfo.* from c3p_deviceinfo deviceinfo left outer join c3p_device_credentials devicecred on deviceinfo.d_id=devicecred.device_id "
+			+ "left outer join c3p_t_credential_management credinfo on credinfo.cr_info_id=devicecred.cr_info_id "
+			+ "left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
+			+ "where siteinfo.c_cust_name=:customerName and siteinfo.c_site_region=:region "
+			+ "and (credinfo.cr_profile_name not in (:profileName) or credinfo.cr_profile_name is null)", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCredMgmtEntityNotInOrIsNull(@Param("customerName") String customerName,
 			@Param("region") String region, @Param("profileName") String profileName);
 	
-	@Query(value = "select * from c3p_deviceinfo deviceinfo left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
-			+ " where siteinfo.c_cust_name=:customerName  and siteinfo.c_site_region=:region and (deviceinfo.d_snmp_cred_profile not in  (:profileName) "
-			+ "or  deviceinfo.d_snmp_cred_profile  is null)", nativeQuery = true)
-	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDSnmpCredProfileNotInOrIsNull(@Param("customerName") String customerName,
-			@Param("region") String region, @Param("profileName") String profileName);
-	
-	@Query(value = "select * from c3p_deviceinfo deviceinfo left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
-			+ " where siteinfo.c_cust_name=:customerName and siteinfo.c_site_region=:region and (deviceinfo.d_TELNET_cred_profile not in  (:profileName) "
-			+ "or  deviceinfo.d_TELNET_cred_profile  is null)", nativeQuery = true)
-	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDTelnetCredProfileNotInOrIsNull(@Param("customerName") String customerName,
-			@Param("region") String region, @Param("profileName") String profileName);
-	
-	@Query(value = "select * from c3p_deviceinfo deviceinfo left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
-			+ " where siteinfo.c_cust_name=:customerName and siteinfo.c_site_name=:siteName and siteinfo.c_site_region=:region and (deviceinfo.d_ssh_cred_profile not in  (:profileName) "
-			+ "or  deviceinfo.d_ssh_cred_profile  is null)", nativeQuery = true)
-	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDSshCredProfileNotInOrIsNull(@Param("customerName") String customerName,
-			@Param("region") String region, @Param("siteName") String siteName, @Param("profileName") String profileName);
-	
-	@Query(value = "select * from c3p_deviceinfo deviceinfo left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
-			+ " where siteinfo.c_cust_name=:customerName  and siteinfo.c_site_name=:siteName and siteinfo.c_site_region=:region and (deviceinfo.d_snmp_cred_profile not in  (:profileName) "
-			+ "or  deviceinfo.d_snmp_cred_profile  is null)", nativeQuery = true)
-	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDSnmpCredProfileNotInOrIsNull(@Param("customerName") String customerName,
-			@Param("region") String region, @Param("siteName") String siteName, @Param("profileName") String profileName);
-	
-	@Query(value = "select * from c3p_deviceinfo deviceinfo left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
-			+ " where siteinfo.c_cust_name=:customerName and siteinfo.c_site_name=:siteName and siteinfo.c_site_region=:region and (deviceinfo.d_TELNET_cred_profile not in  (:profileName) "
-			+ "or  deviceinfo.d_TELNET_cred_profile  is null)", nativeQuery = true)
-	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDTelnetCredProfileNotInOrIsNull(@Param("customerName") String customerName,
+	@Query(value = "select distinct deviceinfo.* from c3p_deviceinfo deviceinfo left outer join c3p_device_credentials devicecred on deviceinfo.d_id=devicecred.device_id "
+			+ "left outer join c3p_t_credential_management credinfo on credinfo.cr_info_id=devicecred.cr_info_id "
+			+ "left outer join c3p_cust_siteinfo siteinfo on deviceinfo.c_site_id=siteinfo.id "
+			+ "where siteinfo.c_cust_name=:customerName and siteinfo.c_site_name=:siteName and siteinfo.c_site_region=:region "
+			+ "and (credinfo.cr_profile_name not in (:profileName) or credinfo.cr_profile_name is null)", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndCredMgmtEntityNotInOrIsNull(@Param("customerName") String customerName,
 			@Param("region") String region, @Param("siteName") String siteName, @Param("profileName") String profileName);
 
 	
 	DeviceDiscoveryEntity findByDHostNameAndDMgmtIpAndDDeComm(String tempHostName, String tempManagementIp,String dcomm);
 	
 	List<DeviceDiscoveryEntity> findAllByOrderByDIdDesc();
-	
-	DeviceDiscoveryEntity findOneByDSnmpCredProfile(String profileName);
-
-	DeviceDiscoveryEntity findByDHostNameAndDSnmpCredProfile(String hostname, String profileName);
 	
 	@Query(value = "select * from c3p_deviceinfo where d_hostname like :dHostName%", nativeQuery = true)
 	List<DeviceDiscoveryEntity> findByHostName(@Param("dHostName")String dHostName);
