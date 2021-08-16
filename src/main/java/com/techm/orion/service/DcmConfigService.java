@@ -3683,7 +3683,8 @@ public class DcmConfigService {
 		profileType = connectType;
 		if (profileName != null && profileType != null) {
 			credentialDetails = credentialManagementRepo.findOneByProfileNameAndProfileType(profileName, profileType);
-		}		
+		}
+		logger.debug("CredentialManagementEntity -- Router Credentials "+credentialDetails);
 		return credentialDetails;
 	}
 	
