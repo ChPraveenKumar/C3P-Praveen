@@ -3674,9 +3674,9 @@ public class DcmConfigService {
 			connectType = "SSH";
 		}
 		if (deviceDetails.getCredMgmtEntity().size() != 0) {
-			for (int i = 0; i < deviceDetails.getCredMgmtEntity().size(); i++) {
-				if (connectType.equalsIgnoreCase(deviceDetails.getCredMgmtEntity().get(i).getProfileType())) {
-					profileName = deviceDetails.getCredMgmtEntity().get(i).getProfileName();
+			for(CredentialManagementEntity credMgmt :deviceDetails.getCredMgmtEntity() ){
+				if (connectType.equalsIgnoreCase(credMgmt.getProfileType())) {
+					profileName = credMgmt.getProfileName();
 				}
 			}
 		}

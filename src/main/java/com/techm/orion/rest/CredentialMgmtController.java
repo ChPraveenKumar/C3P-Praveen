@@ -227,10 +227,7 @@ public class CredentialMgmtController {
 			if (type.equalsIgnoreCase("SSH") || type.equalsIgnoreCase("Telnet") || type.equalsIgnoreCase("SNMP")) {
 				List<DeviceDiscoveryEntity> deviceEntity = credential.getdDiscoveryEntity();
 				if (deviceEntity != null) {
-					for (DeviceDiscoveryEntity dE : deviceEntity) {
-						hostName = dE.getdHostName();
-						count += 1;
-					}
+					count = deviceEntity.size();
 				}
 			}
 			credential.setRefDevice(count);
@@ -268,21 +265,34 @@ public class CredentialMgmtController {
 			profileName = obj.get("profileName").toString();
 			profileType = obj.get("profileType").toString();
 
-			if (profileType.equalsIgnoreCase("SSH") || profileType.equalsIgnoreCase("Telnet") || profileType.equalsIgnoreCase("SNMP")) {
+			if (profileType.equalsIgnoreCase("SSH") || profileType.equalsIgnoreCase("Telnet")
+					|| profileType.equalsIgnoreCase("SNMP")) {
 				credMngmtListByProfName = credentialManagementRepo.findByProfileName(profileName);
-				for (int i = 0; i < credMngmtListByProfName.size(); i++) {
-					hostNameList = credMngmtListByProfName.get(i).getdDiscoveryEntity();
-				}
+
+				credMngmtListByProfName.forEach(credMgmtEntity -> {
+					credMgmtEntity.getdDiscoveryEntity().forEach(deviceEntity -> {
+						JSONObject devEntObj = new JSONObject();
+						devEntObj.put("hostName", deviceEntity.getdHostName());
+						devEntObj.put("managementIp", deviceEntity.getdMgmtIp());
+						devEntObj.put("type", deviceEntity.getdType());
+						outputArray.add(devEntObj);
+					});
+				});
+
+				/*
+				 * for (int i = 0; i < credMngmtListByProfName.size(); i++) { hostNameList =
+				 * credMngmtListByProfName.get(i).getdDiscoveryEntity(); }
+				 */
 			}
 
-			for (DeviceDiscoveryEntity deviceEntity : hostNameList) {
-				object = new JSONObject();
-				object.put("hostName", deviceEntity.getdHostName());
-				object.put("managementIp", deviceEntity.getdMgmtIp());
-				object.put("type", deviceEntity.getdType());
-
-				outputArray.add(object);
-			}
+			/*
+			 * for (DeviceDiscoveryEntity deviceEntity : hostNameList) { object = new
+			 * JSONObject(); object.put("hostName", deviceEntity.getdHostName());
+			 * object.put("managementIp", deviceEntity.getdMgmtIp()); object.put("type",
+			 * deviceEntity.getdType());
+			 * 
+			 * outputArray.add(object); }
+			 */
 			obj.put("data", outputArray);
 		} catch (Exception e) {
 			logger.error(e);
@@ -315,21 +325,17 @@ public class CredentialMgmtController {
 
 			if (profileType.equalsIgnoreCase("SSH") || profileType.equalsIgnoreCase("Telnet") || profileType.equalsIgnoreCase("SNMP")) {
 				credMngmtListByProfName = credentialManagementRepo.findByProfileName(profileName);
-				for (int i = 0; i < credMngmtListByProfName.size(); i++) {
-					hostNameList = credMngmtListByProfName.get(i).getdDiscoveryEntity();
-				}
+				credMngmtListByProfName.forEach(credMgmtEntity -> {
+					credMgmtEntity.getdDiscoveryEntity().forEach(deviceEntity -> {
+						JSONObject devEntObj = new JSONObject();
+						devEntObj.put("hostName", deviceEntity.getdHostName());
+						devEntObj.put("managementIp", deviceEntity.getdMgmtIp());
+						devEntObj.put("type", deviceEntity.getdType());
+						outputArray.add(devEntObj);
+					});
+				});
 			}
-			credentialManagementFinalList = credentialManagementRepo.findByProfileName(profileName);
-
-			for (DeviceDiscoveryEntity deviceEntity : hostNameList) {
-				object = new JSONObject();
-				object.put("hostName", deviceEntity.getdHostName());
-				object.put("managementIp", deviceEntity.getdMgmtIp());
-				object.put("type", deviceEntity.getdType());
-
-				outputArray.add(object);
-			}
-			obj.put("ProfileDetail", credentialManagementFinalList);
+			obj.put("ProfileDetail", credMngmtListByProfName);
 			obj.put("HostDetail", outputArray);
 		} catch (Exception e) {
 			logger.error(e);
@@ -360,15 +366,15 @@ public class CredentialMgmtController {
 	public ResponseEntity<JSONObject> addRefferedDevices(@RequestBody String request) throws Exception {
 
 		JSONObject reffredDevices = new JSONObject();
-		JSONObject reffredDevicesList = null;
 		JSONObject reffredDevicesJson = new JSONObject();
 		JSONParser reffredDevicesParser = new JSONParser();
 		JSONArray devices = new JSONArray();
-		boolean isProfileTypePresent = false, isDeviceAlreadyExist = false;
+		
 		JSONArray deviceList = null;
 
 		String profileName = null, profileType = null, overwrite = null;
 		try {
+			boolean isProfileTypePresent = false, isDeviceAlreadyExist = false;
 			reffredDevices = (JSONObject) reffredDevicesParser.parse(request);
 
 			if (reffredDevices.get("profileName") != null)
@@ -381,16 +387,16 @@ public class CredentialMgmtController {
 				deviceList = (JSONArray) reffredDevices.get("devices");
 
 			if (deviceList != null) {
-				for (int i = 0; i < deviceList.size(); i++) {
-					reffredDevicesList = new JSONObject();
-					JSONObject deviceName = (JSONObject) deviceList.get(i);
+				for(Object dList:deviceList) {
+					JSONObject reffredDevicesList = new JSONObject();
+					JSONObject deviceName = (JSONObject) dList;
 					DeviceDiscoveryEntity deviceInfo = deviceDiscoveryRepository
 							.findByDHostName(deviceName.get("hostName").toString());
 					if (deviceInfo != null) {
 						if (deviceInfo.getCredMgmtEntity().size() != 0) {
-							for (int j = 0; j < deviceInfo.getCredMgmtEntity().size(); j++) {
-								if ((deviceInfo.getCredMgmtEntity().get(j).getProfileName() != null
-										&& !deviceInfo.getCredMgmtEntity().get(j).getProfileName().isEmpty())
+							for(CredentialManagementEntity CredMgmtEntity :deviceInfo.getCredMgmtEntity() ){
+								if ((CredMgmtEntity.getProfileName() != null
+										&& !CredMgmtEntity.getProfileName().isEmpty())
 										&& ("SSH".equalsIgnoreCase(profileType) || "SNMP".equalsIgnoreCase(profileType)
 												|| "Telnet".equalsIgnoreCase(profileType)))
 									isProfileTypePresent = true;
@@ -402,7 +408,7 @@ public class CredentialMgmtController {
 									reffredDevicesList.put("hostName", deviceName.toString());
 									if ("SSH".equalsIgnoreCase(profileType) || "SNMP".equalsIgnoreCase(profileType) || "Telnet".equalsIgnoreCase(profileType) )
 										reffredDevicesList.put("profileName",
-												deviceInfo.getCredMgmtEntity().get(j).getProfileName());
+												CredMgmtEntity.getProfileName());
 									reffredDevicesList.put("profileType", profileType);
 									reffredDevicesList.put("hostName", deviceName.get("hostName").toString());
 									devices.add(reffredDevicesList);
@@ -414,7 +420,6 @@ public class CredentialMgmtController {
 												.findByProfileNameAndProfileType(profileName, profileType);
 										deviceInfo.setCredMgmtEntity(credentialManagementList);
 									}
-									// deviceInfo.getCredMgmtEntity().get(j).setProfileName(profileName);
 									deviceDiscoveryRepository.save(deviceInfo);
 								}
 							}
@@ -449,17 +454,15 @@ public class CredentialMgmtController {
 	public ResponseEntity<JSONObject> deleteRefferedDevices(@RequestBody String request) throws Exception {
 
 		JSONObject reffredDevices = new JSONObject();
-		JSONObject reffredDevicesJson = null;
+		JSONObject reffredDevicesJson = new JSONObject();
 		JSONParser reffredDevicesParser = new JSONParser();
-		String profileType = null;
 		try {
 			reffredDevices = (JSONObject) reffredDevicesParser.parse(request);
-			profileType = reffredDevices.get("profileType").toString();
+			String profileType = reffredDevices.get("profileType").toString();
 			JSONArray deviceList = (JSONArray) reffredDevices.get("devices");
 
-			for (int i = 0; i < deviceList.size(); i++) {
-				reffredDevicesJson = new JSONObject();
-				JSONObject deviceName = (JSONObject) deviceList.get(i);
+			deviceList.forEach(dList -> { 
+				JSONObject deviceName = (JSONObject) dList;
 				DeviceDiscoveryEntity deviceInfo = deviceDiscoveryRepository
 						.findByDHostName(deviceName.get("hostName").toString());
 				if (deviceInfo != null) {
@@ -467,7 +470,7 @@ public class CredentialMgmtController {
 						deviceInfo.setCredMgmtEntity(null);
 					deviceDiscoveryRepository.save(deviceInfo);
 				}
-			}
+			});
 			reffredDevicesJson.put("output", errorValidationRepository.findByErrorId("C3P_CM_008"));
 		} catch (Exception e) {
 			logger.error("exception in deleteRefferedDevices service is " + e);
