@@ -3670,26 +3670,21 @@ public class DcmConfigService {
 		String profileName = null;
 		String profileType = null;
 		String connectType = deviceDetails.getdConnect();
-		if (deviceDetails.getdConnect() != null) {			
-			switch (connectType.toUpperCase()) {
-			case "TELNET":
-				profileName = deviceDetails.getdTelnetCredProfile();
-				break;
-			case "SNMP":
-				profileName = deviceDetails.getdSnmpCredProfile();				
-				break;
-			default:
-				profileName = deviceDetails.getdSshCredProfile();
-				break;
-			}
-			profileType = deviceDetails.getdConnect();			
-		} else {
-			profileType = "SSH";
-			profileName = deviceDetails.getdSshCredProfile();
+		if (connectType == null) {
+			connectType = "SSH";
 		}
+		if (deviceDetails.getCredMgmtEntity().size() != 0) {
+			for(CredentialManagementEntity credMgmt :deviceDetails.getCredMgmtEntity() ){
+				if (connectType.equalsIgnoreCase(credMgmt.getProfileType())) {
+					profileName = credMgmt.getProfileName();
+				}
+			}
+		}
+		profileType = connectType;
 		if (profileName != null && profileType != null) {
 			credentialDetails = credentialManagementRepo.findOneByProfileNameAndProfileType(profileName, profileType);
-		}		
+		}
+		logger.debug("CredentialManagementEntity -- Router Credentials "+credentialDetails);
 		return credentialDetails;
 	}
 	

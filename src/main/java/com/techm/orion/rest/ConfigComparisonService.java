@@ -20,17 +20,25 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.techm.orion.dao.RequestInfoDao;
+import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
+import com.techm.orion.utility.TSALabels;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
@@ -44,6 +52,8 @@ public class ConfigComparisonService implements Observer {
 
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	@Autowired
+	private RestTemplate restTemplate;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -572,6 +582,10 @@ public class ConfigComparisonService implements Observer {
 				obj.put(new String("output"), "Error in processing the files");
 			}
 			bre.close();
+			String previousConfig = currentConfigPath + RequestId + "_PreviousConfig.txt";
+			String currentVersionConfig = currentConfigPath + RequestId + "_CurrentVersionConfig.txt";
+			JSONObject responseJson = configCompareDifference(previousConfig, currentVersionConfig);
+			obj.put("configDifference", responseJson);
 
 		} catch (Exception e) {
 			logger.error(e);
@@ -718,5 +732,33 @@ public class ConfigComparisonService implements Observer {
 		}
 
 		return result;
+	}
+	
+	private JSONObject configCompareDifference(String previousConfig, String currentVersionConfig) {
+		logger.info("Start - configCompareDifference");
+		HttpHeaders headers = null;
+		JSONObject configCompare = null;
+		JSONParser jsonParser = null;
+		JSONObject responseJson = null;
+		try {
+			headers = new HttpHeaders();
+			configCompare = new JSONObject();
+			jsonParser = new JSONParser();
+			configCompare.put(new String("file1"), previousConfig);
+			configCompare.put(new String("file2"), currentVersionConfig);
+			HttpEntity<JSONObject> httpEntity = new HttpEntity<JSONObject>(configCompare, headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue() + "/C3P/api/configDifference/";
+			String response = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class).getBody();
+			responseJson = (JSONObject) jsonParser.parse(response);
+		} catch (ParseException exe) {
+			logger.error("ParseException - configCompareDifference -> " + exe.getMessage());
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - configCompareDifference -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - configCompareDifference->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		logger.info("End - configCompareDifference - responseJson ->" + responseJson);
+		return responseJson;
 	}
 }
