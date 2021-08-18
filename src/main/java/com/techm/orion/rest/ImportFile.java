@@ -531,7 +531,7 @@ public class ImportFile {
 				object = new JSONObject();
 				object.put("importId", entity.getImportId());
 				if (entity.getExecutionDate() != null) {
-					object.put("executionDate", dateUtil.convertTimeStampInSDFFormat(entity.getExecutionDate()));
+					object.put("executionDate", dateUtil.dateTimeInAppFormat(entity.getExecutionDate().toString()));
 				}
 				object.put("status", entity.getStatus());
 				object.put("totalDevices", entity.getTotalDevices());
