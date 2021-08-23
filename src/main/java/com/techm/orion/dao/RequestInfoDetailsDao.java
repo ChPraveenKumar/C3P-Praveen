@@ -38,6 +38,7 @@ import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.entitybeans.ServiceOrderEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
+import com.techm.orion.entitybeans.VendorCommandEntity;
 import com.techm.orion.entitybeans.WebServiceEntity;
 import com.techm.orion.mapper.RequestInfoMappper;
 import com.techm.orion.pojo.RequestInfoCreateConfig;
@@ -49,6 +50,7 @@ import com.techm.orion.repositories.ResourceCharacteristicsRepository;
 import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.repositories.UserManagementRepository;
+import com.techm.orion.repositories.VendorCommandRepository;
 import com.techm.orion.repositories.WebServiceRepo;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.DcmConfigService;
@@ -59,6 +61,9 @@ import com.techm.orion.utility.TextReport;
 
 @Component
 public class RequestInfoDetailsDao {
+	public static String PROPERTIES_FILE = "TSA.properties";
+	public static final Properties PROPERTIES = new Properties();
+	
 	private static final Logger logger = LogManager.getLogger(RequestInfoDetailsDao.class);
 	@Autowired
 	private RequestInfoDetailsRepositories reository;
@@ -80,6 +85,10 @@ public class RequestInfoDetailsDao {
 	private WebServiceRepo webservicerepo;	
 	@Autowired
 	private BackupCurrentRouterConfigurationService backupCurrentRouterConfigurationService;	
+	@Autowired
+	private PythonServices pythonService;
+	@Autowired
+	private VendorCommandRepository vendorCommandRepository;
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
@@ -203,6 +212,56 @@ public class RequestInfoDetailsDao {
 				resourceCharEntity.setRcKeyValue(attributes.getRcKeyValue());
 				resourceCharRepo.save(resourceCharEntity);
 			}
+			
+			if(request.getAlphanumericReqId().substring(0, Math.min(request.getAlphanumericReqId().length(), 4)).equalsIgnoreCase("SLGB"))
+			{
+				//If request is back up and is successful then only execute this block.
+				//Find the baseline version for this hostname
+				RequestInfoEntity entity = reository.findByHostnameAndIsBaseline(request.getHostName(), "1");
+				//fetch the running configuration for this request.
+				if(entity!=null)
+				{
+				String baseLineFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
+						entity.getAlphanumericReqId() + "V"
+								+ Double.toString(entity.getRequestVersion())
+								+ "_PreviousConfig.txt";
+				String currentRunningFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
+						request.getAlphanumericReqId() + "V"
+						+ Double.toString(request.getRequestVersion())
+						+ "_PreviousConfig.txt";
+				if(baseLineFilePath!=null && currentRunningFilePath!=null)
+				{
+					//Call python service to fetch delta between two files
+					Boolean resp=pythonService.pythonDeltaCompute(baseLineFilePath, currentRunningFilePath);
+					//If resp is true update request info r_has_delta_with_baseline flag for this request to 1
+					if(resp == true)
+					{
+						int res=reository.updatehasdeltawithbaseline(true, request.getAlphanumericReqId(), request.getRequestVersion());
+						if(res==0)
+						{
+							logger.error("Could not update the record for has delta flag for request id:::",request.getAlphanumericReqId());	
+						}
+					}
+					else
+					{
+						logger.error("No delta found for request id::::",request.getAlphanumericReqId());	
+
+					}
+					
+				}
+				else
+				{
+					logger.error("Backup files not found",baseLineFilePath);	
+					logger.error("Backup files not found::: baseline path %s",baseLineFilePath);	
+					logger.error("Backup files not found::: currentRunning path %s",currentRunningFilePath);	
+				}
+				}
+				else
+				{
+					logger.error("No backup baselined for this version");
+				}
+				System.out.println("");
+			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
@@ -251,6 +310,7 @@ public class RequestInfoDetailsDao {
 				entity.setRcRequestStatus("Failure");
 				resourceCharHistoryRepo.save(entity);
 			});
+			
 		} else {
 			try {
 				Double finalVersion = Double.valueOf(version);
@@ -281,7 +341,7 @@ public class RequestInfoDetailsDao {
 				pojo.setRequestParentVersion(entity.getRequestParentVersion());
 				pojo.setModel(entity.getModel());
 				pojo.setVendor(entity.getVendor());
-				pojo.setDeviceType(entity.getDeviceType());
+//				pojo.setDeviceType(entity.getDeviceType());
 				pojo.setFamily(entity.getFamily());
 				pojo.setOs(entity.getOs());
 				pojo.setOsVersion(entity.getOsVersion());
@@ -319,7 +379,7 @@ public class RequestInfoDetailsDao {
 			}
 
 		} catch (Exception e) {
-
+			logger.error("Exception in changeRequestInRequestInfoStatus method " +e);
 		}
 
 		return result;
@@ -367,6 +427,7 @@ public class RequestInfoDetailsDao {
 				result = false;
 			}
 		} catch (Exception e) {
+			logger.error("Exception in changeRequestOwner method " +e);
 			e.printStackTrace();
 		}
 		return result;
@@ -386,6 +447,7 @@ public class RequestInfoDetailsDao {
 				result = false;
 			}
 		} catch (Exception e) {
+			logger.error("Exception in changeRequestStatus method " +e);
 			e.printStackTrace();
 		}
 		return result;
@@ -403,6 +465,7 @@ public class RequestInfoDetailsDao {
 				}
 			}
 		} catch (Exception e) {
+			logger.error("Exception in getOwnerAssignedRequestList method " +e);
 			e.printStackTrace();
 		}
 		return list;
@@ -549,12 +612,13 @@ public class RequestInfoDetailsDao {
 				channel = session.openChannel("shell");
 				OutputStream ops = channel.getOutputStream();
 
-				PrintStream ps = new PrintStream(ops, true);
+				PrintStream printStream = new PrintStream(ops, true);
 				logger.info("Channel Connected to machine " + host + " server");
 				channel.connect();
 				InputStream input = channel.getInputStream();
-				ps.println("terminal length 0");
-				ps.println("show run");
+				//ps.println("terminal length 0");
+				//ps.println("show run");
+				printStream = setCommandStream(printStream, requestinfo, "backup", false);
 				try {
 					Thread.sleep(3000);
 				} catch (Exception ee) {
@@ -723,4 +787,47 @@ public class RequestInfoDetailsDao {
 		}
 	}
 	
+	public PrintStream setCommandStream(PrintStream printStream, RequestInfoPojo requestinfo, String commandType,
+			Boolean isStartUp) {
+		List<VendorCommandEntity> vcCommandTypes = vendorCommandRepository
+				.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestinfo.getVendor(),requestinfo.getNetworkType(),requestinfo.getOs(), "CB");
+		for (VendorCommandEntity cmd : vcCommandTypes) {
+			if (commandType.equals("Test")) {
+				printStream = setModeData(cmd.getVcParentId(), printStream);
+			} else {
+				printStream = setModeData(cmd.getVcParentId(), printStream);
+				if (cmd.getVcStart().contains("::")) {
+					if (isStartUp) {						
+						printStream.println(StringUtils.substringAfter(cmd.getVcStart(), "::"));
+					}else {						
+						printStream.println(StringUtils.substringBefore(cmd.getVcStart(), "::"));
+					}
+				} else {
+					printStream.println(cmd.getVcStart());
+				}
+			}
+		}
+		return printStream;
+	}
+
+	private PrintStream setModeData(String parentId, PrintStream printStream) {
+		if (parentId.contains("::")) {
+			String startParentId = StringUtils.substringBefore(parentId, "::");
+			VendorCommandEntity startParentModeCommand = vendorCommandRepository.findByVcRecordId(startParentId);
+			if (startParentModeCommand!=null && !startParentModeCommand.getVcParentId().contains("000")) {
+				printStream = setModeData(startParentModeCommand.getVcParentId(), printStream);
+			}
+			printStream.println(startParentModeCommand.getVcStart());			
+			String endParentId = StringUtils.substringAfter(parentId, "::");
+			VendorCommandEntity endParentMode = vendorCommandRepository.findByVcRecordId(endParentId);
+			printStream.println(endParentMode.getVcStart());
+		}else {
+			VendorCommandEntity startModeCommand = vendorCommandRepository.findByVcRecordId(parentId);
+			if (startModeCommand!=null && !startModeCommand.getVcParentId().contains("000")) {
+				printStream = setModeData(startModeCommand.getVcParentId(), printStream);
+			}
+			printStream.println(startModeCommand.getVcStart());			
+		}
+		return printStream;
+	}
 }

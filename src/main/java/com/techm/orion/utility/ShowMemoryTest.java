@@ -34,6 +34,7 @@ public class ShowMemoryTest {
 		try {
 			PROPERTIES.load(PropFile);
 		} catch (IOException exc) {
+			logger.error("Exception in loadProperties method "+exc.getMessage());
 			exc.printStackTrace();
 			return false;
 		}
@@ -286,8 +287,9 @@ public class ShowMemoryTest {
 		try {
 			Thread.sleep(1000);
 		} catch (Exception ee) {
+			logger.error("Exception in printMemoryInfo method "+ee.getMessage());
 		}
-
+		
 		return result;
 
 	}

@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.techm.orion.entitybeans.ForkDiscrepancyResultEntity;
+import com.techm.orion.entitybeans.HostDiscrepancyResultEntity;
 
 @Repository
 public interface ForkDiscrepancyResultRepository extends JpaRepository<ForkDiscrepancyResultEntity, Long> {
@@ -34,5 +35,8 @@ public interface ForkDiscrepancyResultRepository extends JpaRepository<ForkDiscr
 
 	@Query(value = "select fid_discovered_value from c3p_t_fork_inv_discrepancy where fid_child_oid_no=:oidNum and device_id= :deviceId and fid_in_scope ='Y' and fid_discovery_id =:discovryId ", nativeQuery = true)
 	String findForkDiscrepancyValueByDeviceIdAndoidNo(@Param("oidNum") String oidNum,@Param("deviceId") String deviceId,@Param("discovryId") Integer findForkDiscoveryId);
+	
+	@Query(value = "SELECT * FROM c3p_t_fork_inv_discrepancy where fid_discrepancy_flag between '1' and '3' and fid_resolved_flag='N' and device_id =:deviceId and fid_in_scope ='Y'", nativeQuery = true)
+	List<ForkDiscrepancyResultEntity> findListOfHostDiscrepancyValueByDeviceId(@Param("deviceId") String deviceId);
 
 }

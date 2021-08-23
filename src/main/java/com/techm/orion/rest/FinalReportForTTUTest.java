@@ -2053,8 +2053,7 @@ public class FinalReportForTTUTest extends Thread {
 			}
 
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Exception in validateNetworkTest method "+e.getMessage());
 		}
 		return content;
 	}

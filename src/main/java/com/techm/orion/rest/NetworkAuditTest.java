@@ -169,7 +169,8 @@ public class NetworkAuditTest extends Thread {
 									results = new ArrayList<Boolean>();
 									for (int i = 0; i < finallistOfTests.size(); i++) {
 										// conduct and analyse the tests
-										ps.println("terminal length 0");
+										ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
+//										ps.println("terminal length 0");
 										ps.println(finallistOfTests.get(i).getTestCommand());
 										try {
 											Thread.sleep(8000);
@@ -372,6 +373,7 @@ public class NetworkAuditTest extends Thread {
 		try {
 			TSA_PROPERTIES.load(tsaPropFile);
 		} catch (IOException exc) {
+			logger.error("Exception in loadProperties method "+exc.getMessage());
 			exc.printStackTrace();
 			return false;
 		}

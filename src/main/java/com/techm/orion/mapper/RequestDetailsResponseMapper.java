@@ -42,6 +42,7 @@ public class RequestDetailsResponseMapper {
 			{
 				req.setBaselinedDate(dateutil.dateTimeInAppFormat(request.getBaselinedDate().toString()));
 			}
+			req.setHasDeltaFlag(request.isrHasDeltaWithBaseline());
 			serviceRequest.add(req);
 		});
 		}

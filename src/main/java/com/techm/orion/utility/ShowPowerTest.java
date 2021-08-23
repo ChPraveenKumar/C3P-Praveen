@@ -34,6 +34,7 @@ public class ShowPowerTest {
 		try {
 			PROPERTIES.load(PropFile);
 		} catch (IOException exc) {
+			logger.error("Exception in loadProperties method "+exc.getMessage());
 			exc.printStackTrace();
 			return false;
 		}

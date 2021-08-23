@@ -49,10 +49,10 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.CSVWriteAndConnectPython;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.service.PingService;
 import com.techm.orion.service.RegexTestHealthCheck;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
-import com.techm.orion.utility.PingTest;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
@@ -82,6 +82,8 @@ public class HealthCheckTestValidation extends Thread {
 	
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	@Autowired
+	private PingService pingService;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -144,8 +146,7 @@ public class HealthCheckTestValidation extends Thread {
 								logger.info("Latency "+requestinfo.getCertificationSelectionBit().substring(6));
 								isPredefinedTestSelected = true;
 								//Code to find out frameloss and latency from command ping using python service
-								PingTest pingHelper=new PingTest();
-								JSONArray pingResults = pingHelper.pingResults(requestinfo.getManagementIp(),"healthCheck");
+								JSONArray pingResults = pingService.pingResults(requestinfo.getManagementIp(),"healthCheck");
 								String pingReply="";
 								for(int i=0; i<pingResults.size();i++)
 								{
@@ -217,8 +218,7 @@ public class HealthCheckTestValidation extends Thread {
 							if (requestinfo.getCertificationSelectionBit().substring(4, 5).equalsIgnoreCase("1")) {
 								logger.info("Throughput "+requestinfo.getCertificationSelectionBit().substring(4, 5));
 								isPredefinedTestSelected = true;
-								PingTest pingHelper=new PingTest();
-								JSONObject throughputResults = pingHelper.throughputResults(requestinfo.getManagementIp(),"healthCheck");
+								JSONObject throughputResults = pingService.throughputResults(requestinfo.getManagementIp(),"healthCheck");
 								if(throughputResults.containsKey("error"))
 								{
 									requestinfo.setThroughput("0");
@@ -268,7 +268,7 @@ public class HealthCheckTestValidation extends Thread {
 							 * Owner: Ruchita Salvi Module: Test Strategey Logic: To find and run and
 							 * analyse custom tests
 							 */
-							// fetch extra health test added
+							// fetch extra health test added //351
 							List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
 							
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
@@ -315,7 +315,8 @@ public class HealthCheckTestValidation extends Thread {
 									logger.info("Channel Connected to machine " + host + " server");
 									channel.connect();
 									InputStream input = channel.getInputStream();
-									ps.println("terminal length 0");
+									ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
+//									ps.println("terminal length 0");
 									
 									for (int i = 0; i < finallistOfTests.size(); i++) {
 									
@@ -577,6 +578,7 @@ public class HealthCheckTestValidation extends Thread {
 		try {
 			TSA_PROPERTIES.load(tsaPropFile);
 		} catch (IOException exc) {
+			logger.error("IOException in createNoconfigFile method "+exc.getMessage());
 			exc.printStackTrace();
 			return false;
 		}
@@ -801,7 +803,7 @@ public class HealthCheckTestValidation extends Thread {
 		}
 
 		catch (IOException e) {
-			e.printStackTrace();
+			logger.error("Exception in cmdCall method "+e.getMessage());
 		}
 
 	}

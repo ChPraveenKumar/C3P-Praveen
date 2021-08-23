@@ -59,6 +59,8 @@ public class NetworkTestValidation extends Thread {
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;	
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	@Autowired
+	private VNFHelper helper;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -73,7 +75,7 @@ public class NetworkTestValidation extends Thread {
 		String jsonArray = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
-		Boolean value = false;
+		Boolean value = true;
 
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(request);
@@ -163,8 +165,9 @@ public class NetworkTestValidation extends Thread {
 										
 										if(deviceDetails.getdVNFSupport().equalsIgnoreCase("VNF"))
 										{
-											VNFHelper helper=new VNFHelper();
-											helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											//VNFHelper helper=new VNFHelper();
+											Boolean r = helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											results.add(r);
 										}
 										else if(deviceDetails.getdConnect().equalsIgnoreCase("RESTCONF"))
 										{
@@ -173,6 +176,7 @@ public class NetworkTestValidation extends Thread {
 										}
 										else
 										{
+											ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 											ps.println(finallistOfTests.get(i).getTestCommand());
 											try {
 												Thread.sleep(6000);
@@ -425,7 +429,7 @@ public class NetworkTestValidation extends Thread {
 				}
 			}
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			logger.error("Exception in validateNetworkTest method "+e.getMessage());
 			e.printStackTrace();
 		}
 		return content;

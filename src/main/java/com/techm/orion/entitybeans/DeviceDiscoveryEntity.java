@@ -139,25 +139,17 @@ public class DeviceDiscoveryEntity {
 	@Column(name = "d_decomm_time")
 	private String dDecommTime;
 
-	@Column(name = "d_snmp_cred_profile")
-	private String dSnmpCredProfile;
-
 	@Column(name = "d_new_device", columnDefinition = "int default 0")
 	private int dNewDevice;
-
-	@Column(name = "d_SSH_cred_profile")
-	private String dSshCredProfile;
-
-	@Column(name = "d_TELNET_cred_profile")
-	private String dTelnetCredProfile;
 
 	@Column(name = "d_decomm_reason")
 	private String dDecommReason;
 	@Transient
 	private String dSystemDescription;
 
-	@Transient
-	private String dLocation;
+	/*
+	 * @Transient private String dLocation;
+	 */
 
 	@Transient
 	private String dEndOfLife;
@@ -169,6 +161,9 @@ public class DeviceDiscoveryEntity {
 
 	@Transient
 	private JSONArray contactDetails;
+	
+	@Transient
+	private JSONArray locationDetails;
 
 	@Column(name = "d_discrepancy",length = 2)
 	private int dDiscrepancy;
@@ -187,6 +182,9 @@ public class DeviceDiscoveryEntity {
 	
 	@Column(name = "d_role", length = 100)
 	private String dRole;
+	
+	@Column(name = "d_power_supply", length = 45)
+	private String dPowerSupply;
 	
 	public String getdManagedBy() {
 		return dManagedBy;
@@ -220,6 +218,14 @@ public class DeviceDiscoveryEntity {
 		this.dRole = dRole;
 	}
 
+	public String getdPowerSupply() {
+		return dPowerSupply;
+	}
+
+	public void setdPowerSupply(String dPowerSupply) {
+		this.dPowerSupply = dPowerSupply;
+	}
+	
 	public JSONArray getContactDetails() {
 		return contactDetails;
 	}
@@ -228,36 +234,20 @@ public class DeviceDiscoveryEntity {
 		this.contactDetails = contactDetails;
 	}
 
+	public JSONArray getLocationDetails() {
+		return locationDetails;
+	}
+
+	public void setLocationDetails(JSONArray locationDetails) {
+		this.locationDetails = locationDetails;
+	}
+
 	public String getdStatus() {
 		return dStatus;
 	}
 
 	public void setdStatus(String dStatus) {
 		this.dStatus = dStatus;
-	}
-
-	public String getdSnmpCredProfile() {
-		return dSnmpCredProfile;
-	}
-
-	public void setdSnmpCredProfile(String dSnmpCredProfile) {
-		this.dSnmpCredProfile = dSnmpCredProfile;
-	}
-
-	public String getdSshCredProfile() {
-		return dSshCredProfile;
-	}
-
-	public void setdSshCredProfile(String dSshCredProfile) {
-		this.dSshCredProfile = dSshCredProfile;
-	}
-
-	public String getdTelnetCredProfile() {
-		return dTelnetCredProfile;
-	}
-
-	public void setdTelnetCredProfile(String dTelnetCredProfile) {
-		this.dTelnetCredProfile = dTelnetCredProfile;
 	}
 
 	@Transient
@@ -287,13 +277,11 @@ public class DeviceDiscoveryEntity {
 		this.dEndOfLife = dEndOfLife;
 	}
 
-	public String getdLocation() {
-		return dLocation;
-	}
-
-	public void setdLocation(String dLocation) {
-		this.dLocation = dLocation;
-	}
+	/*
+	 * public String getdLocation() { return dLocation; }
+	 * 
+	 * public void setdLocation(String dLocation) { this.dLocation = dLocation; }
+	 */
 
 	public String getdSystemDescription() {
 		return dSystemDescription;
@@ -306,7 +294,13 @@ public class DeviceDiscoveryEntity {
 	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "c_site_id")
 	private SiteInfoEntity custSiteId;
+	
+	@JsonIgnore
+	@ManyToMany
+	@JoinTable(name = "c3p_device_credentials", joinColumns = @JoinColumn(name = "device_id"), inverseJoinColumns = @JoinColumn(name = "cr_info_id"))
+	List<CredentialManagementEntity> credMgmtEntity;
 
+	@JsonIgnore
 	@ManyToMany
 	@JoinTable(name = "c3p_user_device", joinColumns = @JoinColumn(name = "device_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
 	Set<UserEntity> users;
@@ -668,6 +662,14 @@ public class DeviceDiscoveryEntity {
 		this.dReqCount = dReqCount;
 	}
 
+	public List<CredentialManagementEntity> getCredMgmtEntity() {
+		return credMgmtEntity;
+	}
+
+	public void setCredMgmtEntity(List<CredentialManagementEntity> credMgmtEntity) {
+		this.credMgmtEntity = credMgmtEntity;
+	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;

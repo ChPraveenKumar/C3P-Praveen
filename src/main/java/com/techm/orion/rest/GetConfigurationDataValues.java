@@ -63,7 +63,7 @@ public class GetConfigurationDataValues implements Observer {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getVendor method "+e.getMessage());
 		}
 
 		return Response
@@ -115,7 +115,7 @@ public class GetConfigurationDataValues implements Observer {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getDeviceType method "+e.getMessage());
 		}
 
 		return Response
@@ -155,7 +155,7 @@ public class GetConfigurationDataValues implements Observer {
 		}
 		catch(Exception e)
 		{
-			
+			logger.error("Exception in getModel method "+e.getMessage());
 		}
 		return Response
 				.status(200)
@@ -197,7 +197,7 @@ public class GetConfigurationDataValues implements Observer {
 		}
 		catch(Exception e)
 		{
-			
+			logger.error("Exception in getOS method "+e.getMessage());
 		}
 		return Response
 				.status(200)
@@ -239,7 +239,7 @@ public class GetConfigurationDataValues implements Observer {
 		}
 		catch(Exception e)
 		{
-			
+			logger.error("Exception in getOSVersion method "+e.getMessage());
 		}
 		return Response
 				.status(200)
@@ -283,7 +283,7 @@ public class GetConfigurationDataValues implements Observer {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getRegion method "+e.getMessage());
 		}
 
 		return Response

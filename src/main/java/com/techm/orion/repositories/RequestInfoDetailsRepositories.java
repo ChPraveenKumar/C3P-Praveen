@@ -274,6 +274,14 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	
 	List<RequestInfoEntity> findByRequestCreatorNameOrderByDateofProcessingDesc(String userName, Pageable pageable );
 	
+	@Query(value = "select  * from c3p_t_request_info where r_hostname=:hostname and r_baselined_flag=:r_baselined_flag", nativeQuery = true)
+	RequestInfoEntity findByHostnameAndIsBaseline(@Param("hostname") String hostname,@Param("r_baselined_flag") String r_baselined_flag);
+	
+	@Modifying
+	@Transactional
+	@Query("UPDATE RequestInfoEntity e SET e.rHasDeltaWithBaseline= :r_has_delta_with_baseline  where e.alphanumericReqId =:alphanumericReqId And e.requestVersion = :requestVersion")
+	int updatehasdeltawithbaseline(@Param("r_has_delta_with_baseline") boolean r_has_delta_with_baseline,
+			@Param("alphanumericReqId") String alphanumericReqId, @Param("requestVersion") Double requestVersion);
 }
 
 

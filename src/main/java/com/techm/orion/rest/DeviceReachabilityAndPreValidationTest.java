@@ -45,9 +45,9 @@ import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.service.PingService;
 import com.techm.orion.service.PrevalidationTestServiceImpl;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.PingTest;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
@@ -87,10 +87,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	
 	@Autowired
 	private PrevalidationTestServiceImpl prevalidationTestServiceImpl;
+	@Autowired
+	private PingService pingService;
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
-	PingTest pingHelper = new PingTest();
+	//PingTest pingHelper = new PingTest();
 
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -229,7 +231,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT")
 									|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")
 									|| type.equalsIgnoreCase("SLGA") || type.equalsIgnoreCase("SLGM")
-									|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
+									|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")|| type.equalsIgnoreCase("SLGB")) {
 
 								String host = requestinfo.getManagementIp();
 								CredentialManagementEntity routerCredential = dcmConfigService
@@ -242,27 +244,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								 * "c3pteam"; password = "csr1000v"; } else { user = userPojo.getUsername();
 								 * password = userPojo.getPassword(); }
 								 */
-								String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("portSSH");
-
-								// port="22";
-								session = jsch.getSession(user, host, Integer.parseInt(port));
-								Properties config = new Properties();
-								config.put("StrictHostKeyChecking", "no");
-								session.setConfig(config);
-								session.setPassword(password);
-								session.connect();
-								try {
-									Thread.sleep(10000);
-								} catch (Exception ee) {
-								}
-								channel = session.openChannel("shell");
-								OutputStream ops = channel.getOutputStream();
-
-								PrintStream ps = new PrintStream(ops, true);
-								logger.info("Channel Connected to machine " + host + " server");
+								
+								/*logger.info("Channel Connected to machine " + host + " server");
 								channel.connect();
-								InputStream input = channel.getInputStream();
+								
 								ps.println("show version");
 								try {
 									Thread.sleep(1000);
@@ -274,15 +259,15 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								 * 
 								 */
 
-								requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+								/*requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "1");
 								printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()));
 
-								value = prevalidationTestServiceImpl.PreValidation(requestinfo,
-										Double.toString(requestinfo.getRequestVersion()), null);
+								/*value = prevalidationTestServiceImpl.PreValidation(requestinfo,
+										Double.toString(requestinfo.getRequestVersion()), null);*/
 
-								if (value) {
+								//if (value) {
 									// changes for testing strategy
 									List<Boolean> results = null;
 									RequestInfoDao dao = new RequestInfoDao();
@@ -292,8 +277,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(),
 											requestinfo.getOs(), requestinfo.getOsVersion(), requestinfo.getVendor(),
 											requestinfo.getRegion(), "Device Prevalidation");
-									List<TestDetail> selectedTests = dao.findSelectedTests(
-											requestinfo.getAlphanumericReqId(), "Device Prevalidation", version);
+									List<TestDetail> selectedTests = listOfTests;
 									if (selectedTests.size() > 0) {
 										for (int i = 0; i < listOfTests.size(); i++) {
 											for (int j = 0; j < selectedTests.size(); j++) {
@@ -304,12 +288,34 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 											}
 										}
 									}
+									value=true;
 									if (finallistOfTests.size() > 0) {
+										
 										results = new ArrayList<Boolean>();
 										for (int i = 0; i < finallistOfTests.size(); i++) {
 
+											String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+													.getProperty("portSSH");
+
+											// port="22";
+											session = jsch.getSession(user, host, Integer.parseInt(port));
+											Properties config = new Properties();
+											config.put("StrictHostKeyChecking", "no");
+											session.setConfig(config);
+											session.setPassword(password);
+											session.connect();
+											try {
+												Thread.sleep(10000);
+											} catch (Exception ee) {
+											}
+											channel = session.openChannel("shell");
+											OutputStream ops = channel.getOutputStream();
+
+											PrintStream ps = new PrintStream(ops, true);
+											InputStream input = channel.getInputStream();
+											channel.connect();
 											// conduct and analyse the tests
-											ps.println("terminal length 0");
+											ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 											ps.println(finallistOfTests.get(i).getTestCommand());
 											try {
 												Thread.sleep(6000);
@@ -323,18 +329,21 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 													Double.toString(requestinfo.getRequestVersion()),
 													finallistOfTests.get(i), "Device Prevalidation");
 											results.add(res);
+											input.close();
 										}
 										if (results != null) {
 											for (int i = 0; i < results.size(); i++) {
-												if (!results.get(i)) {
+												if (results.get(i)== false) {
 													value = false;
 													break;
 												}
+										
 											}
 										}
-									} else {
+										
+									/*} else {
 										// No new device prevalidation test added
-									}
+									}*/
 
 									/*
 									 * END
@@ -342,7 +351,19 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									 */
 								}
 								// value=true;
-								input.close();
+									if(value == true)
+									{
+						
+										requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+												Double.toString(requestinfo.getRequestVersion()), "Application_test", "1", "In Progress");
+										
+									}
+									else
+									{
+										requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+												Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
+						
+									}
 								channel.disconnect();
 								session.disconnect();
 
@@ -350,117 +371,117 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								obj.put(new String("output"), jsonArray);
 							}
 
-							else if (type.equalsIgnoreCase("SLGB")) {
-
-								String host = requestinfo.getManagementIp();
-								CredentialManagementEntity routerCredential = dcmConfigService
-										.getRouterCredential(deviceDetails);
-								String user = routerCredential.getLoginRead();
-								String password = routerCredential.getPasswordWrite();
-
-								String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("portSSH");
-								session = jsch.getSession(user, host, Integer.parseInt(port));
-								Properties config = new Properties();
-								config.put("StrictHostKeyChecking", "no");
-								session.setConfig(config);
-								session.setPassword(password);
-								session.connect();
-								try {
-									Thread.sleep(1000);
-								} catch (Exception ee) {
-								}
-								channel = session.openChannel("shell");
-								OutputStream ops = channel.getOutputStream();
-
-								PrintStream ps = new PrintStream(ops, true);
-								logger.info("Channel Connected to machine " + host + " server");
-								channel.connect();
-								InputStream input = channel.getInputStream();
-								ps.println("show version");
-								try {
-									Thread.sleep(5000);
-								} catch (Exception ee) {
-								}
-								/*
-								 * Error here Parameter index out of range (17 > number of parameters, which is
-								 * 16).
-								 * 
-								 */
-								requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "1");
-								printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()));
-
-								value = prevalidationTestServiceImpl.PreValidation(requestinfo,
-										Double.toString(requestinfo.getRequestVersion()), null);
-
-								if (value) {
-									// changes for testing strategy
-									List<Boolean> results = null;
-									RequestInfoDao dao = new RequestInfoDao();
-									List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-									List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-									listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(),
-											requestinfo.getOs(), requestinfo.getOsVersion(), requestinfo.getVendor(),
-											requestinfo.getRegion(), "Device Prevalidation");
-									List<TestDetail> selectedTests = dao.findSelectedTests(
-											requestinfo.getAlphanumericReqId(), "Device Prevalidation", version);
-									if (selectedTests.size() > 0) {
-										for (int i = 0; i < listOfTests.size(); i++) {
-											for (int j = 0; j < selectedTests.size(); j++) {
-												if (selectedTests.get(j).getTestName()
-														.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
-													finallistOfTests.add(listOfTests.get(j));
-												}
-											}
-										}
-									}
-									if (finallistOfTests.size() > 0) {
-										results = new ArrayList<Boolean>();
-										for (int i = 0; i < finallistOfTests.size(); i++) {
-
-											// conduct and analyse the tests
-											ps.println("terminal length 0");
-											ps.println(finallistOfTests.get(i).getTestCommand());
-											try {
-												Thread.sleep(6000);
-											} catch (Exception ee) {
-											}
-
-											// printResult(input,
-											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-											Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
-													requestinfo.getAlphanumericReqId(),
-													Double.toString(requestinfo.getRequestVersion()),
-													finallistOfTests.get(i), "Device Prevalidation");
-											results.add(res);
-										}
-										if (results != null) {
-											for (int i = 0; i < results.size(); i++) {
-												if (!results.get(i)) {
-													value = false;
-													break;
-												}
-											}
-										}
-									} else {
-										// No new device prevalidation test added
-									}
-
-									/*
-									 * END
-									 * 
-									 */
-								}
-								// value=true;
-								channel.disconnect();
-								session.disconnect();
-
-								jsonArray = new Gson().toJson(value);
-								obj.put(new String("output"), jsonArray);
-
-							}
+//							else if (type.equalsIgnoreCase("SLGB")) {
+//
+//								String host = requestinfo.getManagementIp();
+//								CredentialManagementEntity routerCredential = dcmConfigService
+//										.getRouterCredential(deviceDetails);
+//								String user = routerCredential.getLoginRead();
+//								String password = routerCredential.getPasswordWrite();
+//
+//								String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
+//										.getProperty("portSSH");
+//								session = jsch.getSession(user, host, Integer.parseInt(port));
+//								Properties config = new Properties();
+//								config.put("StrictHostKeyChecking", "no");
+//								session.setConfig(config);
+//								session.setPassword(password);
+//								session.connect();
+//								try {
+//									Thread.sleep(1000);
+//								} catch (Exception ee) {
+//								}
+//								channel = session.openChannel("shell");
+//								OutputStream ops = channel.getOutputStream();
+//
+//								PrintStream ps = new PrintStream(ops, true);
+//								logger.info("Channel Connected to machine " + host + " server");
+//								channel.connect();
+//								InputStream input = channel.getInputStream();
+//								ps.println("show version");
+//								try {
+//									Thread.sleep(5000);
+//								} catch (Exception ee) {
+//								}
+//								/*
+//								 * Error here Parameter index out of range (17 > number of parameters, which is
+//								 * 16).
+//								 * 
+//								 */
+//								requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+//										Double.toString(requestinfo.getRequestVersion()), "1");
+//								printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
+//										Double.toString(requestinfo.getRequestVersion()));
+//
+//								value = prevalidationTestServiceImpl.PreValidation(requestinfo,
+//										Double.toString(requestinfo.getRequestVersion()), null);
+//
+//								if (value) {
+//									// changes for testing strategy
+//									List<Boolean> results = null;
+//									RequestInfoDao dao = new RequestInfoDao();
+//									List<TestDetail> listOfTests = new ArrayList<TestDetail>();
+//									List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
+//									listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(),
+//											requestinfo.getOs(), requestinfo.getOsVersion(), requestinfo.getVendor(),
+//											requestinfo.getRegion(), "Device Prevalidation");
+//									List<TestDetail> selectedTests = dao.findSelectedTests(
+//											requestinfo.getAlphanumericReqId(), "Device Prevalidation", version);
+//									if (selectedTests.size() > 0) {
+//										for (int i = 0; i < listOfTests.size(); i++) {
+//											for (int j = 0; j < selectedTests.size(); j++) {
+//												if (selectedTests.get(j).getTestName()
+//														.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
+//													finallistOfTests.add(listOfTests.get(j));
+//												}
+//											}
+//										}
+//									}
+//									if (finallistOfTests.size() > 0) {
+//										results = new ArrayList<Boolean>();
+//										for (int i = 0; i < finallistOfTests.size(); i++) {
+//
+//											// conduct and analyse the tests
+//											ps.println("terminal length 0");
+//											ps.println(finallistOfTests.get(i).getTestCommand());
+//											try {
+//												Thread.sleep(6000);
+//											} catch (Exception ee) {
+//											}
+//
+//											// printResult(input,
+//											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
+//											Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
+//													requestinfo.getAlphanumericReqId(),
+//													Double.toString(requestinfo.getRequestVersion()),
+//													finallistOfTests.get(i), "Device Prevalidation");
+//											results.add(res);
+//										}
+//										if (results != null) {
+//											for (int i = 0; i < results.size(); i++) {
+//												if (!results.get(i)) {
+//													value = false;
+//													break;
+//												}
+//											}
+//										}
+//									} else {
+//										// No new device prevalidation test added
+//									}
+//
+//									/*
+//									 * END
+//									 * 
+//									 */
+//								}
+//								// value=true;
+//								channel.disconnect();
+//								session.disconnect();
+//
+//								jsonArray = new Gson().toJson(value);
+//								obj.put(new String("output"), jsonArray);
+//
+//							}
 
 							else if (type.equalsIgnoreCase("SLGF")) {
 								// Perform health checks for OS upgrade
@@ -610,7 +631,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					// requestinfo.getAlphanumericReqId(),
 					// Double.toString(requestinfo.getRequestVersion()));
 					boolean reachabilityTest = false;
-					JSONArray pingResults = pingHelper.pingResults(requestinfo.getManagementIp());
+					JSONArray pingResults = pingService.pingResults(requestinfo.getManagementIp());
 					if (pingResults != null) {
 						if (pingResults.contains("Error") || pingResults.contains("Destination host unreachable")
 								|| pingResults.contains("Request timed out")
@@ -638,6 +659,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 						}
 
+						requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "1");
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 

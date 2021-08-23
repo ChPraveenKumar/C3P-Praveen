@@ -180,18 +180,31 @@ public class DeviceDiscoveryController implements Observer {
 				JSONObject object = new JSONObject();
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
-				object.put("type", "Router");
+				//object.put("type", "Router");
 				object.put("deviceFamily", getAllDevice.get(i).getdDeviceFamily());
 				object.put("model", getAllDevice.get(i).getdModel());
 				object.put("os", getAllDevice.get(i).getdOs());
 				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
 				object.put("vendor", getAllDevice.get(i).getdVendor());
 				object.put("status", "Available");
+				object.put("role", getAllDevice.get(i).getdRole());
+				object.put("powerSupply", getAllDevice.get(i).getdPowerSupply());
+				object.put("deviceId", getAllDevice.get(i).getdId());
 				if (getAllDevice.get(i).getCustSiteId() != null) {
 					object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
 					SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
 					object.put("site", site.getcSiteName());
 					object.put("region", site.getcSiteRegion());
+					object.put("addressline1", site.getcSiteAddressLine1());
+					object.put("addressline2", site.getcSIteAddressLine2());
+					object.put("addressline3", site.getcSiteAddressLine3());
+					object.put("location", setSiteDetails(site, getAllDevice.get(i)));
+					object.put("city", site.getcSiteCity());
+					object.put("country", site.getcSiteCountry());
+					object.put("market", site.getcSiteMarket());
+					object.put("state", site.getcSiteState());
+					object.put("subRegion", site.getcSiteSubRegion());
+					object.put("zip", site.getcSiteZip());
 
 				}
 				if (getAllDevice.get(i).getdEndOfSupportDate() != null
@@ -270,6 +283,8 @@ public class DeviceDiscoveryController implements Observer {
 				JSONObject extObj=requestInfoDetailsDao.fetchFromDeviceExtLocationDescription(String.valueOf(inventoryList.get(j).getdId()));
 				inventoryList.get(j).setInterfaces(null);
 				inventoryList.get(j).setUsers(null);
+				JSONArray locationDetails = new JSONArray();
+				JSONObject details = new JSONObject();
 				if(extObj!=null && extObj.get("description") != null && extObj.containsKey("description"))
 				{
 				inventoryList.get(j).setdSystemDescription(extObj.get("description").toString());
@@ -280,11 +295,13 @@ public class DeviceDiscoveryController implements Observer {
 				}
 				if(extObj!=null && extObj.containsKey("lat") && (extObj.get("lat") != null) && extObj.containsKey("long") && (extObj.get("long") != null))
 				{
-				inventoryList.get(j).setdLocation("Lat: "+extObj.get("lat").toString()+", Long: "+extObj.get("long").toString());
+					details.put("latitude",extObj.get("lat").toString());
+					details.put("longitude", extObj.get("long").toString());
 				}
 				else
 				{
-				inventoryList.get(j).setdLocation("Not Available");
+					details.put("latitude","Not Available");
+					details.put("longitude", "Not Available");
 				}
 				inventoryList.get(j).setdEndOfSupportDate(inventoryList.get(j).getdEndOfSupportDate());
 				inventoryList.get(j).setdEndOfLife(inventoryList.get(j).getdEndOfSaleDate());
@@ -294,14 +311,15 @@ public class DeviceDiscoveryController implements Observer {
 				inventoryList.get(j).getdManagedBy();
 				inventoryList.get(j).getdManagedServicesType();
 				inventoryList.get(j).getdLifeCycleState();
-				inventoryList.get(j).getdRole();
-
-				/* Update IsNewFlag */
-				int isNewDevice = inventoryList.get(j).getdNewDevice();
-				if (isNewDevice == 0) {
-					inventoryList.get(j).setdNewDevice(1);
-					deviceDiscoveryRepo.save(inventoryList.get(j));
+				if(inventoryList.get(j).getdRole()==null) {
+					inventoryList.get(j).setdRole("Not Available");
 				}
+				inventoryList.get(j).getdPowerSupply();
+				inventoryList.get(j).getCustSiteId().getcSiteAddressLine1();
+				inventoryList.get(j).getCustSiteId().getcSIteAddressLine2();
+				inventoryList.get(j).getCustSiteId().getcSiteAddressLine3();
+				inventoryList.get(j).getCustSiteId().getcSiteName();
+				details.put("location", setSiteDetails(inventoryList.get(j).getCustSiteId(), inventoryList.get(j)));
 
 				JSONArray contactDetails = new JSONArray();
 				JSONObject detail = new JSONObject();
@@ -314,7 +332,9 @@ public class DeviceDiscoveryController implements Observer {
 				detail.put("dContactPhone", inventoryList.get(j).getdContactPhone());
 
 				contactDetails.add(detail);
-				inventoryList.get(j).setContactDetails(contactDetails);				
+				locationDetails.add(details);
+				inventoryList.get(j).setContactDetails(contactDetails);
+				inventoryList.get(j).setLocationDetails(locationDetails);
 			}
 			
 			obj.put("deviceDetails", inventoryList);
@@ -367,4 +387,24 @@ public class DeviceDiscoveryController implements Observer {
 		}
 		return cidr;
 	}
+	
+	private String setSiteDetails(SiteInfoEntity site, DeviceDiscoveryEntity getAllDevice) {
+		String[] strArr = new String[] { convertNull2ZeroString(site.getcSiteName()),
+				convertNull2ZeroString(site.getcSiteAddressLine1()),
+				convertNull2ZeroString(site.getcSIteAddressLine2()) };
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < strArr.length; i++) {
+			sb.append(strArr[i]);
+			sb.append('/');
+		}
+		sb.append(convertNull2ZeroString(site.getcSiteAddressLine3()));
+		sb.append("-");
+		sb.append(convertNull2ZeroString(getAllDevice.getdPowerSupply()));
+		return sb.toString();
+	}
+
+	private String convertNull2ZeroString(String value) {
+		return value == null ? "" : value;
+	}
+	 	 
 }

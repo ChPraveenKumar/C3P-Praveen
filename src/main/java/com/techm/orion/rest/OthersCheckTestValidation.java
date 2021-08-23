@@ -196,7 +196,8 @@ public class OthersCheckTestValidation extends Thread {
 											else
 											{
 												// conduct and analyse the tests
-												ps.println("terminal length 0");
+												ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
+//												ps.println("terminal length 0");
 												ps.println(finallistOfTests.get(i).getTestCommand());
 												try {
 													Thread.sleep(8000);
@@ -386,6 +387,7 @@ public class OthersCheckTestValidation extends Thread {
 		try {
 			TSA_PROPERTIES.load(tsaPropFile);
 		} catch (IOException exc) {
+			logger.error("Exception in loadProperties method "+exc.getMessage());
 			exc.printStackTrace();
 			return false;
 		}

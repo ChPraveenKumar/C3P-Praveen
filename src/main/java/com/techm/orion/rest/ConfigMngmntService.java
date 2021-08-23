@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -164,13 +165,13 @@ public class ConfigMngmntService implements Observer {
 						.toString().toUpperCase());
 			}
 			// configReqToSendToC3pCode.setDeviceName(json.get("deviceName").toString());
-			if (!(json.get("requestType").equals("SLGB"))) {
+			/*if (!(json.get("requestType").equals("SLGB"))) {
 				configReqToSendToC3pCode.setDeviceType(json.get("deviceType")
 						.toString());
 			} else {
 				configReqToSendToC3pCode.setDeviceType(json.get("deviceType")
 						.toString());
-			}
+			}*/
 			configReqToSendToC3pCode.setModel(json.get("model").toString());
 			configReqToSendToC3pCode.setOs(json.get("os").toString());
 			if (json.containsKey("osVersion")) {
@@ -2085,7 +2086,7 @@ public class ConfigMngmntService implements Observer {
 						cammandByTemplate = configurationManagmentService
 								.setReplicationFeatureData(cammandByTemplate,
 										replicationArray,
-										requestInfoPojo.getVendor());
+										requestInfoPojo);
 
 					} else {
 						// No TemplateId and No Feature Replication
@@ -2094,13 +2095,9 @@ public class ConfigMngmntService implements Observer {
 										requestInfoPojo.getVendor(), features);
 						cammandByTemplate = configurationManagmentService
 								.setFeatureData(cammandByTemplate, attribJson);
-						List<VendorCommandEntity> vendorComandList = vendorCommandRepository
-								.findAllByVcVendorName(requestInfoPojo
-										.getVendor());
+						List<VendorCommandEntity> vendorComandList = vendorCommandRepository.findAllByVcVendorNameAndVcNetworkTypeAndVcOsAndVcRecordIdStartsWith(requestInfoPojo.getVendor(),requestInfoPojo.getNetworkType(),requestInfoPojo.getOs(),"CC");
 						if (!vendorComandList.isEmpty()) {
-							vendorComandList.sort((VendorCommandEntity c1,
-									VendorCommandEntity c2) -> c2
-									.getVcParentId() - c1.getVcParentId());
+							vendorComandList.sort(Comparator.comparing(VendorCommandEntity::getVcParentId).reversed());
 							String previous = null;
 							for (VendorCommandEntity vendorComand : vendorComandList) {
 								if (vendorComand.getVcRepetition() != null) {
@@ -2340,7 +2337,7 @@ public class ConfigMngmntService implements Observer {
 				.findCSiteIdByCSiteName(requestInfoPojo.getSiteName());
 		requestInfoPojo.setSiteid(siteId.getcSiteId());
 
-		requestInfoPojo.setDeviceType(json.get("deviceType").toString());
+//		requestInfoPojo.setDeviceType(json.get("deviceType").toString());
 		requestInfoPojo.setModel(json.get("model").toString());
 		requestInfoPojo.setOs(json.get("os").toString());
 		if (json.containsKey("osVersion")) {

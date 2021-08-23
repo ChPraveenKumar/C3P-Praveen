@@ -15,7 +15,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
-import org.apache.commons.net.ntp.TimeStamp;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -138,7 +137,7 @@ public class BackUpAndRestoreController {
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getVendorStatus method "+e.getMessage());
 		}
 
 		return Response.status(200).entity(str).build();
@@ -257,7 +256,7 @@ public class BackUpAndRestoreController {
 			obj.put(new String("output"), jsonArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getBackUpSRList method "+e.getMessage());
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -311,7 +310,7 @@ public class BackUpAndRestoreController {
 			str = errorValidationRepository.findByErrorId("C3P_BR_001");
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getBaselineData method "+e.getMessage());
 		}
 
 		return Response.status(200).entity(str).build();
@@ -371,7 +370,7 @@ public class BackUpAndRestoreController {
 
 				requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-				requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+				//requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 				requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
@@ -416,6 +415,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
+			logger.error("Exception in createConfigurationDcmBackUpAndRestore method "+e.getMessage());
 		}
 		return obj;
 
@@ -509,7 +509,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getAllBackUpRequest method "+e.getMessage());
 
 		}
 
@@ -590,7 +590,7 @@ public class BackUpAndRestoreController {
 			}
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in searchImportDashboard method "+e.getMessage());
 		}
 
 		return versioningModel;
@@ -682,7 +682,7 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+					//requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 					requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
@@ -750,7 +750,7 @@ public class BackUpAndRestoreController {
 
 		catch (Exception e) {
 			e.getStackTrace();
-			logger.error(e);
+			logger.error("Exception in batchBackUpAndRestore method "+e.getMessage());
 		}
 		return obj;
 
@@ -838,7 +838,7 @@ public class BackUpAndRestoreController {
 			detailsList = requestInfoDetailsRepositories.findByBatchId(batchId);
 
 		} catch (Exception e) {
-
+			logger.error("Exception in getSingleBatchRequest method "+e.getMessage());
 		}
 		jsonArray = new Gson().toJson(detailsList);
 		obj.put(new String("output"), jsonArray);
@@ -946,7 +946,7 @@ public class BackUpAndRestoreController {
 
 						requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-						requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+						//requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 						requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
@@ -1018,7 +1018,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in batchConfig method "+e.getMessage());
 		}
 		return obj;
 
@@ -1122,7 +1122,7 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+//					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 					requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
@@ -1181,7 +1181,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in batchTest method "+e.getMessage());
 		}
 		return obj;
 
@@ -1280,7 +1280,7 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+					//requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 					requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
@@ -1352,7 +1352,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in batchOsUpgradeRequest method "+e.getMessage());
 		}
 		return obj;
 
@@ -1374,7 +1374,7 @@ public class BackUpAndRestoreController {
 				model.add(site.getFamily());
 			});
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getAllFamily method "+e.getMessage());
 		}
 		return new ResponseEntity(model, HttpStatus.OK);
 	}
@@ -1399,7 +1399,7 @@ public class BackUpAndRestoreController {
 				model.add(site.getDisplayName());
 			});
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in getAllOsToUpdate method "+e.getMessage());
 		}
 		return new ResponseEntity(model, HttpStatus.OK);
 	}
@@ -1513,7 +1513,7 @@ public class BackUpAndRestoreController {
 			obj.put("data", outputArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in searchOsUpgrade method "+e.getMessage());
 			obj.put("data", errorValidationRepository.findByErrorId("400"));
 		}
 		return new ResponseEntity(obj, HttpStatus.OK);
@@ -1637,11 +1637,50 @@ public class BackUpAndRestoreController {
 			obj.put("data", outputArray);
 
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception in filterOsUpgradeDashboard method "+e.getMessage());
 			obj.put("data", errorValidationRepository.findByErrorId("400"));
 		}
 
 		return new ResponseEntity(obj, HttpStatus.OK);
 	}
+	
+	/**
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
+	@POST
+	@RequestMapping(value = "/clearBaselineVersion", method = RequestMethod.POST, produces = "application/json")
+	@ResponseBody
+	public Response clearBaselineVersion(@RequestBody String request) {
 
+		JSONObject obj = new JSONObject();
+		JSONParser parser = new JSONParser();
+		String hostName = null, str = null;
+
+		List<RequestInfoEntity> baseLineVersionList = new ArrayList<RequestInfoEntity>();
+		
+		try {
+			obj = (JSONObject) parser.parse(request);
+
+			hostName = obj.get("hostname").toString();
+
+			baseLineVersionList = requestInfoDetailsRepositories.findAllByHostName(hostName);
+			for (int i = 0; i < baseLineVersionList.size(); i++) {
+
+				baseLineVersionList.get(i).setBaselineFlag(false);
+				baseLineVersionList.get(i).setBaselinedDate(null);
+				//Logic to clear has delta flag for all previous requests
+				baseLineVersionList.get(i).setrHasDeltaWithBaseline(false);
+			}
+
+			requestInfoDetailsRepositories.save(baseLineVersionList);
+			str = errorValidationRepository.findByErrorId("C3P_BR_001");
+			
+			
+
+		} catch (Exception e) {
+			logger.error("Exception in clearBaselineVersion " +e);
+		}
+
+		return Response.status(200).entity(str).build();
+	}
 }

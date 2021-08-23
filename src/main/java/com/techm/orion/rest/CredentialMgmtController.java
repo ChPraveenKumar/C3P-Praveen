@@ -196,34 +196,6 @@ public class CredentialMgmtController {
 				}
 				if (isDelete) {
 					msg = "Profile deleted succesfully";
-					if (entity.getProfileType().equalsIgnoreCase("SNMP")) {
-						List<DeviceDiscoveryEntity> deviceEntity = deviceDiscoveryRepository
-								.findByDSnmpCredProfile(entity.getProfileName());
-						for (DeviceDiscoveryEntity entities : deviceEntity) {
-							if (!entities.getdSnmpCredProfile().isEmpty()) {
-								entities.setdSnmpCredProfile("");
-								deviceDiscoveryRepository.save(entities);
-							}
-						}
-					} else if (entity.getProfileType().equalsIgnoreCase("SSH")) {
-						List<DeviceDiscoveryEntity> deviceEntity = deviceDiscoveryRepository
-								.findByDSshCredProfile(entity.getProfileName());
-						for (DeviceDiscoveryEntity entities : deviceEntity) {
-							if (!entities.getdSshCredProfile().isEmpty()) {
-								entities.setdSshCredProfile("");
-								deviceDiscoveryRepository.save(entities);
-							}
-						}
-					} else {
-						List<DeviceDiscoveryEntity> deviceEntity = deviceDiscoveryRepository
-								.findByDTelnetCredProfile(entity.getProfileName());
-						for (DeviceDiscoveryEntity entities : deviceEntity) {
-							if (!entities.getdTelnetCredProfile().isEmpty()) {
-								entities.setdTelnetCredProfile("");
-								deviceDiscoveryRepository.save(entities);
-							}
-						}
-					}
 				} else {
 					msg = errorValidationRepository.findByErrorId("C3P_CM_005");
 				}
@@ -241,10 +213,9 @@ public class CredentialMgmtController {
 
 		List<CredentialManagementEntity> credentialManagementList = new ArrayList<CredentialManagementEntity>();
 
-		List<DeviceDiscoveryEntity> hostNameList = new ArrayList<DeviceDiscoveryEntity>();
 		List credentialManagementFinalList = new ArrayList<>();
 
-		String profileName = null, type = null;
+		String profileName = null, type = null, hostName = null;
 
 		credentialManagementList = credentialManagementRepo.findAll();
 
@@ -253,15 +224,11 @@ public class CredentialMgmtController {
 			profileName = credential.getProfileName();
 			type = credential.getProfileType();
 
-			if (type.equalsIgnoreCase("SSH")) {
-				hostNameList = deviceDiscoveryRepository.findByDSshCredProfile(profileName);
-				count = hostNameList.size();
-			} else if (type.equalsIgnoreCase("Telnet")) {
-				hostNameList = deviceDiscoveryRepository.findByDTelnetCredProfile(profileName);
-				count = hostNameList.size();
-			} else if (type.equalsIgnoreCase("SNMP")) {
-				hostNameList = deviceDiscoveryRepository.findByDSnmpCredProfile(profileName);
-				count = hostNameList.size();
+			if (type.equalsIgnoreCase("SSH") || type.equalsIgnoreCase("Telnet") || type.equalsIgnoreCase("SNMP")) {
+				List<DeviceDiscoveryEntity> deviceEntity = credential.getdDiscoveryEntity();
+				if (deviceEntity != null) {
+					count = deviceEntity.size();
+				}
 			}
 			credential.setRefDevice(count);
 			credential.setProfileName(profileName);
@@ -290,6 +257,7 @@ public class CredentialMgmtController {
 		String profileName = null, profileType = null;
 
 		List<DeviceDiscoveryEntity> hostNameList = new ArrayList<DeviceDiscoveryEntity>();
+		List<CredentialManagementEntity> credMngmtListByProfName = new ArrayList<CredentialManagementEntity>();
 
 		try {
 			obj = (JSONObject) parser.parse(request);
@@ -297,25 +265,34 @@ public class CredentialMgmtController {
 			profileName = obj.get("profileName").toString();
 			profileType = obj.get("profileType").toString();
 
-			if (profileType.equalsIgnoreCase("SSH")) {
-				hostNameList = deviceDiscoveryRepository.findByDSshCredProfile(profileName);
+			if (profileType.equalsIgnoreCase("SSH") || profileType.equalsIgnoreCase("Telnet")
+					|| profileType.equalsIgnoreCase("SNMP")) {
+				credMngmtListByProfName = credentialManagementRepo.findByProfileName(profileName);
 
-			} else if (profileType.equalsIgnoreCase("Telnet")) {
-				hostNameList = deviceDiscoveryRepository.findByDTelnetCredProfile(profileName);
+				credMngmtListByProfName.forEach(credMgmtEntity -> {
+					credMgmtEntity.getdDiscoveryEntity().forEach(deviceEntity -> {
+						JSONObject devEntObj = new JSONObject();
+						devEntObj.put("hostName", deviceEntity.getdHostName());
+						devEntObj.put("managementIp", deviceEntity.getdMgmtIp());
+						devEntObj.put("type", deviceEntity.getdType());
+						outputArray.add(devEntObj);
+					});
+				});
 
-			} else if (profileType.equalsIgnoreCase("SNMP")) {
-				hostNameList = deviceDiscoveryRepository.findByDSnmpCredProfile(profileName);
-
+				/*
+				 * for (int i = 0; i < credMngmtListByProfName.size(); i++) { hostNameList =
+				 * credMngmtListByProfName.get(i).getdDiscoveryEntity(); }
+				 */
 			}
 
-			for (DeviceDiscoveryEntity deviceEntity : hostNameList) {
-				object = new JSONObject();
-				object.put("hostName", deviceEntity.getdHostName());
-				object.put("managementIp", deviceEntity.getdMgmtIp());
-				object.put("type", deviceEntity.getdType());
-
-				outputArray.add(object);
-			}
+			/*
+			 * for (DeviceDiscoveryEntity deviceEntity : hostNameList) { object = new
+			 * JSONObject(); object.put("hostName", deviceEntity.getdHostName());
+			 * object.put("managementIp", deviceEntity.getdMgmtIp()); object.put("type",
+			 * deviceEntity.getdType());
+			 * 
+			 * outputArray.add(object); }
+			 */
 			obj.put("data", outputArray);
 		} catch (Exception e) {
 			logger.error(e);
@@ -338,6 +315,7 @@ public class CredentialMgmtController {
 
 		List<DeviceDiscoveryEntity> hostNameList = new ArrayList<DeviceDiscoveryEntity>();
 		List credentialManagementFinalList = new ArrayList<>();
+		List<CredentialManagementEntity> credMngmtListByProfName = new ArrayList<CredentialManagementEntity>();
 
 		try {
 			obj = (JSONObject) parser.parse(request);
@@ -345,27 +323,19 @@ public class CredentialMgmtController {
 			profileName = obj.get("profileName").toString();
 			profileType = obj.get("profileType").toString();
 
-			if (profileType.equalsIgnoreCase("SSH")) {
-				hostNameList = deviceDiscoveryRepository.findByDSshCredProfile(profileName);
-
-			} else if (profileType.equalsIgnoreCase("Telnet")) {
-				hostNameList = deviceDiscoveryRepository.findByDTelnetCredProfile(profileName);
-
-			} else if (profileType.equalsIgnoreCase("SNMP")) {
-				hostNameList = deviceDiscoveryRepository.findByDSnmpCredProfile(profileName);
-
+			if (profileType.equalsIgnoreCase("SSH") || profileType.equalsIgnoreCase("Telnet") || profileType.equalsIgnoreCase("SNMP")) {
+				credMngmtListByProfName = credentialManagementRepo.findByProfileName(profileName);
+				credMngmtListByProfName.forEach(credMgmtEntity -> {
+					credMgmtEntity.getdDiscoveryEntity().forEach(deviceEntity -> {
+						JSONObject devEntObj = new JSONObject();
+						devEntObj.put("hostName", deviceEntity.getdHostName());
+						devEntObj.put("managementIp", deviceEntity.getdMgmtIp());
+						devEntObj.put("type", deviceEntity.getdType());
+						outputArray.add(devEntObj);
+					});
+				});
 			}
-			credentialManagementFinalList = credentialManagementRepo.findByProfileName(profileName);
-
-			for (DeviceDiscoveryEntity deviceEntity : hostNameList) {
-				object = new JSONObject();
-				object.put("hostName", deviceEntity.getdHostName());
-				object.put("managementIp", deviceEntity.getdMgmtIp());
-				object.put("type", deviceEntity.getdType());
-
-				outputArray.add(object);
-			}
-			obj.put("ProfileDetail", credentialManagementFinalList);
+			obj.put("ProfileDetail", credMngmtListByProfName);
 			obj.put("HostDetail", outputArray);
 		} catch (Exception e) {
 			logger.error(e);
@@ -396,15 +366,15 @@ public class CredentialMgmtController {
 	public ResponseEntity<JSONObject> addRefferedDevices(@RequestBody String request) throws Exception {
 
 		JSONObject reffredDevices = new JSONObject();
-		JSONObject reffredDevicesList = null;
 		JSONObject reffredDevicesJson = new JSONObject();
 		JSONParser reffredDevicesParser = new JSONParser();
 		JSONArray devices = new JSONArray();
-		boolean isProfileTypePresent = false, isDeviceAlreadyExist = false;
+		
 		JSONArray deviceList = null;
 
 		String profileName = null, profileType = null, overwrite = null;
 		try {
+			boolean isProfileTypePresent = false, isDeviceAlreadyExist = false;
 			reffredDevices = (JSONObject) reffredDevicesParser.parse(request);
 
 			if (reffredDevices.get("profileName") != null)
@@ -417,44 +387,46 @@ public class CredentialMgmtController {
 				deviceList = (JSONArray) reffredDevices.get("devices");
 
 			if (deviceList != null) {
-				for (int i = 0; i < deviceList.size(); i++) {
-					reffredDevicesList = new JSONObject();
-					JSONObject deviceName = (JSONObject) deviceList.get(i);
+				for(Object dList:deviceList) {
+					JSONObject reffredDevicesList = new JSONObject();
+					JSONObject deviceName = (JSONObject) dList;
 					DeviceDiscoveryEntity deviceInfo = deviceDiscoveryRepository
 							.findByDHostName(deviceName.get("hostName").toString());
 					if (deviceInfo != null) {
-
-						if ((deviceInfo.getdSshCredProfile() != null && !deviceInfo.getdSshCredProfile().isEmpty()
-								&& "SSH".equalsIgnoreCase(profileType))
-								|| (deviceInfo.getdSnmpCredProfile() != null
-										&& !deviceInfo.getdSnmpCredProfile().isEmpty()
-										&& "SNMP".equalsIgnoreCase(profileType))
-								|| (deviceInfo.getdTelnetCredProfile() != null
-										&& !deviceInfo.getdTelnetCredProfile().isEmpty()
-										&& "Telnet".equalsIgnoreCase(profileType)))
-							isProfileTypePresent = true;
-						else
-							isProfileTypePresent = false;
-
-						if (isProfileTypePresent && !"Yes".equalsIgnoreCase(overwrite)) {
-							isDeviceAlreadyExist = true;
-							reffredDevicesList.put("hostName", deviceName.toString());
-							if ("SSH".equalsIgnoreCase(profileType))
-								reffredDevicesList.put("profileName", deviceInfo.getdSshCredProfile());
-							else if ("SNMP".equalsIgnoreCase(profileType))
-								reffredDevicesList.put("profileName", deviceInfo.getdSnmpCredProfile());
-							else if ("Telnet".equalsIgnoreCase(profileType))
-								reffredDevicesList.put("profileName", deviceInfo.getdTelnetCredProfile());
-							reffredDevicesList.put("profileType", profileType);
-							reffredDevicesList.put("hostName", deviceName.get("hostName").toString());
-							devices.add(reffredDevicesList);
+						if (deviceInfo.getCredMgmtEntity().size() != 0) {
+							for(CredentialManagementEntity CredMgmtEntity :deviceInfo.getCredMgmtEntity() ){
+								if ((CredMgmtEntity.getProfileName() != null
+										&& !CredMgmtEntity.getProfileName().isEmpty())
+										&& ("SSH".equalsIgnoreCase(profileType) || "SNMP".equalsIgnoreCase(profileType)
+												|| "Telnet".equalsIgnoreCase(profileType)))
+									isProfileTypePresent = true;
+								else
+									isProfileTypePresent = false;
+								
+								if (isProfileTypePresent && !"Yes".equalsIgnoreCase(overwrite)) {
+									isDeviceAlreadyExist = true;
+									reffredDevicesList.put("hostName", deviceName.toString());
+									if ("SSH".equalsIgnoreCase(profileType) || "SNMP".equalsIgnoreCase(profileType) || "Telnet".equalsIgnoreCase(profileType) )
+										reffredDevicesList.put("profileName",
+												CredMgmtEntity.getProfileName());
+									reffredDevicesList.put("profileType", profileType);
+									reffredDevicesList.put("hostName", deviceName.get("hostName").toString());
+									devices.add(reffredDevicesList);
+								} else {
+									if ("SSH".equalsIgnoreCase(profileType) || "Telnet".equalsIgnoreCase(profileType)
+											|| "SNMP".equalsIgnoreCase(profileType)) {
+										List<CredentialManagementEntity> credentialManagementList = new ArrayList<CredentialManagementEntity>();
+										credentialManagementList = credentialManagementRepo
+												.findByProfileNameAndProfileType(profileName, profileType);
+										deviceInfo.setCredMgmtEntity(credentialManagementList);
+									}
+									deviceDiscoveryRepository.save(deviceInfo);
+								}
+							}
 						} else {
-							if ("SSH".equalsIgnoreCase(profileType))
-								deviceInfo.setdSshCredProfile(profileName);
-							else if ("Telnet".equalsIgnoreCase(profileType))
-								deviceInfo.setdTelnetCredProfile(profileName);
-							else if ("SNMP".equalsIgnoreCase(profileType))
-								deviceInfo.setdSnmpCredProfile(profileName);
+							List<CredentialManagementEntity> credentialManagementList = new ArrayList<CredentialManagementEntity>();
+							credentialManagementList = credentialManagementRepo.findByProfileName(profileName);
+							deviceInfo.setCredMgmtEntity(credentialManagementList);
 							deviceDiscoveryRepository.save(deviceInfo);
 						}
 					}
@@ -482,29 +454,23 @@ public class CredentialMgmtController {
 	public ResponseEntity<JSONObject> deleteRefferedDevices(@RequestBody String request) throws Exception {
 
 		JSONObject reffredDevices = new JSONObject();
-		JSONObject reffredDevicesJson = null;
+		JSONObject reffredDevicesJson = new JSONObject();
 		JSONParser reffredDevicesParser = new JSONParser();
-		String profileType = null;
 		try {
 			reffredDevices = (JSONObject) reffredDevicesParser.parse(request);
-			profileType = reffredDevices.get("profileType").toString();
+			String profileType = reffredDevices.get("profileType").toString();
 			JSONArray deviceList = (JSONArray) reffredDevices.get("devices");
 
-			for (int i = 0; i < deviceList.size(); i++) {
-				reffredDevicesJson = new JSONObject();
-				JSONObject deviceName = (JSONObject) deviceList.get(i);
+			deviceList.forEach(dList -> { 
+				JSONObject deviceName = (JSONObject) dList;
 				DeviceDiscoveryEntity deviceInfo = deviceDiscoveryRepository
 						.findByDHostName(deviceName.get("hostName").toString());
 				if (deviceInfo != null) {
-					if ("SSH".equalsIgnoreCase(profileType))
-						deviceInfo.setdSshCredProfile(null);
-					else if ("Telnet".equalsIgnoreCase(profileType))
-						deviceInfo.setdTelnetCredProfile(null);
-					else if ("SNMP".equalsIgnoreCase(profileType))
-						deviceInfo.setdSnmpCredProfile(null);
+					if ("SSH".equalsIgnoreCase(profileType) || "Telnet".equalsIgnoreCase(profileType) || "SNMP".equalsIgnoreCase(profileType) )
+						deviceInfo.setCredMgmtEntity(null);
 					deviceDiscoveryRepository.save(deviceInfo);
 				}
-			}
+			});
 			reffredDevicesJson.put("output", errorValidationRepository.findByErrorId("C3P_CM_008"));
 		} catch (Exception e) {
 			logger.error("exception in deleteRefferedDevices service is " + e);
@@ -566,45 +532,26 @@ public class CredentialMgmtController {
 			}
 			if ("100".equals(nonMandatoryfiltersbits)) {
 				// find with customer
-				if ("SSH".equalsIgnoreCase(profileType))
-					getAllDevice = deviceInforepo.findAllByCustSiteIdCCustNameAndDSshCredProfileNotInOrIsNull(customer,
+				if ("SSH".equalsIgnoreCase(profileType) || "SNMP".equalsIgnoreCase(profileType)
+						|| "TELNET".equalsIgnoreCase(profileType))
+					getAllDevice = deviceInforepo.findAllByCustSiteIdCCustNameAndCredMgmtEntityNotInOrIsNull(customer,
 							profileName);
-				else if ("SNMP".equalsIgnoreCase(profileType))
-					getAllDevice = deviceInforepo.findAllByCustSiteIdCCustNameAndDSnmpCredProfileNotInOrIsNull(customer,
-							profileName);
-				else
-					getAllDevice = deviceInforepo
-							.findAllByCustSiteIdCCustNameAndDTelnetCredProfileNotInOrIsNull(customer, profileName);
 			}
 			if ("110".equals(nonMandatoryfiltersbits)) {
 				// find with customer and region
-				if ("SSH".equalsIgnoreCase(profileType))
+				if ("SSH".equalsIgnoreCase(profileType) || "SNMP".equalsIgnoreCase(profileType)
+						|| "TELNET".equalsIgnoreCase(profileType))
 					getAllDevice = deviceInforepo
-							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDSshCredProfileNotInOrIsNull(customer,
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCredMgmtEntityNotInOrIsNull(customer,
 									region, profileName);
-				else if ("SNMP".equalsIgnoreCase(profileType))
-					getAllDevice = deviceInforepo
-							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDSnmpCredProfileNotInOrIsNull(customer,
-									region, profileName);
-				else
-					getAllDevice = deviceInforepo
-							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDTelnetCredProfileNotInOrIsNull(
-									customer, region, profileName);
 			}
 
 			if ("311".equals(nonMandatoryfiltersbits)) {
 				// find with customer and region and site
-				if ("SSH".equalsIgnoreCase(profileType))
+				if ("SSH".equalsIgnoreCase(profileType) || "SNMP".equalsIgnoreCase(profileType)
+						|| "TELNET".equalsIgnoreCase(profileType))
 					getAllDevice = deviceInforepo
-							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDSshCredProfileNotInOrIsNull(
-									customer, region, siteName, profileName);
-				else if ("SNMP".equalsIgnoreCase(profileType))
-					getAllDevice = deviceInforepo
-							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDSnmpCredProfileNotInOrIsNull(
-									customer, region, siteName, profileName);
-				else
-					getAllDevice = deviceInforepo
-							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndDTelnetCredProfileNotInOrIsNull(
+							.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteNameAndCredMgmtEntityNotInOrIsNull(
 									customer, region, siteName, profileName);
 			}
 			JSONArray outputArray = new JSONArray();

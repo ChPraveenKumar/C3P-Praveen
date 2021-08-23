@@ -1,10 +1,9 @@
 package com.techm.orion.rest;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 
 import javax.servlet.http.HttpServletResponse;
@@ -34,6 +33,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.itextpdf.html2pdf.HtmlConverter;
 import com.techm.orion.utility.TSALabels;
 
 @Controller
@@ -85,7 +85,9 @@ public class GenerateReport {
 			StringBuilder stringbuilder = new StringBuilder();
 			stringbuilder.append(home).append(requestId).append("_").append(fileName).append("_").append("V")
 					.append(version).append(".pdf");
-			isReportGenerated = generateReport(requestData, stringbuilder.toString());
+			HtmlConverter.convertToPdf(new FileInputStream(downloadHtmlFilePath.getCanonicalFile()), 
+		            new FileOutputStream(stringbuilder.toString()));
+			//isReportGenerated = generateReport(requestData, stringbuilder.toString());
 			File file = new File(stringbuilder.toString());
 			try (FileInputStream fileIn = new FileInputStream(file);) {
 				if (!file.exists()) {

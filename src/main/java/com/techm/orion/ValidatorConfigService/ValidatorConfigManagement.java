@@ -2,11 +2,14 @@
 package com.techm.orion.ValidatorConfigService;
 
 import org.apache.commons.validator.routines.InetAddressValidator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.techm.orion.exception.InvalidValueException;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 
 public class ValidatorConfigManagement {
+	private static final Logger logger = LogManager.getLogger(ValidatorConfigManagement.class);
 	private InetAddressValidator ipValidator = new InetAddressValidator();
 
 	public String validate(CreateConfigRequestDCM configRequest) throws Exception {
@@ -43,7 +46,7 @@ public class ValidatorConfigManagement {
 			 */
 
 		} catch (Exception e) {
-
+			logger.error("Exception in validate method "+e.getMessage());
 		}
 
 		return result;
