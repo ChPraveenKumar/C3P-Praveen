@@ -1,6 +1,9 @@
 package com.techm.orion.service;
 
 import java.util.List;
+
+import org.json.simple.JSONArray;
+
 import com.techm.orion.entitybeans.PasswordPolicy;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
@@ -32,4 +35,6 @@ public interface UserManagementInterface {
 	int lockAndUnlockUser(String userName, String action);
 	boolean resetUsersDB(String userName);
 	boolean setUserLoginFlag(String username, String password, String status); 
+	JSONArray getUserDevices(long userId);
+	JSONArray getUserDeviceGroups(long userId);
 }

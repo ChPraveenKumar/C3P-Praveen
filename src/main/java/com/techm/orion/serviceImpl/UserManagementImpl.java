@@ -1,5 +1,6 @@
 package com.techm.orion.serviceImpl;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -12,6 +13,8 @@ import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.entitybeans.DeviceGroups;
 import com.techm.orion.entitybeans.PasswordPolicy;
 import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.UserManagementEntity;
@@ -19,6 +22,8 @@ import com.techm.orion.entitybeans.UserRole;
 import com.techm.orion.entitybeans.WorkGroup;
 import com.techm.orion.exception.GenericResponse;
 import com.techm.orion.pojo.UserManagementResulltDetailPojo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.DeviceGroupRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.repositories.WorkGroupRepository;
@@ -44,6 +49,12 @@ public class UserManagementImpl implements UserManagementInterface {
 	
 	@Autowired
 	private WorkGroupRepository workGroupRepository;
+	
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private DeviceGroupRepository deviceGroupRepository;
 
 	/*
 	 * Create service for create user for user management
@@ -101,8 +112,18 @@ public class UserManagementImpl implements UserManagementInterface {
 			authentication = (String) json.get("authentication");
 			manager = (String) json.get("manager");
 			userId = (String) json.get("id");
-			deviceGroup = (JSONObject) json.get("deviceGroup");
+			//deviceGroup = (JSONObject) json.get("deviceGroup");
 			JSONArray custRegionSite = (JSONArray) json.get("customerAndSites");
+			
+			List<DeviceDiscoveryEntity> userDevicesList = null;
+			List<DeviceGroups> userDeviceGroupList =null;
+			JSONArray userDevices = (JSONArray) json.get("userDevices");
+			JSONArray userDeviceGroups = (JSONArray) json.get("userDeviceGroups");
+			
+			if(userDevices !=null && !userDevices.isEmpty())
+				userDevicesList = deviceDiscoveryRepository.findByDId(userDevices);
+			if(userDeviceGroups !=null && !userDeviceGroups.isEmpty())
+				userDeviceGroupList = deviceGroupRepository.findById(userDeviceGroups);
 
 			userManagementEntity.setRole(role);
 			userManagementEntity.setId(id);
@@ -120,7 +141,10 @@ public class UserManagementImpl implements UserManagementInterface {
 			userManagementEntity.setAddress(address);
 			userManagementEntity.setUserName(userName);
 			userManagementEntity.setModuleInfo(module.toString());
-			userManagementEntity.setDeviceGroup(deviceGroup.toString());
+			//userManagementEntity.setDeviceGroup(deviceGroup.toString());
+			userManagementEntity.setDeviceDetails(userDevicesList);
+			userManagementEntity.setDeviceGroups(userDeviceGroupList);
+			
 			if (role.equals("enoc_user"))
 				userManagementEntity.setCustomerSites(custRegionSite.toString());
 			else
@@ -313,8 +337,18 @@ public class UserManagementImpl implements UserManagementInterface {
 			manager = (String) json.get("manager");
 			assignManager = (String) json.get("assignManager");
 			userId = (long) json.get("id");
-			deviceGroup = (JSONObject) json.get("deviceGroup");
+			//deviceGroup = (JSONObject) json.get("deviceGroup");
 			JSONArray custRegionSite = (JSONArray) json.get("customerAndSites");
+			
+			List<DeviceDiscoveryEntity> userDevicesList = null;
+			List<DeviceGroups> userDeviceGroupList =null;
+			JSONArray userDevices = (JSONArray) json.get("userDevices");
+			JSONArray userDeviceGroups = (JSONArray) json.get("userDeviceGroups");
+			
+			if(userDevices !=null && !userDevices.isEmpty())
+				userDevicesList = deviceDiscoveryRepository.findByDId(userDevices);
+			if(userDeviceGroups !=null && !userDeviceGroups.isEmpty())
+				userDeviceGroupList = deviceGroupRepository.findById(userDeviceGroups);
 
 			UserManagementEntity userDetails = userManagementRepository.findById(userId);
 
@@ -374,6 +408,9 @@ public class UserManagementImpl implements UserManagementInterface {
 			
 			if (!baseLocation.isEmpty())
 				userDetails.setBaseLocation(baseLocation);
+			
+			userDetails.setDeviceDetails(userDevicesList);
+			userDetails.setDeviceGroups(userDeviceGroupList);
 
 			if (status.equalsIgnoreCase("active")) {
 				String managerNameFromUI = userDetails.getManagerName();
@@ -761,5 +798,51 @@ public class UserManagementImpl implements UserManagementInterface {
 			logger.error("Exception in checkUsersDB method " + exe.getMessage());
 		}
 		return result;
+	}
+	
+	/*
+	 * Create Method for getting user devices in user management
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public JSONArray getUserDevices(long userId) {
+		logger.info("Inside getUserDevices method ->" + userId);
+		JSONArray currentDevices = new JSONArray();
+		UserManagementEntity userDetails = userManagementRepository.findOneById(userId);
+		List<DeviceDiscoveryEntity> currentDevicesList = userDetails.getDeviceDetails();
+		if (currentDevicesList != null && !currentDevicesList.isEmpty()) {
+			currentDevicesList.forEach(device -> {
+				JSONObject userDevicesJson = new JSONObject();
+				userDevicesJson.put("device", device.getdHostName() + "(" + device.getdMgmtIp() + ")");
+				userDevicesJson.put("decomm", device.getdDeComm());
+				userDevicesJson.put("deviceId", device.getdId());
+				currentDevices.add(userDevicesJson);
+			});
+		}
+		logger.info("End of getUserDevices method ->" + currentDevices);
+		return currentDevices;
+	}
+
+	/*
+	 * Create method for getting user device groups in user management
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public JSONArray getUserDeviceGroups(long userId) {
+		logger.info("Inside getUserDeviceGroups method ->" + userId);
+		JSONArray currentDeviceGroups = new JSONArray();
+		UserManagementEntity userDetails = userManagementRepository.findOneById(userId);
+		List<DeviceGroups> deviceGroupList = userDetails.getDeviceGroups();
+		if (deviceGroupList != null && !deviceGroupList.isEmpty()) {
+			deviceGroupList.forEach(group -> {
+				JSONObject userDeviceGroupsJson = new JSONObject();
+				userDeviceGroupsJson.put("groupName", group.getDeviceGroupName());
+				userDeviceGroupsJson.put("groupId", group.getId());
+				userDeviceGroupsJson.put("isActive", group.isActive());
+				currentDeviceGroups.add(userDeviceGroupsJson);
+			});
+		}
+		logger.info("End of getUserDevices method ->" + currentDeviceGroups);
+		return currentDeviceGroups;
 	}
 }

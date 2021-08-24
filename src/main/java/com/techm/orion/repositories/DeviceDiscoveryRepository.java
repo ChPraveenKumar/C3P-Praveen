@@ -320,4 +320,9 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	@Query(value = "select * from c3p_deviceinfo where d_endof_saledate like :dEndOfSaleDate%", nativeQuery = true)
 	List<DeviceDiscoveryEntity> findBySaleDate(@Param("dEndOfSaleDate")String dEndOfSaleDate);
 	
+	@Query(value = "select * from c3p_deviceinfo where d_decomm !=1", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findDeviceDetails();	
+	
+	@Query(value = "select * from c3p_deviceinfo where d_id in(:did)", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findByDId(@Param("did") List<String> did);	
 }

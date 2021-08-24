@@ -2,12 +2,17 @@ package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.Lob;
+import javax.persistence.ManyToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
@@ -117,6 +122,16 @@ public class UserManagementEntity implements Serializable {
 
 	@Column(name = "user_status")
 	private String userStatus;
+	
+	@JsonIgnore
+	@ManyToMany
+	@JoinTable(name = "c3p_user_device", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "device_id"))
+	List<DeviceDiscoveryEntity> deviceDetails;
+	
+	@JsonIgnore
+	@ManyToMany
+	@JoinTable(name = "c3p_t_user_device_groups", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "device_group_id"))
+	List<DeviceGroups> deviceGroups;
 
 	public long getId() {
 		return id;
@@ -436,5 +451,21 @@ public class UserManagementEntity implements Serializable {
 		if (id != other.id)
 			return false;
 		return true;
+	}
+
+	public List<DeviceDiscoveryEntity> getDeviceDetails() {
+		return deviceDetails;
+	}
+
+	public void setDeviceDetails(List<DeviceDiscoveryEntity> deviceDetails) {
+		this.deviceDetails = deviceDetails;
+	}
+
+	public List<DeviceGroups> getDeviceGroups() {
+		return deviceGroups;
+	}
+
+	public void setDeviceGroups(List<DeviceGroups> deviceGroups) {
+		this.deviceGroups = deviceGroups;
 	}
 }
