@@ -6980,7 +6980,7 @@ public class RequestInfoDao {
 			reachabilityObj.put("outcome", "N/A");
 			reachabilityObj.put("notes", "N/A");
 		}
-		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
+		/*if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
 			iosVersion.put("testname", "OS Version");
 			iosVersion.put("status", "Failed");
 			iosVersion.put("outcome", "");
@@ -7053,18 +7053,36 @@ public class RequestInfoDao {
 			vendorTest.put("notes", "N/A");
 			vendorTest.put("CollectedValue", "N/A");
 			vendorTest.put("EvaluationCriteria", "N/A");
-		}
+		}*/
 		if (deliveryStatus.equals("1")) {
 			backUpStatus.put("backupstatus", "Success");
 		} else {
 			backUpStatus.put("backupstatus", "Failed");
 		}
-		prevalidationArray.add(vendorTest);
-		prevalidationArray.add(deviceModel);
-		prevalidationArray.add(iosVersion);
+		//prevalidationArray.add(vendorTest);
+		//prevalidationArray.add(deviceModel);
+		//prevalidationArray.add(iosVersion);
 		prevalidationArray.add(reachabilityObj);
+		
+		
+		
+		org.json.simple.JSONArray dynamicTestResultArray = new org.json.simple.JSONArray();
+		
+		org.json.simple.JSONArray dynamicTestResultArray2 = new org.json.simple.JSONArray();
+		dynamicTestResultArray2 = getDynamicTestResultCustomerReport(
+				request.getAlphanumericReqId(),
+				Double.toString(request.getRequestVersion()),
+				"Device Prevalidation");
+
+		if (dynamicTestResultArray2.size() > 0) {
+			for (int i = 0; i < dynamicTestResultArray2.size(); i++) {
+				prevalidationArray.add(dynamicTestResultArray2.get(i));
+			}
+		}
 		obj.put("Prevalidation", prevalidationArray);
 		obj.put("Backupstatus", backUpStatus);
+		
+		
 		return obj;
 
 	}
