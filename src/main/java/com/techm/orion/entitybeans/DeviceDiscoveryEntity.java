@@ -301,7 +301,7 @@ public class DeviceDiscoveryEntity {
 	List<CredentialManagementEntity> credMgmtEntity;
 
 	@JsonIgnore
-	@ManyToMany
+	@ManyToMany(cascade = { CascadeType.ALL })
 	@JoinTable(name = "c3p_user_device", joinColumns = @JoinColumn(name = "device_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
 	Set<UserManagementEntity> users;
 

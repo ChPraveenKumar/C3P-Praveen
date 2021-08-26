@@ -718,6 +718,7 @@ public class User {
 		JSONParser currentDevicesParser = new JSONParser();
 		JSONObject currentDevicesJson = new JSONObject();
 		JSONArray currentDevicesList = null;
+		ResponseEntity<JSONObject> responseEntity = null;
 		long userId = 0;
 		try {
 			currentDevicesJson = (JSONObject) currentDevicesParser.parse(request);
@@ -728,10 +729,14 @@ public class User {
 			if (currentDevicesList.size() != 0) {
 				currentDevices.put("userDevices", currentDevicesList);
 			} 
+			responseEntity = new ResponseEntity<JSONObject>(currentDevices, HttpStatus.OK);
 		} catch (Exception e) {
-			logger.error("exception in getUserDevices Service" + e.getMessage());
+			logger.error("Exception occured in getUserDevices Service" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<JSONObject>(currentDevices, HttpStatus.OK);
+		return responseEntity;
 	}
 
 	@POST
@@ -746,6 +751,7 @@ public class User {
 		long userId = 0;
 		JSONObject currentDeviceGroups = null;
 		JSONArray currentDevicesList = null;
+		ResponseEntity<JSONObject> responseEntity = null;
 		try {
 			userDeviceGroupsJson = (JSONObject) userDeviceGroupsParser.parse(request);
 			userId = (Long) userDeviceGroupsJson.get("userId");
@@ -754,10 +760,14 @@ public class User {
 			if (currentDevicesList.size() != 0) {
 				userDeviceGroups.put("userDeviceGroups", currentDevicesList);
 			} 
+			responseEntity = new ResponseEntity<JSONObject>(userDeviceGroups, HttpStatus.OK);
 		} catch (Exception e) {
-			logger.error("exception in getUserDeviceGroups Service" + e.getMessage());
+			logger.error("Exception occured ingetUserDeviceGroups Service" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<JSONObject>(userDeviceGroups, HttpStatus.OK);
+		return responseEntity;
 	}
 	
 	@GET
@@ -765,6 +775,7 @@ public class User {
 	public ResponseEntity<JSONObject> getDeviceDetails() {
 		JSONArray deviceList = new JSONArray();
 		JSONObject userDevicesDetails = new JSONObject();
+		ResponseEntity<JSONObject> responseEntity = null;
 		try {
 			List<DeviceDiscoveryEntity> device = deviceRepo.findDeviceDetails();
 			device.forEach(item -> {
@@ -775,10 +786,14 @@ public class User {
 				deviceList.add(devices);
 			});
 			userDevicesDetails.put("userDevices", deviceList);
+			responseEntity = new ResponseEntity<JSONObject>(userDevicesDetails, HttpStatus.OK);
 		} catch (Exception e) {
-			logger.error("exception in getDeviceDetails Service" + e.getMessage());
+			logger.error("Exception occured in getDeviceDetails Service" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<JSONObject>(userDevicesDetails, HttpStatus.OK);
+		return responseEntity;
 	}
 
 	@GET
@@ -786,6 +801,7 @@ public class User {
 	public ResponseEntity<JSONObject> getDeviceGroups() {
 		JSONArray groupList = new JSONArray();
 		JSONObject userDeviceGroups = new JSONObject();
+		ResponseEntity<JSONObject> responseEntity = null;
 		try {
 			List<DeviceGroups> device = deviceGroupRepository.findDeviceGroups();
 			device.forEach(item -> {
@@ -797,9 +813,13 @@ public class User {
 				groupList.add(groups);
 			});
 			userDeviceGroups.put("userDeviceGroups", groupList);
+			responseEntity = new ResponseEntity<JSONObject>(userDeviceGroups, HttpStatus.OK);
 		} catch (Exception e) {
-			logger.error(e);
+			logger.error("Exception occured in userDeviceGroups Service" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<JSONObject>(userDeviceGroups, HttpStatus.OK);
+		return responseEntity;
 	}
 }

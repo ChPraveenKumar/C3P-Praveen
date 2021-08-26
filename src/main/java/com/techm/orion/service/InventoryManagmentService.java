@@ -38,7 +38,7 @@ public class InventoryManagmentService {
 	SiteInfoRepository siteRepo;
 
 	@Autowired
-	UserManagementRepository userManagementRepository;
+	private UserManagementRepository userManagementRepository;
 
 	
 

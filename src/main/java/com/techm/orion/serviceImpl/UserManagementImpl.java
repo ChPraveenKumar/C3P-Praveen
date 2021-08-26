@@ -808,8 +808,10 @@ public class UserManagementImpl implements UserManagementInterface {
 	public JSONArray getUserDevices(long userId) {
 		logger.info("Inside getUserDevices method ->" + userId);
 		JSONArray currentDevices = new JSONArray();
+		List<DeviceDiscoveryEntity> currentDevicesList = null;
 		UserManagementEntity userDetails = userManagementRepository.findOneById(userId);
-		List<DeviceDiscoveryEntity> currentDevicesList = userDetails.getDeviceDetails();
+		if(userDetails !=null)
+			currentDevicesList = userDetails.getDeviceDetails();
 		if (currentDevicesList != null && !currentDevicesList.isEmpty()) {
 			currentDevicesList.forEach(device -> {
 				JSONObject userDevicesJson = new JSONObject();
@@ -831,8 +833,10 @@ public class UserManagementImpl implements UserManagementInterface {
 	public JSONArray getUserDeviceGroups(long userId) {
 		logger.info("Inside getUserDeviceGroups method ->" + userId);
 		JSONArray currentDeviceGroups = new JSONArray();
+		List<DeviceGroups> deviceGroupList  = null;
 		UserManagementEntity userDetails = userManagementRepository.findOneById(userId);
-		List<DeviceGroups> deviceGroupList = userDetails.getDeviceGroups();
+		if(userDetails !=null)
+			deviceGroupList= userDetails.getDeviceGroups();
 		if (deviceGroupList != null && !deviceGroupList.isEmpty()) {
 			deviceGroupList.forEach(group -> {
 				JSONObject userDeviceGroupsJson = new JSONObject();
