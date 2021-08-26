@@ -303,7 +303,7 @@ public class DeviceDiscoveryEntity {
 	@JsonIgnore
 	@ManyToMany
 	@JoinTable(name = "c3p_user_device", joinColumns = @JoinColumn(name = "device_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
-	List<UserManagementEntity> users;
+	Set<UserManagementEntity> users;
 
 	@JsonIgnore
 	@OneToMany(cascade = { CascadeType.ALL }, mappedBy = "device")
@@ -606,11 +606,11 @@ public class DeviceDiscoveryEntity {
 		this.custSiteId = custSiteId;
 	}
 
-	public List<UserManagementEntity> getUsers() {
+	public Set<UserManagementEntity> getUsers() {
 		return users;
 	}
 
-	public void setUsers(List<UserManagementEntity> users) {
+	public void setUsers(Set<UserManagementEntity> users) {
 		this.users = users;
 	}
 
