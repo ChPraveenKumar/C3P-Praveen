@@ -2,12 +2,15 @@ package com.techm.orion.repositories;
 
 import java.util.Date;
 import java.util.List;
+
 import javax.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 import com.techm.orion.entitybeans.PasswordPolicy;
 import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.entitybeans.UserRole;
@@ -138,4 +141,10 @@ public interface UserManagementRepository extends JpaRepository<UserManagementEn
 	List<UserManagementEntity> findOneByWorkGroup(String workGroup);
 	
 	UserManagementEntity findOneByUserName(String userName);
+	
+	UserManagementEntity findOneById(long id);
+	
+	List<UserManagementEntity> findDevicesByUserName(String userName);
+	
+	int countDevicesByUserName(String userName);
 }

@@ -2,8 +2,12 @@ package com.techm.orion.rest;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -16,10 +20,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.entitybeans.DeviceGroups;
 import com.techm.orion.entitybeans.Module;
 import com.techm.orion.entitybeans.PasswordPolicy;
 import com.techm.orion.entitybeans.SiteInfoEntity;
@@ -27,6 +32,8 @@ import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.exception.GenericResponse;
 import com.techm.orion.pojo.UserManagementResulltDetailPojo;
 import com.techm.orion.pojo.UserPojo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.DeviceGroupRepository;
 import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.ModuleInterface;
 import com.techm.orion.service.UserManagementInterface;
@@ -53,6 +60,12 @@ public class User {
 	
 	@Autowired
 	private ErrorValidationRepository errorValidationRepository;
+	
+	@Autowired
+	private DeviceDiscoveryRepository deviceRepo;
+	
+	@Autowired
+	private DeviceGroupRepository deviceGroupRepository;
 
 	/*
 	 * Create service for create user for user management
@@ -693,5 +706,120 @@ public class User {
 			obj.put("data", "");
 		}
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
+	}
+
+	@POST
+	@RequestMapping(value = "/getUserDevices", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity getUserDevices(@RequestBody String request) {
+
+		logger.info("Inside getUserDevices Service ->" + request);
+		JSONObject currentDevices = new JSONObject();
+		JSONParser currentDevicesParser = new JSONParser();
+		JSONObject currentDevicesJson = new JSONObject();
+		JSONArray currentDevicesList = null;
+		ResponseEntity<JSONObject> responseEntity = null;
+		long userId = 0;
+		try {
+			currentDevicesJson = (JSONObject) currentDevicesParser.parse(request);
+			userId = (Long) currentDevicesJson.get("userId");
+			if(userId !=0) {
+				currentDevicesList = userCreateInterface.getUserDevices(userId);
+			}
+			if (currentDevicesList.size() != 0) {
+				currentDevices.put("userDevices", currentDevicesList);
+			} 
+			responseEntity = new ResponseEntity<JSONObject>(currentDevices, HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("Exception occured in getUserDevices Service" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+
+	@POST
+	@RequestMapping(value = "/getUserDeviceGroups", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity getCurrentDeviceGroups(@RequestBody String request) {
+
+		logger.info("Inside getUserDeviceGroups Service ->" + request);
+		JSONObject userDeviceGroups = new JSONObject();
+		JSONParser userDeviceGroupsParser = new JSONParser();
+		JSONObject userDeviceGroupsJson = new JSONObject();
+		long userId = 0;
+		JSONObject currentDeviceGroups = null;
+		JSONArray currentDevicesList = null;
+		ResponseEntity<JSONObject> responseEntity = null;
+		try {
+			userDeviceGroupsJson = (JSONObject) userDeviceGroupsParser.parse(request);
+			userId = (Long) userDeviceGroupsJson.get("userId");
+			if(userId !=0)
+				currentDevicesList = userCreateInterface.getUserDeviceGroups(userId);
+			if (currentDevicesList.size() != 0) {
+				userDeviceGroups.put("userDeviceGroups", currentDevicesList);
+			} 
+			responseEntity = new ResponseEntity<JSONObject>(userDeviceGroups, HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("Exception occured ingetUserDeviceGroups Service" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+	
+	@GET
+	@RequestMapping(value = "/getDeviceDetails", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<JSONObject> getDeviceDetails() {
+		JSONArray deviceList = new JSONArray();
+		JSONObject userDevicesDetails = new JSONObject();
+		ResponseEntity<JSONObject> responseEntity = null;
+		try {
+			List<DeviceDiscoveryEntity> device = deviceRepo.findDeviceDetails();
+			device.forEach(item -> {
+				JSONObject devices = new JSONObject();
+				devices.put("devices", item.getdHostName() + "(" + item.getdMgmtIp() + ")");
+				devices.put("decomm", item.getdDeComm());
+				devices.put("deviceId", item.getdId());
+				deviceList.add(devices);
+			});
+			userDevicesDetails.put("userDevices", deviceList);
+			responseEntity = new ResponseEntity<JSONObject>(userDevicesDetails, HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("Exception occured in getDeviceDetails Service" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+
+	@GET
+	@RequestMapping(value = "/getDeviceGroups", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<JSONObject> getDeviceGroups() {
+		JSONArray groupList = new JSONArray();
+		JSONObject userDeviceGroups = new JSONObject();
+		ResponseEntity<JSONObject> responseEntity = null;
+		try {
+			List<DeviceGroups> device = deviceGroupRepository.findDeviceGroups();
+			device.forEach(item -> {
+				JSONObject groups = new JSONObject();
+
+				groups.put("groupName", item.getDeviceGroupName());
+				groups.put("isActive", item.isActive());
+				groups.put("groupId", item.getId());
+				groupList.add(groups);
+			});
+			userDeviceGroups.put("userDeviceGroups", groupList);
+			responseEntity = new ResponseEntity<JSONObject>(userDeviceGroups, HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("Exception occured in userDeviceGroups Service" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
 	}
 }
