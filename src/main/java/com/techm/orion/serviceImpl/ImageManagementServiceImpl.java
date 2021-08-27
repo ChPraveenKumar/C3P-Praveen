@@ -267,7 +267,7 @@ public class ImageManagementServiceImpl implements ImageManagementService {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public JSONObject validateBinaryImage(String vendor, String family, String imageName) {
+	public JSONObject validateBinaryImage(String vendor, String family, String imageName, String displayName) {
 		JSONObject imageJson = new JSONObject();
 		File vendorDir = new File(TSALabels.IMAGE_FILE_PATH.getValue() + vendor);
 		// Tests whether the vendor Exist or not in the directory.
@@ -277,11 +277,18 @@ public class ImageManagementServiceImpl implements ImageManagementService {
 			// Tests whether the family Exist or not in the directory.
 			boolean familyExists = familyDir.isDirectory();
 			if (familyExists) {
-				File imageDir = new File(familyDir.getPath() +TSALabels.FOLDER_SEPARATOR.getValue() + imageName);
-				// Tests whether the image Exist or not in the directory.
-				boolean isImageExist = imageDir.exists();
-				if (isImageExist) {
-					imageJson.put("response", "File exists");
+				File osDir = new File(familyDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue()+ displayName);
+				// Tests whether the OS Exist or not in the directory.
+				boolean osExists = osDir.isDirectory();
+				if (osExists) {
+					File imageExist = new File(osDir.getPath() +TSALabels.FOLDER_SEPARATOR.getValue() + imageName);
+					// Tests whether the image Exist or not in the directory.
+					boolean isImageExist = imageExist.exists();
+					if (isImageExist) {
+						imageJson.put("response", "File exists");
+					}
+					else
+						imageJson.put("response", "The file does not exist");
 				} else {
 					imageJson.put("response", "The file or folder does not exist");
 				}
