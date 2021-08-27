@@ -117,28 +117,28 @@ public class FinalReportForTTUTest extends Thread {
 								Double.toString(createConfigRequest.getRequest_version()), "preValidate");
 
 						if (certificationTestPojo.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
-							createConfigRequest.setDeviceReachabilityTest("Failed");
+							createConfigRequest.setDeviceReachabilityTest("Fail");
 						}
 						if (certificationTestPojo.getDeviceReachabilityTest().equalsIgnoreCase("1")) {
-							createConfigRequest.setDeviceReachabilityTest("Passed");
+							createConfigRequest.setDeviceReachabilityTest("Pass");
 						}
 						if (certificationTestPojo.getIosVersionTest().equalsIgnoreCase("2")) {
-							createConfigRequest.setIosVersionTest("Failed");
+							createConfigRequest.setIosVersionTest("Fail");
 						}
 						if (certificationTestPojo.getIosVersionTest().equalsIgnoreCase("1")) {
-							createConfigRequest.setIosVersionTest("Passed");
+							createConfigRequest.setIosVersionTest("Pass");
 						}
 						if (certificationTestPojo.getDeviceModelTest().equalsIgnoreCase("2")) {
-							createConfigRequest.setDeviceModelTest("Failed");
+							createConfigRequest.setDeviceModelTest("Fail");
 						}
 						if (certificationTestPojo.getDeviceModelTest().equalsIgnoreCase("1")) {
-							createConfigRequest.setDeviceModelTest("Passed");
+							createConfigRequest.setDeviceModelTest("Pass");
 						}
 						if (certificationTestPojo.getVendorTest().equalsIgnoreCase("2")) {
-							createConfigRequest.setVendorTest("Failed");
+							createConfigRequest.setVendorTest("Fail");
 						}
 						if (certificationTestPojo.getVendorTest().equalsIgnoreCase("1")) {
-							createConfigRequest.setVendorTest("Passed");
+							createConfigRequest.setVendorTest("Pass");
 						}
 
 						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
@@ -180,10 +180,10 @@ public class FinalReportForTTUTest extends Thread {
 						logger.info("flagForPrevalidation-"+flagForPrevalidation);
 
 						if (flagFordelieverConfig.equalsIgnoreCase("1")) {
-							createConfigRequest.setDeliever_config("Passed");
+							createConfigRequest.setDeliever_config("Pass");
 						}
 						if (flagFordelieverConfig.equalsIgnoreCase("2")) {
-							createConfigRequest.setDeliever_config("Failed");
+							createConfigRequest.setDeliever_config("Fail");
 						}
 
 						List<ReoprtFlags> listFlag = requestInfoDao.getReportsInfoForAllRequestsDB();
@@ -199,16 +199,16 @@ public class FinalReportForTTUTest extends Thread {
 								createConfigRequest.getRequestId(),
 								Double.toString(createConfigRequest.getRequest_version()), "networkTest");
 						if (certificationTestPojo.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
-							createConfigRequest.setNetwork_test_interfaceStatus("Passed");
+							createConfigRequest.setNetwork_test_interfaceStatus("Pass");
 						}
 						if (certificationTestPojo.getShowInterfaceCmd().equalsIgnoreCase("1")) {
-							createConfigRequest.setNetwork_test_wanInterface("Passed");
+							createConfigRequest.setNetwork_test_wanInterface("Pass");
 						}
 						if (certificationTestPojo.getShowVersionCmd().equalsIgnoreCase("1")) {
-							createConfigRequest.setNetwork_test_platformIOS("Passed");
+							createConfigRequest.setNetwork_test_platformIOS("Pass");
 						}
 						if (certificationTestPojo.getShowIpBgpSummaryCmd().equalsIgnoreCase("1")) {
-							createConfigRequest.setNetwork_test_BGPNeighbor("Passed");
+							createConfigRequest.setNetwork_test_BGPNeighbor("Pass");
 						}
 						String content = networkTestValidation.validateNetworkTest(createConfigRequest);
 						if (content != "") {
@@ -283,19 +283,19 @@ public class FinalReportForTTUTest extends Thread {
 									"Failure");
 
 							if (reoprtFlags.getGenerate_config() == 2) {
-								createConfigRequest.setGenerate_config("Failed");
+								createConfigRequest.setGenerate_config("Fail");
 							}
 							if (reoprtFlags.getDeliever_config() == 2) {
-								createConfigRequest.setDeliever_config("Failed");
+								createConfigRequest.setDeliever_config("Fail");
 							}
 							if (reoprtFlags.getApplication_test() == 2) {
-								createConfigRequest.setApplication_test("Failed");
+								createConfigRequest.setApplication_test("Fail");
 							}
 							if (reoprtFlags.getHealth_checkup() == 2) {
-								createConfigRequest.setHealth_checkup("Failed");
+								createConfigRequest.setHealth_checkup("Fail");
 							}
 							if (reoprtFlags.getNetwork_test() == 2) {
-								createConfigRequest.setNetwork_test("Failed");
+								createConfigRequest.setNetwork_test("Fail");
 							}
 							String response = "";
 							String resultType = csvWriteAndConnectPythonTemplateSuggestion
@@ -544,28 +544,28 @@ public class FinalReportForTTUTest extends Thread {
 							Double.toString(createConfigRequest.getRequest_version()), "preValidate");
 
 					if (certificationTestPojo.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
-						createConfigRequest.setDeviceReachabilityTest("Failed");
+						createConfigRequest.setDeviceReachabilityTest("Fail");
 					}
 					if (certificationTestPojo.getDeviceReachabilityTest().equalsIgnoreCase("1")) {
-						createConfigRequest.setDeviceReachabilityTest("Passed");
+						createConfigRequest.setDeviceReachabilityTest("Pass");
 					}
 					if (certificationTestPojo.getIosVersionTest().equalsIgnoreCase("2")) {
-						createConfigRequest.setIosVersionTest("Failed");
+						createConfigRequest.setIosVersionTest("Fail");
 					}
 					if (certificationTestPojo.getIosVersionTest().equalsIgnoreCase("1")) {
-						createConfigRequest.setIosVersionTest("Passed");
+						createConfigRequest.setIosVersionTest("Pass");
 					}
 					if (certificationTestPojo.getDeviceModelTest().equalsIgnoreCase("2")) {
-						createConfigRequest.setDeviceModelTest("Failed");
+						createConfigRequest.setDeviceModelTest("Fail");
 					}
 					if (certificationTestPojo.getDeviceModelTest().equalsIgnoreCase("1")) {
-						createConfigRequest.setDeviceModelTest("Passed");
+						createConfigRequest.setDeviceModelTest("Pass");
 					}
 					if (certificationTestPojo.getVendorTest().equalsIgnoreCase("2")) {
-						createConfigRequest.setVendorTest("Failed");
+						createConfigRequest.setVendorTest("Fail");
 					}
 					if (certificationTestPojo.getVendorTest().equalsIgnoreCase("1")) {
-						createConfigRequest.setVendorTest("Passed");
+						createConfigRequest.setVendorTest("Pass");
 					}
 
 					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
@@ -605,10 +605,10 @@ public class FinalReportForTTUTest extends Thread {
 					logger.info("flagForPrevalidation-"+flagForPrevalidation);
 
 					if (flagFordelieverConfig.equalsIgnoreCase("1")) {
-						createConfigRequest.setDeliever_config("Passed");
+						createConfigRequest.setDeliever_config("Pass");
 					}
 					if (flagFordelieverConfig.equalsIgnoreCase("2")) {
-						createConfigRequest.setDeliever_config("Failed");
+						createConfigRequest.setDeliever_config("Fail");
 					}
 
 					List<ReoprtFlags> listFlag = requestInfoDao.getReportsInfoForAllRequestsDB();
@@ -624,16 +624,16 @@ public class FinalReportForTTUTest extends Thread {
 							createConfigRequest.getRequestId(),
 							Double.toString(createConfigRequest.getRequest_version()), "networkTest");
 					if (certificationTestPojo.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
-						createConfigRequest.setNetwork_test_interfaceStatus("Passed");
+						createConfigRequest.setNetwork_test_interfaceStatus("Pass");
 					}
 					if (certificationTestPojo.getShowInterfaceCmd().equalsIgnoreCase("1")) {
-						createConfigRequest.setNetwork_test_wanInterface("Passed");
+						createConfigRequest.setNetwork_test_wanInterface("Pass");
 					}
 					if (certificationTestPojo.getShowVersionCmd().equalsIgnoreCase("1")) {
-						createConfigRequest.setNetwork_test_platformIOS("Passed");
+						createConfigRequest.setNetwork_test_platformIOS("Pass");
 					}
 					if (certificationTestPojo.getShowIpBgpSummaryCmd().equalsIgnoreCase("1")) {
-						createConfigRequest.setNetwork_test_BGPNeighbor("Passed");
+						createConfigRequest.setNetwork_test_BGPNeighbor("Pass");
 					}
 					String content = networkTestValidation.validateNetworkTest(createConfigRequest);
 					if (content != "") {
@@ -704,19 +704,19 @@ public class FinalReportForTTUTest extends Thread {
 								"Failure");
 
 						if (reoprtFlags.getGenerate_config() == 2) {
-							createConfigRequest.setGenerate_config("Failed");
+							createConfigRequest.setGenerate_config("Fail");
 						}
 						if (reoprtFlags.getDeliever_config() == 2) {
-							createConfigRequest.setDeliever_config("Failed");
+							createConfigRequest.setDeliever_config("Fail");
 						}
 						if (reoprtFlags.getApplication_test() == 2) {
-							createConfigRequest.setApplication_test("Failed");
+							createConfigRequest.setApplication_test("Fail");
 						}
 						if (reoprtFlags.getHealth_checkup() == 2) {
-							createConfigRequest.setHealth_checkup("Failed");
+							createConfigRequest.setHealth_checkup("Fail");
 						}
 						if (reoprtFlags.getNetwork_test() == 2) {
-							createConfigRequest.setNetwork_test("Failed");
+							createConfigRequest.setNetwork_test("Fail");
 						}
 						String response = "";
 						String resultType = csvWriteAndConnectPythonTemplateSuggestion
@@ -968,28 +968,28 @@ public class FinalReportForTTUTest extends Thread {
 								"preValidate");
 
 						if (certificationTestPojo.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
-							requestinfo.setDeviceReachabilityTest("Failed");
+							requestinfo.setDeviceReachabilityTest("Fail");
 						}
 						if (certificationTestPojo.getDeviceReachabilityTest().equalsIgnoreCase("1")) {
-							requestinfo.setDeviceReachabilityTest("Passed");
+							requestinfo.setDeviceReachabilityTest("Pass");
 						}
 						if (certificationTestPojo.getIosVersionTest().equalsIgnoreCase("2")) {
-							requestinfo.setIosVersionTest("Failed");
+							requestinfo.setIosVersionTest("Fail");
 						}
 						if (certificationTestPojo.getIosVersionTest().equalsIgnoreCase("1")) {
-							requestinfo.setIosVersionTest("Passed");
+							requestinfo.setIosVersionTest("Pass");
 						}
 						if (certificationTestPojo.getDeviceModelTest().equalsIgnoreCase("2")) {
-							requestinfo.setDeviceModelTest("Failed");
+							requestinfo.setDeviceModelTest("Fail");
 						}
 						if (certificationTestPojo.getDeviceModelTest().equalsIgnoreCase("1")) {
-							requestinfo.setDeviceModelTest("Passed");
+							requestinfo.setDeviceModelTest("Pass");
 						}
 						if (certificationTestPojo.getVendorTest().equalsIgnoreCase("2")) {
-							requestinfo.setVendorTest("Failed");
+							requestinfo.setVendorTest("Fail");
 						}
 						if (certificationTestPojo.getVendorTest().equalsIgnoreCase("1")) {
-							requestinfo.setVendorTest("Passed");
+							requestinfo.setVendorTest("Pass");
 						}
 
 						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
@@ -1031,10 +1031,10 @@ public class FinalReportForTTUTest extends Thread {
 						logger.info("flagForPrevalidation-"+flagForPrevalidation);
 
 						if (flagFordelieverConfig.equalsIgnoreCase("1")) {
-							requestinfo.setDeliever_config("Passed");
+							requestinfo.setDeliever_config("Pass");
 						}
 						if (flagFordelieverConfig.equalsIgnoreCase("2")) {
-							requestinfo.setDeliever_config("Failed");
+							requestinfo.setDeliever_config("Fail");
 						}
 
 						List<ReoprtFlags> listFlag = requestInfoDao.getReportsInfoForAllRequestsDB();
@@ -1112,19 +1112,19 @@ public class FinalReportForTTUTest extends Thread {
 									"Failure");
 
 							if (reoprtFlags.getGenerate_config() == 2) {
-								requestinfo.setGenerate_config("Failed");
+								requestinfo.setGenerate_config("Fail");
 							}
 							if (reoprtFlags.getDeliever_config() == 2) {
-								requestinfo.setDeliever_config("Failed");
+								requestinfo.setDeliever_config("Fail");
 							}
 							if (reoprtFlags.getApplication_test() == 2) {
-								requestinfo.setApplication_test("Failed");
+								requestinfo.setApplication_test("Fail");
 							}
 							if (reoprtFlags.getHealth_checkup() == 2) {
-								requestinfo.setHealth_checkup("Failed");
+								requestinfo.setHealth_checkup("Fail");
 							}
 							if (reoprtFlags.getNetwork_test() == 2) {
-								requestinfo.setNetwork_test("Failed");
+								requestinfo.setNetwork_test("Fail");
 							}
 							//Added a temp fix to restrict the fix for SLGC.
 							if ("SLGC".equalsIgnoreCase(type)){
@@ -1363,28 +1363,28 @@ public class FinalReportForTTUTest extends Thread {
 							"preValidate");
 
 					if (certificationTestPojo.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
-						requestinfo.setDeviceReachabilityTest("Failed");
+						requestinfo.setDeviceReachabilityTest("Fail");
 					}
 					if (certificationTestPojo.getDeviceReachabilityTest().equalsIgnoreCase("1")) {
-						requestinfo.setDeviceReachabilityTest("Passed");
+						requestinfo.setDeviceReachabilityTest("Pass");
 					}
 					if (certificationTestPojo.getIosVersionTest().equalsIgnoreCase("2")) {
-						requestinfo.setIosVersionTest("Failed");
+						requestinfo.setIosVersionTest("Fail");
 					}
 					if (certificationTestPojo.getIosVersionTest().equalsIgnoreCase("1")) {
-						requestinfo.setIosVersionTest("Passed");
+						requestinfo.setIosVersionTest("Pass");
 					}
 					if (certificationTestPojo.getDeviceModelTest().equalsIgnoreCase("2")) {
-						requestinfo.setDeviceModelTest("Failed");
+						requestinfo.setDeviceModelTest("Fail");
 					}
 					if (certificationTestPojo.getDeviceModelTest().equalsIgnoreCase("1")) {
-						requestinfo.setDeviceModelTest("Passed");
+						requestinfo.setDeviceModelTest("Pass");
 					}
 					if (certificationTestPojo.getVendorTest().equalsIgnoreCase("2")) {
-						requestinfo.setVendorTest("Failed");
+						requestinfo.setVendorTest("Fail");
 					}
 					if (certificationTestPojo.getVendorTest().equalsIgnoreCase("1")) {
-						requestinfo.setVendorTest("Passed");
+						requestinfo.setVendorTest("Pass");
 					}
 
 					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
@@ -1425,10 +1425,10 @@ public class FinalReportForTTUTest extends Thread {
 					logger.info("flagForPrevalidation-"+flagForPrevalidation);
 
 					if (flagFordelieverConfig.equalsIgnoreCase("1")) {
-						requestinfo.setDeliever_config("Passed");
+						requestinfo.setDeliever_config("Pass");
 					}
 					if (flagFordelieverConfig.equalsIgnoreCase("2")) {
-						requestinfo.setDeliever_config("Failed");
+						requestinfo.setDeliever_config("Fail");
 					}
 
 					List<ReoprtFlags> listFlag = requestInfoDao.getReportsInfoForAllRequestsDB();
@@ -1505,19 +1505,19 @@ public class FinalReportForTTUTest extends Thread {
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 
 						if (reoprtFlags.getGenerate_config() == 2) {
-							requestinfo.setGenerate_config("Failed");
+							requestinfo.setGenerate_config("Fail");
 						}
 						if (reoprtFlags.getDeliever_config() == 2) {
-							requestinfo.setDeliever_config("Failed");
+							requestinfo.setDeliever_config("Fail");
 						}
 						if (reoprtFlags.getApplication_test() == 2) {
-							requestinfo.setApplication_test("Failed");
+							requestinfo.setApplication_test("Fail");
 						}
 						if (reoprtFlags.getHealth_checkup() == 2) {
-							requestinfo.setHealth_checkup("Failed");
+							requestinfo.setHealth_checkup("Fail");
 						}
 						if (reoprtFlags.getNetwork_test() == 2) {
-							requestinfo.setNetwork_test("Failed");
+							requestinfo.setNetwork_test("Fail");
 						}
 						String response = "";
 						String resultType = csvWriteAndConnectPythonTemplateSuggestion

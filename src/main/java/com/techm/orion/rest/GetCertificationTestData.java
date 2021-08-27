@@ -6,6 +6,7 @@ import java.util.List;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -206,24 +207,32 @@ public class GetCertificationTestData {
 				resultObj.put("Default", subObjArray);
 				// to fetch dynamic test results
 				if (createConfigRequestDCM.getTestType().equalsIgnoreCase("HealthTest")) {
+					if(StringUtils.startsWith(createConfigRequestDCM.getRequestId(),"SLGF")) {
+						dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
+								createConfigRequestDCM.getVersion_report(), "Software Upgrade",createConfigRequestDCM.getTestType());
+					}else {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
-							createConfigRequestDCM.getVersion_report(), "Health Check");
+							createConfigRequestDCM.getVersion_report(), "Health Check",createConfigRequestDCM.getTestType());
+					}
 				} else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("networkTest")) {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
-							createConfigRequestDCM.getVersion_report(), "Network Test");
+							createConfigRequestDCM.getVersion_report(), "Network Test",createConfigRequestDCM.getTestType());
 	
 				} else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("othersTest")) {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
-							createConfigRequestDCM.getVersion_report(), "Others");
+							createConfigRequestDCM.getVersion_report(), "Others",createConfigRequestDCM.getTestType());
 	
 				} else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")) {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
-							createConfigRequestDCM.getVersion_report(), "Device Prevalidation");
+							createConfigRequestDCM.getVersion_report(), "Device Prevalidation",createConfigRequestDCM.getTestType());
 	
 				} else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("networkAuditTest")) {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
-							createConfigRequestDCM.getVersion_report(), "Network Audit");
+							createConfigRequestDCM.getVersion_report(), "Network Audit",createConfigRequestDCM.getTestType());
 	
+				}else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("iospreValidate")) {
+					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
+							createConfigRequestDCM.getVersion_report(), "Software Upgrade",createConfigRequestDCM.getTestType());	
 				}				
 				resultObj.put("Custom", dynamicTestArray);
 	

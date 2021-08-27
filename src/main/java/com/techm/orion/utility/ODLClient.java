@@ -462,7 +462,7 @@ public class ODLClient {
 											test.getTestName(), test.getTestCategory(),
 
 											"Passed", resultText, op, "Text starts with: " + value1, "N/A",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								} else {
 									// fail the test
 
@@ -471,7 +471,7 @@ public class ODLClient {
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, op, "Text starts with: " + value1, "Failed to match",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 							} else if (evaluationOperator.equalsIgnoreCase("=")) {
 								String value1 = rules.get(i).getValue1();
@@ -483,7 +483,7 @@ public class ODLClient {
 											test.getTestName(), test.getTestCategory(),
 
 											"Passed", resultText, op, "Is equal to (=): " + value1, "N/A",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								} else {
 									// fail the test
 
@@ -492,7 +492,7 @@ public class ODLClient {
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, op, "Is equal to (=): " + value1, "Failed to match",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 							} else if (evaluationOperator.equalsIgnoreCase("Between")) {
 								String value1 = rules.get(i).getValue1();
@@ -510,7 +510,7 @@ public class ODLClient {
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Between: " + value1 + " & " + value2, "N/A",
-												rules.get(i).getDataType(), requestinfo.getRequestVersion());
+												rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 									} else {
 										// fail the test
 
@@ -520,7 +520,7 @@ public class ODLClient {
 
 												"Failed", resultText, op, "Between: " + value1 + " & " + value2,
 												"Failed to match", rules.get(i).getDataType(),
-												requestinfo.getRequestVersion());
+												requestinfo.getRequestVersion(),test.getTestSubCategory());
 									}
 								} catch (Exception e) {
 									// fail the test
@@ -531,7 +531,7 @@ public class ODLClient {
 
 											"Failed", resultText, "Unable to process the rule",
 											"Between: " + value1 + " & " + value2, "Error in rule processing",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 
 							} else if (evaluationOperator.equalsIgnoreCase(">")) {
@@ -550,7 +550,7 @@ public class ODLClient {
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Greater than (>): " + value1, "N/A",
-												rules.get(i).getDataType(), requestinfo.getRequestVersion());
+												rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 									} else {
 										// fail the test
 
@@ -560,7 +560,7 @@ public class ODLClient {
 
 												"Failed", resultText, op, "Greater than (>): " + value1,
 												"Failed to match", rules.get(i).getDataType(),
-												requestinfo.getRequestVersion());
+												requestinfo.getRequestVersion(),test.getTestSubCategory());
 									}
 								} catch (Exception e) {
 									// fail the test
@@ -571,7 +571,7 @@ public class ODLClient {
 
 											"Failed", resultText, "Unable to process the rule",
 											"Greater than (>): " + value1, "Error in rule processing",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 							} else if (evaluationOperator.equalsIgnoreCase("<")) {
 								String value1 = rules.get(i).getValue1();
@@ -589,7 +589,7 @@ public class ODLClient {
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Less than (<): " + value1, "N/A",
-												rules.get(i).getDataType(), requestinfo.getRequestVersion());
+												rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 									} else {
 										// fail the test
 
@@ -598,7 +598,7 @@ public class ODLClient {
 												test.getTestName(), test.getTestCategory(),
 
 												"Failed", resultText, op, "Less than (<): " + value1, "Failed to match",
-												rules.get(i).getDataType(), requestinfo.getRequestVersion());
+												rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 									}
 								} catch (Exception e) {
 									// fail the test
@@ -609,7 +609,7 @@ public class ODLClient {
 
 											"Failed", resultText, "Unable to process the rule",
 											"Less than (<): " + value1, "Error in rule processing",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 							} else if (evaluationOperator.equalsIgnoreCase(">=")) {
 								String value1 = rules.get(i).getValue1();
@@ -627,7 +627,7 @@ public class ODLClient {
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Greater than or equals to (>=): " + value1,
-												"N/A", rules.get(i).getDataType(), requestinfo.getRequestVersion());
+												"N/A", rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 									} else {
 										// fail the test
 
@@ -637,7 +637,7 @@ public class ODLClient {
 
 												"Failed", resultText, op, "Greater than or equals to (>=): " + value1,
 												"Failed to match", rules.get(i).getDataType(),
-												requestinfo.getRequestVersion());
+												requestinfo.getRequestVersion(),test.getTestSubCategory());
 									}
 								} catch (Exception e) {
 									// fail the test
@@ -648,7 +648,7 @@ public class ODLClient {
 
 											"Failed", resultText, "Unable to process the rule",
 											"Greater than or equals to (>=): " + value1, "Error in rule processing",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 							} else if (evaluationOperator.equalsIgnoreCase("<=")) {
 								String value1 = rules.get(i).getValue1();
@@ -666,7 +666,7 @@ public class ODLClient {
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Less than or equals to (<=): " + value1,
-												"N/A", rules.get(i).getDataType(), requestinfo.getRequestVersion());
+												"N/A", rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 									} else {
 										// fail the test
 
@@ -676,7 +676,7 @@ public class ODLClient {
 
 												"Failed", resultText, op, "Less than or equals to (<=): " + value1,
 												"Failed to match", rules.get(i).getDataType(),
-												requestinfo.getRequestVersion());
+												requestinfo.getRequestVersion(),test.getTestSubCategory());
 									}
 								} catch (Exception e) {
 									// fail the test
@@ -687,7 +687,7 @@ public class ODLClient {
 
 											"Failed", resultText, "Unable to process the rule",
 											"Less than or equals to (<=): " + value1, "Error in rule processing",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 							} else if (evaluationOperator.equalsIgnoreCase("<>")) {
 								String value1 = rules.get(i).getValue1();
@@ -705,7 +705,7 @@ public class ODLClient {
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Is not equal to  (<>): " + value1, "N/A",
-												rules.get(i).getDataType(), requestinfo.getRequestVersion());
+												rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 									} else {
 										// fail the test
 
@@ -715,7 +715,7 @@ public class ODLClient {
 
 												"Failed", resultText, op, "Is not equal to  (<>): " + value1,
 												"Failed to match", rules.get(i).getDataType(),
-												requestinfo.getRequestVersion());
+												requestinfo.getRequestVersion(),test.getTestSubCategory());
 									}
 								} catch (Exception e) {
 									// fail the test
@@ -725,7 +725,7 @@ public class ODLClient {
 
 											"Failed", resultText, "Unable to process the rule",
 											"Is not equal to  (<>): " + value1, "Error in rule processing",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 							} else if (evaluationOperator.equalsIgnoreCase("Text matches excatly")) {
 								String value1 = rules.get(i).getValue1();
@@ -737,7 +737,7 @@ public class ODLClient {
 											test.getTestName(), test.getTestCategory(),
 
 											"Passed", resultText, op, "Text matches excatly: " + value1, "N/A",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								} else {
 									// fail the test
 
@@ -747,7 +747,7 @@ public class ODLClient {
 
 											"Failed", resultText, op, "Text matches excatly: " + value1,
 											"Failed to match", rules.get(i).getDataType(),
-											requestinfo.getRequestVersion());
+											requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 							} else if (evaluationOperator.equalsIgnoreCase("Text ends with")) {
 								String value1 = rules.get(i).getValue1();
@@ -759,7 +759,7 @@ public class ODLClient {
 											test.getTestName(), test.getTestCategory(),
 
 											"Passed", resultText, op, "Text ends with: " + value1, "N/A",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								} else {
 									// fail the test
 
@@ -768,7 +768,7 @@ public class ODLClient {
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, op, "Text ends with: " + value1, "Failed to match",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 							} else if (evaluationOperator.equalsIgnoreCase("Text contains")) {
 								String value1 = rules.get(i).getValue1();
@@ -780,7 +780,7 @@ public class ODLClient {
 											test.getTestName(), test.getTestCategory(),
 
 											"Passed", resultText, op, "Text contains: " + value1, "N/A",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								} else {
 									// fail the test
 
@@ -789,7 +789,7 @@ public class ODLClient {
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, op, "Text contains: " + value1, "Failed to match",
-											rules.get(i).getDataType(), requestinfo.getRequestVersion());
+											rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 								}
 							} else {
 								// Incorrect operator message fail the test
@@ -799,7 +799,7 @@ public class ODLClient {
 										test.getTestName(), test.getTestCategory(),
 
 										"Failed", resultText, op, "Invalid operator", "Failed",
-										rules.get(i).getDataType(), requestinfo.getRequestVersion());
+										rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 							}
 
 						} else {
@@ -807,7 +807,7 @@ public class ODLClient {
 							result = requestInfoDao.updateTestStrategeyConfigResultsTable(
 									requestinfo.getAlphanumericReqId(), test.getTestName(), test.getTestCategory(),
 									"Passed", resultText, String.join(",", resultList), "N/A", "",
-									rules.get(i).getDataType(), requestinfo.getRequestVersion());
+									rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
 						}
 
 					}
@@ -816,7 +816,7 @@ public class ODLClient {
 			} else {
 				result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestinfo.getAlphanumericReqId(),
 						test.getTestName(), test.getTestCategory(), "Failed", "N/A", "N/A", "N/A", "Invalid odl url",
-						"N/A", requestinfo.getRequestVersion());
+						"N/A", requestinfo.getRequestVersion(),test.getTestSubCategory());
 			}
 		} catch (Exception e) {
 

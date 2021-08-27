@@ -99,7 +99,7 @@ public class NetworkAuditTest extends Thread {
 		Channel channel = null;
 		Session session = null;
 		
-		if (!((type.equals("SLGB") || (type.equals("SNAI") || (type.equals("SNAD")))))) {
+		if (!((type.equals("SLGB") || (type.equals("SNAI") || (type.equals("SNAD"))||(type.equals("SLGF")))))) {
 			try {				
 				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 				 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {

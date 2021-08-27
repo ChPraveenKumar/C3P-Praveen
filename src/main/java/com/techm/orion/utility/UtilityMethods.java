@@ -1,8 +1,11 @@
 package com.techm.orion.utility;
 
-import java.util.Map;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -30,4 +33,16 @@ public class UtilityMethods {
 	      return seen.putIfAbsent(keys, Boolean.TRUE) == null;
 	    };
 	  }
+	
+	public static String readFirstLineFromFile(String path) throws IOException {
+		 String line = null;
+	     StringBuilder lineData = new StringBuilder();
+	    try (BufferedReader br =
+	                   new BufferedReader(new FileReader(path))) {
+	    	 while ((line = br.readLine()) != null) {
+	    		 lineData.append(line);
+	            }
+	        return lineData.toString();
+	    }
+	}
 }

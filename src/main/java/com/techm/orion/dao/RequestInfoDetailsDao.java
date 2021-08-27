@@ -114,6 +114,8 @@ public class RequestInfoDetailsDao {
 			query = "update webserviceinfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("network_audit")) {
 			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
+		}else if (field.equalsIgnoreCase("post_health_checkup")) {
+			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 		else if (field.equalsIgnoreCase("instantiation")) {
 			query = "update webserviceinfo set instantiation = ? where alphanumeric_req_id = ? and version = ? ";
@@ -693,6 +695,12 @@ public class RequestInfoDetailsDao {
 		}
 		else if (field.equalsIgnoreCase("instantiation")) {
 			query = "select instantiation as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+		}
+		if (field.equalsIgnoreCase("pre_health_checkup")) {
+			query = "select pre_health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
+		}
+		if (field.equalsIgnoreCase("post_health_checkup")) {
+			query = "select health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
 		}
 
 		try(Connection connection = ConnectionFactory.getConnection();

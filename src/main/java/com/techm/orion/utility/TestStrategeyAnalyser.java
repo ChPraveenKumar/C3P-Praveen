@@ -11,10 +11,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import com.jcraft.jsch.Channel;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
@@ -48,10 +50,13 @@ public class TestStrategeyAnalyser {
 		String tempTextToAnalyse = null;
 		String filename = null;
 		String webserviceinfoFlag = null;
+		if(test.getTestSubCategory()==null) {
+			test.setTestSubCategory("");
+		}
 		if (testIdentifier.equalsIgnoreCase("Device Prevalidation")) {
 			filename = "_Reachability.txt";
 			webserviceinfoFlag = "Application_test";
-		} else if (testIdentifier.equalsIgnoreCase("Health Check")) {
+		} else if (testIdentifier.equalsIgnoreCase("Health Check") || testIdentifier.equalsIgnoreCase("health_check")) {
 			filename = "_HealthCheck.txt";
 			webserviceinfoFlag = "health_check";
 
@@ -67,6 +72,15 @@ public class TestStrategeyAnalyser {
 			filename = "_CurrentVersionConfig.txt";
 			webserviceinfoFlag = "network_audit";
 
+		}else if (testIdentifier.equalsIgnoreCase("pre_health_checkup")) {
+			filename = "Pre_health_checkup.txt";
+			webserviceinfoFlag = "pre_health_checkup";
+			test.setTestSubCategory("preUpgrade");
+
+		}else if (testIdentifier.equalsIgnoreCase("post_health_checkup")) {
+			filename = "Post_health_checkup.txt";
+			webserviceinfoFlag = "health_check";
+			test.setTestSubCategory("postUpgrade");
 		}
 		try {
 			isFilepathPresent = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V"
@@ -134,7 +148,7 @@ public class TestStrategeyAnalyser {
 					output = "Request timed out";
 				}
 				for (TestRules rulesLabel: rules) {
-					String result = "Failed";
+					String result = "Fail";
 					String resultText = null;
 					String collectedValue = null;
 					if (output != null) {
@@ -146,7 +160,7 @@ public class TestStrategeyAnalyser {
 					}
 					res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 							test.getTestCategory(), result, resultText, collectedValue, "N/A", collectedValue,
-							rulesLabel.getDataType(),requestVersion);
+							rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 				}
 				// Update main request status to failure
 				requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "2",
@@ -161,7 +175,7 @@ public class TestStrategeyAnalyser {
 					output = "Incomplete command";
 				}
 				for (TestRules rulesLabel: rules) {
-					String result = "Failed";
+					String result = "Fail";
 					String resultText = null;
 					String collectedValue = null;
 					if (output != null) {
@@ -169,11 +183,11 @@ public class TestStrategeyAnalyser {
 						collectedValue = output;
 					} else {
 						resultText = rulesLabel.getReportedLabel();
-						collectedValue = "Failed";
+						collectedValue = "Fail";
 					}
 					res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 							test.getTestCategory(), result, resultText, collectedValue, "N/A", collectedValue,
-							rulesLabel.getDataType(),requestVersion);
+							rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 				}
 				// Update main request status to failure
 				requestDetailsInfoDao.editRequestforReportWebserviceInfo(requestID, version, webserviceinfoFlag, "3",
@@ -245,17 +259,17 @@ public class TestStrategeyAnalyser {
 
 									if (output.startsWith(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -263,23 +277,23 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("=")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.equals(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -287,29 +301,28 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Between")) {
 									String value1 = rulesLabel.getValue1();
 									String value2 = rulesLabel.getValue2();
-
 									try {
 										int val1 = Integer.parseInt(value1);
 										int val2 = Integer.parseInt(value2);
 										int out = Integer.parseInt(output.trim());
 										if (out >= val1 && out <= val2) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + " & " + value2,
-													"N/A", rulesLabel.getDataType(),requestVersion);
+													"N/A", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -317,11 +330,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + " & " + value2,
-													"Incorrect collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion);
+													"Incorrect collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -330,7 +343,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Between: " + value1 + " & " + value2, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 
 								} else if (evaluationOperator.equalsIgnoreCase(">")) {
@@ -343,17 +356,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out > val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -361,11 +374,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -374,7 +387,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than (>): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<")) {
 									String value1 = rulesLabel.getValue1();
@@ -386,17 +399,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out < val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -404,11 +417,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -417,7 +430,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than (<): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase(">=")) {
 									String value1 = rulesLabel.getValue1();
@@ -429,7 +442,7 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out >= val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
@@ -437,10 +450,10 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -449,11 +462,11 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "Failed to match",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -462,7 +475,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than or equals to (>=): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<=")) {
 									String value1 = rulesLabel.getValue1();
@@ -474,7 +487,7 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out <= val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
@@ -482,10 +495,10 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -494,11 +507,11 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "Failed to match",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -507,7 +520,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than or equals to (<=): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<>")) {
 									String value1 = rulesLabel.getValue1();
@@ -519,17 +532,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out != val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"N/A", rulesLabel.getDataType(),requestVersion);
+													"N/A", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -537,11 +550,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -550,23 +563,23 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Is not equal to  (<>): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text matches excatly")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.toLowerCase().equalsIgnoreCase(value1.toLowerCase())) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -574,23 +587,23 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text ends with")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.endsWith(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -598,23 +611,23 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text contains")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.contains(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -622,36 +635,36 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else {
 									// Incorrect operator message fail the test
-									result = "Failed";
+									result = "Fail";
 									resultArray.add(result);
 
 									resultText = rulesLabel.getReportedLabel();
 									res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 											test.getTestCategory(),
 
-											result, resultText, output, "Invalid operator", "Failed",
-											rulesLabel.getDataType(),requestVersion);
+											result, resultText, output, "Invalid operator", "Fail",
+											rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 								}
 							} else {
-								result = "Passed";
+								result = "Pass";
 								resultArray.add(result);
 								resultText = rulesLabel.getReportedLabel();
 								res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 										test.getTestCategory(), result, resultText, output, "N/A", "",
-										rulesLabel.getDataType(),requestVersion);
+										rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 							}
 						} else {
-							result = "Failed";
+							result = "Fail";
 							resultArray.add(result);
 
 							resultText = rulesLabel.getReportedLabel();
 							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
-									"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion);
+									"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 							// Update main request status to partial success
 						}
 
@@ -707,17 +720,17 @@ public class TestStrategeyAnalyser {
 
 									if (output.startsWith(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -725,23 +738,23 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("=")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.equals(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -749,7 +762,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Between")) {
 									String value1 = rulesLabel.getValue1();
@@ -761,17 +774,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out >= val1 && out <= val2) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
-													"N/A", rulesLabel.getDataType(),requestVersion);
+													"N/A", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -779,11 +792,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -792,7 +805,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Between: " + value1 + " & " + value2, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 
 								} else if (evaluationOperator.equalsIgnoreCase(">")) {
@@ -805,17 +818,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out > val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -823,11 +836,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -836,7 +849,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than (>): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<")) {
 									String value1 = rulesLabel.getValue1();
@@ -848,17 +861,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out < val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -866,11 +879,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -879,7 +892,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than (<): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase(">=")) {
 									String value1 = rulesLabel.getValue1();
@@ -891,7 +904,7 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out >= val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
@@ -899,10 +912,10 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -911,11 +924,11 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "Failed to match",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -924,7 +937,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than or equals to (>=): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<=")) {
 									String value1 = rulesLabel.getValue1();
@@ -936,7 +949,7 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out <= val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
@@ -944,10 +957,10 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -956,11 +969,11 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "Failed to match",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -969,7 +982,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than or equals to (<=): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<>")) {
 									String value1 = rulesLabel.getValue1();
@@ -981,17 +994,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out != val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"N/A", rulesLabel.getDataType(),requestVersion);
+													"N/A", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -999,11 +1012,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1012,23 +1025,23 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Is not equal to  (<>): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text matches excatly")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.toLowerCase().equalsIgnoreCase(value1.toLowerCase())) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1036,23 +1049,23 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text ends with")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.endsWith(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1060,23 +1073,23 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text contains")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.contains(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1084,36 +1097,36 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else {
 									// Incorrect operator message fail the test
-									result = "Failed";
+									result = "Fail";
 									resultArray.add(result);
 
 									resultText = rulesLabel.getReportedLabel();
 									res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 											test.getTestCategory(),
 
-											result, resultText, output, "Invalid operator", "Failed",
-											rulesLabel.getDataType(),requestVersion);
+											result, resultText, output, "Invalid operator", "Fail",
+											rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 								}
 							} else {
-								result = "Passed";
+								result = "Pass";
 								resultArray.add(result);
 								resultText = rulesLabel.getReportedLabel();
 								res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 										test.getTestCategory(), result, resultText, output, "N/A", "",
-										rulesLabel.getDataType(),requestVersion);
+										rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 							}
 						} else {
-							result = "Failed";
+							result = "Fail";
 							resultArray.add(result);
 
 							resultText = rulesLabel.getReportedLabel();
 							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
-									"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion);
+									"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 							// Update main request status to partial success
 						}
 
@@ -1172,7 +1185,6 @@ public class TestStrategeyAnalyser {
 						String output = extractedValue;
 
 						if (output != null) {
-
 							// check if evalution field is true
 							String isEvaluationRequired = rulesLabel.getEvaluation();
 							if (isEvaluationRequired.equalsIgnoreCase("true")) {
@@ -1183,17 +1195,17 @@ public class TestStrategeyAnalyser {
 									String value1 = rulesLabel.getValue1();
 									if (output.startsWith(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1201,23 +1213,23 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text starts with: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("=")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.equals(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1225,7 +1237,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Is equal to (=): " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Between")) {
 									String value1 = rulesLabel.getValue1();
@@ -1237,17 +1249,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out >= val1 && out <= val2) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
-													"N/A", rulesLabel.getDataType(),requestVersion);
+													"N/A", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -1255,11 +1267,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Between: " + value1 + "& " + value2,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1268,7 +1280,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Between: " + value1 + " & " + value2, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 
 								} else if (evaluationOperator.equalsIgnoreCase(">")) {
@@ -1281,17 +1293,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out > val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -1299,11 +1311,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Greater than (>): " + value1,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1312,7 +1324,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than (>): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<")) {
 									String value1 = rulesLabel.getValue1();
@@ -1324,17 +1336,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out < val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -1342,11 +1354,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Less than (<): " + value1,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1355,7 +1367,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than (<): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase(">=")) {
 									String value1 = rulesLabel.getValue1();
@@ -1367,7 +1379,7 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out >= val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
@@ -1375,10 +1387,10 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -1387,11 +1399,11 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Greater than or equals to (>=): " + value1, "Failed to match",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1400,7 +1412,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Greater than or equals to (>=): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<=")) {
 									String value1 = rulesLabel.getValue1();
@@ -1412,7 +1424,7 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out <= val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
@@ -1420,10 +1432,10 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "N/A",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -1432,11 +1444,11 @@ public class TestStrategeyAnalyser {
 
 													result, resultText, output,
 													"Less than or equals to (<=): " + value1, "Failed to match",
-													rulesLabel.getDataType(),requestVersion);
+													rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1445,7 +1457,7 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Less than or equals to (<=): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("<>")) {
 									String value1 = rulesLabel.getValue1();
@@ -1457,17 +1469,17 @@ public class TestStrategeyAnalyser {
 										int out = Integer.parseInt(output.trim());
 										if (out != val1) {
 											// pass the test
-											result = "Passed";
+											result = "Pass";
 											resultArray.add(result);
 											resultText = rulesLabel.getReportedLabel();
 											res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"N/A", rulesLabel.getDataType(),requestVersion);
+													"N/A", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										} else {
 											// fail the test
-											result = "Failed";
+											result = "Fail";
 											resultArray.add(result);
 
 											resultText = rulesLabel.getReportedLabel();
@@ -1475,11 +1487,11 @@ public class TestStrategeyAnalyser {
 													test.getTestName(), test.getTestCategory(),
 
 													result, resultText, output, "Is not equal to  (<>): " + value1,
-													"Failed to match", rulesLabel.getDataType(),requestVersion);
+													"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 										}
 									} catch (Exception e) {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1488,23 +1500,23 @@ public class TestStrategeyAnalyser {
 
 												result, resultText, "Unable to process the rule",
 												"Is not equal to  (<>): " + value1, "Error in rule processing",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text matches excatly")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.toLowerCase().equalsIgnoreCase(value1.toLowerCase())) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1512,23 +1524,23 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text matches excatly: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text ends with")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.endsWith(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1536,23 +1548,23 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text ends with: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else if (evaluationOperator.equalsIgnoreCase("Text contains")) {
 									String value1 = rulesLabel.getValue1();
 									if (output.contains(value1)) {
 										// pass the test
-										result = "Passed";
+										result = "Pass";
 										resultArray.add(result);
 										resultText = rulesLabel.getReportedLabel();
 										res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1, "N/A",
-												rulesLabel.getDataType(),requestVersion);
+												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									} else {
 										// fail the test
-										result = "Failed";
+										result = "Fail";
 										resultArray.add(result);
 
 										resultText = rulesLabel.getReportedLabel();
@@ -1560,36 +1572,36 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 
 												result, resultText, output, "Text contains: " + value1,
-												"Failed to match", rulesLabel.getDataType(),requestVersion);
+												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 									}
 								} else {
 									// Incorrect operator message fail the test
-									result = "Failed";
+									result = "Fail";
 									resultArray.add(result);
 
 									resultText = rulesLabel.getReportedLabel();
 									res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 											test.getTestCategory(),
 
-											result, resultText, output, "Invalid operator", "Failed",
-											rulesLabel.getDataType(),requestVersion);
+											result, resultText, output, "Invalid operator", "Fail",
+											rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 								}
 							} else {
-								result = "Passed";
+								result = "Pass";
 								resultArray.add(result);
 								resultText = rulesLabel.getReportedLabel();
 								res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 										test.getTestCategory(), result, resultText, output, "N/A", "",
-										rulesLabel.getDataType(),requestVersion);
+										rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 							}
 						} else {
-							result = "Failed";
+							result = "Fail";
 							resultArray.add(result);
 
 							resultText = rulesLabel.getReportedLabel();
 							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(), result, resultText, "N/A", "N/A",
-									"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion);
+									"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 							// Update main request status to partial success
 						}
 						logger.info("Out");
@@ -1639,19 +1651,19 @@ public class TestStrategeyAnalyser {
 
 						if (finalCheck) {
 							// pass the test
-							output = "Test passed";
+							output = "Test Pass";
 
-							result = "Passed";
+							result = "Pass";
 							resultArray.add(result);
 							resultText = rulesLabel.getReportedLabel();
 							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(),
 
 									result, resultText, output, "Snippet starts with: " + evaluationOperator, "N/A",
-									rulesLabel.getDataType(),requestVersion);
+									rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 						} else {
 							// fail the test
-							result = "Failed";
+							result = "Fail";
 							output = "Test failed";
 							resultArray.add(result);
 
@@ -1661,7 +1673,7 @@ public class TestStrategeyAnalyser {
 
 									result, resultText, output, "Snnipet starts with: " + evaluationOperator,
 									"Incorrect data collection rules detected, please contact Administrator",
-									rulesLabel.getDataType(),requestVersion);
+									rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 						}
 
 						logger.info("Out");
@@ -1690,17 +1702,16 @@ public class TestStrategeyAnalyser {
 							}
 						}
 						if (count != 0) {
-							result = "Passed";
-
+							result = "Pass";
 							resultArray.add(result);
 							resultText = rulesLabel.getReportedLabel();
 							res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 									test.getTestCategory(),
 
 									result, resultText, evaluationOperator,
-									"Keyword starts with: " + evaluationOperator, "", rulesLabel.getDataType(),requestVersion);
+									"Keyword starts with: " + evaluationOperator, "", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 						} else {
-							result = "Failed";
+							result = "Fail";
 							String collectedValue = "Test failed";
 							resultArray.add(result);
 							resultText = rulesLabel.getReportedLabel();
@@ -1709,16 +1720,77 @@ public class TestStrategeyAnalyser {
 
 									result, resultText, collectedValue, "Keyword starts with: " + evaluationOperator,
 									"Incorrect data collection rules detected, please contact Administrator",
-									rulesLabel.getDataType(),requestVersion);
+									rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
 						}
 
 						fileReader.close();
 
 					}
+					//Checking Full Result
+					else if (rulesLabel.getDataType().equalsIgnoreCase("FullText")) {
+						boolean finalCheck =false;
+						String output ="";
+						String result ="";
+						String resultText = "";
+						String healthCheckFIle  = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
+									+ version +"_"+rulesLabel.getReportedLabel()+"_"+filename;						
+						File isHealthCheckFilePresent  = new File(healthCheckFIle);							
+							if (!(tempTextToAnalyse.equals(""))) {									
+									if (!isFilePresent.exists()) {
+										isHealthCheckFilePresent.createNewFile();
+										fileWriter = new FileWriter(healthCheckFIle, true);
+										bufferWriter = new BufferedWriter(fileWriter);
+										bufferWriter.append(tempTextToAnalyse);
+										bufferWriter.close();
+										finalCheck = true;
+									} else {
+										fileWriter = new FileWriter(isHealthCheckFilePresent.getAbsoluteFile(), true);
+										bufferWriter = new BufferedWriter(fileWriter);
+										bufferWriter.append(tempTextToAnalyse);
+										bufferWriter.close();
+										finalCheck = true;
+									}
+								}
+							
+							if (finalCheck) {
+								// pass the test
+								output = "Test Pass";
+								result = "Pass";
+								//resultArray.add(result);
+								resultText = rulesLabel.getReportedLabel();
+								String collectedValue = "";																
+								if(test.getTestSubCategory().equals("postUpgrade")) {
+									String preUpgradeFile  = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
+											+ version +"_"+rulesLabel.getReportedLabel()+"_"+"Pre_health_checkup.txt";									
+									String preUpgradeData = UtilityMethods.readFirstLineFromFile(preUpgradeFile);
+									if(preUpgradeData==null && !preUpgradeFile.equals(tempTextToAnalyse)) {
+										collectedValue = "Not Match";
+									}else {
+										collectedValue = "Match";
+									}
+																			   									
+								}
+								res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										test.getTestCategory(),
+										result, resultText,collectedValue, "" + "", "N/A",
+										rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
+							} else {
+								// fail the test
+								result = "Fail";
+								output = "Test failed";
+								resultArray.add(result);
+
+								resultText = rulesLabel.getReportedLabel();
+								res = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+										test.getTestCategory(),
+										result, resultText, "", "" + "", "N/A",
+										rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
+							}
+							}
 				}
 				boolean resultVar = true;
 				for (int i = 0; i < resultArray.size(); i++) {
-					if (resultArray.get(i).contains("Failed")) {
+					if (resultArray.get(i).contains("Fail")) {
 						resultVar = false;
 						break;
 					}
