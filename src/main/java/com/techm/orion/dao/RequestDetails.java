@@ -352,7 +352,7 @@ public class RequestDetails {
 			    	
 			    	String testName = StringUtils.substringAfter(testData.getTestId(),"_")+"::"+testText;
 			    	jsonObject.put("healthcheck", testName);			    	
-			    	if(testDetail.getTestSubCategory().equals("preUpgrade")) {
+			    	if("preUpgrade".equals(testDetail.getTestSubCategory())) {
 			    		jsonObject.put("preUpgradeValue", testDetail.getTestCollectedValue());	
 			    	}else {			    		
 			    		jsonObject.put("postUpgradeValue", testDetail.getTestCollectedValue());			    		

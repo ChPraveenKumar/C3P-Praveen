@@ -1,13 +1,10 @@
 package com.techm.orion.rest;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -20,16 +17,11 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -147,9 +139,9 @@ public class PostUpgradeHealthCheck extends Thread {
 						results = new ArrayList<Boolean>();
 						for (TestDetail testDetail : finallistOfTests) {
 							if ((testDetail.getTestSubCategory().contains("preUpgrade")
-									&& healthCheckTest.equals("pre_health_checkup"))
+									&& "pre_health_checkup".equals(healthCheckTest))
 									|| (testDetail.getTestSubCategory().contains("postUpgrade")
-											&& healthCheckTest.equals("post_health_checkup"))) {
+											&& "post_health_checkup".equals(healthCheckTest))) {
 								ps = requestInfoDetailsDao.setCommandStream(ps, requestinfo, "Test", false);
 								ps.println(testDetail.getTestCommand());
 								try {
@@ -220,12 +212,11 @@ public class PostUpgradeHealthCheck extends Thread {
 								Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
 						requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()));
-						responseDownloadPath = OthersCheckTestValidation.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
+						responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
 						TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
 								+ Double.toString(requestinfo.getRequestVersion()) + "_.txt", response);
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
+						logger.error(e);
 
 					}
 				}
@@ -255,7 +246,7 @@ public class PostUpgradeHealthCheck extends Thread {
 							Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
 					requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()));
-					responseDownloadPath = OthersCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath");
+					responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
 					TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
 							+ Double.toString(requestinfo.getRequestVersion()) + "_CustomTests.txt", response);
 					requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
