@@ -115,6 +115,10 @@ public class RequestInfoDao {
 	
 	@Autowired
 	private RequestDetails requestDetails;	
+	
+	private static final String FLAG_PASS ="Pass";
+	
+	private static final String FLAG_FAIL ="Fail";
 
 	/* SQL information */
 	private static final String INSERT_REQUEST_INFOSO = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner,zipcode,managed,downtimeRequired,lastUpgradedOn,networktype)"
@@ -5121,63 +5125,63 @@ public class RequestInfoDao {
 
 			while (rs.next()) {
 				if (rs.getInt("login_flag") == 1) {
-					req.setOs_upgrade_dilevary_login_flag("Pass");
+					req.setOs_upgrade_dilevary_login_flag(FLAG_PASS);
 				} else if (rs.getInt("login_flag") == 2) {
-					req.setOs_upgrade_dilevary_login_flag("Fail");
+					req.setOs_upgrade_dilevary_login_flag(FLAG_FAIL);
 
 				} else {
 					req.setOs_upgrade_dilevary_login_flag("Not conducted");
 
 				}
 				if (rs.getInt("flash_size_flag") == 1) {
-					req.setOs_upgrade_dilevary_flash_size_flag("Pass");
+					req.setOs_upgrade_dilevary_flash_size_flag(FLAG_PASS);
 				} else if (rs.getInt("flash_size_flag") == 2) {
-					req.setOs_upgrade_dilevary_flash_size_flag("Fail");
+					req.setOs_upgrade_dilevary_flash_size_flag(FLAG_FAIL);
 
 				} else {
 					req.setOs_upgrade_dilevary_flash_size_flag("Not Conducted");
 
 				}
 				if (rs.getInt("back_up_flag") == 1) {
-					req.setOs_upgrade_dilevary_backup_flag("Pass");
+					req.setOs_upgrade_dilevary_backup_flag(FLAG_PASS);
 				} else if (rs.getInt("back_up_flag") == 2) {
-					req.setOs_upgrade_dilevary_backup_flag("Fail");
+					req.setOs_upgrade_dilevary_backup_flag(FLAG_FAIL);
 
 				} else {
 					req.setOs_upgrade_dilevary_backup_flag("Not conducted");
 
 				}
 				if (rs.getInt("os_download_flag") == 1) {
-					req.setOs_upgrade_dilevary_os_download_flag("Pass");
+					req.setOs_upgrade_dilevary_os_download_flag(FLAG_PASS);
 				} else if (rs.getInt("os_download_flag") == 2) {
-					req.setOs_upgrade_dilevary_os_download_flag("Fail");
+					req.setOs_upgrade_dilevary_os_download_flag(FLAG_FAIL);
 
 				} else {
 					req.setOs_upgrade_dilevary_os_download_flag("Not conducted");
 
 				}
 				if (rs.getInt("boot_system_flash_flag") == 1) {
-					req.setOs_upgrade_dilevary_boot_system_flash_flag("Pass");
+					req.setOs_upgrade_dilevary_boot_system_flash_flag(FLAG_PASS);
 				} else if (rs.getInt("boot_system_flash_flag") == 2) {
-					req.setOs_upgrade_dilevary_boot_system_flash_flag("Fail");
+					req.setOs_upgrade_dilevary_boot_system_flash_flag(FLAG_FAIL);
 
 				} else {
 					req.setOs_upgrade_dilevary_boot_system_flash_flag("Not conducted");
 
 				}
 				if (rs.getInt("reload_flag") == 1) {
-					req.setOs_upgrade_dilevary_reload_flag("Pass");
+					req.setOs_upgrade_dilevary_reload_flag(FLAG_PASS);
 				} else if (rs.getInt("reload_flag") == 2) {
-					req.setOs_upgrade_dilevary_reload_flag("Fail");
+					req.setOs_upgrade_dilevary_reload_flag(FLAG_FAIL);
 
 				} else {
 					req.setOs_upgrade_dilevary_reload_flag("Not conducted");
 
 				}
 				if (rs.getInt("post_login_flag") == 1) {
-					req.setOs_upgrade_dilevary_post_login_flag("Pass");
+					req.setOs_upgrade_dilevary_post_login_flag(FLAG_PASS);
 				} else if (rs.getInt("post_login_flag") == 2) {
-					req.setOs_upgrade_dilevary_post_login_flag("Fail");
+					req.setOs_upgrade_dilevary_post_login_flag(FLAG_FAIL);
 
 				} else {
 					req.setOs_upgrade_dilevary_post_login_flag("Not conducted");
@@ -5540,27 +5544,31 @@ public class RequestInfoDao {
 			if(testAndDiagnosis !=null && !testAndDiagnosis.isEmpty()) {
 				org.json.simple.JSONArray testNameArray = (org.json.simple.JSONArray) parser
 						.parse(testAndDiagnosis);
+				
 				if(testNameArray!=null){
 					for (int i = 0; i < testNameArray.size(); i++) {
 						org.json.simple.JSONObject jsonObj = (org.json.simple.JSONObject) testNameArray
 								.get(i);
 						String category = jsonObj.get("testCategory").toString();
+						String subCategory  = null;
 						if (null != category && testtype.equals(category)) {
 							org.json.simple.JSONObject finalObj = new org.json.simple.JSONObject();	
 							if(category.equals("Software Upgrade")) {
 								if(jsonObj.containsKey("testsubCategory") && jsonObj.get("testCategory")!=null) {
 									String subtest = jsonObj.get("testsubCategory").toString();
 									if(subtest.contains("preUpgrade") && requestType.equals("iospreValidate")) {
-										finalObj.put("category", "iospreValidate");			
+										finalObj.put("category", "iospreValidate");	
+										subCategory = "preUpgrade";
 									}else {
 										finalObj.put("category", "Health Check");
+										subCategory = "postUpgrade";
 									}
 								}
 							}else {
 							finalObj.put("category", category);
 							}							
 							int status = getTestDetails(requestId,
-									jsonObj.get("testName").toString(), requestVersion);
+									jsonObj.get("testName").toString(), requestVersion,category,subCategory);
 							finalObj.put("status", status);
 							String testNameAndVersion = jsonObj.get("testName")
 									.toString();
@@ -5671,7 +5679,7 @@ public class RequestInfoDao {
 		if (certificationTestPojo1.getDeviceReachabilityTest()
 				.equalsIgnoreCase("2")) {
 			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Fail");
+			reachabilityObj.put("status", FLAG_FAIL);
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 
@@ -5679,43 +5687,43 @@ public class RequestInfoDao {
 		if (certificationTestPojo1.getDeviceReachabilityTest()
 				.equalsIgnoreCase("1")) {
 			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Pass");
+			reachabilityObj.put("status", FLAG_PASS);
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
 			iosVersion.put("testname", "OS Version");
-			iosVersion.put("status", "Fail");
+			iosVersion.put("status", FLAG_FAIL);
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("1")) {
 			iosVersion.put("testname", "OS Version");
-			iosVersion.put("status", "Pass");
+			iosVersion.put("status", FLAG_PASS);
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("2")) {
 			deviceModel.put("testname", "Device Model");
-			deviceModel.put("status", "Fail");
+			deviceModel.put("status", FLAG_FAIL);
 			deviceModel.put("outcome", "");
 			deviceModel.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("1")) {
 			deviceModel.put("testname", "Device Model");
-			deviceModel.put("status", "Pass");
+			deviceModel.put("status", FLAG_PASS);
 			deviceModel.put("outcome", "");
 			deviceModel.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("2")) {
 			vendorTest.put("testname", "Vendor Test");
-			vendorTest.put("status", "Fail");
+			vendorTest.put("status", FLAG_FAIL);
 			vendorTest.put("outcome", "");
 			vendorTest.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("1")) {
 			vendorTest.put("testname", "Vendor Test");
-			vendorTest.put("status", "Pass");
+			vendorTest.put("status", FLAG_PASS);
 			vendorTest.put("outcome", "");
 			vendorTest.put("notes", "N/A");
 		}
@@ -5736,26 +5744,26 @@ public class RequestInfoDao {
 				"networkTest");
 		if (certificationTestPojo2.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
 			networkIfObj.put("testname", "Network Interface Status");
-			networkIfObj.put("status", "Pass");
+			networkIfObj.put("status", FLAG_PASS);
 			networkIfObj.put("outcome", "");
 			networkIfObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo2.getShowInterfaceCmd().equalsIgnoreCase("1")) {
 			waninterface.put("testname", "Wan Interface");
-			waninterface.put("status", "Pass");
+			waninterface.put("status", FLAG_PASS);
 			waninterface.put("outcome", "");
 			waninterface.put("notes", "N/A");
 		}
 		if (certificationTestPojo2.getShowVersionCmd().equalsIgnoreCase("1")) {
 			networkPlatformIOS.put("testname", "Network Platform IOS");
-			networkPlatformIOS.put("status", "Pass");
+			networkPlatformIOS.put("status", FLAG_PASS);
 			networkPlatformIOS.put("outcome", "");
 			networkPlatformIOS.put("notes", "N/A");
 		}
 		if (certificationTestPojo2.getShowIpBgpSummaryCmd().equalsIgnoreCase(
 				"1")) {
 			bgpneighbour.put("testname", "BGP Neighbour");
-			bgpneighbour.put("status", "Pass");
+			bgpneighbour.put("status", FLAG_PASS);
 			bgpneighbour.put("outcome", "");
 			bgpneighbour.put("notes", "N/A");
 		}
@@ -5776,7 +5784,7 @@ public class RequestInfoDao {
 		if (null != certificationTestPojo3.getThroughput()
 				&& certificationTestPojo3.getThroughput() != "") {
 			throughputObj.put("testname", "Throughput");
-			throughputObj.put("status", "Pass");
+			throughputObj.put("status", FLAG_PASS);
 			throughputObj
 					.put("outcome", certificationTestPojo3.getThroughput());
 			throughputObj
@@ -5784,7 +5792,7 @@ public class RequestInfoDao {
 			throughputObj.put("notes", "N/A");
 		} else {
 			throughputObj.put("testname", "Throughput");
-			throughputObj.put("status", "Pass");
+			throughputObj.put("status", FLAG_PASS);
 			throughputObj.put("outcome", "-1");
 			throughputObj.put("notes", "N/A");
 		}
@@ -5792,7 +5800,7 @@ public class RequestInfoDao {
 		if (null != certificationTestPojo3.getLatency()
 				&& certificationTestPojo3.getLatency() != "") {
 			latencyObj.put("testname", "Latency");
-			latencyObj.put("status", "Pass");
+			latencyObj.put("status", FLAG_PASS);
 			latencyObj.put("outcome", certificationTestPojo3.getLatency());
 			latencyObj.put("CollectedValue", certificationTestPojo3.getLatency());
 
@@ -5800,7 +5808,7 @@ public class RequestInfoDao {
 		} else {
 
 			latencyObj.put("testname", "Latency");
-			latencyObj.put("status", "Pass");
+			latencyObj.put("status", FLAG_PASS);
 			latencyObj.put("outcome", "-1");
 			latencyObj.put("notes", "N/A");
 		}
@@ -5808,14 +5816,14 @@ public class RequestInfoDao {
 		if (null != certificationTestPojo3.getFrameLoss()
 				&& certificationTestPojo3.getFrameLoss() != "") {
 			FrameLossObj.put("testname", "Frameloss");
-			FrameLossObj.put("status", "Pass");
+			FrameLossObj.put("status", FLAG_PASS);
 			FrameLossObj.put("outcome", certificationTestPojo3.getFrameLoss());
 			FrameLossObj.put("CollectedValue", certificationTestPojo3.getFrameLoss());
 
 			FrameLossObj.put("notes", "N/A");
 		} else {
 			FrameLossObj.put("testname", "Frameloss");
-			FrameLossObj.put("status", "Pass");
+			FrameLossObj.put("status", FLAG_PASS);
 			FrameLossObj.put("outcome", "-1");
 			FrameLossObj.put("notes", "N/A");
 		}
@@ -5976,11 +5984,11 @@ public class RequestInfoDao {
 				while (rs.next()) {
 					org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
 					obj.put("category", rs.getString("TestCategory"));
-					if (rs.getString("TestResult").equalsIgnoreCase("Pass")) {
+					if (rs.getString("TestResult").equalsIgnoreCase(FLAG_PASS)) {
 						obj.put("status", "1");
 
 					} else if (rs.getString("TestResult").equalsIgnoreCase(
-							"Fail")) {
+							FLAG_FAIL)) {
 						obj.put("status", "2");
 
 					} else {
@@ -6171,7 +6179,7 @@ public class RequestInfoDao {
 		if (certificationTestPojo1.getDeviceReachabilityTest()
 				.equalsIgnoreCase("2")) {
 			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Fail");
+			reachabilityObj.put("status", FLAG_FAIL);
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 
@@ -6179,32 +6187,32 @@ public class RequestInfoDao {
 		if (certificationTestPojo1.getDeviceReachabilityTest()
 				.equalsIgnoreCase("1")) {
 			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Pass");
+			reachabilityObj.put("status", FLAG_PASS);
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 		}
 
 		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("2")) {
 			deviceModel.put("testname", "Device Model");
-			deviceModel.put("status", "Fail");
+			deviceModel.put("status", FLAG_FAIL);
 			deviceModel.put("outcome", model);
 			deviceModel.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("1")) {
 			deviceModel.put("testname", "Device Model");
-			deviceModel.put("status", "Pass");
+			deviceModel.put("status", FLAG_PASS);
 			deviceModel.put("outcome", model);
 			deviceModel.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("2")) {
 			vendorTest.put("testname", "Vendor Test");
-			vendorTest.put("status", "Fail");
+			vendorTest.put("status", FLAG_FAIL);
 			vendorTest.put("outcome", vendor);
 			vendorTest.put("notes", "N/A");
 		}
 		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("1")) {
 			vendorTest.put("testname", "Vendor Test");
-			vendorTest.put("status", "Pass");
+			vendorTest.put("status", FLAG_PASS);
 			vendorTest.put("outcome", vendor);
 			vendorTest.put("notes", "N/A");
 		}
@@ -6212,7 +6220,7 @@ public class RequestInfoDao {
 		if (deliveryStatus.equals("1")) {
 			backUpStatus.put("backupstatus", "Success");
 		} else {
-			backUpStatus.put("backupstatus", "Fail");
+			backUpStatus.put("backupstatus", FLAG_FAIL);
 		}
 		prevalidationArray.add(vendorTest);
 		prevalidationArray.add(deviceModel);
@@ -6977,7 +6985,7 @@ public class RequestInfoDao {
 		if (certificationTestPojo1.getDeviceReachabilityTest()
 				.equalsIgnoreCase("2")) {
 			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Fail");
+			reachabilityObj.put("status", FLAG_FAIL);
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 
@@ -6985,7 +6993,7 @@ public class RequestInfoDao {
 		if (certificationTestPojo1.getDeviceReachabilityTest()
 				.equalsIgnoreCase("1")) {
 			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Pass");
+			reachabilityObj.put("status", FLAG_PASS);
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 		}
@@ -7073,7 +7081,7 @@ public class RequestInfoDao {
 		if (deliveryStatus.equals("1")) {
 			backUpStatus.put("backupstatus", "Success");
 		} else {
-			backUpStatus.put("backupstatus", "Fail");
+			backUpStatus.put("backupstatus", FLAG_FAIL);
 		}
 		//prevalidationArray.add(vendorTest);
 		//prevalidationArray.add(deviceModel);
@@ -7132,7 +7140,7 @@ public class RequestInfoDao {
 		if (certificationTestPojo1.getDeviceReachabilityTest()
 				.equalsIgnoreCase("2")) {
 			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Fail");
+			reachabilityObj.put("status", FLAG_FAIL);
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 
@@ -7140,7 +7148,7 @@ public class RequestInfoDao {
 		if (certificationTestPojo1.getDeviceReachabilityTest()
 				.equalsIgnoreCase("1")) {
 			reachabilityObj.put("testname", "Device Reachability test");
-			reachabilityObj.put("status", "Pass");
+			reachabilityObj.put("status", FLAG_PASS);
 			reachabilityObj.put("outcome", "");
 			reachabilityObj.put("notes", "N/A");
 		}
@@ -7153,7 +7161,7 @@ public class RequestInfoDao {
 		}
 		/*if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("2")) {
 			iosVersion.put("testname", "OS Version");
-			iosVersion.put("status", "Fail");
+			iosVersion.put("status", FLAG_FAIL);
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
 			iosVersion.put("CollectedValue", resultEnt.getGuiOsVersion());
@@ -7162,7 +7170,7 @@ public class RequestInfoDao {
 		}
 		if (certificationTestPojo1.getIosVersionTest().equalsIgnoreCase("1")) {
 			iosVersion.put("testname", "OS Version");
-			iosVersion.put("status", "Pass");
+			iosVersion.put("status", FLAG_PASS);
 			iosVersion.put("outcome", "");
 			iosVersion.put("notes", "N/A");
 			iosVersion.put("CollectedValue", resultEnt.getGuiOsVersion());
@@ -7179,7 +7187,7 @@ public class RequestInfoDao {
 		}
 		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("2")) {
 			deviceModel.put("testname", "Device Model");
-			deviceModel.put("status", "Fail");
+			deviceModel.put("status", FLAG_FAIL);
 			deviceModel.put("outcome", "");
 			deviceModel.put("notes", "N/A");
 			deviceModel.put("CollectedValue", resultEnt.getGuiModel());
@@ -7187,7 +7195,7 @@ public class RequestInfoDao {
 		}
 		if (certificationTestPojo1.getDeviceModelTest().equalsIgnoreCase("1")) {
 			deviceModel.put("testname", "Device Model");
-			deviceModel.put("status", "Pass");
+			deviceModel.put("status", FLAG_PASS);
 			deviceModel.put("outcome", "");
 			deviceModel.put("notes", "N/A");
 			deviceModel.put("CollectedValue", resultEnt.getGuiModel());
@@ -7203,7 +7211,7 @@ public class RequestInfoDao {
 		}
 		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("2")) {
 			vendorTest.put("testname", "Vendor Test");
-			vendorTest.put("status", "Fail");
+			vendorTest.put("status", FLAG_FAIL);
 			vendorTest.put("outcome", "");
 			vendorTest.put("notes", "N/A");
 			vendorTest.put("CollectedValue", resultEnt.getGuiVendor());
@@ -7211,7 +7219,7 @@ public class RequestInfoDao {
 		}
 		if (certificationTestPojo1.getVendorTest().equalsIgnoreCase("1")) {
 			vendorTest.put("testname", "Vendor Test");
-			vendorTest.put("status", "Pass");
+			vendorTest.put("status", FLAG_PASS);
 			vendorTest.put("outcome", "");
 			vendorTest.put("notes", "N/A");
 			vendorTest.put("CollectedValue", resultEnt.getGuiVendor());
@@ -7252,13 +7260,13 @@ public class RequestInfoDao {
 				Double.toString(request.getRequestVersion()), "HealthTest");
 		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("2")) {
 			throughputObj.put("testname", "Throughput");
-			throughputObj.put("status", "Fail");
+			throughputObj.put("status", FLAG_FAIL);
 			throughputObj.put("outcome", "");
 			throughputObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("1")) {
 			throughputObj.put("testname", "Throughput");
-			throughputObj.put("status", "Pass");
+			throughputObj.put("status", FLAG_PASS);
 			throughputObj
 					.put("outcome", certificationTestPojo3.getThroughput());
 			throughputObj
@@ -7274,13 +7282,13 @@ public class RequestInfoDao {
 
 		if (certificationTestPojo3.getLatencyTest().equalsIgnoreCase("2")) {
 			latencyObj.put("testname", "Latency");
-			latencyObj.put("status", "Fail");
+			latencyObj.put("status", FLAG_FAIL);
 			latencyObj.put("outcome", "");
 			latencyObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo3.getLatencyTest().equalsIgnoreCase("1")) {
 			latencyObj.put("testname", "Latency");
-			latencyObj.put("status", "Pass");
+			latencyObj.put("status", FLAG_PASS);
 			latencyObj.put("outcome", certificationTestPojo3.getLatency());
 			latencyObj.put("CollectedValue", certificationTestPojo3.getLatency());
 
@@ -7295,13 +7303,13 @@ public class RequestInfoDao {
 
 		if (certificationTestPojo3.getFrameLossTest().equalsIgnoreCase("2")) {
 			FrameLossObj.put("testname", "Frameloss");
-			FrameLossObj.put("status", "Fail");
+			FrameLossObj.put("status", FLAG_FAIL);
 			FrameLossObj.put("outcome", "");
 			FrameLossObj.put("notes", "N/A");
 		}
 		if (certificationTestPojo3.getFrameLossTest().equalsIgnoreCase("1")) {
 			FrameLossObj.put("testname", "Frameloss");
-			FrameLossObj.put("status", "Pass");
+			FrameLossObj.put("status", FLAG_PASS);
 			FrameLossObj.put("outcome", certificationTestPojo3.getFrameLoss());
 			FrameLossObj.put("CollectedValue", certificationTestPojo3.getFrameLoss());
 
@@ -7455,8 +7463,14 @@ public class RequestInfoDao {
 
 	/* Dhanshri Mane */
 	public int getTestDetails(String requestId, String testName,
-			double requsetVersion) {
-		String query = "select * from  t_tststrategy_m_config_results where RequestId = ? and testName= ? and request_version=?";
+			double requsetVersion,String category,String subCategory) {
+		String query =null;
+		if(subCategory!=null) {
+			query = "select * from  t_tststrategy_m_config_results where RequestId = ? and testName= ? and request_version=? and TestCategory = ? and test_sub_category =?";			
+		}else {
+			query = "select * from  t_tststrategy_m_config_results where RequestId = ? and testName= ? and request_version=?";
+		}
+		
 		ResultSet rs = null;
 		int status = 0;
 		try (Connection connection = ConnectionFactory.getConnection();
@@ -7465,15 +7479,18 @@ public class RequestInfoDao {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, testName);
 			preparedStmt.setDouble(3, requsetVersion);
+			if(subCategory!=null) {
+				preparedStmt.setString(4, category);
+				preparedStmt.setString(5, subCategory);
+			}
 			rs = preparedStmt.executeQuery();
-
 			int failuarCount = 0;
 			if (rs != null) {
 				while (rs.next()) {
-					if (rs.getString("TestResult").equalsIgnoreCase("Pass")) {
+					if (rs.getString("TestResult").equalsIgnoreCase(FLAG_PASS)) {
 						status = 1;
 					} else if (rs.getString("TestResult").equalsIgnoreCase(
-							"Fail")) {
+							FLAG_FAIL)) {
 						status = 2;
 						failuarCount++;
 					} else {

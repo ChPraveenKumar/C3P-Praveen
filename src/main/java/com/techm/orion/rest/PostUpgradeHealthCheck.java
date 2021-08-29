@@ -80,15 +80,15 @@ public class PostUpgradeHealthCheck extends Thread {
 		try {
 			JSONParser parservalue = new JSONParser();
 			JSONObject requestJson = (JSONObject) parservalue.parse(request);
-			String RequestId = null;
+			String requestId = null;
 			String version = null;
 			if (requestJson.containsKey("requestId") && requestJson.get("requestId") != null) {
-				RequestId = requestJson.get("requestId").toString();
+				requestId = requestJson.get("requestId").toString();
 			}
 			if (requestJson.containsKey("version") && requestJson.get("version") != null) {
 				version = requestJson.get("version").toString();
 			}
-			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				if (type.equalsIgnoreCase("Pre")) {
 					healthCheckTest = "pre_health_checkup";
@@ -102,14 +102,13 @@ public class PostUpgradeHealthCheck extends Thread {
 				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), healthCheckTest, "4", statusValue);
 
-				requestinfo.setAlphanumericReqId(RequestId);
+				requestinfo.setAlphanumericReqId(requestId);
 				requestinfo.setRequestVersion(Double.parseDouble(version));
-
 				String host = requestinfo.getManagementIp();
 				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
 				String user = routerCredential.getLoginRead();
 				String password = routerCredential.getPasswordWrite();
-				logger.info("Request ID in" + healthCheckTest + "test validation" + RequestId);
+				logger.info("Request ID in" + healthCheckTest + "test validation" + requestId);
 				String port = TSALabels.PORT_SSH.getValue();
 				session = jsch.getSession(user, host, Integer.parseInt(port));
 				Properties config = new Properties();
@@ -119,10 +118,7 @@ public class PostUpgradeHealthCheck extends Thread {
 				session.setPassword(password);
 				session.connect();
 				logger.info("After session.connect Health Check milestone");
-				try {
-					Thread.sleep(10000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(10000);
 				try {
 					channel = session.openChannel("shell");
 					OutputStream ops = channel.getOutputStream();
@@ -144,10 +140,7 @@ public class PostUpgradeHealthCheck extends Thread {
 											&& "post_health_checkup".equals(healthCheckTest))) {
 								ps = requestInfoDetailsDao.setCommandStream(ps, requestinfo, "Test", false);
 								ps.println(testDetail.getTestCommand());
-								try {
-									Thread.sleep(8000);
-								} catch (Exception ee) {
-								}
+								UtilityMethods.sleepThread(8000);
 								Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), testDetail, healthCheckTest);
@@ -170,10 +163,7 @@ public class PostUpgradeHealthCheck extends Thread {
 						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), healthCheckTest, "0", status);
 
-					}
-					logger.info("DONE");
-					channel.disconnect();
-					session.disconnect();
+					}					
 					value = true;
 					if (results != null) {
 						for (int i = 0; i < results.size(); i++) {
@@ -184,101 +174,46 @@ public class PostUpgradeHealthCheck extends Thread {
 
 						}
 					}
-					if (!channel.isClosed()) {
-						channel.disconnect();
-					}
-					session.disconnect();
-					try {
-						Thread.sleep(1500);
-					} catch (Exception ee) {
-					}
+					
+					UtilityMethods.sleepThread(1500);
 					logger.info("DONE");
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
 				} catch (IOException ex) {
-					logger.info("Error in Health check first catch " + ex.getMessage());
-					logger.info("Error trace " + ex.getStackTrace());
-					logger.info("" + ex.getCause());
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
-					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), healthCheckTest, "2", "Failure");
-
-					String response = "";
-					String responseDownloadPath = "";
-					try {
-						response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
-						requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
-						requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()));
-						responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
-						TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-								+ Double.toString(requestinfo.getRequestVersion()) + "_.txt", response);
-					} catch (Exception e) {
-						logger.error(e);
-
-					}
+					logger.error("Error in Health check test " + ex.getMessage());
+					ex.getStackTrace();
+					obj = setFailuarResult(jsonArray,value,requestinfo,healthCheckTest,obj,invokeFtl);
 				}
-
-				session.disconnect();
-
 			}
 		} catch (ParseException ex) {
-			logger.error("Error in  Helath Check Milestone" + ex);
+			logger.error("Error in  Helath Check Milestone" + ex.getMessage());
 		}
 		// when reachability fails
 		catch (Exception ex) {
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-				logger.info("Error in health check send catch " + ex.getMessage());
-				logger.info("Error trace " + ex.getStackTrace());
+				logger.info("Error in health check send catch " + ex.getMessage());				
 				ex.printStackTrace();
-				jsonArray = new Gson().toJson(value);
-				obj.put(new String("output"), jsonArray);
-				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-						Double.toString(requestinfo.getRequestVersion()), healthCheckTest, "2", "Failure");
-
-				String response = "";
-				String responseDownloadPath = "";
-				try {
-					response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
-					requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
-					requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()));
-					responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
-					TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-							+ Double.toString(requestinfo.getRequestVersion()) + "_CustomTests.txt", response);
-					requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
-							requestinfo.getAlphanumericReqId());
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+				obj = setFailuarResult(jsonArray,value,requestinfo,healthCheckTest,obj,invokeFtl);
 
 			}
 		} finally {
-
 			if (channel != null) {
 				try {
 					session = channel.getSession();
-
 					if (channel.getExitStatus() == -1) {
-
-						Thread.sleep(5000);
-
+						UtilityMethods.sleepThread(5000);
 					}
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error("Exception occure in healthcheckCommandTest: "+e.getMessage());
 				}
 				channel.disconnect();
-				session.disconnect();
-
+				session.disconnect();				
 			}
 		}
 		return obj;
 	}
 
-	@SuppressWarnings("unchecked")
+	
 	@POST
 	@RequestMapping(value = "/comapreTestResult", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -312,22 +247,8 @@ public class PostUpgradeHealthCheck extends Thread {
 				String[] cmd = { "python", pythonScriptFolder + "filediff.py", "-m", preUpgradeFile, postUpgradeFile,
 						outputFile };
 				Runtime.getRuntime().exec(cmd);
-
-				try {
-					String fileData = UtilityMethods.readFirstLineFromFile(outputFile);
-					if (fileData != null && !fileData.isEmpty()) {
-						Gson gson = new GsonBuilder().disableHtmlEscaping().create();
-						String jsonArray = gson.toJson(fileData);
-						obj.put(new String("output"), jsonArray);
-					} else {
-						logger.info("Error");
-						obj.put(new String("output"), "Error in processing the files");
-					}
-				} catch (IOException e) {
-					logger.error("Message in compareTestResult" + e.getMessage());
-					obj.put(new String("output"), "Error in processing the files");
-					e.printStackTrace();
-				}
+				UtilityMethods.sleepThread(10000);
+				obj = setFileData(outputFile,obj);
 			}
 
 		} catch (ParseException e) {
@@ -336,6 +257,78 @@ public class PostUpgradeHealthCheck extends Thread {
 		} catch (Exception e) {
 			logger.error("Message in compareTestResult" + e.getMessage());
 			e.printStackTrace();
+		}
+		return obj;
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	private JSONObject setFileData(String outputFile, JSONObject obj) {
+		try {
+			String fileData = UtilityMethods.readFirstLineFromFile(outputFile);
+			if (fileData != null && !fileData.isEmpty()) {
+				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+				String jsonArray = gson.toJson(fileData);
+				obj.put(new String("output"), jsonArray);
+			} else {
+				logger.info("Error");
+				obj.put(new String("output"), "Error in processing the files");
+			}
+		} catch (IOException e) {
+			logger.error("Message in compareTestResult" + e.getMessage());
+			obj.put(new String("output"), "Error in processing the files");
+			e.printStackTrace();
+		}
+		return obj;
+		
+	}
+
+
+	@SuppressWarnings({ "unchecked", "unused" })
+	private JSONObject setDeviceReachabilityFailuarResult(String message, Boolean value, RequestInfoPojo requestinfo, String testName, JSONObject obj, InvokeFtl invokeFtl) {
+		message = new Gson().toJson(value);
+		obj.put(new String("output"), message);
+		requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+				Double.toString(requestinfo.getRequestVersion()), testName, "2", "Failure");
+		String response = "";
+		String responseDownloadPath = "";
+		try {
+			response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
+			requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+					Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
+			requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
+					Double.toString(requestinfo.getRequestVersion()));
+			responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
+			TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+					+ Double.toString(requestinfo.getRequestVersion()) + "_CustomTests.txt", response);
+			requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+					requestinfo.getAlphanumericReqId());
+		} catch (Exception e) {
+			logger.error("Exception occured in  setDeviceReachabilityFailuarResult " + e.getMessage());	
+		}
+		return obj;		
+	}
+
+	@SuppressWarnings("unchecked")
+	private JSONObject setFailuarResult(String jsonArray, Boolean value, RequestInfoPojo requestinfo, String healthCheckTest, JSONObject obj, InvokeFtl invokeFtl) {	
+		jsonArray = new Gson().toJson(value);
+		obj.put(new String("output"), jsonArray);
+		requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+				Double.toString(requestinfo.getRequestVersion()), healthCheckTest, "2", "Failure");
+		String response = "";
+		String responseDownloadPath = "";
+		try {
+			response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
+			requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+					Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
+			requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
+					Double.toString(requestinfo.getRequestVersion()));
+			responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
+			TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+					+ Double.toString(requestinfo.getRequestVersion()) + "_CustomTests.txt", response);
+		} catch (Exception e) {
+			logger.error("Exception occured in  setFailuarResultmethod" + e.getMessage());
+
 		}
 		return obj;
 	}

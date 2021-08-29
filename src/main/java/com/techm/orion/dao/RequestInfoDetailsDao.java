@@ -94,30 +94,30 @@ public class RequestInfoDetailsDao {
 			String status) {
 		String query = null;
 		
-		if (field.equalsIgnoreCase("health_check")) {
+		if ("health_check".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("deliver_configuration")) {
+		} else if ("deliver_configuration".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("network_test")) {
+		} else if ("network_test".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("deliever_config")) {
+		} else if ("deliever_config".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("Application_test")) {
+		} else if ("Application_test".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("customer_report")) {
+		} else if ("customer_report".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("generate_configuration")) {
+		} else if ("generate_configuration".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("pre_health_checkup")) {
+		} else if ("pre_health_checkup".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("others_test")) {
+		} else if ("others_test".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("network_audit")) {
+		} else if ("network_audit".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
-		}else if (field.equalsIgnoreCase("post_health_checkup")) {
+		}else if ("post_health_checkup".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 		}
-		else if (field.equalsIgnoreCase("instantiation")) {
+		else if ("instantiation".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set instantiation = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 
@@ -684,22 +684,22 @@ public class RequestInfoDetailsDao {
 		String query = null;
 		ResultSet rs = null;
 		int status = 0;
-		if (field.equalsIgnoreCase("health_check")) {
+		if ("health_check".equalsIgnoreCase(field)) {
 			query = "select health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("network_test")) {
+		} else if ("network_test".equalsIgnoreCase(field)) {
 			query = "select  network_test as dataValue from webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("others_test")) {
+		} else if ("others_test".equalsIgnoreCase(field)) {
 			query = "select others_test as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("network_audit")) {
+		} else if ("network_audit".equalsIgnoreCase(field)) {
 			query = "select network_audit as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		}
-		else if (field.equalsIgnoreCase("instantiation")) {
+		else if ("instantiation".equalsIgnoreCase(field)) {
 			query = "select instantiation as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		}
-		if (field.equalsIgnoreCase("pre_health_checkup")) {
+		if ("pre_health_checkup".equalsIgnoreCase(field)) {
 			query = "select pre_health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
 		}
-		if (field.equalsIgnoreCase("post_health_checkup")) {
+		if ("post_health_checkup".equalsIgnoreCase(field)) {
 			query = "select health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
 		}
 

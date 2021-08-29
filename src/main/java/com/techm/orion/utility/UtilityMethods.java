@@ -11,10 +11,14 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
 @Component
 public class UtilityMethods {
 
+	private static final Logger logger = LogManager.getLogger(UtilityMethods.class);
+	
 	public static <T> Predicate<T> distinctByKey(Function<? super T, Object> keyExtractor) {
 		Map<Object, Boolean> map = new ConcurrentHashMap<>();
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
@@ -44,5 +48,13 @@ public class UtilityMethods {
 	            }
 	        return lineData.toString();
 	    }
+	}
+
+	public static void sleepThread(int time) {		
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException e) {
+				logger.error("Exception occure at the time of Thread sleep");
+			}			
 	}
 }

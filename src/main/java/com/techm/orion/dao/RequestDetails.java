@@ -166,8 +166,7 @@ public class RequestDetails {
 		return map;
 	}
 	@SuppressWarnings("unchecked")
-	public JSONObject customerReportUIRevamp(String requestID, String testType, String version)
-			throws ParseException, SQLException {
+	public JSONObject customerReportUIRevamp(String requestID, String testType, String version){
 		String STATUS_PASSED = "Pass";
 		String STATUS_FAILED = "Fail";
 		String STATUS_NC = "Not Conducted";
@@ -190,12 +189,22 @@ public class RequestDetails {
 
 		String type = createConfigRequestDCM.getAlphanumericReqId().substring(0,
 				Math.min(createConfigRequestDCM.getAlphanumericReqId().length(), 4));
-		String testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(
-				createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
+		String testAndDiagnosis = "";
+		try {
+			testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(
+					createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
+		} catch (SQLException e) {
+			logger.error("Error in customerReportUIRevamp : "+e.getMessage());			
+		}
 		logger.info("customerReportUIRevamp - testAndDiagnosis->"+testAndDiagnosis);
 		Set<String> setOfTestBundle = new HashSet<>();
 		if (testAndDiagnosis != null && !testAndDiagnosis.equals("")) {
-			org.json.simple.JSONArray testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
+			org.json.simple.JSONArray testArray = null;
+			try {
+				testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
+			} catch (ParseException e) {
+			logger.error("Exception in customerReportUIRevamp "+e.getMessage());
+			}
 			org.json.simple.JSONArray bundleNamesArray = null;
 			if(testArray!=null)
 			{

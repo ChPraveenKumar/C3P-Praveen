@@ -408,7 +408,7 @@ public class ConfigurationManagement {
 				e.printStackTrace();
 			}
 
-			if(requestType.equals("IOSUPGRADE")) {				
+			if("IOSUPGRADE".equals(requestType)) {				
 				toSaveArray = setTest(testDetailsRepository.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndTestCategory(
 						configReqToSendToC3pCode.getFamily(), 
 						configReqToSendToC3pCode.getOs(), "All", configReqToSendToC3pCode.getVendor(),
@@ -1024,7 +1024,7 @@ public class ConfigurationManagement {
 				String testCategory = latestTest.getTestCategory();
 				JSONObject testObject = new JSONObject();
 				testObject.put("testCategory", testCategory);
-				if(testCategory.equals("Software Upgrade")) {
+				if("Software Upgrade".equals(testCategory)) {
 					testObject.put("testsubCategory", latestTest.getTestSubCategory());	
 				}
 				testObject.put("selected", 1);
