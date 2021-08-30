@@ -94,5 +94,9 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 			String os, String osVersion, String vendor, String region, String NetworkType);
 
 	List<TestDetail> findByCreatedByOrderByCreatedOnDesc(String userName, Pageable pageable);
+	
+	List<TestDetail> findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndTestCategory(
+			String deviceFamily, String os, String osVersion, String vendor, String region, String category);
+
 
 }

@@ -5,13 +5,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -24,11 +28,11 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
+import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.utility.ShowCPUUsage;
-import com.techm.orion.utility.ShowMemoryTest;
-import com.techm.orion.utility.ShowPowerTest;
+import com.techm.orion.pojo.TestStaregyConfigPojo;
+import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.utility.WAFADateUtil;
 /*
  * Owner: Rahul Tiwari Reason: Get configuration feature name and details from database
@@ -46,6 +50,9 @@ public class RequestDetails {
 	
 	@Autowired
 	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private TestDetailsRepository testDetailsRepository;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -159,12 +166,9 @@ public class RequestDetails {
 		return map;
 	}
 	@SuppressWarnings("unchecked")
-	public JSONObject customerReportUIRevamp(String requestID, String testType, String version)
-			throws ParseException {
-		JSONObject object = new JSONObject();
-		try{
-		String STATUS_PASSED = "Passed";
-		String STATUS_FAILED = "Failed";
+	public JSONObject customerReportUIRevamp(String requestID, String testType, String version){
+		String STATUS_PASSED = "Pass";
+		String STATUS_FAILED = "Fail";
 		String STATUS_NC = "Not Conducted";
 		String KEY_0 = "0";
 		String KEY_1 = "1";
@@ -185,12 +189,22 @@ public class RequestDetails {
 
 		String type = createConfigRequestDCM.getAlphanumericReqId().substring(0,
 				Math.min(createConfigRequestDCM.getAlphanumericReqId().length(), 4));
-		String testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(
-				createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
+		String testAndDiagnosis = "";
+		try {
+			testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(
+					createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
+		} catch (SQLException e) {
+			logger.error("Error in customerReportUIRevamp : "+e.getMessage());			
+		}
 		logger.info("customerReportUIRevamp - testAndDiagnosis->"+testAndDiagnosis);
 		Set<String> setOfTestBundle = new HashSet<>();
 		if (testAndDiagnosis != null && !testAndDiagnosis.equals("")) {
-			org.json.simple.JSONArray testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
+			org.json.simple.JSONArray testArray = null;
+			try {
+				testArray = (org.json.simple.JSONArray) parser.parse(testAndDiagnosis);
+			} catch (ParseException e) {
+			logger.error("Exception in customerReportUIRevamp "+e.getMessage());
+			}
 			org.json.simple.JSONArray bundleNamesArray = null;
 			if(testArray!=null)
 			{
@@ -209,7 +223,7 @@ public class RequestDetails {
 		}
 		JSONObject obj = new JSONObject();
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
-		
+		JSONObject object = new JSONObject();
 
 		if ("SLGF".equalsIgnoreCase(type)) {
 			CreateConfigRequest req = new CreateConfigRequest();
@@ -261,72 +275,12 @@ public class RequestDetails {
 			}
 
 			// Logic for health checks
-			ShowCPUUsage cpuUsage = new ShowCPUUsage();
-			ShowMemoryTest memoryInfo = new ShowMemoryTest();
-			ShowPowerTest powerTest = new ShowPowerTest();
 			RequestInfoPojo reqDetail = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
 					createConfigRequestDCM.getAlphanumericReqId(),
 					Double.toString(createConfigRequestDCM.getRequestVersion()));
 
-			CreateConfigRequest createConfigRequest = requestInfoDao
-					.getRequestDetailFromDBForVersion(createConfigRequestDCM.getAlphanumericReqId(), version);
-
-			createConfigRequest.setHostname(reqDetail.getHostname());
-			createConfigRequest.setSiteid(reqDetail.getSiteid());
-			createConfigRequest.setManagementIp(reqDetail.getManagementIp());
-			createConfigRequest.setCustomer(reqDetail.getCustomer());
-			createConfigRequest.setModel(reqDetail.getModel());
-			createConfigRequest.setRegion(reqDetail.getRegion());
-
-			createConfigRequest.setPre_cpu_usage_percentage(cpuUsage
-					.getCPUUsagePercentage(createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Pre"));
-			createConfigRequest.setPre_memory_info(
-					memoryInfo.getMemoryUsed(createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Pre")
-							.toString());
-			createConfigRequest.setPre_power_info(
-					powerTest.getPowerInfor(createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Pre"));
-			// createConfigRequest.setPre_version_info(versionTest.getVersion(createConfigRequest.getHostname(),createConfigRequest.getRegion(),"Pre"));
-
-			createConfigRequest.setPost_cpu_usage_percentage(cpuUsage
-					.getCPUUsagePercentage(createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Post"));
-			createConfigRequest.setPost_memory_info(
-					memoryInfo.getMemoryUsed(createConfigRequest.getHostname(), createConfigRequest.getRegion(), "Post")
-							.toString());
-			createConfigRequest.setPost_power_info(powerTest.getPowerInfor(createConfigRequest.getHostname(),
-					createConfigRequest.getRegion(), "Post"));
-			// createConfigRequest.setPost_version_info(versionTest.getVersion(createConfigRequest.getHostname(),createConfigRequest.getRegion(),"Post"));
-
-			JSONArray healthCheckArray = new JSONArray();
-
-			JSONObject cpu = new JSONObject();
-			cpu.put("healthcheck", "CPU Usage");
-			cpu.put("preUpgradeValue", createConfigRequest.getPre_cpu_usage_percentage());
-			cpu.put("postUpgradeValue", createConfigRequest.getPost_cpu_usage_percentage());
-
-			if (createConfigRequest.getPre_cpu_usage_percentage() == 0
-					&& createConfigRequest.getPost_cpu_usage_percentage() == 0) {
-				cpu.put("outcome", STATUS_PASSED);
-			} else if (createConfigRequest.getPre_cpu_usage_percentage() < 0
-					&& createConfigRequest.getPost_cpu_usage_percentage() < 0) {
-				cpu.put("outcome", STATUS_FAILED);
-			}
-
-			healthCheckArray.put(cpu);
-
-			JSONObject mem = new JSONObject();
-			mem.put("healthcheck", "Memory Usage(%)");
-			mem.put("preUpgradeValue", createConfigRequest.getPre_memory_info());
-			mem.put("postUpgradeValue", createConfigRequest.getPost_memory_info());
-			if (Double.parseDouble(createConfigRequest.getPre_memory_info()) > 0
-					&& Double.parseDouble(createConfigRequest.getPost_memory_info()) > 0) {
-				mem.put("outcome", STATUS_PASSED);
-			} else {
-				mem.put("outcome", STATUS_FAILED);
-
-			}
-
-			healthCheckArray.put(mem);
-
+			List<TestStaregyConfigPojo> firmwareTestDetails = getFirmwareTestDetails(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
+				
 			obj.put("preVersionInfo", reqDetail.getOsVersion());
 
 			obj.put("postVersionInfo", reqDetail.getOsVersion());
@@ -334,7 +288,7 @@ public class RequestDetails {
 			obj.put("Statusmessage", "Device upgraded Succesfully");
 
 			obj.put("OsupgradeSummary", os_upgrade_dilevary_step_array.toString());
-			obj.put("healthCheckSummary", healthCheckArray.toString());
+			obj.put("healthCheckSummary",setFirmwareTestDetails(firmwareTestDetails).toString());
 
 		} else if ("SLGB".equalsIgnoreCase(type)) {
 			obj = requestInfoDao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
@@ -389,31 +343,91 @@ public class RequestDetails {
 		obj.put("bundleList", setOfTestBundle);
 		array.add(obj);
 		object.put("entity", array);
-		
-		}
-		catch (SQLException exe) {
-			logger.error("SQL Exception in getConfigurationFeatureDetails method "+exe.getMessage());
-		} 
 		return object;
 	}
-	public String getTestAndDiagnosisDetailsWithStatus(String requestId,double requestVersion) throws SQLException {
-		StringBuilder builder = new StringBuilder();
-		ResultSet resultSet = null;
-		String query = "SELECT RequestId,TestsSelected FROM t_tststrategy_m_config_results where RequestId= ? and request_version =?";
-		try (Connection connection = ConnectionFactory.getConnection();
-				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
-			preparedStmt.setString(1, requestId);
-			preparedStmt.setDouble(2, requestVersion);
-			resultSet = preparedStmt.executeQuery();
-			while (resultSet.next()) {
-				builder.append(resultSet.getString("TestsSelected"));
-			}
-		} catch (SQLException exe) {
-			logger.error("SQL Exception in getTestAndDiagnosisDetails method "+exe.getMessage());
-		} finally {
-			DBUtil.close(resultSet);
-		}
-		return builder.toString();
-	}
 	
+		
+	@SuppressWarnings("unchecked")
+	private org.json.simple.JSONArray setFirmwareTestDetails(List<TestStaregyConfigPojo> firmwareTestDetails) {				
+		    Map<String, List<TestStaregyConfigPojo>> tests =firmwareTestDetails.stream()
+                 .collect(Collectors.groupingBy(TestStaregyConfigPojo::getTestResultText)); 
+		    org.json.simple.JSONArray testArray =  new org.json.simple.JSONArray();
+		   tests.keySet().forEach(testText->{
+			   JSONObject jsonObject = new JSONObject();			   
+			    tests.get(testText).forEach(testDetail->{				    	
+			    	 TestDetail testData = testDetailsRepository.findByTestName(StringUtils.substringBeforeLast(testDetail.getTestName(), "_")).stream()
+			    		      .max(Comparator.comparing(TestDetail::getVersion))
+			    		      .orElseThrow(NoSuchElementException::new);			    	    		      
+			    	
+			    	String testName = StringUtils.substringAfter(testData.getTestId(),"_")+"::"+testText;
+			    	jsonObject.put("healthcheck", testName);			    	
+			    	if("preUpgrade".equals(testDetail.getTestSubCategory())) {
+			    		jsonObject.put("preUpgradeValue", testDetail.getTestCollectedValue());	
+			    	}else {			    		
+			    		jsonObject.put("postUpgradeValue", testDetail.getTestCollectedValue());			    		
+			    	}			    	
+			    	jsonObject.put("dataType", testDetail.getTestDataType());
+			    	if(testData.getTestSubCategory()!=null && testData.getTestSubCategory().contains("compare")) {
+			    	 if(jsonObject.get("dataType")!=null && !jsonObject.get("dataType").toString().equals("FullText") && jsonObject.containsKey("preUpgradeValue") && jsonObject.get("preUpgradeValue")!=null && jsonObject.containsKey("postUpgradeValue") && jsonObject.get("postUpgradeValue")!=null) {
+			    		 if(!jsonObject.get("preUpgradeValue").toString().contains("fail")) {
+					    	if(jsonObject.get("preUpgradeValue").toString().equals(jsonObject.get("postUpgradeValue")) ) {
+					    		jsonObject.put("outcome", "Match");
+					    	}else {
+					    		jsonObject.put("outcome", "Not Match");
+					    	}
+			    		 }
+					    }else  if(jsonObject.get("dataType")!=null && jsonObject.get("dataType").toString().equals("FullText") && jsonObject.containsKey("preUpgradeValue") && jsonObject.get("preUpgradeValue")!=null && jsonObject.containsKey("postUpgradeValue") && jsonObject.get("postUpgradeValue")!=null) { 
+					    	jsonObject.put("outcome",jsonObject.get("postUpgradeValue").toString());
+					    }
+			    	}
+			    	if(jsonObject.containsKey("postUpgradeValue") &&jsonObject.get("postUpgradeValue") != null && jsonObject.get("postUpgradeValue").toString().contains("Match")) {
+			    		jsonObject.put("postUpgradeValue", "");
+			    	}
+			    });				    
+			   
+			    testArray.add(jsonObject);
+		   });
+		return testArray; 		   
+	}
+
+	public List<TestStaregyConfigPojo> getFirmwareTestDetails(String requestId,double requsetVersion) {
+		String query = "select * from  t_tststrategy_m_config_results where RequestId = ? and request_version=? and TestCategory = ?";
+		ResultSet result = null;
+		List<TestStaregyConfigPojo> testResultList = null;
+		
+		try (Connection connection = ConnectionFactory.getConnection();
+				PreparedStatement preparedStmt = connection
+						.prepareStatement(query);) {
+			preparedStmt.setString(1, requestId);			
+			preparedStmt.setDouble(2, requsetVersion);
+			preparedStmt.setString(3, "Software Upgrade");
+			result = preparedStmt.executeQuery();
+			testResultList =  new ArrayList<>();
+			if (result != null) {
+				while (result.next()) {
+					TestStaregyConfigPojo testResult = new TestStaregyConfigPojo();
+					testResult.setTestRequestId(result.getString("RequestId"));
+					testResult.setTestCategoty(result.getString("TestCategory"));
+					testResult.setTestCollectedValue(result.getString("CollectedValue"));
+					testResult.setTestDataType(result.getString("data_type"));
+					testResult.setTestEvaluationCreiteria(result.getString("EvaluationCriteria"));
+					testResult.setTestName(result.getString("testName"));
+					testResult.setTestNotes(result.getString("notes"));
+					testResult.setTestRequestVersion(String.valueOf(result.getDouble("request_version")));
+					testResult.setTestResult(result.getString("TestResult"));
+					testResult.setTestResultText(result.getString("ResultText"));
+					testResult.setTestSubCategory(result.getString("test_sub_category"));
+					testResultList.add(testResult);
+				}
+			}
+			
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in getTestDetails method "
+					+ exe.getMessage());
+		} finally {
+			DBUtil.close(result);
+		}
+		return testResultList;
+		
+	}
 }

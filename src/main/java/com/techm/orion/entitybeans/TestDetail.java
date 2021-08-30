@@ -87,6 +87,9 @@ public class TestDetail implements Serializable
 
 	@Column(name = "testType")
 	private String testType;
+	
+	@Column(name = "test_sub_category")
+	private String testSubCategory;
 
 	private boolean isEnabled = false;
 
@@ -390,6 +393,14 @@ public class TestDetail implements Serializable
 
 	public void setTestbundling(Set<TestBundling> testbundling) {
 		this.testbundling = testbundling;
+	}
+
+	public String getTestSubCategory() {
+		return testSubCategory;
+	}
+
+	public void setTestSubCategory(String testSubCategory) {
+		this.testSubCategory = testSubCategory;
 	}
 
 	@Override

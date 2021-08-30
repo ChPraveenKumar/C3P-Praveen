@@ -408,6 +408,12 @@ public class ConfigurationManagement {
 				e.printStackTrace();
 			}
 
+			if("IOSUPGRADE".equals(requestType)) {				
+				toSaveArray = setTest(testDetailsRepository.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndTestCategory(
+						configReqToSendToC3pCode.getFamily(), 
+						configReqToSendToC3pCode.getOs(), "All", configReqToSendToC3pCode.getVendor(),
+						configReqToSendToC3pCode.getRegion(),"Software Upgrade"), toSaveArray);
+			}
 			logger.info("createConfigurationDcm - configReqToSendToC3pCode -NetworkType- "
 					+ configReqToSendToC3pCode.getNetworkType());
 			Map<String, String> result = null;
@@ -1002,7 +1008,12 @@ public class ConfigurationManagement {
 				TestDetail testDetail = testDeatils.getTestDetail();
 				testList.add(testDetail);
 			}
-		}
+		}		
+		return setTest(testList,toSaveArray);		 
+	}	
+
+	@SuppressWarnings("unchecked")
+	private JSONArray setTest(List<TestDetail> testList, JSONArray toSaveArray) {
 		if (testList != null) {
 			Collection<TestDetail> testDetailFinalList = testList.stream()
 					.collect(Collectors.toMap(TestDetail::getTestName, Function.identity(),
@@ -1013,12 +1024,14 @@ public class ConfigurationManagement {
 				String testCategory = latestTest.getTestCategory();
 				JSONObject testObject = new JSONObject();
 				testObject.put("testCategory", testCategory);
+				if("Software Upgrade".equals(testCategory)) {
+					testObject.put("testsubCategory", latestTest.getTestSubCategory());	
+				}
 				testObject.put("selected", 1);
 				testObject.put("testName", testName);
 				testObject.put("bundleName", new ArrayList<>());
 				toSaveArray.add(testObject);
 			}
-
 		}
 		return toSaveArray;
 	}
