@@ -10,6 +10,8 @@ import java.util.Map;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -269,34 +271,38 @@ public class ImageManagementServiceImpl implements ImageManagementService {
 	@Override
 	public JSONObject validateBinaryImage(String vendor, String family, String imageName, String displayName) {
 		JSONObject imageJson = new JSONObject();
-		File vendorDir = new File(TSALabels.IMAGE_FILE_PATH.getValue() + vendor);
-		// Tests whether the vendor Exist or not in the directory.
-		boolean vendorExists = vendorDir.isDirectory();
-		if (vendorExists) {
-			File familyDir = new File(vendorDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue()+ family);
-			// Tests whether the family Exist or not in the directory.
-			boolean familyExists = familyDir.isDirectory();
-			if (familyExists) {
-				File osDir = new File(familyDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue()+ displayName);
-				// Tests whether the OS Exist or not in the directory.
-				boolean osExists = osDir.isDirectory();
-				if (osExists) {
-					File imageExist = new File(osDir.getPath() +TSALabels.FOLDER_SEPARATOR.getValue() + imageName);
-					// Tests whether the image Exist or not in the directory.
-					boolean isImageExist = imageExist.exists();
-					if (isImageExist) {
-						imageJson.put("response", "File exists");
+		try {
+			File vendorDir = new File(TSALabels.IMAGE_FILE_PATH.getValue() + vendor);
+			// Tests whether the vendor Exist or not in the directory.
+			boolean vendorExists = vendorDir.isDirectory();
+			if (vendorExists) {
+				File familyDir = new File(vendorDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue() + family);
+				// Tests whether the family Exist or not in the directory.
+				boolean familyExists = familyDir.isDirectory();
+				if (familyExists) {
+					File osDir = new File(familyDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue() + displayName);
+					// Tests whether the OS Exist or not in the directory.
+					boolean osExists = osDir.isDirectory();
+					if (osExists) {
+						File imageExist = new File(osDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue() + imageName);
+						// Tests whether the image Exist or not in the directory.
+						boolean isImageExist = imageExist.exists();
+						if (isImageExist) {
+							imageJson.put("response", "File exists");
+						} else
+							imageJson.put("response", "The file does not exist");
+					} else {
+						imageJson.put("response", "The file or folder does not exist");
 					}
-					else
-						imageJson.put("response", "The file does not exist");
 				} else {
 					imageJson.put("response", "The file or folder does not exist");
 				}
 			} else {
 				imageJson.put("response", "The file or folder does not exist");
 			}
-		} else {
-			imageJson.put("response", "The file or folder does not exist");
+		} catch (Exception e) {
+			logger.error("Exception occured in validateBinaryImage" + e.getMessage());
+			imageJson.put("response", e.getMessage());
 		}
 		return imageJson;
 	}
