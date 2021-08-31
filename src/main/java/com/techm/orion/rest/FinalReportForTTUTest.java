@@ -1304,7 +1304,7 @@ public class FinalReportForTTUTest extends Thread {
 						requestinfo
 								.setOs_upgrade_dilevary_post_login_flag(req.getOs_upgrade_dilevary_post_login_flag());
 
-						ShowCPUUsage cpuUsage = new ShowCPUUsage();
+						/*ShowCPUUsage cpuUsage = new ShowCPUUsage();
 						ShowMemoryTest memoryInfo = new ShowMemoryTest();
 						ShowPowerTest powerTest = new ShowPowerTest();
 						ShowVersionTest versionTest = new ShowVersionTest();
@@ -1332,8 +1332,8 @@ public class FinalReportForTTUTest extends Thread {
 									requestinfo.getRegion(), "Post"));
 							requestinfo.setPost_version_info(
 									versionTest.getVersion(requestinfo.getHostname(), requestinfo.getRegion(), "Post"));
-						}
-						
+						}*/
+						logger.info("In Firmware Upgrade Final Report");
 						String response = invokeFtl.generateCustomerOSUpgrade(requestinfo);						
 						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestinfo.getAlphanumericReqId() + "V"
