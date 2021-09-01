@@ -68,7 +68,7 @@ public class TemplateManagementService {
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
-	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
+	//@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/addNewFeatureForTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> addNewFeatureForTemplate(@RequestBody String newFeature) {

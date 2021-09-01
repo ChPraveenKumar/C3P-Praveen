@@ -2,14 +2,22 @@ package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.JoinColumn;
 
 @Entity
 @Table(name = "c3p_m_characteristics")
@@ -48,7 +56,6 @@ public class MasterCharacteristicsEntity implements Serializable
 	@Column(name = "c_validations")
 	private String cValidations;
 
-
 	@Column(name = "c_created_by")
 	private String cCreatedBy;
 
@@ -69,14 +76,14 @@ public class MasterCharacteristicsEntity implements Serializable
 
 	@Column(name = "c_type")
 	private String cType;
-	
-	@Column(name = "c_is_key", columnDefinition="TINYINT(1)", nullable = false)
+
+	@Column(name = "c_is_key", columnDefinition = "TINYINT(1)", nullable = false)
 	private boolean cIsKey;
-	
+
 	@Transient
 	private String labelValue;
-	
-	@Column(name = "c_replicationind",columnDefinition="TINYINT(1)")
+
+	@Column(name = "c_replicationind", columnDefinition = "TINYINT(1)")
 	private boolean cReplicationind;
 
 	public String getcValidations() {
@@ -86,7 +93,7 @@ public class MasterCharacteristicsEntity implements Serializable
 	public void setcValidations(String cValidations) {
 		this.cValidations = cValidations;
 	}
-	
+
 	public String getcCategory() {
 		return cCategory;
 	}
@@ -97,7 +104,6 @@ public class MasterCharacteristicsEntity implements Serializable
 
 	@Column(name = "c_category")
 	private String cCategory;
-
 
 	public int getcRowid() {
 		return cRowid;
@@ -226,7 +232,6 @@ public class MasterCharacteristicsEntity implements Serializable
 	public void setLabelValue(String labelValue) {
 		this.labelValue = labelValue;
 	}
-	
 
 	public boolean getcReplicationind() {
 		return cReplicationind;
@@ -240,7 +245,20 @@ public class MasterCharacteristicsEntity implements Serializable
 		super();
 	}
 
-	public MasterCharacteristicsEntity(String cId, String cName, String cFId, String labelValue, boolean cIsKey) {
+	@ManyToMany
+	@JoinTable(name = "c3p_j_charachteristics_attribs_ip_pools", joinColumns = @JoinColumn(name = "c_id"), inverseJoinColumns = @JoinColumn(name = "r_ip_pool_id"))
+	List<IpRangeManagementEntity> linkedPools;
+
+	public List<IpRangeManagementEntity> getLinkedPools() {
+		return linkedPools;
+	}
+
+	public void setLinkedPools(List<IpRangeManagementEntity> linkedPools) {
+		this.linkedPools = linkedPools;
+	}
+
+	public MasterCharacteristicsEntity(String cId, String cName, String cFId,
+			String labelValue, boolean cIsKey) {
 		super();
 		this.cId = cId;
 		this.cName = cName;
