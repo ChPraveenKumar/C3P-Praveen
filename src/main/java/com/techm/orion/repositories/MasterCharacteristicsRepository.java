@@ -26,4 +26,8 @@ public interface MasterCharacteristicsRepository extends JpaRepository<MasterCha
 	
 	@Query(value = "select c_f_id from c3p_m_characteristics where c_id = :c_id", nativeQuery = true)
 	String findByCId(@Param("c_id") String c_id);
+	
+	@Query(value = "select c_rowid from c3p_m_characteristics where c_id = :c_id", nativeQuery = true)
+	int findRowID(@Param("c_id") String c_id);
 }
+
