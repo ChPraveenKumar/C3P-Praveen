@@ -453,23 +453,18 @@ public class MasterFeatureController {
 
 						JSONArray poolIdJsonArray = (JSONArray) jsonObject
 								.get("poolIds");
-						int[] numbers = new int[poolIdJsonArray.size()];
 						for (int iCounter = 0; iCounter < poolIdJsonArray
 								.size(); iCounter++) {
-							numbers[iCounter] = ((Long) poolIdJsonArray
-									.get(iCounter)).intValue();
-						}
-						for (int poolid : numbers) {
-
 							TemplateIpPoolJoinEntity entity = new TemplateIpPoolJoinEntity();
 							entity.setCtChId(cId);
 							entity.setCtTemplateId(json.get("templateId")
 									.toString());
-							entity.setCtPoolId(poolid);
+							entity.setCtPoolId(((Long) poolIdJsonArray
+									.get(iCounter)).intValue());
 							entity.setIsSave(0);
 							templateIpPoolJoinRepository.save(entity);
+							
 						}
-
 					}
 
 				} else {
@@ -479,15 +474,11 @@ public class MasterFeatureController {
 						listOfPoolIds = new ArrayList<IpRangeManagementEntity>();
 						JSONArray poolIdJsonArray = (JSONArray) jsonObject
 								.get("poolIds");
-						int[] numbers = new int[poolIdJsonArray.size()];
 						for (int iCounter = 0; iCounter < poolIdJsonArray
 								.size(); iCounter++) {
-							numbers[iCounter] = ((Long) poolIdJsonArray
-									.get(iCounter)).intValue();
-						}
-						for (int poolid : numbers) {
 							IpRangeManagementEntity entity = new IpRangeManagementEntity();
-							entity.setRangePoolId(poolid);
+							entity.setRangePoolId(((Long) poolIdJsonArray
+									.get(iCounter)).intValue());
 							listOfPoolIds.add(entity);
 						}
 						masterCharacteristic.setLinkedPools(listOfPoolIds);
@@ -911,29 +902,7 @@ public class MasterFeatureController {
 						childList.add(attrJsonObj);
 					}
 					jsonObj.put("attribMappings", childList);
-					/* It is a feature get the commands of a feature */
-					/*
-					 * if ("Basic Configuration".equalsIgnoreCase(featureList.
-					 * getfCategory())) { List<CommandPojo> listShow = new
-					 * ArrayList<CommandPojo>();
-					 * 
-					 * List<BasicConfiguration> basicConfigList = new
-					 * ArrayList<BasicConfiguration>(); basicConfigList =
-					 * basicConfigRepo
-					 * .findByMFId(json.get("featureid").toString());
-					 * maintainOrder(basicConfigList); for (BasicConfiguration
-					 * bConfig : basicConfigList) {
-					 * 
-					 * CommandPojo commandPojo = new CommandPojo();
-					 * commandPojo.setCommand_value(bConfig.getConfiguration());
-					 * listShow.add(commandPojo); } String finalCammands = "";
-					 * for (CommandPojo cammand : listShow) { if
-					 * (!finalCammands.equals("")) finalCammands = finalCammands
-					 * + "\n" + cammand.getCommand_value(); else finalCammands =
-					 * finalCammands + cammand.getCommand_value(); }
-					 * jsonObj.put("commands", finalCammands); obj.put(new
-					 * String("entity"), jsonObj); } else {
-					 */
+				
 					// fetch commands from master command list based on feature
 					// id
 					List<CommandPojo> listShow = new ArrayList<CommandPojo>();
@@ -999,12 +968,7 @@ public class MasterFeatureController {
 				templateId = StringUtils.substringBefore(templateId, ".yang");
 			}
 
-			/*
-			 * List<MasterFeatureEntity> featureEntinty =
-			 * masterFeatureRepository .
-			 * findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun
-			 * ( vendor, "All", os, osVersion, "All", "VNF");
-			 */
+			
 			List<MasterFeatureEntity> featureEntinty = masterFeatureRepository
 					.findAllByFNameContains(templateId);
 			for (MasterFeatureEntity feature : featureEntinty) {

@@ -757,36 +757,27 @@ public class MasterFeatureService {
 
 						JSONArray poolIdJsonArray = (JSONArray) jsonObj
 								.get("poolIds");
-						int[] numbers = new int[poolIdJsonArray.size()];
 						for (int iCounter = 0; iCounter < poolIdJsonArray
 								.size(); iCounter++) {
-							numbers[iCounter] = ((Long) poolIdJsonArray
-									.get(iCounter)).intValue();
-						}
-						for (int poolid : numbers) {
-
-							//find if already present
-							List<TemplateIpPoolJoinEntity> exisitingentity = templateIpPoolJoinRepository.findbyTemplateAndCharachteristic(templateId, cId,poolid);
+							
+							List<TemplateIpPoolJoinEntity> exisitingentity = templateIpPoolJoinRepository.findbyTemplateAndCharachteristic(templateId, cId,((Long) poolIdJsonArray
+									.get(iCounter)).intValue());
 							for(TemplateIpPoolJoinEntity item: exisitingentity)
 							{
-							if(item!=null)
+							if(item!=null && item.getIsSave() == 0)
 							{
-								if(item.getIsSave() == 0)
-								{
 									templateIpPoolJoinRepository.delete(item);
-								}
+								
 							}
 							}
 							TemplateIpPoolJoinEntity entity = new TemplateIpPoolJoinEntity();
 							entity.setCtChId(cId);
 							entity.setCtTemplateId(templateId);
-							entity.setCtPoolId(poolid);
+							entity.setCtPoolId(((Long) poolIdJsonArray
+									.get(iCounter)).intValue());
 							entity.setIsSave(0);
 							templateIpPoolJoinRepository.save(entity);
-							
-							
 						}
-
 					}
 				}
 			}

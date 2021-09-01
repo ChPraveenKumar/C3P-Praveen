@@ -329,7 +329,7 @@ public class TemplateManagementNewService {
 		// Save the pools allocated in join table
 		List<TemplateIpPoolJoinEntity> availableItems = templateIpPoolJoinRepository
 				.findByCtTemplateId(templateVersion);
-		if (availableItems != null || availableItems.size() > 0) {
+		if (availableItems != null && availableItems.size() > 0) {
 			for (TemplateIpPoolJoinEntity item : availableItems) {
 				if (item.getIsSave() == 0)
 					item.setIsSave(1);
