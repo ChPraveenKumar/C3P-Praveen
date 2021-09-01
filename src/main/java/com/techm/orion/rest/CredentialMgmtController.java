@@ -98,7 +98,7 @@ public class CredentialMgmtController {
 		CredentialManagementEntity saveDetail = null;
 		boolean isAdd = false;
 		String profileName = null, profileType = null, description = null, loginRead = null, pwdWrite = null,
-				enablePassword = null, genric = null, port = null, version = null;
+				enablePassword = null, genric = null, port = null, version = null,encryptionType = null;
 		CredentialManagementEntity credentialDetail = new CredentialManagementEntity();
 		JSONObject credential = (JSONObject) parser.parse(credentialRequest);
 		if (credential.containsKey("profileName")) {
@@ -110,30 +110,42 @@ public class CredentialMgmtController {
 		if (credential.containsKey("description")) {
 			description = credential.get("description").toString();
 		}
-		if (credential.containsKey("loginRead")) {
-			loginRead = credential.get("loginRead").toString();
-		}
-		if (credential.containsKey("pwdWrite")) {
-			pwdWrite = credential.get("pwdWrite").toString();
-		}
-		if (credential.containsKey("enablePassword")) {
-			enablePassword = credential.get("enablePassword").toString();
-		}
 		if (credential.containsKey("version")) {
 			version = credential.get("version").toString();
+		}
+		if("SNMPv3".equalsIgnoreCase(version)) {
+			if(credential.containsKey("privacyPassword"))
+				enablePassword = credential.get("privacyPassword").toString();
+			if(credential.containsKey("privacyProtocol"))
+				genric = credential.get("privacyProtocol").toString();
+			if(credential.containsKey("snmpV3User"))
+				loginRead = credential.get("snmpV3User").toString();
+			if(credential.containsKey("authenticationPassword"))
+				pwdWrite = credential.get("authenticationPassword").toString();
+		}
+		else {
+			if(credential.containsKey("enablePassword"))
+				enablePassword = credential.get("enablePassword").toString();
+			if(credential.containsKey("genric"))
+				genric = credential.get("genric").toString();
+			if(credential.containsKey("loginRead"))
+				loginRead = credential.get("loginRead").toString();
+			if(credential.containsKey("pwdWrite"))
+				pwdWrite = credential.get("pwdWrite").toString();
 		}
 		if (credential.containsKey("port")) {
 			port = credential.get("port").toString();
 		}
-		if (credential.containsKey("genric")) {
-			genric = credential.get("genric").toString();
+		if (credential.containsKey("encryptionType")) {
+			encryptionType = credential.get("encryptionType").toString();
 		}
 		CredentialManagementEntity credentailManagement = credentialManagementRepo.findOneByProfileName(profileName);
 		CredentialManagementEntity credentialEntity = new CredentialManagementEntity();
 		Date date = new Date();
 		if (credentailManagement == null) {
 			if ("SNMP".equalsIgnoreCase(profileType) || "SSH".equalsIgnoreCase(profileType)
-					|| "TELNET".equalsIgnoreCase(profileType)) {
+					|| "TELNET".equalsIgnoreCase(profileType)|| "NETCONF".equalsIgnoreCase(profileType)
+					|| "RESTCONF".equalsIgnoreCase(profileType)) {
 				credentialEntity.setProfileName(profileName);
 				credentialEntity.setProfileType(profileType);
 				credentialEntity.setLoginRead(loginRead);
@@ -144,6 +156,7 @@ public class CredentialMgmtController {
 				credentialEntity.setGenric(genric);
 				credentialEntity.setVersion(version);
 				credentialEntity.setEnablePassword(enablePassword);
+				credentialEntity.setEncryptionType(encryptionType);
 				if (!port.isEmpty()) {
 					credentialEntity.setPort(port);
 				} else {
