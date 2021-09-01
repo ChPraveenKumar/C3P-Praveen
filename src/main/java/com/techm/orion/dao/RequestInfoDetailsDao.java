@@ -641,6 +641,7 @@ public class RequestInfoDetailsDao {
 		}
 
 		catch (Exception ex) {
+			logger.error("Exception occure inside backup.."+ex.getMessage());
 			String response = "";
 			try {
 				editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),

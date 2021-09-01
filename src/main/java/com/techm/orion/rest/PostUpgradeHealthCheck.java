@@ -134,9 +134,9 @@ public class PostUpgradeHealthCheck extends Thread {
 					if (finallistOfTests.size() > 0) {
 						results = new ArrayList<Boolean>();
 						for (TestDetail testDetail : finallistOfTests) {
-							if ((testDetail.getTestSubCategory().contains("preUpgrade")
+							if ((testDetail.getTestSubCategory().contains("PreUpgrade")
 									&& "pre_health_checkup".equals(healthCheckTest))
-									|| (testDetail.getTestSubCategory().contains("postUpgrade")
+									|| (testDetail.getTestSubCategory().contains("PostUpgrade")
 											&& "post_health_checkup".equals(healthCheckTest))) {
 								ps = requestInfoDetailsDao.setCommandStream(ps, requestinfo, "Test", false);
 								ps.println(testDetail.getTestCommand());

@@ -80,12 +80,12 @@ public class TestStrategeyAnalyser {
 		}else if ("pre_health_checkup".equalsIgnoreCase(testIdentifier)) {
 			filename = "Pre_health_checkup.txt";
 			webserviceinfoFlag = "pre_health_checkup";
-			test.setTestSubCategory("preUpgrade");
+			test.setTestSubCategory("PreUpgrade");
 
 		}else if ("post_health_checkup".equalsIgnoreCase(testIdentifier)) {
 			filename = "Post_health_checkup.txt";
 			webserviceinfoFlag = "health_check";
-			test.setTestSubCategory("postUpgrade");
+			test.setTestSubCategory("PostUpgrade");
 		}
 		try {
 			isFilepathPresent = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V"
@@ -1568,7 +1568,7 @@ public class TestStrategeyAnalyser {
 								//resultArray.add(FLAG_PASS);
 								resultText = rulesLabel.getReportedLabel();
 								String collectedValue = "";																
-								if(test.getTestSubCategory().equals("postUpgrade")) {
+								if(test.getTestSubCategory().equals("PostUpgrade")) {
 									String preUpgradeFile  = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
 											+ version +"_"+rulesLabel.getReportedLabel()+"_"+"Pre_health_checkup.txt";									
 									String preUpgradeData = UtilityMethods.readFirstLineFromFile(preUpgradeFile);

@@ -441,7 +441,16 @@ public class TestStrategyController {
 		List<TestRules> rulelst = new ArrayList<TestRules>();
 		List<TestBundling> bundleList = new ArrayList<TestBundling>();
 		int bundleId = 0;
-
+		if(json.containsKey("comaprefull_result") && json.get("comaprefull_result")!=null) {
+			Boolean fullResult = (Boolean) json.get("comaprefull_result");
+			if(fullResult) {
+				TestRules rule = new TestRules();
+				rule.setDataType("FullText");
+				rule.setReportedLabel(testDetail.getTestCommand());
+				rule.setTestDetail(testDetail);
+				rulelst.add(rule);
+			}
+		}
 		if (json.containsKey("text_attributes"))
 		{
 			JSONArray attribarray = (JSONArray) json.get("text_attributes");
@@ -616,55 +625,58 @@ public class TestStrategyController {
 	private TestDetail setTestDetails(JSONObject json) {
 		TestDetail testDetail = new TestDetail();
 
-		if (json.containsKey("testName")) {
+		if (json.containsKey("testName") && json.get("testName")!=null) {
 			testDetail.setTestName(json.get("testName").toString());
 			testDetail.setTestId(json.get("testName").toString());
 		}
-		if (json.containsKey("testCategory")) {
+		if (json.containsKey("testCategory") && json.get("testCategory")!=null) {
 			testDetail.setTestCategory(json.get("testCategory").toString());
 		}
-		if (json.containsKey("version")) {
+		if (json.containsKey("testSubCategory") && json.get("testSubCategory")!=null) {
+			testDetail.setTestSubCategory(json.get("testSubCategory").toString());
+		}
+		if (json.containsKey("version") && json.get("version")!=null) {
 			testDetail.setVersion(json.get("version").toString());
 		}
 
-		if (json.containsKey("testType")) {
+		if (json.containsKey("testType") && json.get("testType")!=null) {
 			testDetail.setTestType(json.get("testType").toString());
 		}
-		if (json.containsKey("connectionProtocol")) {
+		if (json.containsKey("connectionProtocol") && json.get("connectionProtocol")!=null) {
 			testDetail.setTestConnectionProtocol(json.get("connectionProtocol").toString());
 		}
-		if (json.containsKey("command")) {
+		if (json.containsKey("command") && json.get("command")!=null) {
 			testDetail.setTestCommand(json.get("command").toString());
 		}
 
-		if (json.containsKey("deviceFamily")) {
+		if (json.containsKey("deviceFamily") && json.get("deviceFamily")!=null) {
 			testDetail.setDeviceFamily(json.get("deviceFamily").toString());
 		}
-		if (json.containsKey("vendor")) {
+		if (json.containsKey("vendor") && json.get("vendor")!=null) {
 			testDetail.setVendor(json.get("vendor").toString());
 		}
 		if (json.containsKey("model") && json.get("model") != null) {
 			testDetail.setDeviceModel(json.get("model").toString());
 		}
-		if (json.containsKey("os")) {
+		if (json.containsKey("os") && json.get("os")!=null) {
 			testDetail.setOs(json.get("os").toString());
 		}
-		if (json.containsKey("osVersion")) {
+		if (json.containsKey("osVersion") && json.get("osVersion")!= null) {
 			testDetail.setOsVersion(json.get("osVersion").toString());
 		}
-		if (json.containsKey("region")) {
+		if (json.containsKey("region") && json.get("region")!=null) {
 			testDetail.setRegion(json.get("region").toString());
 		}
-		if (json.containsKey("networkType")) {
+		if (json.containsKey("networkType") && json.get("networkType")!=null) {
 			testDetail.setNetworkType(json.get("networkType").toString());
 		}
 		String timeStamp = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").format(new Date());
 		testDetail.setCreatedOn(timeStamp);
 
-		if (json.containsKey("userName"))
+		if (json.containsKey("userName") && json.get("userName")!=null)
 			testDetail.setCreatedBy(json.get("userName").toString());
 
-		if (json.containsKey("Comment")) {
+		if (json.containsKey("Comment") && json.get("Comment")!=null) {
 			testDetail.setComment(json.get("Comment").toString());
 		}
 		return testDetail;

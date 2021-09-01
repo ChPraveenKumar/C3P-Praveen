@@ -5556,39 +5556,47 @@ public class RequestInfoDao {
 							if(category.equals("Software Upgrade")) {
 								if(jsonObj.containsKey("testsubCategory") && jsonObj.get("testCategory")!=null) {
 									String subtest = jsonObj.get("testsubCategory").toString();
-									if(subtest.contains("preUpgrade") && requestType.equals("iospreValidate")) {
+									if(subtest.contains("PreUpgrade") && requestType.equals("iospreValidate")) {
 										finalObj.put("category", "iospreValidate");	
-										subCategory = "preUpgrade";
-									}else {
+										subCategory = "PreUpgrade";
+										array.add(setFinalTestData(requestId,requestVersion,category,subCategory,jsonObj,finalObj));
+									}else if(subtest.contains("PostUpgrade") && requestType.equals("HealthTest")) {
 										finalObj.put("category", "Health Check");
-										subCategory = "postUpgrade";
+										subCategory = "PostUpgrade";
+										array.add(setFinalTestData(requestId,requestVersion,category,subCategory,jsonObj,finalObj));
 									}
 								}
 							}else {
 							finalObj.put("category", category);
-							}							
-							int status = getTestDetails(requestId,
-									jsonObj.get("testName").toString(), requestVersion,category,subCategory);
-							finalObj.put("status", status);
-							String testNameAndVersion = jsonObj.get("testName")
-									.toString();
-							testNameAndVersion = StringUtils.substringAfter(
-									testNameAndVersion, "_");
-							finalObj.put("testName", testNameAndVersion);
-							array.add(finalObj);
+							array.add(setFinalTestData(requestId,requestVersion,category,subCategory,jsonObj,finalObj));
+							}									
+							
 						}
 					}
 				}
 			}			
 			
 		} catch (org.json.simple.parser.ParseException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		} catch (SQLException e) {
-			logger.info(e);
+			logger.error(e.getMessage());
 		}
 
 		res.put("custom", array);
 		return array;
+	}
+
+	@SuppressWarnings("unchecked")
+	private org.json.simple.JSONObject setFinalTestData(String requestId, Double requestVersion, String category, String subCategory, org.json.simple.JSONObject jsonObj, org.json.simple.JSONObject finalObj) {
+		int status = getTestDetails(requestId,
+				jsonObj.get("testName").toString(), requestVersion,category,subCategory);
+		finalObj.put("status", status);
+		String testNameAndVersion = jsonObj.get("testName")
+				.toString();
+		testNameAndVersion = StringUtils.substringAfter(
+				testNameAndVersion, "_");
+		finalObj.put("testName", testNameAndVersion);
+		return finalObj;	
 	}
 
 	/*

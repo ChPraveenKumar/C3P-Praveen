@@ -361,13 +361,13 @@ public class RequestDetails {
 			    	
 			    	String testName = StringUtils.substringAfter(testData.getTestId(),"_")+"::"+testText;
 			    	jsonObject.put("healthcheck", testName);			    	
-			    	if("preUpgrade".equals(testDetail.getTestSubCategory())) {
+			    	if("PreUpgrade".equals(testDetail.getTestSubCategory())) {
 			    		jsonObject.put("preUpgradeValue", testDetail.getTestCollectedValue());	
 			    	}else {			    		
 			    		jsonObject.put("postUpgradeValue", testDetail.getTestCollectedValue());			    		
 			    	}			    	
 			    	jsonObject.put("dataType", testDetail.getTestDataType());
-			    	if(testData.getTestSubCategory()!=null && testData.getTestSubCategory().contains("compare")) {
+			    	if(testData.getTestSubCategory()!=null && testData.getTestSubCategory().contains("Compare")) {
 			    	 if(jsonObject.get("dataType")!=null && !jsonObject.get("dataType").toString().equals("FullText") && jsonObject.containsKey("preUpgradeValue") && jsonObject.get("preUpgradeValue")!=null && jsonObject.containsKey("postUpgradeValue") && jsonObject.get("postUpgradeValue")!=null) {
 			    		 if(!jsonObject.get("preUpgradeValue").toString().contains("fail")) {
 					    	if(jsonObject.get("preUpgradeValue").toString().equals(jsonObject.get("postUpgradeValue")) ) {
