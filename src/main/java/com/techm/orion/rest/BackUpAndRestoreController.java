@@ -42,6 +42,7 @@ import com.techm.orion.entitybeans.ImageManagementEntity;
 import com.techm.orion.entitybeans.RequestDetailsBackUpAndRestoreEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
+import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.VendorDetails;
 import com.techm.orion.models.BackUpRequestVersioningJSONModel;
 import com.techm.orion.pojo.BatchPojo;
@@ -55,6 +56,7 @@ import com.techm.orion.repositories.ImageManagementRepository;
 import com.techm.orion.repositories.RequestDetailsBackUpAndRestoreRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.RouterVfRepo;
+import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.VendorDetailsRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.WAFADateUtil;
@@ -103,7 +105,14 @@ public class BackUpAndRestoreController {
 	
 	@Autowired
 	private WAFADateUtil dateUtil;	
+	
+	@Autowired
+	private TestDetailsRepository testDetailsRepository;
 
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+
+	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -406,6 +415,28 @@ public class BackUpAndRestoreController {
 				}
 				String jsonString = mapper.writeValueAsString(requestInfoEntity);
 
+				//Logic to save system prevalidation tests which will not come from ui
+				JSONArray toSaveArray = new JSONArray();
+				List<TestDetail> systprevaltests= testDetailsRepository.getC3PAdminTesListData(requestInfoEntity.getFamily(), requestInfoEntity.getOs(), requestInfoEntity.getRegion(), requestInfoEntity.getOsVersion(), requestInfoEntity.getVendor(),
+						requestInfoEntity.getNetworkType());
+				for(TestDetail tst:systprevaltests)
+				{
+					JSONObject prevaljsonobj=new JSONObject();
+					JSONArray bundleArray= new JSONArray();
+					prevaljsonobj.put("testCategory", tst.getTestCategory());
+					prevaljsonobj.put("selected", 1);
+					prevaljsonobj.put("testName", tst.getTestName()+"_"+tst.getVersion());
+					String testBundle="System Prevalidation";
+					bundleArray.add(testBundle);
+					prevaljsonobj.put("bundleName",bundleArray);
+					toSaveArray.add(prevaljsonobj);
+				}
+				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+						requestInfoEntity.getAlphanumericReqId(),
+						toSaveArray.toString(),
+						requestInfoEntity.getRequestType(),
+						requestInfoEntity .getRequestVersion());
+				
 				obj = myObj.createConfigurationDcm(jsonString);
 				if (obj.get("output").toString().equals("Submitted")) {
 					dcmConfigService.updateRequestCount(requestDetail.get(i));
@@ -714,6 +745,31 @@ public class BackUpAndRestoreController {
 
 					requestInfoEntity.setStartUp(tempStartUp);
 
+					
+					//Save tests for prevalidation
+					
+					//Logic to save system prevalidation tests which will not come from ui
+					JSONArray toSaveArray = new JSONArray();
+					List<TestDetail> systprevaltests= testDetailsRepository.getC3PAdminTesListData(requestInfoEntity.getFamily(), requestInfoEntity.getOs(), requestInfoEntity.getRegion(), requestInfoEntity.getOsVersion(), requestInfoEntity.getVendor(),
+							requestInfoEntity.getNetworkType());
+					for(TestDetail tst:systprevaltests)
+					{
+						JSONObject prevaljsonobj=new JSONObject();
+						JSONArray bundleArray= new JSONArray();
+						prevaljsonobj.put("testCategory", tst.getTestCategory());
+						prevaljsonobj.put("selected", 1);
+						prevaljsonobj.put("testName", tst.getTestName()+"_"+tst.getVersion());
+						String testBundle="System Prevalidation";
+						bundleArray.add(testBundle);
+						prevaljsonobj.put("bundleName",bundleArray);
+						toSaveArray.add(prevaljsonobj);
+					}
+					int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+							requestInfoEntity.getAlphanumericReqId(),
+							toSaveArray.toString(),
+							requestInfoEntity.getRequestType(),
+							requestInfoEntity .getRequestVersion());
+					
 					if (!(scheduledTime.isEmpty())) {
 
 						timestamp = Timestamp.valueOf(scheduledTime);
@@ -991,6 +1047,27 @@ public class BackUpAndRestoreController {
 						}
 
 						String jsonString = mapper.writeValueAsString(requestInfoEntity);
+						//Logic to save system prevalidation tests which will not come from ui
+						JSONArray toSaveArray = new JSONArray();
+						List<TestDetail> systprevaltests= testDetailsRepository.getC3PAdminTesListData(requestInfoEntity.getFamily(), requestInfoEntity.getOs(), requestInfoEntity.getRegion(), requestInfoEntity.getOsVersion(), requestInfoEntity.getVendor(),
+								requestInfoEntity.getNetworkType());
+						for(TestDetail tst:systprevaltests)
+						{
+							JSONObject prevaljsonobj=new JSONObject();
+							JSONArray bundleArray= new JSONArray();
+							prevaljsonobj.put("testCategory", tst.getTestCategory());
+							prevaljsonobj.put("selected", 1);
+							prevaljsonobj.put("testName", tst.getTestName()+"_"+tst.getVersion());
+							String testBundle="System Prevalidation";
+							bundleArray.add(testBundle);
+							prevaljsonobj.put("bundleName",bundleArray);
+							toSaveArray.add(prevaljsonobj);
+						}
+						int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+								requestInfoEntity.getAlphanumericReqId(),
+								toSaveArray.toString(),
+								requestInfoEntity.getRequestType(),
+								requestInfoEntity .getRequestVersion());
 
 						requestId = myObj.getTemplateId(jsonString);
 						if (requestId != null && requestId.get("data").toString() != null) {
@@ -1158,9 +1235,10 @@ public class BackUpAndRestoreController {
 						timestamp = Timestamp.valueOf(scheduledTime);
 						requestInfoEntity.setSceheduledTime(timestamp);
 					}
-
+				
 					String jsonString = mapper.writeValueAsString(requestInfoEntity);
 
+					
 					requestId = myObj.getTemplateId(jsonString);
 					if (requestId != null && requestId.get("data").toString() != null) {
 						j++;
@@ -1316,6 +1394,28 @@ public class BackUpAndRestoreController {
 						timestamp = Timestamp.valueOf(scheduledTime);
 						requestInfoEntity.setSceheduledTime(timestamp);
 					}
+					//Logic to save system prevalidation tests which will not come from ui
+					JSONArray toSaveArray = new JSONArray();
+					List<TestDetail> systprevaltests= testDetailsRepository.getC3PAdminTesListData(requestInfoEntity.getFamily(), requestInfoEntity.getOs(), requestInfoEntity.getRegion(), requestInfoEntity.getOsVersion(), requestInfoEntity.getVendor(),
+							requestInfoEntity.getNetworkType());
+					for(TestDetail tst:systprevaltests)
+					{
+						JSONObject prevaljsonobj=new JSONObject();
+						JSONArray bundleArray= new JSONArray();
+						prevaljsonobj.put("testCategory", tst.getTestCategory());
+						prevaljsonobj.put("selected", 1);
+						prevaljsonobj.put("testName", tst.getTestName()+"_"+tst.getVersion());
+						String testBundle="System Prevalidation";
+						bundleArray.add(testBundle);
+						prevaljsonobj.put("bundleName",bundleArray);
+						toSaveArray.add(prevaljsonobj);
+					}
+					int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+							requestInfoEntity.getAlphanumericReqId(),
+							toSaveArray.toString(),
+							requestInfoEntity.getRequestType(),
+							requestInfoEntity .getRequestVersion());
+					
 					if (map.size() > 1) {
 						requestInfoEntity.setBatchId(batchId);
 						batchIdEntity.setBatchStatus("In Progress");

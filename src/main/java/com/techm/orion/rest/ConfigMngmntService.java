@@ -29,10 +29,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
+import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.VendorCommandEntity;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
 import com.techm.orion.pojo.CommandPojo;
@@ -43,6 +45,7 @@ import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
+import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.VendorCommandRepository;
 import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.ConfigurationManagmentService;
@@ -81,6 +84,13 @@ public class ConfigMngmntService implements Observer {
 	
 	@Autowired
 	private TemplateManagementDao templatemanagementDao;
+	
+	@Autowired
+	private TestDetailsRepository testDetailsRepository;
+
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -2468,6 +2478,24 @@ public class ConfigMngmntService implements Observer {
 							}
 						}
 					}
+					
+					
+					List<TestDetail> systprevaltests= testDetailsRepository.getC3PAdminTesListData(requestInfoPojo.getFamily(), requestInfoPojo.getOs(), requestInfoPojo.getRegion(), requestInfoPojo.getOsVersion(), requestInfoPojo.getVendor(),
+							requestInfoPojo.getNetworkType());
+					
+					for(TestDetail tst:systprevaltests)
+					{
+						JSONObject prevaljsonobj=new JSONObject();
+						JSONArray bundleArray= new JSONArray();
+						prevaljsonobj.put("testCategory", tst.getTestCategory());
+						prevaljsonobj.put("selected", 1);
+						prevaljsonobj.put("testName", tst.getTestName()+"_"+tst.getVersion());
+						String testBundle="System Prevalidation";
+						bundleArray.add(testBundle);
+						prevaljsonobj.put("bundleName",bundleArray);
+						toSaveArray.add(prevaljsonobj);
+					}
+					
 					String testsSelected = toSaveArray.toString();
 					requestInfoPojo.setTestsSelected(testsSelected);
 				}
@@ -2486,6 +2514,11 @@ public class ConfigMngmntService implements Observer {
 		} catch (Exception e) {
 
 			e.printStackTrace();
+		}
+		if(json.containsKey("alphanumericReqId"))
+		{
+			requestInfoPojo.setAlphanumericReqId(json.get(
+					"alphanumericReqId").toString());
 		}
 		return requestInfoPojo;
 

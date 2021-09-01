@@ -160,13 +160,15 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					String password = routerCredential.getPasswordWrite();
 					String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 							.getProperty("portSSH");
-
+					logger.info("Inside deliverConfigurationTest Method :"+json.get("requestType").toString());
 					if (json.get("requestType").toString()
 							.equalsIgnoreCase("SLGF")) {
-						
+						logger.info("Inside deliverConfigurationTest Method :"+json.get("requestType").toString());
 						reqType = json.get("requestType").toString();
 						String query = TSALabels.WEB_SERVICE_URI.getValue()
 								+ TSALabels.FW_UPGADE.getValue();
+						
+						logger.info("Firware upgrade milestone Path :"+ query);
 						JSONObject obj1 = new JSONObject();
 						JSONObject obj2 = new JSONObject();
 						
@@ -811,7 +813,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		catch (Exception ex) {
 			if (requestinfo.getManagementIp() != null
 					&& !requestinfo.getManagementIp().equals("")) {
-
+				logger.error("Exception occure in Delivery COnfiguration : "+ex.getMessage());
 				jsonArray = new Gson().toJson(value);
 				obj.put(new String("output"), jsonArray);
 
