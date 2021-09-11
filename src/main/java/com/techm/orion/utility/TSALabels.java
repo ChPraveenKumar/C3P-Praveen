@@ -40,7 +40,7 @@ public enum TSALabels {
 	SINGLE_REQUEST_CREATE,SINGLE_REQUEST_CREATE_BACKUP,
 	
 	/*Download files*/
-	DOWNLOAD_PATH;
+	DOWNLOAD_PATH, JSCH_CHANNEL_INPUT_BUFFER_SIZE;
 
 
 	private static final Logger logger = LogManager.getLogger(TSALabels.class);

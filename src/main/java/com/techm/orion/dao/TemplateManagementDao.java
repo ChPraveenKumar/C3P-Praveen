@@ -225,7 +225,7 @@ public class TemplateManagementDao {
 			pst.setString(2, templateid);
 			pst.setString(3, version);
 			int i = pst.executeUpdate();
-			System.out.println(i);
+			logger.info("updateReadFlagForTemplate status ->"+i);
 
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block

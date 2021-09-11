@@ -24,6 +24,7 @@ import com.techm.orion.pojo.PreValidateTest;
 
 public class ShowMemoryTest {
 	private static final Logger logger = LogManager.getLogger(ShowMemoryTest.class);
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
@@ -54,13 +55,11 @@ public class ShowMemoryTest {
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(10000);
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 
@@ -69,10 +68,7 @@ public class ShowMemoryTest {
 			channel.connect();
 			InputStream input = channel.getInputStream();
 			ps.println("show memory");
-			try {
-				Thread.sleep(5000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(5000);
 			result = printMemoryInfo(input, channel, routername, region, type);
 			channel.disconnect();
 			session.disconnect();
@@ -93,7 +89,7 @@ public class ShowMemoryTest {
 
 					if (channel.getExitStatus() == -1) {
 
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 
 					}
 				} catch (Exception e) {
@@ -284,11 +280,7 @@ public class ShowMemoryTest {
 			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-			logger.error("Exception in printMemoryInfo method "+ee.getMessage());
-		}
+		UtilityMethods.sleepThread(1000);
 		
 		return result;
 

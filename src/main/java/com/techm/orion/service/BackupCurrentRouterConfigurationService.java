@@ -47,6 +47,7 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 
 @Service
 public class BackupCurrentRouterConfigurationService extends Thread {
@@ -63,6 +64,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 	
 	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 		
 	public boolean getRouterConfig(CreateConfigRequest configRequest, String routerVersionType) throws IOException {
 		
@@ -84,13 +86,11 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(10000);
 
 			try {
 				channel = session.openChannel("shell");
@@ -102,10 +102,8 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				InputStream input = channel.getInputStream();
 				ps.println("terminal length 0");
 				ps.println("show run");
-				try {
-					Thread.sleep(3000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(20000);
+				logger.info("getRouterConfig - Total size of the Channel InputStream -->"+input.available());
 				if (routerVersionType.equalsIgnoreCase("previous")) {
 					backupdone = true;
 					printPreviousVersionInfo(input, channel, configRequest.getRequestId(),
@@ -152,11 +150,11 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				
 				if (channel.getExitStatus() == -1) {
 					
-						Thread.sleep(5000);
+					UtilityMethods.sleepThread(5000);
 					
 				}
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error(e);
 				}
 				channel.disconnect();
 				session.disconnect();
@@ -187,13 +185,11 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(10000);
 
 			try {
 				channel = session.openChannel("shell");
@@ -205,10 +201,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				InputStream input = channel.getInputStream();
 				ps.println("terminal length 0");
 				ps.println("show start");
-				try {
-					Thread.sleep(3000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(3000);
 				if (routerVersionType.equalsIgnoreCase("startup")) {
 					backupdone = true;
 					printstartupVersionInfo(input, channel, configRequest.getRequestId(),
@@ -284,10 +277,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-		}
+		UtilityMethods.sleepThread(1000);
 
 	}
 
@@ -330,10 +320,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-		}
+		UtilityMethods.sleepThread(1000);
 
 	}
 
@@ -353,7 +340,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			if (!(s.equals(""))) {
 				// logger.info(str);
 				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_CurrentVersionConfig.txt";
-				System.out.println("File path for current "+filepath);
+				logger.info("File path for current "+filepath);
 				File file = new File(filepath);
 
 				// if file doesnt exists, then create it
@@ -377,10 +364,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-		}
+		UtilityMethods.sleepThread(1000);
 
 	}
 
@@ -410,13 +394,11 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(10000);
 
 			try {
 				channel = session.openChannel("shell");
@@ -429,10 +411,8 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				ps = requestInfoDetailsDao.setCommandStream(ps,configRequest,"backup",isStartUp);
 //				ps.println("terminal length 0");
 //				ps.println("show run");
-				try {
-					Thread.sleep(3000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(20000);
+				logger.info("getRouterConfig - Total size of the Channel InputStream -->"+input.available());
 				if (routerVersionType.equalsIgnoreCase("previous")) {
 					backupdone = true;
 					printPreviousVersionInfo(input, channel, configRequest.getAlphanumericReqId(),
@@ -494,13 +474,11 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 				Properties config = new Properties();
 				config.put("StrictHostKeyChecking", "no");
+				config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 				session.setConfig(config);
 				session.setPassword(password);
 				session.connect();
-				try {
-					Thread.sleep(10000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(10000);
 
 				try {
 					channel = session.openChannel("shell");
@@ -513,10 +491,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 					ps = requestInfoDetailsDao.setCommandStream(ps,configRequest,"backup",isStartUp);
 //					ps.println("terminal length 0");
 //					ps.println("show start");
-					try {
-						Thread.sleep(3000);
-					} catch (Exception ee) {
-					}
+					UtilityMethods.sleepThread(5000);
 					if (routerVersionType.equalsIgnoreCase("startup")) {
 						backupdone = true;
 						printstartupVersionInfo(input, channel, configRequest.getAlphanumericReqId(),

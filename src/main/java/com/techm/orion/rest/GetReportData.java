@@ -1067,7 +1067,7 @@ public class GetReportData implements Observer {
 		testType = json.get("testType").toString();
 		version = json.get("version").toString();
 		JSONObject jsonObject = requestDetails.customerReportUIRevamp(requestID, testType, version);
-		System.out.println("json object returned is "+jsonObject);
+		logger.info("json object returned is "+jsonObject);
 		if (jsonObject != null) {
 			responseEntity = new ResponseEntity<JSONObject>(jsonObject, HttpStatus.OK);
 		} else {
@@ -1096,7 +1096,7 @@ public class GetReportData implements Observer {
 			JSONObject reportResponse = null;
 				reportResponse = requestDetails.customerReportUIRevamp(rfoDecomposedEntity.get(i).getOdRequestId(), testType,
 						version);
-			System.out.println("jsonObject value: " + reportResponse);
+				logger.info("jsonObject value: " + reportResponse);
 			array.add(reportResponse);
 		}
 		jsonOb.put("output", array);

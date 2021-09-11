@@ -80,12 +80,12 @@ public class TestStrategeyAnalyser {
 		}else if ("pre_health_checkup".equalsIgnoreCase(testIdentifier)) {
 			filename = "Pre_health_checkup.txt";
 			webserviceinfoFlag = "pre_health_checkup";
-			test.setTestSubCategory("PreUpgrade");
+			test.setTestSubCategory("preUpgrade");
 
 		}else if ("post_health_checkup".equalsIgnoreCase(testIdentifier)) {
 			filename = "Post_health_checkup.txt";
 			webserviceinfoFlag = "health_check";
-			test.setTestSubCategory("PostUpgrade");
+			test.setTestSubCategory("postUpgrade");
 		}
 		try {
 			isFilepathPresent = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V"
@@ -100,7 +100,7 @@ public class TestStrategeyAnalyser {
 					isFilePresent.delete();
 				}
 			}
-
+			logger.info("printAndAnalyse - Total size of the Channel InputStream -->"+input.available());
 			while (input.available() > 0) {
 				int i = input.read(tmp, 0, SIZE);
 				if (i < 0) {
@@ -133,9 +133,8 @@ public class TestStrategeyAnalyser {
 			UtilityMethods.sleepThread(10000);
 
 			String text = tempTextToAnalyse;
-			logger.info("text" + text);
+			logger.info("tempTextToAnalyse ->" + text);
 
-			logger.info("After readfile");
 			List<TestRules> rules = new ArrayList<TestRules>();
 			rules = test.getListRules();
 			int chars = 0;
@@ -210,18 +209,25 @@ public class TestStrategeyAnalyser {
 						for (int j = 0; j < metaCharacters.length; j++) {
 							if (beforeText != null) {
 								if (beforeText.contains(metaCharacters[j])) {
-									beforeText = "\\" + beforeText;
+									//beforeText = "\\" + beforeText;
+									beforeText = beforeText.replace(metaCharacters[j],"\\"+metaCharacters[j]);
 								}
 							}
 							if (afterText != null) {
 								if (afterText.contains(metaCharacters[j])) {
-									afterText = "\\" + afterText;
+									//afterText = "\\" + afterText;
+									afterText = afterText.replace(metaCharacters[j],"\\"+metaCharacters[j]);
+
 								}
 							}
 						}
-						if (!noOfChars.isEmpty()) {
+						if (noOfChars!=null && !noOfChars.isEmpty()) {
 							chars = Integer.parseInt(noOfChars);
 						}
+						
+						logger.info("Telstra text ### - beforeText ->"+beforeText);
+						logger.info("Telstra text ### - afterText ->"+afterText);
+						logger.info("Telstra text ### - noOfChars ->"+noOfChars);
 
 						if (!beforeText.isEmpty() && !afterText.isEmpty()) {
 							String value = beforeText + "(.*?)" + afterText;
@@ -247,6 +253,7 @@ public class TestStrategeyAnalyser {
 							}
 
 						}
+						logger.info("Telstra text ### - output #################-"+output);
 						if (output != null) {
 
 							// check if evalution field is true
@@ -566,6 +573,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 												FLAG_PASS, resultText, output, "Text contains: " + value1, "N/A",
 												rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
+										logger.info("Telstra text ### - Text contains +Result -"+res);
 									} else {
 										// fail the test										
 										resultArray.add(FLAG_FAIL);
@@ -575,6 +583,7 @@ public class TestStrategeyAnalyser {
 												test.getTestCategory(),
 												FLAG_FAIL, resultText, output, "Text contains: " + value1,
 												"Failed to match", rulesLabel.getDataType(),requestVersion,test.getTestSubCategory());
+										logger.info("Telstra text ### - Text contains -Result -"+res);
 									}
 								} else {
 									// Incorrect operator message fail the test
@@ -609,6 +618,24 @@ public class TestStrategeyAnalyser {
 						String beforeText = rulesLabel.getBeforeText();
 						String afterText = rulesLabel.getAfterText();
 						String noOfChars = rulesLabel.getNumberOfChars();
+						final String[] metaCharacters = { "\\", "^", "$", "{", "}", "[", "]", "(", ")", ".", "*", "+",
+								"?", "|", "<", ">", "-", "&", "%" };
+
+						for (int j = 0; j < metaCharacters.length; j++) {
+							if (beforeText != null) {
+								if (beforeText.contains(metaCharacters[j])) {
+									//beforeText = "\\" + beforeText;
+									beforeText = beforeText.replace(metaCharacters[j],"\\"+metaCharacters[j]);
+								}
+							}
+							if (afterText != null) {
+								if (afterText.contains(metaCharacters[j])) {
+									//afterText = "\\" + afterText;
+									afterText = afterText.replace(metaCharacters[j],"\\"+metaCharacters[j]);
+
+								}
+							}
+						}
 						if (!noOfChars.isEmpty()) {
 							chars = Integer.parseInt(noOfChars);
 						}
@@ -1059,7 +1086,7 @@ public class TestStrategeyAnalyser {
 								lineSplitArrayList.removeAll(Arrays.asList("", null));
 
 								String[] finallineSplit = lineSplitArrayList.toArray(new String[0]);
-								if (finallineSplit != null || finallineSplit.length > 0)
+								if (finallineSplit != null && finallineSplit.length > 0)
 									extractedValue = finallineSplit[pointer];
 
 							}
@@ -1568,7 +1595,7 @@ public class TestStrategeyAnalyser {
 								//resultArray.add(FLAG_PASS);
 								resultText = rulesLabel.getReportedLabel();
 								String collectedValue = "";																
-								if(test.getTestSubCategory().equals("PostUpgrade")) {
+								if(test.getTestSubCategory().equals("postUpgrade")) {
 									String preUpgradeFile  = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
 											+ version +"_"+rulesLabel.getReportedLabel()+"_"+"Pre_health_checkup.txt";									
 									String preUpgradeData = UtilityMethods.readFirstLineFromFile(preUpgradeFile);
@@ -1596,6 +1623,7 @@ public class TestStrategeyAnalyser {
 							}
 							}
 				}
+				logger.info("Telstra text ### - resultArray -"+resultArray);
 				boolean resultVar = true;
 				for (int i = 0; i < resultArray.size(); i++) {
 					if (resultArray.get(i).contains("Fail")) {
@@ -1623,14 +1651,12 @@ public class TestStrategeyAnalyser {
 				logger.info("exit-status: " + channel.getExitStatus());
 
 			}
-			try {
-				Thread.sleep(1000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(1000);
 		} catch (Exception e) {
 			logger.info("Exception in print and analyse" + e.getMessage());
 			e.printStackTrace();
 		}
+		logger.info("Main response ->: " + res);
 		return res;
 	}
 

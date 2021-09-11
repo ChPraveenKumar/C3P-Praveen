@@ -61,6 +61,7 @@ public class PostUpgradeHealthCheck extends Thread {
 
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
 	@SuppressWarnings("unchecked")
 	@POST
@@ -113,6 +114,7 @@ public class PostUpgradeHealthCheck extends Thread {
 				session = jsch.getSession(user, host, Integer.parseInt(port));
 				Properties config = new Properties();
 				config.put("StrictHostKeyChecking", "no");
+				config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 				logger.info("Password for healthcheck " + password + "user " + user + "host " + host + "Port " + port);
 				session.setConfig(config);
 				session.setPassword(password);
@@ -126,7 +128,6 @@ public class PostUpgradeHealthCheck extends Thread {
 					logger.info("Channel Connected to machine " + host + " server");
 					channel.connect();
 					InputStream input = channel.getInputStream();
-
 					List<TestDetail> finallistOfTests = requestInfoDao.findTestFromTestStrategyDB(
 							requestinfo.getFamily(), requestinfo.getOs(), "All", requestinfo.getVendor(),
 							requestinfo.getRegion(), "Software Upgrade");

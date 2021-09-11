@@ -43,6 +43,7 @@ import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.VNFHelper;
 
 @Controller
@@ -61,6 +62,7 @@ public class NetworkTestValidation extends Thread {
 	private DcmConfigService dcmConfigService;
 	@Autowired
 	private VNFHelper helper;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -116,15 +118,13 @@ public class NetworkTestValidation extends Thread {
 						session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
+						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						session.setConfig(config);
 						session.setPassword(password);
 						logger.info("Before session.connet in network test validation Username" + user
 								+ " Password " + password + " host" + host);
 						session.connect();
-						try {
-							Thread.sleep(5000);
-						} catch (Exception ee) {
-						}
+						UtilityMethods.sleepThread(5000);
 						try {
 							
 							channel = session.openChannel("shell");
@@ -133,7 +133,7 @@ public class NetworkTestValidation extends Thread {
 							PrintStream ps = new PrintStream(ops, true);
 							logger.info("Channel Connected to machine " + host + " server");
 							channel.connect();
-							InputStream input = channel.getInputStream();							
+							InputStream input = channel.getInputStream();
 							List<Boolean> results = null;
 							
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
@@ -178,10 +178,7 @@ public class NetworkTestValidation extends Thread {
 										{
 											ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 											ps.println(finallistOfTests.get(i).getTestCommand());
-											try {
-												Thread.sleep(6000);
-											} catch (Exception ee) {
-											}
+											UtilityMethods.sleepThread(6000);
 
 											// printResult(input,
 											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
@@ -271,10 +268,7 @@ public class NetworkTestValidation extends Thread {
 							session.disconnect();
 							logger.info("DONE");
 							jsonArray = new Gson().toJson(value);
-							try {
-								Thread.sleep(15000);
-							} catch (Exception ee) {
-							}
+							UtilityMethods.sleepThread(15000);
 							obj.put(new String("output"), jsonArray);
 						} catch (IOException ex) {
 							jsonArray = new Gson().toJson(value);
@@ -338,11 +332,11 @@ public class NetworkTestValidation extends Thread {
 					
 					if (channel.getExitStatus() == -1) {
 						
-							Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 						
 					}
 					} catch (Exception e) {
-						System.out.println(e);
+						logger.error(e);
 					}
 					channel.disconnect();
 					session.disconnect();
