@@ -113,7 +113,7 @@ public class CreateScheduleReqDBService {
 			String businessKey = json.get("requestId").toString();
 			String version = json.get("version").toString();
 			String processId = json.get("processId").toString();
-			String user = json.get("user").toString();
+			String user = json.get("user") !=null ? json.get("user").toString() :"";
 
 			ResultSet rs = null;
 			String insertQuery = "INSERT INTO camundahistory(history_processId,history_requestId,history_versionId,history_user) VALUES(?,?,?,?)";

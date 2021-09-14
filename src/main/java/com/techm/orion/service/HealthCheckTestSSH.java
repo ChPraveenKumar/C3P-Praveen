@@ -26,9 +26,11 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.UtilityMethods;
 
 public class HealthCheckTestSSH {
 	private static final Logger logger = LogManager.getLogger(HealthCheckTestSSH.class);
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
@@ -57,6 +59,7 @@ public class HealthCheckTestSSH {
 			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -104,17 +107,11 @@ public class HealthCheckTestSSH {
 					String readFile = readFile();
 
 					ps.println(readFile);
-					try {
-						Thread.sleep(1000);
-					} catch (Exception ee) {
-					}
+					UtilityMethods.sleepThread(1000);
 
 					cmdCall(configRequest.getRequestId(), Double.toString(configRequest.getRequest_version()),
 							configRequest.getManagementIp());
-					try {
-						Thread.sleep(1000);
-					} catch (Exception ee) {
-					}
+					UtilityMethods.sleepThread(1000);
 					printResult(input, configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()));
 
@@ -263,10 +260,7 @@ public class HealthCheckTestSSH {
 			p_stdin.newLine();
 			p_stdin.flush();
 
-			try {
-				Thread.sleep(150000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(15000);
 			InputStream input = p.getInputStream();
 			printResult(input, requestId, version);
 			p_stdin.write("exit");

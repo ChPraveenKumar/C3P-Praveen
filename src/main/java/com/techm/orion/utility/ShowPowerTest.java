@@ -24,6 +24,7 @@ import com.jcraft.jsch.Session;
 
 public class ShowPowerTest {
 	private static final Logger logger = LogManager.getLogger(ShowPowerTest.class);
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
@@ -53,13 +54,11 @@ public class ShowPowerTest {
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(10000);
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 
@@ -68,10 +67,7 @@ public class ShowPowerTest {
 			channel.connect();
 			InputStream input = channel.getInputStream();
 			ps.println("sh environment all");
-			try {
-				Thread.sleep(5000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(5000);
 			result = printPowerInfo(input, channel, routername, region, type);
 			channel.disconnect();
 			session.disconnect();
@@ -205,10 +201,7 @@ public class ShowPowerTest {
 			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-		}
+		UtilityMethods.sleepThread(1000);
 
 		return result;
 

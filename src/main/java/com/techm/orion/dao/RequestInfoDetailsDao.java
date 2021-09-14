@@ -58,6 +58,7 @@ import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.PythonServices;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 
 @Component
 public class RequestInfoDetailsDao {
@@ -89,6 +90,7 @@ public class RequestInfoDetailsDao {
 	private PythonServices pythonService;
 	@Autowired
 	private VendorCommandRepository vendorCommandRepository;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
@@ -262,7 +264,6 @@ public class RequestInfoDetailsDao {
 				{
 					logger.error("No backup baselined for this version");
 				}
-				System.out.println("");
 			}
 		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
 			Double finalVersion = Double.valueOf(version);
@@ -602,13 +603,11 @@ public class RequestInfoDetailsDao {
 			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(3000);
 
 			try {
 				channel = session.openChannel("shell");
@@ -621,10 +620,8 @@ public class RequestInfoDetailsDao {
 				//ps.println("terminal length 0");
 				//ps.println("show run");
 				printStream = setCommandStream(printStream, requestinfo, "backup", false);
-				try {
-					Thread.sleep(3000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(20000);
+				logger.info("getRouterConfig - Total size of the Channel InputStream -->"+input.available());
 				if (routerVersionType.equalsIgnoreCase("previous")) {
 					backupdone = true;
 					backupCurrentRouterConfigurationService.printPreviousVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
@@ -641,6 +638,7 @@ public class RequestInfoDetailsDao {
 		}
 
 		catch (Exception ex) {
+			logger.error("Exception occure inside backup.."+ex.getMessage());
 			String response = "";
 			try {
 				editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -660,7 +658,7 @@ public class RequestInfoDetailsDao {
 
 					if (channel.getExitStatus() == -1) {
 
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 
 					}
 				} catch (Exception e) {
@@ -763,6 +761,7 @@ public class RequestInfoDetailsDao {
 	 * @param deviceId
 	 * @return location
 	 */
+	@SuppressWarnings("unchecked")
 	public JSONObject fetchFromDeviceExtLocationDescription(String deviceId) {
 		JSONObject response=new JSONObject();
 		String sqlQuery = "select r_latitude,r_longitude,r_description from c3p_deviceinfo_ext where r_device_id = ?";
@@ -819,7 +818,7 @@ public class RequestInfoDetailsDao {
 	}
 
 	private PrintStream setModeData(String parentId, PrintStream printStream) {
-		if (parentId.contains("::")) {
+		if (parentId !=null && parentId.contains("::")) {
 			String startParentId = StringUtils.substringBefore(parentId, "::");
 			VendorCommandEntity startParentModeCommand = vendorCommandRepository.findByVcRecordId(startParentId);
 			if (startParentModeCommand!=null && !startParentModeCommand.getVcParentId().contains("000")) {

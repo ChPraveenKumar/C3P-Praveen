@@ -33,7 +33,6 @@ import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsEntity;
-import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestFeatureList;
@@ -49,7 +48,6 @@ import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsRepository;
-import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
@@ -71,9 +69,6 @@ public class ConfigurationManagement {
 
 	@Autowired
 	private DcmConfigService dcmConfigService;
-
-	@Autowired
-	private SiteInfoRepository siteInfoRepository;
 
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
@@ -136,7 +131,7 @@ public class ConfigurationManagement {
 		String res = "false";
 		String data = "Failure";
 		String requestId = null;
-		String request_creator_name = null, userName = null, userRole = null;
+		String request_creator_name = null, userName = null;
 		List<String> templateList = null;
 		
 		List<RequestInfoPojo> configReqToSendToC3pCodeList = new ArrayList<RequestInfoPojo>();
@@ -151,9 +146,6 @@ public class ConfigurationManagement {
 
 			if (json.containsKey("userName"))
 				userName = json.get("userName").toString();
-
-			if (json.containsKey("userRole"))
-				userRole = json.get("userRole").toString();
 
 			if (json.containsKey("apiCallType")) {
 				configReqToSendToC3pCode.setApiCallType(json.get("apiCallType").toString());
@@ -397,7 +389,7 @@ public class ConfigurationManagement {
 				toSaveArray.add(prevaljsonobj);
 			}
 			
-			System.out.println(""+systprevaltests);
+			logger.info("systprevaltests ->"+systprevaltests);
 			// to get the scheduled time for the requestID
 			if (json.containsKey("scheduledTime")) {
 				configReqToSendToC3pCode.setSceheduledTime(json.get("scheduledTime").toString());
