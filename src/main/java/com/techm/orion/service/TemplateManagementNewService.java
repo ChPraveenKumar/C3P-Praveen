@@ -693,6 +693,8 @@ public class TemplateManagementNewService {
 					 * map byAttribSeriesId List to jsonValue List to return
 					 * Response
 					 */
+					//Method to set pool Id's for charachteristics if available
+					setPoolIds(templateattrib.getfId(),templateId,attribCreateConfigData);
 
 					templateattrib
 							.setAttribConfig(attribCreateConfigResponceMapper
@@ -1007,5 +1009,25 @@ public class TemplateManagementNewService {
 		 * (characterData));
 		 */
 		return featureJsonObject;
+	}
+	
+	private void setPoolIds(String featureId, String templateId, List<AttribCreateConfigPojo>list)
+	{
+		for(AttribCreateConfigPojo pojo: list)
+		{
+			//for this attrib get attrib id
+			String id= pojo.getAttribMasterChId();
+			int rowid = masterCharacteristicsRepository.findRowID(id);
+			List<TemplateIpPoolJoinEntity>poolList = templateIpPoolJoinRepository.findByCtTemplateIdAndCtChId(templateId, rowid);
+			List<Integer>poolToSave=null;
+			if(poolList!=null)
+				poolToSave=new ArrayList<Integer>();
+			for(TemplateIpPoolJoinEntity pool:poolList)
+			{
+				poolToSave.add(pool.getCtPoolId());
+			}
+			pojo.setPoolIdList(poolToSave);
+		}
+		
 	}
 }

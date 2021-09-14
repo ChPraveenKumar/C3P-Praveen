@@ -55,34 +55,35 @@ import com.techm.orion.utility.UtilityMethods;
 @Controller
 @RequestMapping("/NetworkAuditTest")
 public class NetworkAuditTest extends Thread {
-	private static final Logger logger = LogManager.getLogger(NetworkAuditTest.class);
+	private static final Logger logger = LogManager
+			.getLogger(NetworkAuditTest.class);
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@Autowired
 	private RequestInfoDao requestInfoDao;
-	
 
 	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;
 
 	@Autowired
 	private TestStrategeyAnalyser testStrategeyAnalyser;
-	
+
 	@Autowired
 	private DcmConfigService dcmConfigService;
-	
+
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@POST
 	@RequestMapping(value = "/networkAuditCommandTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public JSONObject NetworkAuditCommandTest(@RequestBody String request) throws ParseException {
+	public JSONObject NetworkAuditCommandTest(@RequestBody String request)
+			throws ParseException {
 
 		JSONObject obj = new JSONObject();
 		String jsonArray = "";
@@ -101,28 +102,42 @@ public class NetworkAuditTest extends Thread {
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
-		
-		if (!(("SLGB".equals(type) || ("SNAI".equals(type) || ("SNAD".equals(type))||("SLGF".equals(type)))))) {
-			try {				
-				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-				 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					 DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-								.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
-					String statusVAlue = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
-							requestinfo.getRequestVersion());
-					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "network_audit", "4", statusVAlue);
+
+		if (!(("SLGB".equals(type) || ("SNAI".equals(type)
+				|| ("SNAD".equals(type)) || ("SLGF".equals(type)))))) {
+			try {
+				requestinfo = requestInfoDetailsDao
+						.getRequestDetailTRequestInfoDBForVersion(RequestId,
+								version);
+				if (requestinfo.getManagementIp() != null
+						&& !requestinfo.getManagementIp().equals("")) {
+					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
+							.findByDHostNameAndDMgmtIpAndDDeComm(
+									requestinfo.getHostname(),
+									requestinfo.getManagementIp(), "0");
+					String statusVAlue = requestInfoDetailsDao
+							.getPreviousMileStoneStatus(
+									requestinfo.getAlphanumericReqId(),
+									requestinfo.getRequestVersion());
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+							requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()),
+							"network_audit", "4", statusVAlue);
 					NetworkAuditTest.loadProperties();
 					String host = requestinfo.getManagementIp();
-					CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
-							deviceDetails);
+					CredentialManagementEntity routerCredential = dcmConfigService
+							.getRouterCredential(deviceDetails);
 					String user = routerCredential.getLoginRead();
-					String password = routerCredential.getPasswordWrite();	
-					logger.info("Request ID in Network audit test validation" + RequestId);
-					String port = NetworkAuditTest.TSA_PROPERTIES.getProperty("portSSH");
+					String password = routerCredential.getPasswordWrite();
+					logger.info("Request ID in Network audit test validation"
+							+ RequestId);
+					String port = NetworkAuditTest.TSA_PROPERTIES
+							.getProperty("portSSH");
 					/* Logic to connect router */
 
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SLGA")
+					if (type.equalsIgnoreCase("SLGC")
+							|| type.equalsIgnoreCase("SLGT")
+							|| type.equalsIgnoreCase("SLGA")
 							|| type.equalsIgnoreCase("SLGM")) {
 						List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
 								"Others",version);
@@ -269,20 +284,29 @@ public class NetworkAuditTest extends Thread {
 						obj.put(new String("output"), jsonArray);
 					} else if (type.equalsIgnoreCase("SLGF")) {
 						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-						obj = osHealthChk.healthcheckCommandTest(request, "POST");
-					} else if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")
-							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
+						obj = osHealthChk.healthcheckCommandTest(request,
+								"POST");
+					} else if (type.equalsIgnoreCase("SNRC")
+							|| type.equalsIgnoreCase("SNNC")
+							|| type.equalsIgnoreCase("SNRM")
+							|| type.equalsIgnoreCase("SNNM")) {
 						// TO be done
 						value = true;
 						logger.info("DONE Network Test");
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
-						String status = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
-								requestinfo.getRequestVersion());
+						String status = requestInfoDetailsDao
+								.getPreviousMileStoneStatus(
+										requestinfo.getAlphanumericReqId(),
+										requestinfo.getRequestVersion());
 						String switchh = "1";
 
-						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "network_audit", "0", status);
+						requestInfoDetailsDao
+								.editRequestforReportWebserviceInfo(requestinfo
+										.getAlphanumericReqId(), Double
+										.toString(requestinfo
+												.getRequestVersion()),
+										"network_audit", "0", status);
 
 					}
 
@@ -290,29 +314,45 @@ public class NetworkAuditTest extends Thread {
 			}
 			// when reachability fails
 			catch (Exception ex) {
-				 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					logger.info("Error in Network audit send catch " + ex.getMessage());
+				if (requestinfo.getManagementIp() != null
+						&& !requestinfo.getManagementIp().equals("")) {
+					logger.info("Error in Network audit send catch "
+							+ ex.getMessage());
 					logger.info("Error trace " + ex.getStackTrace());
 					ex.printStackTrace();
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
-					requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "network_audit", "2", "Failure");
+					requestInfoDao.editRequestforReportWebserviceInfo(
+							requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()),
+							"network_audit", "2", "Failure");
 
 					String response = "";
 					String responseDownloadPath = "";
 					try {
-						response = invokeFtl.generateNetworkAuditTestResultFailure(requestinfo);
-						requestInfoDao.updateNetworkAuditTestStatus(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
-						requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()));
-						responseDownloadPath = NetworkAuditTest.TSA_PROPERTIES.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
-								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_CurrentVersionConfig.txt",
-								response);
-						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+						response = invokeFtl
+								.generateNetworkAuditTestResultFailure(requestinfo);
+						requestInfoDao.updateNetworkAuditTestStatus(requestinfo
+								.getAlphanumericReqId(), Double
+								.toString(requestinfo.getRequestVersion()), 0,
+								0, 0);
+						requestInfoDao.updateRouterFailureHealthCheck(
+								requestinfo.getAlphanumericReqId(), Double
+										.toString(requestinfo
+												.getRequestVersion()));
+						responseDownloadPath = NetworkAuditTest.TSA_PROPERTIES
+								.getProperty("responseDownloadPath");
+						TextReport
+								.writeFile(
+										responseDownloadPath,
+										requestinfo.getAlphanumericReqId()
+												+ "V"
+												+ Double.toString(requestinfo
+														.getRequestVersion())
+												+ "_CurrentVersionConfig.txt",
+										response);
+						requestInfoDao.releaselockDeviceForRequest(
+								requestinfo.getManagementIp(),
 								requestinfo.getAlphanumericReqId());
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
@@ -320,8 +360,7 @@ public class NetworkAuditTest extends Thread {
 					}
 
 				}
-			}
-			finally {
+			} finally {
 
 				if (channel != null) {
 					try {
@@ -337,7 +376,7 @@ public class NetworkAuditTest extends Thread {
 					}
 					channel.disconnect();
 					session.disconnect();
-				
+
 				}
 			}
 		} else {
@@ -349,13 +388,13 @@ public class NetworkAuditTest extends Thread {
 		}
 
 		/*
-		 * return Response .status(200) .header("Access-Control-Allow-Origin", "*")
-		 * .header("Access-Control-Allow-Headers",
+		 * return Response .status(200) .header("Access-Control-Allow-Origin",
+		 * "*") .header("Access-Control-Allow-Headers",
 		 * "origin, content-type, accept, authorization")
 		 * .header("Access-Control-Allow-Credentials", "true")
 		 * .header("Access-Control-Allow-Methods",
-		 * "GET, POST, PUT, DELETE, OPTIONS, HEAD") .header("Access-Control-Max-Age",
-		 * "1209600").entity(obj) .build();
+		 * "GET, POST, PUT, DELETE, OPTIONS, HEAD")
+		 * .header("Access-Control-Max-Age", "1209600").entity(obj) .build();
 		 */
 
 		return obj;
@@ -363,13 +402,15 @@ public class NetworkAuditTest extends Thread {
 	}
 
 	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
+		InputStream tsaPropFile = Thread.currentThread()
+				.getContextClassLoader()
 				.getResourceAsStream(TSA_PROPERTIES_FILE);
 
 		try {
 			TSA_PROPERTIES.load(tsaPropFile);
 		} catch (IOException exc) {
-			logger.error("Exception in loadProperties method "+exc.getMessage());
+			logger.error("Exception in loadProperties method "
+					+ exc.getMessage());
 			exc.printStackTrace();
 			return false;
 		}
@@ -377,12 +418,15 @@ public class NetworkAuditTest extends Thread {
 	}
 
 	@SuppressWarnings("resource")
-	public ArrayList<String> readFileNoCmd(String requestIdForConfig, String version) throws IOException {
+	public ArrayList<String> readFileNoCmd(String requestIdForConfig,
+			String version) throws IOException {
 		BufferedReader br = null;
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
-		String responseDownloadPath = NetworkAuditTest.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
+		String responseDownloadPath = NetworkAuditTest.TSA_PROPERTIES
+				.getProperty("responseDownloadPath");
+		String filePath = responseDownloadPath + requestIdForConfig + "V"
+				+ version + "_ConfigurationNoCmd";
 
 		br = new BufferedReader(new FileReader(filePath));
 		File f = new File(filePath);
@@ -393,7 +437,8 @@ public class NetworkAuditTest extends Thread {
 				StringBuilder sb2 = new StringBuilder();
 
 				rdr = new LineNumberReader(new FileReader(filePath));
-				InputStream is = new BufferedInputStream(new FileInputStream(filePath));
+				InputStream is = new BufferedInputStream(new FileInputStream(
+						filePath));
 
 				byte[] c = new byte[1024];
 				int count = 0;
@@ -405,7 +450,9 @@ public class NetworkAuditTest extends Thread {
 						}
 					}
 				}
-				int fileReadSize = Integer.parseInt(NetworkAuditTest.TSA_PROPERTIES.getProperty("fileChunkSize"));
+				int fileReadSize = Integer
+						.parseInt(NetworkAuditTest.TSA_PROPERTIES
+								.getProperty("fileChunkSize"));
 				int chunks = (count / fileReadSize) + 1;
 				String line;
 
@@ -423,7 +470,8 @@ public class NetworkAuditTest extends Thread {
 						}
 						ar.add(sb2.toString());
 					} else {
-						LineNumberReader rdr1 = new LineNumberReader(new FileReader(filePath));
+						LineNumberReader rdr1 = new LineNumberReader(
+								new FileReader(filePath));
 						sb2 = new StringBuilder();
 						for (line = null; (line = rdr1.readLine()) != null;) {
 
@@ -445,13 +493,16 @@ public class NetworkAuditTest extends Thread {
 		}
 	}
 
-	public void printResult(InputStream input, Channel channel, String requestId, String version) throws Exception {
+	public void printResult(InputStream input, Channel channel,
+			String requestId, String version) throws Exception {
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
-		String responselogpath = NetworkAuditTest.TSA_PROPERTIES.getProperty("responselogpath");
-		File file = new File(responselogpath + "/" + requestId + "_" + version + "theSSHfile.txt");
+		String responselogpath = NetworkAuditTest.TSA_PROPERTIES
+				.getProperty("responselogpath");
+		File file = new File(responselogpath + "/" + requestId + "_" + version
+				+ "theSSHfile.txt");
 		/*
 		 * if (file.exists()) { file.delete(); }
 		 */
@@ -463,7 +514,8 @@ public class NetworkAuditTest extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 
-				file = new File(responselogpath + "/" + requestId + "_" + version + "theSSHfile.txt");
+				file = new File(responselogpath + "/" + requestId + "_"
+						+ version + "theSSHfile.txt");
 
 				if (!file.exists()) {
 					file.createNewFile();
@@ -490,12 +542,15 @@ public class NetworkAuditTest extends Thread {
 	}
 
 	@SuppressWarnings("resource")
-	public ArrayList<String> readFile(String requestIdForConfig, String version) throws IOException {
+	public ArrayList<String> readFile(String requestIdForConfig, String version)
+			throws IOException {
 		BufferedReader br = null;
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
-		String responseDownloadPath = NetworkAuditTest.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_Configuration";
+		String responseDownloadPath = NetworkAuditTest.TSA_PROPERTIES
+				.getProperty("responseDownloadPath");
+		String filePath = responseDownloadPath + requestIdForConfig + "V"
+				+ version + "_Configuration";
 
 		br = new BufferedReader(new FileReader(filePath));
 		try {
@@ -504,7 +559,8 @@ public class NetworkAuditTest extends Thread {
 			StringBuilder sb2 = new StringBuilder();
 
 			rdr = new LineNumberReader(new FileReader(filePath));
-			InputStream is = new BufferedInputStream(new FileInputStream(filePath));
+			InputStream is = new BufferedInputStream(new FileInputStream(
+					filePath));
 
 			byte[] c = new byte[1024];
 			int count = 0;
@@ -516,7 +572,8 @@ public class NetworkAuditTest extends Thread {
 					}
 				}
 			}
-			int fileReadSize = Integer.parseInt(NetworkAuditTest.TSA_PROPERTIES.getProperty("fileChunkSize"));
+			int fileReadSize = Integer.parseInt(NetworkAuditTest.TSA_PROPERTIES
+					.getProperty("fileChunkSize"));
 			int chunks = (count / fileReadSize) + 1;
 			String line;
 
@@ -534,7 +591,8 @@ public class NetworkAuditTest extends Thread {
 					}
 					ar.add(sb2.toString());
 				} else {
-					LineNumberReader rdr1 = new LineNumberReader(new FileReader(filePath));
+					LineNumberReader rdr1 = new LineNumberReader(
+							new FileReader(filePath));
 					sb2 = new StringBuilder();
 					for (line = null; (line = rdr1.readLine()) != null;) {
 

@@ -1,5 +1,7 @@
 package com.techm.orion.pojo;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
@@ -30,6 +32,26 @@ public class AttribCreateConfigPojo {
 	private boolean isKey;
 
 	private String attribValue;
+
+	private List<Integer> poolIdList;
+	
+	private String attribMasterChId;
+
+	public String getAttribMasterChId() {
+		return attribMasterChId;
+	}
+
+	public void setAttribMasterChId(String attribMasterChId) {
+		this.attribMasterChId = attribMasterChId;
+	}
+
+	public List<Integer> getPoolIdList() {
+		return poolIdList;
+	}
+
+	public void setPoolIdList(List<Integer> poolIdList) {
+		this.poolIdList = poolIdList;
+	}
 
 	public int getId() {
 		return id;

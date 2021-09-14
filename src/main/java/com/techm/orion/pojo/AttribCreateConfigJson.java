@@ -38,6 +38,16 @@ public class AttribCreateConfigJson {
 	
 	private boolean replicationFalg;
 	
+	private List<Integer> poolIds;
+	
+	public List<Integer> getPoolIds() {
+		return poolIds;
+	}
+
+	public void setPoolIds(List<Integer> poolIds) {
+		this.poolIds = poolIds;
+	}
+
 	public String getValue() {
 		return value;
 	}
