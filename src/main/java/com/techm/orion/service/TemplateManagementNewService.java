@@ -1013,7 +1013,6 @@ public class TemplateManagementNewService {
 	
 	private void setPoolIds(String featureId, String templateId, List<AttribCreateConfigPojo>list)
 	{
-		
 		for(AttribCreateConfigPojo pojo: list)
 		{
 			//for this attrib get attrib id
