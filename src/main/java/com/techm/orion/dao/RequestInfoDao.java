@@ -30,8 +30,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,7 +80,6 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.repositories.UserManagementRepository;
-import com.techm.orion.service.CertificationTestResultService;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.WAFADateUtil;
@@ -97,9 +94,6 @@ public class RequestInfoDao {
 	
 	@Autowired
 	private BatchInfoRepo batchInfoRepo;
-	
-	@Inject
-	private CertificationTestResultService certificationTestService;
 	
 	@Autowired
 	private ServiceOrderRepo serviceOrderRepo;
@@ -5557,39 +5551,47 @@ public class RequestInfoDao {
 							if(category.equals("Software Upgrade")) {
 								if(jsonObj.containsKey("testsubCategory") && jsonObj.get("testCategory")!=null) {
 									String subtest = jsonObj.get("testsubCategory").toString();
-									if(subtest.contains("preUpgrade") && requestType.equals("iospreValidate")) {
+									if(subtest.contains("PreUpgrade") && requestType.equals("iospreValidate")) {
 										finalObj.put("category", "iospreValidate");	
-										subCategory = "preUpgrade";
-									}else {
+										subCategory = "PreUpgrade";
+										array.add(setFinalTestData(requestId,requestVersion,category,subCategory,jsonObj,finalObj));
+									}else if(subtest.contains("PostUpgrade") && requestType.equals("HealthTest")) {
 										finalObj.put("category", "Health Check");
-										subCategory = "postUpgrade";
+										subCategory = "PostUpgrade";
+										array.add(setFinalTestData(requestId,requestVersion,category,subCategory,jsonObj,finalObj));
 									}
 								}
 							}else {
 							finalObj.put("category", category);
-							}							
-							int status = getTestDetails(requestId,
-									jsonObj.get("testName").toString(), requestVersion,category,subCategory);
-							finalObj.put("status", status);
-							String testNameAndVersion = jsonObj.get("testName")
-									.toString();
-							testNameAndVersion = StringUtils.substringAfter(
-									testNameAndVersion, "_");
-							finalObj.put("testName", testNameAndVersion);
-							array.add(finalObj);
+							array.add(setFinalTestData(requestId,requestVersion,category,subCategory,jsonObj,finalObj));
+							}									
+							
 						}
 					}
 				}
 			}			
 			
 		} catch (org.json.simple.parser.ParseException e) {
-			e.printStackTrace();
+			logger.error(e.getMessage());
 		} catch (SQLException e) {
-			logger.info(e);
+			logger.error(e.getMessage());
 		}
 
 		res.put("custom", array);
 		return array;
+	}
+
+	@SuppressWarnings("unchecked")
+	private org.json.simple.JSONObject setFinalTestData(String requestId, Double requestVersion, String category, String subCategory, org.json.simple.JSONObject jsonObj, org.json.simple.JSONObject finalObj) {
+		int status = getTestDetails(requestId,
+				jsonObj.get("testName").toString(), requestVersion,category,subCategory);
+		finalObj.put("status", status);
+		String testNameAndVersion = jsonObj.get("testName")
+				.toString();
+		testNameAndVersion = StringUtils.substringAfter(
+				testNameAndVersion, "_");
+		finalObj.put("testName", testNameAndVersion);
+		return finalObj;	
 	}
 
 	/*
@@ -6415,7 +6417,7 @@ public class RequestInfoDao {
 	/* Method Overloading for UIRevamp */
 	public Map<String, String> insertRequestInDB(RequestInfoPojo requestInfoSO) {
 		Map<String, String> hmap = new HashMap<String, String>();
-		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id, customer = null, siteName = null, family = null, siteId = null, vendor = null, deviceType = null, selectedFileFeatures = null, configGenerationMethods = null;
+		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id, customer = null, siteName = null, family = null, siteId = null, vendor = null, selectedFileFeatures = null, configGenerationMethods = null;
 		String request_creator_name = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
 		String networktype = null, fileName = null;
@@ -6946,18 +6948,14 @@ public class RequestInfoDao {
 
 		org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
 		CertificationTestPojo certificationTestPojo1 = new CertificationTestPojo();
-		CertificationTestResultEntity resultEnt = new CertificationTestResultEntity();
 		org.json.simple.JSONArray prevalidationArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONObject reachabilityObj = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject iosVersion = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject deviceModel = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject backUpStatus = new org.json.simple.JSONObject();
 		String requestId = null, deliveryStatus = null;
 		
-		resultEnt = certificationTestService.getRecordByRequestId(
-				request.getAlphanumericReqId(),
-				Double.toString(request.getRequestVersion()));
+//		resultEnt = certificationTestService.getRecordByRequestId(
+//				request.getAlphanumericReqId(),
+//				Double.toString(request.getRequestVersion()));
 
 		certificationTestPojo1 = getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
@@ -7090,9 +7088,6 @@ public class RequestInfoDao {
 		prevalidationArray.add(reachabilityObj);
 		
 		
-		
-		org.json.simple.JSONArray dynamicTestResultArray = new org.json.simple.JSONArray();
-		
 		org.json.simple.JSONArray dynamicTestResultArray2 = new org.json.simple.JSONArray();
 		dynamicTestResultArray2 = getDynamicTestResultCustomerReport(
 				request.getAlphanumericReqId(),
@@ -7118,14 +7113,9 @@ public class RequestInfoDao {
 
 		org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
 		CertificationTestPojo certificationTestPojo1 = new CertificationTestPojo();
-		CertificationTestPojo certificationTestPojo2 = new CertificationTestPojo();
-		CertificationTestResultEntity resultEnt = new CertificationTestResultEntity();
 		CertificationTestPojo certificationTestPojo3 = new CertificationTestPojo();
 		org.json.simple.JSONArray prevalidationArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONObject reachabilityObj = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject iosVersion = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject deviceModel = new org.json.simple.JSONObject();
-		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray othersArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray networkAuditArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray instantiationArray = new org.json.simple.JSONArray();
@@ -7134,9 +7124,9 @@ public class RequestInfoDao {
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "preValidate");
 		
-		resultEnt = certificationTestService.getRecordByRequestId(
-				request.getAlphanumericReqId(),
-				Double.toString(request.getRequestVersion()));
+//		resultEnt = certificationTestService.getRecordByRequestId(
+//				request.getAlphanumericReqId(),
+//				Double.toString(request.getRequestVersion()));
 
 		if (certificationTestPojo1.getDeviceReachabilityTest()
 				.equalsIgnoreCase("2")) {
@@ -7241,14 +7231,14 @@ public class RequestInfoDao {
 
 		org.json.simple.JSONArray networkArray = new org.json.simple.JSONArray();
 
-		org.json.simple.JSONObject networkIfObj = new org.json.simple.JSONObject();
+		/*org.json.simple.JSONObject networkIfObj = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject networkPlatformIOS = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject waninterface = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject bgpneighbour = new org.json.simple.JSONObject();
 
 		certificationTestPojo2 = getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
-				Double.toString(request.getRequestVersion()), "networkTest");
+				Double.toString(request.getRequestVersion()), "networkTest");*/
 		
 		org.json.simple.JSONArray healthArray = new org.json.simple.JSONArray();
 
@@ -7568,7 +7558,7 @@ public class RequestInfoDao {
 	public Map<String, String> insertBatchConfigRequestInDB(
 			RequestInfoPojo requestInfoSO) {
 		Map<String, String> hmap = new HashMap<String, String>();
-		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id = null, customer = null, siteName = null, siteId = null, vendor = null, deviceType = null, deviceFamily = null;
+		String Os = null, model = null, region = null, version = null, hostname = null, alphaneumeric_req_id = null, customer = null, siteName = null, siteId = null, vendor = null, deviceFamily = null;
 		String request_creator_name = null, batchId = null, requestStatus = null, certificationSelectionBit = null;
 		String managementIP = null, scheduledTime = null, templateId = null;
 		String networktype = null;

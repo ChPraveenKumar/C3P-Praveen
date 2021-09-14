@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Properties;
 
 import javax.ws.rs.POST;
@@ -61,18 +59,19 @@ import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.PrevalidationTestServiceImpl;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.VNFHelper;
 
 @Controller
 @RequestMapping("/vnfservices")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
-public class VnfConfigService implements Observer {
+public class VnfConfigService {
 	private static final Logger logger = LogManager.getLogger(VnfConfigService.class);
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
@@ -86,6 +85,7 @@ public class VnfConfigService implements Observer {
 
 	@Autowired
 	private TestStrategeyAnalyser analyser;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	
 	/**
@@ -458,13 +458,11 @@ public class VnfConfigService implements Observer {
 						Session session = jsch.getSession("c3pteam", "10.62.0.27", Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
+						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						session.setConfig(config);
 						session.setPassword("csr1000v");
 						session.connect();
-						try {
-							Thread.sleep(10000);
-						} catch (Exception ee) {
-						}
+						UtilityMethods.sleepThread(10000);
 						channel = session.openChannel("shell");
 						OutputStream ops = channel.getOutputStream();
 
@@ -473,11 +471,8 @@ public class VnfConfigService implements Observer {
 						channel.connect();
 						InputStream input = channel.getInputStream();
 						ps.println("show version");
-						try {
-							Thread.sleep(5000);
-						} catch (Exception ee) {
-						}
-
+						UtilityMethods.sleepThread(5000);
+						logger.info("Total size of the Channel InputStream -->"+input.available());
 						requestInfoDao.addCertificationTestForRequest(createConfigRequest.getRequestId(),
 								Double.toString(createConfigRequest.getRequest_version()), "1");
 						printVersionversionInfo(input, channel, createConfigRequest.getRequestId(),
@@ -515,10 +510,7 @@ public class VnfConfigService implements Observer {
 									// conduct and analyse the tests
 									ps.println("terminal length 0");
 									ps.println(finallistOfTests.get(i).getTestCommand());
-									try {
-										Thread.sleep(6000);
-									} catch (Exception ee) {
-									}
+									UtilityMethods.sleepThread(6000);
 
 									// printResult(input,
 									// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
@@ -607,13 +599,11 @@ public class VnfConfigService implements Observer {
 						Session session = jsch.getSession("c3pteam", "10.62.0.27", Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
+						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						session.setConfig(config);
 						session.setPassword("csr1000v");
 						session.connect();
-						try {
-							Thread.sleep(10000);
-						} catch (Exception ee) {
-						}
+						UtilityMethods.sleepThread(10000);
 						channel = session.openChannel("shell");
 						OutputStream ops = channel.getOutputStream();
 
@@ -622,11 +612,8 @@ public class VnfConfigService implements Observer {
 						channel.connect();
 						InputStream input = channel.getInputStream();
 						ps.println("show version");
-						try {
-							Thread.sleep(5000);
-						} catch (Exception ee) {
-						}
-
+						UtilityMethods.sleepThread(5000);
+						logger.info("Total size of the Channel InputStream -->"+input.available());
 						requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "1");
 						printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
@@ -663,10 +650,7 @@ public class VnfConfigService implements Observer {
 									// conduct and analyse the tests
 									ps.println("terminal length 0");
 									ps.println(finallistOfTests.get(i).getTestCommand());
-									try {
-										Thread.sleep(6000);
-									} catch (Exception ee) {
-									}
+									UtilityMethods.sleepThread(6000);
 
 									// printResult(input,
 									// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
@@ -1018,12 +1002,6 @@ public class VnfConfigService implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-
-	}
-
 	public static boolean loadProperties() throws IOException {
 		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
 				.getResourceAsStream(TSA_PROPERTIES_FILE);
@@ -1100,10 +1078,7 @@ public class VnfConfigService implements Observer {
 			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-		}
+		UtilityMethods.sleepThread(1000);
 
 	}
 

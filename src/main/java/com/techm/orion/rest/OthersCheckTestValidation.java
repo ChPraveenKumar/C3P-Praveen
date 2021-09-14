@@ -44,8 +44,10 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.VNFHelper;
 
 @Controller
@@ -69,6 +71,7 @@ public class OthersCheckTestValidation extends Thread {
 	
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -142,16 +145,14 @@ public class OthersCheckTestValidation extends Thread {
 						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
+						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
 								+ "Port " + port);
 						session.setConfig(config);
 						session.setPassword(password);
 						session.connect();
 						logger.info("After session.connect others milestone");
-						try {
-							Thread.sleep(10000);
-						} catch (Exception ee) {
-						}
+						UtilityMethods.sleepThread(10000);
 						try {
 							channel = session.openChannel("shell");
 							OutputStream ops = channel.getOutputStream();
@@ -159,7 +160,6 @@ public class OthersCheckTestValidation extends Thread {
 							logger.info("Channel Connected to machine " + host + " server");
 							channel.connect();
 							InputStream input = channel.getInputStream();
-
 							/*
 							 * Owner: Ruchita Salvi Module: Test Strategey Logic: To find and run and
 							 * analyse custom tests
@@ -202,10 +202,7 @@ public class OthersCheckTestValidation extends Thread {
 												ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 //												ps.println("terminal length 0");
 												ps.println(finallistOfTests.get(i).getTestCommand());
-												try {
-													Thread.sleep(8000);
-												} catch (Exception ee) {
-												}
+												UtilityMethods.sleepThread(8000);
 												// printResult(input,
 												// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
 												Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
@@ -266,10 +263,7 @@ public class OthersCheckTestValidation extends Thread {
 								channel.disconnect();
 							}
 							session.disconnect();
-							try {
-								Thread.sleep(1500);
-							} catch (Exception ee) {
-							}
+							UtilityMethods.sleepThread(1500);
 							logger.info("DONE");
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
@@ -356,11 +350,11 @@ public class OthersCheckTestValidation extends Thread {
 					
 					if (channel.getExitStatus() == -1) {
 						
-							Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 						
 					}
 					} catch (Exception e) {
-						System.out.println(e);
+						logger.error(e);
 					}
 					channel.disconnect();
 					session.disconnect();
@@ -516,10 +510,7 @@ public class OthersCheckTestValidation extends Thread {
 			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-		}
+		UtilityMethods.sleepThread(1000);
 
 	}
 

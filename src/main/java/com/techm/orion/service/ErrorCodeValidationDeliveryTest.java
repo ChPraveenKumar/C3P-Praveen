@@ -38,10 +38,12 @@ import com.techm.orion.rest.DeliverConfigurationAndBackupTest;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 
 @Service
 public class ErrorCodeValidationDeliveryTest extends Thread {
 	private static final Logger logger = LogManager.getLogger(ErrorCodeValidationDeliveryTest.class);
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
 	@Autowired
 	private RequestInfoDao requestInfoDao;
@@ -155,6 +157,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -337,6 +340,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -548,11 +552,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 			}
 
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-			logger.error("Exception in printResult method "+ee.getMessage());
-		}
+		UtilityMethods.sleepThread(1000);
 
 	}
 

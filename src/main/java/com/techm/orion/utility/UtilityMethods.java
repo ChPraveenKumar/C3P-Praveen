@@ -24,7 +24,7 @@ public class UtilityMethods {
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
 	}
 	
-	public static <T> Predicate<T> distinctByKeys(Function<? super T, ?>... keyExtractors) 
+	public static <T> Predicate<T> distinctByKeys(@SuppressWarnings("unchecked") Function<? super T, ?>... keyExtractors) 
 	  {
 	    final Map<List<?>, Boolean> seen = new ConcurrentHashMap<>();
 	     
@@ -52,7 +52,7 @@ public class UtilityMethods {
 
 	public static void sleepThread(int time) {		
 			try {
-				Thread.sleep(1500);
+				Thread.sleep(time);
 			} catch (InterruptedException e) {
 				logger.error("Exception occure at the time of Thread sleep");
 			}			

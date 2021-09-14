@@ -1538,7 +1538,6 @@ public class BackUpAndRestoreController {
 			JSONArray outputArray = new JSONArray();
 			for (int i = 0; i < getAllDevice.size(); i++) {
 				name = getAllDevice.get(i).getdHostName();
-				System.out.println();
 				object = new JSONObject();
 				object.put("hostName", getAllDevice.get(i).getdHostName());
 				if (getAllDevice.get(i).getdMgmtIp() != null) {

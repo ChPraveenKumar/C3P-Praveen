@@ -22,9 +22,11 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.UtilityMethods;
 
 public class NetworkTestSSH {
 	private static final Logger logger = LogManager.getLogger(NetworkTestSSH.class);
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
 	@SuppressWarnings("unused")
 	public void NetworkTest(CreateConfigRequestDCM configRequest) throws IOException {
@@ -41,6 +43,7 @@ public class NetworkTestSSH {
 			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -77,10 +80,7 @@ public class NetworkTestSSH {
 					configRequest.setNetwork_test_BGPNeighbor("Passed");
 				}
 
-				try {
-					Thread.sleep(2000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(2000);
 
 				printResult(input, channel, configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()));
@@ -191,11 +191,7 @@ public class NetworkTestSSH {
 			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-			logger.error("Exception in printResult method "+ee.getMessage());
-		}
+		UtilityMethods.sleepThread(1000);
 
 	}
 
