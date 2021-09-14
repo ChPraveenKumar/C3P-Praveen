@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.techm.orion.entitybeans.IpRangeManagementEntity;
 import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.pojo.AttribCreateConfigJson;
@@ -33,6 +34,7 @@ public class AttribCreateConfigResponceMapper {
 		pojo.setAttribCategoty(entity.getCategory());
 		pojo.setTemplateFeature(entity.getTemplateFeature());
 		pojo.setKey(entity.isKey());
+		pojo.setAttribMasterChId(entity.getCharacteristicId());
 		return pojo;
 	}
 
@@ -68,6 +70,7 @@ public class AttribCreateConfigResponceMapper {
 				attribJson.setCategory(allByCategoryName);
 			}
 			attribJson.setKey(entity.isKey());
+			attribJson.setPoolIds(entity.getPoolIdList());
 			jsonList.add(attribJson);
 
 		}
@@ -96,6 +99,16 @@ public class AttribCreateConfigResponceMapper {
 				attribJson.setCharacteriscticsId(entity.getcId());
 			}else {
 				attribJson.setCharacteriscticsId("");
+			}
+			List<IpRangeManagementEntity>poolEntityList= entity.getLinkedPools();
+			if(poolEntityList!=null)
+			{
+				List<Integer>tList=new ArrayList<Integer>();
+				for(IpRangeManagementEntity pEntity: poolEntityList)
+				{
+					tList.add(pEntity.getRangePoolId());
+				}
+				attribJson.setPoolIds(tList);
 			}
 			attribJson.setKey(entity.iscIsKey());
 			attribJson.setReplicationFalg(entity.getcReplicationind());

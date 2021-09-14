@@ -3117,6 +3117,7 @@ public class RequestInfoDao {
 							.getString("FrameLoss_Test"));
 					certificationTestPojo.setLatencyTest(rs
 							.getString("Latency_Test"));
+					
 					certificationTestPojo.setThroughput(rs
 							.getString("throughput"));
 					certificationTestPojo.setFrameLoss(rs

@@ -206,8 +206,14 @@ public class ConfigurationManagement {
 			configReqToSendToC3pCode.setCustomer(json.get("customer").toString());
 			configReqToSendToC3pCode.setManagementIp(json.get("managementIp").toString());
 			configReqToSendToC3pCode.setSiteName(json.get("siteName").toString());
-			SiteInfoEntity siteId = siteInfoRepository.findCSiteIdByCSiteName(configReqToSendToC3pCode.getSiteName());
-			configReqToSendToC3pCode.setSiteid(siteId.getcSiteId());
+			if(device.getCustSiteId().getcSiteId()!=null)
+				configReqToSendToC3pCode.setSiteid(device.getCustSiteId().getcSiteId());
+			else
+				configReqToSendToC3pCode.setSiteid("");
+
+			//SiteInfoEntity siteId = siteInfoRepository.findCSiteIdByCSiteName(configReqToSendToC3pCode.getSiteName());
+			
+			//SiteInfoEntity siteId = device.getCustSiteId();
 
 //			configReqToSendToC3pCode.setDeviceType(json.get("deviceType").toString());
 			configReqToSendToC3pCode.setModel(json.get("model").toString());

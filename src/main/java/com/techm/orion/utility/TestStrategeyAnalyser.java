@@ -210,12 +210,15 @@ public class TestStrategeyAnalyser {
 						for (int j = 0; j < metaCharacters.length; j++) {
 							if (beforeText != null) {
 								if (beforeText.contains(metaCharacters[j])) {
-									beforeText = "\\" + beforeText;
+									//beforeText = "\\" + beforeText;
+									beforeText = beforeText.replace(metaCharacters[j],"\\"+metaCharacters[j]);
 								}
 							}
 							if (afterText != null) {
 								if (afterText.contains(metaCharacters[j])) {
-									afterText = "\\" + afterText;
+									//afterText = "\\" + afterText;
+									afterText = afterText.replace(metaCharacters[j],"\\"+metaCharacters[j]);
+
 								}
 							}
 						}
@@ -609,6 +612,24 @@ public class TestStrategeyAnalyser {
 						String beforeText = rulesLabel.getBeforeText();
 						String afterText = rulesLabel.getAfterText();
 						String noOfChars = rulesLabel.getNumberOfChars();
+						final String[] metaCharacters = { "\\", "^", "$", "{", "}", "[", "]", "(", ")", ".", "*", "+",
+								"?", "|", "<", ">", "-", "&", "%" };
+
+						for (int j = 0; j < metaCharacters.length; j++) {
+							if (beforeText != null) {
+								if (beforeText.contains(metaCharacters[j])) {
+									//beforeText = "\\" + beforeText;
+									beforeText = beforeText.replace(metaCharacters[j],"\\"+metaCharacters[j]);
+								}
+							}
+							if (afterText != null) {
+								if (afterText.contains(metaCharacters[j])) {
+									//afterText = "\\" + afterText;
+									afterText = afterText.replace(metaCharacters[j],"\\"+metaCharacters[j]);
+
+								}
+							}
+						}
 						if (!noOfChars.isEmpty()) {
 							chars = Integer.parseInt(noOfChars);
 						}

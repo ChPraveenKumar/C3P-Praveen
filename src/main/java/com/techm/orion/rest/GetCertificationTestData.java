@@ -155,6 +155,15 @@ public class GetCertificationTestData {
 					subObjArray.add(subObj);
 	
 				}*/
+				
+				if (json2.containsKey("frameLossTest")) {
+					subObj = new JSONObject();
+					subObj.put("testName", "Frameloss Test");
+					subObj.put("status", json2.get("frameLossTest"));
+					subObj.put("value", "");
+					subObjArray.add(subObj);
+	
+				}
 				if (json2.containsKey("throughputTest")) {
 					subObj = new JSONObject();
 					subObj.put("testName", "Throughput Test");
@@ -180,7 +189,7 @@ public class GetCertificationTestData {
 					subObjArray.add(subObj);
 	
 				}
-				if (json2.containsKey("throughput")) {
+				/*if (json2.containsKey("throughput")) {
 					subObj = new JSONObject();
 					subObj.put("testName", "throughput");
 					subObj.put("status", "");
@@ -203,7 +212,7 @@ public class GetCertificationTestData {
 					subObj.put("value", json2.get("Latency"));
 					subObjArray.add(subObj);
 	
-				}
+				}*/
 				resultObj.put("Default", subObjArray);
 				// to fetch dynamic test results
 				if ("HealthTest".equalsIgnoreCase(createConfigRequestDCM.getTestType())) {

@@ -134,6 +134,11 @@ public class OthersCheckTestValidation extends Thread {
 					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
 							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGM")
 							|| type.equalsIgnoreCase("SNRM") || type.equalsIgnoreCase("SNNM")) {
+						List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+								"Others",version);
+						List<Boolean> results = null;
+						
+						if (selectedTests.size() > 0){
 						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
@@ -165,9 +170,7 @@ public class OthersCheckTestValidation extends Thread {
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 							listOfTests = requestInfoDao.findTestFromTestStrategyDB(requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Others");
-							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
-									"Others",version);
-							List<Boolean> results = null;
+							
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {
 									for (int j = 0; j < selectedTests.size(); j++) {
@@ -298,6 +301,12 @@ public class OthersCheckTestValidation extends Thread {
 						}
 
 						session.disconnect();
+					}
+						value=true;
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "others_test", "0", "In Progress");
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
 					} else {
 						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
 						obj = osHealthChk.healthcheckCommandTest(request, "POST");

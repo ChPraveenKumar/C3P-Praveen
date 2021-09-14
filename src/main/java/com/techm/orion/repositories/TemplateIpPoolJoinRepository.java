@@ -18,4 +18,6 @@ public interface TemplateIpPoolJoinRepository extends JpaRepository<TemplateIpPo
 
 	List<TemplateIpPoolJoinEntity>findByCtTemplateId(String templateID);
 	
+	
+	List<TemplateIpPoolJoinEntity> findByCtTemplateIdAndCtChId(String templatId,int ChId);
 }
