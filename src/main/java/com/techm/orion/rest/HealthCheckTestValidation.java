@@ -1,16 +1,11 @@
 package com.techm.orion.rest;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -45,11 +40,11 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.PingService;
+import com.techm.orion.service.TestStrategyService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
-import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.VNFHelper;
 
@@ -57,8 +52,6 @@ import com.techm.orion.utility.VNFHelper;
 @RequestMapping("/HealthCheckTestValidation")
 public class HealthCheckTestValidation extends Thread {
 	private static final Logger logger = LogManager.getLogger(HealthCheckTestValidation.class);
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@Autowired
 	private RequestInfoDao requestInfoDao;
@@ -77,9 +70,14 @@ public class HealthCheckTestValidation extends Thread {
 	
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	
 	@Autowired
 	private PingService pingService;
+	
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
+	
+	@Autowired
+	private TestStrategyService testStrategyService;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -94,8 +92,7 @@ public class HealthCheckTestValidation extends Thread {
 		String jsonArray = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
-		// FinalReportTestSSH finalReportTestSSH=new FinalReportTestSSH();
-		Boolean value = false, isPredefinedTestSelected=false;
+		Boolean value = false, isPredefinedTestSelected = false;
 
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(request);
@@ -109,7 +106,7 @@ public class HealthCheckTestValidation extends Thread {
 		Channel channel = null;
 		Session session = null;
 
-	if (!((type.equals("SLGB")|| (type.equals("SNAI") || (type.equals("SNAD")))))) {
+		if (!(("SLGB".equals(type) || ("SNAI".equals(type) || ("SNAD".equals(type)))))) {
 			try {
 				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
@@ -126,13 +123,13 @@ public class HealthCheckTestValidation extends Thread {
 
 					String frameloss = "";
 					String latency = "";
-					HealthCheckTestValidation.loadProperties();
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")
-							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
-							|| type.equalsIgnoreCase("SNNM")) {
-						try{
-						
+
+					if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SNRC".equalsIgnoreCase(type)
+							|| "SNNC".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type)
+							|| "SLGM".equalsIgnoreCase(type) || "SNRM".equalsIgnoreCase(type)
+							|| "SNNM".equalsIgnoreCase(type)) {
+						try {
+
 							if (requestinfo.getCertificationSelectionBit().substring(5, 6).equalsIgnoreCase("1")
 									|| requestinfo.getCertificationSelectionBit().substring(6).equalsIgnoreCase("1")) {
 								logger.info("Frameloss "+requestinfo.getCertificationSelectionBit().substring(5, 6));
@@ -268,8 +265,6 @@ public class HealthCheckTestValidation extends Thread {
 										{
 											ps.println(finallistOfTests.get(i).getTestCommand());
 											UtilityMethods.sleepThread(8000);
-										// printResult(input,
-										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
 										Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 												requestinfo.getAlphanumericReqId(),
 												Double.toString(requestinfo.getRequestVersion()),
@@ -278,8 +273,7 @@ public class HealthCheckTestValidation extends Thread {
 										}
 									
 									}
-									channel.disconnect();
-									session.disconnect();
+
 								} else {
 
 								}
@@ -348,9 +342,7 @@ public class HealthCheckTestValidation extends Thread {
 												status);
 									}
 								}
-								// to create final report if success
-								/* finalReportTestSSH.FlagCheckTest(configRequest); */
-
+			
 							}
 							logger.info("DONE");
 							
@@ -368,55 +360,15 @@ public class HealthCheckTestValidation extends Thread {
 								}
 							}
 							logger.info("DONE");
-							if(channel!=null)
-							{
-							if (!channel.isClosed()) {
-								channel.disconnect();
-							}
-							session.disconnect();
-							UtilityMethods.sleepThread(5000);
-							logger.info("DONE");
-							}
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 						} catch (IOException ex) {
-							logger.info("Error in health check first catch " + ex.getMessage());
-							logger.info("Error trace " + ex.getStackTrace());
-							logger.info("" + ex.getCause());
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "health_check", "2", "Failure");
-
-							String response = "";
-							String responseDownloadPath = "";
-							try {
-								response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
-								requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()));
-								responseDownloadPath = HealthCheckTestValidation.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath,
-										requestinfo.getAlphanumericReqId() + "V"
-												+ Double.toString(requestinfo.getRequestVersion()) + "_HealthCheck.txt",
-										response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-
-							}
+							logger.error("Error in health check first catch " + ex.getMessage());
+							jsonArray = new Gson().toJson(value);							
+							obj = testStrategyService.setFailuarResult(jsonArray, value, requestinfo,  "health_check", obj,
+									invokeFtl,"_HealthCheck.txt");
 						}
-						if(channel!=null)
-						{
-						if (!channel.isClosed()) {
-							channel.disconnect();
-						}
-						session.disconnect();
-						UtilityMethods.sleepThread(5000);
 						logger.info("DONE");
-						}
-					
 					} else if (type.equalsIgnoreCase("SLGF")) {
 						
 						obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
@@ -426,56 +378,26 @@ public class HealthCheckTestValidation extends Thread {
 				}
 			}
 			// when reachability fails
-			catch (Exception ex) {
+			catch (Exception ex) {				
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					logger.info("Error in health check send catch " + ex.getMessage());
-					logger.info("Error trace " + ex.getStackTrace());
-					ex.printStackTrace();
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
-					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "health_check", "2", "Failure");
-
-					String response = "";
-					String responseDownloadPath = "";
-					try {
-						response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
-						requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
-						requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()));
-						responseDownloadPath = HealthCheckTestValidation.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
-								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_HealthCheck.txt",
-								response);
-						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
-								requestinfo.getAlphanumericReqId());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-
-					}
-
+					logger.error("Error in health check send catch " + ex.getMessage());
+					obj = testStrategyService.setDeviceReachabilityFailuarResult(jsonArray, value, requestinfo, "health_check", obj,
+							invokeFtl,"_CustomTests.txt");
 				}
-			}
-			finally {
+			} finally {
 
 				if (channel != null) {
 					try {
-					session = channel.getSession();
-					
-					if (channel.getExitStatus() == -1) {
-						
-						UtilityMethods.sleepThread(5000);
-						
-					}
+						session = channel.getSession();
+
+						if (channel.getExitStatus() == -1) {
+							UtilityMethods.sleepThread(5000);
+						}
 					} catch (Exception e) {
-						logger.error(e);
+						logger.error(e.getMessage());
 					}
 					channel.disconnect();
 					session.disconnect();
-				
 				}
 			}
 		} else {
@@ -486,204 +408,9 @@ public class HealthCheckTestValidation extends Thread {
 
 		}
 
-		
-
 		return obj;
 
 	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			logger.error("IOException in createNoconfigFile method "+exc.getMessage());
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
-	@SuppressWarnings("resource")
-	public ArrayList<String> readFileNoCmd(String requestIdForConfig, String version) throws IOException {
-		BufferedReader br = null;
-		LineNumberReader rdr = null;
-		/* StringBuilder sb2=null; */
-		String responseDownloadPath = HealthCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
-
-		br = new BufferedReader(new FileReader(filePath));
-		File f = new File(filePath);
-		try {
-			ArrayList<String> ar = new ArrayList<String>();
-			if (f.exists()) {
-
-				StringBuilder sb2 = new StringBuilder();
-
-				rdr = new LineNumberReader(new FileReader(filePath));
-				InputStream is = new BufferedInputStream(new FileInputStream(filePath));
-
-				byte[] c = new byte[1024];
-				int count = 0;
-				int readChars = 0;
-				while ((readChars = is.read(c)) != -1) {
-					for (int i = 0; i < readChars; ++i) {
-						if (c[i] == '\n') {
-							++count;
-						}
-					}
-				}
-				int fileReadSize = Integer
-						.parseInt(HealthCheckTestValidation.TSA_PROPERTIES.getProperty("fileChunkSize"));
-				int chunks = (count / fileReadSize) + 1;
-				String line;
-
-				for (int loop = 1; loop <= chunks; loop++) {
-					if (loop == 1) {
-						rdr = new LineNumberReader(new FileReader(filePath));
-						line = rdr.readLine();
-						sb2.append(line).append("\n");
-						for (line = null; (line = rdr.readLine()) != null;) {
-
-							if (rdr.getLineNumber() <= fileReadSize) {
-								sb2.append(line).append("\n");
-							}
-
-						}
-						ar.add(sb2.toString());
-					} else {
-						LineNumberReader rdr1 = new LineNumberReader(new FileReader(filePath));
-						sb2 = new StringBuilder();
-						for (line = null; (line = rdr1.readLine()) != null;) {
-
-							if (rdr1.getLineNumber() > (fileReadSize * (loop - 1))
-									&& rdr1.getLineNumber() <= (fileReadSize * loop)) {
-								sb2.append(line).append("\n");
-							}
-
-						}
-						ar.add(sb2.toString());
-					}
-
-				}
-
-			}
-			return ar;
-		} finally {
-			br.close();
-		}
-	}
-
-	public void printResult(InputStream input, Channel channel, String requestId, String version) throws Exception {
-		BufferedWriter bw = null;
-		FileWriter fw = null;
-		int SIZE = 1024;
-		byte[] tmp = new byte[SIZE];
-		String responselogpath = HealthCheckTestValidation.TSA_PROPERTIES.getProperty("responselogpath");
-		File file = new File(responselogpath + "/" + requestId + "_" + version + "theSSHfile.txt");
-		/*
-		 * if (file.exists()) { file.delete(); }
-		 */
-		while (input.available() > 0) {
-			int i = input.read(tmp, 0, SIZE);
-			if (i < 0)
-				break;
-
-			String s = new String(tmp, 0, i);
-			if (!(s.equals(""))) {
-
-				file = new File(responselogpath + "/" + requestId + "_" + version + "theSSHfile.txt");
-
-				if (!file.exists()) {
-					file.createNewFile();
-
-					fw = new FileWriter(file, true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				} else {
-					fw = new FileWriter(file.getAbsoluteFile(), true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				}
-			}
-
-		}
-		if (channel.isClosed()) {
-			logger.info("exit-status: " + channel.getExitStatus());
-
-		}
-		UtilityMethods.sleepThread(1000);
-
-	}
-
-	@SuppressWarnings("resource")
-	public ArrayList<String> readFile(String requestIdForConfig, String version) throws IOException {
-		BufferedReader br = null;
-		LineNumberReader rdr = null;
-		/* StringBuilder sb2=null; */
-		String responseDownloadPath = HealthCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_Configuration";
-
-		br = new BufferedReader(new FileReader(filePath));
-		try {
-			ArrayList<String> ar = new ArrayList<String>();
-			// StringBuffer send = null;
-			StringBuilder sb2 = new StringBuilder();
-
-			rdr = new LineNumberReader(new FileReader(filePath));
-			InputStream is = new BufferedInputStream(new FileInputStream(filePath));
-
-			byte[] c = new byte[1024];
-			int count = 0;
-			int readChars = 0;
-			while ((readChars = is.read(c)) != -1) {
-				for (int i = 0; i < readChars; ++i) {
-					if (c[i] == '\n') {
-						++count;
-					}
-				}
-			}
-			int fileReadSize = Integer.parseInt(HealthCheckTestValidation.TSA_PROPERTIES.getProperty("fileChunkSize"));
-			int chunks = (count / fileReadSize) + 1;
-			String line;
-
-			for (int loop = 1; loop <= chunks; loop++) {
-				if (loop == 1) {
-					rdr = new LineNumberReader(new FileReader(filePath));
-					line = rdr.readLine();
-					sb2.append(line).append("\n");
-					for (line = null; (line = rdr.readLine()) != null;) {
-
-						if (rdr.getLineNumber() <= fileReadSize) {
-							sb2.append(line).append("\n");
-						}
-
-					}
-					ar.add(sb2.toString());
-				} else {
-					LineNumberReader rdr1 = new LineNumberReader(new FileReader(filePath));
-					sb2 = new StringBuilder();
-					for (line = null; (line = rdr1.readLine()) != null;) {
-
-						if (rdr1.getLineNumber() > (fileReadSize * (loop - 1))
-								&& rdr1.getLineNumber() <= (fileReadSize * loop)) {
-							sb2.append(line).append("\n");
-						}
-
-					}
-					ar.add(sb2.toString());
-				}
-
-			}
-			return ar;
-		} finally {
-			br.close();
-		}
-	}	
 
 	private static void printResult(InputStream input, String requestID, String version) throws Exception {
 		BufferedWriter bw = null;
@@ -699,8 +426,8 @@ public class HealthCheckTestValidation extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				logger.info(s);
-				String filepath = HealthCheckTestValidation.TSA_PROPERTIES.getProperty("responseDownloadPath")
-						+ requestID + "V" + version + "_HealthCheck.txt";
+				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
+						+ "_HealthCheck.txt";
 				File file = new File(filepath);
 
 				// if file doesnt exists, then create it

@@ -3151,23 +3151,6 @@ public class RequestInfoDao {
 		}
 	}
 
-	public void updateNetworkAuditTestStatus(String requestId, String version,
-			int throughputflag, int framelossflag, int latencyflag) {
-		String query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
-		try (Connection connection = ConnectionFactory.getConnection();
-				PreparedStatement preparedStmt = connection
-						.prepareStatement(query);) {
-			preparedStmt.setInt(1, throughputflag);
-			preparedStmt.setInt(2, framelossflag);
-			preparedStmt.setInt(3, latencyflag);
-			preparedStmt.setString(4, requestId);
-			preparedStmt.setString(5, version);
-			preparedStmt.executeUpdate();
-		} catch (SQLException e) {
-			logger.error(e.getMessage());
-		}
-	}
-
 	public void updateHealthCheckTestParameter(String requestId,
 			String version, String value, String type) {
 		String query = null;

@@ -36,10 +36,10 @@ import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.service.TestStrategyService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
-import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.UtilityMethods;
 
 @Controller
@@ -62,7 +62,10 @@ public class PostUpgradeHealthCheck extends Thread {
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
-
+	
+	@Autowired
+	private TestStrategyService testStrategyService;
+	
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/HealthCheck", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -183,7 +186,8 @@ public class PostUpgradeHealthCheck extends Thread {
 				} catch (IOException ex) {
 					logger.error("Error in Health check test " + ex.getMessage());
 					ex.getStackTrace();
-					obj = setFailuarResult(jsonArray,value,requestinfo,healthCheckTest,obj,invokeFtl);
+					obj = testStrategyService.setFailuarResult(jsonArray, value, requestinfo, healthCheckTest, obj,
+							invokeFtl,"_CustomTests.txt");
 				}
 			}
 		} catch (ParseException ex) {
@@ -192,10 +196,10 @@ public class PostUpgradeHealthCheck extends Thread {
 		// when reachability fails
 		catch (Exception ex) {
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-				logger.info("Error in health check send catch " + ex.getMessage());				
+				logger.info("Error in Post health check " + ex.getMessage());
 				ex.printStackTrace();
-				obj = setFailuarResult(jsonArray,value,requestinfo,healthCheckTest,obj,invokeFtl);
-
+				obj = testStrategyService.setDeviceReachabilityFailuarResult(jsonArray, value, requestinfo, healthCheckTest, obj,
+						invokeFtl,"_CustomTests.txt");
 			}
 		} finally {
 			if (channel != null) {
@@ -261,8 +265,7 @@ public class PostUpgradeHealthCheck extends Thread {
 		}
 		return obj;
 	}
-	
-	
+
 	@SuppressWarnings("unchecked")
 	private JSONObject setFileData(String outputFile, JSONObject obj) {
 		try {
@@ -281,56 +284,6 @@ public class PostUpgradeHealthCheck extends Thread {
 			e.printStackTrace();
 		}
 		return obj;
-		
-	}
 
-
-	@SuppressWarnings({ "unchecked", "unused" })
-	private JSONObject setDeviceReachabilityFailuarResult(String message, Boolean value, RequestInfoPojo requestinfo, String testName, JSONObject obj, InvokeFtl invokeFtl) {
-		message = new Gson().toJson(value);
-		obj.put(new String("output"), message);
-		requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-				Double.toString(requestinfo.getRequestVersion()), testName, "2", "Failure");
-		String response = "";
-		String responseDownloadPath = "";
-		try {
-			response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
-			requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
-					Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
-			requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
-					Double.toString(requestinfo.getRequestVersion()));
-			responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
-			TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-					+ Double.toString(requestinfo.getRequestVersion()) + "_CustomTests.txt", response);
-			requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
-					requestinfo.getAlphanumericReqId());
-		} catch (Exception e) {
-			logger.error("Exception occured in  setDeviceReachabilityFailuarResult " + e.getMessage());	
-		}
-		return obj;		
-	}
-
-	@SuppressWarnings("unchecked")
-	private JSONObject setFailuarResult(String jsonArray, Boolean value, RequestInfoPojo requestinfo, String healthCheckTest, JSONObject obj, InvokeFtl invokeFtl) {	
-		jsonArray = new Gson().toJson(value);
-		obj.put(new String("output"), jsonArray);
-		requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-				Double.toString(requestinfo.getRequestVersion()), healthCheckTest, "2", "Failure");
-		String response = "";
-		String responseDownloadPath = "";
-		try {
-			response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
-			requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
-					Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
-			requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
-					Double.toString(requestinfo.getRequestVersion()));
-			responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
-			TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-					+ Double.toString(requestinfo.getRequestVersion()) + "_CustomTests.txt", response);
-		} catch (Exception e) {
-			logger.error("Exception occured in  setFailuarResultmethod" + e.getMessage());
-
-		}
-		return obj;
 	}
 }
