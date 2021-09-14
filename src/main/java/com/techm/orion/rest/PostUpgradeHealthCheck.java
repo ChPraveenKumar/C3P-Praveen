@@ -131,10 +131,24 @@ public class PostUpgradeHealthCheck extends Thread {
 					logger.info("Channel Connected to machine " + host + " server");
 					channel.connect();
 					InputStream input = channel.getInputStream();
-					List<TestDetail> finallistOfTests = requestInfoDao.findTestFromTestStrategyDB(
+					List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();					
+					List<TestDetail> listOfTests = requestInfoDao.findTestFromTestStrategyDB(
 							requestinfo.getFamily(), requestinfo.getOs(), "All", requestinfo.getVendor(),
 							requestinfo.getRegion(), "Software Upgrade");
+					List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+							"Software Upgrade",version);
 					List<Boolean> results = null;
+					
+					if (selectedTests.size() > 0) {
+						for (int i = 0; i < listOfTests.size(); i++) {
+							for (int j = 0; j < selectedTests.size(); j++) {
+								if (selectedTests.get(j).getTestName()
+										.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
+									finallistOfTests.add(listOfTests.get(i));
+								}
+							}
+						}
+					}
 					if (finallistOfTests.size() > 0) {
 						results = new ArrayList<Boolean>();
 						for (TestDetail testDetail : finallistOfTests) {
