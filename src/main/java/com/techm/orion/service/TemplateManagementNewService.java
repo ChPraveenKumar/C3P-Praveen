@@ -1011,9 +1011,8 @@ public class TemplateManagementNewService {
 		return featureJsonObject;
 	}
 	
-	private boolean setPoolIds(String featureId, String templateId, List<AttribCreateConfigPojo>list)
+	private void setPoolIds(String featureId, String templateId, List<AttribCreateConfigPojo>list)
 	{
-		boolean response= false;
 		
 		for(AttribCreateConfigPojo pojo: list)
 		{
@@ -1031,6 +1030,5 @@ public class TemplateManagementNewService {
 			pojo.setPoolIdList(poolToSave);
 		}
 		
-		return response;
 	}
 }
