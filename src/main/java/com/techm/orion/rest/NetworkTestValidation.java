@@ -272,7 +272,7 @@ public class NetworkTestValidation extends Thread {
 						} catch (IOException ex) {
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-							obj = testStrategyService.setFailuarResult(jsonArray, value, requestinfo, "network_test", obj,
+							obj = testStrategyService.setFailureResult(jsonArray, value, requestinfo, "network_test", obj,
 									invokeFtl,"_networkTest.txt");							
 						}
 					}
@@ -288,7 +288,7 @@ public class NetworkTestValidation extends Thread {
 			// when reachability fails
 			catch (Exception ex) {
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					logger.info("Exception in network test" + ex.getMessage());
+					logger.error("Exception in network test" + ex.getMessage());
 					jsonArray = new Gson().toJson(value);					
 					obj = testStrategyService.setDeviceReachabilityFailuarResult(jsonArray, value, requestinfo, "network_test", obj,
 							invokeFtl,"_networkTest.txt");			

@@ -1,15 +1,7 @@
 package com.techm.orion.rest;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.LineNumberReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -46,7 +38,6 @@ import com.techm.orion.service.TestStrategyService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
-import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.UtilityMethods;
 
 /*
@@ -74,8 +65,8 @@ public class NetworkAuditTest extends Thread {
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
-		@Autowired
-		private TestStrategyService testStrategyService;
+	@Autowired
+	private TestStrategyService testStrategyService;
 	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -124,8 +115,7 @@ public class NetworkAuditTest extends Thread {
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 							requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()),
-							"network_audit", "4", statusVAlue);
-					NetworkAuditTest.loadProperties();
+							"network_audit", "4", statusVAlue);					
 					String host = requestinfo.getManagementIp();
 					CredentialManagementEntity routerCredential = dcmConfigService
 							.getRouterCredential(deviceDetails);
@@ -133,19 +123,13 @@ public class NetworkAuditTest extends Thread {
 					String password = routerCredential.getPasswordWrite();
 					logger.info("Request ID in Network audit test validation"
 							+ RequestId);
-					String port = NetworkAuditTest.TSA_PROPERTIES
-							.getProperty("portSSH");
+					String port =TSALabels.PORT_SSH.getValue();
 					/* Logic to connect router */
 
 					if (type.equalsIgnoreCase("SLGC")
 							|| type.equalsIgnoreCase("SLGT")
 							|| type.equalsIgnoreCase("SLGA")
-							|| type.equalsIgnoreCase("SLGM")) {
-						List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
-								"Others",version);
-						List<Boolean> results = null;
-						
-						if (selectedTests.size() > 0){
+							|| type.equalsIgnoreCase("SLGM")) {						
 							session = jsch.getSession(user, host, Integer.parseInt(port));
 							Properties config = new Properties();
 							config.put("StrictHostKeyChecking", "no");
@@ -158,10 +142,10 @@ public class NetworkAuditTest extends Thread {
 							logger.info("After session.connect Network audit milestone");
 							UtilityMethods.sleepThread(10000);
 							try {
-	
+
 								channel = session.openChannel("shell");
 								OutputStream ops = channel.getOutputStream();
-	
+
 								PrintStream ps = new PrintStream(ops, true);
 								logger.info("Channel Connected to machine " + host + " server");
 								channel.connect();
@@ -169,10 +153,13 @@ public class NetworkAuditTest extends Thread {
 								/* Logic to collect number of select test out of all */
 								List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
 								
-								List<TestDetail> listOfTests = new ArrayList<TestDetail>();
+								List<TestDetail> listOfTests = new ArrayList<TestDetail>();							
 								listOfTests = requestInfoDao.findTestFromTestStrategyDB(
 										requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
-										requestinfo.getVendor(), requestinfo.getRegion(), "Network Audit");								
+										requestinfo.getVendor(), requestinfo.getRegion(), "Network Audit");
+								List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+										"Network Audit",version);
+								List<Boolean> results = null;
 								if (selectedTests.size() > 0) {
 									for (int i = 0; i < listOfTests.size(); i++) {
 										for (int j = 0; j < selectedTests.size(); j++) {
@@ -187,21 +174,16 @@ public class NetworkAuditTest extends Thread {
 										for (int i = 0; i < finallistOfTests.size(); i++) {
 											// conduct and analyse the tests
 											ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
-	//										ps.println("terminal length 0");
 											ps.println(finallistOfTests.get(i).getTestCommand());
 											UtilityMethods.sleepThread(8000);
-											/*
-											 * Collect Network Audit test result for snippet and keyword from router
-											 */
 											Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 													requestinfo.getAlphanumericReqId(),
 													Double.toString(requestinfo.getRequestVersion()),
 													finallistOfTests.get(i), "Network Audit");
 											results.add(res);
-	
+
 											String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
 													requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
-	
 											int statusData = requestInfoDetailsDao.getStatusForMilestone(
 													requestinfo.getAlphanumericReqId(),
 													Double.toString(requestinfo.getRequestVersion()), "network_audit");
@@ -212,133 +194,96 @@ public class NetworkAuditTest extends Thread {
 														"1", status);
 											}
 										}
-									}
-								}
-								if (finallistOfTests.size() > 0) {
-									results = new ArrayList<Boolean>();
-									for (int i = 0; i < finallistOfTests.size(); i++) {
-										// conduct and analyse the tests
-										ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
-										ps.println(finallistOfTests.get(i).getTestCommand());
-										UtilityMethods.sleepThread(8000);
-										Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
-												requestinfo.getAlphanumericReqId(),
-												Double.toString(requestinfo.getRequestVersion()),
-												finallistOfTests.get(i), "Network Audit");
-										results.add(res);
-
-										String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
-												requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
-										int statusData = requestInfoDetailsDao.getStatusForMilestone(
-												requestinfo.getAlphanumericReqId(),
-												Double.toString(requestinfo.getRequestVersion()), "network_audit");
-										if (statusData != 3) {
-											requestInfoDetailsDao.editRequestforReportWebserviceInfo(
-													requestinfo.getAlphanumericReqId(),
-													Double.toString(requestinfo.getRequestVersion()), "network_audit",
-													"1", status);
-										}
-									}
+											
+											value = true;
 										
-										value = true;
-									
-								}
-
-							} else {
-								String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
-										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
-								requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "network_audit", "0", status);
-
-								
-								value = true;
-
-							}
-
-							/* Updating web service info table for true or false case */
-
-							if (results != null) {
-								for (int i = 0; i < results.size(); i++) {
-									if (!results.get(i)) {
-										value = false;
-										break;
 									}
 
+								} else {
+									String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
+											requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
+									requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+											Double.toString(requestinfo.getRequestVersion()), "network_audit", "0", status);
+
+									
+									value = true;
+
 								}
-							}
+
+								/* Updating web service info table for true or false case */
+
+								if (results != null) {
+									for (int i = 0; i < results.size(); i++) {
+										if (!results.get(i)) {
+											value = false;
+											break;
+										}
+
+									}
+								}
+								
+								UtilityMethods.sleepThread(15000);
+								jsonArray = new Gson().toJson(value);
+								obj.put(new String("output"), jsonArray);
+							} catch (IOException ex) {
+								logger.error("Error in Network Audit check first catch " + ex.getMessage());
+								jsonArray = new Gson().toJson(value);
+								obj = testStrategyService.setFailureResult(jsonArray, value, requestinfo,  "network_audit", obj,
+										invokeFtl,"_.txt");
+								}
 							
-							UtilityMethods.sleepThread(15000);
+						} else if ("SLGF".equalsIgnoreCase(type)) {
+							PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
+							obj = osHealthChk.healthcheckCommandTest(request, "POST");
+						} else if ("SNRC".equalsIgnoreCase(type) || "SNNC".equalsIgnoreCase(type)
+								|| "SNRM".equalsIgnoreCase(type) || "SNNM".equalsIgnoreCase(type)) {
+							// TO be done
+							value = true;
+							logger.info("DONE Network Test");
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-						} catch (IOException ex) {
-							logger.error("Error in Network Audit check first catch " + ex.getMessage());
-							jsonArray = new Gson().toJson(value);
-							obj = testStrategyService.setFailuarResult(jsonArray, value, requestinfo,  "network_audit", obj,
-									invokeFtl,"_.txt");
-							}
+							String status = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
+									requestinfo.getRequestVersion());
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), "network_audit", "0", status);
+
+						}
+
+					}
+				}
+				// when reachability fails
+				catch (Exception ex) {
+					 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
+						logger.error("Error in Network audit send catch " + ex.getMessage());					
+						jsonArray = new Gson().toJson(value);								
+						obj = testStrategyService.setDeviceReachabilityFailuarResult(jsonArray, value, requestinfo, "network_audit", obj,
+								invokeFtl,"_CurrentVersionConfig.txt");
+					}
+				}
+				finally {
+
+					if (channel != null) {
+						try {
+						session = channel.getSession();
 						
-					} else if ("SLGF".equalsIgnoreCase(type)) {
-						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-						obj = osHealthChk.healthcheckCommandTest(request, "POST");
-					} else if ("SNRC".equalsIgnoreCase(type) || "SNNC".equalsIgnoreCase(type)
-							|| "SNRM".equalsIgnoreCase(type) || "SNNM".equalsIgnoreCase(type)) {
-						// TO be done
-						value = true;
-						logger.info("DONE Network Test");
-						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
-						String status = requestInfoDetailsDao
-								.getPreviousMileStoneStatus(
-										requestinfo.getAlphanumericReqId(),
-										requestinfo.getRequestVersion());
-						String switchh = "1";
-
-						requestInfoDetailsDao
-								.editRequestforReportWebserviceInfo(requestinfo
-										.getAlphanumericReqId(), Double
-										.toString(requestinfo
-												.getRequestVersion()),
-										"network_audit", "0", status);
-
-					}
-
-				}
-			}
-			// when reachability fails
-			catch (Exception ex) {
-				 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-					logger.error("Error in Network audit send catch " + ex.getMessage());					
-					jsonArray = new Gson().toJson(value);								
-					obj = testStrategyService.setDeviceReachabilityFailuarResult(jsonArray, value, requestinfo, "network_audit", obj,
-							invokeFtl,"_CurrentVersionConfig.txt");
-				}
-			} finally {
-
-				if (channel != null) {
-					try {
-					session = channel.getSession();
+						if (channel.getExitStatus() == -1) {						
+							UtilityMethods.sleepThread(5000);						
+						}
+						} catch (Exception e) {
+							logger.error("Exception in NetworkAudit Test Milestone "+e.getMessage());
+						}
+						channel.disconnect();
+						session.disconnect();
 					
-					if (channel.getExitStatus() == -1) {						
-						UtilityMethods.sleepThread(5000);						
 					}
-					} catch (Exception e) {
-						logger.error("Exception in NetworkAudit Test Milestone "+e.getMessage());
-					}
-					channel.disconnect();
-					session.disconnect();
-
 				}
-			}
-		} else {
-			value = true;
+			} else {
+				value = true;
 
-			jsonArray = new Gson().toJson(value);
-			obj.put(new String("output"), jsonArray);
+				jsonArray = new Gson().toJson(value);
+				obj.put(new String("output"), jsonArray);
 
+			}		
+			return obj;
 		}		
-		return obj;
-
 	}
-
-	
-}

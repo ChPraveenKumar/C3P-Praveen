@@ -200,7 +200,7 @@ public class PostUpgradeHealthCheck extends Thread {
 				} catch (IOException ex) {
 					logger.error("Error in Health check test " + ex.getMessage());
 					ex.getStackTrace();
-					obj = testStrategyService.setFailuarResult(jsonArray, value, requestinfo, healthCheckTest, obj,
+					obj = testStrategyService.setFailureResult(jsonArray, value, requestinfo, healthCheckTest, obj,
 							invokeFtl,"_CustomTests.txt");
 				}
 			}

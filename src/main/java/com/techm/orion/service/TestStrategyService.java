@@ -56,7 +56,7 @@ public class TestStrategyService {
 	}
 
 	@SuppressWarnings("unchecked")
-	public JSONObject setFailuarResult(String jsonArray, Boolean value, RequestInfoPojo requestinfo, String healthCheckTest, JSONObject obj, InvokeFtl invokeFtl, String fileName) {	
+	public JSONObject setFailureResult(String jsonArray, Boolean value, RequestInfoPojo requestinfo, String healthCheckTest, JSONObject obj, InvokeFtl invokeFtl, String fileName) {	
 		jsonArray = new Gson().toJson(value);
 		obj.put(new String("output"), jsonArray);
 		requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -73,7 +73,7 @@ public class TestStrategyService {
 			TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
 					+ Double.toString(requestinfo.getRequestVersion()) + fileName, response);
 		} catch (Exception e) {
-			logger.error("Exception occured in  setFailuarResultmethod" + e.getMessage());
+			logger.error("Exception occured in  setFailureResult Method" + e.getMessage());
 
 		}
 		return obj;

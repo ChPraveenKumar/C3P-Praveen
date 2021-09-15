@@ -285,9 +285,8 @@ public class OthersCheckTestValidation extends Thread {
 						requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
 						requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()));
-						responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
-						TextReport.writeFile(responseDownloadPath,
+								Double.toString(requestinfo.getRequestVersion()));						
+						TextReport.writeFile( TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_CustomTests.txt",
 								response);
