@@ -557,9 +557,8 @@ public class ConfigurationManagement {
 							String attribType = object.get("type").toString();
 							String attib = object.get("name").toString();
 							String templateid = object.get("templateid").toString();
-
+							Integer ipPoll = setIpPollData(object);
 							for (AttribCreateConfigPojo templateAttrib : templateAttribute) {
-
 								if (attribLabel.contains(templateAttrib.getAttribLabel())) {
 									/*
 									 * Here we will get charachteristic id need to get attrib name from t_m_attrib
@@ -571,9 +570,10 @@ public class ConfigurationManagement {
 										if (attribType.equals("Template")) {
 											if (attib.equals(attribName)) {
 												createConfigList.add(
-														setConfigData(templateAttrib.getId(), attriValue, templateid));
+														setConfigData(templateAttrib.getId(), attriValue, templateid,ipPoll));
 												configReqToSendToC3pCode = configurationManagmentService.setAttribValue(
 														attribName, configReqToSendToC3pCode, attriValue);
+												
 											}
 										}
 									}
@@ -607,7 +607,7 @@ public class ConfigurationManagement {
 								if (object.get("type") != null) {
 									attribType = object.get("type").toString();
 								}
-
+								Integer ipPoll = setIpPollData(object);
 								String attib = object.get("name").toString();
 								for (MasterCharacteristicsEntity Attrib : attributesFromInput) {
 									if (attribLabel.contains(Attrib.getcName())) {
@@ -618,7 +618,7 @@ public class ConfigurationManagement {
 											if (attribLabel.equals(Attrib.getcName())) {
 												createConfigList.add(setConfigData(0,
 														attriValue, "",
-														Attrib.getcFId(),Attrib.getcId()));
+														Attrib.getcFId(),Attrib.getcId(),ipPoll));
 
 											}
 
@@ -656,7 +656,7 @@ public class ConfigurationManagement {
 										// Need to get actual attrib name from DB as we
 										// will get charachteristic id here instead of
 										// name in case of external api
-
+										Integer ipPoll = setIpPollData(object);
 										MasterAttributes attribute = masterAttribRepository
 												.findByCharacteristicIdAndTemplateId(attib, template);
 
@@ -682,7 +682,7 @@ public class ConfigurationManagement {
 																	if (attib.equals(attribName)) {
 																		createConfigList.add(
 																				setConfigData(templateAttrib.getId(),
-																						attriValue, templateid));
+																						attriValue, templateid,ipPoll));
 																		configReqToSendToC3pCode = configurationManagmentService
 																				.setAttribValue(attribName, configReqToSendToC3pCode,
 																						attriValue);
@@ -750,7 +750,7 @@ public class ConfigurationManagement {
 									if (object.get("type") != null) {
 										attribType = object.get("type").toString();
 									}
-
+									Integer ipPoll = setIpPollData(object);
 									String attib = object.get("name").toString();
 									for (MasterCharacteristicsEntity Attrib : attributesFromInput) {
 										if (attribLabel.contains(Attrib.getcName())) {
@@ -758,7 +758,7 @@ public class ConfigurationManagement {
 											if (attribType == null || attribType.equalsIgnoreCase("Non-Template")) {
 												if (attribLabel.equals(Attrib.getcName())) {
 													createConfigList.add(setConfigData(0, attriValue, "",
-															Attrib.getcFId(), Attrib.getcId()));
+															Attrib.getcFId(), Attrib.getcId(),ipPoll));
 
 												}
 
@@ -830,19 +830,20 @@ public class ConfigurationManagement {
 									{
 										type=object.get("type").toString();
 									}
+									Integer ipPoll = setIpPollData(object);
 									if(type!=null)
 									{
 										if(type.equalsIgnoreCase("Template"))
 										{
 											MasterAttributes masterAttribData = masterAttribRepository.findByTemplateIdAndMasterFIDAndLabel(templateid, featureId,
 													attribLabel);
-											createConfigList.add(setConfigData(masterAttribData.getId(), attriValue, templateid));
+											createConfigList.add(setConfigData(masterAttribData.getId(), attriValue, templateid,ipPoll));
 										}
 										else if(type.equalsIgnoreCase("Non-Template"))
 										{
 											MasterCharacteristicsEntity Attrib=masterCharacteristicRepository.findByCFIdAndCName(featureId, attribLabel);
 											createConfigList.add(setConfigData(0, attriValue, "",
-													Attrib.getcFId(), Attrib.getcId()));
+													Attrib.getcFId(), Attrib.getcId(),ipPoll));
 										}
 									}
 									else
@@ -850,11 +851,11 @@ public class ConfigurationManagement {
 										if(templateid!=null) {
 									MasterAttributes masterAttribData = masterAttribRepository.findByTemplateIdAndMasterFIDAndLabel(templateid, featureId,
 											attribLabel);
-									createConfigList.add(setConfigData(masterAttribData.getId(), attriValue, templateid));}
+									createConfigList.add(setConfigData(masterAttribData.getId(), attriValue, templateid,ipPoll));}
 										else {
 											MasterCharacteristicsEntity Attrib=masterCharacteristicRepository.findByCFIdAndCName(featureId, attribLabel);
 											createConfigList.add(setConfigData(0, attriValue, "",
-													Attrib.getcFId(), Attrib.getcId()));
+													Attrib.getcFId(), Attrib.getcId(),ipPoll));
 										}
 									}
 								
@@ -872,7 +873,7 @@ public class ConfigurationManagement {
 				// Passing Extra parameter createConfigList for saving master
 				// attribute data
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, featureList,
-						userName, features);
+						userName, features,device);
 
 			} else if (configReqToSendToC3pCode.getRequestType().equalsIgnoreCase("NETCONF")
 					&& configReqToSendToC3pCode.getNetworkType().equals("VNF")
@@ -909,10 +910,11 @@ public class ConfigurationManagement {
 						if(object.containsKey("characteriscticsId") && object.get("characteriscticsId")!=null) {
 							 attribCharacteristics = object.get("characteriscticsId").toString();	
 						}	
+						Integer ipPoll = setIpPollData(object);
 						if(attribCharacteristics!=null) {
 						String masterFId = masterCharacteristicRepository.findByCId(attribCharacteristics);								
 						createConfigList.add(
-								setConfigData(0, attriValue, "", masterFId, attribCharacteristics));
+								setConfigData(0, attriValue, "", masterFId, attribCharacteristics,ipPoll));
 						}
 					}
 				}
@@ -921,7 +923,7 @@ public class ConfigurationManagement {
 				}
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, createConfigList, null,
-						userName, features);			
+						userName, features,device);			
 			} else {
 				if (toSaveArray != null && !toSaveArray.isEmpty()) {
 					configReqToSendToC3pCode.setTestsSelected(toSaveArray.toString());
@@ -959,17 +961,30 @@ public class ConfigurationManagement {
 		return obj;
 
 	}
+	
+	private Integer setIpPollData(JSONObject object) {
+		Integer ipPoll = null;
+		if(object.containsKey("ipPoll") && object.get("ipPoll")!=null &&
+				object.get("ipPoll").toString()!=null && !object.get("ipPoll").toString().isEmpty() ) {
+			ipPoll = Integer.valueOf(object.get("ipPoll").toString());
+											
+		}
+		return ipPoll;	
+	}
 
-	private CreateConfigPojo setConfigData(int id, String attriValue, String templateId) {
+	private CreateConfigPojo setConfigData(int id, String attriValue, String templateId, Integer ipPoll) {
 		CreateConfigPojo createConfigPojo = new CreateConfigPojo();
 		createConfigPojo.setMasterLabelId(id);
 		createConfigPojo.setMasterLabelValue(attriValue);
 		createConfigPojo.setTemplateId(templateId);
+		if(ipPoll!=null) {
+			createConfigPojo.setPollId(ipPoll);
+		}
 		return createConfigPojo;
 	}
 
 	private CreateConfigPojo setConfigData(int id, String attriValue, String templateId, String masterFeatureId,
-			String masterCharachteristicId) {
+			String masterCharachteristicId,Integer ipPoll) {
 		CreateConfigPojo createConfigPojo = new CreateConfigPojo();
 		if (id != 0) {
 			createConfigPojo.setMasterLabelId(id);
@@ -979,6 +994,9 @@ public class ConfigurationManagement {
 		}
 		createConfigPojo.setMasterLabelValue(attriValue);
 		createConfigPojo.setTemplateId(templateId);
+		if(ipPoll!=null) {
+			createConfigPojo.setPollId(ipPoll);
+		}
 		if (masterCharachteristicId != null) {
 			createConfigPojo.setMasterCharachteristicId(masterCharachteristicId);
 		}

@@ -35,11 +35,20 @@ import com.jcraft.jsch.Channel;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.dao.TemplateSuggestionDao;
+import com.techm.orion.entitybeans.CreateConfigEntity;
+import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
+import com.techm.orion.entitybeans.HostIpManagementEntity;
+import com.techm.orion.mapper.CreateConfigResponceMapper;
 import com.techm.orion.pojo.CertificationTestPojo;
+import com.techm.orion.pojo.CreateConfigPojo;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.ReoprtFlags;
 import com.techm.orion.pojo.RequestInfoPojo;
+import com.techm.orion.repositories.CreateConfigRepo;
+import com.techm.orion.repositories.DeviceDiscoveryRepository;
+import com.techm.orion.repositories.HostIpManagementRepo;
 import com.techm.orion.service.CSVWriteAndConnectPythonTemplateSuggestion;
+import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ShowCPUUsage;
 import com.techm.orion.utility.ShowMemoryTest;
@@ -60,7 +69,19 @@ public class FinalReportForTTUTest extends Thread {
 	private RequestInfoDetailsDao requestInfoDetailsDao;
 	
 	@Autowired
-	private NetworkTestValidation networkTestValidation;
+	private NetworkTestValidation networkTestValidation;	
+
+	@Autowired
+	private CreateConfigRepo createConfigRepo;
+	
+	@Autowired
+	private HostIpManagementRepo hostIpManagementRepo;
+	
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private DcmConfigService dcmConfigService;
 	
 	private static final String FLAG_PASS ="Pass";
 	private static final String FLAG_FAIL ="Fail";
@@ -324,6 +345,27 @@ public class FinalReportForTTUTest extends Thread {
 					logger.info("DONE");
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
+					
+					String hostIpStatus = null;
+					if("Failure".equals(requestinfo.getStatus())) {
+						hostIpStatus ="Available";
+					}else if("Success".equals(requestinfo.getStatus())) {
+						hostIpStatus ="Reserved";
+					}
+					List<CreateConfigPojo> ipPolls = new ArrayList<>();
+					List<CreateConfigEntity> attribData = createConfigRepo.findAllByRequestIdAndRequestVersion(requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
+					if(attribData!=null && !attribData.isEmpty()) {						
+						for(CreateConfigEntity attribValue : attribData) {
+							HostIpManagementEntity hostIpData = hostIpManagementRepo.findByHostStartIp(attribValue.getMasterLabelValue());
+							if(hostIpData!=null) {
+								CreateConfigResponceMapper mapper = new CreateConfigResponceMapper();
+								ipPolls.add(mapper.getResponceMapper(attribValue));
+							}
+						}
+						 DeviceDiscoveryEntity deviceInfo = deviceDiscoveryRepository.findHostNameAndMgmtip(requestinfo.getManagementIp(), requestinfo.getHostname());
+						 
+						 dcmConfigService.updateIpPollStatus(ipPolls, requestinfo, hostIpStatus, deviceInfo);
+					}
 				} else if (type.equalsIgnoreCase("SLGF")) {
 					RequestInfoDao dao = new RequestInfoDao();
 					boolean ishealthCheckSuccess = dao.isHealthCheckSuccesfulForOSUpgrade(
