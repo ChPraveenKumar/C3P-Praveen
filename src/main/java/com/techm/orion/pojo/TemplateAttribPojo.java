@@ -15,7 +15,8 @@ public class TemplateAttribPojo {
 	private String fName;
 
 	private boolean fReplicationFlag;
-
+	
+	
 	public String getfId() {
 		return fId;
 	}
