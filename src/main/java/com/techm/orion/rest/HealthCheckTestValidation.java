@@ -365,7 +365,7 @@ public class HealthCheckTestValidation extends Thread {
 						} catch (IOException ex) {
 							logger.error("Error in health check first catch " + ex.getMessage());
 							jsonArray = new Gson().toJson(value);							
-							obj = testStrategyService.setFailuarResult(jsonArray, value, requestinfo,  "health_check", obj,
+							obj = testStrategyService.setFailureResult(jsonArray, value, requestinfo,  "health_check", obj,
 									invokeFtl,"_HealthCheck.txt");
 						}
 						logger.info("DONE");
