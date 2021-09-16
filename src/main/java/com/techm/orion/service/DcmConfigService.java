@@ -3780,6 +3780,8 @@ public class DcmConfigService {
 			request.put("createdBy", requestInfoSO.getRequestCreatorName());
 			if(device!=null && device.getdRole()!=null) {
 			request.put("role", device.getdRole());
+			}else {
+				request.put("role", "NA");	
 			}
 			if(!ipPolls.isEmpty()) {
 			HttpHeaders headers = new HttpHeaders();

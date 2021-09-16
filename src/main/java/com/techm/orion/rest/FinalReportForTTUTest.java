@@ -352,19 +352,21 @@ public class FinalReportForTTUTest extends Thread {
 					}else if("Success".equals(requestinfo.getStatus())) {
 						hostIpStatus ="Reserved";
 					}
-					List<CreateConfigPojo> ipPolls = new ArrayList<>();
+					List<CreateConfigPojo> ipPools = new ArrayList<>();
 					List<CreateConfigEntity> attribData = createConfigRepo.findAllByRequestIdAndRequestVersion(requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 					if(attribData!=null && !attribData.isEmpty()) {						
 						for(CreateConfigEntity attribValue : attribData) {
 							HostIpManagementEntity hostIpData = hostIpManagementRepo.findByHostStartIp(attribValue.getMasterLabelValue());
 							if(hostIpData!=null) {
 								CreateConfigResponceMapper mapper = new CreateConfigResponceMapper();
-								ipPolls.add(mapper.getResponceMapper(attribValue));
+								CreateConfigPojo responceMapper = mapper.getResponceMapper(attribValue);
+								responceMapper.setPollId(hostIpData.getHostPoolId());
+								ipPools.add(responceMapper);
 							}
 						}
 						 DeviceDiscoveryEntity deviceInfo = deviceDiscoveryRepository.findHostNameAndMgmtip(requestinfo.getManagementIp(), requestinfo.getHostname());
 						 
-						 dcmConfigService.updateIpPollStatus(ipPolls, requestinfo, hostIpStatus, deviceInfo);
+						 dcmConfigService.updateIpPollStatus(ipPools, requestinfo, hostIpStatus, deviceInfo);
 					}
 				} else if (type.equalsIgnoreCase("SLGF")) {
 					RequestInfoDao dao = new RequestInfoDao();
