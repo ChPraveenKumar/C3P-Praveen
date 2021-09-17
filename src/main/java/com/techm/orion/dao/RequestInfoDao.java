@@ -5374,6 +5374,7 @@ public class RequestInfoDao {
 
 											TestDetail test = new TestDetail();
 											test.setId(rs3.getInt("id"));
+											test.setTestId(rs3.getString("test_id"));
 											test.setTestCommand(rs3
 													.getString("test_command"));
 											test.setTestConnectionProtocol(rs

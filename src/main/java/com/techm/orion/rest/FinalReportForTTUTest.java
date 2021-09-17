@@ -345,7 +345,7 @@ public class FinalReportForTTUTest extends Thread {
 					logger.info("DONE");
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
-					
+					requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);					
 					String hostIpStatus = null;
 					if("Failure".equals(requestinfo.getStatus())) {
 						hostIpStatus ="Available";

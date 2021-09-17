@@ -254,7 +254,7 @@ public class PostUpgradeHealthCheck extends Thread {
 				reportLabel = requestJson.get("testName").toString();
 			}
 			if (requestId != null && version != null) {
-				reportLabel = StringUtils.substringAfter(reportLabel, "::");
+				reportLabel = StringUtils.replace(reportLabel, "::", "_");
 				String pythonScriptFolder = TSALabels.PYTHON_SCRIPT_PATH.getValue();
 				String preUpgradeFile = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestId + "V"
 						+ version + "_" + reportLabel + "_" + "Pre_health_checkup.txt";

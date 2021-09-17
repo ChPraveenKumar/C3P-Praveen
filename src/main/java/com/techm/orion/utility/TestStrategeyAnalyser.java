@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1552,7 +1553,7 @@ public class TestStrategeyAnalyser {
 		boolean finalCheck = false;		
 		String resultText = "";
 		String healthCheckFIle = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
-				+ requestVersion + "_" + rulesLabel.getReportedLabel() + "_" + filename;
+					+ requestVersion + "_" + StringUtils.substringAfter(test.getTestId(),"_")+"_"+rulesLabel.getReportedLabel() + "_" + filename;
 		File isHealthCheckFilePresent = new File(healthCheckFIle);
 		if (!(tempTextToAnalyse.equals(""))) {
 			if (!isFilePresent.exists()) {
@@ -1572,7 +1573,7 @@ public class TestStrategeyAnalyser {
 			String collectedValue = "";
 			if (test.getTestSubCategory().equals("postUpgrade")) {
 				String preUpgradeFile = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
-						+ requestVersion + "_" + rulesLabel.getReportedLabel() + "_" + "Pre_health_checkup.txt";
+						+ requestVersion + "_" +StringUtils.substringAfter(test.getTestId(),"_")+"_"+rulesLabel.getReportedLabel()+ "_" + "Pre_health_checkup.txt";
 				String preUpgradeData = UtilityMethods.readFirstLineFromFile(preUpgradeFile);
 				if (preUpgradeData == null || !preUpgradeFile.equals(tempTextToAnalyse) || tempTextToAnalyse == null) {
 					collectedValue = "Not Match";
