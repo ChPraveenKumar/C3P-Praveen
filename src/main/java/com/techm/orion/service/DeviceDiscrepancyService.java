@@ -467,10 +467,10 @@ public class DeviceDiscrepancyService {
 						isSucess = true;
 					}
 
-				} else if((obj.get("oid") != null && !obj.get("oid").equals(""))) {
+				} else if((obj.get("oid") != null && !obj.get("oid").equals("")) && (obj.get("oidDisplayData") != null && !obj.get("oidDisplayData").equals(""))) {
 					// if child oid is null and empty fetch data from host tables
 					hostDiscrepancyResultEntity = hostDiscrepancyResultRepository.findDeviceHostDiscrepancy(
-							String.valueOf(deviceDiscoveryEntity.getdId()), obj.get("oid").toString(), ipAddress);
+							String.valueOf(deviceDiscoveryEntity.getdId()), obj.get("oid").toString(), ipAddress,obj.get("oidDisplayData").toString());
 					if (hostDiscrepancyResultEntity != null) {
 						logger.info(" hostDiscrepancyResultEntity.getHidOIDNo() ->"
 								+ hostDiscrepancyResultEntity.getHidOIDNo());
