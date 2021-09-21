@@ -57,6 +57,9 @@ public class HostDiscoveryResultEntity {
 
 	@Column(name = "hdr_href", length = 255)
 	private String hdrHerf;
+	
+	@Column(name = "hdr_display_name", length = 60)
+	private String hdrDisplayName;
 
 	public int getHdrId() {
 		return hdrId;
@@ -160,6 +163,14 @@ public class HostDiscoveryResultEntity {
 
 	public void setDiscoveryId(DiscoveryDashboardEntity discoveryId) {
 		this.discoveryId = discoveryId;
+	}
+
+	public String getHdrDisplayName() {
+		return hdrDisplayName;
+	}
+
+	public void setHdrDisplayName(String hdrDisplayName) {
+		this.hdrDisplayName = hdrDisplayName;
 	}
 
 	@Override
