@@ -186,7 +186,7 @@ public class DeviceDiscrepancyService {
 							findForkDiscoveryId, discrepancyObject);
 				}
 				DiscoveryDashboardEntity discoveryDetails = null;
-				if (!isDiscoveryData) {
+				if (!isDiscoveryData || findDiscoveryId!=null) {
 					discoveryDetails = dashboardRepo.findByDisId(findDiscoveryId);
 					details.put("discrepancyData", getDiscoveryDetails(discoveryDetails));
 
