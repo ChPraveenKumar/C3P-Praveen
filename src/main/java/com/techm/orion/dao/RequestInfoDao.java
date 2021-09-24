@@ -172,10 +172,16 @@ public class RequestInfoDao {
 						+ UUID.randomUUID().toString().toUpperCase();
 
 			} else if (request.getRequest_type().equalsIgnoreCase("SLGB")
-					&& request.getNetworkType().equalsIgnoreCase("Legacy")) {
+					&& request.getNetworkType().equalsIgnoreCase("Legacy") && request.getAlpha_numeric_req_id() == null) {
 				alphaneumeric_req_id = "SLGB-"
 						+ UUID.randomUUID().toString().toUpperCase();
-			} else {
+			} 
+			else if(request.getRequest_type().equalsIgnoreCase("SLGB")
+					&& request.getNetworkType().equalsIgnoreCase("Legacy") && request.getAlpha_numeric_req_id() != null)
+			{
+				alphaneumeric_req_id = request.getAlpha_numeric_req_id();
+			}
+			else {
 				alphaneumeric_req_id = "SLGC-"
 						+ UUID.randomUUID().toString().toUpperCase();
 			}

@@ -187,7 +187,16 @@ public class NetworkAuditTest extends Thread {
 											ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 	//										ps.println("terminal length 0");
 											ps.println(finallistOfTests.get(i).getTestCommand());
-											UtilityMethods.sleepThread(8000);
+											int waitTime = 8000;
+											if(requestinfo.getVendor()!=null)
+											{
+												waitTime = UtilityMethods.getWaitTime(requestinfo.getVendor(), finallistOfTests.get(i).getTestCommand());
+											}
+											else
+											{
+												waitTime = 8000;
+											}
+											UtilityMethods.sleepThread(waitTime);
 											/*
 											 * Collect Network Audit test result for snippet and keyword from router
 											 */

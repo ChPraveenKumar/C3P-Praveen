@@ -126,6 +126,10 @@ public class ConfigMngmntService implements Observer {
 				configReqToSendToC3pCode.setRequestType("SLGC");
 
 			}
+			if(json.containsKey("alphanumericReqId"))
+			{
+				configReqToSendToC3pCode.setRequestId(json.get("alphanumericReqId").toString());
+			}
 			if (json.containsKey("networkType")) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType")
 						.toString());

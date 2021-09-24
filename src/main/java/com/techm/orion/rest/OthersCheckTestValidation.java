@@ -98,7 +98,7 @@ public class OthersCheckTestValidation extends Thread {
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
-		if (!(("SLGB".equals(type) || ("SNAI".equals(type))||("SLGF".equals(type))))) {
+		if (!(("SLGB".equals(type) || ("SNAI".equals(type))||("SLGF".equals(type)||("SLGA".equals(type)))))) {
 
 			try {				
 				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
@@ -202,7 +202,16 @@ public class OthersCheckTestValidation extends Thread {
 												ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 //												ps.println("terminal length 0");
 												ps.println(finallistOfTests.get(i).getTestCommand());
-												UtilityMethods.sleepThread(8000);
+												int waitTime = 8000;
+												if(requestinfo.getVendor()!=null)
+												{
+													waitTime = UtilityMethods.getWaitTime(requestinfo.getVendor(), finallistOfTests.get(i).getTestCommand());
+												}
+												else
+												{
+													waitTime = 8000;
+												}
+												UtilityMethods.sleepThread(waitTime);
 												// printResult(input,
 												// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
 												Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
