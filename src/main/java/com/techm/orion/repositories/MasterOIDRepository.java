@@ -40,6 +40,6 @@ public interface MasterOIDRepository extends JpaRepository<MasterOIDEntity, Long
 
 	MasterOIDEntity findByOidId(int masterOid);
 	
-	MasterOIDEntity findByOidNoAndOidVendorAndOidNetworkTypeAndOidCategory(String oid,String vendor,String networkType,String category);
+	MasterOIDEntity findByOidNoAndOidVendorAndOidNetworkTypeAndOidCategoryAndOidDisplayName(String oid,String vendor,String networkType,String category,String oidDIsplayName );
 	
 }

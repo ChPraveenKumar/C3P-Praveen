@@ -20,8 +20,16 @@ import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import com.techm.orion.ValidatorConfigService.ValidatorConfigManagement;
 import com.techm.orion.dao.RequestInfoDao;
@@ -1461,7 +1469,7 @@ public class DcmConfigService {
 	public Map<String, String> updateAlldetails(
 			List<RequestInfoPojo> requestInfoSOList,
 			List<CreateConfigPojo> pojoList, List<String> featureList,
-			List<TemplateFeaturePojo> features) {
+			String userName, List<TemplateFeaturePojo> features, DeviceDiscoveryEntity device) {
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();		
 		String validateMessage = "";
 		String requestIdForConfig = "", requestType = "";
@@ -1989,6 +1997,9 @@ public class DcmConfigService {
 
 		} catch (Exception e) {
 			logger.error("Exception in updateAlldetails method "+e.getMessage());
+		}
+		if(pojoList!=null && !pojoList.isEmpty()) {
+			updateIpPollStatus(pojoList,requestInfoSO,"Allocated",device);
 		}
 		return result;
 	}
@@ -3742,4 +3753,57 @@ public class DcmConfigService {
 		deviceDetails.setdReqCount(count);
 		deviceDiscoveryRepository.save(deviceDetails);
 	}
+	
+	
+	@SuppressWarnings("unchecked")
+	public void updateIpPollStatus(List<CreateConfigPojo> pojoList, RequestInfoPojo requestInfoSO, String status, DeviceDiscoveryEntity device) {		
+		try {
+			RestTemplate restTemplate = new RestTemplate();
+			JSONObject request = new JSONObject();
+			org.json.simple.JSONArray ipPolls = new org.json.simple.JSONArray();
+			for(CreateConfigPojo attribData : pojoList) {
+				if(attribData.getPollId()!=null) {
+				JSONObject ipPollData = new JSONObject();				
+				ipPollData.put(new String("startIp"), attribData.getMasterLabelValue());
+				ipPollData.put(new String("poolId"), attribData.getPollId());				
+				ipPolls.add(ipPollData);
+				}
+			}
+			request.put("hStatus", status);
+			request.put("customer", requestInfoSO.getCustomer());
+			request.put("region", requestInfoSO.getRegion());
+			request.put("siteId", requestInfoSO.getSiteid());
+			request.put("siteName", requestInfoSO.getSiteName());
+			request.put("hostName", requestInfoSO.getHostname());
+			request.put("ipPools", ipPolls);
+			request.put("updatedBy", requestInfoSO.getRequestCreatorName());
+			request.put("createdBy", requestInfoSO.getRequestCreatorName());
+			if(device!=null && device.getdRole()!=null) {
+			request.put("role", device.getdRole());
+			}else {
+				request.put("role", "NA");	
+			}
+			if(!ipPolls.isEmpty()) {
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
+			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_UPDATE_HOST_STATUS.getValue();
+			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			JSONParser parser = new JSONParser();
+			JSONObject responseJson = (JSONObject) parser.parse(response);
+			if (responseJson.containsKey("message") && responseJson.get("message") != null) {
+				if (responseJson.get("message").toString().equals("Success")) {
+					//updateFlag = true;
+				}
+			 }
+			}
+		} catch (HttpClientErrorException exe) {
+			logger.error("HttpClientErrorException - generateReport -> " + exe.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - generateReport->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		//return updateFlag;		
+	}
+
 }

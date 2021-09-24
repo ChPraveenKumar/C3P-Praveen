@@ -73,6 +73,9 @@ public class HostDiscrepancyResultEntity {
 
 	@Column(name = "hid_resolved_timestamp")
 	private Timestamp hidResolvedTimestamp;
+	
+	@Column(name = "hid_display_name", length = 60)
+	private String hidDisplayName;
 
 	public int getHidId() {
 		return hidId;
@@ -216,6 +219,15 @@ public class HostDiscrepancyResultEntity {
 
 	public void setDiscoveryId(DiscoveryDashboardEntity discoveryId) {
 		this.discoveryId = discoveryId;
+	}
+
+	
+	public String getHidDisplayName() {
+		return hidDisplayName;
+	}
+
+	public void setHidDisplayName(String hidDisplayName) {
+		this.hidDisplayName = hidDisplayName;
 	}
 
 	@Override

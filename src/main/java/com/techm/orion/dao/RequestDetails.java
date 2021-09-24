@@ -350,7 +350,7 @@ public class RequestDetails {
 	@SuppressWarnings("unchecked")
 	private org.json.simple.JSONArray setFirmwareTestDetails(List<TestStaregyConfigPojo> firmwareTestDetails) {				
 		    Map<String, List<TestStaregyConfigPojo>> tests =firmwareTestDetails.stream()
-                 .collect(Collectors.groupingBy(TestStaregyConfigPojo::getTestResultText)); 
+                .collect(Collectors.groupingBy(TestStaregyConfigPojo::getTestName));
 		    org.json.simple.JSONArray testArray =  new org.json.simple.JSONArray();
 		   tests.keySet().forEach(testText->{
 			   JSONObject jsonObject = new JSONObject();			   
@@ -359,9 +359,9 @@ public class RequestDetails {
 			    		      .max(Comparator.comparing(TestDetail::getVersion))
 			    		      .orElseThrow(NoSuchElementException::new);			    	    		      
 			    	
-			    	String testName = StringUtils.substringAfter(testData.getTestId(),"_")+"::"+testText;
+			    	String testName = StringUtils.substringAfter(testData.getTestId(),"_")+"::"+testDetail.getTestResultText();
 			    	jsonObject.put("healthcheck", testName);			    	
-			    	if("PreUpgrade".equals(testDetail.getTestSubCategory())) {
+			    	if("preUpgrade".equals(testDetail.getTestSubCategory())) {
 			    		jsonObject.put("preUpgradeValue", testDetail.getTestCollectedValue());	
 			    	}else {			    		
 			    		jsonObject.put("postUpgradeValue", testDetail.getTestCollectedValue());			    		

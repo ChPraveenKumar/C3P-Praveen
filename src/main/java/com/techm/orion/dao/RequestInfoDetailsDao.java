@@ -356,6 +356,9 @@ public class RequestInfoDetailsDao {
 				pojo.setRequestCreatorName(entity.getRequestCreatorName());
 				pojo.setStartUp(entity.getStartUp());
 				pojo.setConfigurationGenerationMethods(entity.getrConfigGenerationMethod());
+				pojo.setCustomer(entity.getCustomer());
+				pojo.setSiteid(entity.getSiteId());
+				pojo.setSiteName(entity.getSiteName());
 			}
 		} catch (Exception e) {
 			logger.error("Exception in getRequestDetailTRequestInfoDBForVersion method " +e);

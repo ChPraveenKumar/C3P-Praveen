@@ -47,6 +47,10 @@ public class SchedulerController {
 	
 	@Autowired
 	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private BackUpAndRestoreController backUpAndRestoreController;
+	
 
 	@POST
 	@RequestMapping(value = "/setSchedule", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -72,6 +76,7 @@ public class SchedulerController {
 							.setShCreateUrl(TSALabels.SINGLE_REQUEST_CREATE
 									.getValue());
 				} else if (requestType.equalsIgnoreCase("SLGB")) {
+					response = backUpAndRestoreController.createConfigurationDcmBackUpAndRestore(createJson.toJSONString());
 					schedulerEntityInstance
 							.setShCreateUrl(TSALabels.SINGLE_REQUEST_CREATE_BACKUP
 									.getValue());

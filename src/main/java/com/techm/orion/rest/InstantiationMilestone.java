@@ -171,7 +171,7 @@ public class InstantiationMilestone extends Thread {
 					logger.info("mileStoneStatus ->" + mileStoneStatus);
 					logger.info("SO ID ->" + rfoDecomposedEntity.getOdRfoId());
 					HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(requestJson, headers);
-					String apiEndPoint = TSALabels.EXTERNAL_MILESTONE_API.getValue() + "now/table/u_imp_stage_status";
+					String apiEndPoint = TSALabels.EXTERNAL_MILESTONE_API.getValue();
 					restTemplate.setRequestFactory(getClientHttpRequestFactory());
 					String response = restTemplate.exchange(apiEndPoint, HttpMethod.POST, entity, String.class)
 							.getBody();

@@ -25,5 +25,7 @@ public interface CreateConfigRepo extends JpaRepository<CreateConfigEntity, Long
 	public List<CreateConfigEntity> findByRequestIdAndTemplateId(String requestId, String templateId);
 	
 	List<CreateConfigEntity> findAttribValuByMasterLabelIdAndRequestIdAndRequestVersion(int attribId, String requestId, double version);
+	
+	List<CreateConfigEntity> findAllByRequestIdAndRequestVersion(String requestId, double version);
 
 }

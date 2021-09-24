@@ -248,17 +248,12 @@ public class TestStrategyController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
-	@SuppressWarnings({ "unused", "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@GET
 	@RequestMapping(value = "/getTestDetails", method = RequestMethod.GET, produces = "application/json")
 	public ResponseEntity getSeriess(@RequestParam String testid, String version) {
-
-		int testDetailsId = 0;
-		List<Integer> findBundleIds = new ArrayList<>();
-		List<String> bundleNameList = new ArrayList<>();
-		String testBundling = null;
 		List<TestDetail> testdetaillist = new ArrayList<TestDetail>();
 		TestDetail detail = null;
 		boolean ischeck = false;
@@ -283,104 +278,103 @@ public class TestStrategyController {
 		});
 		testdetaillist.addAll(settestDetails);
 		if (null != settestDetails && !settestDetails.isEmpty()) {
-			List<TestFeatureList> testfeaturelist = new ArrayList<TestFeatureList>();
-			List<TestRules> testruleslist = null;
-			List<TestRules> testruleslisttext = new ArrayList<TestRules>();
-			List<TestRules> testruleslisttable = new ArrayList<TestRules>();
-			List<TestRules> testruleslistsection = new ArrayList<TestRules>();
-			List<TestRules> testruleslistsnippet = new ArrayList<TestRules>();
-			List<TestRules> testruleslistkeyword = new ArrayList<TestRules>();
-			List<TestRules> testruleslisttextfinal = new ArrayList<TestRules>();
-			List<TestRules> testruleslisttablefinal = new ArrayList<TestRules>();
-			List<TestRules> testruleslistsectionfinal = new ArrayList<TestRules>();
-			List<TestRules> testruleslistsnippetfinal = new ArrayList<TestRules>();
-			List<TestRules> testruleslistkeywordfinal = new ArrayList<TestRules>();
-			detail = testdetaillist.get(0);
-
-			testruleslist = testRulesRepository.findByTestDetail(testdetaillist.get(0));
-
-			for (int i = 0; i < testruleslist.size(); i++) {
-				if (testruleslist.get(i).getDataType().contains("Text")) {
-					int ruleid = testruleslist.get(i).getId();
-					testruleslisttext = testRulesRepository.findById(ruleid);
-					testruleslisttextfinal.addAll(testruleslisttext);
-				}
-				if (testruleslist.get(i).getDataType().contains("Table")) {
-					int ruleid = testruleslist.get(i).getId();
-					testruleslisttable = testRulesRepository.findById(ruleid);
-					testruleslisttablefinal.addAll(testruleslisttable);
-				}
-				if (testruleslist.get(i).getDataType().contains("Section")) {
-					String data_type = "Section";
-					int ruleid = testruleslist.get(i).getId();
-					testruleslistsection = testRulesRepository.findById(ruleid);
-					testruleslistsectionfinal.addAll(testruleslistsection);
-				}
-				if (testruleslist.get(i).getDataType().contains("Snippet")) {
-					String data_type = "Snippet";
-					int ruleid = testruleslist.get(i).getId();
-					testruleslistsnippet = testRulesRepository.findById(ruleid);
-					testruleslistsnippetfinal.addAll(testruleslistsnippet);
-				}
-				if (testruleslist.get(i).getDataType().contains("Keyword")) {
-					String data_type = "Keyword";
-					int ruleid = testruleslist.get(i).getId();
-					testruleslistkeyword = testRulesRepository.findById(ruleid);
-					testruleslistkeywordfinal.addAll(testruleslistkeyword);
-				}
-			}
-			testDetailsId = testdetaillist.get(0).getId();
-			findBundleIds = requestInfoDao.findBundleId(testDetailsId);
-			for (Integer tempObj : findBundleIds) {
-				testBundling = testBundleRepo.findByBundleName(tempObj.intValue());
-				bundleNameList.add(testBundling);
-			}
-			detail.setBundleName(bundleNameList);
-			List<TestFeatureList> testfeaturelistValue = testFeatureListRepository
-					.findByTestDetail(testdetaillist.get(0));
-			if (testfeaturelistValue != null && !testfeaturelistValue.isEmpty()) {
-				testfeaturelistValue.forEach(featureDetails -> {
-					TestFeatureList feature = new TestFeatureList();
-					MasterFeatureEntity masterFeature = masterFeatureRepository
-							.findByFId(featureDetails.getTestFeature());
-					if (masterFeature != null) {
-						feature.setId(featureDetails.getId());
-						feature.setTestFeature(masterFeature.getfName());
-						testfeaturelist.add(feature);
-					}
-				});
-			}
-			detail.setListFeatures(testfeaturelist);
-			detail.setText_attributes(testruleslisttextfinal);
-			detail.setTable_attributes(testruleslisttablefinal);
-			detail.setSection_attributes(testruleslistsectionfinal);
-			detail.setSnippet_attributes(testruleslistsnippetfinal);
-			detail.setKeyword_attributes(testruleslistkeywordfinal);
-			
-			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/dd/MM hh:mm:ss");
-			Date parsedDate;
-			try {
-			parsedDate = dateFormat.parse(detail.getCreatedOn());
-			Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
-			detail.setCreatedOn(dateUtil.dateTimeInAppFormat(timestamp.toString()));
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-			
-
+			detail = setTestDataValue(testdetaillist.get(0));
 			ischeck = true;
-
 		}
 		if (ischeck) {
 			return new ResponseEntity(detail, HttpStatus.OK);
 		} else {
-
 			return new ResponseEntity(errorValidationRepository.findByErrorId("C3P_TS_003"), HttpStatus.OK);
-
 		}
 
+	}
+
+	private TestDetail setTestDataValue(TestDetail testDetail) {
+		List<Integer> findBundleIds = new ArrayList<>();
+		List<String> bundleNameList = new ArrayList<>();
+		String testBundling = null;
+		testDetail = setTestRuleResult(testDetail);
+		findBundleIds = requestInfoDao.findBundleId(testDetail.getId());
+		for (Integer tempObj : findBundleIds) {
+			testBundling = testBundleRepo.findByBundleName(tempObj.intValue());
+			bundleNameList.add(testBundling);
+		}
+		testDetail.setBundleName(bundleNameList);
+
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/dd/MM hh:mm:ss");
+		Date parsedDate;
+		try {
+			parsedDate = dateFormat.parse(testDetail.getCreatedOn());
+			Timestamp timestamp = new java.sql.Timestamp(parsedDate.getTime());
+			testDetail.setCreatedOn(dateUtil.dateTimeInAppFormat(timestamp.toString()));
+		} catch (Exception e) {
+			logger.error("Exception in Get Test Details Service : " + e.getMessage());
+		}
+		return testDetail;
+	}
+
+	private TestDetail setTestRuleResult(TestDetail testDetail) {
+		List<TestRules> testruleslist = null;
+		List<TestRules> testruleslisttextfinal = new ArrayList<TestRules>();
+		List<TestRules> testruleslisttablefinal = new ArrayList<TestRules>();
+		List<TestRules> testruleslistsectionfinal = new ArrayList<TestRules>();
+		List<TestRules> testruleslistsnippetfinal = new ArrayList<TestRules>();
+		List<TestRules> testruleslistkeywordfinal = new ArrayList<TestRules>();
+
+		testruleslist = testRulesRepository.findByTestDetail(testDetail);
+		boolean compareResultFlag = false;
+		for (int i = 0; i < testruleslist.size(); i++) {
+			if (testruleslist.get(i).getDataType().contains("Text") && !testruleslist.get(i).getDataType().contains("FullText")) {
+				testruleslisttextfinal.addAll(setRuleData(testruleslist.get(i)));
+			}
+			if (testruleslist.get(i).getDataType().contains("Table")) {
+				testruleslisttablefinal.addAll(setRuleData(testruleslist.get(i)));
+			}
+			if (testruleslist.get(i).getDataType().contains("Section")) {
+				testruleslistsectionfinal.addAll(setRuleData(testruleslist.get(i)));
+			}
+			if (testruleslist.get(i).getDataType().contains("Snippet")) {
+				testruleslistsnippetfinal.addAll(setRuleData(testruleslist.get(i)));
+			}
+			if (testruleslist.get(i).getDataType().contains("Keyword")) {
+				testruleslistkeywordfinal.addAll(setRuleData(testruleslist.get(i)));
+			}
+			if (testruleslist.get(i).getDataType().contains("FullText") && testruleslist.size() == 1) {
+				compareResultFlag = true;
+				//testruleslisttextfinal.addAll(setRuleData(testruleslist.get(i)));
+			}
+		}
+		if (compareResultFlag) {
+			testDetail.setCompareFullResult(compareResultFlag);
+		}
+		testDetail.setListFeatures(setFeatureList(testDetail));
+		testDetail.setText_attributes(testruleslisttextfinal);
+		testDetail.setTable_attributes(testruleslisttablefinal);
+		testDetail.setSection_attributes(testruleslistsectionfinal);
+		testDetail.setSnippet_attributes(testruleslistsnippetfinal);
+		testDetail.setKeyword_attributes(testruleslistkeywordfinal);
+		return testDetail;		
+	}
+
+	private List<TestRules> setRuleData(TestRules testRules) {
+		return testRulesRepository.findById(testRules.getId());
+	}
+
+	private List<TestFeatureList> setFeatureList(TestDetail testDetail) {
+		List<TestFeatureList> testfeaturelist = new ArrayList<TestFeatureList>();
+		List<TestFeatureList> testfeaturelistValue = testFeatureListRepository.findByTestDetail(testDetail);
+		if (testfeaturelistValue != null && !testfeaturelistValue.isEmpty()) {
+			testfeaturelistValue.forEach(featureDetails -> {
+				TestFeatureList feature = new TestFeatureList();
+				MasterFeatureEntity masterFeature = masterFeatureRepository.findByFId(featureDetails.getTestFeature());
+				if (masterFeature != null) {
+					feature.setId(featureDetails.getId());
+					feature.setTestFeature(masterFeature.getfName());
+					testfeaturelist.add(feature);
+				}
+			});
+		}
+		return testfeaturelistValue;
 	}
 
 	/**
@@ -441,9 +435,10 @@ public class TestStrategyController {
 		List<TestRules> rulelst = new ArrayList<TestRules>();
 		List<TestBundling> bundleList = new ArrayList<TestBundling>();
 		int bundleId = 0;
-		if(json.containsKey("comaprefull_result") && json.get("comaprefull_result")!=null) {
-			Boolean fullResult = (Boolean) json.get("comaprefull_result");
-			if(fullResult) {
+		Boolean fullResult = false;
+		if (json.containsKey("compareFullResult") && json.get("compareFullResult") != null) {
+			fullResult = (Boolean) json.get("compareFullResult");
+			if (fullResult) {
 				TestRules rule = new TestRules();
 				rule.setDataType("FullText");
 				rule.setReportedLabel(testDetail.getTestCommand());
@@ -451,8 +446,7 @@ public class TestStrategyController {
 				rulelst.add(rule);
 			}
 		}
-		if (json.containsKey("text_attributes"))
-		{
+		if (json.containsKey("text_attributes") && !fullResult) {
 			JSONArray attribarray = (JSONArray) json.get("text_attributes");
 			for (int i = 0; i < attribarray.size(); i++) {
 				TestRules rule = new TestRules();
