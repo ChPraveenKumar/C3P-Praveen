@@ -2713,11 +2713,11 @@ public class DcmConfigService {
 
 				}
 			} else {
-				alphaneumeric_req_id = "SLGB-"
+				/*alphaneumeric_req_id = "SLGB-"
 						+ UUID.randomUUID().toString().toUpperCase()
-								.substring(0, 7);
+								.substring(0, 7);*/
 				requestInfoPojo.setRequestType(configRequest.getRequestType());
-				requestInfoPojo.setAlphanumericReqId(alphaneumeric_req_id);
+				requestInfoPojo.setAlphanumericReqId(configRequest.getRequestId());
 
 				LocalDateTime nowDate = LocalDateTime.now();
 				Timestamp timestamp = Timestamp.valueOf(nowDate);

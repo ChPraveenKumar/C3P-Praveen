@@ -123,6 +123,24 @@ public class TestStrategeyAnalyser {
 			UtilityMethods.sleepThread(10000);
 
 			String text = tempTextToAnalyse;
+			//This logic is for Telstra only
+			
+			String linesInit[] = text.split("\\n");
+			List<String> lineListInit = Arrays.asList(linesInit);
+			List<String> lineListFinal = new ArrayList<String>();
+			lineListFinal.addAll(lineListInit);
+			for(int i=0; i< 2; i++){
+				if(lineListInit.get(i).contains("#"))
+				{
+					lineListFinal.remove(i);
+				
+			    }
+				}
+			text = String.join("\\n\\r", lineListFinal);
+			
+			//This logic is for Telstra only
+			
+			
 			logger.info("tempTextToAnalyse ->" + text);
 
 			List<TestRules> rules = new ArrayList<TestRules>();

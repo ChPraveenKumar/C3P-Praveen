@@ -180,7 +180,16 @@ public class NetworkTestValidation extends Thread {
 										{
 											ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 											ps.println(finallistOfTests.get(i).getTestCommand());
-											UtilityMethods.sleepThread(6000);
+											int waitTime = 6000;
+											if(requestinfo.getVendor()!=null)
+											{
+												waitTime = UtilityMethods.getWaitTime(requestinfo.getVendor(), finallistOfTests.get(i).getTestCommand());
+											}
+											else
+											{
+												waitTime = 6000;
+											}
+											UtilityMethods.sleepThread(waitTime);
 
 											Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 													requestinfo.getAlphanumericReqId(),

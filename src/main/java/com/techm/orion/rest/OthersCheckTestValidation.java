@@ -89,7 +89,7 @@ public class OthersCheckTestValidation extends Thread {
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
-		if (!(("SLGB".equals(type) || ("SNAI".equals(type))||("SLGF".equals(type))))) {
+		if (!(("SLGB".equals(type) || ("SNAI".equals(type))||("SLGF".equals(type)||("SLGA".equals(type)))))) {
 
 			try {				
 				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);

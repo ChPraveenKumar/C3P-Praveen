@@ -57,4 +57,24 @@ public class UtilityMethods {
 				logger.error("Exception occure at the time of Thread sleep");
 			}			
 	}
+	
+	public static int getWaitTime(String vendor, String command) {		
+		int response =0;
+		try {
+			if("cisco".equalsIgnoreCase(vendor))
+			{
+				if(command.contains("show run") || command.contains("Show run") || command.contains("show running-config"))
+				{
+					response = 10000;
+				}
+			}
+			else
+			{
+				response = 8000;
+			}
+		} catch (Exception e) {
+			logger.error("Exception occure in getWaitTime");
+		}		
+		return response;
+}
 }

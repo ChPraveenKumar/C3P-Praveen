@@ -491,6 +491,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 					ps = requestInfoDetailsDao.setCommandStream(ps,configRequest,"backup",isStartUp);
 //					ps.println("terminal length 0");
 //					ps.println("show start");
+					
 					UtilityMethods.sleepThread(5000);
 					if (routerVersionType.equalsIgnoreCase("startup")) {
 						backupdone = true;
