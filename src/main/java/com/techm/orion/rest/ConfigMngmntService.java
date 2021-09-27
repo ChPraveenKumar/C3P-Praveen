@@ -2343,9 +2343,11 @@ public class ConfigMngmntService implements Observer {
 		requestInfoPojo.setCustomer(json.get("customer").toString());
 		requestInfoPojo.setManagementIp(json.get("managmentIP").toString());
 		requestInfoPojo.setSiteName(json.get("siteName").toString());
-		SiteInfoEntity siteId = siteInfoRepository
+		List<SiteInfoEntity> sites = siteInfoRepository
 				.findCSiteIdByCSiteName(requestInfoPojo.getSiteName());
-		requestInfoPojo.setSiteid(siteId.getcSiteId());
+		if(sites !=null && sites.size()>0) {
+			requestInfoPojo.setSiteid(sites.get(0).getcSiteId());
+		}
 
 //		requestInfoPojo.setDeviceType(json.get("deviceType").toString());
 		requestInfoPojo.setModel(json.get("model").toString());

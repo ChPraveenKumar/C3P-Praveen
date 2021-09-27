@@ -33,6 +33,7 @@ import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.ResourceCharacteristicsEntity;
+import com.techm.orion.entitybeans.SiteInfoEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
 import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.entitybeans.TestFeatureList;
@@ -48,6 +49,7 @@ import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsRepository;
+import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.TestDetailsRepository;
 import com.techm.orion.repositories.TestFeatureListRepository;
@@ -113,6 +115,9 @@ public class ConfigurationManagement {
 	
 	@Autowired
 	private TestDetailsRepository testDetailsRepository;
+	
+	@Autowired
+	private SiteInfoRepository siteInfoRepository;
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -198,14 +203,20 @@ public class ConfigurationManagement {
 			configReqToSendToC3pCode.setCustomer(json.get("customer").toString());
 			configReqToSendToC3pCode.setManagementIp(json.get("managementIp").toString());
 			configReqToSendToC3pCode.setSiteName(json.get("siteName").toString());
-			if(device.getCustSiteId().getcSiteId()!=null)
+			if(device !=null && device.getCustSiteId().getcSiteId()!=null) {
 				configReqToSendToC3pCode.setSiteid(device.getCustSiteId().getcSiteId());
-			else
-				configReqToSendToC3pCode.setSiteid("");
-
-			//SiteInfoEntity siteId = siteInfoRepository.findCSiteIdByCSiteName(configReqToSendToC3pCode.getSiteName());
+			}else {
+				List<SiteInfoEntity> sites = siteInfoRepository.findCSiteIdByCSiteName(configReqToSendToC3pCode.getSiteName());
+				if(sites !=null && sites.size()>0) {
+					configReqToSendToC3pCode.setSiteid(sites.get(0).getcSiteId());
+				}
+			}
 			
-			//SiteInfoEntity siteId = device.getCustSiteId();
+			if(configReqToSendToC3pCode.getSiteid() !=null && !configReqToSendToC3pCode.getSiteid().isBlank()) {
+				logger.debug("Site id ->"+configReqToSendToC3pCode.getSiteid());
+			}else {
+				logger.error("Missing Mandatory Site id for site name("+configReqToSendToC3pCode.getSiteName()+") Pls validate the input request.");
+			}
 
 //			configReqToSendToC3pCode.setDeviceType(json.get("deviceType").toString());
 			configReqToSendToC3pCode.setModel(json.get("model").toString());
