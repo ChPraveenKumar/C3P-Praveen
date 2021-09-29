@@ -212,7 +212,7 @@ public class ConfigurationManagement {
 				}
 			}
 			
-			if(configReqToSendToC3pCode.getSiteid() !=null && !configReqToSendToC3pCode.getSiteid().isBlank()) {
+			if(configReqToSendToC3pCode.getSiteid() !=null && !configReqToSendToC3pCode.getSiteid().isEmpty()) {
 				logger.debug("Site id ->"+configReqToSendToC3pCode.getSiteid());
 			}else {
 				logger.error("Missing Mandatory Site id for site name("+configReqToSendToC3pCode.getSiteName()+") Pls validate the input request.");

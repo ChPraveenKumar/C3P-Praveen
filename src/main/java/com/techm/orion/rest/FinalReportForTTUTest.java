@@ -344,7 +344,7 @@ public class FinalReportForTTUTest extends Thread {
 					}
 					logger.info("DONE");
 					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
+					//obj.put(new String("output"), jsonArray);
 					requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);					
 					String hostIpStatus = null;
 					if("Failure".equals(requestinfo.getStatus())) {
@@ -404,7 +404,7 @@ public class FinalReportForTTUTest extends Thread {
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
 							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
+							//obj.put(new String("output"), jsonArray);
 						} else if (!ishealthCheckSuccess) {
 							value = false;
 							CreateConfigRequest req = new CreateConfigRequest();
@@ -438,7 +438,7 @@ public class FinalReportForTTUTest extends Thread {
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
 							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
+							//obj.put(new String("output"), jsonArray);
 						} else if (!isDilevarySuccess) {
 							value = false;
 							CreateConfigRequest req = new CreateConfigRequest();
@@ -472,7 +472,7 @@ public class FinalReportForTTUTest extends Thread {
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
 							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
+							//obj.put(new String("output"), jsonArray);
 						}
 					} else if (ishealthCheckSuccess && isPreHealthCheckSuccess && isDilevarySuccess) {
 
@@ -508,7 +508,7 @@ public class FinalReportForTTUTest extends Thread {
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", "Success");
 						value = true;
 						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
+						//obj.put(new String("output"), jsonArray);
 					} else {
 						// in case of health check failure
 						value = false;
@@ -520,7 +520,7 @@ public class FinalReportForTTUTest extends Thread {
 										+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 								response);
 						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
+						//obj.put(new String("output"), jsonArray);
 					}
 				} else if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 					// release the locked device
@@ -713,7 +713,7 @@ public class FinalReportForTTUTest extends Thread {
 
 					value = true;
 					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
+					//obj.put(new String("output"), jsonArray);
 				} else {
 					RequestInfoDao dao = new RequestInfoDao();
 					boolean ishealthCheckSuccess = dao.isHealthCheckSuccesfulForOSUpgrade(
@@ -750,7 +750,7 @@ public class FinalReportForTTUTest extends Thread {
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
 							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
+							//obj.put(new String("output"), jsonArray);
 						} else if (!ishealthCheckSuccess) {
 							value = false;
 							CreateConfigRequest req = new CreateConfigRequest();
@@ -784,7 +784,7 @@ public class FinalReportForTTUTest extends Thread {
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
 							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
+							//obj.put(new String("output"), jsonArray);
 						} else if (!isDilevarySuccess) {
 							value = false;
 							CreateConfigRequest req = new CreateConfigRequest();
@@ -818,7 +818,7 @@ public class FinalReportForTTUTest extends Thread {
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
 							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
+							//obj.put(new String("output"), jsonArray);
 						}
 					} else if (ishealthCheckSuccess && isPreHealthCheckSuccess && isDilevarySuccess) {
 
@@ -884,7 +884,7 @@ public class FinalReportForTTUTest extends Thread {
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", "Success");
 						value = true;
 						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
+						//obj.put(new String("output"), jsonArray);
 					} else {
 						// in case of health check failure
 						value = false;
@@ -896,7 +896,7 @@ public class FinalReportForTTUTest extends Thread {
 										+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 								response);
 						jsonArray = new Gson().toJson(value);
-						obj.put(new String("output"), jsonArray);
+						//obj.put(new String("output"), jsonArray);
 					}
 				}
 
@@ -914,7 +914,7 @@ public class FinalReportForTTUTest extends Thread {
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", "Success");
 					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
+					//obj.put(new String("output"), jsonArray);
 				}
 				else if(status==2)
 				{
@@ -922,10 +922,11 @@ public class FinalReportForTTUTest extends Thread {
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
+					//obj.put(new String("output"), jsonArray);
 				}
 			}
-		} catch (IOException ex) {
+		} catch (Exception ex) {
+			logger.error("Error in finalReportCreation - >"+ex.getMessage());
 			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
 				if (type.equalsIgnoreCase("SLGC")) {
@@ -933,12 +934,13 @@ public class FinalReportForTTUTest extends Thread {
 							Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 					String response;
 					try {
+						value = false;
 						response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);					
 						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
 								response);
-
+						jsonArray = new Gson().toJson(value);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -955,7 +957,7 @@ public class FinalReportForTTUTest extends Thread {
 									+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 							response);
 					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
+					//obj.put(new String("output"), jsonArray);
 				} else if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
 					// to be done
 				} else {
@@ -968,12 +970,13 @@ public class FinalReportForTTUTest extends Thread {
 									+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 							response);
 					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
+					//obj.put(new String("output"), jsonArray);
 				}
 
 			}
 		}
-	
+		logger.info("finalReportCreation - jsonArray ->"+jsonArray);
+		obj.put(new String("output"), jsonArray);
 		return obj;
 
 	}
@@ -1050,7 +1053,7 @@ public class FinalReportForTTUTest extends Thread {
 		FileWriter fw = null;
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
-		File file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + "/" + requestId + "_" + version + "theSSHfile.txt");
+		File file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + requestId + "_" + version + "theSSHfile.txt");
 		/*
 		 * if (file.exists()) { file.delete(); }
 		 */
@@ -1062,7 +1065,7 @@ public class FinalReportForTTUTest extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 
-				file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + "/" + requestId + "_" + version + "theSSHfile.txt");
+				file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + requestId + "_" + version + "theSSHfile.txt");
 
 				if (!file.exists()) {
 					file.createNewFile();

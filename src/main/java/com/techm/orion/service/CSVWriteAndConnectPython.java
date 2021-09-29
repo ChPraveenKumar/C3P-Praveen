@@ -14,12 +14,13 @@ import org.apache.logging.log4j.Logger;
 import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.UtilityMethods;
 
 public class CSVWriteAndConnectPython {
 	private static final Logger logger = LogManager.getLogger(CSVWriteAndConnectPython.class);
 
 	public String ReadWriteAndConnectAnalyser(CreateConfigRequest configRequest) throws IOException {
-		PrintWriter pw = new PrintWriter(new File(TSALabels.ANALYSER_PATH.getValue() + "/SOThrData.csv"));
+		PrintWriter pw = new PrintWriter(new File(TSALabels.ANALYSER_PATH.getValue() + "SOThrData.csv"));
 
 		StringBuilder sb = new StringBuilder();
 
@@ -40,7 +41,7 @@ public class CSVWriteAndConnectPython {
 		String line = "";
 		String cvsSplitBy = ",";
 		String result = "";
-
+		BufferedReader br = null;
 		try {
 			p = builder.start();
 			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
@@ -51,13 +52,10 @@ public class CSVWriteAndConnectPython {
 			p_stdin.newLine();
 			p_stdin.flush();
 
-			try {
-				Thread.sleep(17000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(17000);
 
-			BufferedReader br = new BufferedReader(
-					new FileReader(TSALabels.ANALYSER_PATH.getValue() + "/SOTrainingData_C3P_Throughput_data.csv"));
+			br = new BufferedReader(
+					new FileReader(TSALabels.ANALYSER_PATH.getValue() + "SOTrainingData_C3P_Throughput_data.csv"));
 			while ((line = br.readLine()) != null) {
 
 				// use comma as separator
@@ -71,6 +69,14 @@ public class CSVWriteAndConnectPython {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally {
+			try {
+				if(br !=null) {
+					br.close();
+				}
+			}catch(IOException ioExe) {
+				
+			}
 		}
 
 		return result;
@@ -79,7 +85,7 @@ public class CSVWriteAndConnectPython {
 
 	/* method overloding for UIRevamp */
 	public String ReadWriteAndConnectAnalyser(RequestInfoPojo requestinfo) throws IOException {
-		PrintWriter pw = new PrintWriter(new File(TSALabels.ANALYSER_PATH.getValue() + "/SOThrData.csv"));
+		PrintWriter pw = new PrintWriter(new File(TSALabels.ANALYSER_PATH.getValue() + "SOThrData.csv"));
 
 		StringBuilder sb = new StringBuilder();
 
@@ -100,7 +106,7 @@ public class CSVWriteAndConnectPython {
 		String line = "";
 		String cvsSplitBy = ",";
 		String result = "";
-
+		BufferedReader br = null;
 		try {
 			p = builder.start();
 			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
@@ -116,8 +122,8 @@ public class CSVWriteAndConnectPython {
 			} catch (Exception ee) {
 			}
 
-			BufferedReader br = new BufferedReader(
-					new FileReader(TSALabels.ANALYSER_PATH.getValue() + "/SOTrainingData_C3P_Throughput_data.csv"));
+			br = new BufferedReader(
+					new FileReader(TSALabels.ANALYSER_PATH.getValue() + "SOTrainingData_C3P_Throughput_data.csv"));
 			while ((line = br.readLine()) != null) {				
 				// use comma as separator
 				String[] throuhput = line.split(cvsSplitBy);
@@ -130,6 +136,14 @@ public class CSVWriteAndConnectPython {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+		}finally {
+			try {
+				if(br !=null) {
+					br.close();
+				}
+			}catch(IOException ioExe) {
+				
+			}
 		}
 
 		return result;
