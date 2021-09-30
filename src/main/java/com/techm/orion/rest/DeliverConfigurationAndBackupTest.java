@@ -289,7 +289,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							|| json.get("requestType").toString()
 									.equalsIgnoreCase("SLGM")) {
 						ArrayList<String> commandToPush = new ArrayList<String>();
-
+						InputStream input = null;
 						session = jsch.getSession(user, host,
 								Integer.parseInt(port));
 						Properties config = new Properties();
@@ -298,16 +298,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						session.setConfig(config);
 						session.setPassword(password);
 						session.connect();
-						UtilityMethods.sleepThread(10000);
+						//UtilityMethods.sleepThread(10000);
 						try {
-							channel = session.openChannel("shell");
-							OutputStream ops = channel.getOutputStream();
-
-							PrintStream ps = new PrintStream(ops, true);
-							logger.info("Channel Connected to machine " + host
-									+ " server");
-							channel.connect();
-							InputStream input = channel.getInputStream();
 							
 							// to save the backup and deliver the
 							// configuration(configuration in the router)
@@ -318,6 +310,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									requestinfo.getRequestVersion());
 							String flagForPrevalidation = "";
 							String flagFordelieverConfig = "";
+							logger.debug("SLGC Testing - resultForFlag ->"+resultForFlag);
 							for (Map.Entry<String, String> entry : resultForFlag
 									.entrySet()) {
 								if (entry.getKey() == "flagForPrevalidation") {
@@ -329,7 +322,16 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								}
 
 							}
+							
+							channel = session.openChannel("shell");
+							OutputStream ops = channel.getOutputStream();
 
+							PrintStream ps = new PrintStream(ops, true);
+							logger.info("Channel Connected to machine " + host
+									+ " server");
+							channel.connect();
+							input = channel.getInputStream();
+							UtilityMethods.sleepThread(10000);
 							// print the no config for child version
 							if ((!(requestinfo.getRequestVersion() == requestinfo
 									.getRequestParentVersion()))
@@ -337,11 +339,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 											.equalsIgnoreCase("1")
 									&& flagFordelieverConfig
 											.equalsIgnoreCase("1")) {
-
 								commandToPush = readFileNoCmd(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()));
+								logger.debug("SLGC Testing - readFileNoCmd commandToPush ->"+commandToPush);
 								if (!(commandToPush.get(0).contains("null"))) {
 									// ps.println("config t");
 									for (String arr : commandToPush) {
@@ -368,7 +370,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo
 											.getRequestVersion()));
-
+							logger.debug("SLGC Testing - readFile commandToPush ->"+commandToPush);
 							if (!(commandToPush.get(0).contains("null"))) {
 								// ps.println("config t");
 								for (String arr : commandToPush) {
@@ -390,6 +392,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										.checkErrorCode(requestinfo
 												.getAlphanumericReqId(),
 												requestinfo.getRequestVersion());
+								logger.debug("SLGC Testing - readFile errorType ->"+errorType);
 								// get the router configuration after delivery
 
 								requestinfo.setHostname(requestinfo
@@ -498,13 +501,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 												.getRequestVersion()),
 										"deliever_config", "1", "In Progress");
 
-							}
-							input.close();
-							channel.disconnect();
-							session.disconnect();
+							}							
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-						} catch (IOException ex) {
+						} catch (Exception ex) {
+							logger.error("Exception in SLGC type request  Error-> "+ex.getMessage());
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
@@ -526,7 +527,17 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 											+ "_deliveredConfig.txt", response);
 
 						}
-						session.disconnect();
+						finally{
+							if(input !=null) {
+								input.close();
+							}
+							if(channel !=null) {
+								channel.disconnect();
+							}
+							if(session !=null) {
+								session.disconnect();
+							}
+						}
 
 					} else if (json.get("requestType").toString()
 							.equalsIgnoreCase("SNRC")
@@ -889,7 +900,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		/* StringBuilder sb2=null; */
 		String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 				.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig
+		String filePath = responseDownloadPath + requestIdForConfig
 				+ "V" + version + "_ConfigurationNoCmd";
 
 		br = new BufferedReader(new FileReader(filePath));
@@ -959,7 +970,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 	public void printResult(InputStream input, Channel channel,
 			String requestId, String version) throws Exception {
-		logger.info("Total size of the Channel InputStream -->"+input.available());
+		logger.info("printResult - Total size of the Channel InputStream -->"+input.available());
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 		int SIZE = 1024;
@@ -1009,73 +1020,91 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	@SuppressWarnings("resource")
 	public ArrayList<String> readFile(String requestIdForConfig, String version)
 			throws IOException {
-		BufferedReader br = null;
+		//BufferedReader br = null;
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
 		String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 				.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig
+		String filePath = responseDownloadPath + requestIdForConfig
 				+ "V" + version + "_Configuration";
 
-		br = new BufferedReader(new FileReader(filePath));
+		
+		ArrayList<String> ar = new ArrayList<String>();
 		try {
-			ArrayList<String> ar = new ArrayList<String>();
+			logger.info("readFile - filePath>: " + filePath);
+			//br = new BufferedReader(new FileReader(filePath));
 			// StringBuffer send = null;
 			StringBuilder sb2 = new StringBuilder();
-
-			rdr = new LineNumberReader(new FileReader(filePath));
-			InputStream is = new BufferedInputStream(new FileInputStream(
-					filePath));
-
-			byte[] c = new byte[1024];
-			int count = 0;
-			int readChars = 0;
-			while ((readChars = is.read(c)) != -1) {
-				for (int i = 0; i < readChars; ++i) {
-					if (c[i] == '\n') {
-						++count;
+			File fileCheck = new File(filePath);
+			if(fileCheck.exists()) {
+				logger.info("readFile - file exists");
+				rdr = new LineNumberReader(new FileReader(filePath));
+				InputStream is = new BufferedInputStream(new FileInputStream(
+						filePath));
+				logger.info("readFile - is: " + is);
+				byte[] c = new byte[1024];
+				int count = 0;
+				int readChars = 0;
+				while ((readChars = is.read(c)) != -1) {
+					for (int i = 0; i < readChars; ++i) {
+						if (c[i] == '\n') {
+							++count;
+						}
 					}
 				}
-			}
-			int fileReadSize = Integer
-					.parseInt(DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-							.getProperty("fileChunkSize"));
-			int chunks = (count / fileReadSize) + 1;
-			String line;
-
-			for (int loop = 1; loop <= chunks; loop++) {
-				if (loop == 1) {
-					rdr = new LineNumberReader(new FileReader(filePath));
-					line = rdr.readLine();
-					sb2.append(line).append("\n");
-					for (line = null; (line = rdr.readLine()) != null;) {
-
-						if (rdr.getLineNumber() <= fileReadSize) {
-							sb2.append(line).append("\n");
+				logger.info("readFile - count: " + count);
+				int fileReadSize = Integer
+						.parseInt(DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+								.getProperty("fileChunkSize"));
+				int chunks = (count / fileReadSize) + 1;
+				String line;
+				logger.info("readFile - chunks: " + chunks);
+				for (int loop = 1; loop <= chunks; loop++) {
+					if (loop == 1) {
+						rdr = new LineNumberReader(new FileReader(filePath));
+						line = rdr.readLine();
+						sb2.append(line).append("\n");
+						for (line = null; (line = rdr.readLine()) != null;) {
+	
+							if (rdr.getLineNumber() <= fileReadSize) {
+								sb2.append(line).append("\n");
+							}
+	
 						}
-
-					}
-					ar.add(sb2.toString());
-				} else {
-					LineNumberReader rdr1 = new LineNumberReader(
-							new FileReader(filePath));
-					sb2 = new StringBuilder();
-					for (line = null; (line = rdr1.readLine()) != null;) {
-
-						if (rdr1.getLineNumber() > (fileReadSize * (loop - 1))
-								&& rdr1.getLineNumber() <= (fileReadSize * loop)) {
-							sb2.append(line).append("\n");
+						ar.add(sb2.toString());
+					} else {
+						LineNumberReader rdr1 = new LineNumberReader(
+								new FileReader(filePath));
+						sb2 = new StringBuilder();
+						for (line = null; (line = rdr1.readLine()) != null;) {
+	
+							if (rdr1.getLineNumber() > (fileReadSize * (loop - 1))
+									&& rdr1.getLineNumber() <= (fileReadSize * loop)) {
+								sb2.append(line).append("\n");
+							}
+	
 						}
-
+						ar.add(sb2.toString());
 					}
-					ar.add(sb2.toString());
+	
 				}
-
+			}else {
+				logger.info("readFile - file not exists for filePath ->"+filePath);
 			}
-			return ar;
+		}catch(Exception exe) {
+			logger.error("Exception in method readFile ->"+exe.getMessage());
 		} finally {
-			br.close();
+			try {
+				if(rdr !=null) {
+					rdr.close();
+				}
+			}catch(IOException exe) {
+				
+			}
+			
 		}
+		logger.info("readFile - ar: " + ar);
+		return ar;
 	}	
 
 	private List<String> getExsistingBootCmds(String user, String password, String host, String command) {
@@ -1132,7 +1161,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				}
 			}
 			UtilityMethods.sleepThread(5000);
-			logger.info("Total size of the Channel InputStream -->"+input.available());
+			logger.info("getExsistingBootCmds Total size of the Channel InputStream -->"+input.available());
 			logger.info("Value of command in getExsistingBootCmds method is " +command);
 			cmdCheck = notPresentCmdRes(command);
 			logger.info("Value of not presnt command in getExsistingBootCmds method is " +cmdCheck);
@@ -1324,7 +1353,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			InputStream input = channel.getInputStream();
 			ps.println("show run | i boot");
 			UtilityMethods.sleepThread(10000);
-			logger.info("Total size of the Channel InputStream -->"+input.available());
+			logger.info("checkIdLoadedProperly Total size of the Channel InputStream -->"+input.available());
 			int SIZE = 1024;
 			byte[] tmp = new byte[SIZE];
 			while (input.available() > 0) {
@@ -1486,7 +1515,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				ps.println(cmdResponse);
 				logger.info("after ps.println c3pCheckAvailableFlashSizeOnDevice");
 				UtilityMethods.sleepThread(5000);
-				logger.info("Total size of the Channel InputStream -->"+input.available());
+				logger.info("c3pCheckAvailableFlashSizeOnDevice Total size of the Channel InputStream -->"+input.available());
 				int SIZE = 1024;
 				String availableSize[] = null;
 				byte[] tmp = new byte[SIZE];
@@ -2548,7 +2577,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			InputStream input = channel.getInputStream();
 			ps.println(command);
 			UtilityMethods.sleepThread(5000);
-			logger.info("Total size of the Channel InputStream -->"+input.available());
+			logger.info("saveConfiguration Total size of the Channel InputStream -->"+input.available());
 			isSuccess = true;
 			logger.info("Save the configuration on" + host);
 			input.close();

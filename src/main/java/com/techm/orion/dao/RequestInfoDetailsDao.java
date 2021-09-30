@@ -611,7 +611,7 @@ public class RequestInfoDetailsDao {
 			session.setPassword(password);
 			session.connect();
 			UtilityMethods.sleepThread(3000);
-
+			InputStream input = null;
 			try {
 				channel = session.openChannel("shell");
 				OutputStream ops = channel.getOutputStream();
@@ -619,12 +619,12 @@ public class RequestInfoDetailsDao {
 				PrintStream printStream = new PrintStream(ops, true);
 				logger.info("Channel Connected to machine " + host + " server");
 				channel.connect();
-				InputStream input = channel.getInputStream();
+				input = channel.getInputStream();
 				//ps.println("terminal length 0");
 				//ps.println("show run");
 				printStream = setCommandStream(printStream, requestinfo, "backup", false);
-				UtilityMethods.sleepThread(20000);
-				logger.info("getRouterConfig - Total size of the Channel InputStream -->"+input.available());
+				UtilityMethods.sleepThread(25000);
+				logger.info("RequestInfoDetailsDao - getRouterConfig - Total size of the Channel InputStream -->"+input.available());
 				if (routerVersionType.equalsIgnoreCase("previous")) {
 					backupdone = true;
 					backupCurrentRouterConfigurationService.printPreviousVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
@@ -637,6 +637,10 @@ public class RequestInfoDetailsDao {
 		
 			} catch (Exception e) {
 				e.printStackTrace();
+			}finally {
+				if(input !=null) {
+					input.close();
+				}
 			}
 		}
 

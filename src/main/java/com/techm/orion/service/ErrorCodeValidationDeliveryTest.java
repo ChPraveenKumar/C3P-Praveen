@@ -66,7 +66,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 				errorType = errorValidationPojo.getError_type();
 				errorDescription = errorValidationPojo.getError_description();
 				String commandError = parseFile(
-						TSALabels.RESPONSE_LOG_PATH.getValue() + "/" + requestId + "_" + Double.toString(version) + "theSSHfile.txt",
+						TSALabels.RESPONSE_LOG_PATH.getValue() + requestId + "_" + Double.toString(version) + "theSSHfile.txt",
 						errorMsg);
 				if (commandError != "") {
 					textFound = commandError;
@@ -522,7 +522,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
 
-		File file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + "/" + "theSSHfile.txt");
+		File file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + "theSSHfile.txt");
 		/*
 		 * if (file.exists()) { file.delete(); }
 		 */
@@ -534,7 +534,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 
-				file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + "/" + "theSSHfile.txt");
+				file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + "theSSHfile.txt");
 
 				if (!file.exists()) {
 					file.createNewFile();

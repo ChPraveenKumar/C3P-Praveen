@@ -1,8 +1,5 @@
 package com.techm.orion.rest;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -753,48 +750,4 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 		}
 		return false;
 	}
-
-	public void printVersionversionInfo(InputStream input, Channel channel, String requestID, String version)
-			throws Exception {
-		BufferedWriter bw = null;
-		FileWriter fw = null;
-		int SIZE = 1024;
-		byte[] tmp = new byte[SIZE];
-
-		while (input.available() > 0) {
-			int i = input.read(tmp, 0, SIZE);
-			if (i < 0)
-				break;
-			/* logger.info(new String(tmp, 0, i)); */
-			String s = new String(tmp, 0, i);
-			if (!(s.equals(""))) {
-				// logger.info(str);
-				String filepath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-						.getProperty("responseDownloadPath") + "//" + requestID + "V" + version + "_VersionInfo.txt";
-				File file = new File(filepath);
-
-				// if file doesnt exists, then create it
-				if (!file.exists()) {
-					file.createNewFile();
-
-					fw = new FileWriter(file, true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				} else {
-					fw = new FileWriter(file.getAbsoluteFile(), true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				}
-			}
-		}
-		if (channel.isClosed()) {
-			logger.info("exit-status: " + channel.getExitStatus());
-
-		}
-		UtilityMethods.sleepThread(1000);
-
-	}
-
 }
