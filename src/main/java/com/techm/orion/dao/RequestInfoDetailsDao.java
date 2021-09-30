@@ -132,6 +132,8 @@ public class RequestInfoDetailsDao {
 		} catch (SQLException exe) {
 			logger.error("SQL Exception in editRequestforReportWebserviceInfo update webserviceinfo method "+exe.getMessage());
 		}
+		logger.info("editRequestforReportWebserviceInfo - field ->"+field);
+		logger.info("editRequestforReportWebserviceInfo - status ->"+status);
 		if (field.equalsIgnoreCase("customer_report") && status.contains("Success")) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
@@ -187,6 +189,7 @@ public class RequestInfoDetailsDao {
 				//To uncomment when python services available
 				PythonServices pythonService=new PythonServices();
 				//pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+				logger.info("Before calling customer report sucess status runDecomposeWorkflow");
 				pythonService.runDecomposeWorkflow(rfoDecomposedEntity.getOdRfoId());
 			}
 			// update the request status column to success after Configuration Request gets
@@ -225,47 +228,47 @@ public class RequestInfoDetailsDao {
 				//fetch the running configuration for this request.
 				if(entity!=null)
 				{
-				String baseLineFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
-						entity.getAlphanumericReqId() + "V"
-								+ Double.toString(entity.getRequestVersion())
-								+ "_PreviousConfig.txt";
-				String currentRunningFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
-						request.getAlphanumericReqId() + "V"
-						+ Double.toString(request.getRequestVersion())
-						+ "_PreviousConfig.txt";
-				if(baseLineFilePath!=null && currentRunningFilePath!=null)
-				{
-					//Call python service to fetch delta between two files
-					Boolean resp=pythonService.pythonDeltaCompute(baseLineFilePath, currentRunningFilePath);
-					//If resp is true update request info r_has_delta_with_baseline flag for this request to 1
-					if(resp == true)
+					String baseLineFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
+							entity.getAlphanumericReqId() + "V"
+									+ Double.toString(entity.getRequestVersion())
+									+ "_PreviousConfig.txt";
+					String currentRunningFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
+							request.getAlphanumericReqId() + "V"
+							+ Double.toString(request.getRequestVersion())
+							+ "_PreviousConfig.txt";
+					if(baseLineFilePath!=null && currentRunningFilePath!=null)
 					{
-						int res=reository.updatehasdeltawithbaseline(true, request.getAlphanumericReqId(), request.getRequestVersion());
-						if(res==0)
+						//Call python service to fetch delta between two files
+						Boolean resp=pythonService.pythonDeltaCompute(baseLineFilePath, currentRunningFilePath);
+						//If resp is true update request info r_has_delta_with_baseline flag for this request to 1
+						if(resp == true)
 						{
-							logger.error("Could not update the record for has delta flag for request id:::",request.getAlphanumericReqId());	
+							int res=reository.updatehasdeltawithbaseline(true, request.getAlphanumericReqId(), request.getRequestVersion());
+							if(res==0)
+							{
+								logger.error("Could not update the record for has delta flag for request id:::",request.getAlphanumericReqId());	
+							}
 						}
+						else
+						{
+							logger.error("No delta found for request id::::",request.getAlphanumericReqId());	
+	
+						}
+						
 					}
 					else
 					{
-						logger.error("No delta found for request id::::",request.getAlphanumericReqId());	
-
+						logger.error("Backup files not found",baseLineFilePath);	
+						logger.error("Backup files not found::: baseline path %s",baseLineFilePath);	
+						logger.error("Backup files not found::: currentRunning path %s",currentRunningFilePath);	
 					}
-					
-				}
-				else
-				{
-					logger.error("Backup files not found",baseLineFilePath);	
-					logger.error("Backup files not found::: baseline path %s",baseLineFilePath);	
-					logger.error("Backup files not found::: currentRunning path %s",currentRunningFilePath);	
-				}
 				}
 				else
 				{
 					logger.error("No backup baselined for this version");
 				}
 			}
-		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
+		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure") && "2".equals(flag)) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
 			try {
@@ -302,6 +305,7 @@ public class RequestInfoDetailsDao {
 				//To uncomment when python services available
 				PythonServices pythonService=new PythonServices();
 				//pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+				logger.info("Before calling customer report failure status runDecomposeWorkflow");
 				pythonService.runDecomposeWorkflow(rfoDecomposedEntity.getOdRfoId());
 
 			}

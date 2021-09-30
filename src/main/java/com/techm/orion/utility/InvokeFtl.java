@@ -16,7 +16,6 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
@@ -1062,6 +1061,6 @@ public class InvokeFtl {
 			throws TemplateException, IOException {
 		Map<String, Object> tree = new HashMap<String, Object>();
 		tree.put("preValidateTest", configRequest);
-		return freemarkerDo(tree, "DeviceDecommision.ftl");
+		return freemarkerDo(tree, "DeviceDecommisionError.ftl");
 	}
 }
