@@ -7559,12 +7559,19 @@ public class RequestInfoDao {
 		BatchIdEntity batchIdEntity = new BatchIdEntity();
 		try {
 
-			if (requestInfoSO.getRequestType().equalsIgnoreCase("Config MACD")
-					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+			if (requestInfoSO.getAlphanumericReqId() != null
+					&& !requestInfoSO.getAlphanumericReqId().equals("")) {
+				alphaneumeric_req_id = requestInfoSO.getAlphanumericReqId();
+				if (alphaneumeric_req_id.contains("SLGM")) {
+					requestInfoSO.setRequestType("Config MACD");
+				}
+			}
+			/*if (requestInfoSO.getRequestType().equalsIgnoreCase("Config MACD")
+					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF") && alphaneumeric_req_id != null) {
 				alphaneumeric_req_id = "SLGM-"
 						+ UUID.randomUUID().toString().toUpperCase();
 
-			} else if (requestInfoSO.getRequestType().equalsIgnoreCase("Test")
+			}*/ else if (requestInfoSO.getRequestType().equalsIgnoreCase("Test")
 					&& requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
 				alphaneumeric_req_id = "SLGT-"
 						+ UUID.randomUUID().toString().toUpperCase();
