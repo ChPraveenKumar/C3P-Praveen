@@ -179,6 +179,7 @@ public class TestBundlingController {
 		try {
 			obj = (JSONObject) parser.parse(request);
 			String os = obj.get("os").toString();
+			String family = obj.get("family").toString();
 			//String os_id = obj.get("os_id").toString();
 			if ("All".equals(os)) {
 				osversionlst = (List<OSversion>) osversionRepository.findAll();
@@ -200,18 +201,28 @@ public class TestBundlingController {
 					outputArray.add(objectJson);
 				});
 			}*/
-				familyList = osRepository.findByOs(os);
-				Set<OSversion> osVersionFamily = null;
-				for (OS operatingSystem : familyList) {
-				osVersionFamily = osversionRepository.findByOs(operatingSystem);
-				List<OSversion> list = new ArrayList<>(osVersionFamily);
-				for(int i = 0; i<list.size(); i++) {
-					JSONObject objectJson = new JSONObject();
-					objectJson.put("Id", list.get(i).getId());
-					objectJson.put("Os", list.get(i).getOsversion());
-					outputArray.add(objectJson);
-				}
-				}
+				/*
+				 * familyList = osRepository.findByOs(os); Set<OSversion> osVersionFamily =
+				 * null; for (OS operatingSystem : familyList) { osVersionFamily =
+				 * osversionRepository.findByOs(operatingSystem); List<OSversion> list = new
+				 * ArrayList<>(osVersionFamily); for(int i = 0; i<list.size(); i++) { JSONObject
+				 * objectJson = new JSONObject(); objectJson.put("Id", list.get(i).getId());
+				 * objectJson.put("Os", list.get(i).getOsversion());
+				 * outputArray.add(objectJson); } }
+				 */
+				
+				//C3P-2610
+				Set<DeviceFamily> deviceFamily = new HashSet<DeviceFamily>();
+				deviceFamily = deviceFamilyRepository.findByDeviceFamily(family);
+				deviceFamily.forEach(devicefamily -> {
+					OS osList = osRepository.findByOsAndDeviceFamily(os, devicefamily);
+					osList.getOsversion().forEach(osversion -> {
+						JSONObject objectJson = new JSONObject();
+						objectJson.put("Id", osversion.getId());
+						objectJson.put("Os", osversion.getOsversion());
+						outputArray.add(objectJson);
+					});;
+				});
 			}
 		} catch (Exception exe) {
 			logger.error("Exception occurred while fetching the data object" + exe.getMessage());
