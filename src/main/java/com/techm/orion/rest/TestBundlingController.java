@@ -190,27 +190,6 @@ public class TestBundlingController {
 					outputArray.add(0, object);
 				}
 			} else {
-				/*int id = Integer.parseInt(os_id);
-				OS osFamily = osRepository.findByOsAndId(os, id);
-				Set<OSversion> osVersionList = null;
-				osVersionList = osversionRepository.findByOs(osFamily);
-				osVersionList.forEach(osversion -> {
-					JSONObject objectJson = new JSONObject();
-					objectJson.put("Id", osversion.getId());
-					objectJson.put("Os", osversion.getOsversion());
-					outputArray.add(objectJson);
-				});
-			}*/
-				/*
-				 * familyList = osRepository.findByOs(os); Set<OSversion> osVersionFamily =
-				 * null; for (OS operatingSystem : familyList) { osVersionFamily =
-				 * osversionRepository.findByOs(operatingSystem); List<OSversion> list = new
-				 * ArrayList<>(osVersionFamily); for(int i = 0; i<list.size(); i++) { JSONObject
-				 * objectJson = new JSONObject(); objectJson.put("Id", list.get(i).getId());
-				 * objectJson.put("Os", list.get(i).getOsversion());
-				 * outputArray.add(objectJson); } }
-				 */
-				
 				//C3P-2610
 				Set<DeviceFamily> deviceFamily = new HashSet<DeviceFamily>();
 				deviceFamily = deviceFamilyRepository.findByDeviceFamily(family);
