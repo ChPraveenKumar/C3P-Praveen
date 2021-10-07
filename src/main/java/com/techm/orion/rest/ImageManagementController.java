@@ -307,7 +307,7 @@ public class ImageManagementController {
 	public ResponseEntity<JSONObject>  validateBinaryImage(@RequestBody String request) {
 		JSONObject imageJson = null;
 		JSONParser imageParser = new JSONParser();
-		String vendor = null, family = null, imageName = null;
+		String vendor = null, family = null, imageName = null, displayName =null;
 		ResponseEntity<JSONObject> responseEntity = null;
 		try {
 			JSONObject imageMgtInfo = (JSONObject) imageParser.parse(request);
@@ -321,11 +321,20 @@ public class ImageManagementController {
 			if (imageMgtInfo.get("imageName") != null && imageMgtInfo.containsKey("imageName")) {
 				imageName = imageMgtInfo.get("imageName").toString();
 			}	
-			imageJson = imageManagementService.validateBinaryImage(vendor, family, imageName);
+			if (imageMgtInfo.get("displayName") != null && imageMgtInfo.containsKey("displayName")) {
+				displayName = imageMgtInfo.get("displayName").toString();
+			}
+			imageJson = imageManagementService.validateBinaryImage(vendor, family, imageName, displayName);
 		} catch (ParseException e) {
-			logger.error("Exception occrued in validateBinaryImage" + e.getMessage());
+			logger.error("Exception occured in validateBinaryImage" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
 		} catch (Exception e) {
-			logger.error("Exception occrued in validateBinaryImage" + e.getMessage());
+			logger.error("Exception occured in validateBinaryImage" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
 		}
 		if (imageJson != null) {
 			responseEntity = new ResponseEntity<JSONObject>(imageJson, HttpStatus.OK);

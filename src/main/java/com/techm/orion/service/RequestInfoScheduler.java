@@ -106,7 +106,6 @@ public class RequestInfoScheduler {
 											configRequest, detailsList.get(j).getRequestCreatorName());
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
-									System.out.println(timestamp.toString());
 								} catch (Exception e) {
 
 									logger.error(e);

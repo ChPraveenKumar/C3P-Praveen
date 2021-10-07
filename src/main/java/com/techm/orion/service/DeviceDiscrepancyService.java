@@ -159,11 +159,9 @@ public class DeviceDiscrepancyService {
 					List<HostDiscrepancyResultEntity> discrepancyDetails = hostDiscrepancyResultRepository
 							.findHostDiscrepancyValueByDeviceId(String.valueOf(devicedetails.getdId()),
 									findDiscoveryId);
-					for (HostDiscrepancyResultEntity deviceDiscrepancy : discrepancyDetails) {
-						String displayName = masterOIDRepository.findOidDisplayName(deviceDiscrepancy.getHidOIDNo(),
-								devicedetails.getdVendor());
+					for (HostDiscrepancyResultEntity deviceDiscrepancy : discrepancyDetails) {						
 						JSONObject discrepancy = discrepancyStatusForLatestDiscover(
-								deviceDiscrepancy.getHidDiscrepancyFalg(), displayName,
+								deviceDiscrepancy.getHidDiscrepancyFalg(), deviceDiscrepancy.getHidDisplayName(),
 								deviceDiscrepancy.getHidExistingValue(), deviceDiscrepancy.getHidDiscoverValue(), true);
 						discrepancy.put("oid", deviceDiscrepancy.getHidOIDNo());
 						discrepancy.put("childOid", "");
@@ -188,7 +186,7 @@ public class DeviceDiscrepancyService {
 							findForkDiscoveryId, discrepancyObject);
 				}
 				DiscoveryDashboardEntity discoveryDetails = null;
-				if (!isDiscoveryData) {
+				if (!isDiscoveryData || findDiscoveryId!=null) {
 					discoveryDetails = dashboardRepo.findByDisId(findDiscoveryId);
 					details.put("discrepancyData", getDiscoveryDetails(discoveryDetails));
 
@@ -355,7 +353,6 @@ public class DeviceDiscrepancyService {
 					String.valueOf(deviceId), discoveryId);
 			if (dicreapancyvalue != null) {
 				for (ForkDiscoveryResultEntity forkDiscrepancyData : forkDiscrepancyValue) {
-
 					String oidValue = forkDiscrepancyData.getFdrChildOIDNo();
 					oidValue = StringUtils.substringAfterLast(oidValue, ".");
 					if (oidValue.equals(fidChildOIDNo)) {
@@ -396,10 +393,9 @@ public class DeviceDiscrepancyService {
 	}
 
 	@SuppressWarnings("unchecked")
-	private JSONObject hostDiscrepancyValue(HostDiscoveryResultEntity deviceDiscrepancy, String vendor) {
-		String displayName = masterOIDRepository.findOidDisplayName(deviceDiscrepancy.getHdrOIDNo(), vendor);
+	private JSONObject hostDiscrepancyValue(HostDiscoveryResultEntity deviceDiscrepancy, String vendor) {		
 		JSONObject discrepancy = discrepancyStatusForLatestDiscover(deviceDiscrepancy.getHdrDiscrepancyFalg(),
-				displayName, deviceDiscrepancy.getHdrExistingValue(), deviceDiscrepancy.getHdrDiscoverValue(), false);
+				deviceDiscrepancy.getHdrDisplayName(), deviceDiscrepancy.getHdrExistingValue(), deviceDiscrepancy.getHdrDiscoverValue(), false);
 		discrepancy.put("oid", deviceDiscrepancy.getHdrOIDNo());
 		discrepancy.put("childOid", "");
 		return discrepancy;
@@ -471,10 +467,10 @@ public class DeviceDiscrepancyService {
 						isSucess = true;
 					}
 
-				} else if((obj.get("oid") != null && !obj.get("oid").equals(""))) {
+				} else if((obj.get("oid") != null && !obj.get("oid").equals("")) && (obj.get("oidDisplayData") != null && !obj.get("oidDisplayData").equals(""))) {
 					// if child oid is null and empty fetch data from host tables
 					hostDiscrepancyResultEntity = hostDiscrepancyResultRepository.findDeviceHostDiscrepancy(
-							String.valueOf(deviceDiscoveryEntity.getdId()), obj.get("oid").toString(), ipAddress);
+							String.valueOf(deviceDiscoveryEntity.getdId()), obj.get("oid").toString(), ipAddress,obj.get("oidDisplayData").toString());
 					if (hostDiscrepancyResultEntity != null) {
 						logger.info(" hostDiscrepancyResultEntity.getHidOIDNo() ->"
 								+ hostDiscrepancyResultEntity.getHidOIDNo());
@@ -859,9 +855,9 @@ public class DeviceDiscrepancyService {
 		hostDiscrepancyResult.setHidPreviousValue(hostDiscrepancyResult.getHidExistingValue());
 		hostDiscrepancyResult.setHidExistingValue(hostDiscrepancyResult.getHidDiscoverValue());
 
-		MasterOIDEntity oidData = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkTypeAndOidCategory(
+		MasterOIDEntity oidData = masterOIDRepository.findByOidNoAndOidVendorAndOidNetworkTypeAndOidCategoryAndOidDisplayName(
 				hostDiscrepancyResult.getHidOIDNo(), deviceDiscoveryEntity.getdVendor(),
-				deviceDiscoveryEntity.getdVNFSupport(), "Host");
+				deviceDiscoveryEntity.getdVNFSupport(), "Host",hostDiscrepancyResult.getHidDisplayName());
 		if(oidData!=null) {
 		deviceDiscoveryEntity = setDeviceData(oidData.getOidAttrib(), deviceDiscoveryEntity,
 				hostDiscrepancyResult.getHidDiscoverValue());

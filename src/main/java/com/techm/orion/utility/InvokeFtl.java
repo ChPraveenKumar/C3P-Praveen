@@ -16,7 +16,6 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.AttribCreateConfigPojo;
@@ -448,8 +447,15 @@ public class InvokeFtl {
 				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 						+ "_PreviousConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
+				if(content.contains("cisco") || content.contains("end"))
+				{
 				content = content.substring(content.indexOf("run\r\n") + 5);
 				newStr = content.substring(0, content.lastIndexOf("end") + 3);
+				}
+				else
+				{
+					newStr = content;
+				}
 			}
 		} catch (IOException e) {
 			logger.error("Exception Occured in getPreviousRouterVersion Methode :" + e.getMessage());
@@ -474,9 +480,16 @@ public class InvokeFtl {
 				 * to remove the first four lines and last two lines from the configuration when
 				 * displayed in backup and delivery(Defect number- 219)
 				 */
+				if(content.contains("cisco") || content.contains("end"))
+				{
 				content = content.substring(content.indexOf("run\r\n") + 5);
 
 				newStr = content.substring(0, content.lastIndexOf("end") + 3);
+				}
+				else
+				{
+					newStr=content;
+				}
 			}
 
 		} catch (IOException e) {
@@ -1048,6 +1061,6 @@ public class InvokeFtl {
 			throws TemplateException, IOException {
 		Map<String, Object> tree = new HashMap<String, Object>();
 		tree.put("preValidateTest", configRequest);
-		return freemarkerDo(tree, "DeviceDecommision.ftl");
+		return freemarkerDo(tree, "DeviceDecommisionError.ftl");
 	}
 }

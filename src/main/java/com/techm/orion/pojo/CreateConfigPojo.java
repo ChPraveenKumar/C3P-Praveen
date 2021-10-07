@@ -17,6 +17,8 @@ public class CreateConfigPojo {
 	private String masterFeatureId;
 	
 	private String masterCharachteristicId;
+	
+	private Integer pollId;
 
 	public String getMasterCharachteristicId() {
 		return masterCharachteristicId;
@@ -80,6 +82,14 @@ public class CreateConfigPojo {
 
 	public void setRequestVersion(double requestVersion) {
 		this.requestVersion = requestVersion;
+	}
+
+	public Integer getPollId() {
+		return pollId;
+	}
+
+	public void setPollId(Integer pollId) {
+		this.pollId = pollId;
 	}
 
 }

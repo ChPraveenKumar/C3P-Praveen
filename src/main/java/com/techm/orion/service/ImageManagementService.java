@@ -18,5 +18,5 @@ public interface ImageManagementService {
 
 	JSONObject addBinaryImage(String request);
 	
-	JSONObject validateBinaryImage(String vendor, String family, String imageName);
+	JSONObject validateBinaryImage(String vendor, String family, String imageName, String displayName);
 }

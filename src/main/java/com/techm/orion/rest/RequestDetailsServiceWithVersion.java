@@ -535,7 +535,7 @@ public class RequestDetailsServiceWithVersion {
 					tests.put("combination", combination);
 					tests.put("testName", name);
 					tests.put("version", version);
-					int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion);
+					int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion,null,null);
 					tests.put("status", status);
 					selectedTest.add(tests);
 

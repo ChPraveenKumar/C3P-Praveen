@@ -1,21 +1,16 @@
 package com.techm.orion.rest;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.LineNumberReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import javax.ws.rs.POST;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
@@ -29,47 +24,48 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
-import com.techm.orion.pojo.HealthCheckComponent;
+import com.techm.orion.entitybeans.TestDetail;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.DcmConfigService;
-import com.techm.orion.service.PingService;
-import com.techm.orion.utility.HealthCheckReport;
+import com.techm.orion.service.TestStrategyService;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.ShowCPUUsage;
-import com.techm.orion.utility.ShowMemoryTest;
-import com.techm.orion.utility.ShowVersionTest;
-import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.TestStrategeyAnalyser;
+import com.techm.orion.utility.UtilityMethods;
 
 @Controller
 @RequestMapping("/OsUpgrade")
 public class PostUpgradeHealthCheck extends Thread {
 	private static final Logger logger = LogManager.getLogger(PostUpgradeHealthCheck.class);
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 
 	@Autowired
-	RequestInfoDao requestInfoDao;
+	private RequestInfoDao requestInfoDao;
 
 	@Autowired
-	RequestInfoDetailsDao requestDao;
-	
+	private RequestInfoDetailsDao requestInfoDetailsDao;
+
 	@Autowired
-	private DcmConfigService dcmConfigService;
-	
+	private TestStrategeyAnalyser testStrategeyAnalyser;
+
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
-	@Autowired
-	private PingService pingService;
 
-	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
-	 **/
+	@Autowired
+	private DcmConfigService dcmConfigService;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
+	
+	@Autowired
+	private TestStrategyService testStrategyService;
+	
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/HealthCheck", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -80,430 +76,228 @@ public class PostUpgradeHealthCheck extends Thread {
 		String jsonArray = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
-		boolean value = true;
-		String testToFail = null;
-		JSONParser parser = new JSONParser();
-		JSONObject json;
-		int rechabilityTst = 0;
-
+		String healthCheckTest = null;
+		Boolean value = false;
+		JSch jsch = new JSch();
+		Channel channel = null;
+		Session session = null;
 		try {
-			json = (JSONObject) parser.parse(request);
-			String RequestId = json.get("requestId").toString();
-			String version = json.get("version").toString();
-
-			
-			requestinfo = requestDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
+			JSONParser parservalue = new JSONParser();
+			JSONObject requestJson = (JSONObject) parservalue.parse(request);
+			String requestId = null;
+			String version = null;
+			if (requestJson.containsKey("requestId") && requestJson.get("requestId") != null) {
+				requestId = requestJson.get("requestId").toString();
+			}
+			if (requestJson.containsKey("version") && requestJson.get("version") != null) {
+				version = requestJson.get("version").toString();
+			}
+			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
-						.findByDHostNameAndDMgmtIpAndDDeComm(requestinfo.getHostname(),requestinfo.getManagementIp(),"0");
-				
-				requestinfo.setAlphanumericReqId(RequestId);
-				requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
-
-				String host = requestinfo.getManagementIp();
-				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
-						deviceDetails);
-				String user = routerCredential.getLoginRead();
-				String password = routerCredential.getPasswordWrite();	
 				if (type.equalsIgnoreCase("Pre")) {
-					testToFail = "pre_health_checkup";
+					healthCheckTest = "pre_health_checkup";
 				} else {
-					testToFail = "health_check";
+					healthCheckTest = "post_health_checkup";
 				}
-				boolean reachability = pingService.pingResults(host, requestinfo.getHostname(), requestinfo.getRegion());
-				if (reachability) {
-					rechabilityTst = 1;
-				} else {
-					rechabilityTst = 0;
+				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
+						requestinfo.getHostname(), requestinfo.getManagementIp(), "0");
+				String statusValue = requestInfoDetailsDao.getPreviousMileStoneStatus(
+						requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), healthCheckTest, "4", statusValue);
 
-				}
+				requestinfo.setAlphanumericReqId(requestId);
+				requestinfo.setRequestVersion(Double.parseDouble(version));
+				String host = requestinfo.getManagementIp();
+				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
+				String user = routerCredential.getLoginRead();
+				String password = routerCredential.getPasswordWrite();
+				logger.info("Request ID in" + healthCheckTest + "test validation" + requestId);
+				String port = TSALabels.PORT_SSH.getValue();
+				session = jsch.getSession(user, host, Integer.parseInt(port));
+				Properties config = new Properties();
+				config.put("StrictHostKeyChecking", "no");
+				config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+				logger.info("Password for healthcheck " + password + "user " + user + "host " + host + "Port " + port);
+				session.setConfig(config);
+				session.setPassword(password);
+				session.connect();
+				logger.info("After session.connect Health Check milestone");
+				UtilityMethods.sleepThread(10000);
+				try {
+					channel = session.openChannel("shell");
+					OutputStream ops = channel.getOutputStream();
+					PrintStream ps = new PrintStream(ops, true);
+					logger.info("Channel Connected to machine " + host + " server");
+					channel.connect();
+					InputStream input = channel.getInputStream();
+					List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();					
+					List<TestDetail> listOfTests = requestInfoDao.findTestFromTestStrategyDB(
+							requestinfo.getFamily(), requestinfo.getOs(), "All", requestinfo.getVendor(),
+							requestinfo.getRegion(), "Software Upgrade");
+					List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+							"Software Upgrade",version);
+					List<Boolean> results = null;
+					
+					if (selectedTests.size() > 0) {
+						for (int i = 0; i < listOfTests.size(); i++) {
+							for (int j = 0; j < selectedTests.size(); j++) {
+								if (selectedTests.get(j).getTestName()
+										.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
+									finallistOfTests.add(listOfTests.get(i));
+								}
+							}
+						}
+					}
+					if (finallistOfTests.size() > 0) {
+						results = new ArrayList<Boolean>();
+						for (TestDetail testDetail : finallistOfTests) {
+							if ((testDetail.getTestSubCategory().contains("PreUpgrade")
+									&& "pre_health_checkup".equals(healthCheckTest))
+									|| (testDetail.getTestSubCategory().contains("PostUpgrade")
+											&& "post_health_checkup".equals(healthCheckTest))) {
+								ps = requestInfoDetailsDao.setCommandStream(ps, requestinfo, "Test", false);
+								ps.println(testDetail.getTestCommand());
+								UtilityMethods.sleepThread(8000);
+								Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()), testDetail, healthCheckTest);
+								results.add(res);
+							}
 
-				if (rechabilityTst == 1) {
-					String OsversionOnDevice = null;
-					ShowVersionTest versionTest = new ShowVersionTest();
-					OsversionOnDevice = versionTest.versionInfo(host, user, password, requestinfo.getHostname(),
-							requestinfo.getRegion(), type);
-
-					String memoryResult = null, cpu_usage_result = null;
-
-					if (OsversionOnDevice.equalsIgnoreCase("JSchException")) {
-						value = false;
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), testToFail, "2", "Failure");
-						requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure",
-								"Failure", "Could not connect to the router.");
-
-						try {
-							List<HealthCheckComponent> resultList = new ArrayList<HealthCheckComponent>();
-							HealthCheckReport healthCheckReport = new HealthCheckReport();
-							healthCheckReport.createFailureReport(resultList, requestinfo.getHostname(),
-									requestinfo.getRegion(), type);
-						} catch (Exception e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						}
+						String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
+								requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
+						int statusData = requestInfoDetailsDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), healthCheckTest);
+						if (statusData != 3) {
+							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()), healthCheckTest, "1", status);
 						}
 					} else {
+						String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
+								requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 
-						ShowMemoryTest memoryTest = new ShowMemoryTest();
-						ShowCPUUsage cpu_usage = new ShowCPUUsage();
-						memoryResult = memoryTest.memoryInfo(host, user, password, requestinfo.getHostname(),
-								requestinfo.getRegion(), type);
-						//powerResult = powerTest.powerInfo(host, user, password, requestinfo.getHostname(),
-							//	requestinfo.getRegion(), type);
-						cpu_usage_result = cpu_usage.cpuUsageInfo(host, user, password, requestinfo.getHostname(),
-								requestinfo.getRegion(), type);
-						// Create Health check report
-						List<HealthCheckComponent> resultList = new ArrayList<HealthCheckComponent>();
-						HealthCheckComponent memoryComp = new HealthCheckComponent();
-						memoryComp.setTestname("Memory Check");
-						memoryComp.setTestresult(memoryResult);
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), healthCheckTest, "0", status);
 
-						resultList.add(memoryComp);
-						//resultList.add(memoryComp);
-
-						HealthCheckComponent powerComp = new HealthCheckComponent();
-						powerComp.setTestname("Power Check");
-						powerComp.setTestresult("Pass");
-
-						resultList.add(powerComp);
-
-						HealthCheckComponent cpu_usage_comp = new HealthCheckComponent();
-						cpu_usage_comp.setTestname("CPU Check");
-						cpu_usage_comp.setTestresult(cpu_usage_result);
-						cpu_usage_comp.setTestresult("");
-						resultList.add(cpu_usage_comp);
-
-						HealthCheckReport healthCheckReport = new HealthCheckReport();
-						healthCheckReport.createReport(resultList, requestinfo.getHostname(), requestinfo.getRegion(),
-								type);
-
-						if (memoryResult.equalsIgnoreCase("pass") && /*powerResult.equalsIgnoreCase("pass")*/
-								cpu_usage_result.equalsIgnoreCase("pass")) {
-							value = true;
-							jsonArray = new Gson().toJson(value);
-							obj.put(new String("output"), jsonArray);
-							if (type.equalsIgnoreCase("Post")) {
-								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "health_check", "1",
-										"In Progress");
-
-							} else if (type.equalsIgnoreCase("Pre")) {
-								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "1",
-										"In Progress");
-
+					}					
+					value = true;
+					if (results != null) {
+						for (int i = 0; i < results.size(); i++) {
+							if (!results.get(i)) {
+								value = false;
+								break;
 							}
-							requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
-									requestinfo.getAlphanumericReqId());
 
-						} else {
-							value = false;
-							jsonArray = new Gson().toJson(value);
-							// released device lock
-							requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
-									requestinfo.getAlphanumericReqId());
-							obj.put(new String("output"), jsonArray);
-							if (type.equalsIgnoreCase("Post")) {
-								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "health_check", "2",
-										"Failure");
-								requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure",
-										"Failure", "Could not connect to the router.");
-							} else if (type.equalsIgnoreCase("Pre")) {
-								requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2",
-										"Failure");
-
-							} else {
-
-							}
-							resultList = null;
-							healthCheckReport.createReport(resultList, requestinfo.getHostname(),
-									requestinfo.getRegion(), type);
 						}
-
 					}
-				} else {
-					value = false;
-					// released device lock
-					requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
-							requestinfo.getAlphanumericReqId());
+					
+					UtilityMethods.sleepThread(1500);
+					logger.info("DONE");
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
-					if (type.equalsIgnoreCase("Post")) {
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "health_check", "2", "Failure");
-						requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure",
-								"Failure", "Could not connect to the router.");
-					} else if (type.equalsIgnoreCase("Pre")) {
-						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "2", "Failure");
-					} else {
-
-					}
-
-					String response = "";
-					String responseDownloadPath = "";
-					try {
-						response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
-						requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
-						requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()));
-						responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES
-								.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
-								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_HealthCheck.txt",
-								response);
-						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
-								requestinfo.getAlphanumericReqId());
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-
-					}
+				} catch (IOException ex) {
+					logger.error("Error in Health check test " + ex.getMessage());
+					ex.getStackTrace();
+					obj = testStrategyService.setFailureResult(jsonArray, value, requestinfo, healthCheckTest, obj,
+							invokeFtl,"_CustomTests.txt");
 				}
-
 			}
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (Exception e1) {
+		} catch (ParseException ex) {
+			logger.error("Error in  Helath Check Milestone" + ex.getMessage());
+		}
+		// when reachability fails
+		catch (Exception ex) {
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-
-				e1.printStackTrace();
-				if (e1.getMessage().contains("invalid server's version string")
-						|| e1.getMessage().contains("Auth fail")) {
-					value = false;
-					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), testToFail, "2", "Failure");
-					requestInfoDao.editRequestForReportIOSWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure", "Failure",
-							"Could not connect to the router.");
-
-					String response = "";
-					String responseDownloadPath = "";
-
-					try {
-						response = invokeFtl.generateCustomerIOSHealthCheckFailedPost(requestinfo);
-
-						responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES
-								.getProperty("responseDownloadPathHealthCheckFolder");
-						TextReport.writeFile(responseDownloadPath, type + "_" + requestinfo.getHostname() + "_"
-								+ requestinfo.getRegion() + "_HealthCheckReport.txt", response);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				logger.info("Error in Post health check " + ex.getMessage());
+				ex.printStackTrace();
+				obj = testStrategyService.setDeviceReachabilityFailuarResult(jsonArray, value, requestinfo, healthCheckTest, obj,
+						invokeFtl,"_CustomTests.txt");
+			}
+		} finally {
+			if (channel != null) {
+				try {
+					session = channel.getSession();
+					if (channel.getExitStatus() == -1) {
+						UtilityMethods.sleepThread(5000);
 					}
+				} catch (Exception e) {
+					logger.error("Exception occure in healthcheckCommandTest: "+e.getMessage());
 				}
-
+				channel.disconnect();
+				session.disconnect();				
 			}
 		}
-		jsonArray = new Gson().toJson(value);
-		obj.put(new String("output"), jsonArray);
 		return obj;
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
+	
+	@POST
+	@RequestMapping(value = "/comapreTestResult", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject compareTestResult(@RequestBody String request) {
+		JSONObject obj = new JSONObject();
 		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			logger.error("Exception in loadProperties method "+exc.getMessage());
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
-	@SuppressWarnings("resource")
-	public ArrayList<String> readFileNoCmd(String requestIdForConfig, String version) throws IOException {
-		BufferedReader br = null;
-		LineNumberReader rdr = null;
-		/* StringBuilder sb2=null; */
-		String responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
-
-		br = new BufferedReader(new FileReader(filePath));
-		File f = new File(filePath);
-		try {
-			ArrayList<String> ar = new ArrayList<String>();
-			if (f.exists()) {
-
-				StringBuilder sb2 = new StringBuilder();
-
-				rdr = new LineNumberReader(new FileReader(filePath));
-				InputStream is = new BufferedInputStream(new FileInputStream(filePath));
-
-				byte[] c = new byte[1024];
-				int count = 0;
-				int readChars = 0;
-				while ((readChars = is.read(c)) != -1) {
-					for (int i = 0; i < readChars; ++i) {
-						if (c[i] == '\n') {
-							++count;
-						}
-					}
-				}
-				int fileReadSize = Integer.parseInt(PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("fileChunkSize"));
-				int chunks = (count / fileReadSize) + 1;
-				String line;
-
-				for (int loop = 1; loop <= chunks; loop++) {
-					if (loop == 1) {
-						rdr = new LineNumberReader(new FileReader(filePath));
-						line = rdr.readLine();
-						sb2.append(line).append("\n");
-						for (line = null; (line = rdr.readLine()) != null;) {
-
-							if (rdr.getLineNumber() <= fileReadSize) {
-								sb2.append(line).append("\n");
-							}
-
-						}
-						ar.add(sb2.toString());
-					} else {
-						LineNumberReader rdr1 = new LineNumberReader(new FileReader(filePath));
-						sb2 = new StringBuilder();
-						for (line = null; (line = rdr1.readLine()) != null;) {
-
-							if (rdr1.getLineNumber() > (fileReadSize * (loop - 1))
-									&& rdr1.getLineNumber() <= (fileReadSize * loop)) {
-								sb2.append(line).append("\n");
-							}
-
-						}
-						ar.add(sb2.toString());
-					}
-
-				}
-
+			JSONParser parservalue = new JSONParser();
+			JSONObject requestJson = (JSONObject) parservalue.parse(request);
+			String requestId = null;
+			String version = null;
+			String reportLabel = null;
+			if (requestJson.containsKey("requestId") && requestJson.get("requestId") != null) {
+				requestId = requestJson.get("requestId").toString();
 			}
-			return ar;
-		} finally {
-			br.close();
-		}
-	}
-
-	public void printResult(InputStream input, Channel channel, String requestId, String version) throws Exception {
-		BufferedWriter bw = null;
-		FileWriter fw = null;
-		int SIZE = 1024;
-		byte[] tmp = new byte[SIZE];
-		String responselogpath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responselogpath");
-		File file = new File(responselogpath + "/" + requestId + "_" + version + "theSSHfile.txt");
-		/*
-		 * if (file.exists()) { file.delete(); }
-		 */
-		while (input.available() > 0) {
-			int i = input.read(tmp, 0, SIZE);
-			if (i < 0)
-				break;
-
-			String s = new String(tmp, 0, i);
-			if (!(s.equals(""))) {
-
-				file = new File(responselogpath + "/" + requestId + "_" + version + "theSSHfile.txt");
-
-				if (!file.exists()) {
-					file.createNewFile();
-
-					fw = new FileWriter(file, true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				} else {
-					fw = new FileWriter(file.getAbsoluteFile(), true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				}
+			if (requestJson.containsKey("version") && requestJson.get("version") != null) {
+				version = requestJson.get("version").toString();
+			}
+			if (requestJson.containsKey("testName") && requestJson.get("testName") != null) {
+				reportLabel = requestJson.get("testName").toString();
+			}
+			if (requestId != null && version != null) {
+				reportLabel = StringUtils.replace(reportLabel, "::", "_");
+				String pythonScriptFolder = TSALabels.PYTHON_SCRIPT_PATH.getValue();
+				String preUpgradeFile = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestId + "V"
+						+ version + "_" + reportLabel + "_" + "Pre_health_checkup.txt";
+				String postUpgradeFile = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestId + "V"
+						+ version + "_" + reportLabel + "_" + "Post_health_checkup.txt";
+				String outputFile = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestId + "V"
+						+ version + "_" + reportLabel + "_" + "difference.html";
+				// copy them to temp file
+				String[] cmd = { "python", pythonScriptFolder + "filediff.py", "-m", preUpgradeFile, postUpgradeFile,
+						outputFile };
+				Runtime.getRuntime().exec(cmd);
+				UtilityMethods.sleepThread(10000);
+				obj = setFileData(outputFile,obj);
 			}
 
+		} catch (ParseException e) {
+			logger.error("Message in compareTestResult" + e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Message in compareTestResult" + e.getMessage());
+			e.printStackTrace();
 		}
-		if (channel.isClosed()) {
-			logger.info("exit-status: " + channel.getExitStatus());
-
-		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-		}
-
+		return obj;
 	}
 
-	@SuppressWarnings("resource")
-	public ArrayList<String> readFile(String requestIdForConfig, String version) throws IOException {
-		BufferedReader br = null;
-		LineNumberReader rdr = null;
-		/* StringBuilder sb2=null; */
-		String responseDownloadPath = PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + requestIdForConfig + "V" + version + "_Configuration";
-
-		br = new BufferedReader(new FileReader(filePath));
+	@SuppressWarnings("unchecked")
+	private JSONObject setFileData(String outputFile, JSONObject obj) {
 		try {
-			ArrayList<String> ar = new ArrayList<String>();
-			// StringBuffer send = null;
-			StringBuilder sb2 = new StringBuilder();
-
-			rdr = new LineNumberReader(new FileReader(filePath));
-			InputStream is = new BufferedInputStream(new FileInputStream(filePath));
-
-			byte[] c = new byte[1024];
-			int count = 0;
-			int readChars = 0;
-			while ((readChars = is.read(c)) != -1) {
-				for (int i = 0; i < readChars; ++i) {
-					if (c[i] == '\n') {
-						++count;
-					}
-				}
+			String fileData = UtilityMethods.readFirstLineFromFile(outputFile);
+			if (fileData != null && !fileData.isEmpty()) {
+				Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+				String jsonArray = gson.toJson(fileData);
+				obj.put(new String("output"), jsonArray);
+			} else {
+				logger.info("Error");
+				obj.put(new String("output"), "Error in processing the files");
 			}
-			int fileReadSize = Integer.parseInt(PostUpgradeHealthCheck.TSA_PROPERTIES.getProperty("fileChunkSize"));
-			int chunks = (count / fileReadSize) + 1;
-			String line;
-
-			for (int loop = 1; loop <= chunks; loop++) {
-				if (loop == 1) {
-					rdr = new LineNumberReader(new FileReader(filePath));
-					line = rdr.readLine();
-					sb2.append(line).append("\n");
-					for (line = null; (line = rdr.readLine()) != null;) {
-
-						if (rdr.getLineNumber() <= fileReadSize) {
-							sb2.append(line).append("\n");
-						}
-
-					}
-					ar.add(sb2.toString());
-				} else {
-					LineNumberReader rdr1 = new LineNumberReader(new FileReader(filePath));
-					sb2 = new StringBuilder();
-					for (line = null; (line = rdr1.readLine()) != null;) {
-
-						if (rdr1.getLineNumber() > (fileReadSize * (loop - 1))
-								&& rdr1.getLineNumber() <= (fileReadSize * loop)) {
-							sb2.append(line).append("\n");
-						}
-
-					}
-					ar.add(sb2.toString());
-				}
-
-			}
-			return ar;
-		} finally {
-			br.close();
+		} catch (IOException e) {
+			logger.error("Message in compareTestResult" + e.getMessage());
+			obj.put(new String("output"), "Error in processing the files");
+			e.printStackTrace();
 		}
+		return obj;
+
 	}
-
-
 }

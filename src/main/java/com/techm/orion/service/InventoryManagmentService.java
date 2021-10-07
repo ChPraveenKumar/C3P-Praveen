@@ -17,12 +17,12 @@ import org.springframework.stereotype.Service;
 
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.SiteInfoEntity;
-import com.techm.orion.entitybeans.UserEntity;
+import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.pojo.DeviceDiscoverPojo;
 import com.techm.orion.pojo.SiteInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
-import com.techm.orion.repositories.UserRepository;
+import com.techm.orion.repositories.UserManagementRepository;
 
 @Service
 public class InventoryManagmentService {
@@ -38,7 +38,7 @@ public class InventoryManagmentService {
 	SiteInfoRepository siteRepo;
 
 	@Autowired
-	UserRepository userRepo;
+	private UserManagementRepository userManagementRepository;
 
 	
 
@@ -152,9 +152,9 @@ public class InventoryManagmentService {
 		JSONArray customerArray = new JSONArray();
 		if (logedInUserName != null) {
 
-			List<UserEntity> findDevicesByUserName = userRepo.findDevicesByUserName(logedInUserName);
+			List<UserManagementEntity> findDevicesByUserName = userManagementRepository.findDevicesByUserName(logedInUserName);
 			findDevicesByUserName.forEach(user -> {
-				List<DeviceDiscoveryEntity> devices = user.getDevices();
+				List<DeviceDiscoveryEntity> devices = user.getDeviceDetails();
 				List<SiteInfoEntity> allSiteInfo = new ArrayList<>();
 				devices.forEach(item -> {
 					allSiteInfo.add(item.getCustSiteId());
@@ -202,9 +202,9 @@ public class InventoryManagmentService {
 		JSONArray vendorArray = new JSONArray();
 		String logedInUserName = dcmConfigService.getLogedInUserName();
 		if (logedInUserName != null) {
-			List<UserEntity> findDevicesByUserName = userRepo.findDevicesByUserName(logedInUserName);
+			List<UserManagementEntity> findDevicesByUserName = userManagementRepository.findDevicesByUserName(logedInUserName);
 			findDevicesByUserName.forEach(user -> {
-				List<DeviceDiscoveryEntity> devices = user.getDevices();
+				List<DeviceDiscoveryEntity> devices = user.getDeviceDetails();
 				List<SiteInfoEntity> allSiteInfo = new ArrayList<>();
 				devices.forEach(item -> {
 					allSiteInfo.add(item.getCustSiteId());

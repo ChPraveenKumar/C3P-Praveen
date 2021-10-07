@@ -37,10 +37,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.techm.orion.entitybeans.BasicConfiguration;
+import com.techm.orion.entitybeans.IpRangeManagementEntity;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.entitybeans.Notification;
 import com.techm.orion.entitybeans.Series;
+import com.techm.orion.entitybeans.TemplateIpPoolJoinEntity;
 import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
 import com.techm.orion.pojo.AttribUIComponentPojo;
@@ -56,6 +58,7 @@ import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.SeriesRepository;
+import com.techm.orion.repositories.TemplateIpPoolJoinRepository;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.responseEntity.GetAttribResponseEntity;
 import com.techm.orion.service.AttribSevice;
@@ -91,18 +94,21 @@ public class MasterFeatureController {
 	private NotificationRepo notificationRepo;
 	@Autowired
 	private UserManagementRepository userManagementRepository;
-	
+
 	@Autowired
 	private WAFADateUtil dateUtil;
-	
+
 	@Autowired
 	private ErrorValidationRepository errorValidationRepository;
+
+	@Autowired
+	private TemplateIpPoolJoinRepository templateIpPoolJoinRepository;
 
 	/*
 	 * To get Validation, Category and UI component list.
 	 */
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@GET
@@ -137,7 +143,7 @@ public class MasterFeatureController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@POST
@@ -152,7 +158,7 @@ public class MasterFeatureController {
 		String userName = null;
 		try {
 			json = (JSONObject) parser.parse(configRequest);
-			if(json.get("userName") !=null)
+			if (json.get("userName") != null)
 				userName = json.get("userName").toString();
 			masterFeature = setMasterFeatureData(json);
 			Notification notificationEntity = new Notification();
@@ -162,62 +168,62 @@ public class MasterFeatureController {
 			Timestamp timestampValue = new Timestamp(date.getTime());
 			Calendar cal = Calendar.getInstance();
 			List<String> sUserList = userManagementRepository.findByRole();
-			for(String suserList : sUserList)
-			{
+			for (String suserList : sUserList) {
 				builder.append(suserList).append(",");
-			}	
-			sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
+			}
+			sUserListData = builder.deleteCharAt(builder.length() - 1)
+					.toString();
 			// If it is basic config save commands to
 			// t_tpmgmt_m_basic_configuration else to
 			// c3p_template_master_command_list
 			JSONArray cmdArray = (JSONArray) (json.get("commands"));
-			/*if (Boolean
-					.parseBoolean(json.get("isBasicConiguration").toString()))
+			/*
+			 * if (Boolean
+			 * .parseBoolean(json.get("isBasicConiguration").toString()))
+			 * 
+			 * { String series = getSeries(masterFeature.getfVendor(),
+			 * masterFeature.getfFamily()); Set<Series> seriesSet =
+			 * masterSeriesRepo.findBySeries(series); if (null != seriesSet &&
+			 * !seriesSet.isEmpty()) { obj.put("output",
+			 * "Basic configuration for this series already exist");
+			 * 
+			 * } else { String ent = saveconfiguartionData(json, masterFeature,
+			 * series); camundaService.initiateApprovalFlow(ent, "1.0",
+			 * "Admin"); obj.put("output", "Feature Created");
+			 * camundaService.initiateApprovalFlow(ent, "1.0", "Admin");
+			 * obj.put("output", "Feature Created"); }
+			 * 
+			 * }else {
+			 */
+			// Save features in master feature
+			MasterFeatureEntity ent = masterFeatureRepository
+					.save(masterFeature);
+			ent.setfId("F" + ent.getfRowid());
+			masterFeatureRepository.save(ent);
+			saveMasterCharacteistics(json, masterFeature, ent.getfId());
+			saveComands(cmdArray, ent.getfId());
+			obj.put("output", "Feature Created");
+			notificationEntity
+					.setNotifFromUser(json.get("userName").toString());
+			notificationEntity.setNotifToUser(sUserListData);
+			notificationEntity.setNotifType("Feature Approval");
+			notificationEntity.setNotifCreatedDate(timestampValue);
+			notificationEntity.setNotifReference(ent.getfId() + "_"
+					+ ent.getfName() + "-V" + "1.0");
+			notificationEntity.setNotifLabel(ent.getfId() + "_"
+					+ ent.getfName() + "-V" + "1.0" + " : "
+					+ "Approval initiated");
+			notificationEntity.setNotifMessage("Approval initiated");
+			notificationEntity.setNotifPriority("1");
+			notificationEntity.setNotifStatus("Pending");
+			cal.setTimeInMillis(timestampValue.getTime());
+			cal.add(Calendar.DAY_OF_MONTH, 30);
+			timestampValue = new Timestamp(cal.getTime().getTime());
+			notificationEntity.setNotifExpiryDate(timestampValue);
+			notificationRepo.save(notificationEntity);
+			camundaService.initiateApprovalFlow(ent.getfId(), "1.0", userName);
 
-			{
-				String series = getSeries(masterFeature.getfVendor(),
-						masterFeature.getfFamily());
-				Set<Series> seriesSet = masterSeriesRepo.findBySeries(series);
-				if (null != seriesSet && !seriesSet.isEmpty()) {
-					obj.put("output",
-							"Basic configuration for this series already exist");
-
-				} else {
-					String ent = saveconfiguartionData(json, masterFeature,
-							series);
-					camundaService.initiateApprovalFlow(ent, "1.0", "Admin");
-					obj.put("output", "Feature Created");
-					camundaService.initiateApprovalFlow(ent, "1.0", "Admin");
-					obj.put("output", "Feature Created");
-				}
-
-			}else {*/
-				// Save features in master feature
-				MasterFeatureEntity ent = masterFeatureRepository
-						.save(masterFeature);
-				ent.setfId("F" + ent.getfRowid());
-				masterFeatureRepository.save(ent);
-				saveMasterCharacteistics(json, masterFeature, ent.getfId());
-				saveComands(cmdArray, ent.getfId());
-				obj.put("output", "Feature Created");
-				notificationEntity.setNotifFromUser(json.get("userName").toString());
-				notificationEntity.setNotifToUser(sUserListData);
-				notificationEntity.setNotifType("Feature Approval");
-				notificationEntity.setNotifCreatedDate(timestampValue);
-				notificationEntity.setNotifReference(ent.getfId()+"_"+ent.getfName()+"-V"+"1.0");
-				notificationEntity.setNotifLabel(ent.getfId()+"_"+ent.getfName()+"-V"+"1.0"+" : "+ "Approval initiated");
-				notificationEntity.setNotifMessage("Approval initiated");
-				notificationEntity.setNotifPriority("1");
-				notificationEntity.setNotifStatus("Pending");
-				cal.setTimeInMillis(timestampValue.getTime());
-			    cal.add(Calendar.DAY_OF_MONTH, 30);
-			    timestampValue = new Timestamp(cal.getTime().getTime());
-				notificationEntity.setNotifExpiryDate(timestampValue);
-				notificationRepo.save(notificationEntity);
-				camundaService.initiateApprovalFlow(ent.getfId(), "1.0",
-						userName);
-
-			//}
+			// }
 		} catch (ParseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -259,7 +265,7 @@ public class MasterFeatureController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@POST
@@ -415,12 +421,12 @@ public class MasterFeatureController {
 
 				}
 				if (jsonObject.get("key") != null) {
-					masterCharacteristic.setcIsKey((boolean)jsonObject
+					masterCharacteristic.setcIsKey((boolean) jsonObject
 							.get("key"));
 				}
 				if (jsonObject.get("userName") != null) {
-					masterCharacteristic.setcCreatedBy(jsonObject
-							.get("userName").toString());
+					masterCharacteristic.setcCreatedBy(jsonObject.get(
+							"userName").toString());
 				}
 				timestamp = new Timestamp(new Date().getTime());
 				if (timestamp != null) {
@@ -435,7 +441,51 @@ public class MasterFeatureController {
 						+ yyyyMMdd
 						+ UUID.randomUUID().toString().toUpperCase()
 								.substring(0, 6));
-				//masterCharacteristic.setcCreatedBy("admin");
+				// masterCharacteristic.setcCreatedBy("admin");
+				List<IpRangeManagementEntity> listOfPoolIds = null;
+				if (json.containsKey("templateId")) {
+					// save in manually generated join relationship table
+					int cId = masterCharacteristicsRepository
+							.findRowID(jsonObject.get("characteriscticsId")
+									.toString());
+
+					if (jsonObject.get("poolIds") != null) {
+
+						JSONArray poolIdJsonArray = (JSONArray) jsonObject
+								.get("poolIds");
+						for (int iCounter = 0; iCounter < poolIdJsonArray
+								.size(); iCounter++) {
+							TemplateIpPoolJoinEntity entity = new TemplateIpPoolJoinEntity();
+							entity.setCtChId(cId);
+							entity.setCtTemplateId(json.get("templateId")
+									.toString());
+							entity.setCtPoolId(((Long) poolIdJsonArray
+									.get(iCounter)).intValue());
+							entity.setIsSave(0);
+							templateIpPoolJoinRepository.save(entity);
+							
+						}
+					}
+
+				} else {
+					if(jsonObject.containsKey("poolIds"))
+					{
+					if (jsonObject.get("poolIds") != null) {
+						listOfPoolIds = new ArrayList<IpRangeManagementEntity>();
+						JSONArray poolIdJsonArray = (JSONArray) jsonObject
+								.get("poolIds");
+						for (int iCounter = 0; iCounter < poolIdJsonArray
+								.size(); iCounter++) {
+							IpRangeManagementEntity entity = new IpRangeManagementEntity();
+							entity.setRangePoolId(((Long) poolIdJsonArray
+									.get(iCounter)).intValue());
+							listOfPoolIds.add(entity);
+						}
+						masterCharacteristic.setLinkedPools(listOfPoolIds);
+					}
+					}
+					
+				}
 				masterCharacteristicList.add(masterCharacteristic);
 			}
 
@@ -457,10 +507,9 @@ public class MasterFeatureController {
 		String sUserListData = "", comments = null, userName = null;
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
 		List<String> sUserList = userManagementRepository.findByRole();
-		for(String suserList : sUserList)
-		{
+		for (String suserList : sUserList) {
 			builder.append(suserList).append(",");
-		}	
+		}
 		sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
 
 		if (json.containsKey("featureName")) {
@@ -492,25 +541,26 @@ public class MasterFeatureController {
 			}
 		}
 		if (json.containsKey("comments") && json.containsKey("userName")) {
-			/*comments = json.get("comments").toString();
-			userName = json.get("userName").toString();
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy , HH:mm:ss aa ");  
-		    Date date = new Date();  
-		    comments = userName +" : " +  dateFormat.format(date) +  comments;*/
-			if(json.get("comments")!=null && json.get("userName")!=null)
-			{
-			userName = json.get("userName").toString();
-			String timeStamp="00-00-0000 00:00:00";
-			if(json.containsKey("timezone"))
-			{
-				timeStamp=dateUtil.currentDateTimeFromUserTimeZoneToServerTimzeZone(json.get("timezone").toString());
-			}
-			else
-			{
-				timeStamp=dateUtil.currentDateTime();
-			}
-			String _varComment = timeStamp+" "+userName + " : " +json.get("comments").toString();
-			masterFeature.setfComments(_varComment.concat("\n"));
+			/*
+			 * comments = json.get("comments").toString(); userName =
+			 * json.get("userName").toString(); SimpleDateFormat dateFormat =
+			 * new SimpleDateFormat("dd/MM/yyyy , HH:mm:ss aa "); Date date =
+			 * new Date(); comments = userName +" : " + dateFormat.format(date)
+			 * + comments;
+			 */
+			if (json.get("comments") != null && json.get("userName") != null) {
+				userName = json.get("userName").toString();
+				String timeStamp = "00-00-0000 00:00:00";
+				if (json.containsKey("timezone")) {
+					timeStamp = dateUtil
+							.currentDateTimeFromUserTimeZoneToServerTimzeZone(json
+									.get("timezone").toString());
+				} else {
+					timeStamp = dateUtil.currentDateTime();
+				}
+				String _varComment = timeStamp + " " + userName + " : "
+						+ json.get("comments").toString();
+				masterFeature.setfComments(_varComment.concat("\n"));
 			}
 		}
 		if (json.containsKey("isReplicated")) {
@@ -521,7 +571,7 @@ public class MasterFeatureController {
 		masterFeature.setfFlag("custom");
 		masterFeature.setfStatus("Pending");
 		masterFeature.setfOwner(sUserListData);
-		if (json.containsKey("userName")) 
+		if (json.containsKey("userName"))
 			masterFeature.setfCreatedBy(json.get("userName").toString());
 		Timestamp timestamp = new Timestamp(new Date().getTime());
 		if (timestamp != null) {
@@ -564,14 +614,18 @@ public class MasterFeatureController {
 			Timestamp timestampValue = new Timestamp(date.getTime());
 			Calendar cal = Calendar.getInstance();
 			List<String> sUserList = userManagementRepository.findByRole();
-			for(String suserList : sUserList)
-			{
+			String templateId = null;
+			for (String suserList : sUserList) {
 				builder.append(suserList).append(",");
-			}	
-			sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
+			}
+			sUserListData = builder.deleteCharAt(builder.length() - 1)
+					.toString();
 			json = (JSONObject) parser.parse(configRequest);
 			masterFeature = setMasterFeatureData(json);
 			JSONArray cmdArray = (JSONArray) (json.get("commands"));
+			if (json.containsKey("templateId")) {
+				templateId = json.get("templateId").toString();
+			}
 			List<CommandPojo> commandPojoList = new ArrayList<>();
 			if (Boolean
 					.parseBoolean(json.get("isBasicConiguration").toString()))
@@ -581,26 +635,32 @@ public class MasterFeatureController {
 						masterFeature.getfFamily());
 				Set<Series> seriesSet = masterSeriesRepo.findBySeries(series);
 				if (null != seriesSet && !seriesSet.isEmpty()) {
-					obj.put("output",
-							errorValidationRepository.findByErrorId("C3P_TM_013"));
+					obj.put("output", errorValidationRepository
+							.findByErrorId("C3P_TM_013"));
 
 				} else {
-					String featurId = saveconfiguartionData(json, masterFeature, series);
-					notificationEntity.setNotifFromUser(json.get("userName").toString());
+					String featurId = saveconfiguartionData(json,
+							masterFeature, series);
+					notificationEntity.setNotifFromUser(json.get("userName")
+							.toString());
 					notificationEntity.setNotifToUser(sUserListData);
 					notificationEntity.setNotifType("Feature Approval");
 					notificationEntity.setNotifCreatedDate(timestampValue);
-					notificationEntity.setNotifReference(featurId+"_"+masterFeature.getfName()+"-V"+"1.0");
-					notificationEntity.setNotifLabel(featurId+"_"+masterFeature.getfName()+"-V"+"1.0"+" : "+ "Approval initiated");
+					notificationEntity.setNotifReference(featurId + "_"
+							+ masterFeature.getfName() + "-V" + "1.0");
+					notificationEntity.setNotifLabel(featurId + "_"
+							+ masterFeature.getfName() + "-V" + "1.0" + " : "
+							+ "Approval initiated");
 					notificationEntity.setNotifMessage("Approval initiated");
 					notificationEntity.setNotifPriority("1");
 					notificationEntity.setNotifStatus("Pending");
 					cal.setTimeInMillis(timestampValue.getTime());
-				    cal.add(Calendar.DAY_OF_MONTH, 30);
-				    timestampValue = new Timestamp(cal.getTime().getTime());
+					cal.add(Calendar.DAY_OF_MONTH, 30);
+					timestampValue = new Timestamp(cal.getTime().getTime());
 					notificationEntity.setNotifExpiryDate(timestampValue);
 					notificationRepo.save(notificationEntity);
-					obj.put("output", errorValidationRepository.findByErrorId("C3P_TM_014"));
+					obj.put("output", errorValidationRepository
+							.findByErrorId("C3P_TM_014"));
 				}
 
 			} else {
@@ -622,18 +682,22 @@ public class MasterFeatureController {
 				templateCommandJSONModel.setChecked(false);
 				templateCommandJSONModel.setCommands(commandPojoList);
 				obj.put("output", templateCommandJSONModel);
-				notificationEntity.setNotifFromUser(json.get("userName").toString());
+				notificationEntity.setNotifFromUser(json.get("userName")
+						.toString());
 				notificationEntity.setNotifToUser(sUserListData);
 				notificationEntity.setNotifType("Feature Approval");
 				notificationEntity.setNotifCreatedDate(timestampValue);
-				notificationEntity.setNotifReference(ent.getfId()+"_"+ent.getfName()+"-V"+"1.0");
-				notificationEntity.setNotifLabel(ent.getfId()+"_"+ent.getfName()+"-V"+"1.0"+" : "+ "Approval initiated");
+				notificationEntity.setNotifReference(ent.getfId() + "_"
+						+ ent.getfName() + "-V" + "1.0");
+				notificationEntity.setNotifLabel(ent.getfId() + "_"
+						+ ent.getfName() + "-V" + "1.0" + " : "
+						+ "Approval initiated");
 				notificationEntity.setNotifMessage("Approval initiated");
 				notificationEntity.setNotifPriority("1");
 				notificationEntity.setNotifStatus("Pending");
 				cal.setTimeInMillis(timestampValue.getTime());
-			    cal.add(Calendar.DAY_OF_MONTH, 30);
-			    timestampValue = new Timestamp(cal.getTime().getTime());
+				cal.add(Calendar.DAY_OF_MONTH, 30);
+				timestampValue = new Timestamp(cal.getTime().getTime());
 				notificationEntity.setNotifExpiryDate(timestampValue);
 				notificationRepo.save(notificationEntity);
 			}
@@ -646,7 +710,7 @@ public class MasterFeatureController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -658,7 +722,7 @@ public class MasterFeatureController {
 		JSONObject childJson = null;
 		JSONObject masterJson = null;
 		JSONArray childList = null;
-		int count=0;
+		int count = 0;
 		List<MasterFeatureEntity> featureEntinty = null;
 		try {
 			List<String> vendor = masterFeatureRepository.findVendor();
@@ -675,8 +739,9 @@ public class MasterFeatureController {
 					childJson.put("deviceOs", entity.getfOs());
 					childJson.put("osVersion", entity.getfOsversion());
 					childJson.put("version", entity.getfVersion());
-					childJson.put("createdDate", dateUtil.dateTimeInAppFormat(entity.getfCreatedDate()
-							.toString()));
+					childJson.put("createdDate", dateUtil
+							.dateTimeInAppFormat(entity.getfCreatedDate()
+									.toString()));
 					childJson.put("comment", entity.getfComments());
 					childJson.put("status", entity.getfStatus());
 					childJson.put("networkType", entity.getfNetworkfun());
@@ -701,7 +766,7 @@ public class MasterFeatureController {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
@@ -714,7 +779,7 @@ public class MasterFeatureController {
 		JSONObject masterJson = null;
 		JSONObject childJson = null;
 		JSONArray childList = null;
-		int count=0;
+		int count = 0;
 		String vendor = null, deviceFamily = null, os = null, osVersion = null, region = null, networkFunction = null;
 		try {
 			masterJson = new JSONObject();
@@ -746,8 +811,9 @@ public class MasterFeatureController {
 				childJson.put("deviceOs", entity.getfOs());
 				childJson.put("osVersion", entity.getfOsversion());
 				childJson.put("version", entity.getfVersion());
-				childJson.put("createdDate", dateUtil.dateTimeInAppFormat(entity.getfCreatedDate()
-						.toString()));
+				childJson.put("createdDate", dateUtil
+						.dateTimeInAppFormat(entity.getfCreatedDate()
+								.toString()));
 				childJson.put("comment", entity.getfComments());
 				childJson.put("status", entity.getfStatus());
 				childJson.put("networkFunction", entity.getfNetworkfun());
@@ -768,12 +834,13 @@ public class MasterFeatureController {
 		objInterfaces.put("featureCount", count);
 		return new ResponseEntity<JSONObject>(objInterfaces, HttpStatus.OK);
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/viewFeatureRPC", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public ResponseEntity<JSONObject> viewFeatureRPCDetails(@RequestBody String request) {
+	public ResponseEntity<JSONObject> viewFeatureRPCDetails(
+			@RequestBody String request) {
 
 		JSONObject obj = new JSONObject();
 		List<String> versionList = new ArrayList<>();
@@ -789,15 +856,17 @@ public class MasterFeatureController {
 				featureid = json.get("featureid").toString();
 			if (json.get("version") != null)
 				version = json.get("version").toString();
-			if (json.get("userName") != null) 
+			if (json.get("userName") != null)
 				userName = json.get("userName").toString();
-			if(json.get("notif_id") != null && !json.get("notif_id").equals("")) {
+			if (json.get("notif_id") != null
+					&& !json.get("notif_id").equals("")) {
 				notifId = Integer.parseInt(json.get("notif_id").toString());
 				notificationData = notificationRepo.findById(notifId);
 			}
 			childList = new JSONArray();
 			if (featureid != null && version != null) {
-				MasterFeatureEntity featureList = masterFeatureRepository.findByFIdAndFVersion(featureid, version);
+				MasterFeatureEntity featureList = masterFeatureRepository
+						.findByFIdAndFVersion(featureid, version);
 				if (featureList != null) {
 					jsonObj = new JSONObject();
 					jsonObj.put("featureId", featureList.getfId());
@@ -809,7 +878,8 @@ public class MasterFeatureController {
 					jsonObj.put("region", featureList.getfRegion());
 					jsonObj.put("networkType", featureList.getfNetworkfun());
 					jsonObj.put("category", featureList.getfCategory());
-					jsonObj.put("createdDate", featureList.getfCreatedDate().toString());
+					jsonObj.put("createdDate", featureList.getfCreatedDate()
+							.toString());
 					jsonObj.put("raisedBy", featureList.getfCreatedBy());
 					versionList.add(featureList.getfVersion());
 					jsonObj.put("featureVersionsList", versionList);
@@ -822,56 +892,42 @@ public class MasterFeatureController {
 						attrJsonObj.put("attribLabel", entity.getcName());
 						attrJsonObj.put("attribute", "");
 						attrJsonObj.put("uiControl", entity.getcUicomponent());
-						attrJsonObj.put("validations", attribCreateConfigResponceMapper.setValidation(entity.getcValidations()));
+						attrJsonObj
+								.put("validations",
+										attribCreateConfigResponceMapper
+												.setValidation(entity
+														.getcValidations()));
 						attrJsonObj.put("category", entity.getcCategory());
 						attrJsonObj.put("key", entity.iscIsKey());
 						childList.add(attrJsonObj);
-					}		
+					}
 					jsonObj.put("attribMappings", childList);
-					/* It is a feature get the commands of a feature */
-					/*if ("Basic Configuration".equalsIgnoreCase(featureList.getfCategory())) {
-						List<CommandPojo> listShow = new ArrayList<CommandPojo>();
-
-						List<BasicConfiguration> basicConfigList = new ArrayList<BasicConfiguration>();
-						basicConfigList = basicConfigRepo.findByMFId(json.get("featureid").toString());
-						maintainOrder(basicConfigList);
-						for (BasicConfiguration bConfig : basicConfigList) {
-
-							CommandPojo commandPojo = new CommandPojo();
-							commandPojo.setCommand_value(bConfig.getConfiguration());
-							listShow.add(commandPojo);
-						}
-						String finalCammands = "";
-						for (CommandPojo cammand : listShow) {
-							if (!finalCammands.equals(""))
-								finalCammands = finalCammands + "\n" + cammand.getCommand_value();
-							else
-								finalCammands = finalCammands + cammand.getCommand_value();
-						}
-						jsonObj.put("commands", finalCammands);
-						obj.put(new String("entity"), jsonObj);
-					} else {*/
-						// fetch commands from master command list based on feature id
-						List<CommandPojo> listShow = new ArrayList<CommandPojo>();
-						listShow = masterCommandsRepo.findBymasterFId(json.get("featureid").toString());
-						listShow.sort((CommandPojo c1, CommandPojo c2) -> c1.getPosition() - c2.getPosition());
-						String finalCammands = "";
-						for (CommandPojo cammand : listShow) {
-							finalCammands = finalCammands + cammand.getCommand_value();
-						}
-						jsonObj.put("commands", finalCammands);
-						obj.put(new String("entity"), jsonObj);
-					//}
+				
+					// fetch commands from master command list based on feature
+					// id
+					List<CommandPojo> listShow = new ArrayList<CommandPojo>();
+					listShow = masterCommandsRepo.findBymasterFId(json.get(
+							"featureid").toString());
+					listShow.sort((CommandPojo c1, CommandPojo c2) -> c1
+							.getPosition() - c2.getPosition());
+					String finalCammands = "";
+					for (CommandPojo cammand : listShow) {
+						finalCammands = finalCammands
+								+ cammand.getCommand_value();
+					}
+					jsonObj.put("commands", finalCammands);
+					obj.put(new String("entity"), jsonObj);
+					// }
 				}
-				if(notificationData !=null)
-				{
+				if (notificationData != null) {
 					notificationData.setNotifStatus("Completed");
 					notificationData.setNotifCompletedby(userName);
 					notificationRepo.save(notificationData);
 				}
 			}
 		} catch (Exception exe) {
-			logger.error("Exception in viewFeatureRPCDetails method " + exe.getMessage());
+			logger.error("Exception in viewFeatureRPCDetails method "
+					+ exe.getMessage());
 		}
 		return new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 	}
@@ -881,53 +937,53 @@ public class MasterFeatureController {
 
 			@Override
 			public int compare(BasicConfiguration o1, BasicConfiguration o2) {
-				return Integer.valueOf(o1.getSequence_id()).compareTo(Integer.valueOf(o2.getSequence_id()));
+				return Integer.valueOf(o1.getSequence_id()).compareTo(
+						Integer.valueOf(o2.getSequence_id()));
 			}
 		});
 	}
-	
+
 	@POST
 	@RequestMapping(value = "/getVNFFeature", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public ResponseEntity<List<String>> getVNFFeature(@RequestBody String configRequest) {
+	public ResponseEntity<List<String>> getVNFFeature(
+			@RequestBody String configRequest) {
 		List<String> featureList = new ArrayList<>();
 		try {
 			JSONParser parser = new JSONParser();
-			String vendor =null,os=null,osVersion=null,templateId =null;
+			String vendor = null, os = null, osVersion = null, templateId = null;
 			JSONObject json = (JSONObject) parser.parse(configRequest);
-			if (json.containsKey("vendor") && json.get("vendor")!=null) {
+			if (json.containsKey("vendor") && json.get("vendor") != null) {
 				vendor = json.get("vendor").toString();
 			}
-			if (json.containsKey("deviceOs") && json.get("deviceOs")!=null) {
+			if (json.containsKey("deviceOs") && json.get("deviceOs") != null) {
 				os = json.get("deviceOs").toString();
 			}
-			if (json.containsKey("osVersion") && json.get("osVersion")!=null) {
+			if (json.containsKey("osVersion") && json.get("osVersion") != null) {
 				osVersion = json.get("osVersion").toString();
 			}
-			if (json.containsKey("templateId") && json.get("templateId")!=null) {
+			if (json.containsKey("templateId")
+					&& json.get("templateId") != null) {
 				templateId = json.get("templateId").toString();
-				templateId = StringUtils.substringBefore(templateId,".yang");
+				templateId = StringUtils.substringBefore(templateId, ".yang");
 			}
+
 			
-			/*List<MasterFeatureEntity> featureEntinty = masterFeatureRepository
-					.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfun(
-							vendor, "All", os, osVersion, "All",
-							"VNF");*/
 			List<MasterFeatureEntity> featureEntinty = masterFeatureRepository
 					.findAllByFNameContains(templateId);
-			for(MasterFeatureEntity feature :featureEntinty) {
-				if(feature.getfName().contains(templateId)){
+			for (MasterFeatureEntity feature : featureEntinty) {
+				if (feature.getfName().contains(templateId)) {
 					String featureName = StringUtils.substringAfter(
-							feature.getfName(), templateId+"::");
-					if(feature.getfId().startsWith("F")) {
-					featureList.add(featureName);
+							feature.getfName(), templateId + "::");
+					if (feature.getfId().startsWith("F")) {
+						featureList.add(featureName);
 					}
 				}
 			}
-			
-		}catch (Exception e) {
+
+		} catch (Exception e) {
 			logger.error("Exception in getVNF Feature method " + e.getMessage());
-		}		
+		}
 		return new ResponseEntity<List<String>>(featureList, HttpStatus.OK);
 	}
 }

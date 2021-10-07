@@ -47,6 +47,7 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 
 @Service
 public class BackupCurrentRouterConfigurationService extends Thread {
@@ -63,6 +64,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 	
 	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 		
 	public boolean getRouterConfig(CreateConfigRequest configRequest, String routerVersionType) throws IOException {
 		
@@ -84,14 +86,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
-
+			UtilityMethods.sleepThread(10000);
+			InputStream input = null;
 			try {
 				channel = session.openChannel("shell");
 				OutputStream ops = channel.getOutputStream();
@@ -99,13 +99,11 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				PrintStream ps = new PrintStream(ops, true);
 				logger.info("Channel Connected to machine " + host + " server");
 				channel.connect();
-				InputStream input = channel.getInputStream();
+				input = channel.getInputStream();
 				ps.println("terminal length 0");
 				ps.println("show run");
-				try {
-					Thread.sleep(3000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(20000);
+				logger.info("getRouterConfig - Total size of the Channel InputStream -->"+input.available());
 				if (routerVersionType.equalsIgnoreCase("previous")) {
 					backupdone = true;
 					printPreviousVersionInfo(input, channel, configRequest.getRequestId(),
@@ -115,20 +113,25 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 					printCurrentVersionInfo(input, channel, configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()));
 				}
-				input.close();
-				channel.disconnect();
-				session.disconnect();
+				
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				backupdone = false;
 				e.printStackTrace();
+			}finally {
+				if(input !=null) {
+					input.close();
+				}
+				if(channel !=null) {
+					channel.disconnect();
+				}
+				if(session !=null) {
+					session.disconnect();
+				}
 			}
 		}
 
 		catch (Exception ex) {
 			backupdone = false;
-			channel.disconnect();
-			session.disconnect();
 			String response = "";
 			try {
 				requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
@@ -139,7 +142,6 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 								+ Double.toString(configRequest.getRequest_version()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -152,11 +154,11 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				
 				if (channel.getExitStatus() == -1) {
 					
-						Thread.sleep(5000);
+					UtilityMethods.sleepThread(5000);
 					
 				}
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error(e);
 				}
 				channel.disconnect();
 				session.disconnect();
@@ -187,14 +189,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
-
+			UtilityMethods.sleepThread(10000);
+			InputStream input = null;
 			try {
 				channel = session.openChannel("shell");
 				OutputStream ops = channel.getOutputStream();
@@ -202,13 +202,10 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				PrintStream ps = new PrintStream(ops, true);
 				logger.info("Channel Connected to machine " + host + " server");
 				channel.connect();
-				InputStream input = channel.getInputStream();
+				input = channel.getInputStream();
 				ps.println("terminal length 0");
 				ps.println("show start");
-				try {
-					Thread.sleep(3000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(3000);
 				if (routerVersionType.equalsIgnoreCase("startup")) {
 					backupdone = true;
 					printstartupVersionInfo(input, channel, configRequest.getRequestId(),
@@ -220,8 +217,17 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				}
 				channel.disconnect();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}finally {
+				if(input !=null) {
+					input.close();
+				}
+				if(channel !=null) {
+					channel.disconnect();
+				}
+				if(session !=null) {
+					session.disconnect();
+				}
 			}
 		}
 
@@ -236,7 +242,6 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 								+ Double.toString(configRequest.getRequest_version()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -247,141 +252,88 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 	public void printPreviousVersionInfo(InputStream input, Channel channel, String requestID, String version)
 			throws Exception {
-		BufferedWriter bw = null;
-		FileWriter fw = null;
-		int SIZE = 1024;
-		byte[] tmp = new byte[SIZE];
-
-		while (input.available() > 0) {
-			int i = input.read(tmp, 0, SIZE);
-			if (i < 0)
-				break;
-			/* logger.info(new String(tmp, 0, i)); */
-			String s = new String(tmp, 0, i);
-			if (!(s.equals(""))) {
-				// logger.info(str);
-				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_PreviousConfig.txt";
-				File file = new File(filepath);
-
-				// if file doesnt exists, then create it
-				if (!file.exists()) {
-					file.createNewFile();
-
-					fw = new FileWriter(file, true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				} else {
-					fw = new FileWriter(file.getAbsoluteFile(), true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				}
-			}
-
-		}
-		if (channel.isClosed()) {
-			logger.info("exit-status: " + channel.getExitStatus());
-
-		}
 		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
+			int SIZE = 1024;
+			byte[] tmp = new byte[SIZE];
+
+			while (input.available() > 0) {
+				int i = input.read(tmp, 0, SIZE);
+				if (i < 0)
+					break;
+				/* logger.info(new String(tmp, 0, i)); */
+				String context = new String(tmp, 0, i);
+				if (!(context.equals(""))) {
+					// logger.info(str);
+					String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_PreviousConfig.txt";
+					storeConfigInfoInFile(context, filepath);
+				}
+
+			}
+			if (channel.isClosed()) {
+				logger.info("printPreviousVersionInfo - exit-status: " + channel.getExitStatus());
+			}
+			UtilityMethods.sleepThread(1000);
+		}catch(Exception exe) {
+			logger.error("Exception in printPreviousVersionInfo Error->"+exe.getMessage());
 		}
 
 	}
 
 	public void printstartupVersionInfo(InputStream input, Channel channel, String requestID, String version)
 			throws Exception {
-		BufferedWriter bw = null;
-		FileWriter fw = null;
-		int SIZE = 1024;
-		byte[] tmp = new byte[SIZE];
-
-		while (input.available() > 0) {
-			int i = input.read(tmp, 0, SIZE);
-			if (i < 0)
-				break;
-			/* logger.info(new String(tmp, 0, i)); */
-			String s = new String(tmp, 0, i);
-			if (!(s.equals(""))) {
-				// logger.info(str);
-				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_StartupConfig.txt";
-				File file = new File(filepath);
-
-				// if file doesnt exists, then create it
-				if (!file.exists()) {
-					file.createNewFile();
-
-					fw = new FileWriter(file, true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				} else {
-					fw = new FileWriter(file.getAbsoluteFile(), true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
+		try {
+			int SIZE = 1024;
+			byte[] tmp = new byte[SIZE];
+	
+			while (input.available() > 0) {
+				int i = input.read(tmp, 0, SIZE);
+				if (i < 0)
+					break;
+				/* logger.info(new String(tmp, 0, i)); */
+				String context = new String(tmp, 0, i);
+				if (!(context.equals(""))) {
+					// logger.info(str);
+					String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_StartupConfig.txt";
+					storeConfigInfoInFile(context, filepath);
 				}
 			}
-
-		}
-		if (channel.isClosed()) {
-			logger.info("exit-status: " + channel.getExitStatus());
-
-		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
+			if (channel.isClosed()) {
+				logger.info("printstartupVersionInfo - exit-status: " + channel.getExitStatus());	
+			}
+			UtilityMethods.sleepThread(1000);
+		}catch(Exception exe) {
+			logger.error("Exception in printstartupVersionInfo Error->"+exe.getMessage());
 		}
 
 	}
 
 	public void printCurrentVersionInfo(InputStream input, Channel channel, String requestID, String version)
 			throws Exception {
-		BufferedWriter bw = null;
-		FileWriter fw = null;
-		int SIZE = 1024;
-		byte[] tmp = new byte[SIZE];
-
-		while (input.available() > 0) {
-			int i = input.read(tmp, 0, SIZE);
-			if (i < 0)
-				break;
-			/* logger.info(new String(tmp, 0, i)); */
-			String s = new String(tmp, 0, i);
-			if (!(s.equals(""))) {
-				// logger.info(str);
-				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_CurrentVersionConfig.txt";
-				System.out.println("File path for current "+filepath);
-				File file = new File(filepath);
-
-				// if file doesnt exists, then create it
-				if (!file.exists()) {
-					file.createNewFile();
-
-					fw = new FileWriter(file, true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				} else {
-					fw = new FileWriter(file.getAbsoluteFile(), true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				}
-			}
-
-		}
-		if (channel.isClosed()) {
-			logger.info("exit-status: " + channel.getExitStatus());
-
-		}
 		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
+			int SIZE = 1024;
+			byte[] tmp = new byte[SIZE];
+	
+			while (input.available() > 0) {
+				int i = input.read(tmp, 0, SIZE);
+				if (i < 0)
+					break;
+				/* logger.info(new String(tmp, 0, i)); */
+				String context = new String(tmp, 0, i);
+				if (!(context.equals(""))) {
+					// logger.info(str);
+					String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_CurrentVersionConfig.txt";
+					logger.info("File path for current "+filepath);
+					storeConfigInfoInFile(context, filepath);
+				}
+	
+			}
+			if (channel.isClosed()) {
+				logger.info("printCurrentVersionInfo - exit-status: " + channel.getExitStatus());	
+			}
+			UtilityMethods.sleepThread(1000);
+		}catch(Exception exe) {
+			logger.error("Exception in printCurrentVersionInfo Error->"+exe.getMessage());
 		}
-
 	}
 
 	public boolean getRouterConfig(RequestInfoPojo configRequest, String routerVersionType,Boolean isStartUp) {
@@ -410,14 +362,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
-
+			UtilityMethods.sleepThread(10000);
+			InputStream input = null;
 			try {
 				channel = session.openChannel("shell");
 				OutputStream ops = channel.getOutputStream();
@@ -425,14 +375,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				PrintStream ps = new PrintStream(ops, true);
 				logger.info("Channel Connected to machine " + host + " server");
 				channel.connect();
-				InputStream input = channel.getInputStream();
+				input = channel.getInputStream();
 				ps = requestInfoDetailsDao.setCommandStream(ps,configRequest,"backup",isStartUp);
 //				ps.println("terminal length 0");
 //				ps.println("show run");
-				try {
-					Thread.sleep(3000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(20000);
+				logger.info("getRouterConfig - Total size of the Channel InputStream -->"+input.available());
 				if (routerVersionType.equalsIgnoreCase("previous")) {
 					backupdone = true;
 					printPreviousVersionInfo(input, channel, configRequest.getAlphanumericReqId(),
@@ -442,10 +390,18 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 					printCurrentVersionInfo(input, channel, configRequest.getAlphanumericReqId(),
 							Double.toString(configRequest.getRequestVersion()));
 				}
-				channel.disconnect();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}finally {
+				if(input !=null) {
+					input.close();
+				}
+				if(channel !=null) {
+					channel.disconnect();
+				}
+				if(session !=null) {
+					session.disconnect();
+				}
 			}
 		}
 	}
@@ -494,14 +450,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 				Properties config = new Properties();
 				config.put("StrictHostKeyChecking", "no");
+				config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 				session.setConfig(config);
 				session.setPassword(password);
 				session.connect();
-				try {
-					Thread.sleep(10000);
-				} catch (Exception ee) {
-				}
-
+				UtilityMethods.sleepThread(10000);
+				InputStream input = null;
 				try {
 					channel = session.openChannel("shell");
 					OutputStream ops = channel.getOutputStream();
@@ -509,14 +463,12 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 					PrintStream ps = new PrintStream(ops, true);
 					logger.info("Channel Connected to machine " + host + " server");
 					channel.connect();
-					InputStream input = channel.getInputStream();
+					input = channel.getInputStream();
 					ps = requestInfoDetailsDao.setCommandStream(ps,configRequest,"backup",isStartUp);
 //					ps.println("terminal length 0");
 //					ps.println("show start");
-					try {
-						Thread.sleep(3000);
-					} catch (Exception ee) {
-					}
+					
+					UtilityMethods.sleepThread(5000);
 					if (routerVersionType.equalsIgnoreCase("startup")) {
 						backupdone = true;
 						printstartupVersionInfo(input, channel, configRequest.getAlphanumericReqId(),
@@ -526,9 +478,18 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 						printCurrentVersionInfo(input, channel, configRequest.getAlphanumericReqId(),
 								Double.toString(configRequest.getRequestVersion()));
 					}
-					channel.disconnect();
 				} catch (Exception e) {
 					e.printStackTrace();
+				}finally {
+					if(input !=null) {
+						input.close();
+					}
+					if(channel !=null) {
+						channel.disconnect();
+					}
+					if(session !=null) {
+						session.disconnect();
+					}
 				}
 			}
 		} catch (Exception ex) {
@@ -627,5 +588,38 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 		logger.info("End - vnfBackup ->" + backupdone);
 
 		return backupdone;
+	}
+	
+	private void storeConfigInfoInFile(String context, String filepath) {
+		BufferedWriter bufferWriter = null;
+		FileWriter fileWriter = null;
+		try {			
+			File file = new File(filepath);
+			// if file doesn't exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+				
+				fileWriter = new FileWriter(file, true);
+				bufferWriter = new BufferedWriter(fileWriter);
+				bufferWriter.append(context);
+			} else {
+				fileWriter = new FileWriter(file.getAbsoluteFile(), true);
+				bufferWriter = new BufferedWriter(fileWriter);
+				bufferWriter.append(context);
+			}
+		}catch(IOException ioExe) {
+			logger.error("IOException in storeConfigInfoInFile Error->"+ioExe.getMessage());
+		}finally {
+			try {
+				if(bufferWriter !=null) {
+					bufferWriter.close();
+				}
+				if(fileWriter !=null) {
+					fileWriter.close();
+				}				
+			}catch (IOException ioExe) {
+				logger.error("IOException in finally storeConfigInfoInFile Error->"+ioExe.getMessage());
+			}
+		}
 	}
 }

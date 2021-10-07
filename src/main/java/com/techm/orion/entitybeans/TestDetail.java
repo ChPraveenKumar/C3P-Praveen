@@ -87,6 +87,9 @@ public class TestDetail implements Serializable
 
 	@Column(name = "testType")
 	private String testType;
+	
+	@Column(name = "test_sub_category")
+	private String testSubCategory;
 
 	private boolean isEnabled = false;
 
@@ -136,6 +139,9 @@ public class TestDetail implements Serializable
 	@JoinTable(name = "t_tststrategy_j_test_bundle", joinColumns = {@JoinColumn(name = "test_id", referencedColumnName = "id") }, inverseJoinColumns = {@JoinColumn(name = "bundle_id", referencedColumnName = "id") })
 	Set<TestBundling> testbundling;
 
+	@Transient
+	boolean compareFullResult = false;
+	
 	public String getRegion() {
 		return region;
 	}
@@ -390,6 +396,22 @@ public class TestDetail implements Serializable
 
 	public void setTestbundling(Set<TestBundling> testbundling) {
 		this.testbundling = testbundling;
+	}
+
+	public String getTestSubCategory() {
+		return testSubCategory;
+	}
+
+	public void setTestSubCategory(String testSubCategory) {
+		this.testSubCategory = testSubCategory;
+	}
+
+	public boolean isCompareFullResult() {
+		return compareFullResult;
+	}
+
+	public void setCompareFullResult(boolean compareFullResult) {
+		this.compareFullResult = compareFullResult;
 	}
 
 	@Override

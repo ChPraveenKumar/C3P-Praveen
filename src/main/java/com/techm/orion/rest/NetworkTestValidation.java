@@ -34,15 +34,15 @@ import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.CredentialManagementEntity;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.TestDetail;
-import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.DcmConfigService;
+import com.techm.orion.service.TestStrategyService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
-import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.VNFHelper;
 
 @Controller
@@ -61,7 +61,11 @@ public class NetworkTestValidation extends Thread {
 	private DcmConfigService dcmConfigService;
 	@Autowired
 	private VNFHelper helper;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
+	@Autowired
+	private TestStrategyService testStrategyService;
+
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -103,10 +107,10 @@ public class NetworkTestValidation extends Thread {
 					requestinfo.setAlphanumericReqId(RequestId);
 					requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
 
-					if (type.equalsIgnoreCase("SLGC") || type.equalsIgnoreCase("SLGT") || type.equalsIgnoreCase("SNRC")
-							|| type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SLGA")
-							|| type.equalsIgnoreCase("SLGM") || type.equalsIgnoreCase("SNRM")
-							|| type.equalsIgnoreCase("SNNM")) {
+					if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SNRC".equalsIgnoreCase(type)
+							|| "SNNC".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type)
+							|| "SLGM".equalsIgnoreCase(type) || "SNRM".equalsIgnoreCase(type)
+							|| "SNNM".equalsIgnoreCase(type)) {
 						String host = requestinfo.getManagementIp();
 						CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
 								deviceDetails);
@@ -116,15 +120,13 @@ public class NetworkTestValidation extends Thread {
 						session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
+						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						session.setConfig(config);
 						session.setPassword(password);
 						logger.info("Before session.connet in network test validation Username" + user
 								+ " Password " + password + " host" + host);
 						session.connect();
-						try {
-							Thread.sleep(5000);
-						} catch (Exception ee) {
-						}
+						UtilityMethods.sleepThread(5000);
 						try {
 							
 							channel = session.openChannel("shell");
@@ -133,7 +135,7 @@ public class NetworkTestValidation extends Thread {
 							PrintStream ps = new PrintStream(ops, true);
 							logger.info("Channel Connected to machine " + host + " server");
 							channel.connect();
-							InputStream input = channel.getInputStream();							
+							InputStream input = channel.getInputStream();
 							List<Boolean> results = null;
 							
 							List<TestDetail> listOfTests = new ArrayList<TestDetail>();
@@ -178,13 +180,17 @@ public class NetworkTestValidation extends Thread {
 										{
 											ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 											ps.println(finallistOfTests.get(i).getTestCommand());
-											try {
-												Thread.sleep(6000);
-											} catch (Exception ee) {
+											int waitTime = 6000;
+											if(requestinfo.getVendor()!=null)
+											{
+												waitTime = UtilityMethods.getWaitTime(requestinfo.getVendor(), finallistOfTests.get(i).getTestCommand());
 											}
+											else
+											{
+												waitTime = 6000;
+											}
+											UtilityMethods.sleepThread(waitTime);
 
-											// printResult(input,
-											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
 											Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 													requestinfo.getAlphanumericReqId(),
 													Double.toString(requestinfo.getRequestVersion()),
@@ -267,36 +273,17 @@ public class NetworkTestValidation extends Thread {
 							{
 								value = true;
 							}
-							channel.disconnect();
-							session.disconnect();
+
 							logger.info("DONE");
 							jsonArray = new Gson().toJson(value);
-							try {
-								Thread.sleep(15000);
-							} catch (Exception ee) {
-							}
+							UtilityMethods.sleepThread(15000);
 							obj.put(new String("output"), jsonArray);
 						} catch (IOException ex) {
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-									Double.toString(requestinfo.getRequestVersion()), "network_test", "2", "Failure");
-
-							String response = "";
-							try {
-								response = invokeFtl.generateNetworkTestResultFileFailure(requestinfo);
-								TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-										requestinfo.getAlphanumericReqId() + "V"
-												+ Double.toString(requestinfo.getRequestVersion()) + "_networkTest.txt",
-										response);
-							} catch (Exception e) {
-								// TODO Auto-generated catch block
-
-							}
-
+							obj = testStrategyService.setFailureResult(jsonArray, value, requestinfo, "network_test", obj,
+									invokeFtl,"_networkTest.txt");							
 						}
-						channel.disconnect();
-						session.disconnect();
 					}
 
 					else {
@@ -310,39 +297,23 @@ public class NetworkTestValidation extends Thread {
 			// when reachability fails
 			catch (Exception ex) {
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-
-					logger.info("Exception in network tst" + ex.getMessage());
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
-					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-							Double.toString(requestinfo.getRequestVersion()), "network_test", "2", "Failure");
-					String response = "";
-					try {
-						response = invokeFtl.generateNetworkTestResultFileFailure(requestinfo);
-						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-								requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_networkTest.txt",
-								response);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-
-					}
+					logger.error("Exception in network test" + ex.getMessage());
+					jsonArray = new Gson().toJson(value);					
+					obj = testStrategyService.setDeviceReachabilityFailuarResult(jsonArray, value, requestinfo, "network_test", obj,
+							invokeFtl,"_networkTest.txt");			
 
 				}
-			}
-			finally {
+			} finally {
 
 				if (channel != null) {
 					try {
-					session = channel.getSession();
-					
-					if (channel.getExitStatus() == -1) {
-						
-							Thread.sleep(5000);
-						
-					}
+						session = channel.getSession();
+
+						if (channel.getExitStatus() == -1) {
+							UtilityMethods.sleepThread(5000);
+						}
 					} catch (Exception e) {
-						System.out.println(e);
+						logger.error(e);
 					}
 					channel.disconnect();
 					session.disconnect();
@@ -362,43 +333,7 @@ public class NetworkTestValidation extends Thread {
 
 	}	
 
-	@SuppressWarnings("resource")
-	public String validateNetworkTest(CreateConfigRequest configRequest) throws Exception {
-		logger.info("In side validate network test line no 356");
-		String content = "";
-		String path = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()
-				+ configRequest.getRequestId() + "V" + configRequest.getRequest_version() + "_networkTest.txt";
-
-		File file = new File(path);
-		Scanner in = null;
-		try {
-			if (file.exists()) {
-				in = new Scanner(file);
-				while (in.hasNext()) {
-					String line = in.nextLine();
-
-					String interfacename = configRequest.getC3p_interface().getName();
-					if (interfacename == null) {
-						configRequest.getC3p_interface().setName("");
-
-					}
-					if (line.contains(configRequest.getC3p_interface().getName())) {
-						logger.info(line);
-						content = line;
-						break;
-					}
-
-				}
-			}
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return content;
-	}
-	
-
-	/* method overloading for UIRevamp */
+	@SuppressWarnings("unused")
 	public String validateNetworkTest(RequestInfoPojo requestinfo) throws IOException {
 		logger.info("In side validate network test line no 356");
 		String content = "";
@@ -412,24 +347,10 @@ public class NetworkTestValidation extends Thread {
 				in = new Scanner(file);
 				while (in.hasNext()) {
 					String line = in.nextLine();
-
-					// String interfacename = requestinfo.getC3p_interface()
-					// .getName();
-					// if (interfacename == null) {
-					// requestinfo.getC3p_interface().setName("");
-					//
-					// }
-					// if (line.contains(requestinfo.getC3p_interface()
-					// .getName())) {
-					// logger.info(line);
-					// content = line;
-					// break;
-					// }
-
 				}
 			}
 		} catch (FileNotFoundException e) {
-			logger.error("Exception in validateNetworkTest method "+e.getMessage());
+			logger.error("Exception in validateNetworkTest method " + e.getMessage());
 			e.printStackTrace();
 		}
 		return content;

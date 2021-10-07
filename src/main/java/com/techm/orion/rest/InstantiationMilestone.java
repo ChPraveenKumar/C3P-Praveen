@@ -164,14 +164,14 @@ public class InstantiationMilestone extends Thread {
 					JSONObject requestJson = new JSONObject();
 					HttpHeaders headers = new HttpHeaders();
 					headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-					requestJson.put("u_milestone_name", mileStoneName);
-					requestJson.put("u_status", mileStoneStatus);
-					requestJson.put("u_so_id", rfoDecomposedEntity.getOdRfoId());
+					requestJson.put(TSALabels.EXTERNAL_MILESTONE_NAME.getValue(), mileStoneName);
+					requestJson.put(TSALabels.EXTERNAL_MILESTONE_STATUS.getValue(), mileStoneStatus);
+					requestJson.put(TSALabels.EXTERNAL_MILESTONE_SO_ID.getValue(), rfoDecomposedEntity.getOdRfoId());
 					logger.info("mileStoneName ->" + mileStoneName);
 					logger.info("mileStoneStatus ->" + mileStoneStatus);
 					logger.info("SO ID ->" + rfoDecomposedEntity.getOdRfoId());
 					HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(requestJson, headers);
-					String apiEndPoint = TSALabels.EXTERNAL_MILESTONE_API.getValue() + "now/table/u_imp_stage_status";
+					String apiEndPoint = TSALabels.EXTERNAL_MILESTONE_API.getValue();
 					restTemplate.setRequestFactory(getClientHttpRequestFactory());
 					String response = restTemplate.exchange(apiEndPoint, HttpMethod.POST, entity, String.class)
 							.getBody();

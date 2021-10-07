@@ -6,6 +6,7 @@ import java.util.List;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -154,6 +155,15 @@ public class GetCertificationTestData {
 					subObjArray.add(subObj);
 	
 				}*/
+				
+				if (json2.containsKey("frameLossTest")) {
+					subObj = new JSONObject();
+					subObj.put("testName", "Frameloss Test");
+					subObj.put("status", json2.get("frameLossTest"));
+					subObj.put("value", "");
+					subObjArray.add(subObj);
+	
+				}
 				if (json2.containsKey("throughputTest")) {
 					subObj = new JSONObject();
 					subObj.put("testName", "Throughput Test");
@@ -179,7 +189,7 @@ public class GetCertificationTestData {
 					subObjArray.add(subObj);
 	
 				}
-				if (json2.containsKey("throughput")) {
+				/*if (json2.containsKey("throughput")) {
 					subObj = new JSONObject();
 					subObj.put("testName", "throughput");
 					subObj.put("status", "");
@@ -202,28 +212,36 @@ public class GetCertificationTestData {
 					subObj.put("value", json2.get("Latency"));
 					subObjArray.add(subObj);
 	
-				}
+				}*/
 				resultObj.put("Default", subObjArray);
 				// to fetch dynamic test results
-				if (createConfigRequestDCM.getTestType().equalsIgnoreCase("HealthTest")) {
+				if ("HealthTest".equalsIgnoreCase(createConfigRequestDCM.getTestType())) {
+					if(StringUtils.startsWith(createConfigRequestDCM.getRequestId(),"SLGF")) {
+						dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
+								createConfigRequestDCM.getVersion_report(), "Software Upgrade",createConfigRequestDCM.getTestType());
+					}else {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
-							createConfigRequestDCM.getVersion_report(), "Health Check");
-				} else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("networkTest")) {
+							createConfigRequestDCM.getVersion_report(), "Health Check",createConfigRequestDCM.getTestType());
+					}
+				} else if ("networkTest".equalsIgnoreCase(createConfigRequestDCM.getTestType())) {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
-							createConfigRequestDCM.getVersion_report(), "Network Test");
+							createConfigRequestDCM.getVersion_report(), "Network Test",createConfigRequestDCM.getTestType());
 	
-				} else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("othersTest")) {
+				} else if ("othersTest".equalsIgnoreCase(createConfigRequestDCM.getTestType())) {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
-							createConfigRequestDCM.getVersion_report(), "Others");
+							createConfigRequestDCM.getVersion_report(), "Others",createConfigRequestDCM.getTestType());
 	
-				} else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")) {
+				} else if ("preValidate".equalsIgnoreCase(createConfigRequestDCM.getTestType())) {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
-							createConfigRequestDCM.getVersion_report(), "Device Prevalidation");
+							createConfigRequestDCM.getVersion_report(), "Device Prevalidation",createConfigRequestDCM.getTestType());
 	
-				} else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("networkAuditTest")) {
+				} else if ("networkAuditTest".equalsIgnoreCase(createConfigRequestDCM.getTestType())) {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
-							createConfigRequestDCM.getVersion_report(), "Network Audit");
+							createConfigRequestDCM.getVersion_report(), "Network Audit",createConfigRequestDCM.getTestType());
 	
+				}else if ("iospreValidate".equalsIgnoreCase(createConfigRequestDCM.getTestType())) {
+					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
+							createConfigRequestDCM.getVersion_report(), "Software Upgrade",createConfigRequestDCM.getTestType());	
 				}				
 				resultObj.put("Custom", dynamicTestArray);
 	

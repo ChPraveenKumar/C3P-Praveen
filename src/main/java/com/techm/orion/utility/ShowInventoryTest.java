@@ -22,6 +22,7 @@ import com.techm.orion.pojo.PreValidateTest;
 
 public class ShowInventoryTest {
 	private static final Logger logger = LogManager.getLogger(ShowInventoryTest.class);
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
 	public static String PROPERTIES_FILE = "TSA.properties";
 	public static final Properties PROPERTIES = new Properties();
@@ -51,13 +52,11 @@ public class ShowInventoryTest {
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(10000);
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 
@@ -66,10 +65,7 @@ public class ShowInventoryTest {
 			channel.connect();
 			InputStream input = channel.getInputStream();
 			ps.println("show inventory");
-			try {
-				Thread.sleep(5000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(5000);
 			printInventoryInfo(input, channel, routername, region);
 			session.disconnect();
 			channel.disconnect();
@@ -171,11 +167,7 @@ public class ShowInventoryTest {
 
 		}
 		
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-			logger.error("Exception in printInventoryInfo method "+ee.getMessage());
-		}
+		UtilityMethods.sleepThread(1000);
 		
 		return osversionOnDevice;
 

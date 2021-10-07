@@ -72,6 +72,9 @@ public class CredentialManagementEntity implements Serializable {
 	@Column(name = "cr_created_date")
 	private Date createdDate;
 	
+	@Column(name = "cr_encryption")
+	private String encryptionType;
+	
 	@ManyToMany
 	@JoinTable(name = "c3p_device_credentials", joinColumns = @JoinColumn(name = "cr_info_id"), inverseJoinColumns = @JoinColumn(name = "device_id"))
 	List<DeviceDiscoveryEntity> dDiscoveryEntity;
@@ -207,6 +210,14 @@ public class CredentialManagementEntity implements Serializable {
 
 	public void setdDiscoveryEntity(List<DeviceDiscoveryEntity> dDiscoveryEntity) {
 		this.dDiscoveryEntity = dDiscoveryEntity;
+	}
+	
+	public String getEncryptionType() {
+		return encryptionType;
+	}
+
+	public void setEncryptionType(String encryptionType) {
+		this.encryptionType = encryptionType;
 	}
 	
 	@Override

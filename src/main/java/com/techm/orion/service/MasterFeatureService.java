@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
@@ -19,10 +20,12 @@ import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.connection.DBUtil;
 import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.entitybeans.BasicConfiguration;
+import com.techm.orion.entitybeans.IpRangeManagementEntity;
 import com.techm.orion.entitybeans.MasterAttributes;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
 import com.techm.orion.entitybeans.MasterFeatureEntity;
 import com.techm.orion.entitybeans.TemplateFeatureEntity;
+import com.techm.orion.entitybeans.TemplateIpPoolJoinEntity;
 import com.techm.orion.mapper.AttribCreateConfigResponceMapper;
 import com.techm.orion.models.TemplateCommandJSONModel;
 import com.techm.orion.models.TemplateLeftPanelJSONModel;
@@ -37,6 +40,7 @@ import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
+import com.techm.orion.repositories.TemplateIpPoolJoinRepository;
 
 @Service
 public class MasterFeatureService {
@@ -56,6 +60,8 @@ public class MasterFeatureService {
 	@Autowired
 	private TemplateFeatureRepo templatefeatureRepo;
 
+	@Autowired
+	private TemplateIpPoolJoinRepository templateIpPoolJoinRepository;
 	private static final String ALL_OPTION = "All";
 
 	public List<GetTemplateMngmntActiveDataPojo> getActiveTemplates(DeviceDetailsPojo deviceDetails, String templateId,
@@ -688,7 +694,7 @@ public class MasterFeatureService {
 				idToSetInCommandTable);
 
 		JSONArray attribMapArray = (JSONArray) (requestJson.get("attribMappings"));
-		setAttribMapping(attribMapArray, currentFeature);
+		setAttribMapping(attribMapArray, currentFeature,addNewFeatureTemplateMngmntPojo.getTemplateid());
 		templateCommandJSONModel.setActive(false);
 		templateCommandJSONModel.setCommand_id(idToSetInCommandTable);
 		templateCommandJSONModel.setList(commandPojoList);
@@ -696,7 +702,7 @@ public class MasterFeatureService {
 		return templateCommandJSONModelList;
 	}
 
-	private void setAttribMapping(JSONArray attribMapArray, TemplateFeatureEntity currentFeature) {
+	private void setAttribMapping(JSONArray attribMapArray, TemplateFeatureEntity currentFeature, String templateId) {
 		if (attribMapArray != null) {
 			List<MasterAttribPojo> templateAttribList = new ArrayList<MasterAttribPojo>();
 
@@ -739,7 +745,44 @@ public class MasterFeatureService {
 					templatePojo.setKey((boolean)jsonObj.get("key"));
 				}
 				templateAttribList.add(templatePojo);
+				List<IpRangeManagementEntity> listOfPoolIds = null;
+				
+				if (templateId!=null) {
+					// save in manually generated join relationship table
+					int cId = masterCharacteristicsRepository
+							.findRowID(jsonObj.get("characteriscticsId")
+									.toString());
+
+					if (jsonObj.get("poolIds") != null) {
+
+						JSONArray poolIdJsonArray = (JSONArray) jsonObj
+								.get("poolIds");
+						for (int iCounter = 0; iCounter < poolIdJsonArray
+								.size(); iCounter++) {
+							
+							List<TemplateIpPoolJoinEntity> exisitingentity = templateIpPoolJoinRepository.findbyTemplateAndCharachteristic(templateId, cId,((Long) poolIdJsonArray
+									.get(iCounter)).intValue());
+							for(TemplateIpPoolJoinEntity item: exisitingentity)
+							{
+							if(item!=null && item.getIsSave() == 0)
+							{
+									templateIpPoolJoinRepository.delete(item);
+								
+							}
+							}
+							TemplateIpPoolJoinEntity entity = new TemplateIpPoolJoinEntity();
+							entity.setCtChId(cId);
+							entity.setCtTemplateId(templateId);
+							entity.setCtPoolId(((Long) poolIdJsonArray
+									.get(iCounter)).intValue());
+							entity.setIsSave(0);
+							templateIpPoolJoinRepository.save(entity);
+						}
+					}
+				}
 			}
+			
+			
 			/* save attrib config */
 			templateAttribList.stream().forEach(masterAttrib -> {
 				saveAttrib(masterAttrib, currentFeature);

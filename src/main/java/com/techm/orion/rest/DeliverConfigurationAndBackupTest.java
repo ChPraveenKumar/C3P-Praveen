@@ -49,7 +49,6 @@ import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.ImageManagementEntity;
 import com.techm.orion.entitybeans.RequestInfoEntity;
 import com.techm.orion.entitybeans.VendorCommandEntity;
-import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
@@ -63,6 +62,7 @@ import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.VNFHelper;
 
 @Controller
@@ -99,10 +99,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 	@Autowired
 	private VendorCommandRepository vendorCommandRepository;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/deliverConfigurationTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -114,7 +116,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		InvokeFtl invokeFtl = new InvokeFtl();
 		Boolean value = false;
 		List<RequestInfoEntity> requestDetailEntity = new ArrayList<RequestInfoEntity>();
-		long ftp_image_size = 0, available_flash_size = 0;
 		Boolean isStartUp = false;
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
 		JSch jsch = new JSch();
@@ -160,13 +161,15 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					String password = routerCredential.getPasswordWrite();
 					String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 							.getProperty("portSSH");
-
+					logger.info("Inside deliverConfigurationTest Method :"+json.get("requestType").toString());
 					if (json.get("requestType").toString()
 							.equalsIgnoreCase("SLGF")) {
-						
+						logger.info("Inside deliverConfigurationTest Method :"+json.get("requestType").toString());
 						reqType = json.get("requestType").toString();
 						String query = TSALabels.WEB_SERVICE_URI.getValue()
 								+ TSALabels.FW_UPGADE.getValue();
+						
+						logger.info("Firware upgrade milestone Path :"+ query);
 						JSONObject obj1 = new JSONObject();
 						JSONObject obj2 = new JSONObject();
 						
@@ -196,8 +199,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						
 						// read the response
 						InputStream in = new BufferedInputStream(conn.getInputStream());
-						String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-						JSONObject jsonObject = new JSONObject();
 						
 						in.close();
 						conn.disconnect();
@@ -220,12 +221,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
 								requestinfo.getAlphanumericReqId(),
 								requestinfo.getRequestVersion());
-						String switchh = "0";
+						/*String switchh = "0";
 						if (status.equalsIgnoreCase("Partial Success")) {
 							switchh = "3";
 						} else if (status.equalsIgnoreCase("In Progress")) {
 							switchh = "0";
-						}
+						}*/
 						requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 								requestinfo.getAlphanumericReqId(), Double
 										.toString(requestinfo
@@ -288,28 +289,18 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							|| json.get("requestType").toString()
 									.equalsIgnoreCase("SLGM")) {
 						ArrayList<String> commandToPush = new ArrayList<String>();
-
+						InputStream input = null;
 						session = jsch.getSession(user, host,
 								Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
+						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						session.setConfig(config);
 						session.setPassword(password);
 						session.connect();
+						//UtilityMethods.sleepThread(10000);
 						try {
-							Thread.sleep(10000);
-						} catch (Exception ee) {
-						}
-						try {
-							channel = session.openChannel("shell");
-							OutputStream ops = channel.getOutputStream();
-
-							PrintStream ps = new PrintStream(ops, true);
-							logger.info("Channel Connected to machine " + host
-									+ " server");
-							channel.connect();
-							InputStream input = channel.getInputStream();
-
+							
 							// to save the backup and deliver the
 							// configuration(configuration in the router)
 							requestInfoDetailsDao.getRouterConfig(requestinfo, "previous");
@@ -319,6 +310,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									requestinfo.getRequestVersion());
 							String flagForPrevalidation = "";
 							String flagFordelieverConfig = "";
+							logger.debug("SLGC Testing - resultForFlag ->"+resultForFlag);
 							for (Map.Entry<String, String> entry : resultForFlag
 									.entrySet()) {
 								if (entry.getKey() == "flagForPrevalidation") {
@@ -330,7 +322,16 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								}
 
 							}
+							
+							channel = session.openChannel("shell");
+							OutputStream ops = channel.getOutputStream();
 
+							PrintStream ps = new PrintStream(ops, true);
+							logger.info("Channel Connected to machine " + host
+									+ " server");
+							channel.connect();
+							input = channel.getInputStream();
+							UtilityMethods.sleepThread(10000);
 							// print the no config for child version
 							if ((!(requestinfo.getRequestVersion() == requestinfo
 									.getRequestParentVersion()))
@@ -338,11 +339,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 											.equalsIgnoreCase("1")
 									&& flagFordelieverConfig
 											.equalsIgnoreCase("1")) {
-
 								commandToPush = readFileNoCmd(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()));
+								logger.debug("SLGC Testing - readFileNoCmd commandToPush ->"+commandToPush);
 								if (!(commandToPush.get(0).contains("null"))) {
 									// ps.println("config t");
 									for (String arr : commandToPush) {
@@ -359,10 +360,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 									}
 									// ps.println("exit");
-									try {
-										Thread.sleep(4000);
-									} catch (Exception ee) {
-									}
+									UtilityMethods.sleepThread(4000);
 								}
 							}
 							// then deliver or push the configuration
@@ -372,7 +370,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo
 											.getRequestVersion()));
-
+							logger.debug("SLGC Testing - readFile commandToPush ->"+commandToPush);
 							if (!(commandToPush.get(0).contains("null"))) {
 								// ps.println("config t");
 								for (String arr : commandToPush) {
@@ -394,6 +392,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										.checkErrorCode(requestinfo
 												.getAlphanumericReqId(),
 												requestinfo.getRequestVersion());
+								logger.debug("SLGC Testing - readFile errorType ->"+errorType);
 								// get the router configuration after delivery
 
 								requestinfo.setHostname(requestinfo
@@ -502,13 +501,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 												.getRequestVersion()),
 										"deliever_config", "1", "In Progress");
 
-							}
-							input.close();
-							channel.disconnect();
-							session.disconnect();
+							}							
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
-						} catch (IOException ex) {
+						} catch (Exception ex) {
+							logger.error("Exception in SLGC type request  Error-> "+ex.getMessage());
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 							requestInfoDetailsDao.editRequestforReportWebserviceInfo(
@@ -530,7 +527,17 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 											+ "_deliveredConfig.txt", response);
 
 						}
-						session.disconnect();
+						finally{
+							if(input !=null) {
+								input.close();
+							}
+							if(channel !=null) {
+								channel.disconnect();
+							}
+							if(session !=null) {
+								session.disconnect();
+							}
+						}
 
 					} else if (json.get("requestType").toString()
 							.equalsIgnoreCase("SNRC")
@@ -568,9 +575,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							// Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface
 							// ");
 
-							String payloadLoopback = helper.getPayload(
-									"Loopback", payload);
-
+							//String payloadLoopback = helper.getPayload("Loopback", payload);
 							// dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(),
 							// Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadLoopback);
 							dilevaryresult = true;
@@ -588,9 +593,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 												payloadMultilink);
 								dilevaryresult = true;
 								if (dilevaryresult) {
-									String payloadVT = helper.getPayload(
-											"Virtual-Template", payload);
-
+									//String payloadVT = helper.getPayload("Virtual-Template", payload);
 									// dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(),
 									// Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadVT);
 									dilevaryresult = true;
@@ -663,7 +666,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									jsonArray = new Gson().toJson(value);
 									obj.put(new String("output"), jsonArray);
 									String response = "";
-									String responseDownloadPath = "";
 
 									requestInfoDetailsDao
 											.editRequestforReportWebserviceInfo(
@@ -742,7 +744,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						String path = responseDownloadPathNetconf + "/"
 								+ requestId + "_ConfigurationToPush.xml";
 						VNFHelper helper = new VNFHelper();
-						String payload = helper.readConfigurationXML(path);
 						// get file from vnf config requests folder
 						// pass file path to vnf helper class push on device
 						// method.
@@ -811,7 +812,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		catch (Exception ex) {
 			if (requestinfo.getManagementIp() != null
 					&& !requestinfo.getManagementIp().equals("")) {
-
+				logger.error("Exception occure in Delivery COnfiguration : "+ex.getMessage());
 				jsonArray = new Gson().toJson(value);
 				obj.put(new String("output"), jsonArray);
 
@@ -843,11 +844,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 					if (channel.getExitStatus() == -1) {
 
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 
 					}
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error(e);
 				}
 				channel.disconnect();
 				session.disconnect();
@@ -869,28 +870,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 		logger.info("Inside Backup method for ios upgrade..");
 		boolean isSuccess = false;
-		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-				.getProperty("portSSH");
-		String host = requestinfo.getManagementIp();
-		/*
-		 * JSch jsch = new JSch(); Channel channel = null; Session session =
-		 * jsch.getSession(user, host, Integer.parseInt(port)); Properties
-		 * config = new Properties(); config.put("StrictHostKeyChecking", "no");
-		 * session.setConfig(config); session.setPassword(password);
-		 * session.connect(); try { Thread.sleep(10000); } catch (Exception ee)
-		 * { }
-		 */
 		try {
-			// channel = session.openChannel("shell");
-			// OutputStream ops = channel.getOutputStream();
-
-			// PrintStream ps = new PrintStream(ops, true);
-			// logger.info("Channel Connected to machine " + host +
-			// " server for backup");
-			// channel.connect();
-
-			// to save the backup and deliver the configuration(configuration in
-			// the router)
 			isSuccess = requestInfoDetailsDao.getRouterConfig(requestinfo, stage);
 		} catch (Exception e) {
 
@@ -920,7 +900,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		/* StringBuilder sb2=null; */
 		String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 				.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig
+		String filePath = responseDownloadPath + requestIdForConfig
 				+ "V" + version + "_ConfigurationNoCmd";
 
 		br = new BufferedReader(new FileReader(filePath));
@@ -929,7 +909,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			ArrayList<String> ar = new ArrayList<String>();
 			// if(f.exists()){
 
-			StringBuffer send = null;
 			StringBuilder sb2 = new StringBuilder();
 
 			rdr = new LineNumberReader(new FileReader(filePath));
@@ -939,9 +918,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			byte[] c = new byte[1024];
 			int count = 0;
 			int readChars = 0;
-			boolean empty = true;
 			while ((readChars = is.read(c)) != -1) {
-				empty = false;
 				for (int i = 0; i < readChars; ++i) {
 					if (c[i] == '\n') {
 						++count;
@@ -993,6 +970,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 	public void printResult(InputStream input, Channel channel,
 			String requestId, String version) throws Exception {
+		logger.info("printResult - Total size of the Channel InputStream -->"+input.available());
 		BufferedWriter bw = null;
 		FileWriter fw = null;
 		int SIZE = 1024;
@@ -1035,130 +1013,103 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			logger.info("exit-status: " + channel.getExitStatus());
 
 		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-		}
+		UtilityMethods.sleepThread(1000);
 
 	}
 
 	@SuppressWarnings("resource")
 	public ArrayList<String> readFile(String requestIdForConfig, String version)
 			throws IOException {
-		BufferedReader br = null;
+		//BufferedReader br = null;
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
 		String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 				.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + "//" + requestIdForConfig
+		String filePath = responseDownloadPath + requestIdForConfig
 				+ "V" + version + "_Configuration";
 
-		br = new BufferedReader(new FileReader(filePath));
+		
+		ArrayList<String> ar = new ArrayList<String>();
 		try {
-			ArrayList<String> ar = new ArrayList<String>();
+			logger.info("readFile - filePath>: " + filePath);
+			//br = new BufferedReader(new FileReader(filePath));
 			// StringBuffer send = null;
 			StringBuilder sb2 = new StringBuilder();
-
-			rdr = new LineNumberReader(new FileReader(filePath));
-			InputStream is = new BufferedInputStream(new FileInputStream(
-					filePath));
-
-			byte[] c = new byte[1024];
-			int count = 0;
-			int readChars = 0;
-			boolean empty = true;
-			while ((readChars = is.read(c)) != -1) {
-				empty = false;
-				for (int i = 0; i < readChars; ++i) {
-					if (c[i] == '\n') {
-						++count;
+			File fileCheck = new File(filePath);
+			if(fileCheck.exists()) {
+				logger.info("readFile - file exists");
+				rdr = new LineNumberReader(new FileReader(filePath));
+				InputStream is = new BufferedInputStream(new FileInputStream(
+						filePath));
+				logger.info("readFile - is: " + is);
+				byte[] c = new byte[1024];
+				int count = 0;
+				int readChars = 0;
+				while ((readChars = is.read(c)) != -1) {
+					for (int i = 0; i < readChars; ++i) {
+						if (c[i] == '\n') {
+							++count;
+						}
 					}
 				}
-			}
-			int fileReadSize = Integer
-					.parseInt(DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-							.getProperty("fileChunkSize"));
-			int chunks = (count / fileReadSize) + 1;
-			String line;
-
-			for (int loop = 1; loop <= chunks; loop++) {
-				if (loop == 1) {
-					rdr = new LineNumberReader(new FileReader(filePath));
-					line = rdr.readLine();
-					sb2.append(line).append("\n");
-					for (line = null; (line = rdr.readLine()) != null;) {
-
-						if (rdr.getLineNumber() <= fileReadSize) {
-							sb2.append(line).append("\n");
+				logger.info("readFile - count: " + count);
+				int fileReadSize = Integer
+						.parseInt(DeliverConfigurationAndBackupTest.TSA_PROPERTIES
+								.getProperty("fileChunkSize"));
+				int chunks = (count / fileReadSize) + 1;
+				String line;
+				logger.info("readFile - chunks: " + chunks);
+				for (int loop = 1; loop <= chunks; loop++) {
+					if (loop == 1) {
+						rdr = new LineNumberReader(new FileReader(filePath));
+						line = rdr.readLine();
+						sb2.append(line).append("\n");
+						for (line = null; (line = rdr.readLine()) != null;) {
+	
+							if (rdr.getLineNumber() <= fileReadSize) {
+								sb2.append(line).append("\n");
+							}
+	
 						}
-
-					}
-					ar.add(sb2.toString());
-				} else {
-					LineNumberReader rdr1 = new LineNumberReader(
-							new FileReader(filePath));
-					sb2 = new StringBuilder();
-					for (line = null; (line = rdr1.readLine()) != null;) {
-
-						if (rdr1.getLineNumber() > (fileReadSize * (loop - 1))
-								&& rdr1.getLineNumber() <= (fileReadSize * loop)) {
-							sb2.append(line).append("\n");
+						ar.add(sb2.toString());
+					} else {
+						LineNumberReader rdr1 = new LineNumberReader(
+								new FileReader(filePath));
+						sb2 = new StringBuilder();
+						for (line = null; (line = rdr1.readLine()) != null;) {
+	
+							if (rdr1.getLineNumber() > (fileReadSize * (loop - 1))
+									&& rdr1.getLineNumber() <= (fileReadSize * loop)) {
+								sb2.append(line).append("\n");
+							}
+	
 						}
-
+						ar.add(sb2.toString());
 					}
-					ar.add(sb2.toString());
+	
 				}
-
+			}else {
+				logger.info("readFile - file not exists for filePath ->"+filePath);
 			}
-			return ar;
+		}catch(Exception exe) {
+			logger.error("Exception in method readFile ->"+exe.getMessage());
 		} finally {
-			br.close();
+			try {
+				if(rdr !=null) {
+					rdr.close();
+				}
+			}catch(IOException exe) {
+				
+			}
+			
 		}
-	}
+		logger.info("readFile - ar: " + ar);
+		return ar;
+	}	
 
-	private boolean BackUp(CreateConfigRequest createConfigRequest,
-			String user, String password, String stage)
-			throws NumberFormatException, JSchException {
-		logger.info("Inside Backup method for ios upgrade");
-		boolean isSuccess = false;
-		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-				.getProperty("portSSH");
-		ArrayList<String> commandToPush = new ArrayList<String>();
-		String host = createConfigRequest.getManagementIp();
-		/*
-		 * JSch jsch = new JSch(); Channel channel = null; Session session =
-		 * jsch.getSession(user, host, Integer.parseInt(port)); Properties
-		 * config = new Properties(); config.put("StrictHostKeyChecking", "no");
-		 * session.setConfig(config); session.setPassword(password);
-		 * session.connect(); try { Thread.sleep(10000); } catch (Exception ee)
-		 * { }
-		 */
-		try {
-			// channel = session.openChannel("shell");
-			// OutputStream ops = channel.getOutputStream();
-
-			// PrintStream ps = new PrintStream(ops, true);
-			// logger.info("Channel Connected to machine " + host +
-			// " server for backup");
-			// channel.connect();
-			// InputStream input = channel.getInputStream();
-
-			// to save the backup and deliver the configuration(configuration in
-			// the router)
-			isSuccess = bckupConfigService.getRouterConfig(createConfigRequest,
-					stage);
-		} catch (Exception e) {
-
-		}
-		// session.disconnect();
-		// channel.disconnect();
-		return isSuccess;
-	}
-
-	List<String> getExsistingBootCmds(String user, String password, String host, String command) {
+	private List<String> getExsistingBootCmds(String user, String password, String host, String command) {
 		logger.info("Inside getExsistingBootCmds method user " + user + "password "+ password + "host " + host + "command " + command);
 		List<String> array = new ArrayList<String>();
-		List<String> array1 = new ArrayList<String>();
 
 		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
 				.getProperty("portSSH");
@@ -1175,6 +1126,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			Properties config = new Properties();
 			logger.info("Creating properties object");
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			logger.info("setting StrictHostKeyChecking");
 			logger.info("session setConfig is " + config);
 			session.setConfig(config);
@@ -1182,11 +1134,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			session.setPassword(password);
 			logger.info("Going to connect session");
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-				logger.error("Exception in getExsistingBootCmds after session connect " + ee);
-			}
+			UtilityMethods.sleepThread(10000);
 			channel = session.openChannel("shell");
 			logger.info("After opening channel in getExsistingBootCmds " + channel);
 			OutputStream ops = channel.getOutputStream();
@@ -1212,17 +1160,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					ps.print(cmd);
 				}
 			}
-			try {
-				// change this sleep in case of longer wait
-				Thread.sleep(5000);
-			} catch (Exception ee) {
-				logger.error("Exception in getExsistingBootCmds method after sleep " +ee);
-			}
+			UtilityMethods.sleepThread(5000);
+			logger.info("getExsistingBootCmds Total size of the Channel InputStream -->"+input.available());
 			logger.info("Value of command in getExsistingBootCmds method is " +command);
 			cmdCheck = notPresentCmdRes(command);
 			logger.info("Value of not presnt command in getExsistingBootCmds method is " +cmdCheck);
-			BufferedWriter bw = null;
-			FileWriter fw = null;
 			int SIZE = 1024;
 			byte[] tmp = new byte[SIZE];
 			while (input.available() > 0) {
@@ -1260,7 +1202,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 					if (channel.getExitStatus() == -1) {
 
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 
 					}
 				} catch (Exception e) {
@@ -1288,7 +1230,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					logger.info("Inside the finally try block if channel still open then going to disconnect session " +session);
 					if (channel.getExitStatus() == -1) {
 						logger.info("Inside the finally try block channel.getExitStatus() " +channel.getExitStatus());
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 					}
 				} catch (Exception e) {
 					logger.error("Inside the finally block of catch " + e);
@@ -1320,6 +1262,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			logger.info("Inside pushOnRouter method setting setconfig ->");
 			session.setConfig(config);
 			logger.info("Inside pushOnRouter method config is -> " + config);
@@ -1327,11 +1270,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			logger.info("Inside pushOnRouter method going to connect session with password -> "+password);
 			session.connect();
 			logger.info("Inside pushOnRouter method session connected successfully  ->");
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-				logger.error("Exception inside the pushOnRouter method -> " + ee);
-			}
+			UtilityMethods.sleepThread(10000);
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 			PrintStream ps = new PrintStream(ops, true);
@@ -1373,7 +1312,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						logger.info("Inside the finally try block if channel still open then going to disconnect session " +session);
 						if (channel.getExitStatus() == -1) {
 							logger.info("Inside the finally try block channel.getExitStatus() " +channel.getExitStatus());
-							Thread.sleep(5000);
+							UtilityMethods.sleepThread(5000);
 						}
 					} catch (Exception e) {
 						logger.error("Inside the finally block of catchin pushOnRouter method -> " + e);
@@ -1399,13 +1338,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(10000);
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 			PrintStream ps = new PrintStream(ops, true);
@@ -1415,12 +1352,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					+ " for show run | i boot after pushing new file");
 			InputStream input = channel.getInputStream();
 			ps.println("show run | i boot");
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
-			BufferedWriter bw = null;
-			FileWriter fw = null;
+			UtilityMethods.sleepThread(10000);
+			logger.info("checkIdLoadedProperly Total size of the Channel InputStream -->"+input.available());
 			int SIZE = 1024;
 			byte[] tmp = new byte[SIZE];
 			while (input.available() > 0) {
@@ -1430,9 +1363,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				// we will get response from router here
 				String s = new String(tmp, 0, i);
 				logger.info("router output: " + s);
-				List<String> outList = new ArrayList<String>();
-				String str[] = s.split("\n");
-				outList = Arrays.asList(str);
 				isRes = true;
 			}
 			logger.info("Input size < 0: ");
@@ -1440,13 +1370,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			channel.disconnect();
 			session.disconnect();
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSchException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
 
@@ -1456,11 +1383,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 					if (channel.getExitStatus() == -1) {
 
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 
 					}
 				} catch (Exception e) {
-					System.out.println(e);
+					logger.error(e);
 				}
 				channel.disconnect();
 				session.disconnect();
@@ -1562,6 +1489,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			Properties config = new Properties();
 			logger.info("Creating properties object");
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			logger.info("setting StrictHostKeyChecking");
 			logger.info("sessing setConfig is " + config);
 			session.setConfig(config);
@@ -1570,11 +1498,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			logger.info("Going to connect sessing ");
 			session.connect();
 			logger.info("session Connect successfully ");
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-				logger.error("Exception in c3pCheckAvailableFlashSizeOnDevice after session connect");
-			}
+			UtilityMethods.sleepThread(10000);
 			try {
 				channel = session.openChannel("shell");
 				logger.info("After opening channel in c3pCheckAvailableFlashSizeOnDevice " + channel);
@@ -1590,11 +1514,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				logger.info("After InputStream in  c3pCheckAvailableFlashSizeOnDevice " + input);
 				ps.println(cmdResponse);
 				logger.info("after ps.println c3pCheckAvailableFlashSizeOnDevice");
-				try {
-					Thread.sleep(5000);
-				} catch (Exception ee) {
-					logger.error("Exception in c3pCheckAvailableFlashSizeOnDevice after ps.println ");
-				}
+				UtilityMethods.sleepThread(5000);
+				logger.info("c3pCheckAvailableFlashSizeOnDevice Total size of the Channel InputStream -->"+input.available());
 				int SIZE = 1024;
 				String availableSize[] = null;
 				byte[] tmp = new byte[SIZE];
@@ -1658,11 +1579,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				if (channel.isClosed()) {
 					logger.info("exit-status in c3pCheckAvailableFlashSizeOnDevice: " + channel.getExitStatus());
 				}
-				try {
-					Thread.sleep(1000);
-				} catch (Exception ee) {
-					logger.error("Exception in in c3pCheckAvailableFlashSizeOnDevice: " + ee);
-				}
+				UtilityMethods.sleepThread(1000);
 			} catch (Exception e) {
 				logger.error("Exception in in c3pCheckAvailableFlashSizeOnDevice: " + e);
 			}
@@ -1682,7 +1599,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							+ session);
 					if (channel.getExitStatus() == -1) {
 						logger.info("Inside the finally try block channel.getExitStatus() " + channel.getExitStatus());
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 					}
 				} catch (Exception e) {
 					logger.error("Inside the finally block of catch " + e);
@@ -1818,6 +1735,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						Properties config = new Properties();
 						logger.info("Creating properties object");
 						config.put("StrictHostKeyChecking", "no");
+						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						logger.info("setting StrictHostKeyChecking");
 						logger.info("sessing setConfig is " + config);
 						session.setConfig(config);
@@ -1826,11 +1744,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						logger.info("Going to connect session ");
 						session.connect();
 						logger.info("session Connect successfully");
-						try {
-							Thread.sleep(5000);
-						} catch (Exception ee) {
-							logger.error("Exception in c3pCopyImageOnDevice after session connect");
-						}
+						UtilityMethods.sleepThread(5000);
 						channel = session.openChannel("shell");
 						logger.info("After opening channel in c3pCopyImageOnDevice " + channel);
 						OutputStream ops = channel.getOutputStream();
@@ -1845,18 +1759,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						logger.info("After InputStream in c3pCopyImageOnDevice " + input);
 						ps.println(commandOutput);
 						logger.info("Inside ps.print c3pCopyImageOnDevice");
-
-						try {
-							// change this sleep in case of longer
-							// wait
-							Thread.sleep(Integer.parseInt(TSALabels.REQ_TIME.getValue()));
-						} catch (Exception ee) {
-							logger.error("Exception in c3pCopyImageOnDevice after ps.println ");
-						}
-						BufferedWriter bw = null;
-						FileWriter fw = null;
+						UtilityMethods.sleepThread(Integer.parseInt(TSALabels.REQ_TIME.getValue()));
 						int SIZE = 1024;
 						byte[] tmp = new byte[SIZE];
+						logger.info("Total size of the Channel InputStream -->"+input.available());
 						logger.info("Value of tmp in c3pCopyImageOnDevice " + tmp);
 						while (input.available() > 0) {
 							logger.info("inside while loop in c3pCopyImageOnDevice ");
@@ -1888,7 +1794,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							try {
 								session = channel.getSession();
 								if (channel.getExitStatus() == -1) {
-									Thread.sleep(5000);
+									UtilityMethods.sleepThread(5000);
 								}
 							} catch (Exception e) {
 								logger.error("Exception in c3pCopyImageOnDevice" + e);
@@ -1930,7 +1836,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							+ session);
 					if (channel.getExitStatus() == -1) {
 						logger.info("Inside the finally try block channel.getExitStatus() " + channel.getExitStatus());
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 					}
 				} catch (Exception e) {
 					logger.error("Inside the finally block of catch in c3pCopyImageOnDevice service is -> " + e);
@@ -2302,6 +2208,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				Properties config = new Properties();
 				logger.info("Creating properties object");
 				config.put("StrictHostKeyChecking", "no");
+				config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 				logger.info("setting StrictHostKeyChecking");
 				logger.info("sessing setConfig is " + config);
 				session.setConfig(config);
@@ -2311,17 +2218,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						+ " host" + host);
 				session.connect();
 				logger.info("session Connect successfully ");
-				try {
-					Thread.sleep(5000);
-				} catch (Exception ee) {
-					logger.error("Exception in firmwareupgradeLogin after session connect");
-				}
+				UtilityMethods.sleepThread(5000);
 				try {
 					channel = session.openChannel("shell");
 					logger.info("After opening channel in firmwareupgradeLogin " + channel);
 					OutputStream ops = channel.getOutputStream();
 					logger.info("After OutputStream  in firmwareupgradeLogin" + ops);
-					PrintStream ps = new PrintStream(ops, true);
 					logger.info("Channel Connected to machine " + host + " server");
 					channel.connect();
 					logger.info("Channel Connected Successfully");
@@ -2363,7 +2265,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							+ session);
 					if (channel.getExitStatus() == -1) {
 						logger.info("Inside the finally try block channel.getExitStatus() " + channel.getExitStatus());
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 					}
 				} catch (Exception e) {
 					logger.error("Inside the finally block of catch in firmwareupgradeLogin service is - > " + e);
@@ -2489,6 +2391,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 				Properties config = new Properties();
 				config.put("StrictHostKeyChecking", "no");
+				config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 				logger.info("setting StrictHostKeyChecking");
 				logger.info("sessing setConfig is " + config);
 				session.setConfig(config);
@@ -2514,17 +2417,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							Double.toString(requestinfo.getRequestVersion()), "Back up", "Failure",
 							"Back up unsuccessful.");
 				}
-				try {
-					Thread.sleep(5000);
-				} catch (Exception ee) {
-					logger.error("Exception in firmwareBackup after session connect");
-				}
+				UtilityMethods.sleepThread(5000);
 				try {
 					channel = session.openChannel("shell");
 					logger.info("After opening channel in firmwareBackup " + channel);
 					OutputStream ops = channel.getOutputStream();
 					logger.info("After OutputStream  in firmwareBackup" + ops);
-					PrintStream ps = new PrintStream(ops, true);
 					logger.info("Channel Connected to machine " + host + " server");
 					channel.connect();
 					logger.info("Channel Connected Successfully");
@@ -2550,7 +2448,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					if (channel.getExitStatus() == -1) {
 						logger.info(
 								"Inside the finally if channel still open then going to disconnect session and channel");
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 					}
 				} catch (Exception e) {
 					logger.error("Inside the finally block of catch in firmwareBackup service" + e);
@@ -2666,13 +2564,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(10000);
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 			PrintStream ps = new PrintStream(ops, true);
@@ -2680,11 +2576,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			channel.connect();
 			InputStream input = channel.getInputStream();
 			ps.println(command);
-			try {
-				Thread.sleep(3000);
-			} catch (Exception ee) {
-				logger.error("Exception in the saveConfiguration method after ps.println is-> " + ee);
-			}
+			UtilityMethods.sleepThread(5000);
+			logger.info("saveConfiguration Total size of the Channel InputStream -->"+input.available());
 			isSuccess = true;
 			logger.info("Save the configuration on" + host);
 			input.close();
@@ -2712,7 +2605,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					if (channel.getExitStatus() == -1) {
 						logger.info(
 								"Inside the finally if channel still open then going to disconnect session and channel");
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 					}
 				} catch (Exception e) {
 					logger.error("Inside the finally block of catch in saveConfiguration method -> " + e);
@@ -2736,13 +2629,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
+			UtilityMethods.sleepThread(10000);
 			channel = session.openChannel("shell");
 			OutputStream ops = channel.getOutputStream();
 			PrintStream ps = new PrintStream(ops, true);
@@ -2750,11 +2641,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			channel.connect();
 			InputStream input = channel.getInputStream();
 			ps.println(command);
-			try {
-				Thread.sleep(Integer.parseInt(TSALabels.REQ_TIME.getValue()));
-			} catch (Exception ee) {
-				logger.error("Exception in the firmwareReload method after ps.println is-> " + ee);
-			}
+			UtilityMethods.sleepThread(Integer.parseInt(TSALabels.REQ_TIME.getValue()));
+			logger.info("Total size of the Channel InputStream -->"+input.available());
 			logger.info("Reload the Router on" + host);
 			isSuccess = true;
 			input.close();
@@ -2782,7 +2670,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					if (channel.getExitStatus() == -1) {
 						logger.info(
 								"Inside the finally if channel still open then going to disconnect session and channel");
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 					}
 				} catch (Exception e) {
 					logger.error("Inside the finally block of catch in the firmwareReload method -> " + e);

@@ -1,8 +1,5 @@
 package com.techm.orion.rest;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -46,11 +43,11 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.PingService;
-import com.techm.orion.service.PrevalidationTestServiceImpl;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 
 import freemarker.template.TemplateException;
 
@@ -86,9 +83,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 	
 	@Autowired
-	private PrevalidationTestServiceImpl prevalidationTestServiceImpl;
-	@Autowired
 	private PingService pingService;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
 	public static String TSA_PROPERTIES_FILE = "TSA.properties";
 	public static final Properties TSA_PROPERTIES = new Properties();
@@ -109,6 +105,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 		//PrevalidationTestServiceImpl prevalidationTestServiceImpl = new PrevalidationTestServiceImpl();
 		Boolean value = false, isCheck = false;
 		String status = null, lockRequestId = null;
+		@SuppressWarnings("rawtypes")
 		List deviceLocked;
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
 		JSch jsch = new JSch();
@@ -239,41 +236,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								String user = routerCredential.getLoginRead();
 								String password = routerCredential.getPasswordWrite();
 
-								/*
-								 * if (type.equalsIgnoreCase("SNNC") || type.equalsIgnoreCase("SNRC")) { user =
-								 * "c3pteam"; password = "csr1000v"; } else { user = userPojo.getUsername();
-								 * password = userPojo.getPassword(); }
-								 */
-								
-								/*logger.info("Channel Connected to machine " + host + " server");
-								channel.connect();
-								
-								ps.println("show version");
-								try {
-									Thread.sleep(1000);
-								} catch (Exception ee) {
-								}
-								/*
-								 * Error here Parameter index out of range (17 > number of parameters, which is
-								 * 16).
-								 * 
-								 */
-
-								/*requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()), "1");
-								printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
-										Double.toString(requestinfo.getRequestVersion()));
-
-								/*value = prevalidationTestServiceImpl.PreValidation(requestinfo,
-										Double.toString(requestinfo.getRequestVersion()), null);*/
-
 								//if (value) {
 									// changes for testing strategy
 									List<Boolean> results = null;
 									RequestInfoDao dao = new RequestInfoDao();
 									List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 									List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-									TestDetail test = new TestDetail();
 									listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(),
 											requestinfo.getOs(), requestinfo.getOsVersion(), requestinfo.getVendor(),
 											requestinfo.getRegion(), "Device Prevalidation");
@@ -301,13 +269,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 											session = jsch.getSession(user, host, Integer.parseInt(port));
 											Properties config = new Properties();
 											config.put("StrictHostKeyChecking", "no");
+											config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 											session.setConfig(config);
 											session.setPassword(password);
 											session.connect();
-											try {
-												Thread.sleep(10000);
-											} catch (Exception ee) {
-											}
+											UtilityMethods.sleepThread(10000);
 											channel = session.openChannel("shell");
 											OutputStream ops = channel.getOutputStream();
 
@@ -317,10 +283,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 											// conduct and analyse the tests
 											ps = requestInfoDetailsDao.setCommandStream(ps,requestinfo,"Test",false);
 											ps.println(finallistOfTests.get(i).getTestCommand());
-											try {
-												Thread.sleep(6000);
-											} catch (Exception ee) {
-											}
+											UtilityMethods.sleepThread(6000);
 
 											// printResult(input,
 											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
@@ -331,6 +294,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 											results.add(res);
 											input.close();
 										}
+										logger.info("Telsta - results - "+results);
 										if (results != null) {
 											for (int i = 0; i < results.size(); i++) {
 												if (results.get(i)== false) {
@@ -366,122 +330,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									}
 								channel.disconnect();
 								session.disconnect();
-
+								logger.info("Telsta - value - "+value);
+								
 								jsonArray = new Gson().toJson(value);
 								obj.put(new String("output"), jsonArray);
 							}
-
-//							else if (type.equalsIgnoreCase("SLGB")) {
-//
-//								String host = requestinfo.getManagementIp();
-//								CredentialManagementEntity routerCredential = dcmConfigService
-//										.getRouterCredential(deviceDetails);
-//								String user = routerCredential.getLoginRead();
-//								String password = routerCredential.getPasswordWrite();
-//
-//								String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-//										.getProperty("portSSH");
-//								session = jsch.getSession(user, host, Integer.parseInt(port));
-//								Properties config = new Properties();
-//								config.put("StrictHostKeyChecking", "no");
-//								session.setConfig(config);
-//								session.setPassword(password);
-//								session.connect();
-//								try {
-//									Thread.sleep(1000);
-//								} catch (Exception ee) {
-//								}
-//								channel = session.openChannel("shell");
-//								OutputStream ops = channel.getOutputStream();
-//
-//								PrintStream ps = new PrintStream(ops, true);
-//								logger.info("Channel Connected to machine " + host + " server");
-//								channel.connect();
-//								InputStream input = channel.getInputStream();
-//								ps.println("show version");
-//								try {
-//									Thread.sleep(5000);
-//								} catch (Exception ee) {
-//								}
-//								/*
-//								 * Error here Parameter index out of range (17 > number of parameters, which is
-//								 * 16).
-//								 * 
-//								 */
-//								requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
-//										Double.toString(requestinfo.getRequestVersion()), "1");
-//								printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
-//										Double.toString(requestinfo.getRequestVersion()));
-//
-//								value = prevalidationTestServiceImpl.PreValidation(requestinfo,
-//										Double.toString(requestinfo.getRequestVersion()), null);
-//
-//								if (value) {
-//									// changes for testing strategy
-//									List<Boolean> results = null;
-//									RequestInfoDao dao = new RequestInfoDao();
-//									List<TestDetail> listOfTests = new ArrayList<TestDetail>();
-//									List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-//									listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(),
-//											requestinfo.getOs(), requestinfo.getOsVersion(), requestinfo.getVendor(),
-//											requestinfo.getRegion(), "Device Prevalidation");
-//									List<TestDetail> selectedTests = dao.findSelectedTests(
-//											requestinfo.getAlphanumericReqId(), "Device Prevalidation", version);
-//									if (selectedTests.size() > 0) {
-//										for (int i = 0; i < listOfTests.size(); i++) {
-//											for (int j = 0; j < selectedTests.size(); j++) {
-//												if (selectedTests.get(j).getTestName()
-//														.equalsIgnoreCase(listOfTests.get(i).getTestName())) {
-//													finallistOfTests.add(listOfTests.get(j));
-//												}
-//											}
-//										}
-//									}
-//									if (finallistOfTests.size() > 0) {
-//										results = new ArrayList<Boolean>();
-//										for (int i = 0; i < finallistOfTests.size(); i++) {
-//
-//											// conduct and analyse the tests
-//											ps.println("terminal length 0");
-//											ps.println(finallistOfTests.get(i).getTestCommand());
-//											try {
-//												Thread.sleep(6000);
-//											} catch (Exception ee) {
-//											}
-//
-//											// printResult(input,
-//											// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-//											Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
-//													requestinfo.getAlphanumericReqId(),
-//													Double.toString(requestinfo.getRequestVersion()),
-//													finallistOfTests.get(i), "Device Prevalidation");
-//											results.add(res);
-//										}
-//										if (results != null) {
-//											for (int i = 0; i < results.size(); i++) {
-//												if (!results.get(i)) {
-//													value = false;
-//													break;
-//												}
-//											}
-//										}
-//									} else {
-//										// No new device prevalidation test added
-//									}
-//
-//									/*
-//									 * END
-//									 * 
-//									 */
-//								}
-//								// value=true;
-//								channel.disconnect();
-//								session.disconnect();
-//
-//								jsonArray = new Gson().toJson(value);
-//								obj.put(new String("output"), jsonArray);
-//
-//							}
 
 							else if (type.equalsIgnoreCase("SLGF")) {
 								// Perform health checks for OS upgrade
@@ -511,7 +364,6 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 									response);
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -522,7 +374,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				jsonArray = new Gson().toJson(value);
 				obj.put(new String("output"), jsonArray);
 			}
+			
+			logger.info("Telsta - main obj  - "+obj);
 		} catch (Exception e1) {
+			logger.error("Exception in main block e1.getMessage() - " + e1.getLocalizedMessage());
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 
 				logger.error("e1.getMessage() - " + e1.getMessage());
@@ -569,7 +424,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 					if (channel.getExitStatus() == -1) {
 
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 
 					}
 				} catch (Exception e) {
@@ -588,6 +443,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/performReachabiltyTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -599,7 +455,6 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 		InvokeFtl invokeFtl = new InvokeFtl();
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
 		Boolean value = false;
-		Boolean deviceLocked = false;
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
@@ -895,51 +750,4 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 		}
 		return false;
 	}
-
-	public void printVersionversionInfo(InputStream input, Channel channel, String requestID, String version)
-			throws Exception {
-		BufferedWriter bw = null;
-		FileWriter fw = null;
-		int SIZE = 1024;
-		byte[] tmp = new byte[SIZE];
-
-		while (input.available() > 0) {
-			int i = input.read(tmp, 0, SIZE);
-			if (i < 0)
-				break;
-			/* logger.info(new String(tmp, 0, i)); */
-			String s = new String(tmp, 0, i);
-			if (!(s.equals(""))) {
-				// logger.info(str);
-				String filepath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-						.getProperty("responseDownloadPath") + "//" + requestID + "V" + version + "_VersionInfo.txt";
-				File file = new File(filepath);
-
-				// if file doesnt exists, then create it
-				if (!file.exists()) {
-					file.createNewFile();
-
-					fw = new FileWriter(file, true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				} else {
-					fw = new FileWriter(file.getAbsoluteFile(), true);
-					bw = new BufferedWriter(fw);
-					bw.append(s);
-					bw.close();
-				}
-			}
-		}
-		if (channel.isClosed()) {
-			logger.info("exit-status: " + channel.getExitStatus());
-
-		}
-		try {
-			Thread.sleep(1000);
-		} catch (Exception ee) {
-		}
-
-	}
-
 }

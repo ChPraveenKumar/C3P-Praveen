@@ -702,7 +702,7 @@ public class ConfigurationManagmentService {
 							commandsByFeatureData = setSpecifcComandForFeature(vendorComand, commandsByFeatureData,
 									preValue, checkStart);
 							commandsByFeatureData.forEach(item -> {
-								System.out.println(item.getCommandValue());
+								logger.info("item.getCommandValue() ->"+item.getCommandValue());
 							});
 							if (tempCount <= 2) {
 								if (tempCount == 1) {

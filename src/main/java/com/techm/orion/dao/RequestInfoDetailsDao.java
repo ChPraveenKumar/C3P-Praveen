@@ -58,6 +58,7 @@ import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.PythonServices;
 import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
+import com.techm.orion.utility.UtilityMethods;
 
 @Component
 public class RequestInfoDetailsDao {
@@ -89,33 +90,36 @@ public class RequestInfoDetailsDao {
 	private PythonServices pythonService;
 	@Autowired
 	private VendorCommandRepository vendorCommandRepository;
+	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
 			String status) {
 		String query = null;
 		
-		if (field.equalsIgnoreCase("health_check")) {
+		if ("health_check".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("deliver_configuration")) {
+		} else if ("deliver_configuration".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("network_test")) {
+		} else if ("network_test".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set network_test = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("deliever_config")) {
+		} else if ("deliever_config".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set deliever_config = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("Application_test")) {
+		} else if ("Application_test".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("customer_report")) {
+		} else if ("customer_report".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set customer_report = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("generate_configuration")) {
+		} else if ("generate_configuration".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set generate_config = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("pre_health_checkup")) {
+		} else if ("pre_health_checkup".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set pre_health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("others_test")) {
+		} else if ("others_test".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("network_audit")) {
+		} else if ("network_audit".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
+		}else if ("post_health_checkup".equalsIgnoreCase(field)) {
+			query = "update webserviceinfo set health_checkup = ? where alphanumeric_req_id = ? and version = ? ";
 		}
-		else if (field.equalsIgnoreCase("instantiation")) {
+		else if ("instantiation".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set instantiation = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 
@@ -128,6 +132,8 @@ public class RequestInfoDetailsDao {
 		} catch (SQLException exe) {
 			logger.error("SQL Exception in editRequestforReportWebserviceInfo update webserviceinfo method "+exe.getMessage());
 		}
+		logger.info("editRequestforReportWebserviceInfo - field ->"+field);
+		logger.info("editRequestforReportWebserviceInfo - status ->"+status);
 		if (field.equalsIgnoreCase("customer_report") && status.contains("Success")) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
@@ -183,6 +189,7 @@ public class RequestInfoDetailsDao {
 				//To uncomment when python services available
 				PythonServices pythonService=new PythonServices();
 				//pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+				logger.info("Before calling customer report sucess status runDecomposeWorkflow");
 				pythonService.runDecomposeWorkflow(rfoDecomposedEntity.getOdRfoId());
 			}
 			// update the request status column to success after Configuration Request gets
@@ -221,48 +228,47 @@ public class RequestInfoDetailsDao {
 				//fetch the running configuration for this request.
 				if(entity!=null)
 				{
-				String baseLineFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
-						entity.getAlphanumericReqId() + "V"
-								+ Double.toString(entity.getRequestVersion())
-								+ "_PreviousConfig.txt";
-				String currentRunningFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
-						request.getAlphanumericReqId() + "V"
-						+ Double.toString(request.getRequestVersion())
-						+ "_PreviousConfig.txt";
-				if(baseLineFilePath!=null && currentRunningFilePath!=null)
-				{
-					//Call python service to fetch delta between two files
-					Boolean resp=pythonService.pythonDeltaCompute(baseLineFilePath, currentRunningFilePath);
-					//If resp is true update request info r_has_delta_with_baseline flag for this request to 1
-					if(resp == true)
+					String baseLineFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
+							entity.getAlphanumericReqId() + "V"
+									+ Double.toString(entity.getRequestVersion())
+									+ "_PreviousConfig.txt";
+					String currentRunningFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
+							request.getAlphanumericReqId() + "V"
+							+ Double.toString(request.getRequestVersion())
+							+ "_PreviousConfig.txt";
+					if(baseLineFilePath!=null && currentRunningFilePath!=null)
 					{
-						int res=reository.updatehasdeltawithbaseline(true, request.getAlphanumericReqId(), request.getRequestVersion());
-						if(res==0)
+						//Call python service to fetch delta between two files
+						Boolean resp=pythonService.pythonDeltaCompute(baseLineFilePath, currentRunningFilePath);
+						//If resp is true update request info r_has_delta_with_baseline flag for this request to 1
+						if(resp == true)
 						{
-							logger.error("Could not update the record for has delta flag for request id:::",request.getAlphanumericReqId());	
+							int res=reository.updatehasdeltawithbaseline(true, request.getAlphanumericReqId(), request.getRequestVersion());
+							if(res==0)
+							{
+								logger.error("Could not update the record for has delta flag for request id:::",request.getAlphanumericReqId());	
+							}
 						}
+						else
+						{
+							logger.error("No delta found for request id::::",request.getAlphanumericReqId());	
+	
+						}
+						
 					}
 					else
 					{
-						logger.error("No delta found for request id::::",request.getAlphanumericReqId());	
-
+						logger.error("Backup files not found",baseLineFilePath);	
+						logger.error("Backup files not found::: baseline path %s",baseLineFilePath);	
+						logger.error("Backup files not found::: currentRunning path %s",currentRunningFilePath);	
 					}
-					
-				}
-				else
-				{
-					logger.error("Backup files not found",baseLineFilePath);	
-					logger.error("Backup files not found::: baseline path %s",baseLineFilePath);	
-					logger.error("Backup files not found::: currentRunning path %s",currentRunningFilePath);	
-				}
 				}
 				else
 				{
 					logger.error("No backup baselined for this version");
 				}
-				System.out.println("");
 			}
-		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure")) {
+		} else if (field.equalsIgnoreCase("customer_report") && status.equals("Failure") && "2".equals(flag)) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
 			try {
@@ -299,6 +305,7 @@ public class RequestInfoDetailsDao {
 				//To uncomment when python services available
 				PythonServices pythonService=new PythonServices();
 				//pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
+				logger.info("Before calling customer report failure status runDecomposeWorkflow");
 				pythonService.runDecomposeWorkflow(rfoDecomposedEntity.getOdRfoId());
 
 			}
@@ -353,6 +360,9 @@ public class RequestInfoDetailsDao {
 				pojo.setRequestCreatorName(entity.getRequestCreatorName());
 				pojo.setStartUp(entity.getStartUp());
 				pojo.setConfigurationGenerationMethods(entity.getrConfigGenerationMethod());
+				pojo.setCustomer(entity.getCustomer());
+				pojo.setSiteid(entity.getSiteId());
+				pojo.setSiteName(entity.getSiteName());
 			}
 		} catch (Exception e) {
 			logger.error("Exception in getRequestDetailTRequestInfoDBForVersion method " +e);
@@ -600,14 +610,12 @@ public class RequestInfoDetailsDao {
 			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
+			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
-			try {
-				Thread.sleep(10000);
-			} catch (Exception ee) {
-			}
-
+			UtilityMethods.sleepThread(3000);
+			InputStream input = null;
 			try {
 				channel = session.openChannel("shell");
 				OutputStream ops = channel.getOutputStream();
@@ -615,14 +623,12 @@ public class RequestInfoDetailsDao {
 				PrintStream printStream = new PrintStream(ops, true);
 				logger.info("Channel Connected to machine " + host + " server");
 				channel.connect();
-				InputStream input = channel.getInputStream();
+				input = channel.getInputStream();
 				//ps.println("terminal length 0");
 				//ps.println("show run");
 				printStream = setCommandStream(printStream, requestinfo, "backup", false);
-				try {
-					Thread.sleep(3000);
-				} catch (Exception ee) {
-				}
+				UtilityMethods.sleepThread(25000);
+				logger.info("RequestInfoDetailsDao - getRouterConfig - Total size of the Channel InputStream -->"+input.available());
 				if (routerVersionType.equalsIgnoreCase("previous")) {
 					backupdone = true;
 					backupCurrentRouterConfigurationService.printPreviousVersionInfo(input, channel, requestinfo.getAlphanumericReqId(),
@@ -635,10 +641,15 @@ public class RequestInfoDetailsDao {
 		
 			} catch (Exception e) {
 				e.printStackTrace();
+			}finally {
+				if(input !=null) {
+					input.close();
+				}
 			}
 		}
 
 		catch (Exception ex) {
+			logger.error("Exception occure inside backup.."+ex.getMessage());
 			String response = "";
 			try {
 				editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -658,7 +669,7 @@ public class RequestInfoDetailsDao {
 
 					if (channel.getExitStatus() == -1) {
 
-						Thread.sleep(5000);
+						UtilityMethods.sleepThread(5000);
 
 					}
 				} catch (Exception e) {
@@ -682,17 +693,23 @@ public class RequestInfoDetailsDao {
 		String query = null;
 		ResultSet rs = null;
 		int status = 0;
-		if (field.equalsIgnoreCase("health_check")) {
+		if ("health_check".equalsIgnoreCase(field)) {
 			query = "select health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("network_test")) {
+		} else if ("network_test".equalsIgnoreCase(field)) {
 			query = "select  network_test as dataValue from webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("others_test")) {
+		} else if ("others_test".equalsIgnoreCase(field)) {
 			query = "select others_test as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
-		} else if (field.equalsIgnoreCase("network_audit")) {
+		} else if ("network_audit".equalsIgnoreCase(field)) {
 			query = "select network_audit as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		}
-		else if (field.equalsIgnoreCase("instantiation")) {
+		else if ("instantiation".equalsIgnoreCase(field)) {
 			query = "select instantiation as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+		}
+		if ("pre_health_checkup".equalsIgnoreCase(field)) {
+			query = "select pre_health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
+		}
+		if ("post_health_checkup".equalsIgnoreCase(field)) {
+			query = "select health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
 		}
 
 		try(Connection connection = ConnectionFactory.getConnection();
@@ -755,6 +772,7 @@ public class RequestInfoDetailsDao {
 	 * @param deviceId
 	 * @return location
 	 */
+	@SuppressWarnings("unchecked")
 	public JSONObject fetchFromDeviceExtLocationDescription(String deviceId) {
 		JSONObject response=new JSONObject();
 		String sqlQuery = "select r_latitude,r_longitude,r_description from c3p_deviceinfo_ext where r_device_id = ?";
@@ -811,7 +829,7 @@ public class RequestInfoDetailsDao {
 	}
 
 	private PrintStream setModeData(String parentId, PrintStream printStream) {
-		if (parentId.contains("::")) {
+		if (parentId !=null && parentId.contains("::")) {
 			String startParentId = StringUtils.substringBefore(parentId, "::");
 			VendorCommandEntity startParentModeCommand = vendorCommandRepository.findByVcRecordId(startParentId);
 			if (startParentModeCommand!=null && !startParentModeCommand.getVcParentId().contains("000")) {

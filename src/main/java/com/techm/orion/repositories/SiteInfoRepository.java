@@ -20,7 +20,7 @@ public interface SiteInfoRepository extends JpaRepository<SiteInfoEntity, Long> 
 
 	List<SiteInfoEntity> findCSiteNameByCCustName(String getcCustName);
 	List<SiteInfoEntity> findCSiteIdByCCustNameAndCSiteName(String customer,String site);
-	SiteInfoEntity findCSiteIdByCSiteName(String siteName);
+	List<SiteInfoEntity> findCSiteIdByCSiteName(String siteName);
 	
 	List<SiteInfoEntity> findCSiteIdByCCustNameAndCSiteRegionAndCSiteName(String customer, String region, String site);
 
