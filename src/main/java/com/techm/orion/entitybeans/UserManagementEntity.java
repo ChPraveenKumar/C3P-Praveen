@@ -123,16 +123,19 @@ public class UserManagementEntity implements Serializable {
 
 	@Column(name = "user_status")
 	private String userStatus;
-	
+
 	@JsonIgnore
 	@ManyToMany(cascade = { CascadeType.ALL })
 	@JoinTable(name = "c3p_user_device", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "device_id"))
 	List<DeviceDiscoveryEntity> deviceDetails;
-	
+
 	@JsonIgnore
 	@ManyToMany
 	@JoinTable(name = "c3p_t_user_device_groups", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "device_group_id"))
 	List<DeviceGroups> deviceGroups;
+
+	@Column(name = "last_login_date")
+	private Date lastLoginDate;
 
 	public long getId() {
 		return id;
@@ -469,4 +472,13 @@ public class UserManagementEntity implements Serializable {
 	public void setDeviceGroups(List<DeviceGroups> deviceGroups) {
 		this.deviceGroups = deviceGroups;
 	}
+
+	public Date getLastLoginDate() {
+		return lastLoginDate;
+	}
+
+	public void setLastLoginDate(Date lastLoginDate) {
+		this.lastLoginDate = lastLoginDate;
+	}
+
 }

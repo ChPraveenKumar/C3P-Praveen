@@ -588,11 +588,15 @@ public class UserManagementImpl implements UserManagementInterface {
 					userManagementResulltDetailPojo.setBaseLocation(userDetails.getBaseLocation());
 					jsonModule = (JSONObject) parser.parse(userDetails.getModuleInfo());
 					userManagementResulltDetailPojo.setModuleInfo(jsonModule);
-					if(userDetails.getSubOrdinate() !=null)
+					if(userDetails.getSubOrdinate() !=null) {
 						userManagementResulltDetailPojo.setSuperUser(true);
-					else
+					}
+					else {
 						userManagementResulltDetailPojo.setSuperUser(false);
-					userManagementRepository.resetFailAttempts(userName);
+					}
+					userManagementRepository.resetFailAttempts(userName);					
+					userDetails.setLastLoginDate(new Date());
+					userManagementRepository.save(userDetails);				
 				}
 				else
 				{
