@@ -822,4 +822,38 @@ public class User {
 		}
 		return responseEntity;
 	}
+	
+	/*
+	 *  To change the default password for the current User after login
+	 */
+	@POST
+	@RequestMapping(value = "/passwordChange", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity passwordChange(@RequestBody String request) {
+
+		logger.info("Inside passwordChange Service ->" + request);
+		JSONObject userJson = new JSONObject();
+		JSONParser userInfoParser = new JSONParser();
+		JSONObject userInfoJson = new JSONObject();
+		String userName = null, oldPassword = null, newPassword = null, confirmPassword = null;
+		String statusInfo = null;
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject userDetails = new JSONObject();
+		try {
+			userInfoJson = (JSONObject) userInfoParser.parse(request);
+			userName = (String) userInfoJson.get("userName");
+			oldPassword = (String) userInfoJson.get("oldPassword");
+			newPassword = (String) userInfoJson.get("newPassword");
+			confirmPassword = (String) userInfoJson.get("confirmPassword");
+			if (userName != null && oldPassword != null && newPassword != null && confirmPassword != null)
+				userJson = userCreateInterface.changeUserPassword(userName, oldPassword, newPassword, confirmPassword);
+			responseEntity = new ResponseEntity<JSONObject>(userJson, HttpStatus.OK);
+		} catch (Exception e) {
+			logger.error("Exception occured passwordChange Service" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception in passwordChange service -> " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
 }

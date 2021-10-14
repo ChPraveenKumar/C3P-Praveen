@@ -1,6 +1,7 @@
 package com.techm.orion.entitybeans;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -136,6 +137,9 @@ public class UserManagementEntity implements Serializable {
 
 	@Column(name = "last_login_date")
 	private Date lastLoginDate;
+	
+	@Column(name = "password_updated_date")
+	private Timestamp passwordUpdatedDate;
 
 	public long getId() {
 		return id;
@@ -480,5 +484,12 @@ public class UserManagementEntity implements Serializable {
 	public void setLastLoginDate(Date lastLoginDate) {
 		this.lastLoginDate = lastLoginDate;
 	}
+	
+	public Timestamp getPasswordUpdatedDate() {
+		return passwordUpdatedDate;
+	}
 
+	public void setPasswordUpdatedDate(Timestamp passwordUpdatedDate) {
+		this.passwordUpdatedDate = passwordUpdatedDate;
+	}
 }
