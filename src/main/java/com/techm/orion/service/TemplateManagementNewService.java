@@ -181,6 +181,12 @@ public class TemplateManagementNewService {
 		// accordingliy append the version
 		if (vendor != null && deviceFamily != null && os != null
 				&& osVersion != null && region != null && tempNumber != null) {
+			vendor = vendor.replaceAll(" ", "");
+			deviceFamily =deviceFamily.replaceAll(" ", "");
+			region = region.replaceAll(" ", "");
+			os = os.replaceAll(" ", "");
+			osVersion = osVersion.replaceAll(" " ,"");
+			
 			vendor = vendor.toUpperCase().substring(0, 3);
 			deviceFamily = ("All".equals(deviceFamily)) ? "$" : deviceFamily;
 			region = ("All".equals(region)) ? "$" : region.toUpperCase()
