@@ -38,6 +38,7 @@ import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.ModuleInterface;
 import com.techm.orion.service.UserManagementInterface;
 import com.techm.orion.service.WorkGroupInterface;
+import com.techm.orion.utility.TSALabels;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -533,11 +534,12 @@ public class User {
 		int totalCount = 0;
 		try {
 			Gson gson = new Gson();
+			final String secretKey = TSALabels.SECRET_KEY.getValue();
 			UserPojo dto = gson.fromJson(searchParameters, UserPojo.class);
 			username = dto.getUsername();
 			password = dto.getPassword();
 			UserManagementResulltDetailPojo viewResult = userCreateInterface
-					.checkUserNamePassword(username, password);
+					.checkUserNamePassword(username, password, secretKey);
 
 			if (viewResult !=null) {
 				obj.put("error",
@@ -818,6 +820,51 @@ public class User {
 			logger.error("Exception occured in userDeviceGroups Service" + e.getMessage());
 			JSONObject errObj = new JSONObject();
 			errObj.put("Error", "Exception due to " + e.getMessage());
+			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+	
+	/*
+	 *  To change the default password for the current User after login
+	 */
+	@POST
+	@RequestMapping(value = "/passwordChange", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public ResponseEntity passwordChange(@RequestBody String request) {
+
+		logger.info("Inside passwordChange Service ->" + request);
+		JSONObject userJson = new JSONObject();
+		JSONParser userInfoParser = new JSONParser();
+		JSONObject userInfoJson = new JSONObject();
+		String userName = null, oldPassword = null, newPassword = null, confirmPassword = null;
+		String statusInfo = null;
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject userDetails = new JSONObject();
+		final String secretKey = TSALabels.SECRET_KEY.getValue();
+		try {
+			userInfoJson = (JSONObject) userInfoParser.parse(request);
+			if(userInfoJson.get("userName") !=null)
+				userName = (String) userInfoJson.get("userName");
+			if(userInfoJson.get("oldPassword") !=null)
+				oldPassword = (String) userInfoJson.get("oldPassword");
+			if(userInfoJson.get("newPassword") !=null)
+				newPassword = (String) userInfoJson.get("newPassword");
+			if(userInfoJson.get("confirmPassword") !=null)
+				confirmPassword = (String) userInfoJson.get("confirmPassword");
+			if (userName != null && oldPassword != null && newPassword != null && confirmPassword != null) {
+				userJson = userCreateInterface.changeUserPassword(userName, oldPassword, newPassword, confirmPassword, secretKey);
+				responseEntity = new ResponseEntity<JSONObject>(userJson, HttpStatus.OK);
+			} else {
+				logger.info("Mandatory parameters are missing in the api request ");
+				JSONObject errObj = new JSONObject();
+				errObj.put("Error", "Mandatory parameters are missing in the api request");
+				responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
+			}
+		} catch (Exception e) {
+			logger.error("Exception occured passwordChange Service" + e.getMessage());
+			JSONObject errObj = new JSONObject();
+			errObj.put("Error", "Exception in passwordChange service -> " + e.getMessage());
 			responseEntity = new ResponseEntity<JSONObject>(errObj, HttpStatus.BAD_REQUEST);
 		}
 		return responseEntity;
