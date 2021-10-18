@@ -115,7 +115,7 @@ public class UserManagementImpl implements UserManagementInterface {
 			email = (String) json.get("email");
 			phone = (String) json.get("phone");
 			mobile = (String) json.get("mobile");
-			encryptedPass = userEncrypt.encrypt(userName, secretKey);
+			encryptedPass = userEncrypt.encryptPassword(userName, secretKey);
 			timezone = (String) json.get("timezone");
 			address = (String) json.get("address");
 			baseLocation = (String) json.get("baseLocation");
@@ -876,7 +876,7 @@ public class UserManagementImpl implements UserManagementInterface {
 		decryptedpass = getDecryptPass(userName, oldPassword);
 
 		if (decryptedpass != null && decryptedpass.equals(oldPassword)) {
-			encryptednewPass = userEncrypt.encrypt(newPassword, secretKey);
+			encryptednewPass = userEncrypt.encryptPassword(newPassword, secretKey);
 			userDetails.setCurrentPassword(encryptednewPass);
 			userDetails.setPasswordUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
 			UserManagementEntity userInfo = userManagementRepository.save(userDetails);
@@ -908,7 +908,7 @@ public class UserManagementImpl implements UserManagementInterface {
 		if (isValidMD5(decryptedPass) && decryptMD5Password.equals(decryptedPass))
 			decryptPassword = password;
 		else
-			decryptPassword = userEncrypt.decrypt(decryptedPass, secretKey);
+			decryptPassword = userEncrypt.decryptPassword(decryptedPass, secretKey);
 		return decryptPassword;
 	}
 
@@ -922,7 +922,7 @@ public class UserManagementImpl implements UserManagementInterface {
 		if (isValidMD5(encryptMD5Password) && encryptMD5Password.equals(currentPass))
 			encryptPassword = encryptMD5Password;
 		else
-			encryptPassword = userEncrypt.encrypt(password, secretKey);
+			encryptPassword = userEncrypt.encryptPassword(password, secretKey);
 		return encryptPassword;
 	}
 }

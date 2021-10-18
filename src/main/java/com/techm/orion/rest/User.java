@@ -841,10 +841,14 @@ public class User {
 		JSONObject userDetails = new JSONObject();
 		try {
 			userInfoJson = (JSONObject) userInfoParser.parse(request);
-			userName = (String) userInfoJson.get("userName");
-			oldPassword = (String) userInfoJson.get("oldPassword");
-			newPassword = (String) userInfoJson.get("newPassword");
-			confirmPassword = (String) userInfoJson.get("confirmPassword");
+			if(userInfoJson.get("userName") !=null)
+				userName = (String) userInfoJson.get("userName");
+			if(userInfoJson.get("oldPassword") !=null)
+				oldPassword = (String) userInfoJson.get("oldPassword");
+			if(userInfoJson.get("newPassword") !=null)
+				newPassword = (String) userInfoJson.get("newPassword");
+			if(userInfoJson.get("confirmPassword") !=null)
+				confirmPassword = (String) userInfoJson.get("confirmPassword");
 			if (userName != null && oldPassword != null && newPassword != null && confirmPassword != null)
 				userJson = userCreateInterface.changeUserPassword(userName, oldPassword, newPassword, confirmPassword);
 			responseEntity = new ResponseEntity<JSONObject>(userJson, HttpStatus.OK);

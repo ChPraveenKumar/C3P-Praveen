@@ -37,7 +37,7 @@ public class UserEncryption {
 		}
 	}
 
-	public static String encrypt(String passwordToEncrypt, String secret) {
+	public static String encryptPassword(String passwordToEncrypt, String secret) {
 		try {
 			setKey(secret);
 			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
@@ -49,7 +49,7 @@ public class UserEncryption {
 		return null;
 	}
 
-	public static String decrypt(String passwordToDecrypt, String secret) {
+	public static String decryptPassword(String passwordToDecrypt, String secret) {
 		try {
 			setKey(secret);
 			Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
