@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import com.techm.orion.pojo.UserManagementResulltDetailPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.service.UserManagementInterface;
+import com.techm.orion.utility.TSALabels;
 
 @Controller
 @RequestMapping("/LoginService")
@@ -48,6 +49,7 @@ public class LoginService {
 		String propFileName = "TSA.properties";
 		try {
 			Gson gson = new Gson();
+			final String secretKey = TSALabels.SECRET_KEY.getValue();
 			UserPojo dto = gson.fromJson(searchParameters, UserPojo.class);
 			username = dto.getUsername();
 			password = dto.getPassword();
@@ -55,7 +57,7 @@ public class LoginService {
 			if (username != null && !username.isEmpty()) {
 				try {
 					UserManagementResulltDetailPojo userDetails = userCreateInterface.checkUserNamePassword(username,
-							password);
+							password, secretKey);
 
 					if (userDetails != null && "Success".equalsIgnoreCase(userDetails.getMessage())) {
 						userRole = userDetails.getRole();

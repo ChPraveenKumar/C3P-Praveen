@@ -11,6 +11,7 @@ import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.entitybeans.UserRole;
 import com.techm.orion.exception.GenericResponse;
 import com.techm.orion.pojo.UserManagementResulltDetailPojo;
+import com.techm.orion.utility.TSALabels;
 
 public interface UserManagementInterface {
 	GenericResponse createUser(String userData) throws Exception;
@@ -28,7 +29,7 @@ public interface UserManagementInterface {
 	List<SiteInfoEntity> getRegionDetails(List custName) throws Exception ; 
 	List<PasswordPolicy> getPasswordPolicy() throws Exception ; 
 	List<UserManagementEntity> getAllUserView() throws Exception ; 
-	UserManagementResulltDetailPojo  checkUserNamePassword(String userName, String password) throws Exception ; 
+	UserManagementResulltDetailPojo  checkUserNamePassword(String userName, String password, final String secretKey) throws Exception ; 
 	int resetPassword(String userName);
 	int activeDeletedUser(String status, String userName);
 	int countActiveUser();
@@ -38,5 +39,5 @@ public interface UserManagementInterface {
 	boolean setUserLoginFlag(String username, String password, String status); 
 	JSONArray getUserDevices(long userId);
 	JSONArray getUserDeviceGroups(long userId);
-	JSONObject changeUserPassword(String userName, String oldPassword, String newPassword, String confirmPassword);
+	JSONObject changeUserPassword(String userName, String oldPassword, String newPassword, String confirmPassword, final String secretKey);
 }

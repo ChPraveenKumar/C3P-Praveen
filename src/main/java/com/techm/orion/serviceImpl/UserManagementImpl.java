@@ -31,6 +31,7 @@ import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.repositories.WorkGroupRepository;
 import com.techm.orion.service.UserManagementInterface;
 import com.techm.orion.utility.PasswordEncryption;
+import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.UserEncryption;
 
 @Service
@@ -60,7 +61,7 @@ public class UserManagementImpl implements UserManagementInterface {
 	private DeviceGroupRepository deviceGroupRepository;
 	
 	@Autowired
-	private UserEncryption userEncrypt;
+	private UserEncryption userEncryption;
 	
 	@Autowired
 	private ErrorValidationRepository errorValidationRepository;
@@ -115,7 +116,7 @@ public class UserManagementImpl implements UserManagementInterface {
 			email = (String) json.get("email");
 			phone = (String) json.get("phone");
 			mobile = (String) json.get("mobile");
-			encryptedPass = userEncrypt.encryptPassword(userName, secretKey);
+			encryptedPass = userEncryption.encryptPassword(userName, secretKey);
 			timezone = (String) json.get("timezone");
 			address = (String) json.get("address");
 			baseLocation = (String) json.get("baseLocation");
@@ -568,8 +569,8 @@ public class UserManagementImpl implements UserManagementInterface {
 	}
 
 	@Override
-	public UserManagementResulltDetailPojo checkUserNamePassword(String userName, String currentPassword) throws Exception {
-		String encryptedPass = getEncryptPass(userName, currentPassword);	
+	public UserManagementResulltDetailPojo checkUserNamePassword(String userName, String currentPassword, final String secretKey) throws Exception {
+		String encryptedPass = getEncryptPassword(userName, currentPassword, secretKey);	
 		String userPass = userManagementRepository.findByUserNameCurrentPassword(userName, encryptedPass);
 		UserManagementEntity userDetails = getUserAttempts(userName);
 		UserManagementResulltDetailPojo userManagementResulltDetailPojo = new UserManagementResulltDetailPojo();
@@ -866,18 +867,18 @@ public class UserManagementImpl implements UserManagementInterface {
 	
 	@SuppressWarnings({ "static-access", "unchecked" })
 	public JSONObject changeUserPassword(String userName, String oldPassword, String newPassword,
-			String confirmPassword) {
+			String confirmPassword, final String secretKey) {
 		JSONObject userJson = new JSONObject();
-		final String secretKey = "aaabbbbbbbbbbb!!!!";
-		String encryptednewPass = null, decryptedpass = null;
+		String encryptedNewPassword = null, decryptedPassword = null;
 		logger.info("Inside changeUserPassword method -> userName - " + userName + " oldPassword -" + oldPassword
 				+ " newPassword " + newPassword);
 		UserManagementEntity userDetails = userManagementRepository.findOneByUserName(userName);
-		decryptedpass = getDecryptPass(userName, oldPassword);
+		
+		decryptedPassword = getDecryptPassword(userName, oldPassword, secretKey);
 
-		if (decryptedpass != null && decryptedpass.equals(oldPassword)) {
-			encryptednewPass = userEncrypt.encryptPassword(newPassword, secretKey);
-			userDetails.setCurrentPassword(encryptednewPass);
+		if (decryptedPassword != null && decryptedPassword.equals(oldPassword)) {
+			encryptedNewPassword = userEncryption.encryptPassword(newPassword, secretKey);
+			userDetails.setCurrentPassword(encryptedNewPassword);
 			userDetails.setPasswordUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
 			UserManagementEntity userInfo = userManagementRepository.save(userDetails);
 			if (userInfo != null) {
@@ -899,30 +900,28 @@ public class UserManagementImpl implements UserManagementInterface {
 	}
 
 	@SuppressWarnings("static-access")
-	private String getDecryptPass(String userName, String password) {
+	private String getDecryptPassword(String userName, String password, String secretKey) {
 		String decryptPassword = null, decryptMD5Password = null;
-		final String secretKey = "aaabbbbbbbbbbb!!!!";
 		String decryptedPass = userManagementRepository.findOneByCurrentPassword(userName);
 		decryptMD5Password = passEncrypt.getMd5(password);
 
 		if (isValidMD5(decryptedPass) && decryptMD5Password.equals(decryptedPass))
 			decryptPassword = password;
 		else
-			decryptPassword = userEncrypt.decryptPassword(decryptedPass, secretKey);
+			decryptPassword = userEncryption.decryptPassword(decryptedPass, secretKey);
 		return decryptPassword;
 	}
 
 	@SuppressWarnings("static-access")
-	private String getEncryptPass(String userName, String password) {
+	private String getEncryptPassword(String userName, String password, String secretKey) {
 		String encryptPassword = null, encryptMD5Password = null;
-		final String secretKey = "aaabbbbbbbbbbb!!!!";
 		String currentPass = userManagementRepository.findOneByCurrentPassword(userName);
 		encryptMD5Password = passEncrypt.getMd5(password);
 
 		if (isValidMD5(encryptMD5Password) && encryptMD5Password.equals(currentPass))
 			encryptPassword = encryptMD5Password;
 		else
-			encryptPassword = userEncrypt.encryptPassword(password, secretKey);
+			encryptPassword = userEncryption.encryptPassword(password, secretKey);
 		return encryptPassword;
 	}
 }
