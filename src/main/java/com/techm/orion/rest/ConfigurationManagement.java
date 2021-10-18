@@ -941,6 +941,7 @@ public class ConfigurationManagement {
 				}
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 
+				//3075
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, null, null, userName, null);
 			}
 
