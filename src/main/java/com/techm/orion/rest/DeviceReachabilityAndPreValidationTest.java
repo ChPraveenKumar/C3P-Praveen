@@ -193,8 +193,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 								String responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
 										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-										+ requestinfo.getRequestVersion() + "_prevalidationTest.txt", response);
+								////To remove generation of Prevalidation Test for SLGB
+								/*
+								 * TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId()
+								 * + "V" + requestinfo.getRequestVersion() + "_prevalidationTest.txt",
+								 * response);
+								 */
 
 								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 										requestinfo.getAlphanumericReqId(),
@@ -646,10 +650,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
 								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
 										.getProperty("responseDownloadPath");
-
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
-										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
-										response);
+								if(!"SLGB".equalsIgnoreCase(type)) {
+									TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+											+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
+											response);
+								}
+								
 
 								// CODE TO ASSIGN REQUEST TO FE
 								/*
