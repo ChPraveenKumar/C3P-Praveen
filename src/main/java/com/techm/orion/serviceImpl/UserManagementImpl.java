@@ -876,7 +876,7 @@ public class UserManagementImpl implements UserManagementInterface {
 		
 		decryptedPassword = getDecryptPassword(userName, oldPassword, secretKey);
 
-		if (decryptedPassword != null && decryptedPassword.equals(oldPassword)) {
+		if (decryptedPassword != null && decryptedPassword.equals(oldPassword) && newPassword.equals(confirmPassword)) {
 			encryptedNewPassword = userEncryption.encryptPassword(newPassword, secretKey);
 			userDetails.setCurrentPassword(encryptedNewPassword);
 			userDetails.setPasswordUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
