@@ -384,7 +384,7 @@ public class ConfigurationManagement {
 				}
 			}
 			//Logic to save system prevalidation tests which will not come from ui
-			
+			if(!"IOSUPGRADE".equals(requestType)) {
 			List<TestDetail> systprevaltests= testDetailsRepository.getC3PAdminTesListData(configReqToSendToC3pCode.getFamily(), configReqToSendToC3pCode.getOs(), configReqToSendToC3pCode.getRegion(), configReqToSendToC3pCode.getOsVersion(), configReqToSendToC3pCode.getVendor(),
 					configReqToSendToC3pCode.getNetworkType());
 			for(TestDetail tst:systprevaltests)
@@ -401,6 +401,7 @@ public class ConfigurationManagement {
 			}
 			
 			logger.info("systprevaltests ->"+systprevaltests);
+			}
 			// to get the scheduled time for the requestID
 			if (json.containsKey("scheduledTime")) {
 				configReqToSendToC3pCode.setSceheduledTime(json.get("scheduledTime").toString());
@@ -941,6 +942,7 @@ public class ConfigurationManagement {
 				}
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 
+				//3075
 				result = dcmConfigService.updateAlldetails(configReqToSendToC3pCodeList, null, null, userName, null);
 			}
 

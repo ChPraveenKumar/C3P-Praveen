@@ -1156,14 +1156,13 @@ public class DcmConfigService {
 
 	public String getTemplateName(String region, String vendor, String os,
 			String osVersion, String deviceFamily) {
-		/*
-		 * String templateid = null; templateid =
-		 * region.toUpperCase().substring(0, 2) + vendor.substring(0,
-		 * 2).toUpperCase() + model.toUpperCase() + os.substring(0,
-		 * 2).toUpperCase() + osVersion;
-		 * 
-		 * return templateid;
-		 */
+		
+		vendor = vendor.replaceAll(" ","");
+		region = region.replaceAll(" ", "");
+		os = os.replaceAll(" ","");
+		osVersion = osVersion.replaceAll(" ", "");
+		deviceFamily = deviceFamily.replaceAll(" ","");
+		
 		String temp = null;
 		// will be modified once edit flow is enabled have to check version and
 		// accordingliy append the version
@@ -1341,21 +1340,24 @@ public class DcmConfigService {
 
 			}
 			try {
-				responseHeader = invokeFtl.generateheader(configRequest);
-				response = invokeFtl.generateConfigurationToPush(configRequest,
-						fileToUse);
-				TextReport.writeFile(
-						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-						configRequest.getRequestId() + "V"
-								+ configRequest.getRequest_version()
-								+ "_Configuration", response,
-						"configurationGeneration");
-				TextReport
-						.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-								configRequest.getRequestId() + "V"
-										+ configRequest.getRequest_version()
-										+ "_Header", responseHeader,
-								"headerGeneration");
+				if(!(configRequest.getRequestType().equalsIgnoreCase("SLGB"))) {
+					responseHeader = invokeFtl.generateheader(configRequest);
+					response = invokeFtl.generateConfigurationToPush(configRequest,
+							fileToUse);
+					TextReport.writeFile(
+							TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							configRequest.getRequestId() + "V"
+									+ configRequest.getRequest_version()
+									+ "_Configuration", response,
+							"configurationGeneration");
+					TextReport
+							.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+									configRequest.getRequestId() + "V"
+											+ configRequest.getRequest_version()
+											+ "_Header", responseHeader,
+									"headerGeneration");
+				}
+				
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -2008,12 +2010,14 @@ public class DcmConfigService {
 		InvokeFtl invokeFtl = new InvokeFtl();
 		String responseHeader = "";
 		try {
-			responseHeader = invokeFtl.generateheader(configRequest);
-			TextReport.writeFile(
-					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-					configRequest.getAlphanumericReqId() + "V"
-							+ configRequest.getRequestVersion() + "_Header",
-					responseHeader, "headerGeneration");
+			if(!configRequest.getRequestType().equalsIgnoreCase("SNAI")) {
+				responseHeader = invokeFtl.generateheader(configRequest);
+				TextReport.writeFile(
+						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+						configRequest.getAlphanumericReqId() + "V"
+								+ configRequest.getRequestVersion() + "_Header",
+						responseHeader, "headerGeneration");
+			}
 		} catch (Exception e) {
 			logger.error("Exception in createHeader method "+e.getMessage());
 			e.printStackTrace();
@@ -3651,8 +3655,13 @@ public class DcmConfigService {
 	private void templateFileCreator(List<RequestInfoPojo> requestInfoSOList,RequestInfoPojo request)
 	{
 		if (requestInfoSOList.size() == 1) {
-			createHeader(request);
-			createTemplate(request);
+			if(!requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("Test")) {
+				if(!requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("IOSUPGRADE")) {
+					createHeader(request);
+					createTemplate(request);
+				}
+			}
+			
 
 		} else {
 			createHeader(request);

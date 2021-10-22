@@ -505,7 +505,7 @@ public class RequestDetailsServiceWithVersion {
 	@POST
 	@RequestMapping(value = "/getTestAndDiagnosisDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response getTestAndDiagnosisDetailsDuplicateLatest(@RequestBody String testDetails)
+public Response getTestAndDiagnosisDetailsDuplicateLatest(@RequestBody String testDetails)
 			throws SQLException, JsonParseException, JsonMappingException, IOException {
 
 		JSONParser parser = new JSONParser();
@@ -520,26 +520,28 @@ public class RequestDetailsServiceWithVersion {
 			String testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(requestId, requestVersion);
 			if(testAndDiagnosis!=null && !testAndDiagnosis.isEmpty()) {
 			JSONArray testNameArray = (JSONArray) parser.parse(testAndDiagnosis);
-			Set<String> setOfTest = new HashSet<>();
 			if (testNameArray != null && !testNameArray.equals("")) {
 				for (int i = 0; i < testNameArray.size(); i++) {
 					JSONObject jsonObj = (JSONObject) testNameArray.get(i);
-					setOfTest.add(jsonObj.get("testName").toString());
-				}				
-				setOfTest.forEach(testName -> {
-					JSONObject tests = new JSONObject();
-					String combination = StringUtils.substringBefore(testName, "_");
-					String name = StringUtils.substringAfter(testName, "_");
-					name = StringUtils.substringBeforeLast(name, "_");
-					String version = StringUtils.substringAfterLast(testName, "_");
-					tests.put("combination", combination);
-					tests.put("testName", name);
-					tests.put("version", version);
-					int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion,null,null);
-					tests.put("status", status);
-					selectedTest.add(tests);
+					String testName = jsonObj.get("testName").toString();					
+					String category = null;
+					if(jsonObj.containsKey("testCategory") && jsonObj.get("testCategory")!=null ) {
+						category = 	jsonObj.get("testCategory").toString();
+					}
+					String subCategory = null;
+					if(jsonObj.containsKey("testsubCategory") && jsonObj.get("testsubCategory")!=null) {
+						subCategory = 	jsonObj.get("testsubCategory").toString();
+						if(subCategory.contains("PreUpgrade")) {
+							selectedTest.add(setTestData(requestId,testName,requestVersion,category,"PreUpgrade"));	
+						}if(subCategory.contains("PostUpgrade")) {
+							selectedTest.add(setTestData(requestId,testName,requestVersion,category,"PostUpgrade"));
+						}					
+						
+					}else {
+						selectedTest.add(setTestData(requestId,testName,requestVersion,category,subCategory));
+					}		
 
-				});
+				}
 			}
 			}
 		} catch (Exception e) {
@@ -548,4 +550,21 @@ public class RequestDetailsServiceWithVersion {
 		return Response.status(200).entity(selectedTest).build();
 	}
 
+	private JSONObject setTestData(String requestId, String testName, Double requestVersion, String category, String subCategory) {
+		JSONObject tests = new JSONObject();
+		String combination = StringUtils.substringBefore(testName, "_");
+		String name = StringUtils.substringAfter(testName, "_");
+		name = StringUtils.substringBeforeLast(name, "_");
+		String version = StringUtils.substringAfterLast(testName, "_");
+		tests.put("combination", combination);
+		if(subCategory!=null) {
+			name = subCategory + "_"+name;
+		}
+		tests.put("testName", name);
+		tests.put("version", version);
+		int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion,category,subCategory);
+		tests.put("status", status);
+		return tests;
+		
+	}
 }

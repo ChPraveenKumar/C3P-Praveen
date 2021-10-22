@@ -1,6 +1,7 @@
 package com.techm.orion.serviceImpl;
 
-import java.util.ArrayList;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -24,11 +25,14 @@ import com.techm.orion.exception.GenericResponse;
 import com.techm.orion.pojo.UserManagementResulltDetailPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.DeviceGroupRepository;
+import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.SiteInfoRepository;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.repositories.WorkGroupRepository;
 import com.techm.orion.service.UserManagementInterface;
 import com.techm.orion.utility.PasswordEncryption;
+import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.UserEncryption;
 
 @Service
 public class UserManagementImpl implements UserManagementInterface {
@@ -55,6 +59,12 @@ public class UserManagementImpl implements UserManagementInterface {
 	
 	@Autowired
 	private DeviceGroupRepository deviceGroupRepository;
+	
+	@Autowired
+	private UserEncryption userEncryption;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	/*
 	 * Create service for create user for user management
@@ -63,8 +73,9 @@ public class UserManagementImpl implements UserManagementInterface {
 	public GenericResponse createUser(String userData) throws Exception {
 		GenericResponse res = new GenericResponse();
 
-		logger.info("\n" + "Inside createUser Service");
-		logger.info("\n" + "data=" + userData);
+		logger.info("Inside createUser Service");
+		logger.info("Inside createUser user data - > " + userData);
+		final String secretKey = "aaabbbbbbbbbbb!!!!";
 		JSONParser parser = new JSONParser();
 		JSONObject module = new JSONObject();
 		JSONObject deviceGroup = new JSONObject();
@@ -105,7 +116,7 @@ public class UserManagementImpl implements UserManagementInterface {
 			email = (String) json.get("email");
 			phone = (String) json.get("phone");
 			mobile = (String) json.get("mobile");
-			encryptedPass = passEncrypt.getMd5(userName);
+			encryptedPass = userEncryption.encryptPassword(userName, secretKey);
 			timezone = (String) json.get("timezone");
 			address = (String) json.get("address");
 			baseLocation = (String) json.get("baseLocation");
@@ -558,8 +569,8 @@ public class UserManagementImpl implements UserManagementInterface {
 	}
 
 	@Override
-	public UserManagementResulltDetailPojo checkUserNamePassword(String userName, String currentPassword) throws Exception {
-		String encryptedPass = passEncrypt.getMd5(currentPassword);
+	public UserManagementResulltDetailPojo checkUserNamePassword(String userName, String currentPassword, final String secretKey) throws Exception {
+		String encryptedPass = getEncryptPassword(userName, currentPassword, secretKey);	
 		String userPass = userManagementRepository.findByUserNameCurrentPassword(userName, encryptedPass);
 		UserManagementEntity userDetails = getUserAttempts(userName);
 		UserManagementResulltDetailPojo userManagementResulltDetailPojo = new UserManagementResulltDetailPojo();
@@ -588,11 +599,15 @@ public class UserManagementImpl implements UserManagementInterface {
 					userManagementResulltDetailPojo.setBaseLocation(userDetails.getBaseLocation());
 					jsonModule = (JSONObject) parser.parse(userDetails.getModuleInfo());
 					userManagementResulltDetailPojo.setModuleInfo(jsonModule);
-					if(userDetails.getSubOrdinate() !=null)
+					if(userDetails.getSubOrdinate() !=null) {
 						userManagementResulltDetailPojo.setSuperUser(true);
-					else
+					}
+					else {
 						userManagementResulltDetailPojo.setSuperUser(false);
-					userManagementRepository.resetFailAttempts(userName);
+					}
+					userManagementRepository.resetFailAttempts(userName);					
+					userDetails.setLastLoginDate(new Date());
+					userManagementRepository.save(userDetails);				
 				}
 				else
 				{
@@ -848,5 +863,65 @@ public class UserManagementImpl implements UserManagementInterface {
 		}
 		logger.info("End of getUserDevices method ->" + currentDeviceGroups);
 		return currentDeviceGroups;
+	}
+	
+	@SuppressWarnings({ "static-access", "unchecked" })
+	public JSONObject changeUserPassword(String userName, String oldPassword, String newPassword,
+			String confirmPassword, final String secretKey) {
+		JSONObject userJson = new JSONObject();
+		String encryptedNewPassword = null, decryptedPassword = null;
+		logger.info("Inside changeUserPassword method -> userName - " + userName + " oldPassword -" + oldPassword
+				+ " newPassword " + newPassword);
+		UserManagementEntity userDetails = userManagementRepository.findOneByUserName(userName);
+		
+		decryptedPassword = getDecryptPassword(userName, oldPassword, secretKey);
+
+		if (decryptedPassword != null && decryptedPassword.equals(oldPassword) && newPassword.equals(confirmPassword)) {
+			encryptedNewPassword = userEncryption.encryptPassword(newPassword, secretKey);
+			userDetails.setCurrentPassword(encryptedNewPassword);
+			userDetails.setPasswordUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
+			UserManagementEntity userInfo = userManagementRepository.save(userDetails);
+			if (userInfo != null) {
+				userJson.put("status", "Success");
+				userJson.put("description", errorValidationRepository.findByErrorId("C3P_UM_011"));
+			}
+		} else if (!newPassword.equals(confirmPassword)) {
+			userJson.put("status", "Error");
+			userJson.put("description", errorValidationRepository.findByErrorId("C3P_UM_012"));
+		} else {
+			userJson.put("status", "Error");
+			userJson.put("description", errorValidationRepository.findByErrorId("C3P_UM_010"));
+		}
+		return userJson;
+	}
+
+	private boolean isValidMD5(String decryptedPass) {
+		return decryptedPass.matches("^[a-fA-F0-9]{32}$");
+	}
+
+	@SuppressWarnings("static-access")
+	private String getDecryptPassword(String userName, String password, String secretKey) {
+		String decryptPassword = null, decryptMD5Password = null;
+		String decryptedPass = userManagementRepository.findOneByCurrentPassword(userName);
+		decryptMD5Password = passEncrypt.getMd5(password);
+
+		if (isValidMD5(decryptedPass) && decryptMD5Password.equals(decryptedPass))
+			decryptPassword = password;
+		else
+			decryptPassword = userEncryption.decryptPassword(decryptedPass, secretKey);
+		return decryptPassword;
+	}
+
+	@SuppressWarnings("static-access")
+	private String getEncryptPassword(String userName, String password, String secretKey) {
+		String encryptPassword = null, encryptMD5Password = null;
+		String currentPass = userManagementRepository.findOneByCurrentPassword(userName);
+		encryptMD5Password = passEncrypt.getMd5(password);
+
+		if (isValidMD5(encryptMD5Password) && encryptMD5Password.equals(currentPass))
+			encryptPassword = encryptMD5Password;
+		else
+			encryptPassword = userEncryption.encryptPassword(password, secretKey);
+		return encryptPassword;
 	}
 }
