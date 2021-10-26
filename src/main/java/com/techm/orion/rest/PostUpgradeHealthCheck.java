@@ -38,7 +38,7 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.TestStrategyService;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.UtilityMethods;
 
@@ -113,11 +113,11 @@ public class PostUpgradeHealthCheck extends Thread {
 				String user = routerCredential.getLoginRead();
 				String password = routerCredential.getPasswordWrite();
 				logger.info("Request ID in" + healthCheckTest + "test validation" + requestId);
-				String port = TSALabels.PORT_SSH.getValue();
+				String port = C3PCoreAppLabels.PORT_SSH.getValue();
 				session = jsch.getSession(user, host, Integer.parseInt(port));
 				Properties config = new Properties();
 				config.put("StrictHostKeyChecking", "no");
-				config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+				config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 				logger.info("Password for healthcheck " + password + "user " + user + "host " + host + "Port " + port);
 				session.setConfig(config);
 				session.setPassword(password);
@@ -255,12 +255,12 @@ public class PostUpgradeHealthCheck extends Thread {
 			}
 			if (requestId != null && version != null) {
 				reportLabel = StringUtils.replace(reportLabel, "::", "_");
-				String pythonScriptFolder = TSALabels.PYTHON_SCRIPT_PATH.getValue();
-				String preUpgradeFile = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestId + "V"
+				String pythonScriptFolder = C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue();
+				String preUpgradeFile = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestId + "V"
 						+ version + "_" + reportLabel + "_" + "Pre_health_checkup.txt";
-				String postUpgradeFile = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestId + "V"
+				String postUpgradeFile = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestId + "V"
 						+ version + "_" + reportLabel + "_" + "Post_health_checkup.txt";
-				String outputFile = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestId + "V"
+				String outputFile = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestId + "V"
 						+ version + "_" + reportLabel + "_" + "difference.html";
 				// copy them to temp file
 				String[] cmd = { "python", pythonScriptFolder + "filediff.py", "-m", preUpgradeFile, postUpgradeFile,

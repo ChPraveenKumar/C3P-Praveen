@@ -16,6 +16,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -34,7 +35,7 @@ import com.techm.orion.entitybeans.RfoDecomposedEntity;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.service.VnfInstantiationMilestoneService;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 @Controller
 @RequestMapping("/Instantiation")
@@ -49,6 +50,12 @@ public class InstantiationMilestone extends Thread {
 	private RfoDecomposedRepository rfoDecomposedRepo;
 	@Autowired
 	private VnfInstantiationMilestoneService vnfInstantiationMilestoneService;
+	@Value("${external.system.servicenow.service.uri}")
+	private String serviceNowServiceUri;
+	@Value("${external.system.servicenow.service.username}")
+	private String serviceNowServiceUsername;
+	@Value("${external.system.servicenow.service.password}")
+	private String serviceNowServicePassword;
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -164,16 +171,15 @@ public class InstantiationMilestone extends Thread {
 					JSONObject requestJson = new JSONObject();
 					HttpHeaders headers = new HttpHeaders();
 					headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-					requestJson.put(TSALabels.EXTERNAL_MILESTONE_NAME.getValue(), mileStoneName);
-					requestJson.put(TSALabels.EXTERNAL_MILESTONE_STATUS.getValue(), mileStoneStatus);
-					requestJson.put(TSALabels.EXTERNAL_MILESTONE_SO_ID.getValue(), rfoDecomposedEntity.getOdRfoId());
+					requestJson.put(C3PCoreAppLabels.EXTERNAL_MILESTONE_NAME.getValue(), mileStoneName);
+					requestJson.put(C3PCoreAppLabels.EXTERNAL_MILESTONE_STATUS.getValue(), mileStoneStatus);
+					requestJson.put(C3PCoreAppLabels.EXTERNAL_MILESTONE_SO_ID.getValue(), rfoDecomposedEntity.getOdRfoId());
 					logger.info("mileStoneName ->" + mileStoneName);
 					logger.info("mileStoneStatus ->" + mileStoneStatus);
 					logger.info("SO ID ->" + rfoDecomposedEntity.getOdRfoId());
 					HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(requestJson, headers);
-					String apiEndPoint = TSALabels.EXTERNAL_MILESTONE_API.getValue();
 					restTemplate.setRequestFactory(getClientHttpRequestFactory());
-					String response = restTemplate.exchange(apiEndPoint, HttpMethod.POST, entity, String.class)
+					String response = restTemplate.exchange(serviceNowServiceUri, HttpMethod.POST, entity, String.class)
 							.getBody();
 					JSONObject responseJson = (JSONObject) parser.parse(response);
 					logger.info("responseJson ->" + responseJson);
@@ -206,8 +212,7 @@ public class InstantiationMilestone extends Thread {
 	private HttpClient httpClient() {
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		credentialsProvider.setCredentials(AuthScope.ANY,
-				new UsernamePasswordCredentials(TSALabels.EXTERNAL_MILESTONE_API_USERNAME.getValue(),
-						TSALabels.EXTERNAL_MILESTONE_API_PASSWORD.getValue()));
+				new UsernamePasswordCredentials(serviceNowServiceUsername, serviceNowServicePassword));
 		HttpClient client = HttpClientBuilder.create().setDefaultCredentialsProvider(credentialsProvider).build();
 		return client;
 	}

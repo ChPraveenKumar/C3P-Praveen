@@ -80,7 +80,7 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.repositories.ServiceOrderRepo;
 import com.techm.orion.repositories.UserManagementRepository;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.WAFADateUtil;
 import com.techm.orion.webService.GetAllDetailsService;
@@ -4894,7 +4894,7 @@ public class RequestInfoDao {
 				path = rs.getString("data_path");
 			}
 			if (path != null) {
-				filePath = TSALabels.FAQ_DOC_PATH.getValue() + path + "/"
+				filePath = C3PCoreAppLabels.FAQ_DOC_PATH.getValue() + path + "/"
 						+ page + ".txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 			}

@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 public class RegexTestHealthCheck {
 	private static final Logger logger = LogManager.getLogger(RegexTestHealthCheck.class);
@@ -20,7 +20,7 @@ public class RegexTestHealthCheck {
 		String[] ar = null;
 		String[] data = null;
 		String[] data1 = null;
-		data = TSALabels.REGEX_FILTER_PRE_THROUGHPUT.getValue().split("\\|");
+		data = C3PCoreAppLabels.REGEX_FILTER_PRE_THROUGHPUT.getValue().split("\\|");
 		String text = readFile(requestId, version);
 		Matcher m = Pattern.compile("(?m)^(.*?\\b" + data[1] + "\\b).*?").matcher(text);
 		while (m.find()) {
@@ -49,7 +49,7 @@ public class RegexTestHealthCheck {
 
 		String frameLoss = "";
 
-		data = TSALabels.REGEX_FILTER_PRE_FRAMELOSS.getValue().split("\\|");
+		data = C3PCoreAppLabels.REGEX_FILTER_PRE_FRAMELOSS.getValue().split("\\|");
 
 		String text = readFile(requestId, version);
 		Matcher m = Pattern.compile("(?m)^(.*?\\b" + data[1] + "\\b).*?").matcher(text);
@@ -79,7 +79,7 @@ public class RegexTestHealthCheck {
 	private static String readFile(String requestIdForConfig, String version) throws IOException {
 
 		BufferedReader br = new BufferedReader(
-				new FileReader(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_HealthCheck.txt"));
+				new FileReader(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_HealthCheck.txt"));
 		try {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();

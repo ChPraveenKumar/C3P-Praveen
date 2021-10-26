@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -30,7 +31,7 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.repositories.ImportMasterStagingRepo;
 import com.techm.orion.repositories.ModelsRepository;
 import com.techm.orion.service.CustomerStagingInteface;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 @Service
 public class CustomerStagingServiceImpl implements CustomerStagingInteface {
@@ -54,6 +55,8 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 
 	@Autowired
 	private ModelsRepository modelsRepository;
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
 
 	public boolean saveDataFromUploadFile(List<Map<String, String>> consCSVData, String userName) {
 		logger.info("\n" + "Inside saveDataFromUploadFile method");	
@@ -540,7 +543,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_DEVICE_DATA.getValue();
+			String url = pythonServiceUri + C3PCoreAppLabels.PYTHON_DEVICE_DATA.getValue();
 			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
 			JSONParser parser = new JSONParser();
 			JSONObject responseJson = (JSONObject) parser.parse(response);

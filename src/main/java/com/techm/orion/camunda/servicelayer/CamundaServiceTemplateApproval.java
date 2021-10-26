@@ -1,4 +1,4 @@
-package com.techm.orion.rest;
+package com.techm.orion.camunda.servicelayer;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -12,16 +12,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-import com.techm.orion.utility.TSALabels;
-
+@Service
 public class CamundaServiceTemplateApproval {
 	private static final Logger logger = LogManager.getLogger(CamundaServiceTemplateApproval.class);
+	@Value("${bpm.service.uri}")
+	private String bpmServiceUri;
 	
 	@SuppressWarnings("unchecked")
 	public void completeApprovalFlow(String userTaskId, String status,
 			String comment) {
-		String query = TSALabels.WEB_SERVICE_URI.getValue() +"/engine-rest/task/"
+		String query = bpmServiceUri +"/engine-rest/task/"
 				+ userTaskId + "/complete";
 		JSONObject statusObj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -57,7 +60,6 @@ public class CamundaServiceTemplateApproval {
 			// read the response
 			InputStream in = new BufferedInputStream(conn.getInputStream());
 			String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-			JSONObject jsonObject = new JSONObject();
 
 			in.close();
 			conn.disconnect();
@@ -71,7 +73,7 @@ public class CamundaServiceTemplateApproval {
 	@SuppressWarnings("unchecked")
 	public void initiateApprovalFlow(String templateId, String version,
 			String approver) throws IOException, JSONException {
-		String query = TSALabels.WEB_SERVICE_URI.getValue() +"/engine-rest/process-definition/key/C3P_Template_Approval_Workflow/start ";
+		String query = bpmServiceUri +"/engine-rest/process-definition/key/C3P_Template_Approval_Workflow/start ";
 
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -105,7 +107,6 @@ public class CamundaServiceTemplateApproval {
 		// read the response
 		InputStream in = new BufferedInputStream(conn.getInputStream());
 		String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-		JSONObject jsonObject = new JSONObject();
 
 		in.close();
 		conn.disconnect();

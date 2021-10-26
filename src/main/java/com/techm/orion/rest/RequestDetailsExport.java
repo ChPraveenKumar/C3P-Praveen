@@ -40,7 +40,7 @@ public class RequestDetailsExport {/*
 		// WebServiceEntity ExportList5 = new WebServiceEntity();
 
 		DcmConfigService dcmConfigService = new DcmConfigService();
-		String path = TSALabels.EXPORT_DOWNLOAD_PATH.getValue() + "/" + alphanumericReqId
+		String path = C3PCoreAppLabels.EXPORT_DOWNLOAD_PATH.getValue() + "/" + alphanumericReqId
 				+ "_RequestExport.csv";
 		File file = new File(path);
 		try {
@@ -283,7 +283,7 @@ public class RequestDetailsExport {/*
 		// WebServiceEntity ExportList5 = new WebServiceEntity();
 
 		DcmConfigService dcmConfigService = new DcmConfigService();
-		String path = TSALabels.EXPORT_DOWNLOAD_PATH.getValue() + "/" + alphanumericReqId
+		String path = C3PCoreAppLabels.EXPORT_DOWNLOAD_PATH.getValue() + "/" + alphanumericReqId
 				+ "_RequestExport.xlsx";
 		File file = new File(path);
 		try {

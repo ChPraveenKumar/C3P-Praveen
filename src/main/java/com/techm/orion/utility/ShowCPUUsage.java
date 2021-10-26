@@ -27,36 +27,18 @@ public class ShowCPUUsage {
 	private static final Logger logger = LogManager.getLogger(ShowCPUUsage.class);
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
-	public static String PROPERTIES_FILE = "TSA.properties";
-	public static final Properties PROPERTIES = new Properties();
-
-	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
-
-		try {
-			PROPERTIES.load(PropFile);
-		} catch (IOException exc) {
-			logger.error("Exception in loadProperties method "+exc.getMessage());
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
 	public String cpuUsageInfo(String ip, String username, String password, String routername, String region,
 			String type) throws IOException {
 		String result = null;
-		ShowCPUUsage.loadProperties();
-		String port = ShowCPUUsage.PROPERTIES.getProperty("portSSH");
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
 		try {
-			session = jsch.getSession(username, ip, Integer.parseInt(port));
+			session = jsch.getSession(username, ip, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -108,14 +90,13 @@ public class ShowCPUUsage {
 	public int getCPUUsagePercentage(String hostname, String region, String type) {
 		int res = 0;
 		try {
-			ShowCPUUsage.loadProperties();
 			String filepath = null;
 
 			if (type.equalsIgnoreCase("Pre")) {
-				filepath = ShowCPUUsage.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "Pre_"
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + "Pre_"
 						+ hostname + "_" + region + "_CPUusage.txt";
 			} else {
-				filepath = ShowCPUUsage.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + type
 						+ "_" + hostname + "_" + region + "_CPUusage.txt";
 			}
 			if (filepath != null) {
@@ -176,8 +157,7 @@ public class ShowCPUUsage {
 			String filepath = null;
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
-				// logger.info(str);
-				filepath = ShowCPUUsage.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + type
 						+ "_" + routername + "_" + region + "_CPUusage.txt";
 				File file = new File(filepath);
 

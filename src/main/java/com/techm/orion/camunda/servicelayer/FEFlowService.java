@@ -7,8 +7,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -35,14 +33,12 @@ import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.TemplateFeatureRepo;
-import com.techm.orion.rest.CamundaServiceCreateReq;
-import com.techm.orion.rest.CamundaServiceFEWorkflow;
 import com.techm.orion.rest.DeviceReachabilityAndPreValidationTest;
 
 @Controller
 @RequestMapping("/configuration")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
-public class FEFlowService implements Observer {
+public class FEFlowService {
 	
 	@Autowired
 	private RequestInfoDetailsRepositories reository;
@@ -60,24 +56,21 @@ public class FEFlowService implements Observer {
 	
 	@Autowired
 	private DeviceReachabilityAndPreValidationTest deviceReachabilityAndPreValidationTest;
+	@Autowired
+	private CamundaServiceFEWorkflow camundaServiceFEWorkflow;
+	@Autowired
+	private CamundaServiceCreateReq camundaServiceCreateReq;
 
 
 	@POST
 	@RequestMapping(value = "/startPreValidateTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response prevalidationTest(@RequestBody String request) {
-		
-		// CamundaServiceTemplateApproval camundaService = new
-		// CamundaServiceTemplateApproval();
-
 		Response response = null;
 		try {
 			deviceReachabilityAndPreValidationTest.performPrevalidateTest(request);
 		}
-		// camundaService.initiateApprovalFlow(templateId, templateVersion,
-		// "Admin");
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return response;
@@ -93,11 +86,9 @@ public class FEFlowService implements Observer {
 		Timestamp timestamp = new Timestamp(date.getTime());
 		Calendar cal = Calendar.getInstance();
 		int notifId = 0;
-		final CamundaServiceFEWorkflow workflowService = new CamundaServiceFEWorkflow();
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
-			final CamundaServiceCreateReq camundaServiceCreateReq = new CamundaServiceCreateReq();
 
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
@@ -116,8 +107,7 @@ public class FEFlowService implements Observer {
 
 				@Override
 				public void run() {
-					// TODO Auto-generated method stub
-					workflowService.completeFEDeviceReachabilityFlow(userTaskId, (Boolean) json.get("status"));
+					camundaServiceFEWorkflow.completeFEDeviceReachabilityFlow(userTaskId, (Boolean) json.get("status"));
 
 				}
 			});
@@ -136,7 +126,6 @@ public class FEFlowService implements Observer {
 
 						@Override
 						public void run() {
-							// TODO Auto-generated method stub
 							try {
 								String v1=json.get("version").toString();
 								Float v2 = Float.parseFloat(v1);
@@ -219,17 +208,12 @@ public class FEFlowService implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
-	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
-
-	}
 
 	@POST
 	@RequestMapping(value = "/getBasicConfiguration", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 	@ResponseBody
 	public Response getGeneratedConfiguration(@RequestBody String request) {
-		JSONObject obj = new JSONObject();		
 		JSONArray jsonArray = new JSONArray();
 		JSONObject jsonObject = new JSONObject();
 		int notifId =0;
@@ -282,16 +266,11 @@ public class FEFlowService implements Observer {
 				notificationRepo.save(notificationData);
 			}
 		}
-		// camundaService.initiateApprovalFlow(templateId, templateVersion,
-		// "Admin");
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -328,14 +307,11 @@ public class FEFlowService implements Observer {
 
 				@Override
 				public void run() {
-					// TODO Auto-generated method stub
 					try {
 						camundaServiceCreateReq.uploadToServerNew(RequestId, version1, "NEWREQUEST");
 					} catch (JSONException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IOException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 
@@ -343,21 +319,12 @@ public class FEFlowService implements Observer {
 			});
 			t.start();
 		}
-		// camundaService.initiateApprovalFlow(templateId, templateVersion,
-		// "Admin");
 		catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return response;
 	}
 
-	private String getSeries(String vendor, String deviceType, String model)
-	{
-		String result=vendor+deviceType.toUpperCase()+model.substring(0, 2);
-		return result;
-	}
 }

@@ -20,7 +20,7 @@ import com.techm.orion.entitybeans.ImageManagementEntity;
 import com.techm.orion.repositories.ImageManagementRepository;
 import com.techm.orion.rest.ImageManagementController;
 import com.techm.orion.service.ImageManagementService;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 @Service
 public class ImageManagementServiceImpl implements ImageManagementService {
@@ -177,15 +177,15 @@ public class ImageManagementServiceImpl implements ImageManagementService {
 				imageMgtDetails.setUpdatedDate(Timestamp.valueOf(LocalDateTime.now()));
 				savedRecord = imageManagementRepository.save(imageMgtDetails);
 			} else {
-				File vendorDir = new File(TSALabels.IMAGE_FILE_PATH.getValue() + vendor);
+				File vendorDir = new File(C3PCoreAppLabels.IMAGE_FILE_PATH.getValue() + vendor);
 				// Tests whether the vendor Exist or not in the directory.
 				boolean vendorExists = vendorDir.isDirectory();
 				if (vendorExists) {
-					File familyDir = new File(vendorDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue()+family);
+					File familyDir = new File(vendorDir.getPath() + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue()+family);
 					// Tests whether the family Exist or not in the directory.
 					boolean familyExists = familyDir.isDirectory();
 					if (familyExists) {
-						File imageDir = new File(familyDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue() + imageName);
+						File imageDir = new File(familyDir.getPath() + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue() + imageName);
 						// Tests whether the image Exist or not in the directory.
 						boolean isImageExist = imageDir.exists();
 						if (isImageExist) {
@@ -272,19 +272,19 @@ public class ImageManagementServiceImpl implements ImageManagementService {
 	public JSONObject validateBinaryImage(String vendor, String family, String imageName, String displayName) {
 		JSONObject imageJson = new JSONObject();
 		try {
-			File vendorDir = new File(TSALabels.IMAGE_FILE_PATH.getValue() + vendor);
+			File vendorDir = new File(C3PCoreAppLabels.IMAGE_FILE_PATH.getValue() + vendor);
 			// Tests whether the vendor Exist or not in the directory.
 			boolean vendorExists = vendorDir.isDirectory();
 			if (vendorExists) {
-				File familyDir = new File(vendorDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue() + family);
+				File familyDir = new File(vendorDir.getPath() + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue() + family);
 				// Tests whether the family Exist or not in the directory.
 				boolean familyExists = familyDir.isDirectory();
 				if (familyExists) {
-					File osDir = new File(familyDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue() + displayName);
+					File osDir = new File(familyDir.getPath() + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue() + displayName);
 					// Tests whether the OS Exist or not in the directory.
 					boolean osExists = osDir.isDirectory();
 					if (osExists) {
-						File imageExist = new File(osDir.getPath() + TSALabels.FOLDER_SEPARATOR.getValue() + imageName);
+						File imageExist = new File(osDir.getPath() + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue() + imageName);
 						// Tests whether the image Exist or not in the directory.
 						boolean isImageExist = imageExist.exists();
 						if (isImageExist) {

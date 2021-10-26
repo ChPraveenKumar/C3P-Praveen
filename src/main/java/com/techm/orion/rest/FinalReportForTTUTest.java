@@ -54,7 +54,7 @@ import com.techm.orion.utility.ShowCPUUsage;
 import com.techm.orion.utility.ShowMemoryTest;
 import com.techm.orion.utility.ShowPowerTest;
 import com.techm.orion.utility.ShowVersionTest;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 
 @Controller
@@ -131,10 +131,10 @@ public class FinalReportForTTUTest extends Thread {
 				if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type) || "SLGM".equalsIgnoreCase(type) || "SLGB".equalsIgnoreCase(type)) {
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
-					if (deviceLocked || TSALabels.ROUTER_IP_TEMP.getValue().equals(requestinfo.getManagementIp())) {
+					if (deviceLocked || C3PCoreAppLabels.ROUTER_IP_TEMP.getValue().equals(requestinfo.getManagementIp())) {
 
 						// release the locked device
-						if (!TSALabels.ROUTER_IP_TEMP.getValue().equals(requestinfo.getManagementIp())) {
+						if (!C3PCoreAppLabels.ROUTER_IP_TEMP.getValue().equals(requestinfo.getManagementIp())) {
 							requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 									requestinfo.getAlphanumericReqId());
 						}
@@ -274,7 +274,7 @@ public class FinalReportForTTUTest extends Thread {
 								//This is the place where customer report for SLGC is generated
 								if(!"SLGC".equalsIgnoreCase(type)) {
 									if(!"SLGT".equalsIgnoreCase(type)) {
-										TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
+										TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 												+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 												response);
 									}
@@ -313,13 +313,6 @@ public class FinalReportForTTUTest extends Thread {
 	
 								try {
 									response = invokeFtl.generateCustomerReportFailure(requestinfo);
-									//To remove generation of Customer Report for SLGC
-									/*
-									 * TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-									 * requestinfo.getAlphanumericReqId() + "V" +
-									 * Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
-									 * response);
-									 */
 									if (resultType.equalsIgnoreCase("Failure")) {
 										templateSuggestionDao.updateTemplateUsageData(requestinfo.getTemplateID(),
 												"Failure");
@@ -345,7 +338,7 @@ public class FinalReportForTTUTest extends Thread {
 						String response = invokeFtl.generateCustomerReportDeviceLocked(requestinfo);
 						if(!"SLGC".equalsIgnoreCase(type)) {
 							if(!"SLGT".equalsIgnoreCase(type)) {
-								TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+								TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 										requestinfo.getAlphanumericReqId() + "V"
 												+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 										response);
@@ -399,26 +392,12 @@ public class FinalReportForTTUTest extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerReportDeviceLocked(requestinfo);
-							//To remove generation of Customer Report for SLGF
-							/*
-							 * TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-							 * requestinfo.getAlphanumericReqId() + "V" +
-							 * Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
-							 * response);
-							 */
 						} else if (!isPreHealthCheckSuccess) {
 							value = false;
 							requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerIOSHealthCheckFailed(requestinfo);
-							//To remove generation of Customer Report for SLGF
-							/*
-							 * TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-							 * requestinfo.getAlphanumericReqId() + "V" +
-							 * Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
-							 * response);
-							 */
 							jsonArray = new Gson().toJson(value);
 							//obj.put(new String("output"), jsonArray);
 						} else if (!ishealthCheckSuccess) {
@@ -449,13 +428,6 @@ public class FinalReportForTTUTest extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerIOSHealthCheckFailedPost(requestinfo);
-							//To remove generation of Customer Report for SLGF
-							/*
-							 * TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-							 * requestinfo.getAlphanumericReqId() + "V" +
-							 * Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
-							 * response);
-							 */
 							jsonArray = new Gson().toJson(value);
 							//obj.put(new String("output"), jsonArray);
 						} else if (!isDilevarySuccess) {
@@ -486,13 +458,6 @@ public class FinalReportForTTUTest extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerIOSDilevaryFail(requestinfo);
-							//To remove generation of Customer Report for SLGF
-							/*
-							 * TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-							 * requestinfo.getAlphanumericReqId() + "V" +
-							 * Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
-							 * response);
-							 */
 							jsonArray = new Gson().toJson(value);
 							//obj.put(new String("output"), jsonArray);
 						}
@@ -524,7 +489,7 @@ public class FinalReportForTTUTest extends Thread {
 						String response = invokeFtl.generateCustomerOSUpgrade(requestinfo);
 						logger.info("This is the place where customer report is generated for SLGF request");
 						if(!"SLGF".equalsIgnoreCase(type)) {
-							TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId() + "V"
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
@@ -540,13 +505,6 @@ public class FinalReportForTTUTest extends Thread {
 						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 						String response = invokeFtl.generateCustomerIOSHealthCheckFailed(requestinfo);
-						//To remove generation of Customer Report for SLGF
-						/*
-						 * TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-						 * requestinfo.getAlphanumericReqId() + "V" +
-						 * Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
-						 * response);
-						 */
 						jsonArray = new Gson().toJson(value);
 						//obj.put(new String("output"), jsonArray);
 					}
@@ -686,7 +644,7 @@ public class FinalReportForTTUTest extends Thread {
 						try {
 							String response;
 							response = invokeFtl.generateCustomerReportSuccess(requestinfo);
-							TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId() + "V"
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
@@ -722,7 +680,7 @@ public class FinalReportForTTUTest extends Thread {
 
 						try {
 							response = invokeFtl.generateCustomerReportFailure(requestinfo);
-							TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId() + "V"
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
@@ -763,7 +721,7 @@ public class FinalReportForTTUTest extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerReportDeviceLocked(requestinfo);	
-							TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId() + "V"
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
@@ -773,7 +731,7 @@ public class FinalReportForTTUTest extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerIOSHealthCheckFailed(requestinfo);	
-							TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId() + "V"
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
@@ -807,7 +765,7 @@ public class FinalReportForTTUTest extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerIOSHealthCheckFailedPost(requestinfo);	
-							TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId() + "V"
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
@@ -841,7 +799,7 @@ public class FinalReportForTTUTest extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "customer_report", "2",
 									"Failure");
 							String response = invokeFtl.generateCustomerIOSDilevaryFail(requestinfo);	
-							TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId() + "V"
 											+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 									response);
@@ -904,7 +862,7 @@ public class FinalReportForTTUTest extends Thread {
 						}
 						
 						String response = invokeFtl.generateCustomerOSUpgrade(requestinfo);	
-						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+						TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 								response);
@@ -919,7 +877,7 @@ public class FinalReportForTTUTest extends Thread {
 						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 						String response = invokeFtl.generateCustomerIOSHealthCheckFailed(requestinfo);
-						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+						TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 								response);
@@ -964,7 +922,7 @@ public class FinalReportForTTUTest extends Thread {
 					try {
 						value = false;
 						response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);					
-						TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+						TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt",
 								response);
@@ -980,13 +938,6 @@ public class FinalReportForTTUTest extends Thread {
 					requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 					String response = invokeFtl.generateCustomerIOSHealthCheckFailed(requestinfo);
-					//To remove generation of Customer Report for SLGF
-					/*
-					 * TextReport.writeFile( TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-					 * requestinfo.getAlphanumericReqId() + "V" +
-					 * Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
-					 * response);
-					 */
 					jsonArray = new Gson().toJson(value);
 					//obj.put(new String("output"), jsonArray);
 				} else if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
@@ -997,7 +948,7 @@ public class FinalReportForTTUTest extends Thread {
 							Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
 					String response = invokeFtl.generateCustomerIOSHealthCheckFailed(requestinfo);	
 					TextReport.writeFile(
-							TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
+							C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 									+ Double.toString(requestinfo.getRequestVersion()) + "_customerReport.txt",
 							response);
 					jsonArray = new Gson().toJson(value);
@@ -1016,7 +967,7 @@ public class FinalReportForTTUTest extends Thread {
 	public ArrayList<String> readFileNoCmd(String requestIdForConfig, String version) throws IOException {
 		BufferedReader br = null;
 		LineNumberReader rdr = null;
-		String filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
+		String filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_ConfigurationNoCmd";
 
 		br = new BufferedReader(new FileReader(filePath));
 		File f = new File(filePath);
@@ -1039,7 +990,7 @@ public class FinalReportForTTUTest extends Thread {
 						}
 					}
 				}
-				int fileReadSize = Integer.parseInt(TSALabels.FILE_CHUNK_SIZE.getValue());
+				int fileReadSize = Integer.parseInt(C3PCoreAppLabels.FILE_CHUNK_SIZE.getValue());
 				int chunks = (count / fileReadSize) + 1;
 				String line;
 
@@ -1084,7 +1035,7 @@ public class FinalReportForTTUTest extends Thread {
 		FileWriter fw = null;
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
-		File file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + requestId + "_" + version + "theSSHfile.txt");
+		File file = new File(C3PCoreAppLabels.RESPONSE_LOG_PATH.getValue() + requestId + "_" + version + "theSSHfile.txt");
 		/*
 		 * if (file.exists()) { file.delete(); }
 		 */
@@ -1096,7 +1047,7 @@ public class FinalReportForTTUTest extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 
-				file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + requestId + "_" + version + "theSSHfile.txt");
+				file = new File(C3PCoreAppLabels.RESPONSE_LOG_PATH.getValue() + requestId + "_" + version + "theSSHfile.txt");
 
 				if (!file.exists()) {
 					file.createNewFile();
@@ -1129,7 +1080,7 @@ public class FinalReportForTTUTest extends Thread {
 	public ArrayList<String> readFile(String requestIdForConfig, String version) throws IOException {
 		BufferedReader br = null;
 		LineNumberReader rdr = null;
-		String filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_Configuration";
+		String filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_Configuration";
 
 		br = new BufferedReader(new FileReader(filePath));
 		try {
@@ -1150,7 +1101,7 @@ public class FinalReportForTTUTest extends Thread {
 					}
 				}
 			}
-			int fileReadSize = Integer.parseInt(TSALabels.FILE_CHUNK_SIZE.getValue());
+			int fileReadSize = Integer.parseInt(C3PCoreAppLabels.FILE_CHUNK_SIZE.getValue());
 			int chunks = (count / fileReadSize) + 1;
 			String line;
 
@@ -1192,7 +1143,7 @@ public class FinalReportForTTUTest extends Thread {
 	public String validateNetworkTest(CreateConfigRequest configRequest) throws Exception {
 
 		String content = "";
-		String path = TSALabels.RESPONSE_LOG_PATH.getValue()
+		String path = C3PCoreAppLabels.RESPONSE_LOG_PATH.getValue()
 				+ configRequest.getRequestId() + "V" + configRequest.getRequest_version() + "_networkTest.txt";
 
 		File file = new File(path);

@@ -237,10 +237,10 @@ public class ODLClient {
 
 			String filepath = null;
 			if (step.equalsIgnoreCase("previous")) {
-				filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
+				filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
 						+ "_PreviousConfig.txt";
 			} else {
-				filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
+				filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
 						+ "_CurrentVersionConfig.txt";
 			}
 
@@ -337,22 +337,22 @@ public class ODLClient {
 			URL url = null;
 			String filterType = test.getTestCommand().toUpperCase();
 			if (filterType.equalsIgnoreCase("INTERFACE MTU")) {
-				url = new URL(TSALabels.ODL_TEST_INTERFACE_MTU.getValue());
+				url = new URL(C3PCoreAppLabels.ODL_TEST_INTERFACE_MTU.getValue());
 
 			} else if (filterType.equalsIgnoreCase("ALL INTERFACE LIST")) {
-				url = new URL(TSALabels.ODL_TEST_ALL_INTERFACE_LIST.getValue());
+				url = new URL(C3PCoreAppLabels.ODL_TEST_ALL_INTERFACE_LIST.getValue());
 
 			} else if (filterType.equalsIgnoreCase("INTERFACE ENCAPSULATION")) {
-				url = new URL(TSALabels.ODL_TEST_INTERFACE_ENCAPSULATION.getValue());
+				url = new URL(C3PCoreAppLabels.ODL_TEST_INTERFACE_ENCAPSULATION.getValue());
 
 			} else if (filterType.equalsIgnoreCase("INTERFACE BANDWIDTH")) {
-				url = new URL(TSALabels.ODL_TEST_INTERFACE_BANDWIDTH.getValue());
+				url = new URL(C3PCoreAppLabels.ODL_TEST_INTERFACE_BANDWIDTH.getValue());
 
 			} else if (filterType.equalsIgnoreCase("NEGOTIATION TEST")) {
-				url = new URL(TSALabels.ODL_TEST_NEGOTIATION_TEST.getValue());
+				url = new URL(C3PCoreAppLabels.ODL_TEST_NEGOTIATION_TEST.getValue());
 
 			} else if (filterType.equalsIgnoreCase("BANDWIDTH TEST")) {
-				url = new URL(TSALabels.ODL_TEST_BANDWIDTH_TEST.getValue());
+				url = new URL(C3PCoreAppLabels.ODL_TEST_BANDWIDTH_TEST.getValue());
 
 			}
 			if (url != null) {
@@ -384,7 +384,7 @@ public class ODLClient {
 
 					String xml_data = XML.toString(jsonObj);
 					String filepath = null;
-					filepath = TSALabels.VNF_CONFIG_CREATION_PATH.getValue() + "\\TempXml.xml";
+					filepath = C3PCoreAppLabels.VNF_CONFIG_CREATION_PATH.getValue() + "\\TempXml.xml";
 					File file = new File(filepath);
 					if (!file.exists()) {
 						file.createNewFile();
@@ -409,7 +409,7 @@ public class ODLClient {
 						if (rules.get(i).getDataType().equalsIgnoreCase("Text")) {
 							resultList = new ArrayList<String>();
 							String filtertosearch = rules.get(i).getBeforeText();
-							String[] cmd = { "python", TSALabels.PYTHON_SCRIPT_PATH.getValue() + "\\xml_parser.py ",
+							String[] cmd = { "python", C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue() + "\\xml_parser.py ",
 									"-f", filtertosearch, "-d", filepath };
 							Process p;
 							try {

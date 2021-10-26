@@ -20,42 +20,23 @@ import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
-import com.techm.orion.pojo.PreValidateTest;
 
 public class ShowMemoryTest {
 	private static final Logger logger = LogManager.getLogger(ShowMemoryTest.class);
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
-	public static String PROPERTIES_FILE = "TSA.properties";
-	public static final Properties PROPERTIES = new Properties();
-
-	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
-
-		try {
-			PROPERTIES.load(PropFile);
-		} catch (IOException exc) {
-			logger.error("Exception in loadProperties method "+exc.getMessage());
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
 	public String memoryInfo(String ip, String username, String password, String routername, String region, String type)
 			throws IOException {
 		String result = null;
-		ShowMemoryTest.loadProperties();
-		String port = ShowMemoryTest.PROPERTIES.getProperty("portSSH");
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
 		try {
-			session = jsch.getSession(username, ip, Integer.parseInt(port));
+			session = jsch.getSession(username, ip, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -106,14 +87,13 @@ public class ShowMemoryTest {
 	public Double getMemoryUsed(String hostname, String region, String type) {
 		Double per = 0.0;
 		try {
-			ShowMemoryTest.loadProperties();
 			String filepath = null;
 
 			if (type.equalsIgnoreCase("Pre")) {
-				filepath = ShowMemoryTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder")
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue()
 						+ "Pre_" + hostname + "_" + region + "_MemoryInfo.txt";
 			} else {
-				filepath = ShowMemoryTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + type
 						+ "_" + hostname + "_" + region + "_MemoryInfo.txt";
 			}
 			if (filepath != null) {
@@ -172,19 +152,10 @@ public class ShowMemoryTest {
 		return per;
 	}
 
-	public String printMemoryInfo(InputStream input, Channel channel, String routername, String region, String type)
+	private String printMemoryInfo(InputStream input, Channel channel, String routername, String region, String type)
 			throws Exception {
 
 		String result = null;
-		String[] ar = null;
-		String[] data = null;
-		String[] data1 = null;
-		String[] comp = new String[10];
-		String str1 = "";
-		String exp = ShowMemoryTest.PROPERTIES.getProperty("RegexFilterForPreValidation");
-		boolean value = false;
-		PreValidateTest preValidateTest = new PreValidateTest();
-		data = exp.split("\\|");
 
 		BufferedWriter bw = null;
 		FileWriter fw = null;
@@ -200,7 +171,7 @@ public class ShowMemoryTest {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				filepath = ShowMemoryTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + type
 						+ "_" + routername + "_" + region + "_MemoryInfo.txt";
 				File file = new File(filepath);
 

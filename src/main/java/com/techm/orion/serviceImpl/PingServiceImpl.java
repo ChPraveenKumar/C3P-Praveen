@@ -19,6 +19,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -28,7 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import com.techm.orion.service.PingService;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 @Service
 public class PingServiceImpl implements PingService {
@@ -37,9 +38,12 @@ public class PingServiceImpl implements PingService {
 	@Autowired
 	@Qualifier("pythonOauth2RestTemplate")
 	private OAuth2RestTemplate pythonOauth2RestTemplate;
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
 
 	public JSONArray pingResults(String managementIp) {
 		logger.info("Start pingResults - managementIp- " + managementIp);
+		logger.info("Start pingResults - pythonServiceUri- " + pythonServiceUri);
 		JSONArray responce = null;
 		JSONObject responsejson = pythonPingResults(managementIp);
 		if (responsejson != null && responsejson.containsKey("pingReply")) {
@@ -80,12 +84,12 @@ public class PingServiceImpl implements PingService {
 
 		try {
 			obj.put(new String("srcMgmtIP"), managementIp);
-			obj.put(new String("srcMgmtPort"), TSALabels.THROUGHPUT_PORT.getValue());
+			obj.put(new String("srcMgmtPort"), C3PCoreAppLabels.THROUGHPUT_PORT.getValue());
 			obj.put(new String("destMgmtIP"), "");
 			obj.put(new String("destMgmtPort"), "");
-			obj.put(new String("packetCount"), Integer.parseInt(TSALabels.THROUGHPUT_PACKET_SIZE.getValue()));
-			obj.put(new String("throughputUnit"), TSALabels.THROUGHPUT_UNIT.getValue());
-			obj.put(new String("bufferSize"), Integer.parseInt(TSALabels.THROUGHPUT_BUFFER_SIZE.getValue()));
+			obj.put(new String("packetCount"), Integer.parseInt(C3PCoreAppLabels.THROUGHPUT_PACKET_SIZE.getValue()));
+			obj.put(new String("throughputUnit"), C3PCoreAppLabels.THROUGHPUT_UNIT.getValue());
+			obj.put(new String("bufferSize"), Integer.parseInt(C3PCoreAppLabels.THROUGHPUT_BUFFER_SIZE.getValue()));
 			obj.put(new String("srcApplication"), "C3P");
 
 			
@@ -93,8 +97,8 @@ public class PingServiceImpl implements PingService {
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(obj,
 					headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue()
-					+ TSALabels.PYTHON_THROUGHPUT.getValue();
+			String url = pythonServiceUri
+					+ C3PCoreAppLabels.PYTHON_THROUGHPUT.getValue();
 			String response = restTemplate.exchange(url, HttpMethod.POST,
 					entity, String.class).getBody();
 
@@ -120,7 +124,7 @@ public class PingServiceImpl implements PingService {
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			headers.add("Authorization", "Bearer " + pythonOauth2RestTemplate.getAccessToken());
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(inputObj, headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_PING.getValue();
+			String url = pythonServiceUri + C3PCoreAppLabels.PYTHON_PING.getValue();
 			String response = pythonOauth2RestTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
 
 			JSONParser parser = new JSONParser();
@@ -148,7 +152,7 @@ public class PingServiceImpl implements PingService {
 		byte[] tmpStore = new byte[SIZE];
 		boolean flag = true;
 		StringBuilder filepath = new StringBuilder();
-		filepath.append(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue());
+		filepath.append(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue());
 		filepath.append(routername);
 		filepath.append("_");
 		filepath.append(region);

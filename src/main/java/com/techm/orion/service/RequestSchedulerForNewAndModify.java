@@ -6,13 +6,18 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.techm.orion.dao.RequestSchedulerDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.SchedulerListPojo;
 
+@Service
 public class RequestSchedulerForNewAndModify {
 	private static final Logger logger = LogManager.getLogger(RequestSchedulerForNewAndModify.class);
+	@Autowired
+	private TelnetCommunicationSSH telnetCommunicationSSH;
 
 	public List<SchedulerListPojo> getScheduledHistoryDB(String requestId, String version) {
 
@@ -76,11 +81,9 @@ public class RequestSchedulerForNewAndModify {
 
 			requestSchedulerDao.runScheduledRequestUpdate(configRequest.getRequestId(),
 					Double.toString(configRequest.getRequest_version()));
-			TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest);
+			telnetCommunicationSSH.setConfigRequest(configRequest);
 			telnetCommunicationSSH.setDaemon(true);
 			telnetCommunicationSSH.start();
-
-			// requestSchedulerDao.updateScheduledRequest(configRequest);
 
 		} catch (Exception e) {
 			logger.error("Exception in runScheduledRequestService method "+e.getMessage());
@@ -100,15 +103,9 @@ public class RequestSchedulerForNewAndModify {
 					Double.toString(configRequest.getRequest_version()));
 			configRequest.setRequest_parent_version(configRequestData.getRequest_parent_version());
 
-			/*
-			 * requestSchedulerDao.RunScheduledRequestUpdate(configRequest.getRequestId(),
-			 * Double.toString(configRequest.getRequest_version()));
-			 */
-			TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(configRequest);
+			telnetCommunicationSSH.setConfigRequest(configRequest);
 			telnetCommunicationSSH.setDaemon(true);
 			telnetCommunicationSSH.start();
-
-			// requestSchedulerDao.updateScheduledRequest(configRequest);
 
 		} catch (Exception e) {
 			logger.error("Exception in createNewReScheduledRequestService method "+e.getMessage());

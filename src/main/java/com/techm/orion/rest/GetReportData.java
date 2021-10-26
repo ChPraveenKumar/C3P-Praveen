@@ -5,8 +5,6 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -54,7 +52,7 @@ import com.techm.orion.service.ReportDetailsService;
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/GetReportData")
-public class GetReportData implements Observer {
+public class GetReportData {
 	private static final Logger logger = LogManager.getLogger(GetReportData.class);
 
 	@Autowired
@@ -585,12 +583,6 @@ public class GetReportData implements Observer {
 				.header("Access-Control-Allow-Credentials", "true")
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-	}
-
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@GET

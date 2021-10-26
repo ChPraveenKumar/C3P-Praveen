@@ -22,7 +22,7 @@ import com.techm.orion.pojo.TemplateFeaturePojo;
 import com.techm.orion.repositories.MasterCharacteristicsRepository;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.rest.VnfConfigService;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.UtilityMethods;
 
 @Service

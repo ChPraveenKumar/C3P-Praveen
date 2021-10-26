@@ -5,12 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.Properties;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -22,6 +17,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -37,23 +33,19 @@ import org.springframework.web.client.RestTemplate;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.techm.orion.dao.RequestInfoDao;
-import com.techm.orion.entitybeans.ResourceCharacteristicsHistoryEntity;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/comparison")
-public class ConfigComparisonService implements Observer {
-
+public class ConfigComparisonService {
 	private static final Logger logger = LogManager.getLogger(ConfigComparisonService.class);
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-
 	@Autowired
 	private RequestInfoDao requestInfoDao;
 	@Autowired
 	private RestTemplate restTemplate;
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -65,12 +57,6 @@ public class ConfigComparisonService implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-			
-			ConfigComparisonService.loadProperties();
-			String pythonScriptFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("pythonScriptPath");
-			String standardConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("standardConfigPath");
-			String currentConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			String comparisonFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("comparisonHtmls");
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 			String RequestId = json.get("testLabel").toString();
@@ -89,7 +75,7 @@ public class ConfigComparisonService implements Observer {
 			// String requestId="SR-DC394C0";
 			String snippet = requestInfoDao.getSnippet(label, test_name);
 			// write it to temp file StandardConfiguration.txt
-			String filepath1 = standardConfigPath + "StandardConfiguration.txt";
+			String filepath1 = C3PCoreAppLabels.STANDARD_CONFIG_PATH.getValue() + "StandardConfiguration.txt";
 			FileWriter fw1 = null;
 			BufferedWriter bw1 = null;
 			File file1 = new File(filepath1);
@@ -111,8 +97,8 @@ public class ConfigComparisonService implements Observer {
 			}
 
 			// Create temp current version file
-			String filepath2 = currentConfigPath + requestId + "V1.0" + "_CurrentVersionConfig.txt";
-			String tempFilePath = currentConfigPath + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt";
+			String filepath2 = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V1.0" + "_CurrentVersionConfig.txt";
+			String tempFilePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt";
 			File tempFile = new File(tempFilePath);
 			FileWriter fw = new FileWriter(tempFilePath);
 			if (!tempFile.exists()) {
@@ -147,16 +133,16 @@ public class ConfigComparisonService implements Observer {
 			// copy them to temp file
 
 			// if destination html file exists delete it and create new
-			File destFile = new File(comparisonFolder + requestId + "V1.0" + "_ComparisonSnippet" + ".html");
+			File destFile = new File(C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + requestId + "V1.0" + "_ComparisonSnippet" + ".html");
 			if (!destFile.exists()) {
 			} else {
 				destFile.delete();
 			}
 
-			String[] cmd = { "python", pythonScriptFolder + "filediff.py", "-m",
-					standardConfigPath + "StandardConfiguration.txt",
-					currentConfigPath + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt",
-					comparisonFolder + requestId + "V1.0" + "_ComparisonSnippet" + ".html" };
+			String[] cmd = { "python", C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue() + "filediff.py", "-m",
+					C3PCoreAppLabels.STANDARD_CONFIG_PATH.getValue() + "StandardConfiguration.txt",
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt",
+					C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + requestId + "V1.0" + "_ComparisonSnippet" + ".html" };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -167,7 +153,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + requestId + "V1.0" + "_ComparisonSnippet" + ".html";
+				outputFile = C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + requestId + "V1.0" + "_ComparisonSnippet" + ".html";
 				StringBuilder bldr = new StringBuilder();
 				String str;
 
@@ -184,8 +170,8 @@ public class ConfigComparisonService implements Observer {
 
 				String jsonArray = gson.toJson(content);
 				content = getFormattedDoc(content, "snippet",
-						currentConfigPath + RequestId + "_PreviousConfig.txt",
-						currentConfigPath + RequestId + "_CurrentVersionConfig.txt");
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_PreviousConfig.txt",
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_CurrentVersionConfig.txt");
 
 				obj.put(new String("output"), content);
 			} else {
@@ -221,12 +207,6 @@ public class ConfigComparisonService implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-			
-			ConfigComparisonService.loadProperties();
-			String pythonScriptFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("pythonScriptPath");
-			String standardConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("standardConfigPath");
-			String currentConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			String comparisonFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("comparisonHtmls");
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 			String RequestId = json.get("testLabel").toString();
@@ -244,7 +224,7 @@ public class ConfigComparisonService implements Observer {
 			String tempRequestId12 = tempRequestId1.concat(RequestId);
 			String snippet = requestInfoDao.getSnippet(reportLabel, testName);
 			// write it to temp file StandardConfiguration.txt
-			String filepath1 = standardConfigPath + "StandardConfiguration.txt";
+			String filepath1 = C3PCoreAppLabels.STANDARD_CONFIG_PATH.getValue() + "StandardConfiguration.txt";
 			FileWriter fw1 = null;
 			BufferedWriter bw1 = null;
 			File file1 = new File(filepath1);
@@ -266,8 +246,8 @@ public class ConfigComparisonService implements Observer {
 			}
 
 			// Create temp current version file
-			String filepath2 = currentConfigPath + requestId + "V1.0" + "_CurrentVersionConfig.txt";
-			String tempFilePath = currentConfigPath + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt";
+			String filepath2 = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V1.0" + "_CurrentVersionConfig.txt";
+			String tempFilePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt";
 			File tempFile = new File(tempFilePath);
 			FileWriter fw = new FileWriter(tempFilePath);
 			if (!tempFile.exists()) {
@@ -302,16 +282,16 @@ public class ConfigComparisonService implements Observer {
 			// copy them to temp file
 
 			// if destination html file exists delete it and create new
-			File destFile = new File(comparisonFolder + requestId + "V1.0" + "_ComparisonSnippet" + ".html");
+			File destFile = new File(C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + requestId + "V1.0" + "_ComparisonSnippet" + ".html");
 			if (!destFile.exists()) {
 			} else {
 				destFile.delete();
 			}
 
-			String[] cmd = { "python", pythonScriptFolder + "filediff.py", "-m",
-					standardConfigPath + "StandardConfiguration.txt",
-					currentConfigPath + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt",
-					comparisonFolder + requestId + "V1.0" + "_ComparisonSnippet" + ".html" };
+			String[] cmd = { "python", C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue() + "filediff.py", "-m",
+					C3PCoreAppLabels.STANDARD_CONFIG_PATH.getValue() + "StandardConfiguration.txt",
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt",
+					C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + requestId + "V1.0" + "_ComparisonSnippet" + ".html" };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -322,7 +302,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + requestId + "V1.0" + "_ComparisonSnippet" + ".html";
+				outputFile = C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + requestId + "V1.0" + "_ComparisonSnippet" + ".html";
 				StringBuilder bldr = new StringBuilder();
 				String str;
 
@@ -339,8 +319,8 @@ public class ConfigComparisonService implements Observer {
 
 				String jsonArray = gson.toJson(content);
 				content = getFormattedDoc(content, "snippet",
-						currentConfigPath + RequestId + "_PreviousConfig.txt",
-						currentConfigPath + RequestId + "_CurrentVersionConfig.txt");
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_PreviousConfig.txt",
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_CurrentVersionConfig.txt");
 
 				obj.put(new String("output"), content);
 			} else {
@@ -376,19 +356,14 @@ public class ConfigComparisonService implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-			ConfigComparisonService.loadProperties();
-			String pythonScriptFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("pythonScriptPath");
-
-			String currentConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			String comparisonFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("comparisonHtmls");
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 			String RequestId = json.get("requestID").toString();
 			String keyword = json.get("keyword").toString();
 			String outputFile = null;
-			String[] cmd = { "python", pythonScriptFolder + "keywordSearchFiltered.py", "-m",
-					currentConfigPath + RequestId + "V1.0" + "_CurrentVersionConfig.txt",
-					comparisonFolder + RequestId + "_KeywordNetworkAudit" + ".html", keyword };
+			String[] cmd = { "python", C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue() + "keywordSearchFiltered.py", "-m",
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "V1.0" + "_CurrentVersionConfig.txt",
+					C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + RequestId + "_KeywordNetworkAudit" + ".html", keyword };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -399,7 +374,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + RequestId + "_KeywordFinalReport" + ".html";
+				outputFile = C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + RequestId + "_KeywordFinalReport" + ".html";
 				StringBuilder bldr = new StringBuilder();
 				String str;
 
@@ -449,19 +424,14 @@ public class ConfigComparisonService implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-			ConfigComparisonService.loadProperties();
-			String pythonScriptFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("pythonScriptPath");
-
-			String currentConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			String comparisonFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("comparisonHtmls");
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 			String RequestId = json.get("requestID").toString();
 			String keyword = json.get("keyword").toString();
 			String outputFile = null;
-			String[] cmd = { "python", pythonScriptFolder + "keywordSearchFiltered.py", "-m",
-					currentConfigPath + RequestId + "V1.0" + "_CurrentVersionConfig.txt",
-					comparisonFolder + RequestId + "_KeywordFinalReport" + ".html", keyword };
+			String[] cmd = { "python", C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue() + "keywordSearchFiltered.py", "-m",
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "V1.0" + "_CurrentVersionConfig.txt",
+					C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + RequestId + "_KeywordFinalReport" + ".html", keyword };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -472,7 +442,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + RequestId + "_KeywordFinalReport" + ".html";
+				outputFile = C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + RequestId + "_KeywordFinalReport" + ".html";
 
 				StringBuilder bldr = new StringBuilder();
 				String str;
@@ -522,25 +492,18 @@ public class ConfigComparisonService implements Observer {
 	@RequestMapping(value = "/configcomparisonbackupmilestone", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response configComparisonbackupanddilevary(@RequestBody String configRequest) {
-
 		JSONObject obj = new JSONObject();
 		try {
-
-			ConfigComparisonService.loadProperties();
-			String pythonScriptFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("pythonScriptPath");
-			//String standardConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("standardConfigPath");
-			String currentConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			String comparisonFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("comparisonHtmls");
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 			String RequestId = json.get("requestID").toString();
 			String outputFile = null;
 
 			// copy them to temp file
-			String[] cmd = { "python", pythonScriptFolder + "filediff.py", "-m",
-					currentConfigPath + RequestId + "_PreviousConfig.txt",
-					currentConfigPath + RequestId + "_CurrentVersionConfig.txt",
-					comparisonFolder + RequestId + "_Comparison" + ".html" };
+			String[] cmd = { "python", C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue() + "filediff.py", "-m",
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_PreviousConfig.txt",
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_CurrentVersionConfig.txt",
+					C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + RequestId + "_Comparison" + ".html" };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -551,7 +514,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + RequestId + "_Comparison" + ".html";
+				outputFile = C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + RequestId + "_Comparison" + ".html";
 				StringBuilder bldr = new StringBuilder();
 				String str;
 
@@ -568,8 +531,8 @@ public class ConfigComparisonService implements Observer {
 
 				String jsonArray = gson.toJson(content);
 				content = getFormattedDoc(content, "sr_backup",
-						currentConfigPath + RequestId + "_PreviousConfig.txt",
-						currentConfigPath + RequestId + "_CurrentVersionConfig.txt");
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_PreviousConfig.txt",
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_CurrentVersionConfig.txt");
 
 				obj.put(new String("output"), jsonArray);
 			} else {
@@ -582,8 +545,8 @@ public class ConfigComparisonService implements Observer {
 				obj.put(new String("output"), "Error in processing the files");
 			}
 			bre.close();
-			String previousConfig = currentConfigPath + RequestId + "_PreviousConfig.txt";
-			String currentVersionConfig = currentConfigPath + RequestId + "_CurrentVersionConfig.txt";
+			String previousConfig = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_PreviousConfig.txt";
+			String currentVersionConfig = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_CurrentVersionConfig.txt";
 			JSONObject responseJson = configCompareDifference(previousConfig, currentVersionConfig);
 			obj.put("configDifference", responseJson);
 
@@ -609,12 +572,6 @@ public class ConfigComparisonService implements Observer {
 
 		JSONObject obj = new JSONObject();
 		try {
-
-			ConfigComparisonService.loadProperties();
-			String pythonScriptFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("pythonScriptPath");
-			//String standardConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("standardConfigPath");
-			String currentConfigPath = ConfigComparisonService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-			String comparisonFolder = ConfigComparisonService.TSA_PROPERTIES.getProperty("comparisonHtmls");
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 			String RequestId1 = json.get("requestID1").toString();
@@ -622,10 +579,10 @@ public class ConfigComparisonService implements Observer {
 			String outputFile = null;
 
 			// copy them to temp file
-			String[] cmd = { "python", pythonScriptFolder + "filediff.py", "-m",
-					currentConfigPath + RequestId1 + "V1.0" + "_PreviousConfig.txt",
-					currentConfigPath + RequestId2 + "V1.0" + "_PreviousConfig.txt",
-					comparisonFolder + RequestId1 + "_Comparison" + ".html" };
+			String[] cmd = { "python", C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue() + "filediff.py", "-m",
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId1 + "V1.0" + "_PreviousConfig.txt",
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId2 + "V1.0" + "_PreviousConfig.txt",
+					C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + RequestId1 + "_Comparison" + ".html" };
 
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
@@ -636,7 +593,7 @@ public class ConfigComparisonService implements Observer {
 
 			if (bre.readLine() == null) {
 				// update the success scenario in DB
-				outputFile = comparisonFolder + RequestId1 + "_Comparison" + ".html";
+				outputFile = C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + RequestId1 + "_Comparison" + ".html";
 				StringBuilder bldr = new StringBuilder();
 				String str;
 
@@ -675,25 +632,6 @@ public class ConfigComparisonService implements Observer {
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
-	}
-
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 
 	public String getFormattedDoc(String content, String type, String previousConfigFilename,
@@ -747,7 +685,7 @@ public class ConfigComparisonService implements Observer {
 			configCompare.put(new String("file1"), previousConfig);
 			configCompare.put(new String("file2"), currentVersionConfig);
 			HttpEntity<JSONObject> httpEntity = new HttpEntity<JSONObject>(configCompare, headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue() + "/C3P/api/configDifference/";
+			String url = pythonServiceUri + "/C3P/api/configDifference/";
 			String response = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class).getBody();
 			responseJson = (JSONObject) jsonParser.parse(response);
 		} catch (ParseException exe) {

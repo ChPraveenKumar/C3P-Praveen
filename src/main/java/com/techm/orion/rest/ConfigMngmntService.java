@@ -10,8 +10,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.POST;
 
@@ -29,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.DeviceDiscoveryEntity;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
@@ -51,13 +48,13 @@ import com.techm.orion.service.AttribCreateConfigService;
 import com.techm.orion.service.ConfigurationManagmentService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.GetConfigurationTemplateService;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 
 @Controller
 @RequestMapping("/ConfigMngmntService")
-public class ConfigMngmntService implements Observer {
+public class ConfigMngmntService {
 	private static final Logger logger = LogManager
 			.getLogger(ConfigMngmntService.class);
 
@@ -87,9 +84,6 @@ public class ConfigMngmntService implements Observer {
 	
 	@Autowired
 	private TestDetailsRepository testDetailsRepository;
-
-	@Autowired
-	private RequestInfoDao requestInfoDao;
 
 	
 	/**
@@ -1940,12 +1934,6 @@ public class ConfigMngmntService implements Observer {
 						null, configReqToSendToC3pCode.getTemplateID());
 	}
 
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
-
-	}
-
 	public static Timestamp convertStringToTimestamp(String str_date) {
 		try {
 			DateFormat formatter;
@@ -2128,7 +2116,7 @@ public class ConfigMngmntService implements Observer {
 					logger.info("finalCammands - "
 							+ invokeFtl.setCommandPosition(null,
 									cammandByTemplate));
-					TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH
+					TextReport.writeFile(C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH
 							.getValue(), requestInfoPojo.getTemplateID(),
 							invokeFtl.setCommandPosition(null,
 									cammandByTemplate));

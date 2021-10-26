@@ -1,4 +1,4 @@
-package com.techm.orion.rest;
+package com.techm.orion.camunda.servicelayer;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -7,19 +7,25 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import com.techm.orion.pojo.Global;
-import com.techm.orion.utility.TSALabels;
 
+@Service
 public class CamundaServiceCreateReq {
-	
+	private static final Logger logger = LogManager.getLogger(CamundaServiceCreateReq.class);
+	@Value("${bpm.service.uri}")
+	private String bpmServiceUri;
 
 	@SuppressWarnings("unchecked")
 	public void uploadToServer(String requestId, String version, String requestType) throws IOException, JSONException {
-
-		String query = TSALabels.WEB_SERVICE_URI.getValue() + "/engine-rest/process-definition/key/C3P_Schedule_Request_Workflow/start";
+		logger.info("bpmServiceUri->"+bpmServiceUri);
+		String query = bpmServiceUri + "/engine-rest/process-definition/key/C3P_Schedule_Request_Workflow/start";
 
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -52,7 +58,6 @@ public class CamundaServiceCreateReq {
 		// read the response
 		InputStream in = new BufferedInputStream(conn.getInputStream());
 		String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-		JSONObject jsonObject = new JSONObject();
 
 		in.close();
 		conn.disconnect();
@@ -62,7 +67,7 @@ public class CamundaServiceCreateReq {
 	@SuppressWarnings("unchecked")
 	public void uploadToServerNew(String requestId, String version, String requestType)
 			throws IOException, JSONException {
-		String query = TSALabels.WEB_SERVICE_URI.getValue() + "/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
+		String query = bpmServiceUri + "/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
 
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -102,14 +107,12 @@ public class CamundaServiceCreateReq {
 		InputStream in = new BufferedInputStream(conn.getInputStream());
 		String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
 
-		JSONObject jsonObject = new JSONObject();
-
 		in.close();
 		conn.disconnect();
 	}
 
 	public void deleteProcessID(String processId) throws IOException, JSONException {
-		String query = TSALabels.WEB_SERVICE_URI.getValue() + "/engine-rest/process-instance/" + processId;
+		String query = bpmServiceUri + "/engine-rest/process-instance/" + processId;
 
 		URL url = new URL(query);
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -121,7 +124,6 @@ public class CamundaServiceCreateReq {
 		// read the response
 		InputStream in = new BufferedInputStream(conn.getInputStream());
 		String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-		JSONObject jsonObject = new JSONObject();
 
 		in.close();
 		conn.disconnect();
@@ -133,7 +135,7 @@ public class CamundaServiceCreateReq {
 	 */
 	@SuppressWarnings("unchecked")
 	public void uploadToServer(String requestId, String version, String requestType, String userName) throws IOException, JSONException {
-		String query = TSALabels.WEB_SERVICE_URI.getValue() + "/engine-rest/process-definition/key/C3P_Schedule_Request_Workflow/start";
+		String query = bpmServiceUri + "/engine-rest/process-definition/key/C3P_Schedule_Request_Workflow/start";
 
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -166,7 +168,6 @@ public class CamundaServiceCreateReq {
 		// read the response
 		InputStream in = new BufferedInputStream(conn.getInputStream());
 		String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-		JSONObject jsonObject = new JSONObject();
 
 		in.close();
 		conn.disconnect();
@@ -179,7 +180,7 @@ public class CamundaServiceCreateReq {
 	@SuppressWarnings("unchecked")
 	public void uploadToServerNew(String requestId, String version, String requestType, String userName)
 			throws IOException, JSONException {
-		String query = TSALabels.WEB_SERVICE_URI.getValue() + "/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
+		String query = bpmServiceUri + "/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
 
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -218,8 +219,6 @@ public class CamundaServiceCreateReq {
 		// read the response
 		InputStream in = new BufferedInputStream(conn.getInputStream());
 		String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-
-		JSONObject jsonObject = new JSONObject();
 
 		in.close();
 		conn.disconnect();

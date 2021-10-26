@@ -62,7 +62,7 @@ import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.service.PrevalidationTestServiceImpl;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.UtilityMethods;
@@ -74,9 +74,6 @@ import com.techm.orion.utility.VNFHelper;
 public class VnfConfigService {
 	private static final Logger logger = LogManager.getLogger(VnfConfigService.class);
 
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-	
 	@Autowired
 	private RequestInfoDetailsDao requestDao;
 
@@ -125,7 +122,6 @@ public class VnfConfigService {
 		// 3. Else call service for VNF configuration
 		JSONParser parser = new JSONParser();
 		try {
-			VnfConfigService.loadProperties();
 			JSONObject json = (JSONObject) parser.parse(params);
 			List<TempVNFEntity> list = new ArrayList<TempVNFEntity>();
 
@@ -155,14 +151,7 @@ public class VnfConfigService {
 					list.add(vnfObj);
 				}
 
-				String xmlFileDownloadPath = VnfConfigService.TSA_PROPERTIES.getProperty("staticXMLVnf");
-
-				// once we have list of features that we need to configure we
-				// must go ahead and put the values in hard coded xml.
-				//String fileName = "combinedFeatures.xml";
-				//ClassLoader classLoader = new VnfConfigService().getClass().getClassLoader();
-
-				File file = new File(xmlFileDownloadPath);
+				File file = new File(C3PCoreAppLabels.STATIC_XML_VNF.getValue());
 				String contents = new String(Files.readAllBytes(file.toPath()));
 
 				Jinjava jinjava = new Jinjava();
@@ -414,8 +403,6 @@ public class VnfConfigService {
 		InvokeFtl invokeFtl = new InvokeFtl();
 		try {
 
-			VnfConfigService.loadProperties();
-
 			json = (JSONObject) parser.parse(params);
 
 			// Require requestId and version from camunda
@@ -450,15 +437,14 @@ public class VnfConfigService {
 
 						//String user = userPojo.getUsername();
 						//String password = userPojo.getPassword();
-						String port = VnfConfigService.TSA_PROPERTIES.getProperty("portSSH");
 
-						logger.info("port " + port + "host " + host);
+						logger.info("host " + host);
 						JSch jsch = new JSch();
 						Channel channel = null;
-						Session session = jsch.getSession("c3pteam", "10.62.0.27", Integer.parseInt(port));
+						Session session = jsch.getSession("c3pteam", "10.62.0.27", Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
-						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+						config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						session.setConfig(config);
 						session.setPassword("csr1000v");
 						session.connect();
@@ -547,13 +533,10 @@ public class VnfConfigService {
 						requestInfoDao.addCertificationTestForRequest(createConfigRequest.getRequestId(),
 								Double.toString(createConfigRequest.getRequest_version()), "2");
 						String response = "";
-						String responseDownloadPath = "";
-
 						try {
 							response = invokeFtl.generatePrevalidationResultFileFailureODLMount(createConfigRequest);
 
-							responseDownloadPath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath,
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									createConfigRequest.getRequestId() + "V"
 											+ Double.toString(createConfigRequest.getRequest_version())
 											+ "_prevalidationTest.txt",
@@ -586,20 +569,14 @@ public class VnfConfigService {
 						mountStatus = "Pass";
 						// Check for Vendor, Device model, os, os version
 						String host = requestinfo.getManagementIp();
-						//UserPojo userPojo = new UserPojo();
-						//userPojo = requestInfoDao.getRouterCredentials();
 
-						//String user = userPojo.getUsername();
-						//String password = userPojo.getPassword();
-						String port = VnfConfigService.TSA_PROPERTIES.getProperty("portSSH");
-
-						logger.info("port " + port + "host " + host);
+						logger.info("host " + host);
 						JSch jsch = new JSch();
 						Channel channel = null;
-						Session session = jsch.getSession("c3pteam", "10.62.0.27", Integer.parseInt(port));
+						Session session = jsch.getSession("c3pteam", "10.62.0.27", Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
-						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+						config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						session.setConfig(config);
 						session.setPassword("csr1000v");
 						session.connect();
@@ -686,17 +663,13 @@ public class VnfConfigService {
 						requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "2");
 						String response = "";
-						String responseDownloadPath = "";
-
 						try {
 							response = invokeFtl.generatePrevalidationResultFileFailureODLMount(requestinfo);
 
-							responseDownloadPath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 									+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 									response);
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
@@ -706,26 +679,19 @@ public class VnfConfigService {
 
 			}
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (java.text.ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSchException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e1) {
 			if (createConfigRequest.getManagementIp() != null && !createConfigRequest.getManagementIp().equals("")) {
 
-				// TODO Auto-generated catch block
-
-				logger.info(e1.getMessage());
+				logger.info("Exception occured ->"+e1.getMessage());
 
 				if (e1.getMessage().contains("invalid server's version string")
 						|| e1.getMessage().contains("Auth fail")) {
@@ -737,17 +703,13 @@ public class VnfConfigService {
 					requestInfoDao.addCertificationTestForRequest(createConfigRequest.getRequestId(),
 							Double.toString(createConfigRequest.getRequest_version()), "2_Authentication");
 					String response = "";
-					String responseDownloadPath = "";
-
 					try {
 						response = invokeFtl.generateAuthenticationFailure(createConfigRequest);
 
-						responseDownloadPath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath, createConfigRequest.getRequestId() + "V"
+						TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), createConfigRequest.getRequestId() + "V"
 								+ Double.toString(createConfigRequest.getRequest_version()) + "_prevalidationTest.txt",
 								response);
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 
@@ -760,17 +722,13 @@ public class VnfConfigService {
 					requestInfoDao.addCertificationTestForRequest(createConfigRequest.getRequestId(),
 							Double.toString(createConfigRequest.getRequest_version()), "2");
 					String response = "";
-					String responseDownloadPath = "";
-
 					try {
 						response = invokeFtl.generatePrevalidationResultFileFailure(createConfigRequest);
 
-						responseDownloadPath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath, createConfigRequest.getRequestId() + "V"
+						TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), createConfigRequest.getRequestId() + "V"
 								+ Double.toString(createConfigRequest.getRequest_version()) + "_prevalidationTest.txt",
 								response);
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -789,13 +747,11 @@ public class VnfConfigService {
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "2_Authentication");
 					String response = "";
-					String responseDownloadPath = "";
 
 					try {
 						response = invokeFtl.generateAuthenticationFailure(requestinfo);
 
-						responseDownloadPath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
+						TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 								response);
@@ -812,18 +768,15 @@ public class VnfConfigService {
 					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "2");
 					String response = "";
-					String responseDownloadPath = "";
 
 					try {
 						response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
 
-						responseDownloadPath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath");
-						TextReport.writeFile(responseDownloadPath,
+						TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 								response);
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
@@ -831,9 +784,6 @@ public class VnfConfigService {
 			}
 		}
 
-		// value=true;
-		// jsonArray = new Gson().toJson(value);
-		// obj.put(new String("output"), jsonArray);
 		return obj;
 	}
 
@@ -849,7 +799,6 @@ public class VnfConfigService {
 		JSONObject obj = new JSONObject();
 		String requestIdForConfig = "";
 		try {
-			VnfConfigService.loadProperties();
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(params);
 			CreateConfigRequestDCM configReqToSendToC3pCode = new CreateConfigRequestDCM();
@@ -987,11 +936,7 @@ public class VnfConfigService {
 
 			}
 
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		// Save data to tempvnfentity
@@ -1002,18 +947,6 @@ public class VnfConfigService {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
 
 	public String prettyPrintXml(String xmlStringToBeFormatted) {
 		String formattedXmlString = null;
@@ -1053,7 +986,7 @@ public class VnfConfigService {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				String filepath = VnfConfigService.TSA_PROPERTIES.getProperty("responseDownloadPath") + requestID
+				String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID
 						+ "V" + version + "_VersionInfo.txt";
 				File file = new File(filepath);
 

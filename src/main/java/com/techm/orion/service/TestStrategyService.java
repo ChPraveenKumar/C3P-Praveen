@@ -11,7 +11,7 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 
 @Component
@@ -44,7 +44,7 @@ public class TestStrategyService {
 					Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
 			requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
 					Double.toString(requestinfo.getRequestVersion()));
-			responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
+			responseDownloadPath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue();
 			TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
 					+ Double.toString(requestinfo.getRequestVersion()) + fileName, response);
 			requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
@@ -69,7 +69,7 @@ public class TestStrategyService {
 					Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
 			requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
 					Double.toString(requestinfo.getRequestVersion()));
-			responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
+			responseDownloadPath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue();
 			TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
 					+ Double.toString(requestinfo.getRequestVersion()) + fileName, response);
 		} catch (Exception e) {

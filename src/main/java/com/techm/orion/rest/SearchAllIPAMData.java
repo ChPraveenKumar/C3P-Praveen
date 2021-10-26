@@ -1,10 +1,7 @@
 package com.techm.orion.rest;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -21,14 +18,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.techm.orion.connection.ConnectionFactory;
 import com.techm.orion.entitybeans.EIPAMEntity;
 import com.techm.orion.repositories.EIPAMEntityRepository;
 
 @Controller
 @RequestMapping("/SearchAllIpamData")
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
-public class SearchAllIPAMData implements Observer {
+public class SearchAllIPAMData {
 	private static final Logger logger = LogManager.getLogger(SearchAllIPAMData.class);
 	
 	@Autowired
@@ -43,9 +39,7 @@ public class SearchAllIPAMData implements Observer {
 	public Response getAll(@RequestBody String searchParameters) {
 
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
 		String jsonArray = "";
-		String keyword = null;
 		String site = null;
 		String customer = null;
 		String service = null;
@@ -72,7 +66,6 @@ public class SearchAllIPAMData implements Observer {
 			}
 
 			else {
-				Connection connection = ConnectionFactory.getConnection();
 				int parameters_to_search = 0;
 
 				if (!site.isEmpty()) {
@@ -291,12 +284,6 @@ public class SearchAllIPAMData implements Observer {
 				.header("Access-Control-Allow-Credentials", "true")
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-	}
-
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

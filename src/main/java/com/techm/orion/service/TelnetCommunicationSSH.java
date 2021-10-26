@@ -1,47 +1,53 @@
 package com.techm.orion.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.techm.orion.camunda.servicelayer.CamundaServiceCreateReq;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
-import com.techm.orion.rest.CamundaServiceCreateReq;
 
+@Service
 public class TelnetCommunicationSSH extends Thread {
 
 	private CreateConfigRequestDCM configRequest = null;
 	private RequestInfoPojo request = null;
-	private CamundaServiceCreateReq camundaServiceCreateReq = new CamundaServiceCreateReq();
 	private String userName = null;
-
-	public TelnetCommunicationSSH(CreateConfigRequestDCM list) {
-		// this();
-		configRequest = new CreateConfigRequestDCM();
-		this.configRequest = list;
-	}
+	@Autowired
+	private CamundaServiceCreateReq camundaServiceCreateReq;
 	
-	public TelnetCommunicationSSH(RequestInfoPojo list) {
-		// this();
-		request = new RequestInfoPojo();
-		this.request = list;
-	}
-	
-	/*
-	 * Overloaded Constructor for passing user information
-	 */
-	public TelnetCommunicationSSH(CreateConfigRequestDCM list, String userName) {
-		// this();
-		configRequest = new CreateConfigRequestDCM();
-		this.configRequest = list;
-		this.userName = userName;
-	}
 
-	/*
-	 * Overloaded Constructor for passing user information
-	 */
-	public TelnetCommunicationSSH(RequestInfoPojo list, String userName) {
-		// this();
-		request = new RequestInfoPojo();
-		this.request = list;
-		this.userName = userName;
-	}
+//	public TelnetCommunicationSSH(CreateConfigRequestDCM list) {
+//		// this();
+//		configRequest = new CreateConfigRequestDCM();
+//		this.configRequest = list;
+//	}
+//	
+//	public TelnetCommunicationSSH(RequestInfoPojo list) {
+//		// this();
+//		request = new RequestInfoPojo();
+//		this.request = list;
+//	}
+//	
+//	/*
+//	 * Overloaded Constructor for passing user information
+//	 */
+//	public TelnetCommunicationSSH(CreateConfigRequestDCM list, String userName) {
+//		// this();
+//		configRequest = new CreateConfigRequestDCM();
+//		this.configRequest = list;
+//		this.userName = userName;
+//	}
+//
+//	/*
+//	 * Overloaded Constructor for passing user information
+//	 */
+//	public TelnetCommunicationSSH(RequestInfoPojo list, String userName) {
+//		// this();
+//		request = new RequestInfoPojo();
+//		this.request = list;
+//		this.userName = userName;
+//	}
 
 	// public void connectToRouter(CreateConfigRequestDCM configRequest) throws
 	// Exception {
@@ -72,6 +78,30 @@ public class TelnetCommunicationSSH extends Thread {
 
 			ex.printStackTrace();
 		}
+	}
+
+	public CreateConfigRequestDCM getConfigRequest() {
+		return configRequest;
+	}
+
+	public void setConfigRequest(CreateConfigRequestDCM configRequest) {
+		this.configRequest = configRequest;
+	}
+
+	public RequestInfoPojo getRequest() {
+		return request;
+	}
+
+	public void setRequest(RequestInfoPojo request) {
+		this.request = request;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 
 }

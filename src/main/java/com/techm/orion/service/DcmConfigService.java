@@ -23,6 +23,7 @@ import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -72,8 +73,8 @@ import com.techm.orion.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.orion.repositories.RfoDecomposedRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.UserManagementRepository;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.VNFHelper;
 
@@ -126,16 +127,15 @@ public class DcmConfigService {
 	
 	@Autowired
 	private TemplateManagementDao templateManagementDao;
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
+	@Autowired
+	private TelnetCommunicationSSH telnetCommunicationSSH;
 	
 	public Map<String, String> updateAlldetails(
 			CreateConfigRequestDCM configRequest,
 			List<CreateConfigPojo> pojoList) throws IOException {
 
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
-		
-		// CamundaServiceCreateReq camundaServiceCreateReq = new
-		// CamundaServiceCreateReq();
-		
 		String validateMessage = "", requestType = "";
 		// TelnetCommunicationSSH telnetCommunicationSSH=new
 		// TelnetCommunicationSSH();
@@ -395,12 +395,10 @@ public class DcmConfigService {
 						if (configRequest.getNetworkType().equalsIgnoreCase(
 								"Legacy")) {
 							createTemplate(configRequest);
-
-							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-									configRequest);
+							
+							telnetCommunicationSSH.setConfigRequest(configRequest);
 							telnetCommunicationSSH.setDaemon(true);
 							telnetCommunicationSSH.start();
-							// telnetCommunicationSSH.connectToRouter(configRequest);
 						} else if (configRequest.getNetworkType()
 								.equalsIgnoreCase("VNF")) {/*
 															 * VNFHelper helper
@@ -475,8 +473,7 @@ public class DcmConfigService {
 					configRequest.setRequestId(requestId);
 					createTemplate(configRequest);
 
-					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-							configRequest);
+					telnetCommunicationSSH.setConfigRequest(configRequest);
 					telnetCommunicationSSH.setDaemon(true);
 					telnetCommunicationSSH.start();
 				}
@@ -612,8 +609,7 @@ public class DcmConfigService {
 					configRequest.setRequestId(requestId);
 					createTemplate(configRequest);
 
-					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-							configRequest);
+					telnetCommunicationSSH.setConfigRequest(configRequest);
 					telnetCommunicationSSH.setDaemon(true);
 					telnetCommunicationSSH.start();
 
@@ -795,22 +791,20 @@ public class DcmConfigService {
 						String responseHeader = invokeFtl
 								.generateheader(configRequest);
 						TextReport.writeFile(
-								TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+								C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestIdForConfig + "V"
 										+ configRequest.getRequest_version()
 										+ "_Header", responseHeader,
 								"headerGeneration");
 
-						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-								configRequest);
+						telnetCommunicationSSH.setConfigRequest(configRequest);
 						telnetCommunicationSSH.setDaemon(true);
 						telnetCommunicationSSH.start();
 					}
 
 					else {
 						createTemplate(configRequest);
-						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-								configRequest);
+						telnetCommunicationSSH.setConfigRequest(configRequest);
 						telnetCommunicationSSH.setDaemon(true);
 						telnetCommunicationSSH.start();
 					}
@@ -869,7 +863,7 @@ public class DcmConfigService {
 						String responseHeader = invokeFtl
 								.generateheader(configRequest);
 						TextReport.writeFile(
-								TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+								C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestIdForConfig + "V"
 										+ configRequest.getRequest_version()
 										+ "_Header", responseHeader,
@@ -1345,13 +1339,13 @@ public class DcmConfigService {
 					response = invokeFtl.generateConfigurationToPush(configRequest,
 							fileToUse);
 					TextReport.writeFile(
-							TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 							configRequest.getRequestId() + "V"
 									+ configRequest.getRequest_version()
 									+ "_Configuration", response,
 							"configurationGeneration");
 					TextReport
-							.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									configRequest.getRequestId() + "V"
 											+ configRequest.getRequest_version()
 											+ "_Header", responseHeader,
@@ -1670,11 +1664,9 @@ public class DcmConfigService {
 						for (RequestInfoPojo request : requestInfoSOList) {
 							createTemplateAndHeader(request, requestInfoSOList);
 						}
-						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-								requestInfoSO);
+						telnetCommunicationSSH.setRequest(requestInfoSO);
 						telnetCommunicationSSH.setDaemon(true);
 						telnetCommunicationSSH.start();
-						// telnetCommunicationSSH.connectToRouter(configRequest);
 					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
 							"VNF")) {
 						VNFHelper helper = new VNFHelper();
@@ -1686,8 +1678,7 @@ public class DcmConfigService {
 										requestIdForConfig, requestInfoSO);
 								if (filepath != null) {
 
-									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											requestInfoSO);
+									telnetCommunicationSSH.setRequest(requestInfoSO);
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
 
@@ -1696,32 +1687,18 @@ public class DcmConfigService {
 
 								}
 							} else {
-								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-										requestInfoSO);
+								telnetCommunicationSSH.setRequest(requestInfoSO);
 								telnetCommunicationSSH.setDaemon(true);
 								telnetCommunicationSSH.start();
 							}
 						} else {
-							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-									requestInfoSO);
+							telnetCommunicationSSH.setRequest(requestInfoSO);
 							telnetCommunicationSSH.setDaemon(true);
 							telnetCommunicationSSH.start();
 						}
 
 					}
 
-					/*
-					 * validateMessage = "Success";
-					 * createTemplate(requestInfoSO);
-					 * 
-					 * TelnetCommunicationSSH telnetCommunicationSSH = new
-					 * TelnetCommunicationSSH( requestInfoSO);
-					 * telnetCommunicationSSH.setDaemon(true);
-					 * telnetCommunicationSSH.start(); } else { validateMessage
-					 * = "Failure";
-					 * 
-					 * }
-					 */
 
 				} else {
 					requestInfoSO.setStatus("Scheduled");
@@ -2013,7 +1990,7 @@ public class DcmConfigService {
 			if(!configRequest.getRequestType().equalsIgnoreCase("SNAI")) {
 				responseHeader = invokeFtl.generateheader(configRequest);
 				TextReport.writeFile(
-						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						configRequest.getAlphanumericReqId() + "V"
 								+ configRequest.getRequestVersion() + "_Header",
 						responseHeader, "headerGeneration");
@@ -2057,32 +2034,16 @@ public class DcmConfigService {
 			}
 			try {
 				// responseHeader = invokeFtl.generateheader(configRequest);
-				/*
-				 * responseHeader = invokeFtl.generateheader(configRequest);
-				 * TextReport.writeFile(
-				 * TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-				 * configRequest.getAlphanumericReqId() + "V" +
-				 * configRequest.getRequestVersion() + "_Header",
-				 * responseHeader, "headerGeneration");
-				 */
 
 				response = invokeFtl.generateConfigurationToPush(configRequest,
 						fileToUse);
 				TextReport.writeFile(
-						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						configRequest.getAlphanumericReqId() + "V"
 								+ configRequest.getRequestVersion()
 								+ "_Configuration", response,
 						"configurationGeneration");
-				/*
-				 * TextReport
-				 * .writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
-				 * configRequest.getAlphanumericReqId() + "V" +
-				 * configRequest.getRequestVersion() + "_Header",
-				 * responseHeader,"headerGeneration");
-				 */
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -2265,8 +2226,8 @@ public class DcmConfigService {
 					if (!(requestType.equals("Test"))) {
 						createTemplate(requestInfoSO);
 					}
-					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-							requestInfoSO, userName);
+					telnetCommunicationSSH.setRequest(requestInfoSO);
+					telnetCommunicationSSH.setUserName(userName);
 					telnetCommunicationSSH.setDaemon(true);
 					telnetCommunicationSSH.start();
 				} else {
@@ -2401,7 +2362,7 @@ public class DcmConfigService {
 	}
 
 	private String getTemplateCreationPathForFolder() {
-		String path = TSALabels.TEMPLATE_CREATION_PATH.getValue();
+		String path = C3PCoreAppLabels.TEMPLATE_CREATION_PATH.getValue();
 		if (path.charAt(path.length() - 1) == '\\'
 				|| path.charAt(path.length() - 1) == '/') {
 			path = path.substring(0, path.length() - 1);
@@ -2585,8 +2546,6 @@ public class DcmConfigService {
 
 		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		
-		// CamundaServiceCreateReq camundaServiceCreateReq = new
-		// CamundaServiceCreateReq();		
 		String validateMessage = "", requestType = "";
 		// TelnetCommunicationSSH telnetCommunicationSSH=new
 		// TelnetCommunicationSSH();
@@ -2847,8 +2806,8 @@ public class DcmConfigService {
 								"Legacy")) {
 							createTemplate(configRequest);
 
-							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-									configRequest, userName);
+							telnetCommunicationSSH.setConfigRequest(configRequest);
+							telnetCommunicationSSH.setUserName(userName);
 							telnetCommunicationSSH.setDaemon(true);
 							telnetCommunicationSSH.start();
 							// telnetCommunicationSSH.connectToRouter(configRequest);
@@ -2926,8 +2885,8 @@ public class DcmConfigService {
 					configRequest.setRequestId(requestId);
 					createTemplate(configRequest);
 
-					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-							configRequest, userName);
+					telnetCommunicationSSH.setConfigRequest(configRequest);
+					telnetCommunicationSSH.setUserName(userName);
 					telnetCommunicationSSH.setDaemon(true);
 					telnetCommunicationSSH.start();
 				}
@@ -3063,8 +3022,8 @@ public class DcmConfigService {
 					configRequest.setRequestId(requestId);
 					createTemplate(configRequest);
 
-					TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-							configRequest, userName);
+					telnetCommunicationSSH.setConfigRequest(configRequest);
+					telnetCommunicationSSH.setUserName(userName);
 					telnetCommunicationSSH.setDaemon(true);
 					telnetCommunicationSSH.start();
 				}
@@ -3082,11 +3041,7 @@ public class DcmConfigService {
 			String userName, List<TemplateFeaturePojo> features) {
 		List<String> configGenMtds = new ArrayList<String>();
 
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
-		
 		String validateMessage = "";
-		// TelnetCommunicationSSH telnetCommunicationSSH=new
-		// TelnetCommunicationSSH();
 		String requestIdForConfig = "", requestType = "";
 		String res = "", output = "";
 		Map<String, String> result = new HashMap<String, String>();
@@ -3308,11 +3263,10 @@ public class DcmConfigService {
 						for (RequestInfoPojo request : requestInfoSOList) {
 							createTemplateAndHeader(request, requestInfoSOList);
 						}
-						TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-								requestInfoSO, userName);
+						telnetCommunicationSSH.setRequest(requestInfoSO);
+						telnetCommunicationSSH.setUserName(userName);
 						telnetCommunicationSSH.setDaemon(true);
 						telnetCommunicationSSH.start();
-						// telnetCommunicationSSH.connectToRouter(configRequest);
 					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase(
 							"VNF")) {
 						if (requestInfoSO.getRequestType().equalsIgnoreCase(
@@ -3323,8 +3277,8 @@ public class DcmConfigService {
 								createTemplateAndHeader(request,
 										requestInfoSOList);
 							}
-							TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-									requestInfoSO, userName);
+							telnetCommunicationSSH.setRequest(requestInfoSO);
+							telnetCommunicationSSH.setUserName(userName);
 							telnetCommunicationSSH.setDaemon(true);
 							telnetCommunicationSSH.start();
 
@@ -3338,8 +3292,8 @@ public class DcmConfigService {
 											requestIdForConfig, requestInfoSO);
 									if (filepath != null) {
 
-										TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-												requestInfoSO, userName);
+										telnetCommunicationSSH.setRequest(requestInfoSO);
+										telnetCommunicationSSH.setUserName(userName);
 										telnetCommunicationSSH.setDaemon(true);
 										telnetCommunicationSSH.start();
 
@@ -3348,14 +3302,14 @@ public class DcmConfigService {
 
 									}
 								} else {
-									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											requestInfoSO, userName);
+									telnetCommunicationSSH.setRequest(requestInfoSO);
+									telnetCommunicationSSH.setUserName(userName);
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
 								}
 							} else {
-								TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-										requestInfoSO, userName);
+								telnetCommunicationSSH.setRequest(requestInfoSO);
+								telnetCommunicationSSH.setUserName(userName);
 								telnetCommunicationSSH.setDaemon(true);
 								telnetCommunicationSSH.start();
 							}
@@ -3796,7 +3750,7 @@ public class DcmConfigService {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_UPDATE_HOST_STATUS.getValue();
+			String url = pythonServiceUri + C3PCoreAppLabels.PYTHON_UPDATE_HOST_STATUS.getValue();
 			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
 			JSONParser parser = new JSONParser();
 			JSONObject responseJson = (JSONObject) parser.parse(response);

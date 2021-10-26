@@ -1,6 +1,5 @@
 package com.techm.orion.rest;
 
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
@@ -13,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -27,7 +27,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.techm.orion.entitybeans.SchedulerHistoryEntity;
 import com.techm.orion.repositories.SchedulerHistoryRepository;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.WAFADateUtil;
 
 @Controller
@@ -50,6 +50,10 @@ public class SchedulerController {
 	
 	@Autowired
 	private BackUpAndRestoreController backUpAndRestoreController;
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
+	@Value("${bpm.service.uri}")
+	private String bpmServiceUri;
 	
 
 	@POST
@@ -58,6 +62,8 @@ public class SchedulerController {
 	public Response scheduleRequest(@RequestBody String request) {
 		JSONObject obj = new JSONObject();
 		JSONObject response = null;
+		logger.info("bpmServiceUri ->"+bpmServiceUri);
+		logger.info("pythonServiceUri ->"+pythonServiceUri);
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
@@ -73,12 +79,12 @@ public class SchedulerController {
 					response = configurationManagement
 							.createConfigurationDcm(createJson.toJSONString());
 					schedulerEntityInstance
-							.setShCreateUrl(TSALabels.SINGLE_REQUEST_CREATE
+							.setShCreateUrl(bpmServiceUri + C3PCoreAppLabels.SINGLE_REQUEST_CREATE
 									.getValue());
 				} else if (requestType.equalsIgnoreCase("SLGB")) {
 					response = backUpAndRestoreController.createConfigurationDcmBackUpAndRestore(createJson.toJSONString());
 					schedulerEntityInstance
-							.setShCreateUrl(TSALabels.SINGLE_REQUEST_CREATE_BACKUP
+							.setShCreateUrl(bpmServiceUri + C3PCoreAppLabels.SINGLE_REQUEST_CREATE_BACKUP
 									.getValue());
 				}
 				// Logic to save entry in scheduler history table
@@ -132,8 +138,8 @@ public class SchedulerController {
 								.asList(MediaType.APPLICATION_JSON));
 						HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(
 								pythonInputJson, headers);
-						String url = TSALabels.PYTHON_SERVICES.getValue()
-								+ TSALabels.PYTHON_SCHEDULER.getValue();
+						String url = pythonServiceUri
+								+ C3PCoreAppLabels.PYTHON_SCHEDULER.getValue();
 						String pythonAPIResponse = restTemplate.exchange(url,
 								HttpMethod.POST, entity, String.class)
 								.getBody();
@@ -203,7 +209,7 @@ public class SchedulerController {
 									0,
 									response.get("endDate").toString().length() - 4));
 		response.put("timezone",
-				TSALabels.C3P_APPLICATION_SERVER_TIMEZONE.getValue());
+				C3PCoreAppLabels.C3P_APPLICATION_SERVER_TIMEZONE.getValue());
 		}
 		return response;
 	}

@@ -26,35 +26,17 @@ public class ShowPowerTest {
 	private static final Logger logger = LogManager.getLogger(ShowPowerTest.class);
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
-	public static String PROPERTIES_FILE = "TSA.properties";
-	public static final Properties PROPERTIES = new Properties();
-
-	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
-
-		try {
-			PROPERTIES.load(PropFile);
-		} catch (IOException exc) {
-			logger.error("Exception in loadProperties method "+exc.getMessage());
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
 	public String powerInfo(String ip, String username, String password, String routername, String region, String type)
 			throws IOException {
 		String result = null;
-		ShowPowerTest.loadProperties();
-		String port = ShowPowerTest.PROPERTIES.getProperty("portSSH");
 		try {
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(username, ip, Integer.parseInt(port));
+			Session session = jsch.getSession(username, ip, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -72,16 +54,12 @@ public class ShowPowerTest {
 			channel.disconnect();
 			session.disconnect();
 		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSchException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return result;
@@ -91,14 +69,13 @@ public class ShowPowerTest {
 	public String getPowerInfor(String hostname, String region, String type) {
 		String result = null;
 		try {
-			ShowPowerTest.loadProperties();
 			String filepath = null;
 
 			if (type.equalsIgnoreCase("Pre")) {
-				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + "Pre_"
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + "Pre_"
 						+ hostname + "_" + region + "_PowerInfo.txt";
 			} else {
-				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + type
 						+ "_" + hostname + "_" + region + "_PowerInfo.txt";
 			}
 			if (filepath != null) {
@@ -125,9 +102,7 @@ public class ShowPowerTest {
 				}
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			return "fail";
-			// e.printStackTrace();
 		}
 
 		return result;
@@ -154,7 +129,7 @@ public class ShowPowerTest {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				filepath = ShowPowerTest.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + type
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + type
 						+ "_" + routername + "_" + region + "_PowerInfo.txt";
 				File file = new File(filepath);
 

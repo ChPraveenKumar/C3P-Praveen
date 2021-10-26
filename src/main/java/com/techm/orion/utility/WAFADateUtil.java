@@ -171,7 +171,7 @@ public class WAFADateUtil {
 		String response=null;
 		// Current date and time using now()
 		ZonedDateTime currentDateTime = ZonedDateTime.now();
-		ZoneId applicationServerZoneId = ZoneId.of(TSALabels.C3P_APPLICATION_SERVER_TIMEZONE.getValue());
+		ZoneId applicationServerZoneId = ZoneId.of(C3PCoreAppLabels.C3P_APPLICATION_SERVER_TIMEZONE.getValue());
 		ZoneId clientZoneID = ZoneId.of(timezone);
 		ZonedDateTime clientDateTime = currentDateTime.withZoneSameInstant(clientZoneID);
 		ZonedDateTime applicationDateTime = clientDateTime.withZoneSameInstant(applicationServerZoneId);

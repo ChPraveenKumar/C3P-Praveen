@@ -36,7 +36,7 @@ import com.techm.orion.pojo.ParentVersionPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.rest.DeliverConfigurationAndBackupTest;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.UtilityMethods;
 
@@ -66,7 +66,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 				errorType = errorValidationPojo.getError_type();
 				errorDescription = errorValidationPojo.getError_description();
 				String commandError = parseFile(
-						TSALabels.RESPONSE_LOG_PATH.getValue() + requestId + "_" + Double.toString(version) + "theSSHfile.txt",
+						C3PCoreAppLabels.RESPONSE_LOG_PATH.getValue() + requestId + "_" + Double.toString(version) + "theSSHfile.txt",
 						errorMsg);
 				if (commandError != "") {
 					textFound = commandError;
@@ -154,10 +154,10 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+			Session session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -324,7 +324,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 			}
 			String responseforNoCmd = invokeFtl.generateModifyConfigurationToPushNoCmd(latestVersion, compareVersion);
 
-			TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+			TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 					+ configRequest.getRequest_version() + "_ConfigurationNoCmdForError", responseforNoCmd);
 
 			String host = configRequest.getManagementIp();
@@ -337,10 +337,10 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+			Session session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -382,7 +382,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 	public ArrayList<String> readFile(String requestIdForConfig, String version) throws IOException {
 		BufferedReader br = null;
 		LineNumberReader rdr = null;
-		String filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_PreviousConfig.txt";
+		String filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_PreviousConfig.txt";
 
 		br = new BufferedReader(new FileReader(filePath));
 		try {
@@ -405,7 +405,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 					}
 				}
 			}
-			int fileReadSize = Integer.parseInt(TSALabels.FILE_CHUNK_SIZE.getValue());
+			int fileReadSize = Integer.parseInt(C3PCoreAppLabels.FILE_CHUNK_SIZE.getValue());
 			int chunks = (count / fileReadSize) + 1;
 			String line;
 
@@ -450,7 +450,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 	public ArrayList<String> readFileForNoCommand(String requestIdForConfig, String version) throws IOException {
 		BufferedReader br = null;
 		LineNumberReader rdr = null;
-		String filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version
+		String filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version
 				+ "_ConfigurationNoCmdForError";
 
 		br = new BufferedReader(new FileReader(filePath));
@@ -474,7 +474,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 					}
 				}
 			}
-			int fileReadSize = Integer.parseInt(TSALabels.FILE_CHUNK_SIZE.getValue());
+			int fileReadSize = Integer.parseInt(C3PCoreAppLabels.FILE_CHUNK_SIZE.getValue());
 			int chunks = (count / fileReadSize) + 1;
 			String line;
 
@@ -522,7 +522,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
 
-		File file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + "theSSHfile.txt");
+		File file = new File(C3PCoreAppLabels.RESPONSE_LOG_PATH.getValue() + "theSSHfile.txt");
 		/*
 		 * if (file.exists()) { file.delete(); }
 		 */
@@ -534,7 +534,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 
-				file = new File(TSALabels.RESPONSE_LOG_PATH.getValue() + "theSSHfile.txt");
+				file = new File(C3PCoreAppLabels.RESPONSE_LOG_PATH.getValue() + "theSSHfile.txt");
 
 				if (!file.exists()) {
 					file.createNewFile();

@@ -21,25 +21,22 @@ import com.techm.orion.repositories.BatchInfoRepo;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.WebServiceRepo;
 
-/*  @Controller
-  
-  @RequestMapping("/searchdeviceinventoryNew")*/
-
 @Controller
 public class RequestInfoScheduler {
 
 	@Autowired
-	public RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
 	@Autowired
-	public BatchInfoRepo batchInfoRepo;
+	private BatchInfoRepo batchInfoRepo;
 
 	@Autowired
-	RequestInfoDao dao;
+	private RequestInfoDao dao;
 
 	@Autowired
-	public WebServiceRepo webServiceRepo;
-
+	private WebServiceRepo webServiceRepo;
+	@Autowired
+	private TelnetCommunicationSSH telnetCommunicationSSH;
 	private static final Logger logger = LogManager.getLogger(RequestInfoScheduler.class);
 
 
@@ -53,7 +50,7 @@ public class RequestInfoScheduler {
 	@Scheduled(cron = "0 0/5 * * * *")	
 	public void fetchDBJob() {
 		CreateConfigRequestDCM configRequest = new CreateConfigRequestDCM();
-		String tempBatchId = null, tempId = null;
+		String tempBatchId = null;
 		List<BatchIdEntity> entity = batchInfoRepo.findAll();
 
 		List<RequestInfoEntity> detailsList = new ArrayList<RequestInfoEntity>();
@@ -102,8 +99,8 @@ public class RequestInfoScheduler {
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
 								try {
-									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											configRequest, detailsList.get(j).getRequestCreatorName());
+									telnetCommunicationSSH.setConfigRequest(configRequest);
+									telnetCommunicationSSH.setUserName(detailsList.get(j).getRequestCreatorName());
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
 								} catch (Exception e) {
@@ -144,8 +141,8 @@ public class RequestInfoScheduler {
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
 								try {
-									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											configRequest, detailsList.get(j).getRequestCreatorName());
+									telnetCommunicationSSH.setConfigRequest(configRequest);
+									telnetCommunicationSSH.setUserName(detailsList.get(j).getRequestCreatorName());
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
 								} catch (Exception e) {
@@ -190,8 +187,8 @@ public class RequestInfoScheduler {
 
 								try {
 
-									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											configRequest, detailsList.get(j).getRequestCreatorName());
+									telnetCommunicationSSH.setConfigRequest(configRequest);
+									telnetCommunicationSSH.setUserName(detailsList.get(j).getRequestCreatorName());
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
 								} catch (Exception e) {
@@ -230,8 +227,8 @@ public class RequestInfoScheduler {
 
 								try {
 
-									TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-											configRequest, detailsList.get(j).getRequestCreatorName());
+									telnetCommunicationSSH.setConfigRequest(configRequest);
+									telnetCommunicationSSH.setUserName(detailsList.get(j).getRequestCreatorName());
 									telnetCommunicationSSH.setDaemon(true);
 									telnetCommunicationSSH.start();
 								} catch (Exception e) {

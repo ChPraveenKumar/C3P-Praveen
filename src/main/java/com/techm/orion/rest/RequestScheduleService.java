@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
+import com.techm.orion.camunda.servicelayer.CamundaServiceCreateReq;
 import com.techm.orion.dao.RequestSchedulerDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.SchedulerListPojo;
@@ -30,11 +31,13 @@ import com.techm.orion.service.RequestSchedulerForNewAndModify;
 
 @Controller
 @RequestMapping("/RequestScheduleService")
-public class RequestScheduleService implements Observer {
+public class RequestScheduleService {
 	private static final Logger logger = LogManager.getLogger(RequestScheduleService.class);
 
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	@Autowired
+	private CamundaServiceCreateReq camundaServiceCreateReq;
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -61,9 +64,6 @@ public class RequestScheduleService implements Observer {
 			jsonArray = new Gson().toJson(scheduledList);
 
 			obj.put(new String("output"), jsonArray);
-
-			// obj.put(new String("testType"), new
-			// String(createConfigRequestDCM.getTestType()));
 
 		} catch (Exception e) {
 			logger.error(e);
@@ -105,8 +105,7 @@ public class RequestScheduleService implements Observer {
 
 			processId = daoService.getProcessIdFromCamundaHistory(RequestId, version);
 			if (processId != null) {
-				CamundaServiceCreateReq c = new CamundaServiceCreateReq();
-				c.deleteProcessID(processId);
+				camundaServiceCreateReq.deleteProcessID(processId);
 				String result = requestSchedulerForNewAndModify.rescheduleRequestDB(RequestId, version, scheduledTime);
 
 				String message = requestSchedulerForNewAndModify
@@ -124,9 +123,6 @@ public class RequestScheduleService implements Observer {
 			} else {
 				obj.put(new String("output"), "Failed to reschedule");
 			}
-
-			// obj.put(new String("testType"), new
-			// String(createConfigRequestDCM.getTestType()));
 
 		} catch (Exception e) {
 			logger.error(e);
@@ -401,8 +397,7 @@ public class RequestScheduleService implements Observer {
 			processId = daoService.getProcessIdFromCamundaHistory(jsonData.get("requestId").toString(),
 					jsonData.get("version").toString());
 			if (processId != null) {
-				CamundaServiceCreateReq c = new CamundaServiceCreateReq();
-				c.deleteProcessID(processId);
+				camundaServiceCreateReq.deleteProcessID(processId);
 				String message = requestSchedulerForNewAndModify.runScheduledRequestService(createConfigRequestDCM);
 				obj.put(new String("output"), new String(message));
 
@@ -415,12 +410,6 @@ public class RequestScheduleService implements Observer {
 		}
 
 		return obj;
-
-	}
-
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -447,8 +436,7 @@ public class RequestScheduleService implements Observer {
 			RequestSchedulerDao daoService = new RequestSchedulerDao();
 			processId = daoService.getProcessIdFromCamundaHistory(RequestId, version);
 			if (processId != null) {
-				CamundaServiceCreateReq c = new CamundaServiceCreateReq();
-				c.deleteProcessID(processId);
+				camundaServiceCreateReq.deleteProcessID(processId);
 				daoService.deleteProcessIdFromCamundaHistory(processId);
 				String result = requestSchedulerForNewAndModify.cancelRequestDB(RequestId, version);
 				obj.put(new String("output"), result);
@@ -456,9 +444,6 @@ public class RequestScheduleService implements Observer {
 			} else {
 				obj.put(new String("output"), "Failed to reschedule");
 			}
-
-			// obj.put(new String("testType"), new
-			// String(createConfigRequestDCM.getTestType()));
 
 		} catch (Exception e) {
 			logger.error(e);
@@ -495,8 +480,6 @@ public class RequestScheduleService implements Observer {
 
 			obj.put(new String("output"), result);
 
-			// obj.put(new String("testType"), new
-			// String(createConfigRequestDCM.getTestType()));
 
 		} catch (Exception e) {
 			logger.error(e);

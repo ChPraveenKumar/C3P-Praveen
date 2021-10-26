@@ -25,7 +25,7 @@ import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.UserPojo;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.UtilityMethods;
 
 public class HealthCheckTestSSH {
@@ -56,10 +56,10 @@ public class HealthCheckTestSSH {
 			String frameloss = "";
 			String latency = "";
 			JSch jsch = new JSch();
-			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+			Session session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -182,7 +182,7 @@ public class HealthCheckTestSSH {
 
 	private static String readFile() throws IOException {
 		BufferedReader br = new BufferedReader(
-				new FileReader(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "HealthcheckTestCommand.txt"));
+				new FileReader(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + "HealthcheckTestCommand.txt"));
 		try {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();
@@ -212,7 +212,7 @@ public class HealthCheckTestSSH {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				logger.info(s);
-				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID
+				String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID
 						+ "V" + version + "_HealthCheck.txt";
 				File file = new File(filepath);
 
@@ -253,7 +253,7 @@ public class HealthCheckTestSSH {
 			 * 
 			 * p_stdin.newLine(); p_stdin.flush(); }
 			 */
-			p_stdin.write("cd " + TSALabels.ANALYSER_PATH.getValue());
+			p_stdin.write("cd " + C3PCoreAppLabels.ANALYSER_PATH.getValue());
 			p_stdin.newLine();
 			p_stdin.flush();
 			p_stdin.write("ttcp -t nbufs 1 verbose host " + managementIp);
@@ -281,7 +281,7 @@ public class HealthCheckTestSSH {
 			commadBuilder.append("ping ");
 			commadBuilder.append(managementIp);
 			//Pings timeout
-			if("Linux".equals(TSALabels.APP_OS.getValue())) {
+			if("Linux".equals(C3PCoreAppLabels.APP_OS.getValue())) {
 				commadBuilder.append(" -c ");
 			}else {
 				commadBuilder.append(" -n ");

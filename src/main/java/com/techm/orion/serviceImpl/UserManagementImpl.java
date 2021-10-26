@@ -31,7 +31,7 @@ import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.repositories.WorkGroupRepository;
 import com.techm.orion.service.UserManagementInterface;
 import com.techm.orion.utility.PasswordEncryption;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.UserEncryption;
 
 @Service

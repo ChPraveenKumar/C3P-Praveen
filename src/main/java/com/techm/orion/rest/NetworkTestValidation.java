@@ -40,7 +40,7 @@ import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.TestStrategyService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.VNFHelper;
@@ -117,10 +117,10 @@ public class NetworkTestValidation extends Thread {
 						String user = routerCredential.getLoginRead();
 						String password = routerCredential.getPasswordWrite();
 					
-						session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+						session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
-						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+						config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						session.setConfig(config);
 						session.setPassword(password);
 						logger.info("Before session.connet in network test validation Username" + user
@@ -337,7 +337,7 @@ public class NetworkTestValidation extends Thread {
 	public String validateNetworkTest(RequestInfoPojo requestinfo) throws IOException {
 		logger.info("In side validate network test line no 356");
 		String content = "";
-		String path = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()
+		String path = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue()
 				+ requestinfo.getAlphanumericReqId() + "V" + requestinfo.getRequestVersion() + "_networkTest.txt";
 
 		File file = new File(path);

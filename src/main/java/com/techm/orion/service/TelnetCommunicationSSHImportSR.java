@@ -1,31 +1,34 @@
 package com.techm.orion.service;
 
-import com.techm.orion.pojo.CreateConfigRequestDCM;
-import com.techm.orion.rest.CamundaServiceCreateReq;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+import com.techm.orion.camunda.servicelayer.CamundaServiceCreateReq;
+import com.techm.orion.pojo.CreateConfigRequestDCM;
+
+@Service
 public class TelnetCommunicationSSHImportSR extends Thread {
 
-	private CreateConfigRequestDCM configRequest = new CreateConfigRequestDCM();
-	private CamundaServiceCreateReq camundaServiceCreateReq = new CamundaServiceCreateReq();
+	private CreateConfigRequestDCM configRequest;
+	@Autowired
+	private CamundaServiceCreateReq camundaServiceCreateReq;
 	private String userName = null;
 
-	public TelnetCommunicationSSHImportSR(CreateConfigRequestDCM list) {
-		//this();
-		this.configRequest = list;
-	}
-	 
-	/*
-	 * Overloaded Constructor for passing user information
-	 */
-	public TelnetCommunicationSSHImportSR(CreateConfigRequestDCM list, String userName) {
-		// this();
-		this.configRequest = list;
-		this.userName = userName;
-	}
+//	public TelnetCommunicationSSHImportSR(CreateConfigRequestDCM list) {
+//		//this();
+//		this.configRequest = list;
+//	}
+//	 
+//	/*
+//	 * Overloaded Constructor for passing user information
+//	 */
+//	public TelnetCommunicationSSHImportSR(CreateConfigRequestDCM list, String userName) {
+//		// this();
+//		this.configRequest = list;
+//		this.userName = userName;
+//	}
+//
 
-
-	// public void connectToRouter(CreateConfigRequestDCM configRequest) throws
-	// Exception {
 	@Override
 	public void run() {
 
@@ -43,6 +46,22 @@ public class TelnetCommunicationSSHImportSR extends Thread {
 
 			ex.printStackTrace();
 		}
+	}
+
+	public CreateConfigRequestDCM getConfigRequest() {
+		return configRequest;
+	}
+
+	public void setConfigRequest(CreateConfigRequestDCM configRequest) {
+		this.configRequest = configRequest;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
 	}
 
 }

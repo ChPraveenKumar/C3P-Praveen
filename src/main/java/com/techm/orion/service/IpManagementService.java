@@ -13,6 +13,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,7 +26,7 @@ import com.techm.orion.entitybeans.IpRangeManagementEntity;
 import com.techm.orion.pojo.IpManagement;
 import com.techm.orion.repositories.HostIpManagementRepo;
 import com.techm.orion.repositories.IpRangeManagementRepo;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 @Service
 public class IpManagementService {
@@ -38,6 +39,8 @@ public class IpManagementService {
 
 	@Autowired
 	private RequestDashboardGraphService requestDashboardGraphService;
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
 
 	@SuppressWarnings("unchecked")
 	public JSONObject getHostIps() {
@@ -392,7 +395,7 @@ public class IpManagementService {
 			ipEntity.setRangeCreatedDate(date);
 			HttpHeaders headers = new HttpHeaders();
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(rangeJson, headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.IP_MANAGEMENT.getValue();
+			String url = pythonServiceUri + C3PCoreAppLabels.IP_MANAGEMENT.getValue();
 			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
 			JSONObject responseJson = (JSONObject) jsonParser.parse(response);
 			String startIp = null, endIp = null;

@@ -10,16 +10,15 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -31,17 +30,14 @@ import com.techm.orion.service.DecomposeWorkflow;
 
 @RestController
 public class PythonServices {
-	@Autowired
-	RestTemplate restTemplate;
-	
-	private static String endpointUrl = TSALabels.PYTHON_SERVICES.getValue();
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
 	private static final Logger logger = LogManager.getLogger(PythonServices.class);
+	@Autowired
+	private DecomposeWorkflow decomposeWorkflow;
 
-	private static final String RUNNEXTREQUEST = endpointUrl
+	private final String RUNNEXTREQUEST = pythonServiceUri
 			+ "C3P/api/tmfcode/RunNextRequest";
-	
-	public static String PROPERTIES_FILE = "TSA.properties";
-	public static final Properties PROPERTIES = new Properties();
 	
 
 	public String runNextRequest(String rfoid) {
@@ -52,9 +48,10 @@ public class PythonServices {
 
 	public void runDecomposeWorkflow(String rfoid)
 	{
-		DecomposeWorkflow decompose=new DecomposeWorkflow(rfoid);
-		decompose.setDaemon(true);
-		decompose.start();
+		//DecomposeWorkflow decompose=new DecomposeWorkflow(rfoid);
+		decomposeWorkflow.setRfoid(rfoid);
+		decomposeWorkflow.setDaemon(true);
+		decomposeWorkflow.start();
 	}
 	private HttpURLConnection openHttpConnection(String endpointUrl) {
 		HttpURLConnection httpConnection = null;
@@ -144,6 +141,7 @@ public class PythonServices {
 	public Boolean pythonDeltaCompute(String filepath1, String filepath2) {
 		logger.info("Start pythonDeltaCompute - file1- " + filepath1);
 		logger.info("Start pythonDeltaCompute - file2- " + filepath2);
+		logger.info("pythonServiceUri -  " + pythonServiceUri);
 		Boolean responce = null;
 		RestTemplate restTemplate = new RestTemplate();
 		JSONObject obj = new JSONObject();
@@ -155,8 +153,8 @@ public class PythonServices {
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(obj,
 					headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue()
-					+ TSALabels.PYTHON_DIFFLIB_DELTA_COMPUTE.getValue();
+			String url = pythonServiceUri
+					+ C3PCoreAppLabels.PYTHON_DIFFLIB_DELTA_COMPUTE.getValue();
 			String response = restTemplate.exchange(url, HttpMethod.POST,
 					entity, String.class).getBody();
 
@@ -167,7 +165,6 @@ public class PythonServices {
 			}
 
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		logger.info("Response" + responce);

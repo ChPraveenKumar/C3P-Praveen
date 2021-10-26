@@ -11,7 +11,7 @@ import com.techm.orion.entitybeans.UserManagementEntity;
 import com.techm.orion.entitybeans.UserRole;
 import com.techm.orion.exception.GenericResponse;
 import com.techm.orion.pojo.UserManagementResulltDetailPojo;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 public interface UserManagementInterface {
 	GenericResponse createUser(String userData) throws Exception;

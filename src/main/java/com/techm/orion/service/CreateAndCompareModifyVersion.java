@@ -21,7 +21,7 @@ import com.techm.orion.pojo.ModifyConfigResultPojo;
 import com.techm.orion.pojo.ParentVersionPojo;
 import com.techm.orion.pojo.RequestInfoSO;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 
 @Component
@@ -268,10 +268,10 @@ public class CreateAndCompareModifyVersion {
 		// if the type is template create,we are going to generate a file for it
 		if (type.equalsIgnoreCase("templatecreate")) {
 			try {
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						latestVersion.getRequestId() + "V" + latestVersion.getRequest_version() + "_Configuration",
 						response);
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						latestVersion.getRequestId() + "V" + latestVersion.getRequest_version() + "_ConfigurationNoCmd",
 						responseforNoCmd);
 
@@ -320,7 +320,7 @@ public class CreateAndCompareModifyVersion {
 		try {
 			BufferedWriter bw = null;
 			FileWriter fw = null;
-			String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "/noconfig.txt";
+			String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + "/noconfig.txt";
 			File file = new File(filepath);
 			if (file.exists() && counter == 1) {
 				PrintWriter writer = new PrintWriter(file);
@@ -362,7 +362,7 @@ public class CreateAndCompareModifyVersion {
 		try {
 			BufferedWriter bw = null;
 			FileWriter fw = null;
-			String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "/createconfig.txt";
+			String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + "/createconfig.txt";
 			File file = new File(filepath);
 			if (file.exists() && counter == 1) {
 				PrintWriter writer = new PrintWriter(file);
@@ -632,10 +632,10 @@ public class CreateAndCompareModifyVersion {
 		// if the type is template create,we are going to generate a file for it
 		if (type.equalsIgnoreCase("templatecreate")) {
 			try {
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						latestVersion.getRequestId() + "V" + latestVersion.getRequest_version() + "_Configuration",
 						response);
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						latestVersion.getRequestId() + "V" + latestVersion.getRequest_version() + "_ConfigurationNoCmd",
 						responseforNoCmd);
 

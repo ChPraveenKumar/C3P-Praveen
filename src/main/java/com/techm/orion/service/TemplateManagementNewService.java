@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.techm.orion.camunda.servicelayer.CamundaServiceTemplateApproval;
 import com.techm.orion.dao.TemplateManagementDB;
 import com.techm.orion.dao.TemplateManagementDao;
 import com.techm.orion.entitybeans.MasterAttributes;
@@ -48,7 +49,6 @@ import com.techm.orion.repositories.TemplateCommandsRepository;
 import com.techm.orion.repositories.TemplateConfigBasicDetailsRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.TemplateIpPoolJoinRepository;
-import com.techm.orion.rest.CamundaServiceTemplateApproval;
 import com.techm.orion.rest.GetTemplateConfigurationData;
 import com.techm.orion.utility.UtilityMethods;
 
@@ -95,6 +95,8 @@ public class TemplateManagementNewService {
 
 	@Autowired
 	private TemplateIpPoolJoinRepository templateIpPoolJoinRepository;
+	@Autowired
+	private CamundaServiceTemplateApproval camundaServiceTemplateApproval;
 
 	public List<GetTemplateMngmntActiveDataPojo> getDataForRightPanelOnEditTemplate(
 			String templateId, boolean selectAll) throws Exception {
@@ -202,7 +204,6 @@ public class TemplateManagementNewService {
 		TemplateManagementDB templateDao = new TemplateManagementDB();
 		String templateId = null, templateVersion = null;
 		DecimalFormat numberFormat = new DecimalFormat("#.#");
-		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
 		String templateAndVesion = json.get("templateid").toString() + "_V"
 				+ json.get("templateVersion").toString();
@@ -343,7 +344,7 @@ public class TemplateManagementNewService {
 			}
 		}
 		try {
-			camundaService.initiateApprovalFlow(templateAndVesion,
+			camundaServiceTemplateApproval.initiateApprovalFlow(templateAndVesion,
 					templateVersion, "Admin");
 		} catch (JSONException | IOException e) {
 			e.printStackTrace();

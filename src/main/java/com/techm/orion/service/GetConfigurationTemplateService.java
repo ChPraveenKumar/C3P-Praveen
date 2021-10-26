@@ -13,7 +13,7 @@ import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 @Component
 public class GetConfigurationTemplateService {
@@ -250,7 +250,7 @@ public class GetConfigurationTemplateService {
 	}
 	
 	private String getTemplateCreationPathForFolder() {
-		String path = TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(); 
+		String path = C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH.getValue(); 
 		if (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/'){
 			path = path.substring(0, path.length()-1);
 	    }

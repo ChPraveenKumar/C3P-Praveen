@@ -14,7 +14,7 @@ import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.ReoprtFlags;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 
 public class FinalReportTestSSH {
@@ -67,7 +67,7 @@ public class FinalReportTestSSH {
 				String response = invokeFtl.generateCustomerReportSuccess(createConfigRequest);
 				
 				TextReport.writeFile(
-						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 								+ Double.toString(configRequest.getRequest_version()) + "_customerReport.txt",
 						response);
 			}
@@ -98,7 +98,7 @@ public class FinalReportTestSSH {
 				String response = invokeFtl.generateCustomerReportFailure(createConfigRequest);		
 				
 				TextReport.writeFile(
-						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 								+ Double.toString(configRequest.getRequest_version()) + "_customerReport.txt",
 						response);
 			}

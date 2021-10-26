@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -34,14 +35,15 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.itextpdf.html2pdf.HtmlConverter;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 @Controller
 @CrossOrigin(origins = "http://localhost:4200", maxAge = 3600)
 @RequestMapping("/GenerateReport")
 public class GenerateReport {
 	private static final Logger logger = LogManager.getLogger(GenerateReport.class);
-
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
 	/*
 	 * Owner: Rahul Tiwari Module: Generate Report Logic: To generate pdf from html
 	 * data custom tests
@@ -56,7 +58,7 @@ public class GenerateReport {
 		// String pythonScriptFolder = "D:/PDF_Ptyhon_Folder/inputfile.py";
 
 		// Provide the path of html file location
-		String home = TSALabels.DOWNLOAD_PATH.getValue();
+		String home = C3PCoreAppLabels.DOWNLOAD_PATH.getValue();
 		File downloadHtmlFilePath = new File(home + "report" + ".html");
 
 		// Provide the name of generated pdf file Name with request and version
@@ -123,7 +125,7 @@ public class GenerateReport {
 	@RequestMapping(value = "/downloadCOBTemplate", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<FileSystemResource> downloadTemplateCOB() {
-		String customerOnBoardingFileFolder = TSALabels.COBTemplate.getValue() + "CustomerOnboardTemplate.csv";
+		String customerOnBoardingFileFolder = C3PCoreAppLabels.COB_TEMPLATE.getValue() + "CustomerOnboardTemplate.csv";
 		File templateFile = null;
 		try {
 			templateFile = new File(customerOnBoardingFileFolder);
@@ -156,7 +158,7 @@ public class GenerateReport {
 		String requestData = null;
 		String requestId = null;
 		String version = null;
-		String pythonScriptFolder = TSALabels.PYTHON_SCRIPT_PATH.getValue() + "pdfConverter.py";
+		String pythonScriptFolder = C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue() + "pdfConverter.py";
 		
 		File pythonFileCheck = new File(pythonScriptFolder);
 		try {
@@ -225,7 +227,7 @@ public class GenerateReport {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_REPORT.getValue();
+			String url = pythonServiceUri + C3PCoreAppLabels.PYTHON_REPORT.getValue();
 			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
 			logger.info("response of generateReport is " + response);
 

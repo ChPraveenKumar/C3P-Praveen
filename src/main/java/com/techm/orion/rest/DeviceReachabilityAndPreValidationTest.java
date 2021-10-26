@@ -29,6 +29,7 @@ import com.google.gson.Gson;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
+import com.techm.orion.camunda.servicelayer.CamundaServiceFEWorkflow;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.dao.RequestInfoDetailsDao;
 import com.techm.orion.entitybeans.CredentialManagementEntity;
@@ -43,8 +44,8 @@ import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.UserManagementRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.PingService;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.UtilityMethods;
@@ -84,11 +85,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	
 	@Autowired
 	private PingService pingService;
+	@Autowired
+	private CamundaServiceFEWorkflow camundaServiceFEWorkflow;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
-
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
-	//PingTest pingHelper = new PingTest();
 
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -119,12 +118,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			String version = json.get("version").toString();
 			List<RequestInfoEntity> requestDetailEntity1 = new ArrayList<RequestInfoEntity>();
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			logger.info("ResponseDownloadpath in prevalidation"
-					+ DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES.getProperty("responseDownloadPath"));
-			DeviceReachabilityAndPreValidationTest.loadProperties();
 			// TODO: We need to remove ROUTER_IP_TEMP later or while on GCP
 			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
-					&& !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) // Temperory
+					&& !requestinfo.getManagementIp().contains(C3PCoreAppLabels.ROUTER_IP_TEMP.getValue())) // Temperory
 			{
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
@@ -173,9 +169,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								value = false;
 								String response = invokeFtl.generateDevicelockedFile(requestinfo);
 
-								String responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath,
+								TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 										requestinfo.getAlphanumericReqId() + "V" + requestinfo.getRequestVersion()
 
 												+ "_prevalidationTest.txt",
@@ -191,15 +185,6 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								value = false;
 								String response = invokeFtl.generateDevicelockedFile(requestinfo);
 
-								String responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								////To remove generation of Prevalidation Test for SLGB
-								/*
-								 * TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId()
-								 * + "V" + requestinfo.getRequestVersion() + "_prevalidationTest.txt",
-								 * response);
-								 */
-
 								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "Application_test", "2",
@@ -211,9 +196,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								value = false;
 								String response = invokeFtl.generateDevicelockedFile(requestinfo);
 
-								String responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+								TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 										+ requestinfo.getRequestVersion() + "_prevalidationTest.txt", response);
 
 								requestInfoDetailsDao.editRequestforReportWebserviceInfo(
@@ -266,14 +249,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										results = new ArrayList<Boolean>();
 										for (int i = 0; i < finallistOfTests.size(); i++) {
 
-											String port = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-													.getProperty("portSSH");
-
 											// port="22";
-											session = jsch.getSession(user, host, Integer.parseInt(port));
+											session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 											Properties config = new Properties();
 											config.put("StrictHostKeyChecking", "no");
-											config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+											config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 											session.setConfig(config);
 											session.setPassword(password);
 											session.connect();
@@ -362,9 +342,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						try {
 							response = invokeFtl.generateDeviceDecommissonedFileFalure(requestinfo);
 
-							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
-							TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 									+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 									response);
 						} catch (Exception e) {
@@ -413,10 +391,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);				
 
 				}
-				responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-						.getProperty("responseDownloadPath");
 				TextReport.writeFile(
-						responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 								+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 						response);
 			}
@@ -469,7 +445,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 			/* Temporary hard coding ROUTER_IP_TEMP router */
 			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
-					&& !requestinfo.getManagementIp().contains(TSALabels.ROUTER_IP_TEMP.getValue())) {
+					&& !requestinfo.getManagementIp().contains(C3PCoreAppLabels.ROUTER_IP_TEMP.getValue())) {
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "4", "In Progress");
@@ -479,8 +455,6 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 					requestinfo.setAlphanumericReqId(RequestId);
 					requestinfo.setRequestVersion(Double.parseDouble(json.get("version").toString()));
-
-					DeviceReachabilityAndPreValidationTest.loadProperties();
 
 					requestInfoDetailsDao.changeRequestInRequestInfoStatus(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "In Progress");
@@ -544,9 +518,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							sUserListData = builder.deleteCharAt(builder.length() - 1).toString();
 							try {
 								response = invokeFtl.generateBasicConfigurationFile(requestinfo);
-								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+								TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_basicConfiguration.txt",
 										response);
 
@@ -560,10 +532,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										Double.toString(requestinfo.getRequestVersion()), "2");
 
 								response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
-								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
 
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+								TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 										response);
 
@@ -591,15 +561,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								notificationEntity.setNotifExpiryDate(timestampValue);
 								notificationRepo.save(notificationEntity);
 								// Code to initiate FE Workflow
-								CamundaServiceFEWorkflow feworkflow = new CamundaServiceFEWorkflow();
-								feworkflow.initiateFEWorkflow(requestinfo.getAlphanumericReqId(),
+								camundaServiceFEWorkflow.initiateFEWorkflow(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "FE_USER_ALL");
 								value = false;
 								jsonArray = new Gson().toJson(value);
 								obj.put(new String("output"), jsonArray);
 							} catch (Exception e) {
-								// TODO Auto-generated catch block
-
 								requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 										requestinfo.getAlphanumericReqId());
 								jsonArray = new Gson().toJson(value);
@@ -613,10 +580,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure",
 										"Failure", "Could not connect to the router.");
 								response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
-								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
 
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+								TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 										response);
 								value = false;
@@ -632,9 +597,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							String responseDownloadPath = "";
 							try {
 								response = invokeFtl.generateBasicConfigurationFile(requestinfo);
-								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
-								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+								TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_basicConfiguration.txt",
 										response);
 
@@ -648,10 +611,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										Double.toString(requestinfo.getRequestVersion()), "2");
 
 								response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
-								responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
 								if(!"SLGB".equalsIgnoreCase(type)) {
-									TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+									TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 											+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 											response);
 								}
@@ -689,10 +650,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									Double.toString(requestinfo.getRequestVersion()), "Device Reachability Failure",
 									"Failure", "Could not connect to the router.");
 							response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
-							responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
 
-							TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+							TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 									+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 									response);
 							value = false;
@@ -725,11 +684,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 				String responseDownloadPath = "";
 				try {
 					response = invokeFtl.generatePrevalidationResultFileFailure(requestinfo);
-					responseDownloadPath = DeviceReachabilityAndPreValidationTest.TSA_PROPERTIES
-							.getProperty("responseDownloadPath");
 
 					TextReport.writeFile(
-							responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
+							C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 									+ Double.toString(requestinfo.getRequestVersion()) + "_prevalidationTest.txt",
 							response);
 				} catch (Exception e) {
@@ -744,16 +701,4 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread().getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
 }

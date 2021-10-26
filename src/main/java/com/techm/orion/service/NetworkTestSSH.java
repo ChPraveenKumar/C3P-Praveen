@@ -21,7 +21,7 @@ import com.jcraft.jsch.Session;
 import com.techm.orion.dao.RequestInfoDao;
 import com.techm.orion.pojo.CreateConfigRequestDCM;
 import com.techm.orion.pojo.UserPojo;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.UtilityMethods;
 
 public class NetworkTestSSH {
@@ -40,10 +40,10 @@ public class NetworkTestSSH {
 			String password = userPojo.getPassword();
 			ArrayList<String> commandToPush = new ArrayList<String>();
 			JSch jsch = new JSch();
-			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+			Session session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -166,7 +166,7 @@ public class NetworkTestSSH {
 			if (!(s.equals(""))) {
 				logger.info(s);
 
-				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID
+				String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID
 						+ "V" + version + "_networkTest.txt";
 				File file = new File(filepath);
 
@@ -199,7 +199,7 @@ public class NetworkTestSSH {
 	public String validateNetworkTest(CreateConfigRequestDCM configRequest) throws Exception {
 
 		String content = "";
-		String path = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()
+		String path = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue()
 				+ configRequest.getRequestId() + "V" + configRequest.getRequest_version() + "_networkTest.txt";
 
 		File file = new File(path);

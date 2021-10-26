@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -45,26 +46,24 @@ import com.techm.orion.pojo.CreateConfigRequest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.UtilityMethods;
 
 @Service
 public class BackupCurrentRouterConfigurationService extends Thread {
 	private static final Logger logger = LogManager.getLogger(BackupCurrentRouterConfigurationService.class);
-
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
-	
 	@Autowired
 	private DcmConfigService dcmConfigService;
-	
 	@Autowired
 	private RequestInfoDao requestInfoDao ;
-	
 	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
 		
 	public boolean getRouterConfig(CreateConfigRequest configRequest, String routerVersionType) throws IOException {
 		
@@ -83,10 +82,10 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			String user = routerCredential.getLoginRead();
 			String password = routerCredential.getPasswordWrite();
 
-			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+			session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -138,7 +137,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 						Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
 				TextReport.writeFile(
-						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 								+ Double.toString(configRequest.getRequest_version()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
@@ -186,10 +185,10 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+			Session session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -238,7 +237,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 						Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
 				TextReport.writeFile(
-						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 								+ Double.toString(configRequest.getRequest_version()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
@@ -264,7 +263,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				String context = new String(tmp, 0, i);
 				if (!(context.equals(""))) {
 					// logger.info(str);
-					String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_PreviousConfig.txt";
+					String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_PreviousConfig.txt";
 					storeConfigInfoInFile(context, filepath);
 				}
 
@@ -293,7 +292,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				String context = new String(tmp, 0, i);
 				if (!(context.equals(""))) {
 					// logger.info(str);
-					String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_StartupConfig.txt";
+					String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_StartupConfig.txt";
 					storeConfigInfoInFile(context, filepath);
 				}
 			}
@@ -321,7 +320,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 				String context = new String(tmp, 0, i);
 				if (!(context.equals(""))) {
 					// logger.info(str);
-					String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_CurrentVersionConfig.txt";
+					String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + "_CurrentVersionConfig.txt";
 					logger.info("File path for current "+filepath);
 					storeConfigInfoInFile(context, filepath);
 				}
@@ -359,10 +358,10 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 			JSch jsch = new JSch();
 			Channel channel = null;
-			Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+			Session session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -412,7 +411,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 						Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);			
 				TextReport.writeFile(
-						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
 								+ Double.toString(configRequest.getRequestVersion()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
@@ -447,10 +446,10 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 
 				JSch jsch = new JSch();
 				Channel channel = null;
-				Session session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+				Session session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 				Properties config = new Properties();
 				config.put("StrictHostKeyChecking", "no");
-				config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+				config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 				session.setConfig(config);
 				session.setPassword(password);
 				session.connect();
@@ -499,7 +498,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 						Double.toString(createConfigRequest.getRequest_version()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(createConfigRequest);
 				TextReport.writeFile(
-						TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
+						C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
 								+ Double.toString(configRequest.getRequestVersion()) + "_deliveredConfig.txt",
 						response);
 			} catch (Exception e) {
@@ -543,7 +542,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			JSONObject request = new JSONObject();
 			String fileName = null;
 			request.put(new String("ip"), managementIp);
-			request.put(new String("port"), TSALabels.BACKUP_PORT.getValue());
+			request.put(new String("port"), C3PCoreAppLabels.BACKUP_PORT.getValue());
 			request.put(new String("source"), source);
 			request.put(new String("requestId"), requestId);
 			request.put(new String("stage"), stage);
@@ -552,7 +551,7 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_BACKUP.getValue();
+			String url = pythonServiceUri + C3PCoreAppLabels.PYTHON_BACKUP.getValue();
 			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
 			logger.info("response of getConfig is " + response);
 
@@ -567,10 +566,10 @@ public class BackupCurrentRouterConfigurationService extends Thread {
 			}
 
 			if (response.contains("Error")) {
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						requestId + "V" + Double.toString(version) + "_" + fileName, response);
 			} else {
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 						requestId + "V" + Double.toString(version) + "_" + fileName, formatXml(response));
 			}
 			if (response != null) {

@@ -36,7 +36,7 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.UtilityMethods;
@@ -112,7 +112,7 @@ public class OthersCheckTestValidation extends Thread {
 					String password = routerCredential.getPasswordWrite();	
 					logger.info("Request ID in others test validation" + RequestId);
 					
-					String port = TSALabels.PORT_SSH.getValue();					
+					String port = C3PCoreAppLabels.PORT_SSH.getValue();					
 					
 					if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SNRC".equalsIgnoreCase(type)
 							|| "SNNC".equalsIgnoreCase(type) || "SLGM".equalsIgnoreCase(type)
@@ -120,7 +120,7 @@ public class OthersCheckTestValidation extends Thread {
 						session = jsch.getSession(user, host, Integer.parseInt(port));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
-						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+						config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						logger.info("Password for healthcheck " + password + "user " + user + "host " + host
 								+ "Port " + port);
 						session.setConfig(config);
@@ -252,7 +252,7 @@ public class OthersCheckTestValidation extends Thread {
 										Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
 								requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()));
-								responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
+								responseDownloadPath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue();
 								TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_.txt", response);
 							} catch (Exception e) {
@@ -286,7 +286,7 @@ public class OthersCheckTestValidation extends Thread {
 								Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
 						requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()));						
-						TextReport.writeFile( TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+						TextReport.writeFile( C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 								requestinfo.getAlphanumericReqId() + "V"
 										+ Double.toString(requestinfo.getRequestVersion()) + "_CustomTests.txt",
 								response);

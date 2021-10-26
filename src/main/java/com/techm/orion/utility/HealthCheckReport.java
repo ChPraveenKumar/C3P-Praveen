@@ -5,54 +5,18 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.Formatter;
 import java.util.List;
-import java.util.Properties;
 
 import com.techm.orion.pojo.HealthCheckComponent;
 
 public class HealthCheckReport {
-	public static String PROPERTIES_FILE = "TSA.properties";
-	public static final Properties PROPERTIES = new Properties();
-
-	private static String readFile(String path) throws IOException {
-
-		BufferedReader br = new BufferedReader(new FileReader(path));
-		try {
-			StringBuilder sb = new StringBuilder();
-			String line = br.readLine();
-
-			while (line != null) {
-				sb.append(line);
-				sb.append("\n");
-				line = br.readLine();
-			}
-			return sb.toString();
-		} finally {
-			br.close();
-		}
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
-
-		try {
-			PROPERTIES.load(PropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
 
 	public String getHealthCheckReport(String hostname, String region) {
 		String result = null;
 		try {
-			HealthCheckReport.loadProperties();
 			String filepath = null;
-			filepath = HealthCheckReport.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder")
+			filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue()
 					+ hostname + "_" + region + "_HealthCheckReport.html";
 			StringBuilder contentBuilder = new StringBuilder();
 			BufferedReader in = new BufferedReader(new FileReader(filepath));
@@ -63,7 +27,6 @@ public class HealthCheckReport {
 			in.close();
 			result = contentBuilder.toString();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -74,10 +37,8 @@ public class HealthCheckReport {
 			String state) {
 		boolean status = false;
 		try {
-			HealthCheckReport.loadProperties();
-
 			String filepath = null;
-			filepath = HealthCheckReport.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + state
+			filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + state
 					+ "_" + routername + "_" + region + "_HealthCheckReport.html";
 			File file = new File(filepath);
 
@@ -85,8 +46,6 @@ public class HealthCheckReport {
 				file.delete();
 			}
 			file.createNewFile();
-
-			Formatter fmt = new Formatter();
 
 			try {
 				FileWriter fw = new FileWriter(file, true);
@@ -113,11 +72,9 @@ public class HealthCheckReport {
 				}
 
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return status;
@@ -125,10 +82,9 @@ public class HealthCheckReport {
 
 	public boolean createReport(List<HealthCheckComponent> resultArray, String routername, String region, String state)
 			throws IOException {
-		HealthCheckReport.loadProperties();
 		boolean status = false;
 		String filepath = null;
-		filepath = HealthCheckReport.PROPERTIES.getProperty("responseDownloadPathHealthCheckFolder") + state
+		filepath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + state
 				+ "_" + routername + "_" + region + "_HealthCheckReport.html";
 		File file = new File(filepath);
 
@@ -137,7 +93,6 @@ public class HealthCheckReport {
 		}
 		file.createNewFile();
 
-		Formatter fmt = new Formatter();
 
 		try {
 			FileWriter fw = new FileWriter(file, true);
@@ -201,7 +156,6 @@ public class HealthCheckReport {
 			}
 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return status;

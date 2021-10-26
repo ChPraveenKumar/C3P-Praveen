@@ -22,7 +22,7 @@ import com.google.gson.Gson;
 import com.techm.orion.pojo.UserManagementResulltDetailPojo;
 import com.techm.orion.pojo.UserPojo;
 import com.techm.orion.service.UserManagementInterface;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 @Controller
 @RequestMapping("/LoginService")
@@ -46,10 +46,10 @@ public class LoginService {
 		String username = null, password = null, userRole = null;
 		InputStream inputStream;
 		Properties prop = new Properties();
-		String propFileName = "TSA.properties";
+		String propFileName = "C3PCoreApp.properties";
 		try {
 			Gson gson = new Gson();
-			final String secretKey = TSALabels.SECRET_KEY.getValue();
+			final String secretKey = C3PCoreAppLabels.SECRET_KEY.getValue();
 			UserPojo dto = gson.fromJson(searchParameters, UserPojo.class);
 			username = dto.getUsername();
 			password = dto.getPassword();

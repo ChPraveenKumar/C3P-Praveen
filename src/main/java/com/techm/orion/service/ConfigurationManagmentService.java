@@ -28,7 +28,7 @@ import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.VendorCommandRepository;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 
 @Service
@@ -184,7 +184,7 @@ public class ConfigurationManagmentService {
 
 				logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
 
-				TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateName,
+				TextReport.writeFile(C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateName,
 						invokeFtl.setCommandPosition(null, cammandByTemplate));
 			}
 			obj.put(new String("output"),
@@ -622,7 +622,7 @@ public class ConfigurationManagmentService {
 		}
 		cammandByTemplate = setcammandByTemplate(cammandByTemplate, requestInfoData);
 		logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
-		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateID,
+		TextReport.writeFile(C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateID,
 				invokeFtl.setCommandPosition(null, cammandByTemplate));
 
 	}

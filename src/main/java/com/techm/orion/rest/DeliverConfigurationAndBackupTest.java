@@ -31,6 +31,7 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,9 +59,9 @@ import com.techm.orion.repositories.VendorCommandRepository;
 import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.ErrorCodeValidationDeliveryTest;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
-import com.techm.orion.utility.TSALabels;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.VNFHelper;
@@ -71,8 +72,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 	private static final Logger logger = LogManager
 			.getLogger(DeliverConfigurationAndBackupTest.class);
-	public static String TSA_PROPERTIES_FILE = "TSA.properties";
-	public static final Properties TSA_PROPERTIES = new Properties();
 	@Autowired
 	private RequestInfoDao requestInfoDao;
 
@@ -100,6 +99,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	@Autowired
 	private VendorCommandRepository vendorCommandRepository;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
+	@Value("${bpm.service.uri}")
+	private String bpmServiceUri;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -153,21 +154,19 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					requestinfo.setRequestVersion(Double.parseDouble(json.get(
 							"version").toString()));
 
-					DeliverConfigurationAndBackupTest.loadProperties();
 					String host = requestinfo.getManagementIp();
 					CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
 							deviceDetails);
 					String user = routerCredential.getLoginRead();
 					String password = routerCredential.getPasswordWrite();
-					String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-							.getProperty("portSSH");
+					//String port = C3PCoreAppLabels.PORT_SSH.getValue();
 					logger.info("Inside deliverConfigurationTest Method :"+json.get("requestType").toString());
 					if (json.get("requestType").toString()
 							.equalsIgnoreCase("SLGF")) {
 						logger.info("Inside deliverConfigurationTest Method :"+json.get("requestType").toString());
 						reqType = json.get("requestType").toString();
-						String query = TSALabels.WEB_SERVICE_URI.getValue()
-								+ TSALabels.FW_UPGADE.getValue();
+						String query = bpmServiceUri
+								+ C3PCoreAppLabels.FW_UPGADE.getValue();
 						
 						logger.info("Firware upgrade milestone Path :"+ query);
 						JSONObject obj1 = new JSONObject();
@@ -291,10 +290,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						ArrayList<String> commandToPush = new ArrayList<String>();
 						InputStream input = null;
 						session = jsch.getSession(user, host,
-								Integer.parseInt(port));
+								Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 						Properties config = new Properties();
 						config.put("StrictHostKeyChecking", "no");
-						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+						config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						session.setConfig(config);
 						session.setPassword(password);
 						session.connect();
@@ -408,11 +407,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									String response = invokeFtl
 											.generateDileveryConfigFile(requestinfo);
 
-									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
 									TextReport
-											.writeFile(
-													responseDownloadPath,
+											.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 													requestinfo
 															.getAlphanumericReqId()
 															+ "V"
@@ -443,11 +439,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									String response = invokeFtl
 											.generateDileveryConfigFile(requestinfo);
 
-									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
 									TextReport
 											.writeFile(
-													responseDownloadPath,
+													C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 													requestinfo
 															.getAlphanumericReqId()
 															+ "V"
@@ -481,10 +475,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								String response = invokeFtl
 										.generateDileveryConfigFile(requestinfo);
 
-								String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-										.getProperty("responseDownloadPath");
 								TextReport.writeFile(
-										responseDownloadPath,
+										C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 										requestinfo.getAlphanumericReqId()
 												+ "V"
 												+ Double.toString(requestinfo
@@ -516,10 +508,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							String response = invokeFtl
 									.generateDeliveryConfigFileFailure(requestinfo);
 
-							String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
 							TextReport.writeFile(
-									responseDownloadPath,
+									C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId()
 											+ "V"
 											+ Double.toString(requestinfo
@@ -550,7 +540,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						boolean result = client.doGetODLBackUp(requestinfo
 								.getAlphanumericReqId(), Double
 								.toString(requestinfo.getRequestVersion()),
-								TSALabels.ODL_GET_CONFIGURATION_URL.getValue(),
+								C3PCoreAppLabels.ODL_GET_CONFIGURATION_URL.getValue(),
 								"previous");
 						// boolean result=true;
 						// call method for dilevary from vnf utils
@@ -558,13 +548,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							// go for dilevary
 
 							boolean dilevaryresult = false;
-
-							// dilevaryresult=true;
-
 							// Get XML to be pushed from local
-							String responseDownloadPathRestConf = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("VnfConfigCreationPath");
-							String path = responseDownloadPathRestConf + "/"
+							String path = C3PCoreAppLabels.VNF_CONFIG_CREATION_PATH.getValue()
 									+ requestinfo.getAlphanumericReqId()
 									+ "_ConfigurationToPush.xml";
 							VNFHelper helper = new VNFHelper();
@@ -588,7 +573,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 														.getAlphanumericReqId(),
 												Double.toString(requestinfo
 														.getRequestVersion()),
-												TSALabels.ODL_PUT_CONFIGURATION_INTERFACE_URL
+												C3PCoreAppLabels.ODL_PUT_CONFIGURATION_INTERFACE_URL
 														.getValue(),
 												payloadMultilink);
 								dilevaryresult = true;
@@ -621,7 +606,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()),
-										TSALabels.ODL_GET_CONFIGURATION_URL
+										C3PCoreAppLabels.ODL_GET_CONFIGURATION_URL
 												.getValue(), "current");
 								// boolean currentconfig=true;
 								if (currentconfig == true) {
@@ -640,11 +625,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									String response = invokeFtl
 											.generateDileveryConfigFile(requestinfo);
 
-									String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-											.getProperty("responseDownloadPath");
 									TextReport
 											.writeFile(
-													responseDownloadPath,
+													C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 													requestinfo
 															.getAlphanumericReqId()
 															+ "V"
@@ -679,7 +662,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 											.generateDeliveryConfigFileFailure(requestinfo);
 									TextReport
 											.writeFile(
-													TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+													C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 													requestinfo
 															.getAlphanumericReqId()
 															+ "V"
@@ -702,7 +685,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								response = invokeFtl
 										.generateDeliveryConfigFileFailure(requestinfo);
 								TextReport.writeFile(
-										TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+										C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 										requestinfo.getAlphanumericReqId()
 												+ "V"
 												+ Double.toString(requestinfo
@@ -722,7 +705,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							response = invokeFtl
 									.generateDeliveryConfigFileFailure(requestinfo);
 							TextReport.writeFile(
-									TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+									C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId()
 											+ "V"
 											+ Double.toString(requestinfo
@@ -739,9 +722,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 						// push configuration for Netconf devices String
 						String requestId = requestinfo.getAlphanumericReqId();
-						String responseDownloadPathNetconf = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-								.getProperty("VnfConfigCreationPath");
-						String path = responseDownloadPathNetconf + "/"
+						String path = C3PCoreAppLabels.VNF_CONFIG_CREATION_PATH.getValue()
 								+ requestId + "_ConfigurationToPush.xml";
 						VNFHelper helper = new VNFHelper();
 						// get file from vnf config requests folder
@@ -755,10 +736,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 							String response = invokeFtl
 									.generateDileveryConfigFile(requestinfo);
-							String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
 							TextReport.writeFile(
-									responseDownloadPath,
+									C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId()
 											+ "V"
 											+ Double.toString(requestinfo
@@ -779,7 +758,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							jsonArray = new Gson().toJson(value);
 							obj.put(new String("output"), jsonArray);
 							String response = "";
-							String responseDownloadPath = "";
 
 							requestInfoDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double
@@ -788,10 +766,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 									"deliever_config", "2", "Failure");
 							response = invokeFtl
 									.generateDeliveryConfigFileFailure(requestinfo);
-							responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-									.getProperty("responseDownloadPath");
 							TextReport.writeFile(
-									responseDownloadPath,
+									C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 									requestinfo.getAlphanumericReqId()
 											+ "V"
 											+ Double.toString(requestinfo
@@ -825,14 +801,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					response = invokeFtl
 							.generateDeliveryConfigFileFailure(requestinfo);
 					TextReport.writeFile(
-							TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(),
+							C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(),
 							requestinfo.getAlphanumericReqId()
 									+ "V"
 									+ Double.toString(requestinfo
 											.getRequestVersion())
 									+ "_deliveredConfig.txt", response);
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -878,29 +853,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		return isSuccess;
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream tsaPropFile = Thread.currentThread()
-				.getContextClassLoader()
-				.getResourceAsStream(TSA_PROPERTIES_FILE);
-
-		try {
-			TSA_PROPERTIES.load(tsaPropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
-
 	@SuppressWarnings("resource")
 	public ArrayList<String> readFileNoCmd(String requestIdForConfig,
 			String version) throws IOException {
 		BufferedReader br = null;
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
-		String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-				.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + requestIdForConfig
+		String filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig
 				+ "V" + version + "_ConfigurationNoCmd";
 
 		br = new BufferedReader(new FileReader(filePath));
@@ -926,8 +885,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				}
 			}
 			int fileReadSize = Integer
-					.parseInt(DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-							.getProperty("fileChunkSize"));
+					.parseInt(C3PCoreAppLabels.FILE_CHUNK_SIZE.getValue());
 			int chunks = (count / fileReadSize) + 1;
 			String line;
 
@@ -975,9 +933,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		FileWriter fw = null;
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
-		String responselogpath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-				.getProperty("responselogpath");
-		File file = new File(responselogpath + "/" + requestId + "_" + version
+		File file = new File(C3PCoreAppLabels.RESPONSE_LOG_PATH.getValue() + requestId + "_" + version
 				+ "theSSHfile.txt");
 		/*
 		 * if (file.exists()) { file.delete(); }
@@ -990,7 +946,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 
-				file = new File(responselogpath + "/" + requestId + "_"
+				file = new File(C3PCoreAppLabels.RESPONSE_LOG_PATH.getValue() + requestId + "_"
 						+ version + "theSSHfile.txt");
 
 				if (!file.exists()) {
@@ -1023,9 +979,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		//BufferedReader br = null;
 		LineNumberReader rdr = null;
 		/* StringBuilder sb2=null; */
-		String responseDownloadPath = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-				.getProperty("responseDownloadPath");
-		String filePath = responseDownloadPath + requestIdForConfig
+		String filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig
 				+ "V" + version + "_Configuration";
 
 		
@@ -1054,8 +1008,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				}
 				logger.info("readFile - count: " + count);
 				int fileReadSize = Integer
-						.parseInt(DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-								.getProperty("fileChunkSize"));
+						.parseInt(C3PCoreAppLabels.FILE_CHUNK_SIZE.getValue());
 				int chunks = (count / fileReadSize) + 1;
 				String line;
 				logger.info("readFile - chunks: " + chunks);
@@ -1111,22 +1064,19 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		logger.info("Inside getExsistingBootCmds method user " + user + "password "+ password + "host " + host + "command " + command);
 		List<String> array = new ArrayList<String>();
 
-		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-				.getProperty("portSSH");
-		logger.info("Value of port inside getExsistingBootCmds method port " + port);
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
 		List<String> notPresent = new ArrayList<String>();
 		List<String> cmdCheck = new ArrayList<String>();
 		try {
-			session = jsch.getSession(user, host, Integer.parseInt(port));
+			session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 
 			logger.info("Inside try block value of session details in getExsistingBootCmds is " + session);
 			Properties config = new Properties();
 			logger.info("Creating properties object");
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			logger.info("setting StrictHostKeyChecking");
 			logger.info("session setConfig is " + config);
 			session.setConfig(config);
@@ -1250,19 +1200,16 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			List<String> cmdToPush) {
 		logger.info("Inside pushOnRouter method user " + user + "password "+ password + "host " + host + "command " + cmdToPush);
 		boolean isSuccess = false;
-		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-				.getProperty("portSSH");
-		logger.info("Inside pushOnRouter method port " + port);
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
 		try {
-			session = jsch.getSession(user, host, Integer.parseInt(port));
+			session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 			logger.info("Inside pushOnRouter method session is -> " + session);
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			logger.info("Inside pushOnRouter method setting setconfig ->");
 			session.setConfig(config);
 			logger.info("Inside pushOnRouter method config is -> " + config);
@@ -1328,17 +1275,15 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 	boolean checkIdLoadedProperly(String user, String password, String host) {
 		boolean isRes = false;
-		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES
-				.getProperty("portSSH");
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
 		try {
-			session = jsch.getSession(user, host, Integer.parseInt(port));
+			session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -1417,13 +1362,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			logger.info("Inside c3pCheckAvailableFlashSizeOnDevice request-> " + request);
 			json = (JSONObject) parser.parse(request);
 			logger.info("Inside c3pCheckAvailableFlashSizeOnDevice json " + json);
-			DeliverConfigurationAndBackupTest.loadProperties();
 			logger.info("Loading the properties file in c3pCheckAvailableFlashSizeOnDevice service ");
 		} catch (ParseException e) {
 			logger.error("ParseException in c3pCheckAvailableFlashSizeOnDevice is " + e);
-			e.printStackTrace();
-		} catch (IOException e) {
-			logger.error("IOException in c3pCheckAvailableFlashSizeOnDevice is " + e);
 			e.printStackTrace();
 		}
 		if (json.get("requestId") != null && json.containsKey("requestId")) {
@@ -1475,21 +1416,19 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		logger.info("Value of user in c3pCheckAvailableFlashSizeOnDevice is " + user);
 		String password = routerCredential.getPasswordWrite();
 		logger.info("Value of password in c3pCheckAvailableFlashSizeOnDevice is " + password);
-		String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
-		logger.info("Value of port in c3pCheckAvailableFlashSizeOnDevice is " + port);
 		long sizeAvailable = 0;
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
 		try {
 			logger.info("Inside try block for getting session details in c3pCheckAvailableFlashSizeOnDevice");
-			session = jsch.getSession(user, host, Integer.parseInt(port));
+			session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 			logger.info(
 					"Inside try block valoe of session details in c3pCheckAvailableFlashSizeOnDevice is " + session);
 			Properties config = new Properties();
 			logger.info("Creating properties object");
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			logger.info("setting StrictHostKeyChecking");
 			logger.info("sessing setConfig is " + config);
 			session.setConfig(config);
@@ -1538,7 +1477,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 								for (int k = 0; k < sublist1.size(); k++) {
 									logger.info(
 											"To get available free size from command output in c3pCheckAvailableFlashSizeOnDevice ");
-									String fw_mem = TSALabels.REGEX_FILTER_FW_MEM.getValue();
+									String fw_mem = C3PCoreAppLabels.REGEX_FILTER_FW_MEM.getValue();
 									availableSize = fw_mem.split("\\|");
 									for (String searchKey : availableSize) {
 										if (sublist1.get(k).toLowerCase().indexOf("available") != -1
@@ -1690,7 +1629,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							Double.toString(requestinfo.getRequestVersion()), "deliever_config", "4", "In Progress");
 					logger.info("changing status in WebserviceInfo table in c3pCopyImageOnDevice");
 
-					DeliverConfigurationAndBackupTest.loadProperties();
 					logger.info("Loading the properties file in c3pCopyImageOnDevice service ");
 					String host = requestinfo.getManagementIp();
 					logger.info("Value of host in c3pCopyImageOnDevice is " + host);
@@ -1700,14 +1638,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					logger.info("Value of user in c3pCopyImageOnDevice is " + user);
 					String password = routerCredential.getPasswordWrite();
 					logger.info("Value of password in c3pCopyImageOnDevice is " + password);
-					String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
-					logger.info("Value of port in c3pCopyImageOnDevice is " + port);
-					String source = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("SOURCE");
+					String source = C3PCoreAppLabels.SOURCE.getValue();
 					logger.info(
 							"Value of source after getting value from property in c3pCopyImageOnDevice is " + source);
-					source = source + requestinfo.getVendor() + TSALabels.FOLDER_SEPARATOR.getValue()
-							+ requestinfo.getFamily() + TSALabels.FOLDER_SEPARATOR.getValue() + requestinfo.getOs()
-							+ "-" + requestinfo.getOsVersion() + TSALabels.FOLDER_SEPARATOR.getValue();
+					source = source + requestinfo.getVendor() + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue()
+							+ requestinfo.getFamily() + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue() + requestinfo.getOs()
+							+ "-" + requestinfo.getOsVersion() + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue();
 					logger.info("final Value of source in c3pCopyImageOnDevice is " + source);
 					commandOutput = modifyCommand(cmdResponse, source, requestinfo.getVendor(),
 							requestinfo.getOsVersion());
@@ -1730,12 +1666,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						// + "destination";
 
 						logger.info("Inside try block for getting session details in c3pCopyImageOnDevice");
-						session = jsch.getSession(user, host, Integer.parseInt(port));
+						session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 						logger.info("Inside try block value of session details in c3pCopyImageOnDevice is " + session);
 						Properties config = new Properties();
 						logger.info("Creating properties object");
 						config.put("StrictHostKeyChecking", "no");
-						config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+						config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 						logger.info("setting StrictHostKeyChecking");
 						logger.info("sessing setConfig is " + config);
 						session.setConfig(config);
@@ -1759,7 +1695,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						logger.info("After InputStream in c3pCopyImageOnDevice " + input);
 						ps.println(commandOutput);
 						logger.info("Inside ps.print c3pCopyImageOnDevice");
-						UtilityMethods.sleepThread(Integer.parseInt(TSALabels.REQ_TIME.getValue()));
+						UtilityMethods.sleepThread(Integer.parseInt(C3PCoreAppLabels.REQ_TIME.getValue()));
 						int SIZE = 1024;
 						byte[] tmp = new byte[SIZE];
 						logger.info("Total size of the Channel InputStream -->"+input.available());
@@ -1903,13 +1839,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
 						requestinfo.getHostname(), requestinfo.getManagementIp(), "0");
 				logger.info("Checking deviceDetails in c3pBootSystemFlash is " + deviceDetails);
-				try {
-					DeliverConfigurationAndBackupTest.loadProperties();
-					logger.info("Loading the properties file in c3pBootSystemFlash service ");
-				} catch (IOException e1) {
-					logger.error("IOException inside c3pBootSystemFlash service is-> " + e1);
-					e1.printStackTrace();
-				}
 				String host = requestinfo.getManagementIp();
 				logger.info("Value of host in c3pBootSystemFlash is " + host);
 				CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(deviceDetails);
@@ -1918,8 +1847,6 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				logger.info("Value of user in c3pBootSystemFlash is " + user);
 				String password = routerCredential.getPasswordWrite();
 				logger.info("Value of password in c3pBootSystemFlash is " + password);
-				String port = DeliverConfigurationAndBackupTest.TSA_PROPERTIES.getProperty("portSSH");
-				logger.info("Value of port in c3pBootSystemFlash is " + port);
 				ftpImageName = getImageName(requestinfo.getVendor(), requestinfo.getFamily(),
 						requestinfo.getOsVersion());
 				logger.info("Value of ftp_image_name in c3pBootSystemFlash is " + ftpImageName);
@@ -2104,7 +2031,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				+ "osVersion" + osVersion);
 		String command1 = "", tempcmd = null, cmd = null, vendorOS = null, cmdResponse = null, isSlashN = null;
 		String test[] = command.split("\n");
-		isSlashN = TSALabels.REQ_SLASHN.getValue();
+		isSlashN = C3PCoreAppLabels.REQ_SLASHN.getValue();
 		logger.info("Value of test inside modifyCommand " + test);
 		for (String cmdResult : test) {
 			logger.info("Value of cmdResult inside modifyCommand " + cmdResult);
@@ -2204,11 +2131,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				String password = routerCredential.getPasswordWrite();
 				logger.info("Value of password in firmwareupgradeLogin is " + password);
 				logger.info("Getting session details in firmwareupgradeLogin");
-				session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+				session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 				Properties config = new Properties();
 				logger.info("Creating properties object");
 				config.put("StrictHostKeyChecking", "no");
-				config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+				config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 				logger.info("setting StrictHostKeyChecking");
 				logger.info("sessing setConfig is " + config);
 				session.setConfig(config);
@@ -2287,8 +2214,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		ImageManagementEntity imageMgtDetails = imageMangemntRepository.findByVendorAndFamilyAndDisplayName(vendor,
 				family, osVersion);
 		logger.info("Value of imagedetails inside getImageName methos is ->: " + imageMgtDetails);
-		File imageDir = new File(TSALabels.IMAGE_FILE_PATH.getValue() + vendor + TSALabels.FOLDER_SEPARATOR.getValue()
-				+ family + TSALabels.FOLDER_SEPARATOR.getValue() + osVersion);
+		File imageDir = new File(C3PCoreAppLabels.IMAGE_FILE_PATH.getValue() + vendor + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue()
+				+ family + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue() + osVersion);
 		logger.info("Value of imageDir inside getImageName methos is ->: " + imageDir);
 		String imageName = "";
 		boolean isImagePathExist = imageDir.exists();
@@ -2310,8 +2237,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		ImageManagementEntity imageMgtDetails = imageMangemntRepository.findByVendorAndFamilyAndDisplayName(vendor,
 				family, osVersion);
 		logger.info("Value of imagedetails inside getImageSize methos is ->: " + imageMgtDetails);
-		File imageDir = new File(TSALabels.IMAGE_FILE_PATH.getValue() + vendor + TSALabels.FOLDER_SEPARATOR.getValue()
-				+ family + TSALabels.FOLDER_SEPARATOR.getValue() + osVersion);
+		File imageDir = new File(C3PCoreAppLabels.IMAGE_FILE_PATH.getValue() + vendor + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue()
+				+ family + C3PCoreAppLabels.FOLDER_SEPARATOR.getValue() + osVersion);
 		logger.info("Value of imageDir inside getImageSize methos is ->: " + imageDir);
 		long size = 0;
 		boolean isImageExist = imageDir.exists();
@@ -2388,10 +2315,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				String password = routerCredential.getPasswordWrite();
 				logger.info("Value of password in firmwareBackup is " + password);
 				logger.info("Getting session details in firmwareBackup");
-				session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+				session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 				Properties config = new Properties();
 				config.put("StrictHostKeyChecking", "no");
-				config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+				config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 				logger.info("setting StrictHostKeyChecking");
 				logger.info("sessing setConfig is " + config);
 				session.setConfig(config);
@@ -2560,11 +2487,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		Channel channel = null;
 		Session session = null;
 		try {
-			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+			session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -2625,11 +2552,11 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		Channel channel = null;
 		Session session = null;
 		try {
-			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+			session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -2641,7 +2568,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			channel.connect();
 			InputStream input = channel.getInputStream();
 			ps.println(command);
-			UtilityMethods.sleepThread(Integer.parseInt(TSALabels.REQ_TIME.getValue()));
+			UtilityMethods.sleepThread(Integer.parseInt(C3PCoreAppLabels.REQ_TIME.getValue()));
 			logger.info("Total size of the Channel InputStream -->"+input.available());
 			logger.info("Reload the Router on" + host);
 			isSuccess = true;

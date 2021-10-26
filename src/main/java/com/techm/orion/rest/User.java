@@ -38,7 +38,7 @@ import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.service.ModuleInterface;
 import com.techm.orion.service.UserManagementInterface;
 import com.techm.orion.service.WorkGroupInterface;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 @RestController
 @CrossOrigin(origins = "*")
@@ -534,7 +534,7 @@ public class User {
 		int totalCount = 0;
 		try {
 			Gson gson = new Gson();
-			final String secretKey = TSALabels.SECRET_KEY.getValue();
+			final String secretKey = C3PCoreAppLabels.SECRET_KEY.getValue();
 			UserPojo dto = gson.fromJson(searchParameters, UserPojo.class);
 			username = dto.getUsername();
 			password = dto.getPassword();
@@ -841,7 +841,7 @@ public class User {
 		String statusInfo = null;
 		ResponseEntity<JSONObject> responseEntity = null;
 		JSONObject userDetails = new JSONObject();
-		final String secretKey = TSALabels.SECRET_KEY.getValue();
+		final String secretKey = C3PCoreAppLabels.SECRET_KEY.getValue();
 		try {
 			userInfoJson = (JSONObject) userInfoParser.parse(request);
 			if(userInfoJson.get("userName") !=null)

@@ -56,15 +56,12 @@ import com.techm.orion.service.BackupCurrentRouterConfigurationService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.PythonServices;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 import com.techm.orion.utility.UtilityMethods;
 
 @Component
 public class RequestInfoDetailsDao {
-	public static String PROPERTIES_FILE = "TSA.properties";
-	public static final Properties PROPERTIES = new Properties();
-	
 	private static final Logger logger = LogManager.getLogger(RequestInfoDetailsDao.class);
 	@Autowired
 	private RequestInfoDetailsRepositories reository;
@@ -228,11 +225,11 @@ public class RequestInfoDetailsDao {
 				//fetch the running configuration for this request.
 				if(entity!=null)
 				{
-					String baseLineFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
+					String baseLineFilePath=C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue()+
 							entity.getAlphanumericReqId() + "V"
 									+ Double.toString(entity.getRequestVersion())
 									+ "_PreviousConfig.txt";
-					String currentRunningFilePath=TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()+
+					String currentRunningFilePath=C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue()+
 							request.getAlphanumericReqId() + "V"
 							+ Double.toString(request.getRequestVersion())
 							+ "_PreviousConfig.txt";
@@ -607,10 +604,10 @@ public class RequestInfoDetailsDao {
 			String password = routerCredential.getPasswordWrite();
 
 
-			session = jsch.getSession(user, host, Integer.parseInt(TSALabels.PORT_SSH.getValue()));
+			session = jsch.getSession(user, host, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -655,7 +652,7 @@ public class RequestInfoDetailsDao {
 				editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "deliever_config", "2", "Failure");
 				response = invokeFtl.generateDeliveryConfigFileFailure(requestinfo);
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestinfo.getAlphanumericReqId() + "V"
 						+ Double.toString(requestinfo.getRequestVersion()) + "_deliveredConfig.txt", response,null);
 			} catch (Exception e) {
 				e.printStackTrace();

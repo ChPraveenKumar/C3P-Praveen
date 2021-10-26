@@ -46,7 +46,7 @@ import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.service.MasterFeatureService;
 import com.techm.orion.service.TemplateManagementDetailsService;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.WAFADateUtil;
 
 @Controller
@@ -737,7 +737,7 @@ public class GetTemplateConfigurationData {
 				List<GetTemplateMngmntPojo> list = new ArrayList<GetTemplateMngmntPojo>();
 				getTemplateMngmntPojo.setTemplateid(json.get("templateid").toString().replace("-", "_"));
 
-				List<String> lines = Files.readAllLines(Paths.get(TSALabels.TEMPLATE_CREATION_PATH.getValue() + json.get("templateid").toString().replace("-", "_")));
+				List<String> lines = Files.readAllLines(Paths.get(C3PCoreAppLabels.TEMPLATE_CREATION_PATH.getValue() + json.get("templateid").toString().replace("-", "_")));
 				List<CommandPojo> listShow = new ArrayList<CommandPojo>();
 
 				for (int i = 0; i < lines.size(); i++) {

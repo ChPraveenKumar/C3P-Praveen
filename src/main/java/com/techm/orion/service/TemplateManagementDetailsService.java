@@ -22,7 +22,7 @@ import com.techm.orion.pojo.GetTemplateMngmntPojo;
 import com.techm.orion.pojo.Global;
 import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.TemplateConfigBasicDetailsRepository;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 
 @Service
@@ -186,9 +186,9 @@ public class TemplateManagementDetailsService {
 	public String saveFinaltemplate(String templateId, String finaltemplate, String version) {
 		String result = null;
 		if (version.equalsIgnoreCase("1.0")) {
-			TextReport.writeFile(TSALabels.TEMPLATE_CREATION_PATH.getValue(), templateId, finaltemplate);
+			TextReport.writeFile(C3PCoreAppLabels.TEMPLATE_CREATION_PATH.getValue(), templateId, finaltemplate);
 		} else {
-			TextReport.writeFile(TSALabels.TEMPLATE_CREATION_PATH.getValue(), templateId, finaltemplate);
+			TextReport.writeFile(C3PCoreAppLabels.TEMPLATE_CREATION_PATH.getValue(), templateId, finaltemplate);
 		}
 		return result;
 	}

@@ -11,14 +11,14 @@ import java.io.PrintWriter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.UtilityMethods;
 
 public class CSVWriteAndConnectPythonTemplateSuggestion {
 	private static final Logger logger = LogManager.getLogger(CSVWriteAndConnectPythonTemplateSuggestion.class);
 	
 	public String ReadWriteAndAnalyseSuggestion(String suggestion, String type) throws IOException {
-		PrintWriter pw = new PrintWriter(new File(TSALabels.ANALYSER_PATH.getValue() + "InputTestData.csv"));
+		PrintWriter pw = new PrintWriter(new File(C3PCoreAppLabels.ANALYSER_PATH.getValue() + "InputTestData.csv"));
 
 		StringBuilder sb = new StringBuilder();
 
@@ -42,12 +42,12 @@ public class CSVWriteAndConnectPythonTemplateSuggestion {
 			p = builder.start();
 			BufferedWriter p_stdin = new BufferedWriter(new OutputStreamWriter(p.getOutputStream()));
 			//Check will be applicable for Windows environment only
-			if("Windows".equals(TSALabels.APP_OS.getValue())) {
+			if("Windows".equals(C3PCoreAppLabels.APP_OS.getValue())) {
 				p_stdin.write("d:");
 				p_stdin.newLine();
 				p_stdin.flush();
 			}			
-			p_stdin.write("cd " + TSALabels.ANALYSER_PATH.getValue());
+			p_stdin.write("cd " + C3PCoreAppLabels.ANALYSER_PATH.getValue());
 			p_stdin.newLine();
 			p_stdin.flush();
 			p_stdin.write("python templateSuggestionTest.py");
@@ -57,7 +57,7 @@ public class CSVWriteAndConnectPythonTemplateSuggestion {
 			UtilityMethods.sleepThread(17000);
 			//Scanner s = new Scanner(p.getInputStream());
 
-			br = new BufferedReader(new FileReader(TSALabels.ANALYSER_PATH.getValue() + "finalResultdata.csv"));
+			br = new BufferedReader(new FileReader(C3PCoreAppLabels.ANALYSER_PATH.getValue() + "finalResultdata.csv"));
 			while ((line = br.readLine()) != null) {
 
 				// use comma as separator

@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -38,13 +36,12 @@ import com.techm.orion.pojo.TemplateBasicConfigurationPojo;
 import com.techm.orion.repositories.MasterFeatureRepository;
 import com.techm.orion.repositories.NotificationRepo;
 import com.techm.orion.repositories.TemplateFeatureRepo;
-import com.techm.orion.rest.CamundaServiceTemplateApproval;
 import com.techm.orion.rest.GetTemplateConfigurationData;
 import com.techm.orion.utility.WAFADateUtil;
 
 @Controller
 @RequestMapping("/createTemplate")
-public class TemplateApprovalWorkflowService implements Observer {
+public class TemplateApprovalWorkflowService {
 	private static final Logger logger = LogManager.getLogger(TemplateApprovalWorkflowService.class);
 
 	@Autowired
@@ -63,14 +60,16 @@ public class TemplateApprovalWorkflowService implements Observer {
 	private GetTemplateConfigurationData getTemplateConfigurationData;
 	
 	@Autowired
-	private TemplateManagementDao templateManagementDao ;
+	private TemplateManagementDao templateManagementDao;
+	
+	@Autowired
+	private CamundaServiceTemplateApproval camundaServiceTemplateApproval;
 	
 	
 	@POST
 	@RequestMapping(value = "/saveTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> saveTemplate(@RequestBody String string) {
-		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONParser parser = new JSONParser();
 		String templateId = null, templateVersion = null;
 		ResponseEntity<JSONObject> response = null;
@@ -87,15 +86,12 @@ public class TemplateApprovalWorkflowService implements Observer {
 				templateId = templateId.substring(0, templateId.indexOf("_V"));
 			}
 			response = getTemplateConfigurationData.saveConfigurationTemplate(string, templateId, templateVersion);
-			camundaService.initiateApprovalFlow(templateId, templateVersion, "Admin");
+			camundaServiceTemplateApproval.initiateApprovalFlow(templateId, templateVersion, "Admin");
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return response;
@@ -107,7 +103,6 @@ public class TemplateApprovalWorkflowService implements Observer {
 	@ResponseBody
 	public Response updateTemplateStatus(@RequestBody String string) {
 		JSONObject obj = new JSONObject();		
-		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONParser parser = new JSONParser();
 		String templateId = null, templateVersion = null, status = null, approverComment = null,featureID=null, featureVersion=null;
 		String userTaskId = null, userName = null;
@@ -186,7 +181,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 						approverComment);
 				userTaskId = templateManagementDao
 						.getUserTaskIdForTemplate(json.get("templateid").toString().replace("-", "_"), templateVersion);
-				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
+				camundaServiceTemplateApproval.completeApprovalFlow(userTaskId, status, approverComment);
 			}
 			else
 			{
@@ -212,7 +207,7 @@ public class TemplateApprovalWorkflowService implements Observer {
 				userTaskId = templateManagementDao.getUserTaskIdForTemplate(featureID, featureVersion);
 				
 				
-				camundaService.completeApprovalFlow(userTaskId, status, approverComment);
+				camundaServiceTemplateApproval.completeApprovalFlow(userTaskId, status, approverComment);
 				
 			}
 			notificationData.setNotifStatus("Completed");
@@ -292,12 +287,6 @@ public class TemplateApprovalWorkflowService implements Observer {
 				.header("Access-Control-Allow-Credentials", "true")
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-	}
-
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

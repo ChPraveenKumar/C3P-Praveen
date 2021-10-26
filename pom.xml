@@ -236,4 +236,33 @@
 
 		</plugins>
 	</build>
+	<profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <activatedProperties>dev</activatedProperties>
+            </properties>
+        </profile>
+         <profile>
+            <id>gcpdev</id>
+            <properties>
+                <activatedProperties>gcpdev</activatedProperties>
+            </properties>
+        </profile>
+        <profile>
+            <id>stage</id>
+            <properties>
+                <activatedProperties>stage</activatedProperties>
+            </properties>
+        </profile>
+        <profile>
+            <id>gkedemo</id>            
+            <properties>
+                <activatedProperties>gkedemo</activatedProperties>
+            </properties>
+        </profile>
+    </profiles>
 </project>

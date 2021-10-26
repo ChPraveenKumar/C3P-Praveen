@@ -7,18 +7,24 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONException;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-import com.techm.orion.utility.TSALabels;
-
+@Service
 public class ServiceOrderDecomposeWorkflow {
+	private static final Logger logger = LogManager.getLogger(ServiceOrderDecomposeWorkflow.class);
+	@Value("${bpm.service.uri}")
+	private String bpmServiceUri;
 	
 	@SuppressWarnings("unchecked")
 	public void uploadToServer(String rfoid, String version) throws IOException, JSONException {
 
-		String serverPath= TSALabels.WEB_SERVICE_URI.getValue();
-		String query = serverPath + "/engine-rest/process-definition/key/C3P_SO_NextRun_Workflow/start";
+		logger.info("bpmServiceUri->"+bpmServiceUri);		
+		String query = bpmServiceUri + "/engine-rest/process-definition/key/C3P_SO_NextRun_Workflow/start";
 
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
@@ -48,7 +54,6 @@ public class ServiceOrderDecomposeWorkflow {
 		// read the response
 		InputStream in = new BufferedInputStream(conn.getInputStream());
 		String result = org.apache.commons.io.IOUtils.toString(in, "UTF-8");
-		JSONObject jsonObject = new JSONObject();
 
 		in.close();
 		conn.disconnect();

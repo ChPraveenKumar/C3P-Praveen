@@ -9,7 +9,6 @@ public class MVCController {
 	@RequestMapping("/home")
 	public String helloToIndex(Model model) {
 		// model.addAttribute("name", name);
-		// TSAUtil.startScheduler();
 
 		return "index";
 	}

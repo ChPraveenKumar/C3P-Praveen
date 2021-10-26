@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.techm.orion.camunda.servicelayer.CamundaServiceTemplateApproval;
 import com.techm.orion.entitybeans.BasicConfiguration;
 import com.techm.orion.entitybeans.IpRangeManagementEntity;
 import com.techm.orion.entitybeans.MasterCharacteristicsEntity;
@@ -103,6 +104,8 @@ public class MasterFeatureController {
 
 	@Autowired
 	private TemplateIpPoolJoinRepository templateIpPoolJoinRepository;
+	@Autowired
+	private CamundaServiceTemplateApproval camundaServiceTemplateApproval;
 
 	/*
 	 * To get Validation, Category and UI component list.
@@ -153,7 +156,6 @@ public class MasterFeatureController {
 		JSONParser parser = new JSONParser();
 		JSONObject obj = new JSONObject();
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
-		CamundaServiceTemplateApproval camundaService = new CamundaServiceTemplateApproval();
 		JSONObject json;
 		String userName = null;
 		try {
@@ -221,17 +223,14 @@ public class MasterFeatureController {
 			timestampValue = new Timestamp(cal.getTime().getTime());
 			notificationEntity.setNotifExpiryDate(timestampValue);
 			notificationRepo.save(notificationEntity);
-			camundaService.initiateApprovalFlow(ent.getfId(), "1.0", userName);
+			camundaServiceTemplateApproval.initiateApprovalFlow(ent.getfId(), "1.0", userName);
 
 			// }
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -334,7 +333,6 @@ public class MasterFeatureController {
 
 			}
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -504,7 +502,7 @@ public class MasterFeatureController {
 
 	private MasterFeatureEntity setMasterFeatureData(JSONObject json) {
 		StringBuilder builder = new StringBuilder();
-		String sUserListData = "", comments = null, userName = null;
+		String sUserListData = "", userName = null;
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
 		List<String> sUserList = userManagementRepository.findByRole();
 		for (String suserList : sUserList) {

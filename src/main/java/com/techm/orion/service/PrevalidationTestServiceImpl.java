@@ -17,7 +17,7 @@ import com.techm.orion.pojo.PreValidateTest;
 import com.techm.orion.pojo.RequestInfoPojo;
 import com.techm.orion.repositories.CertificationTestResultRepository;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 
 @Controller
@@ -39,8 +39,8 @@ public class PrevalidationTestServiceImpl {
 		String[] comp = new String[10];
 		String[] compOSV = new String[6];
 		String str1 = "";
-		String expOS=TSALabels.REGEX_FILTER_PRE_VALIDATION_OS_VERSION.getValue();
-		String exp = TSALabels.REGEX_FILTER_PRE_VALIDATION.getValue();
+		String expOS=C3PCoreAppLabels.REGEX_FILTER_PRE_VALIDATION_OS_VERSION.getValue();
+		String exp = C3PCoreAppLabels.REGEX_FILTER_PRE_VALIDATION.getValue();
 		String store = "";
 		boolean value = false;
 		PreValidateTest preValidateTest = new PreValidateTest();
@@ -152,7 +152,7 @@ public class PrevalidationTestServiceImpl {
 					&& preValidateTest.getVendorTestStatus().equalsIgnoreCase("Pass")
 					&& mountStatus.equalsIgnoreCase("Pass")) {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, mountStatus);
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 						+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
 				value = true;
 				// db call for success prevalidation
@@ -165,7 +165,7 @@ public class PrevalidationTestServiceImpl {
 
 			else {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, mountStatus);
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 						+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
 				// db call for failue
 				value = false;
@@ -180,7 +180,7 @@ public class PrevalidationTestServiceImpl {
 					&& preValidateTest.getOsVersionTestStatus().equalsIgnoreCase("Pass")
 					&& preValidateTest.getVendorTestStatus().equalsIgnoreCase("Pass")) {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, null);
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 						+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
 				value = true;
 				// db call for success prevalidation
@@ -194,7 +194,7 @@ public class PrevalidationTestServiceImpl {
 			else {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, null);
 			
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getRequestId() + "V"
 						+ configRequest.getRequest_version() + "_prevalidationTest.txt", response);
 				// db call for failue
 				value = false;
@@ -210,7 +210,7 @@ public class PrevalidationTestServiceImpl {
 	private static String readFile(String requestIdForConfig, String version) throws IOException {		
 
 		BufferedReader br = new BufferedReader(
-				new FileReader(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_VersionInfo.txt"));
+				new FileReader(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestIdForConfig + "V" + version + "_VersionInfo.txt"));
 		try {
 			StringBuilder sb = new StringBuilder();
 			String line = br.readLine();
@@ -235,8 +235,8 @@ public class PrevalidationTestServiceImpl {
 		String[] comp = new String[10];
 		String[] compOSV = new String[6];
 		String str1 = "";
-		String exp = TSALabels.REGEX_FILTER_PRE_VALIDATION.getValue();
-		String expOS=TSALabels.REGEX_FILTER_PRE_VALIDATION_OS_VERSION.getValue();
+		String exp = C3PCoreAppLabels.REGEX_FILTER_PRE_VALIDATION.getValue();
+		String expOS=C3PCoreAppLabels.REGEX_FILTER_PRE_VALIDATION_OS_VERSION.getValue();
 		String store = "";
 		boolean value = false;
 		PreValidateTest preValidateTest = new PreValidateTest();
@@ -353,7 +353,7 @@ public class PrevalidationTestServiceImpl {
 					&& mountStatus.equalsIgnoreCase("Pass")) {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, mountStatus);
 				
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
 						+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
 				value = true;
 				// db call for success prevalidation
@@ -364,7 +364,7 @@ public class PrevalidationTestServiceImpl {
 			}
 			else {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, mountStatus);
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
 						+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
 				// db call for failue
 				value = false;
@@ -379,7 +379,7 @@ public class PrevalidationTestServiceImpl {
 					&& preValidateTest.getOsVersionTestStatus().equalsIgnoreCase("Pass")
 					&& preValidateTest.getVendorTestStatus().equalsIgnoreCase("Pass")) {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, null);
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
 						+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
 				value = true;
 				// db call for success prevalidation
@@ -392,7 +392,7 @@ public class PrevalidationTestServiceImpl {
 			else {
 				String response = invokeFtl.generatePrevalidationResultFile(preValidateTest, null);
 				
-				TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
+				TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), configRequest.getAlphanumericReqId() + "V"
 						+ configRequest.getRequestVersion() + "_prevalidationTest.txt", response);
 				// db call for failue
 				value = false;

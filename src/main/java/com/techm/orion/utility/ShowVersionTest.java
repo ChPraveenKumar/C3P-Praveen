@@ -26,22 +26,6 @@ public class ShowVersionTest {
 	private static final Logger logger = LogManager.getLogger(ShowVersionTest.class);
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 
-	public static String PROPERTIES_FILE = "TSA.properties";
-	public static final Properties PROPERTIES = new Properties();
-
-	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
-
-		try {
-			PROPERTIES.load(PropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			logger.error("Exception in loadProperties method "+exc.getMessage());
-			return false;
-		}
-		return false;
-	}
-
 	public String getVersion(String hostname, String region, String type) {
 		String version = null;
 		String[] data = null;
@@ -52,16 +36,15 @@ public class ShowVersionTest {
 		PreValidateTest preValidateTest = new PreValidateTest();
 
 		try {
-			ShowVersionTest.loadProperties();
 			String filepath = null;
-			String exp = ShowVersionTest.PROPERTIES.getProperty("RegexFilterForPreValidation");
+			String exp = C3PCoreAppLabels.REGEX_FILTER_PRE_VALIDATION.getValue();
 
 			data = exp.split("\\|");
 			if (type.equalsIgnoreCase("Pre")) {
-				filepath = ShowVersionTest.PROPERTIES.getProperty("responseDownloadPathVersion") + "//" + "Pre_"
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_VERSION_PATH.getValue() + "Pre_"
 						+ hostname + "_" + region + "_VersionInfo.txt";
 			} else {
-				filepath = ShowVersionTest.PROPERTIES.getProperty("responseDownloadPathVersion") + "//" + type + "_"
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_VERSION_PATH.getValue() + type + "_"
 						+ hostname + "_" + region + "_VersionInfo.txt";
 			}
 			if (filepath != null) {
@@ -83,9 +66,6 @@ public class ShowVersionTest {
 					}
 
 				}
-				int vendorflag = 2;
-				int versionflag = 2;
-				int modelflag = 2;
 				if (!comp[0].equalsIgnoreCase("")) {
 					preValidateTest.setVendorActualValue(comp[0]);
 
@@ -113,19 +93,16 @@ public class ShowVersionTest {
 
 	public String versionInfo(String ip, String username, String password, String routername, String region,
 			String type) throws IOException {
-		boolean result = false;
-		ShowVersionTest.loadProperties();
-		String port = ShowVersionTest.PROPERTIES.getProperty("portSSH");
 		String osversionOnDevice = null;
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
 		try {
-			session = jsch.getSession(username, ip, Integer.parseInt(port));
+			session = jsch.getSession(username, ip, Integer.parseInt(C3PCoreAppLabels.PORT_SSH.getValue()));
 
 			Properties config = new Properties();
 			config.put("StrictHostKeyChecking", "no");
-			config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+			config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 			session.setConfig(config);
 			session.setPassword(password);
 			session.connect();
@@ -140,7 +117,6 @@ public class ShowVersionTest {
 			ps.println("show version");
 			UtilityMethods.sleepThread(5000);
 			osversionOnDevice = printVersionversionInfo(input, channel, routername, region, type);
-			result = true;
 			channel.disconnect();
 			session.disconnect();
 		} catch (NumberFormatException e) {
@@ -183,8 +159,7 @@ public class ShowVersionTest {
 		String[] data1 = null;
 		String[] comp = new String[10];
 		String str1 = "";
-		String exp = ShowVersionTest.PROPERTIES.getProperty("RegexFilterForPreValidation");
-		boolean value = false;
+		String exp = C3PCoreAppLabels.REGEX_FILTER_PRE_VALIDATION.getValue();
 		PreValidateTest preValidateTest = new PreValidateTest();
 		data = exp.split("\\|");
 
@@ -202,7 +177,7 @@ public class ShowVersionTest {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				// logger.info(str);
-				filepath = ShowVersionTest.PROPERTIES.getProperty("responseDownloadPathVersion") + "//" + type + "_"
+				filepath = C3PCoreAppLabels.RESP_DOWNLOAD_VERSION_PATH.getValue() + type + "_"
 						+ routername + "_" + region + "_VersionInfo.txt";
 				File file = new File(filepath);
 
@@ -240,9 +215,6 @@ public class ShowVersionTest {
 				}
 
 			}
-			int vendorflag = 2;
-			int versionflag = 2;
-			int modelflag = 2;
 			if (!comp[0].equalsIgnoreCase("")) {
 				preValidateTest.setVendorActualValue(comp[0]);
 

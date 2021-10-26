@@ -36,7 +36,7 @@ import com.techm.orion.repositories.DeviceDiscoveryRepository;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.TestStrategyService;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.UtilityMethods;
 
@@ -123,7 +123,7 @@ public class NetworkAuditTest extends Thread {
 					String password = routerCredential.getPasswordWrite();
 					logger.info("Request ID in Network audit test validation"
 							+ RequestId);
-					String port =TSALabels.PORT_SSH.getValue();
+					String port =C3PCoreAppLabels.PORT_SSH.getValue();
 					/* Logic to connect router */
 
 					if (type.equalsIgnoreCase("SLGC")
@@ -133,7 +133,7 @@ public class NetworkAuditTest extends Thread {
 							session = jsch.getSession(user, host, Integer.parseInt(port));
 							Properties config = new Properties();
 							config.put("StrictHostKeyChecking", "no");
-							config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+							config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 							logger.info("Password for network audit test " + password + "user " + user + "host "
 									+ host + "Port " + port);
 							session.setConfig(config);

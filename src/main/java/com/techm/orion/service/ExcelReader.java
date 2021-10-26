@@ -60,7 +60,7 @@ import com.techm.orion.repositories.RouterVfRepo;
 import com.techm.orion.repositories.TemplateFeatureRepo;
 import com.techm.orion.repositories.VendorRepository;
 import com.techm.orion.repositories.WebServiceRepo;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 Class to handle import (single, bulk file) validation, data save, milestone validation and communda flow invocation
 @Service
@@ -1394,7 +1394,7 @@ public class ExcelReader {
 		String osversion = ExportList.getOs_version();
 
 		if (isNullOrEmpty(Template_id)) {
-			String path = TSALabels.TEMPLATE_CREATION_PATH.getValue() + Template_id;
+			String path = C3PCoreAppLabels.TEMPLATE_CREATION_PATH.getValue() + Template_id;
 			File file = new File(path);
 			String template = null;
 			DcmConfigService dcmConfigService = new DcmConfigService();
@@ -1609,7 +1609,7 @@ public class ExcelReader {
 					ExportList.setTemplateIdUsed(TemplateList);
 					logger.info("Matched Template Found for Selected features");
 					if (TemplateList != null) {
-						String path = TSALabels.TEMPLATE_CREATION_PATH.getValue()	+ TemplateList;
+						String path = C3PCoreAppLabels.TEMPLATE_CREATION_PATH.getValue()	+ TemplateList;
 						File file = new File(path);
 
 						if (file.exists()) {

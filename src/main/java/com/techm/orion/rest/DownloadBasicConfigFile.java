@@ -24,7 +24,7 @@ import com.techm.orion.pojo.CommandPojo;
 import com.techm.orion.repositories.MasterCommandsRepository;
 import com.techm.orion.repositories.RequestInfoDetailsRepositories;
 import com.techm.orion.repositories.TemplateFeatureRepo;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 
 @Controller
@@ -48,7 +48,7 @@ public class DownloadBasicConfigFile {
 	public void getBasicConfigFile(HttpServletResponse response, @RequestParam String requestId,
 			@RequestParam String version) {
 		try {
-			String path = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId
+			String path = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId
 					+ "V" + version + "_Configuration";
 			
 			String textData = "";
@@ -68,7 +68,7 @@ public class DownloadBasicConfigFile {
 				commandpojo.setCommand_sequence_id(commands.getCommand_sequence_id());
 				textData = textData+commands.getCommand_value();
 			}
-			TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestId
+			TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestId
 					+ "V" + version + "_basicConfiguration.txt",textData);	
 			
 			File file = new File(path);

@@ -58,7 +58,7 @@ import com.techm.orion.service.ConfigurationManagmentService;
 import com.techm.orion.service.DcmConfigService;
 import com.techm.orion.service.GetConfigurationTemplateService;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 
 @Controller
@@ -800,7 +800,7 @@ public class ConfigurationManagement {
 							}
 
 							logger.info("finalCammands - " + invokeFtl.setCommandPosition(null, cammandByTemplate));
-							TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(),
+							TextReport.writeFile(C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH.getValue(),
 									configReqToSendToC3pCode.getTemplateID(),
 									invokeFtl.setCommandPosition(null, cammandByTemplate));
 							GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();

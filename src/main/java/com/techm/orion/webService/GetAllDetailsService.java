@@ -13,6 +13,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.glassfish.jersey.client.ClientConfig;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.techm.orion.pojo.CreateConfigRequest;
@@ -21,23 +23,26 @@ import com.techm.orion.pojo.Interface;
 import com.techm.orion.pojo.InternetLCVRFType;
 import com.techm.orion.pojo.MISARPEType;
 import com.techm.orion.utility.InvokeFtl;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TextReport;
 
+@Service
 public class GetAllDetailsService {
-	private static final Logger logger = LogManager.getLogger(GetAllDetailsService.class);	
+	private static final Logger logger = LogManager.getLogger(GetAllDetailsService.class);
+	@Value("${bpm.service.uri}")
+	private String bpmServiceUri;
 
 	public String jsonResponseString() throws IOException {
 		ClientConfig clientConfig = new ClientConfig();
 		Client client = ClientBuilder.newClient(clientConfig);
-		URI serviceURI = UriBuilder.fromUri(TSALabels.WEB_SERVICE_URI.getValue()).build();
+		URI serviceURI = UriBuilder.fromUri(bpmServiceUri).build();
 		WebTarget webTarget = client.target(serviceURI);
 
 		/*
 		 * String response1= webTarget.path(saveRequestDetailsPath).request()
 		 * .accept(MediaType.APPLICATION_JSON).post
 		 */
-		String response = webTarget.path(TSALabels.ALL_REQUEST_DETAILS_PATH.getValue()).request().accept(MediaType.APPLICATION_JSON)
+		String response = webTarget.path(C3PCoreAppLabels.ALL_REQUEST_DETAILS_PATH.getValue()).request().accept(MediaType.APPLICATION_JSON)
 				.get(String.class);
 
 		return response;
@@ -101,7 +106,7 @@ public class GetAllDetailsService {
 
 			ClientConfig clientConfig = new ClientConfig();
 			Client client = ClientBuilder.newClient(clientConfig);
-			URI serviceURI = UriBuilder.fromUri(TSALabels.WEB_SERVICE_URI.getValue()).build();
+			URI serviceURI = UriBuilder.fromUri(bpmServiceUri).build();
 			javax.ws.rs.client.WebTarget webTarget = client
 					.target("http://localhost:8080/POC1/rest/CreateConfigurationService/createConfiguration");
 			/*
@@ -133,8 +138,8 @@ public class GetAllDetailsService {
 			/*
 			 * pushCommand = invokeFtl .generatePushCommandFile(createConfigRequest);
 			 */
-			TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestId + "_Configuration", configuration);
-			TextReport.writeFile(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestId + "_PushCommand", pushCommand);
+			TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestId + "_Configuration", configuration);
+			TextReport.writeFile(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue(), requestId + "_PushCommand", pushCommand);
 			
 			logger.info("requestId - " +requestId);
 			logger.info("configuration - " +configuration);

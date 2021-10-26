@@ -88,7 +88,7 @@ public class TestStrategeyAnalyser {
 			test.setTestSubCategory("postUpgrade");
 		}
 		try {
-			isFilepathPresent = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + filename;
+			isFilepathPresent = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + filename;
 			isFilePresent = new File(isFilepathPresent);
 			/*
 			 * In case of network audit we are deleting the existing file to avoid the
@@ -1527,7 +1527,7 @@ public class TestStrategeyAnalyser {
 	private List<String> setKeywordResultData(String requestID, Double requestVersion, TestRules rulesLabel,
 			String tempTextToAnalyse, String filename, TestDetail test, File isFilePresent, List<String> resultArray)
 			throws IOException {
-		String configFolderPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
+		String configFolderPath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue();
 		File filePath = new File(configFolderPath + requestID + "V1.0" + "_CurrentVersionConfig.txt");
 		String[] words = null;
 		String resultText = null;
@@ -1570,7 +1570,7 @@ public class TestStrategeyAnalyser {
 
 		boolean finalCheck = false;		
 		String resultText = "";
-		String healthCheckFIle = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
+		String healthCheckFIle = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
 					+ requestVersion + "_" + StringUtils.substringAfter(test.getTestId(),"_")+"_"+rulesLabel.getReportedLabel() + "_" + filename;
 		File isHealthCheckFilePresent = new File(healthCheckFIle);
 		if (!(tempTextToAnalyse.equals(""))) {
@@ -1590,7 +1590,7 @@ public class TestStrategeyAnalyser {
 			resultText = rulesLabel.getReportedLabel();
 			String collectedValue = "";
 			if (test.getTestSubCategory().equals("postUpgrade")) {
-				String preUpgradeFile = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
+				String preUpgradeFile = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
 						+ requestVersion + "_" +StringUtils.substringAfter(test.getTestId(),"_")+"_"+rulesLabel.getReportedLabel()+ "_" + "Pre_health_checkup.txt";
 				String preUpgradeData = UtilityMethods.readFirstLineFromFile(preUpgradeFile);
 				if (preUpgradeData == null || !preUpgradeFile.equals(tempTextToAnalyse) || tempTextToAnalyse == null) {

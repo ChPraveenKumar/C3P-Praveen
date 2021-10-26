@@ -32,7 +32,7 @@ import com.techm.orion.repositories.ErrorValidationRepository;
 import com.techm.orion.repositories.ImportMasterStagingRepo;
 import com.techm.orion.service.CustomerStagingInteface;
 import com.techm.orion.service.StorageService;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.WAFADateUtil;
 
 /*Class to handle import service(single and bulk) request with other functionality*/
@@ -272,7 +272,7 @@ public class ImportFile {
 			//Storing file on local system 
 			storageService.store(file, fileNameAsImport);
 			//Updating file name with alphanumeric number 
-			String TOTAL_FILE_PATH = TSALabels.IMPORT_FILEPATH.getValue().concat(fileNameAsImport.concat("_").concat(FILE_NAME));
+			String TOTAL_FILE_PATH = C3PCoreAppLabels.IMPORT_FILEPATH.getValue().concat(fileNameAsImport.concat("_").concat(FILE_NAME));
 
 			files.add(file.getOriginalFilename());
 
@@ -408,7 +408,7 @@ public class ImportFile {
 			//Storing file on local system 
 			storageService.store(file, fileNameAsImport);
 			//Updating file name with alphanumeric number 
-			String TOTAL_FILE_PATH = TSALabels.IMPORT_FILEPATH.getValue().concat(fileNameAsImport.concat("_").concat(FILE_NAME));
+			String TOTAL_FILE_PATH = C3PCoreAppLabels.IMPORT_FILEPATH.getValue().concat(fileNameAsImport.concat("_").concat(FILE_NAME));
 			files.add(file.getOriginalFilename());
 			boolean flagCSV = false;
 			String extension = FilenameUtils.getExtension(file.getOriginalFilename());

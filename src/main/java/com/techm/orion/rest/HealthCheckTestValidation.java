@@ -43,7 +43,7 @@ import com.techm.orion.service.PingService;
 import com.techm.orion.service.TestStrategyService;
 import com.techm.orion.utility.InvokeFtl;
 import com.techm.orion.utility.ODLClient;
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 import com.techm.orion.utility.TestStrategeyAnalyser;
 import com.techm.orion.utility.UtilityMethods;
 import com.techm.orion.utility.VNFHelper;
@@ -224,11 +224,11 @@ public class HealthCheckTestValidation extends Thread {
 											deviceDetails);
 									String user = routerCredential.getLoginRead();
 									String password = routerCredential.getPasswordWrite();	
-									String port = TSALabels.PORT_SSH.getValue();
+									String port = C3PCoreAppLabels.PORT_SSH.getValue();
 									session = jsch.getSession(user, host, Integer.parseInt(port));
 									Properties config = new Properties();
 									config.put("StrictHostKeyChecking", "no");
-									config.put(JSCH_CONFIG_INPUT_BUFFER, TSALabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
+									config.put(JSCH_CONFIG_INPUT_BUFFER, C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE.getValue());
 									session.setConfig(config);
 									session.setPassword(password);
 									logger.info("Before session.connet in health test validation Username" + user
@@ -426,7 +426,7 @@ public class HealthCheckTestValidation extends Thread {
 			String s = new String(tmp, 0, i);
 			if (!(s.equals(""))) {
 				logger.info(s);
-				String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
+				String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
 						+ "_HealthCheck.txt";
 				File file = new File(filepath);
 

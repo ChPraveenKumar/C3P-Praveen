@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
@@ -21,6 +20,7 @@ import org.json.XML;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -42,9 +42,8 @@ import com.techm.orion.rest.VnfConfigService;
 @Component
 public class VNFHelper {
 	private static final Logger logger = LogManager.getLogger(VNFHelper.class);
-
-	public static String PROPERTIES_FILE = "TSA.properties";
-	public static final Properties PROPERTIES = new Properties();
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
 
 	@Autowired
 	private RequestInfoDao requestInfoDao ;
@@ -56,11 +55,10 @@ public class VNFHelper {
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
 		try {
-			VNFHelper.loadProperties();
-			filepath = VNFHelper.PROPERTIES.getProperty("VnfConfigCreationPath") + "//" + requestId
+			filepath = C3PCoreAppLabels.VNF_CONFIG_CREATION_PATH.getValue() + requestId
 					+ "_Configuration.xml";
 
-			filepath2 = VNFHelper.PROPERTIES.getProperty("VnfConfigCreationPath") + "//" + requestId
+			filepath2 = C3PCoreAppLabels.VNF_CONFIG_CREATION_PATH.getValue() + requestId
 					+ "_ConfigurationToPush.xml";
 			File file = new File(filepath);
 			File file1 = new File(filepath2);
@@ -128,7 +126,7 @@ public class VNFHelper {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_EDIT_NETCONF.getValue();
+			String url = pythonServiceUri + C3PCoreAppLabels.PYTHON_EDIT_NETCONF.getValue();
 			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
 			logger.info("response of getConfig is " + response);
 			JSONParser parser = new JSONParser();
@@ -182,7 +180,7 @@ public class VNFHelper {
 			commadBuilder.append("ping ");
 			commadBuilder.append(managementIp);
 			//Pings timeout
-			if("Linux".equals(TSALabels.APP_OS.getValue())) {
+			if("Linux".equals(C3PCoreAppLabels.APP_OS.getValue())) {
 				commadBuilder.append(" -c ");
 			}else {
 				commadBuilder.append(" -n ");
@@ -225,8 +223,7 @@ public class VNFHelper {
 				flag = false;
 
 			}
-			VNFHelper.loadProperties();
-			String filepath = VNFHelper.PROPERTIES.getProperty("responseDownloadPath") + routername + "_"
+			String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + routername + "_"
 					+ region + "_Reachability.txt";
 			File file = new File(filepath);
 
@@ -269,7 +266,6 @@ public class VNFHelper {
 	public String readConfigurationXML(String filepath) {
 		String output = null;
 		try {
-			VNFHelper.loadProperties();
 			File file = new File(filepath);
 			output = new String(Files.readAllBytes(Paths.get(filepath)));
 		} catch (IOException e) {
@@ -279,17 +275,6 @@ public class VNFHelper {
 		return output;
 	}
 
-	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
-
-		try {
-			PROPERTIES.load(PropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
-	}
 
 	public String getPayload(String type, String xml) {
 		String output = null;
@@ -422,11 +407,10 @@ public class VNFHelper {
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
 		try {
-			VNFHelper.loadProperties();
-			filepath = VNFHelper.PROPERTIES.getProperty("VnfConfigCreationPath") + "//" + requestId
+			filepath = C3PCoreAppLabels.VNF_CONFIG_CREATION_PATH.getValue() + requestId
 					+ "_Configuration.xml";
 
-			filepath2 = VNFHelper.PROPERTIES.getProperty("VnfConfigCreationPath") + "//" + requestId
+			filepath2 = C3PCoreAppLabels.VNF_CONFIG_CREATION_PATH.getValue() + requestId
 					+ "_ConfigurationToPush.xml";
 			File file = new File(filepath);
 			File file1 = new File(filepath2);
@@ -488,7 +472,7 @@ public class VNFHelper {
 		String filterType=test.getTestCommand().replaceAll("\\s", "").toLowerCase();
 		ClassLoader classLoader = new VnfConfigService().getClass().getClassLoader();
 		
-			 file = new File(TSALabels.PYTHON_SCRIPT_PATH.getValue()+filterType+"filter.xml");
+			 file = new File(C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue()+filterType+"filter.xml");
 			 pathxml=file.getPath();
 			//String output1 = new String(Files.readAllBytes(Paths.get(path)));			
 			logger.info(filterType+"filter.xml picked");
@@ -902,7 +886,7 @@ public class VNFHelper {
 			HttpHeaders headers = new HttpHeaders();
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
-			String url = TSALabels.PYTHON_SERVICES.getValue() + TSALabels.PYTHON_TEST_NETCONF.getValue();
+			String url = pythonServiceUri + C3PCoreAppLabels.PYTHON_TEST_NETCONF.getValue();
 			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
 			logger.info("response of netconfgetRPC is " + response);
 			JSONParser parser = new JSONParser();

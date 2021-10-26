@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.techm.orion.utility.TSALabels;
+import com.techm.orion.utility.C3PCoreAppLabels;
 
 public class ConnectionFactory {
 	private static final Logger logger = LogManager.getLogger(ConnectionFactory.class);
@@ -16,7 +16,7 @@ public class ConnectionFactory {
 	// private constructor
 	private ConnectionFactory() {
 		try {
-			Class.forName(TSALabels.DRIVER_CLASS.getValue());
+			Class.forName(C3PCoreAppLabels.DRIVER_CLASS.getValue());
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -37,19 +37,8 @@ public class ConnectionFactory {
 	private Connection createConnection() {
 		Connection connection = null;
 		try {
-			connection = DriverManager.getConnection(TSALabels.URL_SQL.getValue(), TSALabels.USENAME_SQL.getValue(),
-					TSALabels.PASSWORD_SQL.getValue());
-		} catch (SQLException e) {
-			logger.error(e.getMessage());
-		}
-		return connection;
-	}
-
-	private Connection createConnectionToTemplateDB() {
-		Connection connection = null;
-		try {
-			connection = DriverManager.getConnection(TSALabels.URL_TEMPLATE_DB.getValue(),
-					TSALabels.USENAME_SQL.getValue(), TSALabels.PASSWORD_SQL.getValue());
+			connection = DriverManager.getConnection(C3PCoreAppLabels.URL_SQL.getValue(), C3PCoreAppLabels.USENAME_SQL.getValue(),
+					C3PCoreAppLabels.PASSWORD_SQL.getValue());
 		} catch (SQLException e) {
 			logger.error(e.getMessage());
 		}
@@ -58,9 +47,5 @@ public class ConnectionFactory {
 
 	public static Connection getConnection() {
 		return getInstance().createConnection();
-	}
-
-	public static Connection getConnectionToTemplateDB() {
-		return getInstance().createConnectionToTemplateDB();
 	}
 }

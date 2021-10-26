@@ -2,9 +2,7 @@ package com.techm.orion.utility;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -14,9 +12,6 @@ import org.json.XML;
 public class XMLToJSONConverter {
 	ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 	File FileToRead = null;
-
-	public static String PROPERTIES_FILE = "TSA.properties";
-	public static final Properties PROPERTIES = new Properties();
 
 	String fileContent = "";
 
@@ -116,10 +111,8 @@ public class XMLToJSONConverter {
 		JSONObject resultJSON = new JSONObject();
 
 		try {
-			XMLToJSONConverter.loadProperties();
-			String filePath = XMLToJSONConverter.PROPERTIES.getProperty("configurationFilesXML");
 
-			FileToRead = new File(filePath);
+			FileToRead = new File(C3PCoreAppLabels.CONFIGURATION_FILES_XML.getValue());
 			InputStream stream = new FileInputStream(FileToRead);
 			fileContent = IOUtils.toString(stream);
 			xmlJSONObj = XML.toJSONObject(fileContent);
@@ -177,17 +170,5 @@ public class XMLToJSONConverter {
 		}
 
 		return resultJSON;
-	}
-
-	public static boolean loadProperties() throws IOException {
-		InputStream PropFile = Thread.currentThread().getContextClassLoader().getResourceAsStream(PROPERTIES_FILE);
-
-		try {
-			PROPERTIES.load(PropFile);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-			return false;
-		}
-		return false;
 	}
 }

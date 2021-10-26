@@ -55,10 +55,10 @@ public class InvokeFtl {
 			String type = requestID.substring(0, Math.min(requestID.length(), 4));
 			String responseDownloadPath = null;
 			if (type.equalsIgnoreCase("SNRC") || type.equalsIgnoreCase("SNNC")) {
-				responseDownloadPath = TSALabels.VNF_CONFIG_CREATION_PATH.getValue();
+				responseDownloadPath = C3PCoreAppLabels.VNF_CONFIG_CREATION_PATH.getValue();
 				filePath = responseDownloadPath + requestID + "_Configuration.xml";
 			} else {
-				responseDownloadPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
+				responseDownloadPath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue();
 				filePath = responseDownloadPath + requestID + "V" + version + "_Configuration";
 			}
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
@@ -100,7 +100,7 @@ public class InvokeFtl {
 		String filePath = "";
 		List<String> lines = new ArrayList<String>();
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
+			filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
 					+ "_basicConfiguration.txt";
 			lines = Files.readAllLines(Paths.get(filePath));
 
@@ -115,7 +115,7 @@ public class InvokeFtl {
 		String content = "";
 		String filePath = "";
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
+			filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version
 					+ "_prevalidationTest.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 		} catch (IOException e) {
@@ -310,19 +310,19 @@ public class InvokeFtl {
 		String contentCurrentVersion = "Not Completed";
 		Map<String, String> dataList = new HashMap<String, String>();
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_deliveredConfig.txt";
+			filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_deliveredConfig.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			dataList.put("content", content);
 
 			File file = new File(
-					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
 
 			if (file.exists()) {
 				contentPreviousVersion = "Completed";
 				dataList.put("contentPreviousVersion", contentPreviousVersion);
 			}
 
-			file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+			file = new File(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 					+ "_CurrentVersionConfig.txt");
 			if (file.exists()) {
 				contentCurrentVersion = "Completed";
@@ -356,7 +356,7 @@ public class InvokeFtl {
 		String filePath = "";
 
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_HealthCheck.txt";
+			filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_HealthCheck.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 
 		} catch (IOException e) {
@@ -370,7 +370,7 @@ public class InvokeFtl {
 		String content = "";
 		String filePath = "";
 		try {
-			filePath = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + step + "_" + requestId + "_"
+			filePath = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + step + "_" + requestId + "_"
 					+ region + "_HealthCheckReport.html";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 		} catch (IOException e) {
@@ -384,7 +384,7 @@ public class InvokeFtl {
 		String content = "";
 		String filePath = "";
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CustomTests.txt";
+			filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_CustomTests.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 
 		} catch (IOException e) {
@@ -398,7 +398,7 @@ public class InvokeFtl {
 		String content = "";
 		String filePath = "";
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_customerReport.txt";
+			filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_customerReport.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 		} catch (IOException e) {
 			logger.error("Exception Occured in getCustomerReport Methode :" + e.getMessage());
@@ -411,7 +411,7 @@ public class InvokeFtl {
 		String content = "";
 		String filePath = "";
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_networkTest.txt";
+			filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_networkTest.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			content = content.replace("terminal length 0", "");
 		} catch (IOException e) {
@@ -425,7 +425,7 @@ public class InvokeFtl {
 		String content = "";
 		String filePath = "";
 		try {
-			filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+			filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 					+ "_CurrentVersionConfig.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			content = content.replace("terminal length 0", "");
@@ -442,9 +442,9 @@ public class InvokeFtl {
 		String newStr = "";
 		try {
 			File file = new File(
-					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
 			if (file.exists()) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+				filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 						+ "_PreviousConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				if(content.contains("cisco") || content.contains("end"))
@@ -469,10 +469,10 @@ public class InvokeFtl {
 		String filePath = "";
 		String newStr = "";
 		try {
-			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+			File file = new File(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 					+ "_CurrentVersionConfig.txt");
 			if (file.exists()) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+				filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 						+ "_CurrentVersionConfig.txt";
 
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
@@ -505,7 +505,7 @@ public class InvokeFtl {
 		Map<String, Object> tree = new HashMap<String, Object>();
 		tree.put("latestVersion", latestVersion);
 		tree.put("compareVersion", compareVersion);
-		String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "noconfig.txt";
+		String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + "noconfig.txt";
 		File file = new File(filepath);
 		if (file.exists()) {
 			res = freemarkerDoModify(tree, "noconfig.txt");
@@ -521,7 +521,7 @@ public class InvokeFtl {
 		Map<String, Object> tree = new HashMap<String, Object>();
 		tree.put("latestVersion", latestVersion);
 		tree.put("compareVersion", compareVersion);
-		String filepath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + "createconfig.txt";
+		String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + "createconfig.txt";
 		File file = new File(filepath);
 		if (file.exists()) {
 			res = freemarkerDoModify(tree, "createconfig.txt");
@@ -540,7 +540,7 @@ public class InvokeFtl {
 			Configuration cfg = new Configuration();
 			cfg.setClassForTemplateLoading(InvokeFtl.class, "/");
 			FileTemplateLoader templateLoader = new FileTemplateLoader(
-					new File(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue()));
+					new File(C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH.getValue()));
 			cfg.setTemplateLoader(templateLoader);
 			Template tpl = cfg.getTemplate(template);
 			OutputStream os = new ByteArrayOutputStream();
@@ -578,7 +578,7 @@ public class InvokeFtl {
 		try {
 			@SuppressWarnings("deprecation")
 			Configuration cfg = new Configuration();
-			cfg.setDirectoryForTemplateLoading(new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue()));
+			cfg.setDirectoryForTemplateLoading(new File(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue()));
 			Template tpl = cfg.getTemplate(template);
 			OutputStream os = new ByteArrayOutputStream();
 			OutputStreamWriter output = new OutputStreamWriter(os);
@@ -619,7 +619,7 @@ public class InvokeFtl {
 		}
 
 		logger.info("finalCammands - " + setCommandPosition(cammandsBySeriesId, cammandByTemplate));
-		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId,
+		TextReport.writeFile(C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId,
 				setCommandPosition(cammandsBySeriesId, cammandByTemplate));
 
 	}
@@ -781,7 +781,7 @@ public class InvokeFtl {
 		}
 
 		logger.info("finalCammands - " + finalCammands);
-		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);
+		TextReport.writeFile(C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);
 
 	}
 
@@ -906,9 +906,9 @@ public class InvokeFtl {
 		String newStr = "";
 		try {
 			File file = new File(
-					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt");
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt");
 			if (file.exists()) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+				filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 						+ "_StartupConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 				content = content.substring(content.indexOf("run\r\n") + 5);
@@ -993,7 +993,7 @@ public class InvokeFtl {
 		}
 
 		logger.info("finalCammands - " + finalCammands);
-		TextReport.writeFile(TSALabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);
+		TextReport.writeFile(C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH.getValue(), templateId, finalCammands);
 
 	}
 
@@ -1001,10 +1001,10 @@ public class InvokeFtl {
 		String content = "", filePath = null;
 		try {
 			File file = new File(
-					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
 
 			if (file.exists() && "VNF".equalsIgnoreCase(networkType)) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+				filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 						+ "_PreviousConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 			}
@@ -1018,10 +1018,10 @@ public class InvokeFtl {
 	public String getCurrentRouterVersionForVNF(String requestId, String version, String networkType) {
 		String content = "", filePath = null;
 		try {
-			File file = new File(TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+			File file = new File(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 					+ "_CurrentVersionConfig.txt");
 			if (file.exists() && "VNF".equalsIgnoreCase(networkType)) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+				filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 						+ "_CurrentVersionConfig.txt";
 
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
@@ -1037,9 +1037,9 @@ public class InvokeFtl {
 		String content = "", filePath = null;
 		try {
 			File file = new File(
-					TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt");
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_StartupConfig.txt");
 			if (file.exists()) {
-				filePath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
+				filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
 						+ "_StartupConfig.txt";
 				content = new String(Files.readAllBytes(Paths.get(filePath)));
 			}
