@@ -81,9 +81,8 @@ public class RequestSchedulerForNewAndModify {
 
 			requestSchedulerDao.runScheduledRequestUpdate(configRequest.getRequestId(),
 					Double.toString(configRequest.getRequest_version()));
-			telnetCommunicationSSH.setConfigRequest(configRequest);
-			telnetCommunicationSSH.setDaemon(true);
-			telnetCommunicationSSH.start();
+			telnetCommunicationSSH.setTelecommunicationData(configRequest, null,null);
+
 
 		} catch (Exception e) {
 			logger.error("Exception in runScheduledRequestService method "+e.getMessage());
@@ -103,9 +102,7 @@ public class RequestSchedulerForNewAndModify {
 					Double.toString(configRequest.getRequest_version()));
 			configRequest.setRequest_parent_version(configRequestData.getRequest_parent_version());
 
-			telnetCommunicationSSH.setConfigRequest(configRequest);
-			telnetCommunicationSSH.setDaemon(true);
-			telnetCommunicationSSH.start();
+			telnetCommunicationSSH.setTelecommunicationData(configRequest, null,null);
 
 		} catch (Exception e) {
 			logger.error("Exception in createNewReScheduledRequestService method "+e.getMessage());

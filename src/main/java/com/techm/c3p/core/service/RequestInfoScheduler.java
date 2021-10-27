@@ -99,10 +99,7 @@ public class RequestInfoScheduler {
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
 								try {
-									telnetCommunicationSSH.setConfigRequest(configRequest);
-									telnetCommunicationSSH.setUserName(detailsList.get(j).getRequestCreatorName());
-									telnetCommunicationSSH.setDaemon(true);
-									telnetCommunicationSSH.start();
+									telnetCommunicationSSH.setTelecommunicationData(configRequest, null, detailsList.get(j).getRequestCreatorName());
 								} catch (Exception e) {
 
 									logger.error(e);
@@ -141,10 +138,8 @@ public class RequestInfoScheduler {
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
 								try {
-									telnetCommunicationSSH.setConfigRequest(configRequest);
-									telnetCommunicationSSH.setUserName(detailsList.get(j).getRequestCreatorName());
-									telnetCommunicationSSH.setDaemon(true);
-									telnetCommunicationSSH.start();
+									telnetCommunicationSSH.setTelecommunicationData(configRequest, null, detailsList.get(j).getRequestCreatorName());
+									
 								} catch (Exception e) {
 
 									logger.error(e);
@@ -186,11 +181,8 @@ public class RequestInfoScheduler {
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
 								try {
+									telnetCommunicationSSH.setTelecommunicationData(configRequest, null, detailsList.get(j).getRequestCreatorName());
 
-									telnetCommunicationSSH.setConfigRequest(configRequest);
-									telnetCommunicationSSH.setUserName(detailsList.get(j).getRequestCreatorName());
-									telnetCommunicationSSH.setDaemon(true);
-									telnetCommunicationSSH.start();
 								} catch (Exception e) {
 
 									logger.error(e);
@@ -226,11 +218,8 @@ public class RequestInfoScheduler {
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 
 								try {
+									telnetCommunicationSSH.setTelecommunicationData(configRequest, null, detailsList.get(j).getRequestCreatorName());
 
-									telnetCommunicationSSH.setConfigRequest(configRequest);
-									telnetCommunicationSSH.setUserName(detailsList.get(j).getRequestCreatorName());
-									telnetCommunicationSSH.setDaemon(true);
-									telnetCommunicationSSH.start();
 								} catch (Exception e) {
 
 									logger.error(e);
