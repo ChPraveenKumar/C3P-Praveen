@@ -16,11 +16,9 @@ import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.techm.c3p.core.connection.ConnectionFactory;
 import com.techm.c3p.core.connection.DBUtil;
+import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.dao.TemplateManagementDB;
-import com.techm.c3p.core.entitybeans.BasicConfiguration;
-import com.techm.c3p.core.entitybeans.IpRangeManagementEntity;
 import com.techm.c3p.core.entitybeans.MasterAttributes;
 import com.techm.c3p.core.entitybeans.MasterCharacteristicsEntity;
 import com.techm.c3p.core.entitybeans.MasterFeatureEntity;
@@ -59,10 +57,12 @@ public class MasterFeatureService {
 	private MasterAttribRepository masterAttrribRepository;
 	@Autowired
 	private TemplateFeatureRepo templatefeatureRepo;
-
 	@Autowired
 	private TemplateIpPoolJoinRepository templateIpPoolJoinRepository;
-	private static final String ALL_OPTION = "All";
+	@Autowired
+	private TemplateManagementDB templateManagementDB;
+	@Autowired
+	private JDBCConnection jDBCconnection;
 
 	public List<GetTemplateMngmntActiveDataPojo> getActiveTemplates(DeviceDetailsPojo deviceDetails, String templateId,
 			 String templateVersion) {
@@ -130,7 +130,7 @@ public class MasterFeatureService {
 		ResultSet resultSet = null;
 		String templaetIdWithVersion = templateId+"_V"+templateVersion;
 		String checkFeature ="select * from c3p_template_master_feature_list where command_type like ? and is_Save = 0;";
-		try (Connection connection = ConnectionFactory.getConnection();PreparedStatement checkPrepareStatement = connection.prepareStatement(checkFeature);) {				
+		try (Connection connection = jDBCconnection.getConnection();PreparedStatement checkPrepareStatement = connection.prepareStatement(checkFeature);) {				
 			//checkPrepareStatement.setString(1,templaetIdWithVersion);
 			checkPrepareStatement.setString(1,templateId+'%');
 			resultSet = checkPrepareStatement.executeQuery();
@@ -664,7 +664,6 @@ public class MasterFeatureService {
 	}
 
 	public List<TemplateCommandJSONModel> addNewFeatureForTemplate(JSONObject requestJson) {
-		TemplateManagementDB templateDao = new TemplateManagementDB();
 		TemplateCommandJSONModel templateCommandJSONModel = new TemplateCommandJSONModel();
 		List<TemplateCommandJSONModel> templateCommandJSONModelList = new ArrayList<TemplateCommandJSONModel>();
 		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
@@ -685,12 +684,12 @@ public class MasterFeatureService {
 			if (requestJson.get("masterId") != null) {
 				addNewFeatureTemplateMngmntPojo.setMasterFeatureId(requestJson.get("masterId").toString());
 			}
-			idToSetInCommandTable = templateDao.updateFeatureTablesForNewCommand(addNewFeatureTemplateMngmntPojo);
+			idToSetInCommandTable = templateManagementDB.updateFeatureTablesForNewCommand(addNewFeatureTemplateMngmntPojo);
 			currentFeature = templatefeatureRepo.findByCommandAndComandDisplayFeature(
 					addNewFeatureTemplateMngmntPojo.getTemplateid(), addNewFeatureTemplateMngmntPojo.getFeatureName());
 		}
 
-		commandPojoList = templateDao.updateMasterCommandTableWithNewCommand(addNewFeatureTemplateMngmntPojo,
+		commandPojoList = templateManagementDB.updateMasterCommandTableWithNewCommand(addNewFeatureTemplateMngmntPojo,
 				idToSetInCommandTable);
 
 		JSONArray attribMapArray = (JSONArray) (requestJson.get("attribMappings"));
@@ -745,7 +744,6 @@ public class MasterFeatureService {
 					templatePojo.setKey((boolean)jsonObj.get("key"));
 				}
 				templateAttribList.add(templatePojo);
-				List<IpRangeManagementEntity> listOfPoolIds = null;
 				
 				if (templateId!=null) {
 					// save in manually generated join relationship table

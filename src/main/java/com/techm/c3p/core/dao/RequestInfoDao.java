@@ -40,8 +40,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 
 import com.techm.c3p.core.beans.RequestInfo;
-import com.techm.c3p.core.connection.ConnectionFactory;
 import com.techm.c3p.core.connection.DBUtil;
+import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.entitybeans.BatchIdEntity;
 import com.techm.c3p.core.entitybeans.CertificationTestResultEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
@@ -108,7 +108,9 @@ public class RequestInfoDao {
 	private WAFADateUtil dateUtil;
 	
 	@Autowired
-	private RequestDetails requestDetails;	
+	private RequestDetails requestDetails;
+	@Autowired
+	private JDBCConnection jDBCConnection;
 	
 	private static final String FLAG_PASS ="Pass";
 	
@@ -145,7 +147,7 @@ public class RequestInfoDao {
 		double request_version = 0, request_parent_version = 0;
 		boolean isAutoProgress;
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(INSERT_REQUEST_INFOSO);) {
 			if (request.getRequest_type().equalsIgnoreCase("IOSUPGRADE")
@@ -607,7 +609,7 @@ public class RequestInfoDao {
 	public int insertTestRecordInDB(String requestID, String testsSelected,
 			String requestType, double requestVersion) {
 		int result = 0;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(INSERT_T_TSTSTRATEGY_M_CONFIG_TRANSACTION);) {
 			prepStmt.setString(1, requestID);
@@ -624,7 +626,7 @@ public class RequestInfoDao {
 
 	public void addRequestID_to_Os_Upgrade_dilevary_flags(String requestId,
 			String version) {
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(INSERT_OS_UPGRADE_DELIVERY_FLAGS);) {
 			prepStmt.setString(1, requestId);
@@ -684,7 +686,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		RequestInfoSO request = null;
 		List<RequestInfoSO> requestInfoList = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection.prepareStatement(query);) {
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				prepStmt.setString(1, value + "%");
@@ -796,7 +798,7 @@ public class RequestInfoDao {
 		ResultSet resultSet = null;
 		RequestInfoSO requestInfoObj = null;
 		List<RequestInfoSO> requestInfoList1 = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection.prepareStatement(query);) {
 			resultSet = prepStmt.executeQuery();
 			requestInfoList1 = new ArrayList<RequestInfoSO>();
@@ -879,7 +881,7 @@ public class RequestInfoDao {
 	public boolean addRequestIDtoWebserviceInfo(String alphanumeric_req_id,
 			String request_version) {
 		boolean queryStatus = false;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(INSERT_WEB_SERVICE_INFO);) {
 			prepStmt.setInt(1, 1);
@@ -910,7 +912,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM webserviceinfo where request_id = ?";
 		ResultSet resultSet = null;
 		boolean checkReportFlags = false;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection.prepareStatement(query);) {
 			prepStmt.setInt(1, Integer.parseInt(requestId));
 			resultSet = prepStmt.executeQuery();
@@ -933,7 +935,7 @@ public class RequestInfoDao {
 		ReoprtFlags flags = null;
 		List<ReoprtFlags> reportFlags = null;
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection.prepareStatement(query);) {
 			resultSet = prepStmt.executeQuery();
 			reportFlags = new ArrayList<ReoprtFlags>();
@@ -980,7 +982,7 @@ public class RequestInfoDao {
 		ResultSet resultSet = null;
 		RequestInfoSO request = null;
 		List<RequestInfoSO> requestInfoList = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection.prepareStatement(query);) {
 			prepStmt.setString(1, value);
 			resultSet = prepStmt.executeQuery();
@@ -1010,7 +1012,7 @@ public class RequestInfoDao {
 			String errorStatus_dilevarytest,
 			String errorDescription_dilevarytest) {
 		String query = "update webserviceinfo set TextFound_DeliveryTest = ?, ErrorStatus_DeliveryTest=?, ErrorDescription_DeliveryTest=? where alphanumeric_req_id = ? and version = ? ";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection.prepareStatement(query);) {
 			prepStmt.setString(1, textFound_dileverytest);
 			prepStmt.setString(2, errorStatus_dilevarytest);
@@ -1051,7 +1053,7 @@ public class RequestInfoDao {
 			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, flag);
@@ -1068,7 +1070,7 @@ public class RequestInfoDao {
 		if (field.equalsIgnoreCase("customer_report")
 				&& status.contains("Success")) {
 			ResultSet rs = null;
-			try (Connection connection = ConnectionFactory.getConnection();
+			try (Connection connection = jDBCConnection.getConnection();
 					PreparedStatement preparedStmt = connection
 							.prepareStatement(GET_REQUEST_INFO_SO_BY_ALPREQID_VERSION);) {
 				preparedStmt.setString(1, requestId);
@@ -1115,7 +1117,7 @@ public class RequestInfoDao {
 		} else if (field.equalsIgnoreCase("customer_report")
 				&& status.equals("Failure")) {
 			ResultSet rs = null;
-			try (Connection connection = ConnectionFactory.getConnection();
+			try (Connection connection = jDBCConnection.getConnection();
 					PreparedStatement preparedStmt = connection
 							.prepareStatement(GET_REQUEST_INFO_SO_BY_ALPREQID_VERSION);) {
 
@@ -1167,7 +1169,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		RequestInfoSO request = null;
 		List<RequestInfoSO> requestInfoList = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			rs = preparedStmt.executeQuery();
@@ -1244,7 +1246,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM eipamdbtable WHERE eipam_site_id = ? AND eipam_customer_name=? AND eipam_service=? AND eipam_region=?";
 		ResultSet rs = null;
 		EIPAMPojo eipamobj = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, site);
 			pst.setString(2, customer);
@@ -1275,7 +1277,7 @@ public class RequestInfoDao {
 		EIPAMPojo pojo;
 		ResultSet rs = null;
 		List<EIPAMPojo> requestInfoList = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			rs = pst.executeQuery();
 			requestInfoList = new ArrayList<EIPAMPojo>();
@@ -1312,7 +1314,7 @@ public class RequestInfoDao {
 		UserPojo flags = null;
 		List<UserPojo> userList = null;
 		UserValidationResultDetailPojo resultSet = new UserValidationResultDetailPojo();
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			rs = pst.executeQuery();
 			userList = new ArrayList<UserPojo>();
@@ -1375,7 +1377,7 @@ public class RequestInfoDao {
 	private boolean setUserLoginFlag(String username, String password) {
 		boolean result = false;
 		String query = "update users set user_status=1 where user_name=? AND user_password=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, username);
 			pst.setString(2, password);
@@ -1395,7 +1397,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM routeruserdevicemanagementtable";
 		ResultSet rs = null;
 		UserPojo userList = new UserPojo();
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			rs = pst.executeQuery();
 			if (rs.next()) {
@@ -1413,7 +1415,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM routeruserdevicemanagementtable where mgmtip=?";
 		ResultSet rs = null;
 		UserPojo userList = new UserPojo();
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, mgmtip);
 
@@ -1432,7 +1434,7 @@ public class RequestInfoDao {
 	public boolean addNewUserToDB(String username, String pass) {
 		String query = "INSERT INTO users(user_name,user_password,user_status)"
 				+ "VALUES(?,?,?)";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, username);
 			pst.setString(2, pass);
@@ -1457,7 +1459,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		ResultSet getRs = null;
 		UserPojo userList = new UserPojo();
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			rs = pst.executeQuery();
 			if (rs.next()) {
@@ -1505,7 +1507,7 @@ public class RequestInfoDao {
 
 	public List<EIPAMPojo> getSearchedRecordsFromDB(String site,
 			String customer, String service, String ip) throws SQLException {
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = jDBCConnection.getConnection();
 		String query1;
 		PreparedStatement ps = null;
 		int parameters_to_search = 0;
@@ -1695,7 +1697,7 @@ public class RequestInfoDao {
 		AlertInformationPojo pojo;
 		ResultSet rs = null;
 		List<AlertInformationPojo> requestInfoList = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			rs = pst.executeQuery();
 			requestInfoList = new ArrayList<AlertInformationPojo>();
@@ -1720,7 +1722,7 @@ public class RequestInfoDao {
 		String query = "INSERT INTO eipamdbtable(eipam_site_id,eipam_region,eipam_ip,eipam_subnet_mask,eipam_service,eipam_customer_name,eipam_ip_status)"
 				+ "VALUES(?,?,?,?,?,?,?)";
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, pojo.getSite());
 			ps.setString(2, pojo.getRegion());
@@ -1753,7 +1755,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		AlertInformationPojo eipamobj = null;
 		List<AlertInformationPojo> requestInfoList1 = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			requestInfoList1 = new ArrayList<AlertInformationPojo>();
 			ps.setString(1, code + "%");
@@ -1782,7 +1784,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		List<AlertInformationPojo> resultobj = new ArrayList<AlertInformationPojo>();
 		List<AlertInformationPojo> requestInfoList1 = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			rs = ps.executeQuery();
 			requestInfoList1 = new ArrayList<AlertInformationPojo>();
@@ -1819,7 +1821,7 @@ public class RequestInfoDao {
 		UserValidationResultDetailPojo validatedResult = new UserValidationResultDetailPojo();
 		String query = "INSERT INTO alertinformationtable(alert_code,alert_category,alert_description,alert_type)"
 				+ "VALUES(?,?,?,?)";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, pojo.getAlert_code());
 			ps.setString(2, pojo.getAlert_category());
@@ -1846,7 +1848,7 @@ public class RequestInfoDao {
 	private boolean updateEIPAMTable(String ip) {
 		boolean result = false;
 		String query = "update eipamdbtable set eipam_ip_status=1 where eipam_ip=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, ip);
 			int i = ps.executeUpdate();
@@ -1866,7 +1868,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		int id1;
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			list = new ArrayList<RequestInfoSO>();
 			ps.setString(1, id);
@@ -1968,7 +1970,7 @@ public class RequestInfoDao {
 		String query = "INSERT INTO requestinfoso(Os,banner,device_name,model,region,service,os_version,hostname,enable_password,vrf_name,isAutoProgress,vendor,customer,siteid,managementIp,device_type,vpn,alphanumeric_req_id,request_status,request_version,request_parent_version,request_creator_name,snmpHostAddress,snmpString,loopBackType,loopbackIPaddress,loopbackSubnetMask,lanInterface,lanIp,lanMaskAddress,lanDescription,certificationSelectionBit,ScheduledTime,RequestType_Flag,TemplateIdUsed,RequestOwner)"
 				+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			alphaneumeric_req_id = request.getDisplay_request_id();
@@ -2408,7 +2410,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		RequestInfoSO request = null;
 		List<RequestInfoSO> requestInfoList1 = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			if (!userRole.equalsIgnoreCase("admin")) {
@@ -2587,7 +2589,7 @@ public class RequestInfoDao {
 		RequestInfoSO request;
 		ResultSet rs = null;
 		int id1;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			list = new ArrayList<RequestInfoSO>();
 			ps.setString(1, id);
@@ -2689,7 +2691,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			configCmdList = new ArrayList<ModifyConfigResultPojo>();
 
@@ -2721,7 +2723,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM users WHERE user_status=?";
 		ResultSet rs = null;
 		UserPojo user = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setInt(1, 1);
 			rs = ps.executeQuery();
@@ -2743,7 +2745,7 @@ public class RequestInfoDao {
 	public boolean resetUsersDB(String username) {
 		boolean result = false;
 		String query = "update users set user_status=0 WHERE user_name=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, username);
 			int i = ps.executeUpdate();
@@ -2761,7 +2763,7 @@ public class RequestInfoDao {
 		int num = 0;
 		ResultSet rs = null;
 		String query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			rs = ps.executeQuery();
 			while (rs.next()) {
@@ -2789,7 +2791,7 @@ public class RequestInfoDao {
 			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'success' and alphanumeric_req_id rlike'SR|OS'";
 
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				ps.setString(1, Global.loggedInUser);
@@ -2821,7 +2823,7 @@ public class RequestInfoDao {
 			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'failure' and alphanumeric_req_id rlike'SR|OS'";
 
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				ps.setString(1, Global.loggedInUser);
@@ -2853,7 +2855,7 @@ public class RequestInfoDao {
 
 		}
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				ps.setString(1, Global.loggedInUser);
@@ -2875,7 +2877,7 @@ public class RequestInfoDao {
 			String ip, String mask) {
 		boolean result = false;
 		String query = "update eipamdbtable set eipam_ip=?,eipam_subnet_mask=?,eipam_ip_status=? WHERE eipam_customer_name=? AND eipam_site_id=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, ip);
 			ps.setString(2, mask);
@@ -2903,7 +2905,7 @@ public class RequestInfoDao {
 		boolean result = false;
 		String query = "INSERT INTO eipamdbtable(eipam_ip,eipam_subnet_mask,eipam_ip_status,eipam_customer_name,eipam_site_id,eipam_region,eipam_service)"
 				+ "VALUES(?,?,?,?,?,?,?)";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, ip);
@@ -2955,7 +2957,7 @@ public class RequestInfoDao {
 		Map<String, String> hmap = new HashMap<String, String>();
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String parentVersion = numberFormat.format(version - 0.1);
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
@@ -2991,7 +2993,7 @@ public class RequestInfoDao {
 			suggestion = "Please check the router credentials";
 		}
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setInt(1, Integer.parseInt(Device_Reachability_Test));
 			ps.setInt(2, 0);
@@ -3034,7 +3036,7 @@ public class RequestInfoDao {
 		if (modelflag == 2) {
 			suggestion = "Please select the correct router model from C3P GUI";
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setInt(1, vendorflag);
@@ -3055,7 +3057,7 @@ public class RequestInfoDao {
 			String osGui, String modelActual, String modelGui) {
 		String query = "update certificationtestvalidation set actual_vendor = ?,gui_vendor = ?,actual_os_version  = ?,gui_os_version =?,actual_model=?,gui_model=? where alphanumeric_req_id = ? and version = ? ";
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, vendorActual);
@@ -3078,7 +3080,7 @@ public class RequestInfoDao {
 		CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
 		String query = "select * from  certificationtestvalidation where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
@@ -3144,7 +3146,7 @@ public class RequestInfoDao {
 			int throughputflag, int framelossflag, int latencyflag) {
 		String query = "update certificationtestvalidation set Throughput_Test = ?,FrameLoss_Test = ?,Latency_Test  = ? where alphanumeric_req_id = ? and version = ? ";
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setInt(1, throughputflag);
@@ -3168,7 +3170,7 @@ public class RequestInfoDao {
 		} else {
 			query = "update certificationtestvalidation set throughput = ? where alphanumeric_req_id = ? and version = ? ";
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, value);
@@ -3185,7 +3187,7 @@ public class RequestInfoDao {
 			int versionDetailflag, int showIpBgpSummaryflag) {
 		String query = "update certificationtestvalidation set ShowIpIntBrief_Cmd = ?,ShowInterface_Cmd = ?,ShowVersion_Cmd  = ?,showIpBgpSummary_Cmd=? where alphanumeric_req_id = ? and version = ? ";
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setInt(1, ipInterfaceBriefflag);
@@ -3221,7 +3223,7 @@ public class RequestInfoDao {
 																	// monday
 		List<String> daysArray = new ArrayList<String>();
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			int count = 0;
 			rs = ps.executeQuery();
@@ -3420,7 +3422,7 @@ public class RequestInfoDao {
 		ConfigurationDataValuePojo object = null;
 		ResultSet rs = null;
 		List<ConfigurationDataValuePojo> list = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			rs = ps.executeQuery();
 			list = new ArrayList<ConfigurationDataValuePojo>();
@@ -3444,7 +3446,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		List<ConfigurationDataValuePojo> list = null;
 		ConfigurationDataValuePojo object;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			rs = ps.executeQuery();
 			list = new ArrayList<ConfigurationDataValuePojo>();
@@ -3468,7 +3470,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM c3p_data_configuration_table where component_name=? AND component_make=?";
 		List<String> list = new ArrayList<String>();
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, "c3p_" + deviceType.toLowerCase() + "_model");
 			ps.setString(2, vendor);
@@ -3491,7 +3493,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_os_type'";
 		List<String> list = new ArrayList<String>();
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			rs = ps.executeQuery();
 			list = new ArrayList<String>();
@@ -3516,7 +3518,7 @@ public class RequestInfoDao {
 		List<String> list = new ArrayList<String>();
 		List<String> listtoSend = new ArrayList<String>();
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			rs = ps.executeQuery();
 			list = new ArrayList<String>();
@@ -3560,7 +3562,7 @@ public class RequestInfoDao {
 																	// monday
 		List<String> daysArray = new ArrayList<String>();
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			int count = 0;
 			rs = ps.executeQuery();
@@ -3705,7 +3707,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM c3p_data_configuration_table where component_name='c3p_region'";
 		ResultSet rs = null;
 		List<ConfigurationDataValuePojo> list = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ConfigurationDataValuePojo object;
 			rs = ps.executeQuery();
@@ -3730,7 +3732,7 @@ public class RequestInfoDao {
 		String query = "select * from errorcodedata where router_error_message is not null";
 		ResultSet rs = null;
 		List<ErrorValidationPojo> list = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ErrorValidationPojo object;
 			rs = ps.executeQuery();
@@ -3760,7 +3762,7 @@ public class RequestInfoDao {
 		String updateQuery = "update certificationtestvalidation set suggestionForFailure = ? where alphanumeric_req_id = ? and version = ?";
 		ResultSet rs = null;
 		String suggestionForErrorDesc = "";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, textFound);
@@ -3802,7 +3804,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			configCmdList = new ArrayList<ModifyConfigResultPojo>();
 			rs = ps.executeQuery();
@@ -3826,7 +3828,7 @@ public class RequestInfoDao {
 		ErrorValidationPojo errorValidationPojo = new ErrorValidationPojo();
 		String query = "Select * from webserviceinfo  where alphanumeric_req_id = ? and version = ?";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 			pst.setString(2, version);
@@ -3857,7 +3859,7 @@ public class RequestInfoDao {
 
 		ResultSet rs = null;
 		CreateConfigRequest request = new CreateConfigRequest();
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, value);
 			pst.setString(2, version);
@@ -4017,7 +4019,7 @@ public class RequestInfoDao {
 		}
 		ResultSet rs = null;
 		boolean devicelocked = false;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			if (TestType.equalsIgnoreCase("DeviceTest")) {
 				pst.setString(1, managementIp);
@@ -4043,7 +4045,7 @@ public class RequestInfoDao {
 		String result = "";
 		String query = "INSERT INTO devicelocked_managementip(management_ip,locked_by,flag)"
 				+ "VALUES(?,?,?)";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, managementIp);
@@ -4064,7 +4066,7 @@ public class RequestInfoDao {
 			String RequestId) {
 		String result = "";
 		String query = "delete from devicelocked_managementip where management_ip = ? and locked_by = ? ";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, managementIp);
@@ -4090,7 +4092,7 @@ public class RequestInfoDao {
 		Map<String, String> hmap = new HashMap<String, String>();
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String version = numberFormat.format(versionId);
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
@@ -4122,7 +4124,7 @@ public class RequestInfoDao {
 		String userRole =null;
 		List<UserManagementEntity> userRoleDetails = userManagementRepository.findByUserName(owner);
 		String query = "update c3p_t_request_info set r_request_owner = ? , r_read_fe=?, r_read_se=? where r_alphanumeric_req_id = ? and r_request_version= ?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, owner);
@@ -4158,7 +4160,7 @@ public class RequestInfoDao {
 	public String getUserTaskIdForRequest(String requestId, String version) {
 		String usertaskid = null;
 		String query = "select * from  camundahistory where history_requestId=? and history_versionId=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 			pst.setString(2, version);
@@ -4177,7 +4179,7 @@ public class RequestInfoDao {
 			String status) {
 		boolean result = false;
 		String query = "update c3p_t_request_info set r_status = ?, r_end_date_of_processing= now() where r_alphanumeric_req_id = ? and r_request_version= ?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, status);
 			pst.setString(2, requestid);
@@ -4198,7 +4200,7 @@ public class RequestInfoDao {
 	public List<RequestInfoSO> getFEAssignedRequestList() {
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
 		String query = "select * from  requestinfoso where RequestOwner=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			RequestInfoSO request = null;
 			pst.setString(1, "feuser");
@@ -4317,7 +4319,7 @@ public class RequestInfoDao {
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
 		ResultSet rs = null;
 		String query = "select * from  requestinfoso where RequestOwner=? and request_status  IN (?,?)";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			RequestInfoSO request = null;
 			pst.setString(1, "seuser");
@@ -4440,7 +4442,7 @@ public class RequestInfoDao {
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
 		String query = "select * from  requestinfoso where RequestOwner=? and request_status  IN (?,?)";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			RequestInfoSO request = null;
 			pst.setString(1, "admin");
@@ -4568,7 +4570,7 @@ public class RequestInfoDao {
 			query = "update c3p_t_request_info set r_read_se = ? where r_alphanumeric_req_id = ? and r_request_version = ? ";
 		}
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setInt(1, status);
@@ -4594,7 +4596,7 @@ public class RequestInfoDao {
 			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Scheduled' and alphanumeric_req_id rlike'SR|OS'";
 
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				ps.setString(1, Global.loggedInUser);
@@ -4623,7 +4625,7 @@ public class RequestInfoDao {
 		} else if (Global.loggedInUser.equalsIgnoreCase("admin")) {
 			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where request_status = 'Hold' and alphanumeric_req_id rlike'SR|OS'";
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
 				ps.setString(1, Global.loggedInUser);
@@ -4645,7 +4647,7 @@ public class RequestInfoDao {
 		String owner = null;
 		ResultSet rs = null;
 		String query = "SELECT request_creator_name FROM requestinfoso where alphanumeric_req_id = ? and request_version = ?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, reqId);
@@ -4670,7 +4672,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		ModifyConfigResultPojo configCmdPojo = null;
 		List<ModifyConfigResultPojo> configCmdList = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			configCmdList = new ArrayList<ModifyConfigResultPojo>();
 			ps.setString(1, configRequest.getVendor());
@@ -4701,7 +4703,7 @@ public class RequestInfoDao {
 			String version) {
 		String query = "update webserviceinfo set application_test = ? where alphanumeric_req_id = ? and version = ? ";
 		String updatedQuery = "update certificationtestvalidation set Device_Reachability_Test = ? where alphanumeric_req_id = ? and version = ? ";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, "0");
@@ -4729,7 +4731,7 @@ public class RequestInfoDao {
 	public void updateRouterFailureHealthCheck(String requestId, String version) {
 		String query = "update certificationtestvalidation set suggestionForFailure =? where alphanumeric_req_id = ? and version = ? ";
 		String suggestion = "Please check the connectivity.Issue while performing Health check test";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, suggestion);
@@ -4749,7 +4751,7 @@ public class RequestInfoDao {
 		String updateQuery = "update requestinfoso set date_of_processing = ? where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
 		String result = "false";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestId);
 			ps.setString(2, version);
@@ -4789,7 +4791,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		String updateQuery = null;
 		String diff = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, requestId);
@@ -4846,7 +4848,7 @@ public class RequestInfoDao {
 	public String updateTempProcessingTime(String requestId, String version)
 			throws SQLException {
 		String query = "update requestinfoso set temp_processing_time= now() where alphanumeric_req_id = ? and request_version= ?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestId);
 			ps.setString(2, version);
@@ -4861,7 +4863,7 @@ public class RequestInfoDao {
 	public boolean updateEditedAlertData(String alertCode, String description) {
 		boolean result = false;
 		String query = "update alertinformationtable set alert_description = ? WHERE alert_code=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, description);
 			ps.setString(2, alertCode);
@@ -4884,7 +4886,7 @@ public class RequestInfoDao {
 		String path = null;
 		String query = "SELECT data_path FROM t_faq_data where page = ?";
 		String filePath = "";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, page);
@@ -4931,7 +4933,7 @@ public class RequestInfoDao {
 			query = "select request_status, count(*) as number from requestinfoso where DATE(date_of_processing) between ? and ?  and alphanumeric_req_id rlike'SR|OS' Group by request_status";
 
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 
@@ -4982,7 +4984,7 @@ public class RequestInfoDao {
 		int flag = 0;
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String parentVersion = numberFormat.format(version);
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
@@ -5016,7 +5018,7 @@ public class RequestInfoDao {
 		int flag = 0;
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String parentVersion = numberFormat.format(version);
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
@@ -5051,7 +5053,7 @@ public class RequestInfoDao {
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String parentVersion = numberFormat.format(version);
 		query = "select pre_health_checkup from  webserviceinfo where alphanumeric_req_id = ? and version = ?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
@@ -5081,7 +5083,7 @@ public class RequestInfoDao {
 			String requestId, String version) {
 		String query = "update os_upgrade_dilevary_flags set " + key
 				+ "= ? WHERE request_id=? and request_version=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setInt(1, value);
 			ps.setString(2, requestId);
@@ -5099,7 +5101,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM os_upgrade_dilevary_flags WHERE request_id=? AND request_version=?";
 		ResultSet rs = null;
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, requestId);
@@ -5189,7 +5191,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
 		String query = "SELECT * FROM os_upgrade_dilevary_flags WHERE request_id=? AND request_version=?";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, requestId);
@@ -5263,7 +5265,7 @@ public class RequestInfoDao {
 		String res = null;
 		Map<String, String> hmap = new HashMap<String, String>();
 		logger.info("Version received" + versionId);
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
@@ -5321,7 +5323,7 @@ public class RequestInfoDao {
 
 		ResultSet rs = null, rs1 = null, rs2 = null, rs3 = null;
 		Set<String> setOfTest = new HashSet<>();
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(queryTstDetails);) {
 
@@ -5486,7 +5488,7 @@ public class RequestInfoDao {
 			String notes, String data_type, double requestVersion,String subCategory) {
 		boolean res = false;
 		String query = "insert into t_tststrategy_m_config_results (TestResult,ResultText,RequestId,TestCategory,testName,CollectedValue,EvaluationCriteria,notes,data_type,request_version,test_sub_category) values (?,?,?,?,?,?,?,?,?,?,?)";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, testResult);
 			ps.setString(2, testText);
@@ -5600,7 +5602,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		String testName = null;
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
@@ -5894,7 +5896,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		String res = null;
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
@@ -5936,7 +5938,7 @@ public class RequestInfoDao {
 		// logic to get previous status from reqestinfoso
 		String query = "select request_status from requestinfoso where alphanumeric_req_id = ? and request_version = ?";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
@@ -5967,7 +5969,7 @@ public class RequestInfoDao {
 		}
 		String query = "select * from  t_tststrategy_m_config_results where RequestId = ? and TestCategory= ?";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
@@ -6013,7 +6015,7 @@ public class RequestInfoDao {
 		String queryTstRules = "select snippet from t_tststrategy_m_tstrules where reported_label = ? and test_name=?";
 		ResultSet rs = null;
 		ResultSet rs1 = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, test_name);
@@ -6050,7 +6052,7 @@ public class RequestInfoDao {
 		List<TestDetail> list = new ArrayList<TestDetail>();
 		String query = "select * from t_tststrategy_m_tstdetails";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			rs = pst.executeQuery();
@@ -6084,7 +6086,7 @@ public class RequestInfoDao {
 
 	public void updateVersion(String testName, boolean is_enabled) {
 		String query = "update t_tststrategy_m_tstdetails set is_enabled=? where test_name = ? ";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 
@@ -6100,7 +6102,7 @@ public class RequestInfoDao {
 
 	public void updateRequestforReportWebserviceInfo(String requestId) {
 		String query = "Update webserviceinfo Set health_checkup='0', network_test='0',network_audit='0' where alphanumeric_req_id = ?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
@@ -6135,7 +6137,7 @@ public class RequestInfoDao {
 		String query1 = "SELECT * FROM webserviceinfo where alphanumeric_req_id =?";
 
 		ResultSet rs = null, rs1 = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 
@@ -6153,7 +6155,7 @@ public class RequestInfoDao {
 			DBUtil.close(rs);
 		}
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst1 = connection.prepareStatement(query1);) {
 			pst1.setString(1, requestId);
 			rs1 = pst1.executeQuery();
@@ -6231,7 +6233,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		RequestInfoSO request = null;
 		List<RequestInfoSO> requestInfoList = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			rs = pst.executeQuery();
@@ -6259,7 +6261,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM webserviceinfo where alphanumeric_req_id =?";
 		ResultSet rs = null;
 		boolean deliver_status = false;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, string);
 
@@ -6297,7 +6299,7 @@ public class RequestInfoDao {
 			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ?;";
 
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestType);
 			if (!Global.loggedInUser.equalsIgnoreCase("admin")) {
@@ -6343,7 +6345,7 @@ public class RequestInfoDao {
 
 			}
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			if (requestType != null) {
 				ps.setString(1, requestType);
@@ -6384,7 +6386,7 @@ public class RequestInfoDao {
 			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where networktype = ? and alphanumeric_req_id like ? ;";
 
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, networkType);
 			ps.setString(2, requestType);
@@ -6777,7 +6779,7 @@ public class RequestInfoDao {
 		TestDetail request = null;
 		ResultSet rs = null;
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			requestInfoList = new ArrayList<TestDetail>();
 
@@ -6820,7 +6822,7 @@ public class RequestInfoDao {
 			query = "SELECT * FROM t_tststrategy_m_testbundling where region LIKE ?";
 		}
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			requestInfoList = new ArrayList<TestBundling>();
 			pst.setString(1, value + "%");
@@ -6858,7 +6860,7 @@ public class RequestInfoDao {
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			requestInfoList = new ArrayList<FirmwareUpgradeDetail>();
 
@@ -6892,7 +6894,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		List deviceLockList = new ArrayList<>();
 		if (TestType.equalsIgnoreCase("DeviceTest")) {
-			try (Connection connection = ConnectionFactory.getConnection();
+			try (Connection connection = jDBCConnection.getConnection();
 					PreparedStatement pst = connection.prepareStatement(query);) {
 
 				pst.setString(1, managementIp);
@@ -6916,7 +6918,7 @@ public class RequestInfoDao {
 		String query = "delete from devicelocked_managementip where locked_by = ?";
 		String result = null;
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, locked_by);
 
@@ -6956,7 +6958,7 @@ public class RequestInfoDao {
 
 		ResultSet rs = null;
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 			rs = pst.executeQuery();
@@ -7400,7 +7402,7 @@ public class RequestInfoDao {
 		CertificationTestResultEntity ent = new CertificationTestResultEntity();
 		String query = "SELECT * FROM certificationtestvalidation WHERE alphanumeric_req_id=? AND version=?";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestID);
 			ps.setString(2, version);
@@ -7426,7 +7428,7 @@ public class RequestInfoDao {
 		String query = "SELECT * FROM t_tststrategy_m_config_results WHERE RequestId=?";
 		ResultSet rs = null;
 		String result = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestId);
 			rs = ps.executeQuery();
@@ -7454,7 +7456,7 @@ public class RequestInfoDao {
 		
 		ResultSet rs = null;
 		int status = 0;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
@@ -7497,7 +7499,7 @@ public class RequestInfoDao {
 		List<FirmwareUpgradeDetail> requestInfoList = null;
 		FirmwareUpgradeDetail request = null;
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			requestInfoList = new ArrayList<FirmwareUpgradeDetail>();
 			pst.setString(1, isFamily + "%");
@@ -7527,7 +7529,7 @@ public class RequestInfoDao {
 	public final boolean updateBatchStatus(String batchId) {
 		boolean result = false;
 		String query = "update c3p_t_request_batch_info set r_batch_status='Completed' where r_batch_id=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, batchId);
@@ -7826,7 +7828,7 @@ public class RequestInfoDao {
 	public boolean updateBatchRequestStatus(String requestId) {
 		boolean result = false;
 		String query = "update c3p_t_request_info set r_status= 'Failure' where r_alphanumeric_req_id=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestId);
 			int i = ps.executeUpdate();
@@ -7845,7 +7847,7 @@ public class RequestInfoDao {
 	public final boolean updateRequestExecutionStatus(String requestId) {
 		boolean result = false;
 		String query = "update c3p_t_request_info set r_execution_status= true where r_alphanumeric_req_id=?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 
 			ps.setString(1, requestId);
@@ -7866,7 +7868,7 @@ public class RequestInfoDao {
 		String query = "select testsselected from  t_tststrategy_m_config_transaction where RequestId = ?";
 		ResultSet rs = null;
 		String res = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestID);
@@ -7929,7 +7931,7 @@ public class RequestInfoDao {
 	}
 
 	private void insertInternetCvrfso(RequestInfoSO request) {
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(INSERT_INTERNET_LCVRF_SO);) {
 			if (request.getInternetLcVrf() != null) {
@@ -8043,7 +8045,7 @@ public class RequestInfoDao {
 	}
 
 	private void insertMisArPeSo(RequestInfoSO request) {
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(INSERT_MIS_AR_PE_SO);) {
 			if (request.getMisArPeSO() != null) {
@@ -8096,7 +8098,7 @@ public class RequestInfoDao {
 	}
 
 	private void insertDeviceInterfaceSo(RequestInfoSO request) {
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(INSERT_DEVICE_INTERFACE_SO);) {
 			if (request.getDeviceInterfaceSO() != null) {
@@ -8194,7 +8196,7 @@ public class RequestInfoDao {
 	}
 
 	private void insertBannerDataTable(String banner) {
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(INSERT_BANNER_DATA_TABLE);) {
 			if (banner != "") {
@@ -8214,7 +8216,7 @@ public class RequestInfoDao {
 	private MisArPeSO getMisArPeSO(int requestInfoId) {
 		MisArPeSO misArPeSo = new MisArPeSO();
 		ResultSet resultSet = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(GET_MIS_AR_PE_SO);) {
 			prepStmt.setInt(1, requestInfoId);
@@ -8241,7 +8243,7 @@ public class RequestInfoDao {
 	private InternetLcVrfSO getInternetLcVrf(int requestInfoId) {
 		InternetLcVrfSO internetLcVrfSO = new InternetLcVrfSO();
 		ResultSet resultSet = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(GET_INTERNET_LCVRF_SO);) {
 			prepStmt.setInt(1, requestInfoId);
@@ -8278,7 +8280,7 @@ public class RequestInfoDao {
 	private DeviceInterfaceSO getDeviceInterfaceSO(int requestInfoId) {
 		DeviceInterfaceSO deviceInterfaceSO = new DeviceInterfaceSO();
 		ResultSet resultSet = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(GET_DEVICE_INTERFACE_SO);) {
 			prepStmt.setInt(1, requestInfoId);
@@ -8308,7 +8310,7 @@ public class RequestInfoDao {
 
 	private void updateRequestInfoSoByAlpReqVersion(String alpReqId,
 			String version, String status, Timestamp endDate, String elapsedTime) {
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement prepStmt = connection
 						.prepareStatement(UPDATE_REQUEST_INFO_SO_BY_ALPREQID_VERSION);) {
 			prepStmt.setString(1, status);
@@ -8327,7 +8329,7 @@ public class RequestInfoDao {
 		List<TestStrategyPojo> list = new ArrayList<TestStrategyPojo>();
 		String query = "select * from t_tststrategy_m_tstdetails";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			rs = pst.executeQuery();
@@ -8369,7 +8371,7 @@ public class RequestInfoDao {
 
 		query = "SELECT test_id FROM t_tststrategy_j_test_bundle where bundle_id LIKE ?";
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			pst.setString(1, bundleId + "%");
@@ -8396,7 +8398,7 @@ public class RequestInfoDao {
 		List<TestStrategyPojo> list = new ArrayList<TestStrategyPojo>();
 		String query = "select * from t_tststrategy_m_tstdetails where id LIKE ?";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, testId + "%");
 			rs = pst.executeQuery();
@@ -8451,7 +8453,7 @@ public class RequestInfoDao {
 			query = "SELECT * FROM t_tststrategy_m_tstdetails where region LIKE ?";
 		}
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			requestInfoList = new ArrayList<TestStrategyPojo>();
 			pst.setString(1, value + "%");
@@ -8495,7 +8497,7 @@ public class RequestInfoDao {
 
 		query = "SELECT bundle_id FROM t_tststrategy_j_test_bundle where test_id LIKE ?";
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			pst.setString(1, testId + "%");
@@ -8522,7 +8524,7 @@ public class RequestInfoDao {
 		List<TestDetail> list = new ArrayList<TestDetail>();
 		String query = "select * from t_tststrategy_m_tstdetails where id = ? and test_category = ?";
 		ResultSet rs = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setInt(1, i);
 			pst.setString(2, tempTestCategoryName);
@@ -8561,7 +8563,7 @@ public class RequestInfoDao {
 		String queryTstRules = "select * from t_tststrategy_m_tstrules where test_name=?";
 		ResultSet rs = null, rs1 = null;
 		List<TestRules> rulelist = new ArrayList<TestRules>();
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, testId + "%");
 			rs = pst.executeQuery();
@@ -8647,7 +8649,7 @@ public class RequestInfoDao {
 
 		query = "SELECT test_id FROM t_tststrategy_j_test_bundle where bundle_id LIKE ?";
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			pst.setString(1, bundleId + "%");
@@ -8684,7 +8686,7 @@ public class RequestInfoDao {
 			query = "SELECT COUNT(request_info_id) AS total FROM requestinfoso Where alphanumeric_req_id like ?;";
 
 		}
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement ps = connection.prepareStatement(query);) {
 			ps.setString(1, requestType);
 			if (!userRole.equalsIgnoreCase("admin")) {
@@ -8722,7 +8724,7 @@ public class RequestInfoDao {
 		ResultSet rs = null;
 		RequestInfoSO request = null;
 		List<RequestInfoSO> requestInfoList = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			rs = preparedStmt.executeQuery();
@@ -8800,7 +8802,7 @@ public class RequestInfoDao {
 		String query = "select * from  certificationtestvalidation where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
 		List<PreValidateTest> list = null;
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);

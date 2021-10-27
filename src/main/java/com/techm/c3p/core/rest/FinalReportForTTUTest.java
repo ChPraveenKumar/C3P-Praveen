@@ -131,13 +131,11 @@ public class FinalReportForTTUTest extends Thread {
 				if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type) || "SLGM".equalsIgnoreCase(type) || "SLGB".equalsIgnoreCase(type)) {
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
-					if (deviceLocked || C3PCoreAppLabels.ROUTER_IP_TEMP.getValue().equals(requestinfo.getManagementIp())) {
+					if (deviceLocked) {
 
 						// release the locked device
-						if (!C3PCoreAppLabels.ROUTER_IP_TEMP.getValue().equals(requestinfo.getManagementIp())) {
-							requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
-									requestinfo.getAlphanumericReqId());
-						}
+						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+								requestinfo.getAlphanumericReqId());
 						CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
 						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),

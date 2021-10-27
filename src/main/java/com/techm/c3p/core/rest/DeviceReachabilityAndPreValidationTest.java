@@ -119,8 +119,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 			List<RequestInfoEntity> requestDetailEntity1 = new ArrayList<RequestInfoEntity>();
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 			// TODO: We need to remove ROUTER_IP_TEMP later or while on GCP
-			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
-					&& !requestinfo.getManagementIp().contains(C3PCoreAppLabels.ROUTER_IP_TEMP.getValue())) // Temperory
+			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-"))
 			{
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.findByDHostNameAndDMgmtIpAndDDeComm(
@@ -444,8 +443,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 			/* Temporary hard coding ROUTER_IP_TEMP router */
-			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
-					&& !requestinfo.getManagementIp().contains(C3PCoreAppLabels.ROUTER_IP_TEMP.getValue())) {
+			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")) {
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "pre_health_checkup", "4", "In Progress");

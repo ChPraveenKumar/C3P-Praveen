@@ -33,7 +33,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.techm.c3p.core.dao.RequestInfoDao;
-import com.techm.c3p.core.dao.RequestSchedulerDao;
 import com.techm.c3p.core.dao.TemplateManagementDao;
 import com.techm.c3p.core.dao.TemplateSuggestionDao;
 import com.techm.c3p.core.entitybeans.CreateConfigEntity;
@@ -538,7 +537,6 @@ public class DcmConfigService {
 	}
 
 	public Map<String, String> updateAlldetailsOnModify(CreateConfigRequestDCM configRequest) {
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		ValidatorConfigManagement validatorConfigManagement = new ValidatorConfigManagement();
 		CreateAndCompareModifyVersion createAndCompareModifyVersion = new CreateAndCompareModifyVersion();
 		RequestInfoDao requestInfoDao = new RequestInfoDao();
@@ -1285,7 +1283,6 @@ public class DcmConfigService {
 	public Map<String, String> updateAlldetails(List<RequestInfoPojo> requestInfoSOList,
 			List<CreateConfigPojo> pojoList, List<String> featureList, String userName,
 			List<TemplateFeaturePojo> features, DeviceDiscoveryEntity device) {
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		String validateMessage = "";
 		String requestIdForConfig = "", requestType = "";
 		String res = "", output = "";
@@ -1762,7 +1759,6 @@ public class DcmConfigService {
 
 	public Map<String, String> updateBatchConfig(RequestInfoPojo requestInfoSO, List<CreateConfigPojo> pojoList,
 			List<String> featureList, String userName, List<TemplateFeaturePojo> features) {
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		String validateMessage = "";
 
 		String requestIdForConfig = "", requestType = "";

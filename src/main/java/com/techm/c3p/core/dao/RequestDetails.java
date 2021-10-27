@@ -26,8 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.Gson;
-import com.techm.c3p.core.connection.ConnectionFactory;
 import com.techm.c3p.core.connection.DBUtil;
+import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
@@ -53,12 +53,14 @@ public class RequestDetails {
 	
 	@Autowired
 	private TestDetailsRepository testDetailsRepository;
+	@Autowired
+	private JDBCConnection jDBCConnection;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
 		ResultSet resultSet = null;
 		String query = "SELECT RequestId,TestsSelected FROM t_tststrategy_m_config_transaction where RequestId= ? and request_version =?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setDouble(2, requestVersion);
@@ -87,7 +89,7 @@ public class RequestDetails {
 				+ "left join c3p_template_master_feature_list flist on attr.feature_id= flist.id "
 				+ "where info.request_id= ? and info.template_id= ?";
 
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, templateId);
@@ -116,7 +118,7 @@ public class RequestDetails {
 				+ "left join t_attrib_m_attribute attr on info.master_label_id=attr.id "
 				+ "left join c3p_template_master_feature_list flist on attr.feature_id= flist.id "
 				+ "where info.request_id= ? and info.template_id= ?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, templateId);
@@ -147,7 +149,7 @@ public class RequestDetails {
 				+ "left join c3p_template_master_feature_list flist on attr.feature_id= flist.id "
 				+ "where info.request_id= ? and info.template_id= ? and flist.command_parent_feature = ? ";
 		
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);
 			preparedStmt.setString(2, templateId);
@@ -395,7 +397,7 @@ public class RequestDetails {
 		ResultSet result = null;
 		List<TestStaregyConfigPojo> testResultList = null;
 		
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
 			preparedStmt.setString(1, requestId);			

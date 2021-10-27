@@ -1,7 +1,6 @@
 package com.techm.c3p.core.rest;
 
 import java.util.List;
-import java.util.Observer;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -11,6 +10,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,8 +22,10 @@ import com.techm.c3p.core.service.AttributeFeatureNewService;
 
 @Controller
 @RequestMapping("/AttributeFeatureService")
-public abstract class AttributeFeatureService implements Observer {
+public abstract class AttributeFeatureService {
 	private static final Logger logger = LogManager.getLogger(AttributeFeatureService.class);
+	@Autowired
+	private AttributeFeatureNewService attributeFeatureNewService;
 	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -41,7 +43,6 @@ public abstract class AttributeFeatureService implements Observer {
 
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
-			AttributeFeatureNewService attributeFeatureNewService = new AttributeFeatureNewService();
 			TemplateAttributeJSONModel templateAttributeJSONModel = new TemplateAttributeJSONModel();
 			templateAttributeJSONModel.setAttributename(json.get("Attributename").toString());
 			templateAttributeJSONModel.setAttributeFeature(json.get("Attributefeature").toString());

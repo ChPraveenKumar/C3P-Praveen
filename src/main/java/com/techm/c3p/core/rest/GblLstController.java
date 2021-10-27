@@ -1,8 +1,5 @@
 package com.techm.c3p.core.rest;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -25,9 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.techm.c3p.core.bpm.servicelayer.CamundaServiceCreateReq;
-import com.techm.c3p.core.connection.ConnectionFactory;
-import com.techm.c3p.core.connection.DBUtil;
 import com.techm.c3p.core.entitybeans.DeviceFamily;
 import com.techm.c3p.core.entitybeans.GlobalLstReq;
 import com.techm.c3p.core.entitybeans.Models;
@@ -44,7 +38,6 @@ import com.techm.c3p.core.repositories.OSversionRepository;
 import com.techm.c3p.core.repositories.RegionsRepository;
 import com.techm.c3p.core.repositories.ServicesRepository;
 import com.techm.c3p.core.repositories.VendorRepository;
-import com.techm.c3p.core.utility.PythonServices;
 
 @RestController
 public class GblLstController {
@@ -65,10 +58,6 @@ public class GblLstController {
 	private RegionsRepository regionsRepository;
 	@Autowired
 	private ErrorValidationRepository errorValidationRepository;
-	@Autowired
-	private PythonServices pythonService;
-	@Autowired
-	private CamundaServiceCreateReq camundaServiceCreateReq;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -114,35 +103,6 @@ public class GblLstController {
 	@GET
 	@RequestMapping(value = "/services", method = RequestMethod.GET, produces = "application/json")
 	public Response getServices() {
-		//Testing
-//		Connection connection = null;
-//		PreparedStatement prepStmt = null;
-//		ResultSet resultSet = null;
-//		try {
-//			String testquery = "SELECT * FROM c3p_deviceinfo";
-//			connection = ConnectionFactory.getConnection();
-//			prepStmt = connection.prepareStatement(testquery);
-//			resultSet = prepStmt.executeQuery();
-//			while (resultSet.next()) {
-//				
-//				logger.info("d_Id - " + resultSet.getInt("d_Id"));
-//			}
-//			
-//		}catch(Exception exe) {
-//			exe.printStackTrace();
-//		}finally {
-//			DBUtil.close(resultSet);
-//			DBUtil.close(prepStmt);
-//			DBUtil.close(connection);
-//		}
-		try {
-			//final CamundaServiceCreateReq camundaServiceCreateReq = new CamundaServiceCreateReq();
-			camundaServiceCreateReq.uploadToServer("Test", "1.0", "GLGC");
-		}catch(Exception exe) {
-			exe.printStackTrace();
-		}
-		
-		pythonService.pythonDeltaCompute("anji", "test");
 		return Response.status(200).entity(servicesRepository.findAll()).build();
 	}
 

@@ -18,11 +18,12 @@ public class RequestSchedulerForNewAndModify {
 	private static final Logger logger = LogManager.getLogger(RequestSchedulerForNewAndModify.class);
 	@Autowired
 	private TelnetCommunicationSSH telnetCommunicationSSH;
+	@Autowired
+	private RequestSchedulerDao requestSchedulerDao;
 
 	public List<SchedulerListPojo> getScheduledHistoryDB(String requestId, String version) {
 
 		List<SchedulerListPojo> scheduledList = new ArrayList<SchedulerListPojo>();
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 
 		try {
 			if (!version.contains(".")) {
@@ -38,7 +39,6 @@ public class RequestSchedulerForNewAndModify {
 
 	public String rescheduleRequestDB(String requestId, String version, String scheduledTime) {
 
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		String result = "";
 
 		try {
@@ -55,7 +55,6 @@ public class RequestSchedulerForNewAndModify {
 
 	public String cancelRequestDB(String requestId, String version) {
 
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		String result = "";
 
 		try {
@@ -70,7 +69,6 @@ public class RequestSchedulerForNewAndModify {
 
 	public String runScheduledRequestService(CreateConfigRequestDCM configRequest) throws IOException {
 
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		CreateConfigRequestDCM configRequestData = new CreateConfigRequestDCM();
 
 		try {
@@ -93,7 +91,6 @@ public class RequestSchedulerForNewAndModify {
 
 	public String createNewReScheduledRequestService(CreateConfigRequestDCM configRequest) throws IOException {
 
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		CreateConfigRequestDCM configRequestData = new CreateConfigRequestDCM();
 
 		try {
@@ -113,7 +110,6 @@ public class RequestSchedulerForNewAndModify {
 
 	public String abortScheduledRequestDB(String requestId, String version) {
 
-		RequestSchedulerDao requestSchedulerDao = new RequestSchedulerDao();
 		String result = "";
 
 		try {

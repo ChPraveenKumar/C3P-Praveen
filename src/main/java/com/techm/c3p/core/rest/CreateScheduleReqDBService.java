@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.techm.c3p.core.connection.ConnectionFactory;
 import com.techm.c3p.core.connection.DBUtil;
+import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.pojo.CreateScheduleReqPojo;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
@@ -30,7 +30,9 @@ public class CreateScheduleReqDBService {
 	private static final Logger logger = LogManager.getLogger(CreateScheduleReqDBService.class);
 
 	@Autowired
-	RequestInfoDetailsRepositories requestnfoDao;
+	private RequestInfoDetailsRepositories requestnfoDao;
+	@Autowired
+	private JDBCConnection jDBCconnection;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -58,7 +60,7 @@ public class CreateScheduleReqDBService {
 			ResultSet rs = null;
 			CreateScheduleReqPojo scheduleReqObj = null;
 
-			try(Connection connection = ConnectionFactory.getConnection();
+			try(Connection connection = jDBCconnection.getConnection();
 					PreparedStatement statement = connection.prepareStatement(query) ) {
 				statement.setString(1, version);
 				statement.setString(2, businessKey);
@@ -120,7 +122,7 @@ public class CreateScheduleReqDBService {
 			String updateQuery = "update camundahistory set history_processId = ?,history_user = ? where history_requestId = ? and history_versionId= ?";
 			String countQuery = "select count(history_processId) count from camundahistory where history_versionId = ? and history_requestId like ?";
 
-			try(Connection connection = ConnectionFactory.getConnection();
+			try(Connection connection = jDBCconnection.getConnection();
 					PreparedStatement preparedStmt1 = connection.prepareStatement(insertQuery);
 					PreparedStatement preparedStmt2 = connection.prepareStatement(updateQuery);) {
 				CreateScheduleReqPojo scheduleReqObj = null;
@@ -183,7 +185,7 @@ public class CreateScheduleReqDBService {
 
 			String query = "update camundahistory set history_userTaskId = ? where history_processId = ?";
 			
-			try(Connection connection = ConnectionFactory.getConnection();
+			try(Connection connection = jDBCconnection.getConnection();
 					PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 				preparedStmt.setString(1, taskId);
 				preparedStmt.setString(2, processId);

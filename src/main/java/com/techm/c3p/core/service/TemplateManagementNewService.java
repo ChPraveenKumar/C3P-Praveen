@@ -97,11 +97,11 @@ public class TemplateManagementNewService {
 	private TemplateIpPoolJoinRepository templateIpPoolJoinRepository;
 	@Autowired
 	private CamundaServiceTemplateApproval camundaServiceTemplateApproval;
+	@Autowired
+	private TemplateManagementDB templateManagementDB;
 
 	public List<GetTemplateMngmntActiveDataPojo> getDataForRightPanelOnEditTemplate(
 			String templateId, boolean selectAll) throws Exception {
-
-		TemplateManagementDB templateManagementDB = new TemplateManagementDB();
 
 		List<GetTemplateMngmntActiveDataPojo> templateactiveList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
 		templateactiveList = templateManagementDB.getRightPanelOnEditTemplate(
@@ -201,13 +201,12 @@ public class TemplateManagementNewService {
 	}
 
 	public ResponseEntity<JSONObject> setTemplateData(JSONObject json) {
-		TemplateManagementDB templateDao = new TemplateManagementDB();
 		String templateId = null, templateVersion = null;
 		DecimalFormat numberFormat = new DecimalFormat("#.#");
 		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = new AddNewFeatureTemplateMngmntPojo();
 		String templateAndVesion = json.get("templateid").toString() + "_V"
 				+ json.get("templateVersion").toString();
-		boolean ifTemplateAlreadyPresent = templateDao
+		boolean ifTemplateAlreadyPresent = templateManagementDB
 				.checkTemplateVersionAlredyexist(templateAndVesion);
 		List<MasterAttributes> attributeList = new ArrayList<>();
 		String oldTemplate = "";
@@ -228,7 +227,7 @@ public class TemplateManagementNewService {
 		saveLeftPanelData(json, addNewFeatureTemplateMngmntPojo.getTemplateid());
 		JSONArray cmdArray = (JSONArray) (json.get("list"));
 		addNewFeatureTemplateMngmntPojo.setCmdList(SetCommandData(cmdArray));
-		templateDao
+		templateManagementDB
 				.updateTransactionCommandForNewTemplate(addNewFeatureTemplateMngmntPojo);
 
 		JSONArray leftPanelData = (JSONArray) (json.get("leftPanelData"));
@@ -381,7 +380,6 @@ public class TemplateManagementNewService {
 
 	public List<CommandPojo> saveLeftPanelData(JSONObject json,
 			String templateId) {
-		TemplateManagementDB templateDao = new TemplateManagementDB();
 		AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo = null;
 		List<CommandPojo> commandPojoList1 = new ArrayList<CommandPojo>();
 		try {
@@ -410,7 +408,7 @@ public class TemplateManagementNewService {
 			}
 
 			addNewFeatureTemplateMngmntPojo.setCmdList(commandPojoList1);
-			templateDao
+			templateManagementDB
 					.updateTransactionFeatureForNewTemplate(addNewFeatureTemplateMngmntPojo);
 
 		} catch (Exception e) {

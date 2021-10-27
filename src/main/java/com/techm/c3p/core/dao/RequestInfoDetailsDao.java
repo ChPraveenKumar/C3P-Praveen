@@ -28,8 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
-import com.techm.c3p.core.connection.ConnectionFactory;
 import com.techm.c3p.core.connection.DBUtil;
+import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.entitybeans.CredentialManagementEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
@@ -87,6 +87,8 @@ public class RequestInfoDetailsDao {
 	private PythonServices pythonService;
 	@Autowired
 	private VendorCommandRepository vendorCommandRepository;
+	@Autowired
+	private JDBCConnection jDBCConnection;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
@@ -120,7 +122,7 @@ public class RequestInfoDetailsDao {
 			query = "update webserviceinfo set instantiation = ? where alphanumeric_req_id = ? and version = ? ";
 		}
 
-		try(Connection connection = ConnectionFactory.getConnection();
+		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {			
 			preparedStmt.setString(1, flag);
 			preparedStmt.setString(2, requestId);
@@ -709,7 +711,7 @@ public class RequestInfoDetailsDao {
 			query = "select health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";
 		}
 
-		try(Connection connection = ConnectionFactory.getConnection();
+		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, alphanumericReqId);
 			preparedStmt.setString(2, version);
@@ -750,7 +752,7 @@ public class RequestInfoDetailsDao {
 	public String fetchImageInstanceFromDeviceExt(String deviceId) {
 		String imageInstanceId = null;
 		String sqlQuery = "select r_imageInstanceId from c3p_deviceinfo_ext where r_device_id = ?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
 			preparedStmt.setString(1, deviceId);
 			ResultSet rs = preparedStmt.executeQuery();
@@ -773,7 +775,7 @@ public class RequestInfoDetailsDao {
 	public JSONObject fetchFromDeviceExtLocationDescription(String deviceId) {
 		JSONObject response=new JSONObject();
 		String sqlQuery = "select r_latitude,r_longitude,r_description from c3p_deviceinfo_ext where r_device_id = ?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
 			preparedStmt.setString(1, deviceId);
 			ResultSet rs = preparedStmt.executeQuery();
@@ -792,7 +794,7 @@ public class RequestInfoDetailsDao {
 	public void saveInDeviceExtension(String deviceId, String modelDescription) {
 		String sqlQuery = "INSERT INTO c3p_deviceinfo_ext(r_device_id, r_description) "
 				+ "VALUES (?,?)";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
 			preparedStmt.setString(1, deviceId);
 			preparedStmt.setString(2, modelDescription);

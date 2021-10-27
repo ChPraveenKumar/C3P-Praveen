@@ -12,16 +12,21 @@ import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import com.techm.c3p.core.connection.ConnectionFactory;
 import com.techm.c3p.core.connection.DBUtil;
+import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.pojo.AddNewFeatureTemplateMngmntPojo;
 import com.techm.c3p.core.pojo.CommandPojo;
 import com.techm.c3p.core.pojo.GetTemplateMngmntActiveDataPojo;
 
+@Service
 public class TemplateManagementDB {
 
 	private static final Logger logger = LogManager.getLogger(TemplateManagementDB.class);
+	@Autowired
+	private JDBCConnection jDBCConnection;
 
 	public int updateFeatureTablesForNewCommand(AddNewFeatureTemplateMngmntPojo addNewFeatureTemplateMngmntPojo) {
 		ResultSet rs = null;
@@ -30,7 +35,7 @@ public class TemplateManagementDB {
 		String query = "Insert into c3p_template_master_feature_list(comand_display_feature,command_parent_feature,command_type,hasParent,is_Save,isMandate,master_f_id) values(?,?,?,?,?,?,?)";
 		String selQuery = "select * from c3p_template_master_feature_list";
 		String checkFeature = "select * from c3p_template_master_feature_list where command_type =? and is_Save = 0;";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);
 				PreparedStatement checkPrepareStatement = connection.prepareStatement(checkFeature);) {
 			checkPrepareStatement.setString(1, addNewFeatureTemplateMngmntPojo.getTemplateid());
@@ -84,7 +89,7 @@ public class TemplateManagementDB {
 		int lastCount = 0;
 		List<CommandPojo> commandPojoList = new ArrayList<CommandPojo>();
 		String query0 = "select max(command_sequence_id) from c3p_template_master_command_list";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query0);) {
 
 			for (int i = 0; i < addNewFeatureTemplateMngmntPojo.getCmdList().size(); i++) {
@@ -144,7 +149,7 @@ public class TemplateManagementDB {
 		Set<String> availableCommandIDs = new HashSet<String>();
 		try {
 			for (int i = 0; i < addNewFeatureTemplateMngmntPojo.getCmdList().size(); i++) {
-				try (Connection connection = ConnectionFactory.getConnection();
+				try (Connection connection = jDBCConnection.getConnection();
 						PreparedStatement preparedStmt = connection.prepareStatement(insertQuery)) {
 					CommandPojo commandPojo = addNewFeatureTemplateMngmntPojo.getCmdList().get(i);
 					availableCommandIDs.add(commandPojo.getCommand_id());
@@ -160,7 +165,7 @@ public class TemplateManagementDB {
 				}
 			}
 
-			try (Connection connection = ConnectionFactory.getConnection();
+			try (Connection connection = jDBCConnection.getConnection();
 					PreparedStatement preparedStmt1 = connection.prepareStatement(temMastFeatureQuery)) {
 				preparedStmt1.setString(1, addNewFeatureTemplateMngmntPojo.getTemplateid());
 				rs1 = preparedStmt1.executeQuery();
@@ -234,7 +239,7 @@ public class TemplateManagementDB {
 		String query1 = "Insert into c3p_template_transaction_feature_list (id,command_feature_template_id) values (?,?)";
 		for (int i = 0; i < addNewFeatureTemplateMngmntPojo.getCmdList().size(); i++) {
 			CommandPojo commandPojo = addNewFeatureTemplateMngmntPojo.getCmdList().get(i);
-			try (Connection connection = ConnectionFactory.getConnection();
+			try (Connection connection = jDBCConnection.getConnection();
 					PreparedStatement preparedStmt = connection.prepareStatement(query1);) {
 				preparedStmt.setString(1, commandPojo.getId());
 				preparedStmt.setString(2, addNewFeatureTemplateMngmntPojo.getTemplateid());
@@ -252,7 +257,7 @@ public class TemplateManagementDB {
 		List<GetTemplateMngmntActiveDataPojo> dataList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
 		ResultSet rs1 = null;
 		String query1 = "select cmdlist.command_value,cmdlist.command_sequence_id,flist.check_default,flist.hasParent,flist.id from c3p_template_master_command_list cmdlist ,c3p_template_master_feature_list flist where cmdlist.command_id=flist.id and flist.command_type=? order by cmdlist.position";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query1);) {
 			preparedStmt.setString(1, "Generic");
 
@@ -281,7 +286,7 @@ public class TemplateManagementDB {
 		List<GetTemplateMngmntActiveDataPojo> dataList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
 		ResultSet rs1 = null;
 		String query1 = "select txnList.command_id,txnList.command_sequence_id,masterList.command_value from c3p_template_transaction_command_list txnList,c3p_template_master_command_list masterList where txnList.command_id=masterList.command_id and txnList.command_template_id=? order by txnList.command_position";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query1);) {
 			preparedStmt.setString(1, templateId);
 
@@ -306,7 +311,7 @@ public class TemplateManagementDB {
 		ResultSet rs1 = null;
 		boolean isAlredyPresent = false;
 		String query1 = "SELECT * FROM c3p_template_transaction_command_list where command_template_id = ?";
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query1);) {
 			preparedStmt.setString(1, templateAndVersion);
 			rs1 = preparedStmt.executeQuery();

@@ -25,8 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
-import com.techm.c3p.core.connection.ConnectionFactory;
 import com.techm.c3p.core.connection.DBUtil;
+import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.entitybeans.BasicConfiguration;
 import com.techm.c3p.core.entitybeans.Notification;
 import com.techm.c3p.core.exception.DuplicateDataException;
@@ -45,17 +45,19 @@ import com.techm.c3p.core.utility.WAFADateUtil;
 public class TemplateManagementDao {
 	private static final Logger logger = LogManager.getLogger(TemplateManagementDao.class);
 	private Connection connection;
-	Statement statement;
+	private Statement statement;
 	@Autowired
 	private NotificationRepo notificationRepo;
 	@Autowired
 	private UserManagementRepository userManagementRepository;
 	@Autowired
 	private WAFADateUtil dateUtil;
+	@Autowired
+	private JDBCConnection jDBCConnection;
 
 	public boolean updateMasterFeatureAndCommandTable(String series) {
 		boolean result = false;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query1 = "select * from c3p_template_master_feature_list WHERE command_type=?";
 		String query2 = "Insert into c3p_template_master_feature_list SET comand_display_feature=?, command_parent_feature=?, command_type=?, hasParent=?,isMandate=?,check_default=?,is_Save=?";
 		String query3 = "Insert into c3p_template_master_command_list SET command_id=?, command_value=?, command_sequence_id=?, command_type=?";
@@ -165,7 +167,7 @@ public class TemplateManagementDao {
 
 	public List<String> getParentFeatureList() {
 		List<String> list = new ArrayList<String>();
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query2 = "Select distinct command_parent_feature from c3p_template_master_feature_list";
 		try {
 			Statement pst = connection.createStatement();
@@ -190,7 +192,7 @@ public class TemplateManagementDao {
 	public List<String> getParentFeatureList(String templateid) {
 		List<String> parentList = new ArrayList<String>();
 		parentList.add(0, "Add New Feature");
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query2 = "Select distinct command_parent_feature from c3p_template_master_feature_list WHERE command_type LIKE ?";
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
@@ -208,7 +210,7 @@ public class TemplateManagementDao {
 	}
 
 	public void updateReadFlagForTemplate(String templateid, String version, String status, String userRole) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query2 = null;
 		if (userRole.equalsIgnoreCase("Admin")) {
 			query2 = "UPDATE templateconfig_basic_details SET temp_read_status_admin=? WHERE temp_id=? and temp_version=?";
@@ -236,7 +238,7 @@ public class TemplateManagementDao {
 	}
 
 	public boolean getTemplateStatus(String templateid, String version) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		boolean result = false;
 		String status = null;
 		String query2 = "select * from  templateconfig_basic_details where temp_id = ? and temp_version = ?";
@@ -265,7 +267,7 @@ public class TemplateManagementDao {
 
 	public String getUserTaskIdForTemplate(String templateid, String version) {
 		String userTaskid = null;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query2 = "select * from  camundahistory where history_requestId=? and history_versionId=?";
 		try {
 			PreparedStatement pst = connection.prepareStatement(query2);
@@ -286,7 +288,7 @@ public class TemplateManagementDao {
 
 	public int updateTemplateStatus(String templateid, String version, String status, String approverCommet) {
 		int res = 0;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query2 = "update templateconfig_basic_details set temp_status = ?, temp_comment_section= concat(?, temp_comment_section), "
 				+ "temp_updated_date=? where temp_id = ? and temp_version = ? ";
 		try {
@@ -321,7 +323,7 @@ public class TemplateManagementDao {
 		logger.info("in Approval: get template list");
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		TemplateBasicConfigurationPojo pojo;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query2 = null;
 		if (username.equalsIgnoreCase("Admin")) {
 			query2 = "SELECT * FROM templateconfig_basic_details where temp_status=? or temp_status=?";
@@ -386,7 +388,7 @@ public class TemplateManagementDao {
 
 	public int getNumberOfTemplatesForApprovalForLoggedInUser(String username) {
 		int number = 0;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs1 = null;
 		String query1 = null;
 		logger.info("in Approval-template number");
@@ -422,10 +424,8 @@ public class TemplateManagementDao {
 	}
 
 	public boolean saveTemperorySequence(String templateId, String versionToSave) {
-		boolean res = false;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		boolean result = false;
-		boolean isNewFeature = false;
 		// save new command in c3p_template_master_feature_list
 		// update the new command in c3p_template_transaction_feature_list
 		// save new command in c3p_template_master_command_list along with
@@ -441,7 +441,6 @@ public class TemplateManagementDao {
 		try {
 			for (int i = 0; i < Global.globalSessionLeftPanel.size(); i++) {
 				if (Global.globalSessionLeftPanel.get(i).getId().equalsIgnoreCase("NewParent")) {
-					isNewFeature = true;
 					name = Global.globalSessionLeftPanel.get(i).getName();
 					parent = Global.globalSessionLeftPanel.get(i).getName();
 					idToSetInCommandTable = updateFeatureTablesForNewCommand(name, parent, templateId);
@@ -652,7 +651,7 @@ public class TemplateManagementDao {
 			String command_type, int parentId, int topLineNum, int bottomLineNum, boolean dragged, int hasParent,
 			String newFeature, String lstCmdId) {
 		boolean res = true;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet resultSet = null;
 		String query1 = null;
 		PreparedStatement preparedStmt = null;
@@ -782,7 +781,7 @@ public class TemplateManagementDao {
 
 	public String selectFeature(String request) {
 		boolean res = false;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs1 = null;
 		String query1 = null, query2 = null, query3 = null;
 		PreparedStatement preparedStmt = null, pst = null;
@@ -924,7 +923,7 @@ public class TemplateManagementDao {
 	public Map<String, String> getDataForRightPanel(String templateId, boolean selectAll) throws SQLException {
 		Map<String, String> map = new HashMap<String, String>();
 		GetTemplateMngmntActiveDataPojo getTemplateMngmntActivePojo = null;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs1 = null, rs2 = null;
 		RequestInfoSO request = null;
 		List<GetTemplateMngmntActiveDataPojo> allFeaturesList = null;
@@ -1103,9 +1102,8 @@ public class TemplateManagementDao {
 
 	public List<GetTemplateMngmntActiveDataPojo> getDataForActivefeatures(String templateId) throws SQLException {
 		GetTemplateMngmntActiveDataPojo getTemplateMngmntActivePojo = null;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs = null;
-		RequestInfoSO request = null;
 		List<GetTemplateMngmntActiveDataPojo> templateMngmntActiveList = null;
 		PreparedStatement preparedStmt = null;
 		String query = null;
@@ -1116,7 +1114,6 @@ public class TemplateManagementDao {
 
 			rs = preparedStmt.executeQuery();
 			templateMngmntActiveList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
-			int id;
 			while (rs.next()) {
 				getTemplateMngmntActivePojo = new GetTemplateMngmntActiveDataPojo();
 				getTemplateMngmntActivePojo.setChildKeyValue(rs.getString("tempCmd.Name"));
@@ -1138,7 +1135,7 @@ public class TemplateManagementDao {
 	public List<GetTemplateMngmntActiveDataPojo> getChildCommandValue(JSONArray names, JSONArray checked,
 			String templateid) {
 		Statement statement = null;
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = jDBCConnection.getConnection();
 
 		String query = "";
 		String query1 = "";
@@ -1221,7 +1218,7 @@ public class TemplateManagementDao {
 	@SuppressWarnings("resource")
 	public List<GetTemplateMngmntActiveDataPojo> getCommandValue(String Value, String templateId) {
 		Statement statement = null;
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = jDBCConnection.getConnection();
 
 		String query = "";
 		String query1 = "";
@@ -1318,7 +1315,7 @@ public class TemplateManagementDao {
 	@SuppressWarnings("resource")
 	public String updateDeactivatedFeature(String Value, String templateId) {
 		Statement statement = null;
-		Connection connection = ConnectionFactory.getConnection();
+		Connection connection = jDBCConnection.getConnection();
 
 		String query = "";
 		;
@@ -1384,7 +1381,7 @@ public class TemplateManagementDao {
 
 	public List<TemplateLeftPanelJSONModel> getDataFeatures(String templateId) throws SQLException {
 		GetTemplateMngmntActiveDataPojo getTemplateMngmntActivePojo = new GetTemplateMngmntActiveDataPojo();
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs = null;
 		RequestInfoSO request = null;
 		List<GetTemplateMngmntActiveDataPojo> templateMngmntActiveList = null;
@@ -1492,7 +1489,7 @@ public class TemplateManagementDao {
 	public final Map<String, String> addTemplate(String vendor, String deviceFamily, String model, String os,
 			String osVersion, String region, String oldTemplateId, String oldVersion, String comment,
 			String networkType, String aliasName, String userName, String userRole) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		boolean result = false;
 		String tempid = null, oldversion = null;
 		String query1 = "INSERT INTO templateconfig_basic_details(temp_id,temp_vendor,temp_device_family,temp_model,temp_device_os,temp_os_version,temp_region,"
@@ -1617,7 +1614,7 @@ public class TemplateManagementDao {
 	}
 
 	public final boolean updateTemplateDB(String tempID) throws SQLException {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		boolean result = false;
 		String query = "INSERT INTO c3p_template_transaction_feature_list (id,command_feature_template_id)"
 				+ "VALUES(1,?)";
@@ -1643,7 +1640,7 @@ public class TemplateManagementDao {
 	public List<TemplateBasicConfigurationPojo> getTemplateList() {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		TemplateBasicConfigurationPojo pojo;
-		connection = ConnectionFactory.getConnection();		
+		connection = jDBCConnection.getConnection();		
 		String query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type not in ('VNF') order by temp_created_date desc";
 		try {
 			Statement pst = connection.createStatement();
@@ -1700,7 +1697,7 @@ public class TemplateManagementDao {
 	}
 
 	public void updateDBActiveOnSelectAll(String templateId) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query1 = null, query2 = null, query3 = null;
 		query1 = "select * from c3p_template_master_feature_list";
 		query2 = "delete from c3p_template_transaction_feature_list WHERE command_feature_template_id=?";
@@ -1743,7 +1740,7 @@ public class TemplateManagementDao {
 	}
 
 	public void updateDBActiveOnDeSelectResetAll(String templateId) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query = null;
 		query = "delete from c3p_template_transaction_feature_list WHERE command_feature_template_id=?";
 		PreparedStatement preparedStmt;
@@ -1774,7 +1771,7 @@ public class TemplateManagementDao {
 	}
 
 	public List<TemplateBasicConfigurationPojo> searchResults(String key, String value) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		String query = null;
 		if (key.equalsIgnoreCase("Template ID")) {
@@ -1855,7 +1852,7 @@ public class TemplateManagementDao {
 
 	public List<String> getActiveFeatureListForCurrentTemplate(String templateid) {
 		List<String> list = new ArrayList<String>();
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query = null;
 		query = "select * from templateconfig_feature_active where temp_id=?";
 		ResultSet rs = null;
@@ -1884,7 +1881,7 @@ public class TemplateManagementDao {
 	public final boolean savenewfeatureinCommandList(String parent, String commandName, String commandValue,
 			String templateID) {
 		boolean res = false;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query = null;
 		query = "INSERT INTO templateconfig_feature_command(Name,Command_Value,Parent_name,hasParent,draggable,templateid)"
 				+ "VALUES(?,?,?,1,1,?)";
@@ -1936,7 +1933,7 @@ public class TemplateManagementDao {
 	// features that are active
 
 	public String getFinalConfigurationTemplate(String tempId) throws SQLException {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs = null;
 		PreparedStatement preparedStmt = null;
 		String query = null;
@@ -1972,7 +1969,7 @@ public class TemplateManagementDao {
 	 */
 
 	public List<String> getListForFeatureSelectTempMngmnt(String tempId) throws SQLException {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs = null;
 		ResultSet rs1 = null;
 		PreparedStatement preparedStmt = null;
@@ -2039,7 +2036,7 @@ public class TemplateManagementDao {
 	}
 
 	public Map<String, String> updateTemplateDBOnModify(String tempID, String OldVersion) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		boolean result = false;
 		String tempid = null;
 		String query1 = "SELECT * FROM templateconfig_feature_active where TempId=?";
@@ -2105,7 +2102,7 @@ public class TemplateManagementDao {
 
 	public Map<String, String> backTemplateDBOnModify(String tempID, String OldVersion) {
 
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 
 		String queryTransactionFeatureList = "Delete from c3p_template_transaction_feature_list where command_feature_template_id IN (?)";
 
@@ -2189,7 +2186,7 @@ public class TemplateManagementDao {
 		String getTempalteByDateSortedQuery = null;
 		List<TemplateBasicConfigurationPojo> templateBscCnfgList = new ArrayList<TemplateBasicConfigurationPojo>();
 		TemplateBasicConfigurationPojo templateBscCnfgPojo;
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		getTempalteByDateSortedQuery = "SELECT * FROM templateconfig_basic_details WHERE temp_id = ?  ORDER BY temp_updated_date DESC";
 		try {
 			PreparedStatement pst = connection.prepareStatement(getTempalteByDateSortedQuery);
@@ -2231,7 +2228,7 @@ public class TemplateManagementDao {
 	 * Dhanshri Mane 14-1-2020 GetCammands related SeriesId
 	 */
 	public List<CommandPojo> getCammandsBySeriesId(String seriesId, String templateId) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query1 = "";
 		PreparedStatement pst = null;
 		ResultSet res = null;
@@ -2271,7 +2268,7 @@ public class TemplateManagementDao {
 
 	public List<CommandPojo> getCammandByTemplateAndfeatureId(int featureId, String templateId) {
 
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 
 		String query1 = "select c3p_template_master_command_list.command_value,c3p_template_master_command_list.command_id,c3p_template_transaction_command_list.command_position,c3p_template_master_command_list.no_form_command,c3p_template_master_command_list.command_type  from c3p_template_master_command_list ,c3p_template_transaction_command_list where c3p_template_master_command_list.command_id=? and c3p_template_master_command_list.command_id =c3p_template_transaction_command_list.command_id and c3p_template_master_command_list.command_sequence_id =c3p_template_transaction_command_list.command_sequence_id and c3p_template_transaction_command_list.command_template_id=?;";
 
@@ -2312,7 +2309,7 @@ public class TemplateManagementDao {
 	 */
 	public String getSeriesId(String templateId, String seriesId) {
 
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 
 		String query1 = "select * from c3p_template_transaction_feature_list where command_feature_template_id=?;";
 
@@ -2393,7 +2390,7 @@ public class TemplateManagementDao {
 	}
 	
 	public List<CommandPojo> getCammandByTemplateId(String templateId) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		String query1 = "SELECT command_value FROM c3p_template_master_command_list where command_type =?";
 		PreparedStatement pst;
 		ResultSet res;
@@ -2422,7 +2419,7 @@ public class TemplateManagementDao {
 		ResultSet res;
 
 		List<CommandPojo> cammandList = new ArrayList<>();
-		try (Connection connection = ConnectionFactory.getConnection();
+		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query1);) {								
 				preparedStmt.setString(1, master_f_id);
 				res = preparedStmt.executeQuery();

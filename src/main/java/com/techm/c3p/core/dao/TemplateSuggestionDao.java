@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,14 +18,13 @@ import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.techm.c3p.core.connection.ConnectionFactory;
 import com.techm.c3p.core.connection.DBUtil;
+import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.pojo.AttribCreateConfigJson;
 import com.techm.c3p.core.pojo.AttribCreateConfigPojo;
 import com.techm.c3p.core.pojo.CategoryDropDownPojo;
 import com.techm.c3p.core.pojo.TemplateAttribPojo;
 import com.techm.c3p.core.pojo.TemplateBasicConfigurationPojo;
-import com.techm.c3p.core.repositories.TemplateFeatureRepo;
 import com.techm.c3p.core.service.AttribCreateConfigService;
 import com.techm.c3p.core.service.CategoryDropDownService;
 
@@ -35,18 +33,15 @@ public class TemplateSuggestionDao {
 	private static final Logger logger = LogManager.getLogger(TemplateSuggestionDao.class);
 	@Autowired
 	private AttribCreateConfigService service;
-
-	@Autowired
-	TemplateFeatureRepo templatefeatureRepo;
-
 	@Autowired
 	private CategoryDropDownService categoryDropDownservice;
+	@Autowired
+	private JDBCConnection jDBCConnection;
 	
 	private Connection connection;
-	Statement statement;
 
 	public List<String> getListOfFeaturesForDeviceDetail(String tempId, String networkType) throws SQLException {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs = null;
 		PreparedStatement preparedStmt = null;
 		String query = null;
@@ -126,7 +121,7 @@ public class TemplateSuggestionDao {
 	}
 
 	public List<String> getListOfFeatureForSelectedTemplate(String tempId) throws SQLException {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs = null;
 		PreparedStatement preparedStmt = null;
 		String query = null;
@@ -194,7 +189,7 @@ public class TemplateSuggestionDao {
                 + query
                 + ") and command_feature_template_id like ?  group by command_feature_template_id having count(distinct id)=?) and temp_status='Approved'";
         logger.info("Query=" + query1);
-        connection = ConnectionFactory.getConnection();
+        connection = jDBCConnection.getConnection();
         PreparedStatement ps = null;
         ResultSet rs = null;
         List<TemplateBasicConfigurationPojo> listTemplate = new ArrayList<TemplateBasicConfigurationPojo>();
@@ -283,7 +278,7 @@ public class TemplateSuggestionDao {
 	}
 
 	public void insertTemplateUsageData(String TemplateId) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 
 		String[] arr = TemplateId.split("_V");
 		//String templateId = TemplateId.substring(0, 14);
@@ -340,7 +335,7 @@ public class TemplateSuggestionDao {
 	}
 
 	public void updateTemplateUsageData(String TemplateId, String result) {
-		connection = ConnectionFactory.getConnection();	
+		connection = jDBCConnection.getConnection();	
 		ResultSet rs = null;
 		logger.info("updateTemplateUsageData - TemplateId -"+TemplateId);
 		try {
@@ -405,7 +400,7 @@ public class TemplateSuggestionDao {
 	}
 
 	public String getFailureIssueType(String suggestion) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 
 		String category = "";
 		ResultSet rs = null;
@@ -430,7 +425,7 @@ public class TemplateSuggestionDao {
 	}
 
 	public String getBestTemplate(List<String> templateVersionList, String templateId) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 
 		String versionWithTemplate = "";
 		ResultSet rs = null;
@@ -598,8 +593,9 @@ public class TemplateSuggestionDao {
 		return templateWithAttrib;
 	}
 
+	@SuppressWarnings("unchecked")
 	public JSONObject getBasicDeatilsOfTemplate(String templateId, String version) {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		JSONObject basicDetails = new JSONObject();
 		ResultSet rs = null;
 		List<String> versionList = new ArrayList<>();
@@ -656,7 +652,7 @@ public class TemplateSuggestionDao {
 	}
 
 	public List<String> getFeatureList(String tempId) throws SQLException {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs = null;
 		PreparedStatement preparedStmt = null;
 		String query = null;
@@ -681,7 +677,7 @@ public class TemplateSuggestionDao {
 	}
 	
 	public List<String> getListOfFeaturesForDeviceDetail(String tempId, String networkType, String requestType) throws SQLException {
-		connection = ConnectionFactory.getConnection();
+		connection = jDBCConnection.getConnection();
 		ResultSet rs = null;
 		PreparedStatement preparedStmt = null;
 		String query = null;

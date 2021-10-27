@@ -4,8 +4,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -38,6 +36,8 @@ public class RequestScheduleService {
 	private DcmConfigService dcmConfigService;
 	@Autowired
 	private CamundaServiceCreateReq camundaServiceCreateReq;
+	@Autowired
+	private RequestSchedulerDao requestSchedulerDao;
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -86,7 +86,6 @@ public class RequestScheduleService {
 	public Response recheduleRequest(@RequestBody String request) {
 
 		JSONObject obj = new JSONObject();
-		RequestSchedulerDao daoService = new RequestSchedulerDao();
 		String processId = null;
 		try {
 			JSONParser parser = new JSONParser();
@@ -103,7 +102,7 @@ public class RequestScheduleService {
 			createConfigRequestDCM.setRequest_version(Double.parseDouble(version));
 			createConfigRequestDCM.setScheduledTime(scheduledTime);
 
-			processId = daoService.getProcessIdFromCamundaHistory(RequestId, version);
+			processId = requestSchedulerDao.getProcessIdFromCamundaHistory(RequestId, version);
 			if (processId != null) {
 				camundaServiceCreateReq.deleteProcessID(processId);
 				String result = requestSchedulerForNewAndModify.rescheduleRequestDB(RequestId, version, scheduledTime);
@@ -393,8 +392,7 @@ public class RequestScheduleService {
 				createConfigRequestDCM.setScheduledTime(json.get("scheduledTime").toString());
 			}
 
-			RequestSchedulerDao daoService = new RequestSchedulerDao();
-			processId = daoService.getProcessIdFromCamundaHistory(jsonData.get("requestId").toString(),
+			processId = requestSchedulerDao.getProcessIdFromCamundaHistory(jsonData.get("requestId").toString(),
 					jsonData.get("version").toString());
 			if (processId != null) {
 				camundaServiceCreateReq.deleteProcessID(processId);
@@ -433,11 +431,10 @@ public class RequestScheduleService {
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
 
-			RequestSchedulerDao daoService = new RequestSchedulerDao();
-			processId = daoService.getProcessIdFromCamundaHistory(RequestId, version);
+			processId = requestSchedulerDao.getProcessIdFromCamundaHistory(RequestId, version);
 			if (processId != null) {
 				camundaServiceCreateReq.deleteProcessID(processId);
-				daoService.deleteProcessIdFromCamundaHistory(processId);
+				requestSchedulerDao.deleteProcessIdFromCamundaHistory(processId);
 				String result = requestSchedulerForNewAndModify.cancelRequestDB(RequestId, version);
 				obj.put(new String("output"), result);
 

@@ -13,23 +13,28 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import com.techm.c3p.core.connection.ConnectionFactory;
 import com.techm.c3p.core.connection.DBUtil;
+import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.SchedulerListPojo;
 
+@Service
 public class RequestSchedulerDao {
 
 	private static final Logger logger = LogManager.getLogger(RequestSchedulerDao.class);
+	@Autowired
+	private JDBCConnection jDBCConnection;
 
 	public String updateScheduledRequest(CreateConfigRequestDCM configRequest) throws SQLException {
 		String result = "";
 		ResultSet rs = null;
 		String query = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
 				+ "VALUES(?,?,?,?,?)";
-		try(Connection connection = ConnectionFactory.getConnection();
+		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			
 			preparedStmt.setString(1, configRequest.getRequestId());
@@ -71,7 +76,7 @@ public class RequestSchedulerDao {
 		}
 		String query = "Select * from scheduledrequesthistory  where RequestID = ?  ORDER BY id DESC";
 		ResultSet rs = null;
-		try(Connection connection = ConnectionFactory.getConnection();
+		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			pst.setString(1, requestId);
@@ -109,7 +114,7 @@ public class RequestSchedulerDao {
 				+ "VALUES(?,?,?,?,?)";
 
 		String result = "";
-		try(Connection connection = ConnectionFactory.getConnection();
+		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);
 				PreparedStatement pst1 = connection.prepareStatement(queryInsert);) {
 
@@ -144,7 +149,7 @@ public class RequestSchedulerDao {
 		String queryInsert = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Last_Execution_Time)"
 				+ "VALUES(?,?,?,?)";
 		String result = "";
-		try(Connection connection = ConnectionFactory.getConnection();
+		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);
 				PreparedStatement pst1 = connection.prepareStatement(queryInsert);) {
 
@@ -169,7 +174,7 @@ public class RequestSchedulerDao {
 	public String runScheduledRequestUpdate(String requestId, String version) throws ParseException {
 		String query = "update requestinfoso set request_status = ? where alphanumeric_req_id = ? and request_version = ? ";
 		String result = "";
-		try(Connection	connection = ConnectionFactory.getConnection();
+		try(Connection	connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {			
 			pst.setString(1, "In Progress");
 			pst.setString(2, requestId);
@@ -189,7 +194,7 @@ public class RequestSchedulerDao {
 		String query = "Select * from requestinfoso  where alphanumeric_req_id = ? and request_version = ?";
 		ResultSet rs = null;
 
-		try(Connection connection = ConnectionFactory.getConnection();
+		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 			pst.setString(2, version);
@@ -217,7 +222,7 @@ public class RequestSchedulerDao {
 		ResultSet rs = null;
 		String result = "";
 		String rowId = "";
-		try(Connection connection = ConnectionFactory.getConnection();
+		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 
 			pst.setString(1, requestId);
@@ -292,7 +297,7 @@ public class RequestSchedulerDao {
 		return result;
 	}
 
-	public String covnertTStoString(Timestamp indate) {
+	private String covnertTStoString(Timestamp indate) {
 		String dateString = null;
 		Date date = new Date();
 		date.setTime(indate.getTime());
@@ -305,7 +310,7 @@ public class RequestSchedulerDao {
 		String query = "Select history_processId from camundahistory where history_requestId=? and history_versionId=?";
 		ResultSet rs = null;
 		
-		try(Connection	connection = ConnectionFactory.getConnection();
+		try(Connection	connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, requestId);
 			pst.setString(2, version);
@@ -324,7 +329,7 @@ public class RequestSchedulerDao {
 
 	public void deleteProcessIdFromCamundaHistory(String processId) {
 		String query = "delete from camundahistory where history_processId = ?";
-		try(Connection connection = ConnectionFactory.getConnection();
+		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement pst = connection.prepareStatement(query);) {
 			pst.setString(1, processId);
 			pst.execute("SET FOREIGN_KEY_CHECKS=0");
@@ -339,7 +344,7 @@ public class RequestSchedulerDao {
 		String result = "";
 		String query = "INSERT INTO scheduledrequesthistory(RequestID,version,Status,Next_Execution_Time,Last_Execution_Time)"
 				+ "VALUES(?,?,?,?,?)";
-		try(Connection connection = ConnectionFactory.getConnection();
+		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {
 			preparedStmt.setString(1, configRequest.getAlphanumericReqId());
 			preparedStmt.setString(2, Double.toString(configRequest.getRequestVersion()));

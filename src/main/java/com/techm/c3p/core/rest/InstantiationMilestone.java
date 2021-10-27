@@ -35,7 +35,6 @@ import com.techm.c3p.core.entitybeans.RfoDecomposedEntity;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.RfoDecomposedRepository;
 import com.techm.c3p.core.service.VnfInstantiationMilestoneService;
-import com.techm.c3p.core.utility.C3PCoreAppLabels;
 
 @Controller
 @RequestMapping("/Instantiation")
@@ -154,6 +153,9 @@ public class InstantiationMilestone extends Thread {
 		logger.info("Start - pushMilestoneInfo");
 		JSONObject outputObj = new JSONObject();
 		boolean isUpdate = false;
+		String EXTERNAL_MILESTONE_NAME= "milestone_name";
+		String EXTERNAL_MILESTONE_STATUS="status";
+		String EXTERNAL_MILESTONE_SO_ID="so_id";
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject inputJson = (JSONObject) parser.parse(request);
@@ -171,9 +173,9 @@ public class InstantiationMilestone extends Thread {
 					JSONObject requestJson = new JSONObject();
 					HttpHeaders headers = new HttpHeaders();
 					headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-					requestJson.put(C3PCoreAppLabels.EXTERNAL_MILESTONE_NAME.getValue(), mileStoneName);
-					requestJson.put(C3PCoreAppLabels.EXTERNAL_MILESTONE_STATUS.getValue(), mileStoneStatus);
-					requestJson.put(C3PCoreAppLabels.EXTERNAL_MILESTONE_SO_ID.getValue(), rfoDecomposedEntity.getOdRfoId());
+					requestJson.put(EXTERNAL_MILESTONE_NAME, mileStoneName);
+					requestJson.put(EXTERNAL_MILESTONE_STATUS, mileStoneStatus);
+					requestJson.put(EXTERNAL_MILESTONE_SO_ID, rfoDecomposedEntity.getOdRfoId());
 					logger.info("mileStoneName ->" + mileStoneName);
 					logger.info("mileStoneStatus ->" + mileStoneStatus);
 					logger.info("SO ID ->" + rfoDecomposedEntity.getOdRfoId());
