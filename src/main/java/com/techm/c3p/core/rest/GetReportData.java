@@ -78,6 +78,7 @@ public class GetReportData {
 	
 	@Autowired
 	private ReportDetailsService reportDetailsService;
+	
 	@POST
 	@RequestMapping(value = "/getReportDataforTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody

@@ -103,24 +103,30 @@ public class GetNotification {
 					tempId =tempIdAndVersion.get("tempId");
 					tempVersion = tempIdAndVersion.get("tempVersion");
 					TemplateConfigBasicDetailsEntity tempDetails = tempRepository.findByTempIdAndTempVersion(tempId, tempVersion);
+					if(tempDetails!=null) {
 					childJson.put(new String("updated_date"), tempDetails.getTempUpdatedDate().toString());
 					childJson.put(new String("comment"), tempDetails.getTempCommentSection());
 					templateNotificationList.add(childJson);
+					}
 				}
 				else if ("suser".equalsIgnoreCase(userRole) && notificationDetails[1].toString().contains("Feature")) {
 					featureId = getFeatureId(notificationDetails[2].toString());
 					MasterFeatureEntity featureDetails = masterFeatureRepository.findByFId(featureId);
+					if(featureDetails!=null) {
 					childJson.put(new String("updated_date"), featureDetails.getfUpdatedDate().toString());
 					childJson.put(new String("comment"), featureDetails.getfComments());
 					featureNotificationList.add(childJson);
+					}
 				}
 				else if ("feuser".equalsIgnoreCase(userRole) && notificationDetails[1].toString().contains("FE"))
 				{
 					requestId = getRequestId(notificationDetails[2].toString());
 					RequestInfoEntity requestDetails = requestInfoDetailsRepositories.findByAlphanumericReqId(requestId);
+					if(requestDetails!=null) {
 					childJson.put(new String("request_status"), requestDetails.getStatus());
 					childJson.put(new String("request_updated_on"), requestDetails.getEndDateOfProcessing().toString());
 					requsetNotificationDetailList.add(childJson);
+					}
 				}
 			}
 		}

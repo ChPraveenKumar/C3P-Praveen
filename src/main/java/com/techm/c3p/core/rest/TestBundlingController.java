@@ -360,9 +360,10 @@ public class TestBundlingController {
 				versioningModelObject.setTests(versioningModelChildList);
 				versioningModel.add(versioningModelObject);
 				jsonArray.add(versioningModel);
+				obj.put("categoryTest", versioningModel);
 			}
 
-			obj.put("categoryTest", versioningModel);
+			
 		} catch (Exception e) {
 			logger.error(e);
 			obj.put("data", "No Record Found");

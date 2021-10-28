@@ -32,14 +32,13 @@ public class TemplateManagementDetailsService {
 	private TemplateConfigBasicDetailsRepository templateConfigBasicDetailsRepository;
 
 	@Autowired
-	private TemplateManagementDao templateManagementDao;
+	private TemplateManagementDao templateManagementDao;	
 	
 	public boolean addNewFeature(String comand_display_feature, String command_to_add, String command_type,
 			String templateId, int parentid, int save, int topLineNum, int bottomLineNum, boolean dragged,
 			int hasParent, String newFeature, String version, String lstCmdId) {
 		boolean result = false;
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-
+		
 		if (save == 1) {
 			result = templateManagementDao.saveTemperorySequence(templateId, version);
 			if (result) {
@@ -59,22 +58,18 @@ public class TemplateManagementDetailsService {
 	}
 
 	public String selectFeature(String request) {
-		String res = null;
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+		String res = null;		
 		res = templateManagementDao.selectFeature(request);
 		return res;
 	}
 
-	public Map<String, String> getDataForRightPanel(String templateId, boolean selectAll) throws Exception {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();		
+	public Map<String, String> getDataForRightPanel(String templateId, boolean selectAll) throws Exception {			
 		Map<String, String> templatecommandList = new HashMap<String, String>();
 		templatecommandList = templateManagementDao.getDataForRightPanel(templateId, selectAll);
 		return templatecommandList;
 	}
 
-	public List<GetTemplateMngmntPojo> getCommandForActivefeatures(String templateId) throws Exception {
-
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+	public List<GetTemplateMngmntPojo> getCommandForActivefeatures(String templateId) throws Exception {		
 		GetTemplateMngmntPojo getTemplateMngmntPojo = null;
 		List<GetTemplateMngmntActiveDataPojo> templatecommandList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
 		List<GetTemplateMngmntPojo> templateactiveList = new ArrayList<GetTemplateMngmntPojo>();
@@ -101,8 +96,7 @@ public class TemplateManagementDetailsService {
 	}
 
 	public List<GetTemplateMngmntPojo> getCommandsforselectedchildfeatures(JSONArray nameArrray, JSONArray checkedArray,
-			String templateid) throws Exception {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+			String templateid) throws Exception {		
 		GetTemplateMngmntPojo getTemplateMngmntPojo = null;
 		List<GetTemplateMngmntActiveDataPojo> templatecommandList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
 		List<GetTemplateMngmntPojo> templateactiveList = new ArrayList<GetTemplateMngmntPojo>();
@@ -123,8 +117,7 @@ public class TemplateManagementDetailsService {
 	}
 
 	public List<GetTemplateMngmntPojo> getCommandForSelectedFeature(String id, String templateId) throws Exception {
-
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+		
 		GetTemplateMngmntPojo getTemplateMngmntPojo = null;
 		List<GetTemplateMngmntActiveDataPojo> templatecommandList = new ArrayList<GetTemplateMngmntActiveDataPojo>();
 		List<GetTemplateMngmntPojo> templateactiveList = new ArrayList<GetTemplateMngmntPojo>();
@@ -143,20 +136,18 @@ public class TemplateManagementDetailsService {
 		return templateactiveList;
 	}
 
-	public String updateDeactivatedFeature(String id, String templateId) throws Exception {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+	public String updateDeactivatedFeature(String id, String templateId) throws Exception {		
 		String result = templateManagementDao.updateDeactivatedFeature(id, templateId);
 		return result;
 	}
 
-	public String getTemplateForTemplateId(String templateId) throws Exception {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+	public String getTemplateForTemplateId(String templateId) throws Exception {		
 		String result = templateManagementDao.getFinalConfigurationTemplate(templateId);
 		return result;
 	}
 
 	public List<TemplateLeftPanelJSONModel> getActiveFeatures(String templateId) throws Exception {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+		
 		List<TemplateLeftPanelJSONModel> templatecommandList = new ArrayList<TemplateLeftPanelJSONModel>();
 		templatecommandList = templateManagementDao.getDataFeatures(templateId);
 		return templatecommandList;
@@ -164,21 +155,18 @@ public class TemplateManagementDetailsService {
 
 	public boolean updateTemplateDBonCreate(String tempID) throws SQLException {
 		boolean result = false;
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
 		result = templateManagementDao.updateTemplateDB(tempID);
 		return result;
 	}
 
 	public Map<String, String> updateTemplateDBonModify(String tempID, String oldVersion) {
-		Map<String, String> result = new HashMap<String, String>();
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+		Map<String, String> result = new HashMap<String, String>();		
 		result = templateManagementDao.updateTemplateDBOnModify(tempID, oldVersion);
 		return result;
 	}
 
 	public Map<String, String> backTemplateDBonModify(String tempID, String oldVersion) {
-		Map<String, String> result = new HashMap<String, String>();
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+		Map<String, String> result = new HashMap<String, String>();		
 		result = templateManagementDao.backTemplateDBOnModify(tempID, oldVersion);
 		return result;
 	}
@@ -193,34 +181,28 @@ public class TemplateManagementDetailsService {
 		return result;
 	}
 
-	public List<TemplateBasicConfigurationPojo> getTemplateListData() {
-		//TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+	public List<TemplateBasicConfigurationPojo> getTemplateListData() {	
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		list = templateManagementDao.getTemplateList();
 		return list;
 	}
 
-	public void updateActiveOnSelectAll(String templateId) {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+	public void updateActiveOnSelectAll(String templateId) {		
 		templateManagementDao.updateDBActiveOnSelectAll(templateId);
 	}
 
-	public void updateActiveOnDeSelectResetAll(String templateId) {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+	public void updateActiveOnDeSelectResetAll(String templateId) {		
 		templateManagementDao.updateDBActiveOnDeSelectResetAll(templateId);
 	}
 
 	public List<TemplateBasicConfigurationPojo> searchTemplates(String key, String value) {
-		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();		
 		list = templateManagementDao.searchResults(key, value);
 		return list;
 	}
 
 	public List<String> getActiveFeatureListForCurrentTemplate(String templateid) {
 		List<String> list = new ArrayList<String>();
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-
 		list = templateManagementDao.getActiveFeatureListForCurrentTemplate(templateid);
 		return list;
 	}
@@ -268,15 +250,12 @@ public class TemplateManagementDetailsService {
 	public boolean savenewfeatureinCommandList(String parent, String commandName, String commandValue,
 			String templateID) {
 		boolean isSuccess = false;
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-
 		isSuccess = templateManagementDao.savenewfeatureinCommandList(parent, commandName, commandValue, templateID);
 		return isSuccess;
 	}
 
 	/* pankaj yes no flow */
-	public List<TemplateBasicConfigurationPojo> getTemplateToModify(String templateId) {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
+	public List<TemplateBasicConfigurationPojo> getTemplateToModify(String templateId) {		
 		List<TemplateBasicConfigurationPojo> templateBscConfg = new ArrayList<TemplateBasicConfigurationPojo>();
 		Boolean ifApproved = false;
 		List<TemplateBasicConfigurationPojo> templateList = templateManagementDao.getTemplatesListToModify(templateId);

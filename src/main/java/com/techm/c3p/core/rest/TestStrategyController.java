@@ -257,6 +257,12 @@ public class TestStrategyController {
 		List<TestDetail> testdetaillist = new ArrayList<TestDetail>();
 		TestDetail detail = null;
 		boolean ischeck = false;
+		if(testid.contains("_PreUpgrade_")) {
+			testid = testid.replace("_PreUpgrade_", "_");
+		}
+		if(testid.contains("_PostUpgrade_")) {
+			testid = testid.replace("_PostUpgrade_", "_");
+		}
 		Set<TestDetail> settestDetails = testDetailsRepository.findByTestIdAndVersion(testid, version);
 		List<TestDetail> testList = testDetailsRepository.findByTestId(testid);
 		Collection<TestDetail> testDetailFinalList = testList.stream().collect(Collectors.toMap(TestDetail::getTestName,

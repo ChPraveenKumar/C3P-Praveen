@@ -225,10 +225,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								//if (value) {
 									// changes for testing strategy
 									List<Boolean> results = null;
-									RequestInfoDao dao = new RequestInfoDao();
+//									RequestInfoDao dao = new RequestInfoDao();
 									List<TestDetail> listOfTests = new ArrayList<TestDetail>();
 									List<TestDetail> finallistOfTests = new ArrayList<TestDetail>();
-									listOfTests = dao.findTestFromTestStrategyDB(requestinfo.getFamily(),
+									listOfTests = requestInfoDao.findTestFromTestStrategyDB(requestinfo.getFamily(),
 											requestinfo.getOs(), requestinfo.getOsVersion(), requestinfo.getVendor(),
 											requestinfo.getRegion(), "Device Prevalidation");
 									List<TestDetail> selectedTests = listOfTests;

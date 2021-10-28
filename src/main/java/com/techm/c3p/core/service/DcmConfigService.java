@@ -1388,10 +1388,7 @@ public class DcmConfigService {
 
 							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 							requestFeatureEntity.settFeatureId(featureid);
-							requestFeatureEntity.settRequestId(requestInfoSO.getAlphanumericReqId());
-							requestFeatureEntity.settHostName(requestInfoSO.getHostname());
-							requestFeatureEntity.settRequestVersion(requestInfoSO.getRequestVersion());
-							requestFeatureRepo.save(requestFeatureEntity);
+							saveRequestFeatureData(requestFeatureEntity,requestInfoSO);
 						});
 
 					}
@@ -1402,13 +1399,8 @@ public class DcmConfigService {
 							RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 							MasterFeatureEntity masterFeatureId = masterFeatureRepository
 									.findByFIdAndFVersion(feature.getfMasterId(), "1.0");
-
-							requestFeatureEntity.settMasterFeatureId(masterFeatureId);
-							;
-							requestFeatureEntity.settRequestId(requestInfoSO.getAlphanumericReqId());
-							requestFeatureEntity.settHostName(requestInfoSO.getHostname());
-							requestFeatureEntity.settRequestVersion(requestInfoSO.getRequestVersion());
-							requestFeatureRepo.save(requestFeatureEntity);
+							requestFeatureEntity.settMasterFeatureId(masterFeatureId);							
+							saveRequestFeatureData(requestFeatureEntity,requestInfoSO);
 						});
 					}
 				} else if (requestInfoSO.getApiCallType().equalsIgnoreCase("c3p-ui")) {
@@ -1417,16 +1409,20 @@ public class DcmConfigService {
 							TemplateFeatureEntity featureId = templateFeatureRepo
 									.findByCommandAndComandDisplayFeature(requestInfoSO.getTemplateID(), feature);
 							if (featureId != null) {
-
 								RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 								requestFeatureEntity.settFeatureId(featureId);
-								requestFeatureEntity.settRequestId(requestInfoSO.getAlphanumericReqId());
-								requestFeatureEntity.settHostName(requestInfoSO.getHostname());
-								requestFeatureEntity.settRequestVersion(requestInfoSO.getRequestVersion());
-								requestFeatureRepo.save(requestFeatureEntity);
+								saveRequestFeatureData(requestFeatureEntity,requestInfoSO);
 							}
 						});
-					}
+					}else {
+					features.forEach(feature -> {
+						RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
+						MasterFeatureEntity masterFeatureId = masterFeatureRepository
+								.findByFIdAndFVersion(feature.getfMasterId(), "1.0");
+						requestFeatureEntity.settMasterFeatureId(masterFeatureId);						
+						saveRequestFeatureData(requestFeatureEntity,requestInfoSO);
+					});
+				}
 				}
 
 				if (output.equalsIgnoreCase("true")) {
@@ -1679,6 +1675,13 @@ public class DcmConfigService {
 			updateIpPollStatus(pojoList, requestInfoSO, "Allocated", device);
 		}
 		return result;
+	}
+
+	private void saveRequestFeatureData(RequestFeatureTransactionEntity requestFeatureEntity, RequestInfoPojo requestInfoSO) {		
+		requestFeatureEntity.settRequestId(requestInfoSO.getAlphanumericReqId());
+		requestFeatureEntity.settHostName(requestInfoSO.getHostname());
+		requestFeatureEntity.settRequestVersion(requestInfoSO.getRequestVersion());
+		requestFeatureRepo.save(requestFeatureEntity);		
 	}
 
 	private void createHeader(RequestInfoPojo configRequest) {

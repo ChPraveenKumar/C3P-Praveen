@@ -45,6 +45,7 @@ public class RequestDetails {
 	
 	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;	
+	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
 	
@@ -53,6 +54,7 @@ public class RequestDetails {
 	
 	@Autowired
 	private TestDetailsRepository testDetailsRepository;
+	
 	@Autowired
 	private JDBCConnection jDBCConnection;
 	
@@ -176,7 +178,7 @@ public class RequestDetails {
 		String KEY_1 = "1";
 		String KEY_2 = "2";
 		
-		RequestDetails requestDetailsDao = new RequestDetails();
+//		RequestDetails requestDetailsDao = new RequestDetails();
 		JSONParser parser = new JSONParser();
 		RequestInfoPojo createConfigRequestDCM = new RequestInfoPojo();
 		createConfigRequestDCM.setAlphanumericReqId(requestID);
@@ -193,7 +195,7 @@ public class RequestDetails {
 				Math.min(createConfigRequestDCM.getAlphanumericReqId().length(), 4));
 		String testAndDiagnosis = "";
 		try {
-			testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(
+			testAndDiagnosis = getTestAndDiagnosisDetails(
 					createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 		} catch (SQLException e) {
 			logger.error("Error in customerReportUIRevamp : "+e.getMessage());			

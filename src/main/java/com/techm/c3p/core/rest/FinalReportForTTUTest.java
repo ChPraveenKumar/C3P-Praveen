@@ -83,6 +83,9 @@ public class FinalReportForTTUTest extends Thread {
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	
+	@Autowired
+	private TemplateSuggestionDao templateSuggestionDao;
+	
 	private static final String FLAG_PASS ="Pass";
 	private static final String FLAG_FAIL ="Fail";
 
@@ -103,7 +106,7 @@ public class FinalReportForTTUTest extends Thread {
 		JSONObject json;
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
 		
-		TemplateSuggestionDao templateSuggestionDao = new TemplateSuggestionDao();
+		
 		Boolean value = false;
 		String FailureIssueType = "";
 		json = (JSONObject) parser.parse(request);
@@ -370,16 +373,16 @@ public class FinalReportForTTUTest extends Thread {
 						 dcmConfigService.updateIpPollStatus(ipPools, requestinfo, hostIpStatus, deviceInfo);
 					}
 				} else if (type.equalsIgnoreCase("SLGF")) {
-					RequestInfoDao dao = new RequestInfoDao();
-					boolean ishealthCheckSuccess = dao.isHealthCheckSuccesfulForOSUpgrade(
+//					RequestInfoDao dao = new RequestInfoDao();
+					boolean ishealthCheckSuccess = requestInfoDao.isHealthCheckSuccesfulForOSUpgrade(
 							requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 					logger.info("Health Check Flag is " + ishealthCheckSuccess);
-					boolean isPreHealthCheckSuccess = dao.isPreHealthCheckSuccesfulForOSUpgrade(
+					boolean isPreHealthCheckSuccess = requestInfoDao.isPreHealthCheckSuccesfulForOSUpgrade(
 							requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 					logger.info("Pre Health Check Flag is " + isPreHealthCheckSuccess);
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
-					boolean isDilevarySuccess = dao.isDilevarySuccessforOSUpgrade(requestinfo.getAlphanumericReqId(),
+					boolean isDilevarySuccess = requestInfoDao.isDilevarySuccessforOSUpgrade(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
 					if (!isPreHealthCheckSuccess || !ishealthCheckSuccess || !isDilevarySuccess) {
 						if (deviceLocked) {
@@ -699,16 +702,16 @@ public class FinalReportForTTUTest extends Thread {
 					jsonArray = new Gson().toJson(value);
 					//obj.put(new String("output"), jsonArray);
 				} else {
-					RequestInfoDao dao = new RequestInfoDao();
-					boolean ishealthCheckSuccess = dao.isHealthCheckSuccesfulForOSUpgrade(
+//					RequestInfoDao dao = new RequestInfoDao();
+					boolean ishealthCheckSuccess = requestInfoDao.isHealthCheckSuccesfulForOSUpgrade(
 							requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 					logger.info("Health Check Flag is " + ishealthCheckSuccess);
-					boolean isPreHealthCheckSuccess = dao.isPreHealthCheckSuccesfulForOSUpgrade(
+					boolean isPreHealthCheckSuccess = requestInfoDao.isPreHealthCheckSuccesfulForOSUpgrade(
 							requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 					logger.info("Pre Health Check Flag is " + isPreHealthCheckSuccess);
 					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
-					boolean isDilevarySuccess = dao.isDilevarySuccessforOSUpgrade(requestinfo.getAlphanumericReqId(),
+					boolean isDilevarySuccess = requestInfoDao.isDilevarySuccessforOSUpgrade(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
 					if (!isPreHealthCheckSuccess || !ishealthCheckSuccess || !isDilevarySuccess) {
 						if (deviceLocked) {
