@@ -58,7 +58,8 @@ public class ConfigurationManagmentService {
 
 	InvokeFtl invokeFtl = new InvokeFtl();
 
-	GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
+	@Autowired
+	private GetConfigurationTemplateService getConfigurationTemplateService;
 
 	@Autowired
 	private TemplateManagementDao templateManagementDao;

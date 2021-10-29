@@ -60,7 +60,9 @@ public class NetworkTestValidation extends Thread {
 	@Autowired
 	private DcmConfigService dcmConfigService;
 	@Autowired
-	private VNFHelper helper;
+	private VNFHelper vNFHelper;
+	@Autowired
+	private ODLClient oDLClient;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	@Autowired
@@ -167,14 +169,12 @@ public class NetworkTestValidation extends Thread {
 										
 										if(deviceDetails.getdVNFSupport().equalsIgnoreCase("VNF"))
 										{
-											//VNFHelper helper=new VNFHelper();
-											Boolean r = helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											Boolean r = vNFHelper.performTest(finallistOfTests.get(i),requestinfo, user, password);
 											results.add(r);
 										}
 										else if(deviceDetails.getdConnect().equalsIgnoreCase("RESTCONF"))
 										{
-											ODLClient client=new ODLClient();
-											client.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											oDLClient.performTest(finallistOfTests.get(i),requestinfo, user, password);
 										}
 										else
 										{

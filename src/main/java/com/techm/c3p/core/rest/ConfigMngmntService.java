@@ -84,6 +84,8 @@ public class ConfigMngmntService {
 	
 	@Autowired
 	private TestDetailsRepository testDetailsRepository;
+	@Autowired
+	private GetConfigurationTemplateService getConfigurationTemplateService;
 
 	
 	/**
@@ -93,7 +95,6 @@ public class ConfigMngmntService {
 	@RequestMapping(value = "/createConfigurationDcm", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public JSONObject createConfigurationDcm(@RequestBody String configRequest) {
-		// DcmConfigService dcmConfigService=new DcmConfigService();
 		JSONObject obj = new JSONObject();
 		String requestType = null;
 		String requestIdForConfig = "";
@@ -1956,7 +1957,6 @@ public class ConfigMngmntService {
 		String data = "Failure";
 		String userName = null;
 
-		GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		Map<String, String> result = null;
 		List<RequestInfoPojo> configReqToSendToC3pCodeList = new ArrayList<RequestInfoPojo>();

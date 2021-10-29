@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
@@ -17,6 +18,7 @@ import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
 import com.techm.c3p.core.utility.TextReport;
 
+@Service
 public class FinalReportTestSSH {
 	private static final Logger logger = LogManager.getLogger(FinalReportTestSSH.class);
 

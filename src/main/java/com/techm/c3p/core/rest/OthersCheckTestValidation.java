@@ -61,6 +61,12 @@ public class OthersCheckTestValidation extends Thread {
 	
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	@Autowired
+	private PostUpgradeHealthCheck postUpgradeHealthCheck;
+	@Autowired
+	private VNFHelper vNFHelper;
+	@Autowired
+	private ODLClient oDLClient;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	/**
@@ -165,13 +171,11 @@ public class OthersCheckTestValidation extends Thread {
 											
 											if(deviceDetails.getdConnect().equalsIgnoreCase("NETCONF"))
 											{
-												VNFHelper helper=new VNFHelper();
-												helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
+												vNFHelper.performTest(finallistOfTests.get(i),requestinfo, user, password);
 											}
 											else if(deviceDetails.getdConnect().equalsIgnoreCase("RESTCONF"))
 											{
-												ODLClient client=new ODLClient();
-												client.performTest(finallistOfTests.get(i),requestinfo, user, password);
+												oDLClient.performTest(finallistOfTests.get(i),requestinfo, user, password);
 											}
 											else
 											{
@@ -263,8 +267,7 @@ public class OthersCheckTestValidation extends Thread {
 
 						
 					} else {
-						PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-						obj = osHealthChk.healthcheckCommandTest(request, "POST");
+						obj = postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
 					}
 
 				}
@@ -279,7 +282,6 @@ public class OthersCheckTestValidation extends Thread {
 							Double.toString(requestinfo.getRequestVersion()), "others_test", "2", "Failure");
 
 					String response = "";
-					String responseDownloadPath = "";
 					try {
 						response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
 						requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),

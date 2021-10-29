@@ -24,6 +24,9 @@ public class GetConfigurationTemplateService {
 	@Autowired
 	private RequestInfoDao requestInfoDao;
 	
+	@Autowired
+	private CreateAndCompareModifyVersion createAndCompareModifyVersion;
+	
 	public String generateTemplate(CreateConfigRequestDCM configRequest) {
 
 		String response = null;
@@ -58,7 +61,6 @@ public class GetConfigurationTemplateService {
 						}
 					}
 					float highestVersion = 0, tempVersion = 0;
-					String tempToUseTemp = null;
 					if (isTemplateAvailable) {
 						for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 							tempString = listOfTemplatesAvailable.get(i).substring(0,
@@ -105,9 +107,6 @@ public class GetConfigurationTemplateService {
 	}
 
 	public String getTemplateOnModify(CreateConfigRequestDCM configRequest) {
-		CreateAndCompareModifyVersion createAndCompareModifyVersion = new CreateAndCompareModifyVersion();
-		
-		String requestIdForConfig = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
 		String responseForTemplate = "";
 		try {
@@ -193,7 +192,6 @@ public class GetConfigurationTemplateService {
 						}
 					}
 					float highestVersion = 0, tempVersion = 0;
-					String tempToUseTemp = null;
 					if (isTemplateAvailable) {
 						for (int i = 0; i < listOfTemplatesAvailable.size(); i++) {
 							tempString = listOfTemplatesAvailable.get(i).substring(0,

@@ -111,6 +111,8 @@ public class RequestInfoDao {
 	private RequestDetails requestDetails;
 	@Autowired
 	private JDBCConnection jDBCConnection;
+	@Autowired
+	private GetAllDetailsService getAllDetailsService;
 	
 	private static final String FLAG_PASS ="Pass";
 	
@@ -846,10 +848,9 @@ public class RequestInfoDao {
 		}
 
 		List<RequestInfo> requestInfoList = new ArrayList<RequestInfo>();
-		GetAllDetailsService gads = new GetAllDetailsService();
 		String response;
 		try {
-			response = gads.jsonResponseString();
+			response = getAllDetailsService.jsonResponseString();
 			JSONObject jsonObject = new JSONObject(response);
 			JSONArray tsmresponse = (JSONArray) jsonObject
 					.get("requestsDetail");
@@ -4786,7 +4787,6 @@ public class RequestInfoDao {
 
 	public String updateTimeIntervalElapsedTime(String requestId, String version)
 			throws SQLException {
-		RequestInfoDao requestinfoDao = new RequestInfoDao();
 		String query = "select * from requestinfoso where alphanumeric_req_id = ? and request_version= ?";
 		ResultSet rs = null;
 		String updateQuery = null;
@@ -4811,14 +4811,14 @@ public class RequestInfoDao {
 				}
 
 				if (rs.getString("temp_elapsed_time") == null) {
-					diff = requestinfoDao.calcTimeDiffInMins(timestamp, d);
+					diff = calcTimeDiffInMins(timestamp, d);
 					updateQuery = "update requestinfoso set temp_elapsed_time = ?, temp_processing_time= now() where alphanumeric_req_id = ? and request_version= ?";
 				} else {
 					Timestamp d1 = null;
 					date = new java.util.Date();
 					timestamp = new java.sql.Timestamp(date.getTime());
 					d1 = rs.getTimestamp("temp_processing_time");
-					String diff1 = requestinfoDao.calcTimeDiffInMins(timestamp,
+					String diff1 = calcTimeDiffInMins(timestamp,
 							d1);
 					diff = String.format("%.2f", Float.toString((Float
 							.parseFloat(diff1) + Float.parseFloat(rs

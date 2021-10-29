@@ -284,8 +284,6 @@ public class FEFlowService {
 	@RequestMapping(value = "/restartFEFlow", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response restartFEFlow(@RequestBody String request) {
-		final CamundaServiceCreateReq camundaServiceCreateReq = new CamundaServiceCreateReq();
-		
 		Response response = null;
 		try {
 

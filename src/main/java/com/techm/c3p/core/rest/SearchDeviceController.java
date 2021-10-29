@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -23,38 +22,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.SiteInfoEntity;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
-import com.techm.c3p.core.repositories.SiteInfoRepository;
-import com.techm.c3p.core.repositories.TestDetailsRepository;
-import com.techm.c3p.core.repositories.TestFeatureListRepository;
-import com.techm.c3p.core.service.InventoryManagmentService;
 
 @Controller
 @RequestMapping("/searchdeviceinventory")
 public class SearchDeviceController {
 
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
-
 	@Autowired
-	SiteInfoRepository siteRepo;
-
-	@Autowired
-	DeviceDiscoveryRepository deviceInforepo;
-
-	@Autowired
-	InventoryManagmentService inventoryServiceRepo;
-
-	@Autowired
-	public TestFeatureListRepository testFeatureListRepository;
-
-	@Autowired
-	public TestDetailsRepository testDetailsRepository;
-
-	private static final Logger logger = LogManager
-			.getLogger(SearchDeviceController.class);
+	private DeviceDiscoveryRepository deviceInforepo;
+	private static final Logger logger = LogManager.getLogger(SearchDeviceController.class);
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************

@@ -131,6 +131,12 @@ public class DcmConfigService {
 
 	@Autowired
 	private TelnetCommunicationSSH telnetCommunicationSSH;
+	
+	@Autowired
+	private CreateAndCompareModifyVersion createAndCompareModifyVersion;
+	
+	@Autowired
+	private VNFHelper vNFHelper;
 
 	public Map<String, String> updateAlldetails(CreateConfigRequestDCM configRequest, List<CreateConfigPojo> pojoList)
 			throws IOException {
@@ -469,13 +475,6 @@ public class DcmConfigService {
 					if (configRequest.getNetworkType().equalsIgnoreCase("Legacy")) {
 						createTemplate(configRequest);
 
-						// update the scheduler history
-						/*
-						 * requestSchedulerDao .updateScheduledRequest(configRequest);
-						 * TelnetCommunicationSSH telnetCommunicationSSH = new TelnetCommunicationSSH(
-						 * configRequest); telnetCommunicationSSH.setDaemon(true);
-						 * telnetCommunicationSSH.start();
-						 */
 					} else if (configRequest.getNetworkType().equalsIgnoreCase(
 							"VNF")) {/*
 										 * VNFHelper helper = new VNFHelper(); if (configRequest.getVnfConfig() != null)
@@ -538,8 +537,6 @@ public class DcmConfigService {
 
 	public Map<String, String> updateAlldetailsOnModify(CreateConfigRequestDCM configRequest) {
 		ValidatorConfigManagement validatorConfigManagement = new ValidatorConfigManagement();
-		CreateAndCompareModifyVersion createAndCompareModifyVersion = new CreateAndCompareModifyVersion();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		String validateMessage = "";
 
 		String requestIdForConfig = "";
@@ -768,7 +765,6 @@ public class DcmConfigService {
 
 	public List<RequestInfoSO> getAllDetails() {
 		List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		detailsList = requestInfoDao.getAllResquestsFromDB();
 		return detailsList;
 	}
@@ -776,14 +772,12 @@ public class DcmConfigService {
 	// Overload method for passing user information
 	public List<RequestInfoSO> getAllDetails(String userRole) {
 		List<RequestInfoSO> detailsList = new ArrayList<RequestInfoSO>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		detailsList = requestInfoDao.getAllResquestsFromDB(userRole);
 		return detailsList;
 	}
 
 	public List<EIPAMPojo> searchAllIPAMData(String site, String customer, String service, String ip)
 			throws SQLException {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		return requestInfoDao.getSearchedRecordsFromDB(site, customer, service, ip);
 	}
 
@@ -791,13 +785,11 @@ public class DcmConfigService {
 	 * Code changes for JDBC to JPA migration --- Alert Page(To display All alerts)
 	 */
 	public List<AlertInformationPojo> getAllAlertData() {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		return requestInfoDao.getALLAlertDataFromDB();
 	}
 
 	public List<RequestInfoSO> getDatasForRequest(String requestid) {
 		List<RequestInfoSO> list = new ArrayList<RequestInfoSO>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		list = requestInfoDao.getDatasForRequestfromDB(requestid);
 		return list;
 	}
@@ -812,42 +804,36 @@ public class DcmConfigService {
 
 	public int getTotalRequests() {
 		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getTotalRequestsFromDB();
 		return num;
 	}
 
 	public int getSuccessRequests() {
 		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getSuccessRequestsFromDB();
 		return num;
 	}
 
 	public int getFailureRequests() {
 		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getFailureRequestsFromDB();
 		return num;
 	}
 
 	public int getInProgressRequests() {
 		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getInProgressRequestsFromDB();
 		return num;
 	}
 
 	public boolean updateEIPAMRecord(String customer, String site, String ip, String mask) {
 		boolean res = false;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		res = requestInfoDao.updateEIPAMRecord(customer, site, ip, mask);
 		return res;
 	}
 
 	public boolean addEIPAMRecord(String customer, String site, String ip, String mask, String service, String region) {
 		boolean res = false;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		res = requestInfoDao.addEIPAMRecord(customer, site, ip, mask, service, region);
 		return res;
 	}
@@ -891,16 +877,11 @@ public class DcmConfigService {
 		} else {
 			time = "0";
 		}
-		// RequestInfoDao requestInfoDao=new RequestInfoDao();
-		// time=requestInfoDao.getMinElapsedTimeFromDB();
 		return time;
 	}
 
 	public String getAvgElapsedTime(List<RequestInfoSO> list) {
 		String time;
-		// RequestInfoDao requestInfoDao=new RequestInfoDao();
-		// time=requestInfoDao.getAvgElapsedTimeFromDB();
-
 		List<Double> vals = new ArrayList<Double>();
 		for (int i = 0; i < list.size(); i++) {
 			if (list.get(i).getElapsed_time() != null) {
@@ -922,7 +903,6 @@ public class DcmConfigService {
 
 	public JSONArray getColumnChartData() {
 		JSONArray array = new JSONArray();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		array = requestInfoDao.getColumnChartData();
 		return array;
 	}
@@ -942,18 +922,15 @@ public class DcmConfigService {
 	}
 
 	public List<ConfigurationDataValuePojo> getVendorData() {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		return requestInfoDao.getALLVendorData();
 	}
 
 	public List<ConfigurationDataValuePojo> getDeviceTypeData() {
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		return requestInfoDao.getALLDeviceTypeData();
 	}
 
 	public List<String> getModelData(String vendor, String deviceType) {
 		List<String> list = new ArrayList<String>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		try {
 			list = requestInfoDao.getALLModelData(vendor, deviceType);
 		} catch (IOException e) {
@@ -965,7 +942,6 @@ public class DcmConfigService {
 
 	public List<String> getOSData(String make, String deviceType) {
 		List<String> list = new ArrayList<String>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		try {
 			list = requestInfoDao.getALLOSData(make, deviceType);
 		} catch (IOException e) {
@@ -977,7 +953,6 @@ public class DcmConfigService {
 
 	public List<String> getOSVersionData(String os, String model) {
 		List<String> list = new ArrayList<String>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		try {
 			list = requestInfoDao.getALLOSVersionData(os, model);
 		} catch (IOException e) {
@@ -989,14 +964,12 @@ public class DcmConfigService {
 
 	public JSONArray getColumnChartDataMonthly() {
 		JSONArray array = new JSONArray();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		array = requestInfoDao.getColumnChartDataMonthly();
 		return array;
 	}
 
 	public List<ConfigurationDataValuePojo> getRegionData() {
 		List<ConfigurationDataValuePojo> list = new ArrayList<ConfigurationDataValuePojo>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		try {
 			list = requestInfoDao.getALLRegionData();
 		} catch (IOException e) {
@@ -1189,21 +1162,18 @@ public class DcmConfigService {
 
 	public int getScheduledRequests() {
 		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getScheduledRequestsFromDB();
 		return num;
 	}
 
 	public int getHoldRequests() {
 		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getHoldRequestsFromDB();
 		return num;
 	}
 
 	public List<AlertInformationPojo> searchAllAlertNotificationData(String code, String description) {
 		List<AlertInformationPojo> detailsList = new ArrayList<AlertInformationPojo>();
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		try {
 			detailsList = requestInfoDao.getSearchedRecordsFromAlertsDB(code, description);
 		}
@@ -1218,7 +1188,6 @@ public class DcmConfigService {
 
 	public boolean updateServiceForEditedAlert(String alertCode, String description) {
 		boolean res = false;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		res = requestInfoDao.updateEditedAlertData(alertCode, description);
 		return res;
 
@@ -1250,7 +1219,6 @@ public class DcmConfigService {
 	/* Get Request using NetworkType and Request Type */
 	public int getNetworkTypeRequest(String requestType, String networkType) {
 		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getNetworkTypeRequest(networkType, requestType);
 		return num;
 	}
@@ -1258,7 +1226,6 @@ public class DcmConfigService {
 	/* Get Request using Request Type */
 	public int getRequestTypeData(String requestType) {
 		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getRequestTpyeData(requestType);
 		return num;
 	}
@@ -1266,7 +1233,6 @@ public class DcmConfigService {
 	/* Overloaded method for user information and Get Request using Request Type */
 	public int getRequestTypeData(String requestType, String userRole) {
 		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getRequestTpyeData(requestType, userRole);
 		return num;
 	}
@@ -1274,7 +1240,6 @@ public class DcmConfigService {
 	/* Get Request using Request Type and Request Status */
 	public int getStatusForSpecificRequestType(String requestType, String requestStatus, String userRole) {
 		int num = 0;
-		RequestInfoDao requestInfoDao = new RequestInfoDao();
 		num = requestInfoDao.getStatusForSpecificRequestType(requestType, requestStatus, userRole);
 		return num;
 	}
@@ -1433,10 +1398,9 @@ public class DcmConfigService {
 						}
 						telnetCommunicationSSH.setTelecommunicationData(null, requestInfoSO, null);
 					} else if (requestInfoSO.getNetworkType().equalsIgnoreCase("VNF")) {
-						VNFHelper helper = new VNFHelper();
 						if (requestInfoSO.getVnfConfig() != null) {
 							if (!requestInfoSO.getRequestType().equalsIgnoreCase("Test")) {
-								String filepath = helper.saveXML(requestInfoSO.getVnfConfig(), requestIdForConfig,
+								String filepath = vNFHelper.saveXML(requestInfoSO.getVnfConfig(), requestIdForConfig,
 										requestInfoSO);
 								if (filepath != null) {
 
@@ -2738,10 +2702,9 @@ public class DcmConfigService {
 							telnetCommunicationSSH.setTelecommunicationData(null, requestInfoSO, userName);
 
 						} else {
-							VNFHelper helper = new VNFHelper();
 							if (requestInfoSO.getVnfConfig() != null) {
 								if (!requestInfoSO.getRequestType().equalsIgnoreCase("Test")) {
-									String filepath = helper.saveXML(requestInfoSO.getVnfConfig(), requestIdForConfig,
+									String filepath = vNFHelper.saveXML(requestInfoSO.getVnfConfig(), requestIdForConfig,
 											requestInfoSO);
 									if (filepath != null) {
 										telnetCommunicationSSH.setTelecommunicationData(null, requestInfoSO, userName);

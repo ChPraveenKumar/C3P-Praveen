@@ -26,7 +26,9 @@ import com.techm.c3p.core.pojo.TemplateBasicConfigurationPojo;
 public class GetDataOnRefreshService {
 	private static final Logger logger = LogManager.getLogger(GetDataOnRefreshService.class);
 	@Autowired
-	RequestInfoDetailsDao requestInfoDao;
+	private RequestInfoDetailsDao requestInfoDao;
+	@Autowired
+	private TemplateManagementDao templateManagementDao;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -36,8 +38,6 @@ public class GetDataOnRefreshService {
 	@RequestMapping(value = "/get", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	public Response getAll() {
-		TemplateManagementDao templateManagementDao = new TemplateManagementDao();
-
 		logger.info("in Refresh");
 		JSONObject obj = new JSONObject();
 		int notificationCount = 0;

@@ -118,6 +118,9 @@ public class ConfigurationManagement {
 	
 	@Autowired
 	private SiteInfoRepository siteInfoRepository;
+	
+	@Autowired
+	private GetConfigurationTemplateService getConfigurationTemplateService;
 
 	/**
 	 *This Api is marked as ***************Both Api Impacted****************
@@ -803,7 +806,6 @@ public class ConfigurationManagement {
 							TextReport.writeFile(C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH.getValue(),
 									configReqToSendToC3pCode.getTemplateID(),
 									invokeFtl.setCommandPosition(null, cammandByTemplate));
-							GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
 							data = getConfigurationTemplateService.generateTemplate(configReqToSendToC3pCode);
 
 							break;

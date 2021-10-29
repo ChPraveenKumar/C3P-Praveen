@@ -2,8 +2,6 @@ package com.techm.c3p.core.rest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -19,59 +17,30 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
-import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.entitybeans.EIPAMEntity;
 import com.techm.c3p.core.repositories.EIPAMEntityRepository;
 
 @Controller
 @RequestMapping("/UpdateIpamDBService")
-public class UpdateIpamDBService implements Observer {
+public class UpdateIpamDBService {
 	private static final Logger logger = LogManager.getLogger(UpdateIpamDBService.class);
 	@Autowired
-	EIPAMEntityRepository eipamEntityRepository;
-
-	RequestInfoDao requestInfoDao = new RequestInfoDao();
-
-	private String siteid;
-
-	private String customerName;
-
-	private String zipAdd;
-
-	private String maskAdd;
-
-	private String serviceAdd;
-
-	private String regionAdd;
+	private EIPAMEntityRepository eipamEntityRepository;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/	
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/update", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public Response update(@RequestBody String searchParameters) {
-
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
-		String jsonArray = "";
-
-		EIPAMEntity entity = new EIPAMEntity();
-
 		List<EIPAMEntity> detailList = new ArrayList<EIPAMEntity>();
-		detailList = eipamEntityRepository.findAll();
-
-		boolean result = false;
 		try {
+			detailList = eipamEntityRepository.findAll();
 			Gson gson = new Gson();
-
 			EIPAMEntity dto = gson.fromJson(searchParameters, EIPAMEntity.class);
-			int id = dto.getId();
-			String customerName = dto.getCustomer();
-			String siteid = dto.getSite();
-			String ipAdd = dto.getIp();
-			String maskAdd = dto.getMask();
-
 			boolean flag = false;
 			if (flag == false) {
 				String ipEdit = dto.getIp();
@@ -110,6 +79,7 @@ public class UpdateIpamDBService implements Observer {
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
+	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/add", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -161,12 +131,6 @@ public class UpdateIpamDBService implements Observer {
 		}
 
 		return Response.status(200).entity(obj).build();
-	}
-
-	@Override
-	public void update(Observable o, Object arg) {
-		// TODO Auto-generated method stub
-
 	}
 
 }

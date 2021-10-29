@@ -10,8 +10,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Response;
@@ -37,18 +35,21 @@ import com.techm.c3p.core.webservice.GetAllDetailsService;
 
 @Controller
 @RequestMapping("/GetAllRequestTreeJSONService")
-public class GetAllRequestTreeJSONService implements Observer {
+public class GetAllRequestTreeJSONService {
 	private static final Logger logger = LogManager.getLogger(GetAllRequestTreeJSONService.class);
-    List<ElapsedTimeFormatPojo> elapsedtimings;
+    private List<ElapsedTimeFormatPojo> elapsedtimings;
 
     @Autowired
 	private DcmConfigService dcmConfigService;
+    @Autowired
+    private GetAllDetailsService getAllDetailsService;
 	
     
     /**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
-    @GET
+    @SuppressWarnings("unchecked")
+	@GET
     @RequestMapping(value = "/GetAllRequestTreeJSON", method = RequestMethod.GET, produces = "application/json")
     @ResponseBody
     public Response GetAllRequests() {
@@ -65,8 +66,6 @@ public class GetAllRequestTreeJSONService implements Observer {
 	    detailsList = dcmConfigService.getAllDetails();
 	    
 	    //Constructing json object to include versioning----------------------------------------------------------------------------------------------
-	    JSONObject requestListJsonObject = new JSONObject();
-	    
 	    
 	    elapsedtimings = new ArrayList<ElapsedTimeFormatPojo>();
 	    // Logic to give number of success and filure requests
@@ -270,18 +269,12 @@ public class GetAllRequestTreeJSONService implements Observer {
     public String getProcessId(CreateConfigRequestDCM configRequest)
 	    throws IOException {
 
-	GetAllDetailsService gads = new GetAllDetailsService();
-	String requestIdForProcess = gads
+	String requestIdForProcess = getAllDetailsService
 		.createProcessForConfiguration(configRequest);
 
 	return requestIdForProcess;
     }
 
-    @Override
-    public void update(Observable arg0, Object arg1) {
-	// TODO Auto-generated method stub
-
-    }
     public int countNumberEqual(List<RequestInfoSO> itemList, RequestInfoSO itemToCheck) {
         int count = 0;
         for (RequestInfoSO i : itemList) {

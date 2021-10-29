@@ -14,6 +14,8 @@ import java.util.Scanner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -24,15 +26,19 @@ import com.techm.c3p.core.pojo.UserPojo;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.UtilityMethods;
 
+@Service
 public class NetworkTestSSH {
 	private static final Logger logger = LogManager.getLogger(NetworkTestSSH.class);
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
+	@Autowired
+	private RequestInfoDao requestInfoDao;
+	@Autowired
+	private HealthCheckTestSSH healthCheckTestSSH;
 
 	@SuppressWarnings("unused")
 	public void NetworkTest(CreateConfigRequestDCM configRequest) throws IOException {
 		try {
 
-			RequestInfoDao requestInfoDao = new RequestInfoDao();
 			UserPojo userPojo = new UserPojo();
 			userPojo = requestInfoDao.getRouterCredentials();
 			String host = configRequest.getManagementIp();
@@ -115,14 +121,12 @@ public class NetworkTestSSH {
 					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()), "network_test", "1", "In Progress");
 
-					HealthCheckTestSSH healthCheckTestSSH = new HealthCheckTestSSH();
 					healthCheckTestSSH.HealthCheckTest(configRequest);
 
 				} else if (configRequest.getInterfaceStatus().equalsIgnoreCase("0")
 						&& configRequest.getWanInterface().equalsIgnoreCase("0")
 						&& configRequest.getPlatformIOS().equalsIgnoreCase("0")
 						&& configRequest.getBGPNeighbor().equalsIgnoreCase("0")) {
-					HealthCheckTestSSH healthCheckTestSSH = new HealthCheckTestSSH();
 					healthCheckTestSSH.HealthCheckTest(configRequest);
 
 				} else {

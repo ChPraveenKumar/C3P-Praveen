@@ -18,6 +18,7 @@ import java.util.Scanner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.JSch;
@@ -28,12 +29,15 @@ import com.techm.c3p.core.pojo.UserPojo;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.UtilityMethods;
 
+@Service
 public class HealthCheckTestSSH {
 	private static final Logger logger = LogManager.getLogger(HealthCheckTestSSH.class);
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	@Autowired
+	private  FinalReportTestSSH finalReportTestSSH;
 	
 	// @SuppressWarnings("unused")
 	public void HealthCheckTest(CreateConfigRequestDCM configRequest) throws IOException {
@@ -45,7 +49,6 @@ public class HealthCheckTestSSH {
 			Map<String, String> hmapResult = new HashMap<String, String>();
 
 			RegexTestHealthCheck regexTestHealthCheck = new RegexTestHealthCheck();
-			FinalReportTestSSH finalReportTestSSH = new FinalReportTestSSH();
 			String host = configRequest.getManagementIp();
 			UserPojo userPojo = new UserPojo();
 			userPojo = requestInfoDao.getRouterCredentials();

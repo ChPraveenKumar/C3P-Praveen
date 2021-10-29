@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,8 @@ import com.techm.c3p.core.service.GetConfigurationTemplateService;
 @RequestMapping("/GetConfigurationTemplateForModify")
 public class GetConfigurationTemplateForModify {
 	private static final Logger logger = LogManager.getLogger(GetConfigurationTemplateForModify.class);
+	@Autowired
+	private GetConfigurationTemplateService getConfigurationTemplateService;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -36,7 +39,6 @@ public class GetConfigurationTemplateForModify {
 		String data = "";
 
 		CreateConfigRequestDCM createConfigRequest = new CreateConfigRequestDCM();
-		GetConfigurationTemplateService getConfigurationTemplateService = new GetConfigurationTemplateService();
 		try {
 
 			JSONParser parser = new JSONParser();

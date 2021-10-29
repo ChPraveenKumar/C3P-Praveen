@@ -10,8 +10,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.core.Response;
@@ -35,25 +33,26 @@ import com.techm.c3p.core.webservice.GetAllDetailsService;
 
 @Controller
 @RequestMapping("/GetAllRequestService")
-public class GetAllRequestService implements Observer {
+public class GetAllRequestService {
 	private static final Logger logger = LogManager.getLogger(GetAllRequestService.class);
-	List<ElapsedTimeFormatPojo> elapsedtimings;
-	
+	private List<ElapsedTimeFormatPojo> elapsedtimings;
 
 	@Autowired
 	private DcmConfigService dcmConfigService;
+	@Autowired
+	private GetAllDetailsService getAllDetailsService;
 	
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
+	@SuppressWarnings("unchecked")
 	@GET
 	@RequestMapping(value = "/GetAllRequests", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	public Response GetAllRequests() {
 		
 		JSONObject obj = new JSONObject();
-		String jsonMessage = "";
 		String jsonArray = "";
 		int success = 0, failure = 0;
 		SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
@@ -65,7 +64,6 @@ public class GetAllRequestService implements Observer {
 
 			// Constructing json object to include
 			// versioning----------------------------------------------------------------------------------------------
-			JSONObject requestListJsonObject = new JSONObject();
 
 			elapsedtimings = new ArrayList<ElapsedTimeFormatPojo>();
 			// Logic to give number of success and filure requests
@@ -180,15 +178,8 @@ public class GetAllRequestService implements Observer {
 
 	public String getProcessId(CreateConfigRequestDCM configRequest) throws IOException {
 
-		GetAllDetailsService gads = new GetAllDetailsService();
-		String requestIdForProcess = gads.createProcessForConfiguration(configRequest);
+		String requestIdForProcess = getAllDetailsService.createProcessForConfiguration(configRequest);
 
 		return requestIdForProcess;
-	}
-
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
-
 	}
 }

@@ -55,6 +55,8 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 
 	@Autowired
 	private ModelsRepository modelsRepository;
+	@Autowired
+	private RestTemplate restTemplate;
 	@Value("${python.service.uri}")
 	private String pythonServiceUri;
 
@@ -412,7 +414,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 		ImportMasterStagingEntity master = null;
 		DeviceDiscoveryEntity deviceEntity = null;
 		SiteInfoEntity siteEntity = null;
-		boolean updateDeviceType = false;
 		try {
 
 			for (Object deviceData : deviceInfo) {
@@ -506,7 +507,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 				String id = String.valueOf(deviceEntity.getdId());
 				requestInfoDetailsDao.saveInDeviceExtension(id, modelsEntity.getModelDescription());
 				if (deviceDetails != null) {
-					updateDeviceType = updateDeviceRole(deviceDetails);
+					updateDeviceRole(deviceDetails);
 				}
 			}
 
@@ -536,7 +537,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 	public boolean updateDeviceRole(DeviceDiscoveryEntity deviceDetails) {
 		boolean updateFlag = false;
 		try {
-			RestTemplate restTemplate = new RestTemplate();
 			JSONObject request = new JSONObject();
 			request.put(new String("hostName"), deviceDetails.getdHostName());
 			request.put(new String("ipAddress"), deviceDetails.getdMgmtIp());

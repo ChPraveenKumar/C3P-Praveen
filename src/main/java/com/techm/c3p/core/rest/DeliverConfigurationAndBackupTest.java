@@ -98,6 +98,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 	@Autowired
 	private VendorCommandRepository vendorCommandRepository;
+	@Autowired
+	private VNFHelper vNFHelper;
+	@Autowired
+	private ODLClient oDLClient;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	@Value("${bpm.service.uri}")
 	private String bpmServiceUri;
@@ -536,8 +540,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						// for restconf
 
 						// call method for backup from vnf utils
-						ODLClient client = new ODLClient();
-						boolean result = client.doGetODLBackUp(requestinfo
+						boolean result = oDLClient.doGetODLBackUp(requestinfo
 								.getAlphanumericReqId(), Double
 								.toString(requestinfo.getRequestVersion()),
 								C3PCoreAppLabels.ODL_GET_CONFIGURATION_URL.getValue(),
@@ -552,8 +555,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							String path = C3PCoreAppLabels.VNF_CONFIG_CREATION_PATH.getValue()
 									+ requestinfo.getAlphanumericReqId()
 									+ "_ConfigurationToPush.xml";
-							VNFHelper helper = new VNFHelper();
-							String payload = helper.readConfigurationXML(path);
+							String payload = vNFHelper.readConfigurationXML(path);
 
 							logger.info("log");
 							// dilevaryresult=client.doPUTDilevary(createConfigRequest.getRequestId(),
@@ -565,9 +567,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							// Double.toString(createConfigRequest.getRequest_version()),"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/CSR1000v/yang-ext:mount/ned:native/interface",payloadLoopback);
 							dilevaryresult = true;
 							if (dilevaryresult) {
-								String payloadMultilink = helper.getPayload(
+								String payloadMultilink = vNFHelper.getPayload(
 										"Multilink", payload);
-								dilevaryresult = client
+								dilevaryresult = oDLClient
 										.doPUTDilevary(
 												requestinfo
 														.getAlphanumericReqId(),
@@ -602,7 +604,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							// service for dilevary of config
 							if (dilevaryresult == true) {
 								// take current config back up
-								boolean currentconfig = client.doGetODLBackUp(
+								boolean currentconfig = oDLClient.doGetODLBackUp(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()),
@@ -724,13 +726,12 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						String requestId = requestinfo.getAlphanumericReqId();
 						String path = C3PCoreAppLabels.VNF_CONFIG_CREATION_PATH.getValue()
 								+ requestId + "_ConfigurationToPush.xml";
-						VNFHelper helper = new VNFHelper();
 						// get file from vnf config requests folder
 						// pass file path to vnf helper class push on device
 						// method.
 						bckupConfigService.getRouterConfig(requestinfo, "previous",isStartUp);
 
-						boolean result = helper.pushOnVnfDevice(path,routerCredential,requestinfo.getManagementIp());
+						boolean result = vNFHelper.pushOnVnfDevice(path,routerCredential,requestinfo.getManagementIp());
 						if (result) {
 							value = true;
 

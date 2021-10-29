@@ -67,6 +67,8 @@ public class NetworkAuditTest extends Thread {
 	
 	@Autowired
 	private TestStrategyService testStrategyService;
+	@Autowired
+	private PostUpgradeHealthCheck postUpgradeHealthCheck;
 	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -233,8 +235,7 @@ public class NetworkAuditTest extends Thread {
 								}
 							
 						} else if ("SLGF".equalsIgnoreCase(type)) {
-							PostUpgradeHealthCheck osHealthChk = new PostUpgradeHealthCheck();
-							obj = osHealthChk.healthcheckCommandTest(request, "POST");
+							obj = postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
 						} else if ("SNRC".equalsIgnoreCase(type) || "SNNC".equalsIgnoreCase(type)
 								|| "SNRM".equalsIgnoreCase(type) || "SNNM".equalsIgnoreCase(type)) {
 							// TO be done

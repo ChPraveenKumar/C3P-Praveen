@@ -38,6 +38,8 @@ public class PingServiceImpl implements PingService {
 	@Autowired
 	@Qualifier("pythonOauth2RestTemplate")
 	private OAuth2RestTemplate pythonOauth2RestTemplate;
+	@Autowired
+	private RestTemplate restTemplate;
 	@Value("${python.service.uri}")
 	private String pythonServiceUri;
 
@@ -79,7 +81,6 @@ public class PingServiceImpl implements PingService {
 	public JSONObject throughputResults(String managementIp, String testType) {
 		logger.info("Start throughputResults - managementIp- " + managementIp);
 		JSONObject responce = null;
-		RestTemplate restTemplate = new RestTemplate();
 		JSONObject obj = new JSONObject();
 
 		try {

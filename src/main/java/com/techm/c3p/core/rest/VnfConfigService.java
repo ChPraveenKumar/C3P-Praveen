@@ -82,6 +82,12 @@ public class VnfConfigService {
 
 	@Autowired
 	private TestStrategeyAnalyser analyser;
+	@Autowired
+	private PrevalidationTestServiceImpl prevalidationTestServiceImpl;
+	@Autowired
+	private VNFHelper vNFHelper;
+	@Autowired
+	private ODLClient oDLClient;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	
@@ -393,12 +399,9 @@ public class VnfConfigService {
 
 		JSONObject obj = new JSONObject();
 		CreateConfigRequest createConfigRequest = new CreateConfigRequest();
-		
-		PrevalidationTestServiceImpl prevalidationTestServiceImpl = new PrevalidationTestServiceImpl();
 		Boolean value = false;
 		JSONParser parser = new JSONParser();
 		JSONObject json;
-		ODLClient odlClient = new ODLClient();
 		String jsonArray = "";
 		InvokeFtl invokeFtl = new InvokeFtl();
 		try {
@@ -413,11 +416,10 @@ public class VnfConfigService {
 
 			if (createConfigRequest.getManagementIp() != null && !createConfigRequest.getManagementIp().equals("")) {
 				// Load payload from resources (payload is hardcoded)
-				VNFHelper helper = new VNFHelper();
-				String payload = helper.loadXMLPayload("ODL_new_device.xml");
+				String payload = vNFHelper.loadXMLPayload("ODL_new_device.xml");
 				String mountStatus = null;
 				// Check if device is already mounted and mount it same url is used for both
-				String output = odlClient.doPostNetworkTopology(
+				String output = oDLClient.doPostNetworkTopology(
 						"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/controller-config/yang-ext:mount/config:modules ",
 						payload, "application/xml");
 
@@ -425,7 +427,7 @@ public class VnfConfigService {
 				{
 					// device already exists or we have mounted the device check if it has been
 					// successfully mounted
-					String result = odlClient.doGetNodeinTopology(
+					String result = oDLClient.doGetNodeinTopology(
 							"http://10.62.0.119:8181/restconf/operational/network-topology:network-topology/");
 					if (result.equalsIgnoreCase("Success")) {
 						// device mounted successfully
@@ -550,11 +552,10 @@ public class VnfConfigService {
 				} else {
 				}
 			} else if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
-				VNFHelper helper = new VNFHelper();
-				String payload = helper.loadXMLPayload("ODL_new_device.xml");
+				String payload = vNFHelper.loadXMLPayload("ODL_new_device.xml");
 				String mountStatus = null;
 				// Check if device is already mounted and mount it same url is used for both
-				String output = odlClient.doPostNetworkTopology(
+				String output = oDLClient.doPostNetworkTopology(
 						"http://10.62.0.119:8181/restconf/config/network-topology:network-topology/topology/topology-netconf/node/controller-config/yang-ext:mount/config:modules ",
 						payload, "application/xml");
 
@@ -562,7 +563,7 @@ public class VnfConfigService {
 				{
 					// device already exists or we have mounted the device check if it has been
 					// successfully mounted
-					String result = odlClient.doGetNodeinTopology(
+					String result = oDLClient.doGetNodeinTopology(
 							"http://10.62.0.119:8181/restconf/operational/network-topology:network-topology/");
 					if (result.equalsIgnoreCase("Success")) {
 						// device mounted successfully
@@ -907,9 +908,8 @@ public class VnfConfigService {
 			 */
 
 			// save xml data as new xml file
-			VNFHelper helper = new VNFHelper();
 			if (dataXML != null) {
-				String filepath = helper.saveXML(dataXML, requestIdForConfig, configReqToSendToC3pCode);
+				String filepath = vNFHelper.saveXML(dataXML, requestIdForConfig, configReqToSendToC3pCode);
 				/*
 				 * if (filepath != null) { // Push the configuration to server boolean
 				 * resultPush = helper.pushOnVnfDevice(filepath);

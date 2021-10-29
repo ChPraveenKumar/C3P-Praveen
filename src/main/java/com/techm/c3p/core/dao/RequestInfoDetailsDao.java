@@ -186,7 +186,6 @@ public class RequestInfoDetailsDao {
 
 				rfoDecomposedRepo.updateStatus("Success", "Admin", Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
 				//To uncomment when python services available
-				PythonServices pythonService=new PythonServices();
 				//pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
 				logger.info("Before calling customer report sucess status runDecomposeWorkflow");
 				pythonService.runDecomposeWorkflow(rfoDecomposedEntity.getOdRfoId());
@@ -302,7 +301,6 @@ public class RequestInfoDetailsDao {
 
 				rfoDecomposedRepo.updateStatus("Failure", "Admin", Timestamp.valueOf(LocalDateTime.now()), requestId, Double.valueOf(version));
 				//To uncomment when python services available
-				PythonServices pythonService=new PythonServices();
 				//pythonService.runNextRequest(rfoDecomposedEntity.getOdRfoId());
 				logger.info("Before calling customer report failure status runDecomposeWorkflow");
 				pythonService.runDecomposeWorkflow(rfoDecomposedEntity.getOdRfoId());

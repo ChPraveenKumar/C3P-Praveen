@@ -2,8 +2,6 @@ package com.techm.c3p.core.rest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -30,7 +28,7 @@ import com.techm.c3p.core.service.AttributeFeatureNewService;
 
 @Controller
 @RequestMapping("/AttributeFeatureServiceTM")
-public class AttributeFeatureServiceTM implements Observer {
+public class AttributeFeatureServiceTM {
 	
 	private static final Logger logger = LogManager.getLogger(AttributeFeatureService.class);
 	
@@ -39,6 +37,8 @@ public class AttributeFeatureServiceTM implements Observer {
 	
 	@Autowired
 	private ErrorValidationRepository errorValidationRepository;
+	@Autowired
+	private AttributeFeatureNewService attributeFeatureNewService;
 	
 	/**
 	 * This Api is marked as ***************External Api Impacted****************
@@ -57,7 +57,6 @@ public class AttributeFeatureServiceTM implements Observer {
 
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
-			AttributeFeatureNewService attributeFeatureNewService = new AttributeFeatureNewService();
 			TemplateAttributeJSONModel templateAttributeJSONModel = new TemplateAttributeJSONModel();
 			templateAttributeJSONModel.setAttributename(json.get(
 					"Attributename").toString());
@@ -224,12 +223,6 @@ public class AttributeFeatureServiceTM implements Observer {
 						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj)
 				.build();
-
-	}
-
-	@Override
-	public void update(Observable arg0, Object arg1) {
-		// TODO Auto-generated method stub
 
 	}
 }

@@ -73,6 +73,10 @@ public class HealthCheckTestValidation extends Thread {
 	
 	@Autowired
 	private PingService pingService;
+	@Autowired
+	private VNFHelper vNFHelper;
+	@Autowired
+	private ODLClient oDLClient;
 	
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
@@ -253,13 +257,11 @@ public class HealthCheckTestValidation extends Thread {
 										
 										if(deviceDetails.getdConnect().equalsIgnoreCase("NETCONF"))
 										{
-											VNFHelper helper=new VNFHelper();
-											helper.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											vNFHelper.performTest(finallistOfTests.get(i),requestinfo, user, password);
 										}
 										else if(deviceDetails.getdConnect().equalsIgnoreCase("RESTCONF"))
 										{
-											ODLClient client=new ODLClient();
-											client.performTest(finallistOfTests.get(i),requestinfo, user, password);
+											oDLClient.performTest(finallistOfTests.get(i),requestinfo, user, password);
 										}
 										else
 										{

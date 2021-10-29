@@ -38,6 +38,8 @@ public class RequestScheduleService {
 	private CamundaServiceCreateReq camundaServiceCreateReq;
 	@Autowired
 	private RequestSchedulerDao requestSchedulerDao;
+	@Autowired
+	private RequestSchedulerForNewAndModify requestSchedulerForNewAndModify;
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -52,8 +54,6 @@ public class RequestScheduleService {
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
-
-			RequestSchedulerForNewAndModify requestSchedulerForNewAndModify = new RequestSchedulerForNewAndModify();
 
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
@@ -90,8 +90,6 @@ public class RequestScheduleService {
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
-
-			RequestSchedulerForNewAndModify requestSchedulerForNewAndModify = new RequestSchedulerForNewAndModify();
 
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
@@ -144,7 +142,6 @@ public class RequestScheduleService {
 	public JSONObject runScheduleRequest(@RequestBody String configRequest) {
 		
 		JSONObject obj = new JSONObject();
-		RequestSchedulerForNewAndModify requestSchedulerForNewAndModify = new RequestSchedulerForNewAndModify();
 		String processId = null;
 
 		try {
@@ -426,8 +423,6 @@ public class RequestScheduleService {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
 
-			RequestSchedulerForNewAndModify requestSchedulerForNewAndModify = new RequestSchedulerForNewAndModify();
-
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
 
@@ -467,8 +462,6 @@ public class RequestScheduleService {
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(request);
-
-			RequestSchedulerForNewAndModify requestSchedulerForNewAndModify = new RequestSchedulerForNewAndModify();
 
 			String RequestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
