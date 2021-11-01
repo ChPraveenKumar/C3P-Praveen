@@ -8,10 +8,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import com.techm.c3p.core.pojo.HealthCheckComponent;
 
 public class HealthCheckReport {
-
+	private static final Logger logger = LogManager.getLogger(HealthCheckReport.class);
 	public String getHealthCheckReport(String hostname, String region) {
 		String result = null;
 		try {
@@ -28,6 +31,7 @@ public class HealthCheckReport {
 			result = contentBuilder.toString();
 		} catch (IOException e) {
 			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 
 		return result;
@@ -73,9 +77,11 @@ public class HealthCheckReport {
 
 			} catch (IOException e1) {
 				e1.printStackTrace();
+				logger.error(e1.getMessage());	
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+			logger.error(e.getMessage());
 		}
 		return status;
 	}

@@ -130,7 +130,8 @@ public class MasterFeatureService {
 		ResultSet resultSet = null;
 		String templaetIdWithVersion = templateId+"_V"+templateVersion;
 		String checkFeature ="select * from c3p_template_master_feature_list where command_type like ? and is_Save = 0;";
-		try (Connection connection = jDBCconnection.getConnection();PreparedStatement checkPrepareStatement = connection.prepareStatement(checkFeature);) {				
+		try (Connection connection = jDBCconnection.getConnection();
+				PreparedStatement checkPrepareStatement = connection.prepareStatement(checkFeature);) {				
 			//checkPrepareStatement.setString(1,templaetIdWithVersion);
 			checkPrepareStatement.setString(1,templateId+'%');
 			resultSet = checkPrepareStatement.executeQuery();

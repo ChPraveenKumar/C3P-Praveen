@@ -102,7 +102,7 @@ public class RequestInfoScheduler {
 									telnetCommunicationSSH.setTelecommunicationData(configRequest, null, detailsList.get(j).getRequestCreatorName());
 								} catch (Exception e) {
 
-									logger.error(e);
+									logger.error("Error in fetchDBJob"+e.getMessage());
 								}
 								
 								obj = webServiceRepo.findByAlphanumericReqId(detailsList.get(j).getAlphanumericReqId());
