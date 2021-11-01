@@ -1,5 +1,7 @@
 package com.techm.c3p.core.serviceimpl;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,11 +23,13 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
+import com.techm.c3p.core.entitybeans.CredentialManagementEntity;
 import com.techm.c3p.core.entitybeans.CustomerStagingEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.ImportMasterStagingEntity;
 import com.techm.c3p.core.entitybeans.Models;
 import com.techm.c3p.core.entitybeans.SiteInfoEntity;
+import com.techm.c3p.core.repositories.CredentialManagementRepo;
 import com.techm.c3p.core.repositories.CustomerStagingImportRepo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.ImportMasterStagingRepo;
@@ -59,6 +63,9 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 	private RestTemplate restTemplate;
 	@Value("${python.service.uri}")
 	private String pythonServiceUri;
+	
+	@Autowired
+	private CredentialManagementRepo credentialManagementRepo;
 
 	public boolean saveDataFromUploadFile(List<Map<String, String>> consCSVData, String userName) {
 		logger.info("\n" + "Inside saveDataFromUploadFile method");	
@@ -154,6 +161,18 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						customerStagingEntity.setSiteStatus(rowData.get(key));
 					} else if ("Site Subregion".equals(key)) {
 						customerStagingEntity.setSiteSubregion(rowData.get(key));
+					} else if ("SSH".equals(key)) {
+						customerStagingEntity.setSsh(rowData.get(key));
+					} else if ("Telnet".equals(key)) {
+						customerStagingEntity.setTelnet(rowData.get(key));
+					} else if ("SNMPv2".equals(key)) {
+						customerStagingEntity.setSnmpv2(rowData.get(key));
+					} else if ("SNMPv3".equals(key)) {
+						customerStagingEntity.setSnmpv3(rowData.get(key));
+					} else if ("Netconf".equals(key)) {
+						customerStagingEntity.setNetconf(rowData.get(key));
+					} else if ("Restconf".equals(key)) {
+						customerStagingEntity.setRestconf(rowData.get(key));
 					}
 				}
 				customerStagingEntity.setStatus("Successful");
@@ -163,7 +182,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			
 			boolean isStaggingDataUpdate = checkMgmtIp(importId);
 			if (isStaggingDataUpdate==true)
-				isSaved =saveOrUpdateInventory(importId);
+				isSaved =saveOrUpdateInventory(importId, userName);
 			
 		} catch (Exception e) {
 			logger.error("exception in fileValidationCSVForCOB servvice" + e.getMessage());
@@ -232,7 +251,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 		List<String> rootCause = new ArrayList<String>();
 		List<CustomerStagingEntity> getStaggingData = customerStagingImportRepo.findStaggingData(importId);
 		boolean isFlag = false;
-		boolean isFlagError = false;
 		boolean isChecked =false;
 		List<DeviceDiscoveryEntity> supportedHostName = new ArrayList<DeviceDiscoveryEntity>();
 		List<String> supportedVendor = customerStagingImportRepo.findSupportedVendor();
@@ -240,7 +258,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 		List<String> supportedModel = customerStagingImportRepo.findModel();
 		List<String> supportedOS = customerStagingImportRepo.findOS();
 		List<String> supportedOSVersion = customerStagingImportRepo.findOSVersion();
-		String hostName, vendor, family, model, os, osVersion = null;
+		String hostName, vendor, family, model, os, osVersion = null, ssh =null, telnet = null, snmpv2 = null, snmpv3 = null, netconf = null, restconf =null;
 		try {
 			for (CustomerStagingEntity data : getStaggingData) {
 				if(data.getiPV4ManagementAddress() != null && !data.getiPV4ManagementAddress().isEmpty())
@@ -260,7 +278,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						isFlag = true;
 
 					} else {
-						isFlagError = true;
 						rootCause.add("Mismatch found in Hostname");
 					}
 
@@ -271,7 +288,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						isFlag = true;
 
 					} else {
-						isFlagError = true;
 						rootCause.add("Mismatch found in vendor");
 					}
 					// Check Device Family is supporting or not
@@ -280,7 +296,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedFamily.stream().anyMatch(family::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						isFlagError = true;
 						rootCause.add("Mismatch found in family");
 					}
 					// Check Device model is supporting or not
@@ -289,7 +304,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedModel.stream().anyMatch(model::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						isFlagError = true;
 						rootCause.add("Mismatch found in model");
 					}
 					// Check OS is supporting or not
@@ -298,7 +312,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						isFlag = true;
 
 					} else {
-						isFlagError = true;
 						rootCause.add("Mismatch found in os");
 					}
 					// Check OSVersion is supporting or not
@@ -307,24 +320,23 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedOSVersion.stream().anyMatch(osVersion::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						isFlagError = true;
 						rootCause.add("Mismatch found in osVersion");
 					}
+					
+					isFlag = isProfileValidate(rootCause, isFlag, data);
 
-					if (isFlag == true && isFlagError == false) {
+					if (isFlag == true && rootCause.isEmpty()) {
 						data.setResult("Existing");
 						data.setOutcomeResult("Success");
 						data.setRootCause("");
 						customerStagingImportRepo.saveAndFlush(data);
 						isFlag = false;
-						isFlagError = false;
 					} else {
 						data.setResult("Existing");
 						data.setOutcomeResult("Exception");
 						data.setRootCause(rootCause.toString().replace("[", " ").replace("]", " "));
 						customerStagingImportRepo.saveAndFlush(data);
 						isFlag = false;
-						isFlagError = false;
 						rootCause.clear();
 					}
 				} else {
@@ -335,7 +347,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						isFlag = true;
 
 					} else {
-						isFlagError = true;
 						rootCause.add("vendor not supported");
 					}
 					// Check Device Family is supporting or not
@@ -344,7 +355,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedFamily.stream().anyMatch(family::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						isFlagError = true;
 						rootCause.add("family not supported");
 					}
 					// Check Device model is supporting or not
@@ -353,7 +363,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedModel.stream().anyMatch(model::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						isFlagError = true;
 						rootCause.add("model not supported");
 					}
 					// Check OS is supporting or not
@@ -362,7 +371,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						isFlag = true;
 
 					} else {
-						isFlagError = true;
 						rootCause.add("OS not supported");
 					}
 					// Check OSVersion is supporting or not
@@ -371,17 +379,17 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedOSVersion.stream().anyMatch(osVersion::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						isFlagError = true;
 						rootCause.add("OSVersion not supported");
 					}
 
-					if (isFlag == true && isFlagError == false) {
+					isFlag = isProfileValidate(rootCause, isFlag, data);
+					
+					if (isFlag == true && rootCause.isEmpty()) {
 						data.setResult("New");
 						data.setOutcomeResult("Success");
 						data.setRootCause("");
 						customerStagingImportRepo.saveAndFlush(data);
 						isFlag = false;
-						isFlagError = false;
 					} else {
 						data.setResult("New");
 						data.setOutcomeResult("Exception");
@@ -389,7 +397,6 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 								.replace("]", " "));
 						customerStagingImportRepo.saveAndFlush(data);
 						isFlag = false;
-						isFlagError = false;
 						rootCause.clear();
 					}
 				}
@@ -404,9 +411,10 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 	}
 
 	/* Method call to save/update data from into inventory */
-	public boolean saveOrUpdateInventory(String importId) {
+	public boolean saveOrUpdateInventory(String importId, String userName) {
 
 		logger.info("Inside saveOrUpdateInventory method");
+		List<CredentialManagementEntity> credentialDetails = null;
 		boolean isImportMasterUpdated = false;
 		ImportMasterStagingEntity importStagging = new ImportMasterStagingEntity();
 		List<CustomerStagingEntity> deviceInfo = customerStagingImportRepo.getStaggingData(importId);
@@ -501,6 +509,56 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 				if (col[31] != null)
 					siteEntity.setcSiteSubRegion(col[31].toString());
 				deviceEntity.setCustSiteId(siteEntity);
+				
+				List<CredentialManagementEntity> CredEntity = new ArrayList<CredentialManagementEntity>();
+				if (col[32] != null) {
+					credentialDetails = credentialManagementRepo.findByProfileNameAndProfileType(col[32].toString(),
+							"SSH");
+					if (!credentialDetails.isEmpty()) {
+						CredEntity.addAll(credentialDetails);
+					}
+				}
+
+				if (col[33] != null) {
+					credentialDetails = credentialManagementRepo.findByProfileNameAndProfileType(col[33].toString(),
+							"TELNET");
+					if (!credentialDetails.isEmpty()) {
+						CredEntity.addAll(credentialDetails);
+					}
+				}
+
+				if (col[34] != null) {
+					credentialDetails = credentialManagementRepo
+							.findByProfileNameAndProfileTypeAndVersion(col[34].toString(), "SNMP", "SNMP V1C/V2C");
+					if (!credentialDetails.isEmpty()) {
+						CredEntity.addAll(credentialDetails);
+					}
+				}
+
+				if (col[35] != null) {
+					credentialDetails = credentialManagementRepo
+							.findByProfileNameAndProfileTypeAndVersion(col[35].toString(), "SNMP", "SNMPv3");
+					if (!credentialDetails.isEmpty()) {
+						CredEntity.addAll(credentialDetails);
+					}
+				}
+
+				if (col[36] != null) {
+					credentialDetails = credentialManagementRepo.findByProfileNameAndProfileType(col[36].toString(),
+							"NETCONF");
+					if (!credentialDetails.isEmpty()) {
+						CredEntity.addAll(credentialDetails);
+					}
+				}
+
+				if (col[37] != null) {
+					credentialDetails = credentialManagementRepo.findByProfileNameAndProfileType(col[37].toString(),
+							"RESTCONF");
+					if (!credentialDetails.isEmpty()) {
+						CredEntity.addAll(credentialDetails);
+					}
+				}
+				deviceEntity.setCredMgmtEntity(CredEntity);
 
 				DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository.saveAndFlush(deviceEntity);
 				Models modelsEntity = modelsRepository.findOneByModel(deviceEntity.getdModel());
@@ -512,15 +570,15 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			}
 
 			if (importStagging != null) {
-				importStagging.setCreatedBy(dashboardStatus.get(0).getUserName());
-				importStagging.setExecutionDate(dashboardStatus.get(0).getExecutionProcessDate());
-				importStagging.setStatus(dashboardStatus.get(0).getStatus());
+				importStagging.setCreatedBy(userName);
+				importStagging.setExecutionDate(Timestamp.valueOf(LocalDateTime.now()));
+				importStagging.setStatus("Successful");
 				importStagging.setTotalDevices(dashboardStatus.get(0).getTotalDevices());
 				importStagging.setCountSuccess(dashboardStatus.get(0).getCount_success());
 				importStagging.setCountException(dashboardStatus.get(0).getCount_exception());
 				importStagging.setCountNew(dashboardStatus.get(0).getCount_new());
 				importStagging.setCountExisting(dashboardStatus.get(0).getCount_existing());
-				importStagging.setUserName(dashboardStatus.get(0).getUserName());
+				importStagging.setUserName(userName);
 				importStagging.setImportId(importId);
 				master = importMasterStagingRepo.saveAndFlush(importStagging);
 			}
@@ -528,7 +586,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			if (master != null)
 				isImportMasterUpdated = true;
 		} catch (Exception e) {
-			logger.error("\n" + "exception in saveOrUpdateInventory method" + e.getMessage());
+			logger.error("exception in saveOrUpdateInventory method" + e.getMessage());
 		}
 		return isImportMasterUpdated;
 	}
@@ -559,5 +617,88 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			exe.printStackTrace();
 		}
 		return updateFlag;
+	}
+	
+	/**
+	 *  Checking and Validate the profile name in CredentialManagement Table
+	 */
+	private boolean isProfileValidate(List<String> rootCause, boolean isFlag, CustomerStagingEntity data) {
+		String ssh;
+		String telnet;
+		String snmpv2;
+		String snmpv3;
+		String netconf;
+		String restconf;
+		List<CredentialManagementEntity> credentialDetails = null;
+		// Checking ssh is supporting or not
+		ssh = data.getSsh();
+		if (ssh != null && !ssh.isEmpty()) {
+			credentialDetails = credentialManagementRepo.findByProfileNameAndProfileType(ssh, "SSH");
+			if (credentialDetails != null && !credentialDetails.isEmpty() && ssh != null) {
+				isFlag = true;
+			} else {
+				rootCause.add("SSH not supported");
+			}
+		}
+		
+		// Checking telnet is supporting or not
+		telnet = data.getTelnet();
+		if (telnet != null && !telnet.isEmpty()) {
+			credentialDetails = credentialManagementRepo.findByProfileNameAndProfileType(telnet, "TELNET");
+			if (credentialDetails != null && !credentialDetails.isEmpty() && telnet != null) {
+				isFlag = true;
+			} else {
+				rootCause.add("Telnet not supported");
+			}
+		}
+		
+		// Checking snmpv2 is supporting or not
+		snmpv2 = data.getSnmpv2();
+		if (snmpv2 != null && !snmpv2.isEmpty()) {
+			credentialDetails = credentialManagementRepo.findByProfileNameAndProfileTypeAndVersion(snmpv2, "SNMP",
+					"SNMP V1C/V2C");
+			if (credentialDetails != null && !credentialDetails.isEmpty() && snmpv2 != null) {
+				isFlag = true;
+			} else {
+				rootCause.add("Snmpv2 not supported");
+			}
+		}
+		
+		// Checking snmpv3 is supporting or not
+		snmpv3 = data.getSnmpv3();
+		if (snmpv3 != null && !snmpv3.isEmpty()) {
+			credentialDetails = credentialManagementRepo.findByProfileNameAndProfileTypeAndVersion(snmpv3, "SNMP",
+					"SNMPv3");
+			if (credentialDetails != null && !credentialDetails.isEmpty() && snmpv3 != null) {
+				isFlag = true;
+			} else {
+				rootCause.add("Snmpv3 not supported");
+			}
+		}
+		
+		// Checking netconf is supporting or not
+		netconf = data.getNetconf();
+		if (netconf != null && !netconf.isEmpty()) {
+			credentialDetails = credentialManagementRepo.findByProfileNameAndProfileType(netconf,
+					"NETCONF");
+			if (credentialDetails != null && !credentialDetails.isEmpty() && netconf != null) {
+				isFlag = true;
+			} else {
+				rootCause.add("Netconf not supported");
+			}
+		}
+		
+		// Checking restconf is supporting or not
+		restconf = data.getRestconf();
+		if (restconf != null && !restconf.isEmpty()) {
+			credentialDetails = credentialManagementRepo.findByProfileNameAndProfileType(restconf,
+					"RESTCONF");
+			if (credentialDetails != null && !credentialDetails.isEmpty() && restconf != null) {
+				isFlag = true;
+			} else {
+				rootCause.add("Restconf not supported");
+			}
+		}
+		return isFlag;
 	}
 }

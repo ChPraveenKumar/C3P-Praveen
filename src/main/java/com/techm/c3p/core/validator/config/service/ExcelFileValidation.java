@@ -843,6 +843,7 @@ public class ExcelFileValidation {
 		Map<String, List<String>> response = new HashMap<String, List<String>>();
 		List<String> missingManColumns = null;
 		List<String> matchingOptColumns = null;
+		List<String> missingColumns = null;
 		InetAddressValidator validator = InetAddressValidator.getInstance();
 		Set<String> csvAllColumns = new HashSet<String>();
 		try (Reader reader = new FileReader(filePath.getFile());
@@ -882,6 +883,15 @@ public class ExcelFileValidation {
 				logger.info("No Missing Mandatory Columns");
 				/* Finding matching optional columns presents in csv headers */
 				for (String optColumn : dbOptColumns) {
+					// missingColumns
+					if (csvAllColumns.contains(optColumn)) {
+						logger.info("Matched column:" + optColumn);
+					} else {
+						if (missingColumns == null) {
+							missingColumns = new ArrayList<String>();
+						}
+						missingColumns.add(optColumn);
+					}
 					if (matchingOptColumns == null) {
 						matchingOptColumns = new ArrayList<String>();
 					}
@@ -890,6 +900,12 @@ public class ExcelFileValidation {
 					}
 				}
 
+				if (missingColumns != null) {
+					// Adding Missing Columns information
+					logger.info("missingColumns:" + missingColumns);
+					// response.put("Missing headers", missingColumns);
+					response.put("C3P_CB_016", missingColumns);
+				} else {
 				/*
 				 * Read the csv data rows and store then based on key (header)
 				 * and its value will be number of records present under it
@@ -989,7 +1005,7 @@ public class ExcelFileValidation {
 				}
 
 			}
-
+		}
 		} catch (Exception e) {
 			list.add(e.getMessage());
 			response.put("error", list);
@@ -1081,10 +1097,10 @@ public class ExcelFileValidation {
 		List<String> optionalColumns = new ArrayList<String>();
 		List<CSVHeaderCOBEntity> allColumns = csvHeader.findAll();
 		for (CSVHeaderCOBEntity entity : allColumns) {
-			if (entity.getMandatoryFlag().equals("1")) {
-				manColumns.add(entity.getCsvHeaderName());
-			} else {
-				optionalColumns.add(entity.getCsvHeaderName());
+			if ("Device-Onboarding".equals(entity.getDsHeaderCategory()) && entity.isDsHeaderMandatoryFlag()) {
+				manColumns.add(entity.getDsHeaderName());
+			} else if ("Device-Onboarding".equals(entity.getDsHeaderCategory())) {
+				optionalColumns.add(entity.getDsHeaderName());
 			}
 		}
 		cobHeaderMap.put("ManColumns", manColumns);

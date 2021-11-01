@@ -35,10 +35,10 @@ public interface CustomerStagingImportRepo extends JpaRepository<CustomerStaging
 			+ "rootCause, iPV6ManagementAddress)  FROM CustomerStagingEntity where importId=:importId order by stagingId desc")
 	List<CustomerStagingEntity> generateReport(@Param("importId") String importId);
 
-	@Query("SELECT new com.techm.c3p.core.entitybeans.CustomerStagingEntity (executionDate, count(importId) AS totalDevices,createdBy, "
+	@Query("SELECT new com.techm.c3p.core.entitybeans.CustomerStagingEntity (count(importId) AS totalDevices, "
 			+ "count( case when outcome_result='Exception' then 1 end) as count_exception,count( case when outcome_result='Success' then 1 end) as count_success,"
 			+ "count(case when result='New' and outcome_result='Success' then 1 end) as count_new, "
-			+ "count( case when result='Existing' and outcome_result='Success' then 1 end) as count_existing, status, userName ) "
+			+ "count( case when result='Existing' and outcome_result='Success' then 1 end) as count_existing ) "
 			+ "FROM CustomerStagingEntity where importId=:importId")
 	List<CustomerStagingEntity> generateReportStatus(@Param("importId") String importId);
 
@@ -70,7 +70,8 @@ public interface CustomerStagingImportRepo extends JpaRepository<CustomerStaging
 	@Query("SELECT iPV4ManagementAddress, iPV6ManagementAddress, hostname, deviceVendor, deviceFamily, deviceModel, os, osVersion"
 			+ " , cPU, cPUVersion, dRAMSizeInMb, flashSizeInMb, imageFilename, mACAddress, serialNumber,result,customerName, customerID,"
 			+ " siteName, siteID, siteAddress, siteAddress1, city, siteContact, contactEmailID,"
-			+ " contactNumber,country, market, siteRegion, siteState, siteStatus, siteSubregion FROM CustomerStagingEntity"
+			+ " contactNumber,country, market, siteRegion, siteState, siteStatus, siteSubregion, "
+			+ " ssh, telnet, snmpv2, snmpv3, netconf, restconf FROM CustomerStagingEntity"
 			+ " where importId=:importId AND result in('New', 'Existing') AND outcomeResult='Success'")
 	List<CustomerStagingEntity> getStaggingData(@Param("importId") String importId);
 	

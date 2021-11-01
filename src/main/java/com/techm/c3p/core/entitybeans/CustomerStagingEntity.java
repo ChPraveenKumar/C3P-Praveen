@@ -153,6 +153,24 @@ public class CustomerStagingEntity implements Serializable {
 
 	@Column(name = "country")
 	private String country;
+	
+	@Column(name = "ssh")
+	private String ssh;
+	
+	@Column(name = "telnet")
+	private String telnet;
+	
+	@Column(name = "snmpv2")
+	private String snmpv2;
+	
+	@Column(name = "snmpv3")
+	private String snmpv3;
+	
+	@Column(name = "netconf")
+	private String netconf;
+	
+	@Column(name = "restconf")
+	private String restconf;
 
 	@Column(name = "market")
 	private String market;
@@ -631,18 +649,14 @@ public class CustomerStagingEntity implements Serializable {
 		this.iPV6ManagementAddress =iPV6ManagementAddress;
 	}	
 	
-	public CustomerStagingEntity(Date executionDate,long totalDevices,String createdBy, long count_exception, 
-			long count_success, long count_new, long count_existing, String status, String userName) {
+	public CustomerStagingEntity(long totalDevices, long count_exception, 
+			long count_success, long count_new, long count_existing) {
 		super();
-		this.userName = userName;
-		this.status= status;
 		this.totalDevices=totalDevices;
 		this.count_new=count_new;
 		this.count_existing=count_existing;
 		this.count_success=count_success;
 		this.count_exception=count_exception;
-		this.createdBy = createdBy;
-		this.executionDate = executionDate;
 	}
 
 	public CustomerStagingEntity(int stagingId, String hostname, String deviceVendor, String deviceFamily, String deviceModel,
@@ -682,5 +696,53 @@ public class CustomerStagingEntity implements Serializable {
 		if (stagingId != other.stagingId)
 			return false;
 		return true;
+	}
+
+	public String getSsh() {
+		return ssh;
+	}
+
+	public void setSsh(String ssh) {
+		this.ssh = ssh;
+	}
+
+	public String getTelnet() {
+		return telnet;
+	}
+
+	public void setTelnet(String telnet) {
+		this.telnet = telnet;
+	}
+
+	public String getSnmpv2() {
+		return snmpv2;
+	}
+
+	public void setSnmpv2(String snmpv2) {
+		this.snmpv2 = snmpv2;
+	}
+
+	public String getSnmpv3() {
+		return snmpv3;
+	}
+
+	public void setSnmpv3(String snmpv3) {
+		this.snmpv3 = snmpv3;
+	}
+
+	public String getNetconf() {
+		return netconf;
+	}
+
+	public void setNetconf(String netconf) {
+		this.netconf = netconf;
+	}
+
+	public String getRestconf() {
+		return restconf;
+	}
+
+	public void setRestconf(String restconf) {
+		this.restconf = restconf;
 	}	
 }
