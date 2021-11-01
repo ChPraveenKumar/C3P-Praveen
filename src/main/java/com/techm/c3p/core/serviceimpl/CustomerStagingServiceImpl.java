@@ -32,6 +32,7 @@ import com.techm.c3p.core.entitybeans.SiteInfoEntity;
 import com.techm.c3p.core.repositories.CredentialManagementRepo;
 import com.techm.c3p.core.repositories.CustomerStagingImportRepo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
+import com.techm.c3p.core.repositories.ErrorValidationRepository;
 import com.techm.c3p.core.repositories.ImportMasterStagingRepo;
 import com.techm.c3p.core.repositories.ModelsRepository;
 import com.techm.c3p.core.service.CustomerStagingInteface;
@@ -66,6 +67,8 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 	
 	@Autowired
 	private CredentialManagementRepo credentialManagementRepo;
+	@Autowired
+	public ErrorValidationRepository errorValidationRepository;
 
 	public boolean saveDataFromUploadFile(List<Map<String, String>> consCSVData, String userName) {
 		logger.info("\n" + "Inside saveDataFromUploadFile method");	
@@ -278,7 +281,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						isFlag = true;
 
 					} else {
-						rootCause.add("Mismatch found in Hostname");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_023"));
 					}
 
 					// Check Device Model is supporting or not
@@ -288,7 +291,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						isFlag = true;
 
 					} else {
-						rootCause.add("Mismatch found in vendor");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_024"));
 					}
 					// Check Device Family is supporting or not
 					family = data.getDeviceFamily();
@@ -296,7 +299,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedFamily.stream().anyMatch(family::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						rootCause.add("Mismatch found in family");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_025"));
 					}
 					// Check Device model is supporting or not
 					model = data.getDeviceModel();
@@ -304,7 +307,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedModel.stream().anyMatch(model::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						rootCause.add("Mismatch found in model");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_026"));
 					}
 					// Check OS is supporting or not
 					os = data.getOs();
@@ -312,7 +315,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						isFlag = true;
 
 					} else {
-						rootCause.add("Mismatch found in os");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_027"));
 					}
 					// Check OSVersion is supporting or not
 					osVersion = data.getOsVersion();
@@ -320,7 +323,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedOSVersion.stream().anyMatch(osVersion::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						rootCause.add("Mismatch found in osVersion");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_028"));
 					}
 					
 					isFlag = isProfileValidate(rootCause, isFlag, data);
@@ -347,7 +350,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						isFlag = true;
 
 					} else {
-						rootCause.add("vendor not supported");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_029"));
 					}
 					// Check Device Family is supporting or not
 					family = data.getDeviceFamily();
@@ -355,7 +358,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedFamily.stream().anyMatch(family::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						rootCause.add("family not supported");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_030"));
 					}
 					// Check Device model is supporting or not
 					model = data.getDeviceModel();
@@ -363,7 +366,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedModel.stream().anyMatch(model::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						rootCause.add("model not supported");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_031"));
 					}
 					// Check OS is supporting or not
 					os = data.getOs();
@@ -371,7 +374,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						isFlag = true;
 
 					} else {
-						rootCause.add("OS not supported");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_032"));
 					}
 					// Check OSVersion is supporting or not
 					osVersion = data.getOsVersion();
@@ -379,7 +382,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 							&& supportedOSVersion.stream().anyMatch(osVersion::equalsIgnoreCase)) {
 						isFlag = true;
 					} else {
-						rootCause.add("OSVersion not supported");
+						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_033"));
 					}
 
 					isFlag = isProfileValidate(rootCause, isFlag, data);
@@ -637,7 +640,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			if (credentialDetails != null && !credentialDetails.isEmpty() && ssh != null) {
 				isFlag = true;
 			} else {
-				rootCause.add("SSH not supported");
+				rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_017"));
 			}
 		}
 		
@@ -648,7 +651,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			if (credentialDetails != null && !credentialDetails.isEmpty() && telnet != null) {
 				isFlag = true;
 			} else {
-				rootCause.add("Telnet not supported");
+				rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_018"));
 			}
 		}
 		
@@ -660,7 +663,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			if (credentialDetails != null && !credentialDetails.isEmpty() && snmpv2 != null) {
 				isFlag = true;
 			} else {
-				rootCause.add("Snmpv2 not supported");
+				rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_019"));
 			}
 		}
 		
@@ -672,7 +675,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			if (credentialDetails != null && !credentialDetails.isEmpty() && snmpv3 != null) {
 				isFlag = true;
 			} else {
-				rootCause.add("Snmpv3 not supported");
+				rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_020"));
 			}
 		}
 		
@@ -684,7 +687,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			if (credentialDetails != null && !credentialDetails.isEmpty() && netconf != null) {
 				isFlag = true;
 			} else {
-				rootCause.add("Netconf not supported");
+				rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_021"));
 			}
 		}
 		
@@ -696,7 +699,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 			if (credentialDetails != null && !credentialDetails.isEmpty() && restconf != null) {
 				isFlag = true;
 			} else {
-				rootCause.add("Restconf not supported");
+				rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_022"));
 			}
 		}
 		return isFlag;
