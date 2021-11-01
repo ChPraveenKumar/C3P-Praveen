@@ -133,6 +133,7 @@ public class RequestInfoDetailsDao {
 		}
 		logger.info("editRequestforReportWebserviceInfo - field ->"+field);
 		logger.info("editRequestforReportWebserviceInfo - status ->"+status);
+		logger.info("pythonService ->"+pythonService);
 		if (field.equalsIgnoreCase("customer_report") && status.contains("Success")) {
 			Double finalVersion = Double.valueOf(version);
 			RequestInfoEntity request = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);

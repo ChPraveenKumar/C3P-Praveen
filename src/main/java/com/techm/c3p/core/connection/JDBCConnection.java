@@ -31,16 +31,16 @@ public class JDBCConnection {
 	private Connection createConnection() {
 		Connection connection = null;
 		try {
-			logger.info("datasourceUrl->"+datasourceUrl);
-			logger.info("driverClass->"+driverClass);
-			logger.info("username->"+username);
-			logger.info("password->"+password);
+//			logger.info("datasourceUrl->"+datasourceUrl);
+//			logger.info("driverClass->"+driverClass);
+//			logger.info("username->"+username);
+//			logger.info("password->"+password);
 			Class.forName(driverClass);
 			connection = DriverManager.getConnection(datasourceUrl, username, password);
-		} catch (ClassNotFoundException e) {
-			logger.error(e.getMessage());
-		} catch (SQLException e) {
-			logger.error(e.getMessage());
+		} catch (ClassNotFoundException exe) {
+			logger.error("JDBCConnection ClassNotFoundException ->"+exe.getMessage());
+		} catch (SQLException exe) {
+			logger.error("JDBCConnection SQLException ->"+exe.getMessage());
 		}
 		return connection;
 	}
@@ -48,7 +48,7 @@ public class JDBCConnection {
 	@Bean
 	@Scope("prototype")
     public Connection getConnection() {
-		logger.info("getConnection datasourceUrl->"+datasourceUrl);
+		//logger.info("getConnection datasourceUrl->"+datasourceUrl);
         return createConnection();
     }
 }

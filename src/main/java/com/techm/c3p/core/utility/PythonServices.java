@@ -48,10 +48,11 @@ public class PythonServices {
 
 	public void runDecomposeWorkflow(String rfoid)
 	{
+		decomposeWorkflow.setDecomposeWorkflowData(rfoid);
 		//DecomposeWorkflow decompose=new DecomposeWorkflow(rfoid);
-		decomposeWorkflow.setRfoid(rfoid);
-		decomposeWorkflow.setDaemon(true);
-		decomposeWorkflow.start();
+//		decomposeWorkflow.setRfoid(rfoid);
+//		decomposeWorkflow.setDaemon(true);
+//		decomposeWorkflow.start();
 	}
 	private HttpURLConnection openHttpConnection(String endpointUrl) {
 		HttpURLConnection httpConnection = null;
