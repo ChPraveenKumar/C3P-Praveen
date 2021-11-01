@@ -422,7 +422,7 @@ public class ConfigurationManagement {
 			}
 
 			if("IOSUPGRADE".equals(requestType)) {				
-				toSaveArray = setTest(testDetailsRepository.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndTestCategory(
+				toSaveArray = configurationManagmentService.setTest(testDetailsRepository.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndTestCategory(
 						configReqToSendToC3pCode.getFamily(), 
 						configReqToSendToC3pCode.getOs(), "All", configReqToSendToC3pCode.getVendor(),
 						configReqToSendToC3pCode.getRegion(),"Software Upgrade"), toSaveArray);
@@ -1040,33 +1040,10 @@ public class ConfigurationManagement {
 				testList.add(testDetail);
 			}
 		}		
-		return setTest(testList,toSaveArray);		 
+		return configurationManagmentService.setTest(testList,toSaveArray);		 
 	}	
 
-	@SuppressWarnings("unchecked")
-	private JSONArray setTest(List<TestDetail> testList, JSONArray toSaveArray) {
-		if (testList != null) {
-			Collection<TestDetail> testDetailFinalList = testList.stream()
-					.collect(Collectors.toMap(TestDetail::getTestName, Function.identity(),
-							BinaryOperator.maxBy(Comparator.comparing(TestDetail::getVersion))))
-					.values();
-			for (TestDetail latestTest : testDetailFinalList) {
-				String testName = latestTest.getTestName() + "_" + latestTest.getVersion();
-				String testCategory = latestTest.getTestCategory();
-				JSONObject testObject = new JSONObject();
-				testObject.put("testCategory", testCategory);
-				if("Software Upgrade".equals(testCategory)) {
-					testObject.put("testsubCategory", latestTest.getTestSubCategory());	
-				}
-				testObject.put("selected", 1);
-				testObject.put("testName", testName);
-				testObject.put("bundleName", new ArrayList<>());
-				toSaveArray.add(testObject);
-			}
-		}
-		return toSaveArray;
-	}
-	
+
 	@SuppressWarnings("unchecked")
 	@POST
 	@RequestMapping(value = "/validateKey", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")

@@ -58,6 +58,7 @@ import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.RouterVfRepo;
 import com.techm.c3p.core.repositories.TestDetailsRepository;
 import com.techm.c3p.core.repositories.VendorDetailsRepository;
+import com.techm.c3p.core.service.ConfigurationManagmentService;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.utility.WAFADateUtil;
 
@@ -111,6 +112,9 @@ public class BackUpAndRestoreController {
 
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private ConfigurationManagmentService configurationManagmentService;
 
 	
 	/**
@@ -1396,6 +1400,7 @@ public class BackUpAndRestoreController {
 					}
 					//Logic to save system prevalidation tests which will not come from ui
 					JSONArray toSaveArray = new JSONArray();
+					if(!"IOSUPGRADE".equals(requestType)) {
 					List<TestDetail> systprevaltests= testDetailsRepository.getC3PAdminTesListData(requestInfoEntity.getFamily(), requestInfoEntity.getOs(), requestInfoEntity.getRegion(), requestInfoEntity.getOsVersion(), requestInfoEntity.getVendor(),
 							requestInfoEntity.getNetworkType());
 					for(TestDetail tst:systprevaltests)
@@ -1409,6 +1414,13 @@ public class BackUpAndRestoreController {
 						bundleArray.add(testBundle);
 						prevaljsonobj.put("bundleName",bundleArray);
 						toSaveArray.add(prevaljsonobj);
+					}
+					}
+					if("IOSUPGRADE".equals(requestType)) {				
+						toSaveArray = configurationManagmentService.setTest(testDetailsRepository.findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndTestCategory(
+								requestInfoEntity.getFamily(), 
+								requestInfoEntity.getOs(), "All", requestInfoEntity.getVendor(),
+								requestInfoEntity.getRegion(),"Software Upgrade"), toSaveArray);
 					}
 					int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
 							requestInfoEntity.getAlphanumericReqId(),

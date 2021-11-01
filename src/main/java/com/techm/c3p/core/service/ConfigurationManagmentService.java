@@ -3,8 +3,12 @@ package com.techm.c3p.core.service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,6 +21,7 @@ import com.techm.c3p.core.dao.TemplateManagementDao;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.SiteInfoEntity;
 import com.techm.c3p.core.entitybeans.TemplateFeatureEntity;
+import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.entitybeans.VendorCommandEntity;
 import com.techm.c3p.core.pojo.AttribCreateConfigJson;
 import com.techm.c3p.core.pojo.AttribCreateConfigPojo;
@@ -891,4 +896,28 @@ public class ConfigurationManagmentService {
 		}
 		return finalCommandList;
 	}
+	@SuppressWarnings("unchecked")
+	public JSONArray setTest(List<TestDetail> testList, JSONArray toSaveArray) {
+		if (testList != null) {
+			Collection<TestDetail> testDetailFinalList = testList.stream()
+					.collect(Collectors.toMap(TestDetail::getTestName, Function.identity(),
+							BinaryOperator.maxBy(Comparator.comparing(TestDetail::getVersion))))
+					.values();
+			for (TestDetail latestTest : testDetailFinalList) {
+				String testName = latestTest.getTestName() + "_" + latestTest.getVersion();
+				String testCategory = latestTest.getTestCategory();
+				JSONObject testObject = new JSONObject();
+				testObject.put("testCategory", testCategory);
+				if("Software Upgrade".equals(testCategory)) {
+					testObject.put("testsubCategory", latestTest.getTestSubCategory());	
+				}
+				testObject.put("selected", 1);
+				testObject.put("testName", testName);
+				testObject.put("bundleName", new ArrayList<>());
+				toSaveArray.add(testObject);
+			}
+		}
+		return toSaveArray;
+	}
+	
 }

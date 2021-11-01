@@ -134,6 +134,7 @@ public class DeviceRequestController {
 				}
 			} // write logic for feature updation date in mas
 		} catch (Exception e) {
+			e.printStackTrace();
 			logger.error(e);
 		}
 		return Response.status(200).entity(output).build();

@@ -803,7 +803,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 	@POST
 	@RequestMapping(value = "/getConfigurationFeatures", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response getConfigurationFeatures(@RequestBody String requestDetails) {
+	public Response getConfigurationFeatures(@RequestBody String requestDetailsData) {
 		JSONParser parser = new JSONParser();
 		JSONObject json;
 		String requestId, templateId = null;
@@ -811,7 +811,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 
 		try {
 			// parse requestDetails and get request Id and tempalteId
-			json = (JSONObject) parser.parse(requestDetails);
+			json = (JSONObject) parser.parse(requestDetailsData);
 			requestId = (String) json.get("requestId");
 			templateId = (String) json.get("templateId");
 
@@ -823,11 +823,11 @@ public class SearchRequestServiceWithVersion implements Observer {
 			List<String> list = new ArrayList<String>();
 			List<String> configFeautreName = new ArrayList<String>();
 			// For fetching data from database query
-			RequestDetails dao = new RequestDetails();
+//			RequestDetails dao = new RequestDetails();
 			StringBuilder builder = new StringBuilder();
 
-			configFeatureList = dao.getConfigurationFeatureList(requestId, templateId);
-			configFeautreName = dao.getConfigurationFeature(requestId, templateId);
+			configFeatureList = requestDetails.getConfigurationFeatureList(requestId, templateId);
+			configFeautreName = requestDetails.getConfigurationFeature(requestId, templateId);
 
 			// get an array of keys of the HashMap
 			String[] key = configFeatureList.keySet().toArray(new String[0]);
@@ -862,7 +862,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 	@POST
 	@RequestMapping(value = "/getConfigurationFeatureDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response getConfigurationFeatureDetails(@RequestBody String requestDetails) {
+	public Response getConfigurationFeatureDetails(@RequestBody String requestDetailsData) {
 		JSONParser parser = new JSONParser();
 		JSONObject json;
 		String requestId, templateId, feature = null;
@@ -872,7 +872,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 
 			// parse requestDetails and get requestId, templateId, and feature from
 			// requestDetails
-			json = (JSONObject) parser.parse(requestDetails);
+			json = (JSONObject) parser.parse(requestDetailsData);
 			requestId = (String) json.get("requestId");
 			templateId = (String) json.get("templateId");
 			feature = (String) json.get("feature");
@@ -884,10 +884,10 @@ public class SearchRequestServiceWithVersion implements Observer {
 			Map<String, String> configFeatureList = new TreeMap<String, String>();
 			List<String> list = new ArrayList<String>();
 			// For fetching data from database query
-			RequestDetails dao = new RequestDetails();
+			//RequestDetails dao = new RequestDetails();
 			StringBuilder builder = new StringBuilder();
 
-			configFeatureList = dao.getConfigurationFeatureDetails(requestId, templateId, feature);
+			configFeatureList = requestDetails.getConfigurationFeatureDetails(requestId, templateId, feature);
 
 			// get an array of keys of the HashMap
 			String[] key = configFeatureList.keySet().toArray(new String[0]);
