@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.orion</groupId>
+	<groupId>com.techm.c3p.core</groupId>
 	<artifactId>C3P</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
@@ -236,4 +236,33 @@
 
 		</plugins>
 	</build>
+	<profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <activatedProperties>dev</activatedProperties>
+            </properties>
+        </profile>
+         <profile>
+            <id>gcpdev</id>
+            <properties>
+                <activatedProperties>gcpdev</activatedProperties>
+            </properties>
+        </profile>
+        <profile>
+            <id>stage</id>
+            <properties>
+                <activatedProperties>stage</activatedProperties>
+            </properties>
+        </profile>
+        <profile>
+            <id>gkedemo</id>            
+            <properties>
+                <activatedProperties>gkedemo</activatedProperties>
+            </properties>
+        </profile>
+    </profiles>
 </project>
