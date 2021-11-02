@@ -51,7 +51,7 @@ public class TestStrategeyAnalyser {
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
 		File isFilePresent = null;
-		String isFilepathPresent = null, tempTextToAnalyse = null, filename = null, filenameData =null;
+		String isFilepathPresent = null, tempTextToAnalyse = null, filename = null, filenameData =null, webserviceinfoFlag = null;
 		if (test.getTestSubCategory() == null) {
 			test.setTestSubCategory("");
 		}
