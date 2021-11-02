@@ -450,6 +450,12 @@ public class ImportFile {
 					obj.put(new String("errorMessage"), excelFileValidation.getErrorInformation("C3P_CB_013",
 							validateFileColumn.get("C3P_CB_013")));
 					obj.put(new String("successMessage"), "");
+				} else if (validateFileColumn.containsKey("C3P_CB_016")) {
+					status = false;
+					obj.put(new String("response"), status);
+					obj.put(new String("errorMessage"), excelFileValidation.getErrorInformation("C3P_CB_016",
+							validateFileColumn.get("C3P_CB_016")));
+					obj.put(new String("successMessage"), "");
 				} else if (validateFileColumn.containsKey("error")) {
 					status = false;
 					obj.put(new String("response"), status);
@@ -603,10 +609,11 @@ public class ImportFile {
 
 		logger.info("Inside generateReport Service");
 		JSONObject obj = new JSONObject();
-		List<CustomerStagingEntity> listStaggingData, listStaggingStatus =null;
+		List<CustomerStagingEntity> listStaggingData =null;
 		JSONArray staggingArrayData = new JSONArray();
 		JSONArray staggingArrayStatus = new JSONArray();
 		JSONObject object, status = null;
+		List<ImportMasterStagingEntity> importMasterData =null;
 		
 		try {
 			listStaggingData = customerStagingInteface.generateReport(importId);
@@ -620,16 +627,18 @@ public class ImportFile {
 				object.put("rootCause", entity.getRootCause());	
 				staggingArrayData.add(object);
 			}
-			listStaggingStatus = customerStagingInteface.generateReportStatus(importId);
-			for (CustomerStagingEntity entity : listStaggingStatus) {
+			importMasterData =importMasterStagingRepo.getImportStaggingData(importId);
+			for (ImportMasterStagingEntity entity : importMasterData) {
 				status = new JSONObject();
+				status.put("importId", entity.getImportId());
 				status.put("executionDate", entity.getExecutionDate().toString());
+				status.put("status", entity.getStatus());
 				status.put("totalDevices", entity.getTotalDevices());
-				status.put("createdBy", entity.getCreatedBy());	
-				status.put("exception", entity.getCount_exception());
-				status.put("success", entity.getCount_success());	
-				status.put("new", entity.getCount_new());
-				status.put("existing", entity.getCount_existing());
+				status.put("exception", entity.getCountException());
+				status.put("success", entity.getCountSuccess());
+				status.put("new", entity.getCountNew());
+				status.put("existing", entity.getCountExisting());
+				status.put("createdBy", entity.getCreatedBy());
 				staggingArrayStatus.add(status);
 			}
             if(listStaggingData !=null)

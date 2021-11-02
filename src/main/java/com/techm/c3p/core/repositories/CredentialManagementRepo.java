@@ -40,5 +40,6 @@ public interface CredentialManagementRepo extends JpaRepository<CredentialManage
 	@Query(value = "select * from c3p_t_credential_management where cr_created_date  < (CURDATE()-interval 30 day) ", nativeQuery = true)
 	List<CredentialManagementEntity>  getpreviousMonthsData();
 	
+	List<CredentialManagementEntity> findByProfileNameAndProfileTypeAndVersion(String profileName, String profileType, String version);
 	
 }
