@@ -51,9 +51,7 @@ public class TestStrategeyAnalyser {
 		int SIZE = 1024;
 		byte[] tmp = new byte[SIZE];
 		File isFilePresent = null;
-		String isFilepathPresent = null;
-		String tempTextToAnalyse = null;
-		String filename = null;
+		String isFilepathPresent = null, tempTextToAnalyse = null, filename = null, filenameData =null;
 		String webserviceinfoFlag = null;
 		if (test.getTestSubCategory() == null) {
 			test.setTestSubCategory("");
@@ -78,18 +76,20 @@ public class TestStrategeyAnalyser {
 			webserviceinfoFlag = "network_audit";
 
 		} else if ("pre_health_checkup".equalsIgnoreCase(testIdentifier)) {
-			filename = "Pre_health_checkup.txt";
+			filenameData = "Pre_health_checkup.txt";
 			webserviceinfoFlag = "pre_health_checkup";
 			test.setTestSubCategory("preUpgrade");
 
 		} else if ("post_health_checkup".equalsIgnoreCase(testIdentifier)) {
-			filename = "Post_health_checkup.txt";
+			filenameData = "Post_health_checkup.txt";
 			webserviceinfoFlag = "health_check";
 			test.setTestSubCategory("postUpgrade");
 		}
 		try {
-			isFilepathPresent = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + filename;
+			if(filename!=null) {
+			isFilepathPresent = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestID + "V" + version + filename;
 			isFilePresent = new File(isFilepathPresent);
+			}
 			/*
 			 * In case of network audit we are deleting the existing file to avoid the
 			 * overriding the show run output
@@ -111,6 +111,8 @@ public class TestStrategeyAnalyser {
 					tempTextToAnalyse = textContent;
 				else
 					tempTextToAnalyse = tempTextToAnalyse + textContent;
+				
+				if(filename!=null) {
 				if (!(textContent.equals(""))) {
 					// if file doesnt exists, then create it
 					if (!isFilePresent.exists()) {
@@ -118,6 +120,7 @@ public class TestStrategeyAnalyser {
 					} else {
 						setFileData(isFilePresent.getAbsoluteFile(), tempTextToAnalyse);
 					}
+				}
 				}
 			}
 			UtilityMethods.sleepThread(10000);
@@ -157,7 +160,7 @@ public class TestStrategeyAnalyser {
 				List<String> resultArray = new ArrayList<String>();
 				for (TestRules rulesLabel : rules) {
 					resultArray = setRuleData(requestID, requestVersion, rulesLabel, tempTextToAnalyse, filename, test,
-							isFilePresent, resultArray, text, chars);
+							isFilePresent, resultArray, text, chars,filenameData);
 				}
 				logger.info("Telstra text ### - resultArray -" + resultArray);
 				boolean resultVar = true;
@@ -197,7 +200,7 @@ public class TestStrategeyAnalyser {
 
 	private List<String> setRuleData(String requestID, Double requestVersion, TestRules rulesLabel,
 			String tempTextToAnalyse, String filename, TestDetail test, File isFilePresent, List<String> resultArray,
-			String text, int chars) {
+			String text, int chars,String filenameData) {
 
 		try {
 			/* Checking for Text Rule validation */
@@ -227,8 +230,8 @@ public class TestStrategeyAnalyser {
 			}
 			/* Checking Full Result */
 			else if ("FullText".equalsIgnoreCase(rulesLabel.getDataType())) {
-				resultArray = setTextFullResultData(requestID, requestVersion, rulesLabel, tempTextToAnalyse, filename,
-						test, isFilePresent, resultArray);
+				resultArray = setTextFullResultData(requestID, requestVersion, rulesLabel, tempTextToAnalyse, filenameData,
+						test, resultArray);
 			}
 		} catch (IOException e) {
 			logger.error(e.getMessage());
@@ -1527,7 +1530,7 @@ public class TestStrategeyAnalyser {
 	private List<String> setKeywordResultData(String requestID, Double requestVersion, TestRules rulesLabel,
 			String tempTextToAnalyse, String filename, TestDetail test, File isFilePresent, List<String> resultArray)
 			throws IOException {
-		String configFolderPath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue();
+		String configFolderPath = TSALabels.RESPONSE_DOWNLOAD_PATH.getValue();
 		File filePath = new File(configFolderPath + requestID + "V1.0" + "_CurrentVersionConfig.txt");
 		String[] words = null;
 		String resultText = null;
@@ -1565,16 +1568,16 @@ public class TestStrategeyAnalyser {
 	}
 
 	private List<String> setTextFullResultData(String requestID, Double requestVersion, TestRules rulesLabel,
-			String tempTextToAnalyse, String filename, TestDetail test, File isFilePresent, List<String> resultArray)
+			String tempTextToAnalyse, String filename, TestDetail test, List<String> resultArray)
 			throws IOException {
 
 		boolean finalCheck = false;		
 		String resultText = "";
-		String healthCheckFIle = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
+		String healthCheckFIle = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
 					+ requestVersion + "_" + StringUtils.substringAfter(test.getTestId(),"_")+"_"+rulesLabel.getReportedLabel() + "_" + filename;
 		File isHealthCheckFilePresent = new File(healthCheckFIle);
 		if (!(tempTextToAnalyse.equals(""))) {
-			if (!isFilePresent.exists()) {
+			if (!isHealthCheckFilePresent.exists()) {
 				isHealthCheckFilePresent.createNewFile();
 				setFileData(isHealthCheckFilePresent, tempTextToAnalyse);
 				finalCheck = true;
@@ -1590,7 +1593,7 @@ public class TestStrategeyAnalyser {
 			resultText = rulesLabel.getReportedLabel();
 			String collectedValue = "";
 			if (test.getTestSubCategory().equals("postUpgrade")) {
-				String preUpgradeFile = C3PCoreAppLabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
+				String preUpgradeFile = TSALabels.RESP_DOWNLOAD_HEALTH_CHECK_REPORTS_PATH.getValue() + requestID + "V"
 						+ requestVersion + "_" +StringUtils.substringAfter(test.getTestId(),"_")+"_"+rulesLabel.getReportedLabel()+ "_" + "Pre_health_checkup.txt";
 				String preUpgradeData = UtilityMethods.readFirstLineFromFile(preUpgradeFile);
 				if (preUpgradeData == null || !preUpgradeFile.equals(tempTextToAnalyse) || tempTextToAnalyse == null) {
@@ -1682,3 +1685,4 @@ public class TestStrategeyAnalyser {
 	}
 
 }
+
