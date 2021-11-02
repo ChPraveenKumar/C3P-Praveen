@@ -18,7 +18,7 @@ public class CSVHeaderCOBEntity {
 	@Column(name = "ds_header_name", length = 25)
 	private String dsHeaderName;
 
-	@Column(name = "ds_header_mandatory_flag", columnDefinition = "TINYINT(1)", nullable = false)
+	@Column(name = "ds_header_mandatory_flag", columnDefinition = "TINYINT(1) default 0", nullable = false )
 	private boolean dsHeaderMandatoryFlag;
 
 	@Column(name = "ds_header_category", length = 25)

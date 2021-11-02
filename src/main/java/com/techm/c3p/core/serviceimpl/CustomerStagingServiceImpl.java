@@ -326,7 +326,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_028"));
 					}
 					
-					isFlag = isProfileValidate(rootCause, isFlag, data);
+					isFlag = validateCredentialMgmtProfile(rootCause, isFlag, data);
 
 					if (isFlag == true && rootCause.isEmpty()) {
 						data.setResult("Existing");
@@ -385,7 +385,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 						rootCause.add(errorValidationRepository.findByErrorId("C3P_CB_033"));
 					}
 
-					isFlag = isProfileValidate(rootCause, isFlag, data);
+					isFlag = validateCredentialMgmtProfile(rootCause, isFlag, data);
 					
 					if (isFlag == true && rootCause.isEmpty()) {
 						data.setResult("New");
@@ -625,7 +625,7 @@ public class CustomerStagingServiceImpl implements CustomerStagingInteface {
 	/**
 	 *  Checking and Validate the profile name in CredentialManagement Table
 	 */
-	private boolean isProfileValidate(List<String> rootCause, boolean isFlag, CustomerStagingEntity data) {
+	private boolean validateCredentialMgmtProfile(List<String> rootCause, boolean isFlag, CustomerStagingEntity data) {
 		String ssh;
 		String telnet;
 		String snmpv2;
