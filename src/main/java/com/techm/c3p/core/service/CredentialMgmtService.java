@@ -36,19 +36,30 @@ public class CredentialMgmtService {
 		JSONArray credentialArray = new JSONArray();
 		credentialManagementList.forEach(credentialList -> {
 			JSONObject credential = new JSONObject();
+			if("SNMPv3".equalsIgnoreCase(credentialList.getVersion())) {
+				credential.put("privacyPassword", credentialList.getEnablePassword());
+				credential.put("snmpV3User", credentialList.getLoginRead());
+				credential.put("authenticationPassword", credentialList.getPasswordWrite());
+				credential.put("encryptionType", credentialList.getEncryptionType());
+				credential.put("privacyProtocol", credentialList.getGenric());
+				
+			}
+			else {
+				credential.put("passwordwrite", credentialList.getPasswordWrite());
+				credential.put("enablePassword", credentialList.getEnablePassword());
+				credential.put("loginRead", credentialList.getLoginRead());
+			}
 			credential.put("infoId", credentialList.getInfoId());
 			credential.put("profileType", credentialList.getProfileType());
 			credential.put("profileName", credentialList.getProfileName());
 			credential.put("description", credentialList.getDescription());
 			credential.put("version", credentialList.getVersion());
-			credential.put("loginRead", credentialList.getLoginRead());
 			credential.put("port", credentialList.getPort());
-			credential.put("passwordwrite", credentialList.getPasswordWrite());
-			credential.put("enablePassword", credentialList.getEnablePassword());
 			List<DeviceDiscoveryEntity> hostNameList = new ArrayList<DeviceDiscoveryEntity>();
 			if (("SSH".equalsIgnoreCase(credentialList.getProfileType())) 
 					|| ("TELNET".equalsIgnoreCase(credentialList.getProfileType()))
-					|| ("SNMP".equalsIgnoreCase(credentialList.getProfileType()))) {
+					|| ("SNMP".equalsIgnoreCase(credentialList.getProfileType()))|| ("NETCONF".equalsIgnoreCase(credentialList.getProfileType()))
+					|| ("RESTCONF".equalsIgnoreCase(credentialList.getProfileType()))) {
 				for(int i=0; i<credentialList.getdDiscoveryEntity().size();i++) {
 					hostNameList = credentialList.getdDiscoveryEntity();
 				}
