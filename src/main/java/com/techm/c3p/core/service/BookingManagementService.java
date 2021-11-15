@@ -135,62 +135,67 @@ public class BookingManagementService {
 			value = jsonRequest.get("value").toString();
 		}
 		JSONArray bookingDashboardData = new JSONArray();
-		JSONObject bookingData = new JSONObject();
+
 		int count = 0;
 		if (key != null && value != null) {
 			if ("projectName".equals(key)) {
+				JSONObject bookingData = new JSONObject();
 				WorkGroup projecValue = workGroupRepository.findByWorkGroupName(value);
-				WorkGroup projectData = workGroupRepository
-						.findAllByWorkGroupIdAndWorkGroupType(projecValue.getWorkGroupId(), "Project");
-				bookingData.put("project", projectData.getWorkGroupName());
-				List<BookingPortStatusEntity> bookingPortData = bookingPortStatusRepository
-						.findAllByBpProjectId(projecValue.getWorkGroupId());
-				bookingData.put("projectStatus", projectData.getWorkGroupStatus());
-				if (projectData.getEndDate() != null) {
-					String endDate = StringUtils.substringBefore((projectData.getEndDate().toString()), " ")
-							.replace("-", "/");
-					bookingData.put("projectEndDate", endDate);
-				} else {
-					bookingData.put("projectEndDate", "");
-				}
-				JSONArray dataValue = new JSONArray();
-				for (BookingPortStatusEntity dashboarddata : bookingPortData) {
-					DeviceDiscoveryEntity deviceData = deviceDiscoveryRepository
-							.findAllByDId(dashboarddata.getBpDeviceId());
-					dataValue.add(setBookingData(deviceData, dashboarddata, projectData));
-					if ("Booked".equals(dashboarddata.getBpBookingStatus())) {
-						count = count + 1;
+				if (projecValue != null) {
+					WorkGroup projectData = workGroupRepository
+							.findAllByWorkGroupIdAndWorkGroupType(projecValue.getWorkGroupId(), "Project");
+					bookingData.put("project", projectData.getWorkGroupName());
+					List<BookingPortStatusEntity> bookingPortData = bookingPortStatusRepository
+							.findAllByBpProjectId(projecValue.getWorkGroupId());
+					bookingData.put("projectStatus", projectData.getWorkGroupStatus());
+					if (projectData.getEndDate() != null) {
+						String endDate = StringUtils.substringBefore((projectData.getEndDate().toString()), " ")
+								.replace("-", "/");
+						bookingData.put("projectEndDate", endDate);
+					} else {
+						bookingData.put("projectEndDate", "");
 					}
+					JSONArray dataValue = new JSONArray();
+					for (BookingPortStatusEntity dashboarddata : bookingPortData) {
+						DeviceDiscoveryEntity deviceData = deviceDiscoveryRepository
+								.findAllByDId(dashboarddata.getBpDeviceId());
+						dataValue.add(setBookingData(deviceData, dashboarddata, projectData));
+						if ("Booked".equals(dashboarddata.getBpBookingStatus())) {
+							count = count + 1;
+						}
+					}
+					bookingData.put("childList", dataValue);
+					bookingDashboardData.add(bookingData);
 				}
-				bookingData.put("childList", dataValue);
-				bookingDashboardData.add(bookingData);
 			}
 		}
 		if ("deviceName".equals(key)) {
 			DeviceDiscoveryEntity deviceData = deviceDiscoveryRepository.findByDHostName(value);
-			List<BookingPortStatusEntity> bookingDeviceData = bookingPortStatusRepository
-					.findAllByBpDeviceId(deviceData.getdId());
-			count = bookingDeviceData.size();
+			if (deviceData != null) {
+				List<BookingPortStatusEntity> bookingDeviceData = bookingPortStatusRepository
+						.findAllByBpDeviceId(deviceData.getdId());
 
-			for (BookingPortStatusEntity data : bookingDeviceData) {
-				WorkGroup projectData = workGroupRepository.findAllByWorkGroupIdAndWorkGroupType(data.getBpProjectId(),
-						"Project");
-				bookingData.put("project", projectData.getWorkGroupName());
-				bookingData.put("projectStatus", projectData.getWorkGroupStatus());
-				if (projectData.getEndDate() != null) {
-					String endDate = StringUtils.substringBefore((projectData.getEndDate().toString()), " ")
-							.replace("-", "/");
-					bookingData.put("projectStartDate", endDate);
-				} else {
-					bookingData.put("projectEndDate", "");
+				for (BookingPortStatusEntity data : bookingDeviceData) {
+					JSONObject bookingData = new JSONObject();
+					WorkGroup projectData = workGroupRepository
+							.findAllByWorkGroupIdAndWorkGroupType(data.getBpProjectId(), "Project");
+					bookingData.put("project", projectData.getWorkGroupName());
+					bookingData.put("projectStatus", projectData.getWorkGroupStatus());
+					if (projectData.getEndDate() != null) {
+						String endDate = StringUtils.substringBefore((projectData.getEndDate().toString()), " ")
+								.replace("-", "/");
+						bookingData.put("projectEndDate", endDate);
+					} else {
+						bookingData.put("projectEndDate", "");
+					}
+					if ("Booked".equals(data.getBpBookingStatus())) {
+						count = count + 1;
+					}
+					JSONArray dataValue = new JSONArray();
+					dataValue.add(setBookingData(deviceData, data, projectData));
+					bookingData.put("childList", dataValue);
+					bookingDashboardData.add(bookingData);
 				}
-				if ("Booked".equals(data.getBpBookingStatus())) {
-					count = count + 1;
-				}
-				JSONArray dataValue = new JSONArray();
-				dataValue.add(setBookingData(deviceData, data, projectData));
-				bookingData.put("childList", dataValue);
-				bookingDashboardData.add(bookingData);
 			}
 		}
 
