@@ -68,6 +68,9 @@ public class PortEntity implements Serializable {
 	@Column(name = "created_date")
 	private Date createdDate;
 
+	@Column(name = "port_category", length = 1)
+	private String portCategory;
+	
 	public String getCreatedBy() {
 		return createdBy;
 	}

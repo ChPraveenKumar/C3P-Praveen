@@ -325,4 +325,6 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	
 	@Query(value = "select * from c3p_deviceinfo where d_id in(:did)", nativeQuery = true)
 	List<DeviceDiscoveryEntity> findByDId(@Param("did") List<String> did);	
+	
+	DeviceDiscoveryEntity findAllByDId(int id);
 }

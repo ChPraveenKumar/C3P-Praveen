@@ -48,6 +48,18 @@ public class WorkGroup {
 	@Column(name = "apicalltype")
 	private String apicalltype;
 	
+	@Column(name = "work_group_id", length = 15)
+	private String workGroupId;
+	
+	@Column(name = "work_group_status", length = 15)
+	private String workGroupStatus;
+	
+	@Column(name = "end_date")
+	private Date endDate;
+	
+	@Column(name = "workgroup_type", length = 15)
+	private String workGroupType;
+	
 	public int getId() {
 		return id;
 	}
@@ -127,7 +139,7 @@ public class WorkGroup {
 	public void setApicalltype(String apicalltype) {
 		this.apicalltype = apicalltype;
 	}
-
+	
 	public WorkGroup(int id, String workGroupName) {
 		super();
 		this.id = id;
@@ -136,6 +148,38 @@ public class WorkGroup {
 
 	public WorkGroup() {
 		super();
+	}
+
+	public String getWorkGroupId() {
+		return workGroupId;
+	}
+
+	public void setWorkGroupId(String workGroupId) {
+		this.workGroupId = workGroupId;
+	}
+
+	public String getWorkGroupStatus() {
+		return workGroupStatus;
+	}
+
+	public void setWorkGroupStatus(String workGroupStatus) {
+		this.workGroupStatus = workGroupStatus;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public String getWorkGroupType() {
+		return workGroupType;
+	}
+
+	public void setWorkGroupType(String workGroupType) {
+		this.workGroupType = workGroupType;
 	}
 
 	@Override
