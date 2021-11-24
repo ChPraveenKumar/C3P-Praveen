@@ -25,11 +25,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.techm.c3p.core.dao.RequestInfoDao;
+import com.techm.c3p.core.entitybeans.MasterFeatureEntity;
 import com.techm.c3p.core.entitybeans.Notification;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.entitybeans.TemplateFeatureEntity;
 import com.techm.c3p.core.pojo.CommandPojo;
 import com.techm.c3p.core.repositories.MasterCommandsRepository;
+import com.techm.c3p.core.repositories.MasterFeatureRepository;
 import com.techm.c3p.core.repositories.NotificationRepo;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.TemplateFeatureRepo;
@@ -58,8 +60,13 @@ public class FEFlowService {
 	private DeviceReachabilityAndPreValidationTest deviceReachabilityAndPreValidationTest;
 	@Autowired
 	private CamundaServiceFEWorkflow camundaServiceFEWorkflow;
+	
 	@Autowired
 	private CamundaServiceCreateReq camundaServiceCreateReq;
+	
+
+	@Autowired
+	private MasterFeatureRepository masterFeatureRepository;
 
 
 	@POST
@@ -248,13 +255,24 @@ public class FEFlowService {
 						commandValue.addAll(masterCommandsRepository.findByCommandId(templateFeature.getId()));
 					}
 				});
+				if(templateFeatureEntity == null || templateFeatureEntity.isEmpty()) {
+					List<MasterFeatureEntity> basicFeatureData = masterFeatureRepository.findAllByFVendorAndFFamilyAndFOsAndFOsversionAndFRegionAndFNetworkfunAndFNameContains(req.getVendor(), req.getFamily(), req.getOs(), req.getOsVersion(), req.getRegion(), req.getNetworkType(),"Basic Configuration");
+					basicFeatureData.forEach(basicConf->{
+						commandValue.addAll(masterCommandsRepository.findBymasterFId(basicConf.getfId()));
+					});					
+				}
 				commandValue.forEach(commands -> {
 					CommandPojo commandpojo = new CommandPojo();
 					commandpojo.setCommand_value(commands.getCommand_value());
 					commandpojo.setCommand_sequence_id(commands.getCommand_sequence_id());
 					jsonArray.add(commandpojo);
 				});
-				jsonObject.put("output", jsonArray);
+				
+				if(!jsonArray.isEmpty()) {
+					jsonObject.put("output", jsonArray);	
+				}else {
+					jsonObject.put("output", "Basic Configuration is not available for this device");
+				}
 				
 				//Global.loggedInUser="feuser";
 				if (userRole.equalsIgnoreCase("feuser")) {
