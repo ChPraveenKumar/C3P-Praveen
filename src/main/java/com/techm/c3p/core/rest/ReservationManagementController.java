@@ -1,5 +1,6 @@
 package com.techm.c3p.core.rest;
 
+import javax.annotation.security.RolesAllowed;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 
@@ -17,18 +18,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.techm.c3p.core.service.BookingManagementService;
+import com.techm.c3p.core.service.ReservationManagementService;
 
 @Controller
-@RequestMapping("/bookingManagement")
-public class BookingManagementController {
-	private static final Logger logger = LogManager.getLogger(BookingManagementController.class);
+@RequestMapping("/reservationManagement")
+public class ReservationManagementController {
+	private static final Logger logger = LogManager.getLogger(ReservationManagementController.class);
 	
 	@Autowired
-	private BookingManagementService bookingManagementService;
+	private ReservationManagementService bookingManagementService;
 	
 	@GET
 	@RequestMapping(value = "/dashboard", method = RequestMethod.GET, produces = "application/json")
+	@RolesAllowed("admin")
 	public ResponseEntity<JSONObject> getDashboardData() throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
 		JSONObject jsonResult = bookingManagementService.getDahsboardData();
@@ -45,7 +47,7 @@ public class BookingManagementController {
 	@POST	
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public ResponseEntity<JSONObject> createConfigurationDcm(@RequestBody String request) {		
+	public ResponseEntity<JSONObject> searchRequest(@RequestBody String request) {		
 			JSONParser parser = new JSONParser();
 			ResponseEntity<JSONObject> responseEntity = null;
 			try {
