@@ -38,7 +38,6 @@ import com.techm.c3p.core.repositories.DiscoveryDashboardRepository;
 import com.techm.c3p.core.repositories.ForkDiscrepancyResultRepository;
 import com.techm.c3p.core.repositories.HostDiscrepancyResultRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
-import com.techm.c3p.core.service.InventoryManagmentService;
 import com.techm.c3p.core.utility.WAFADateUtil;
 
 
@@ -388,7 +387,7 @@ public class DeviceDiscoveryController implements Observer {
 		return cidr;
 	}
 	
-	private String setSiteDetails(SiteInfoEntity site, DeviceDiscoveryEntity getAllDevice) {
+	public String setSiteDetails(SiteInfoEntity site, DeviceDiscoveryEntity getAllDevice) {
 		String[] strArr = new String[] { convertNull2ZeroString(site.getcSiteName()),
 				convertNull2ZeroString(site.getcSiteAddressLine1()),
 				convertNull2ZeroString(site.getcSIteAddressLine2()) };

@@ -885,7 +885,7 @@ public class UserManagementImpl implements UserManagementInterface {
 				userJson.put("status", "Success");
 				userJson.put("description", errorValidationRepository.findByErrorId("C3P_UM_011"));
 			}
-		} else if (!newPassword.equals(confirmPassword)) {
+		} else if (!newPassword.equals(confirmPassword) && decryptedPassword != null && decryptedPassword.equals(oldPassword)) {
 			userJson.put("status", "Error");
 			userJson.put("description", errorValidationRepository.findByErrorId("C3P_UM_012"));
 		} else {

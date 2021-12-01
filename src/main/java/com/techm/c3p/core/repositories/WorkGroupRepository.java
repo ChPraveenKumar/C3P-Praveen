@@ -22,4 +22,6 @@ public interface WorkGroupRepository extends JpaRepository<WorkGroup, Long> {
 	
 	List<WorkGroup> findAllByOrderByCreatedDateDesc();
 	
+	WorkGroup findAllByWorkGroupIdAndWorkGroupType(String projectId,String type);
+	
 }
