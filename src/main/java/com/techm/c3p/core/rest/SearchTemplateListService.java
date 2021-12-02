@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +32,8 @@ import com.techm.c3p.core.service.TemplateManagementDetailsService;
 public class SearchTemplateListService implements Observer {
 	private static final Logger logger = LogManager.getLogger(SearchTemplateListService.class);
 
-	TemplateManagementDetailsService service = new TemplateManagementDetailsService();
+	@Autowired
+	private TemplateManagementDetailsService templateManagementDetailsService;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -57,7 +59,7 @@ public class SearchTemplateListService implements Observer {
 				try {
 					// quick fix for json not getting serialized
 
-					detailsList = service.searchTemplates(key, value);
+					detailsList = templateManagementDetailsService.searchTemplates(key, value);
 					if (detailsList.size() > 0) {
 						List<TemplateVersioningJSONModel> versioningModel = new ArrayList<TemplateVersioningJSONModel>();
 						List<TemplateBasicConfigurationPojo> versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();

@@ -664,6 +664,19 @@ public class CredentialMgmtController {
 		}
 		return responseEntity;
 	}
+	
+	@POST
+	@RequestMapping(value = "/editCredentialProfile", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+	public ResponseEntity<JSONObject> editCredentialProfile(@RequestBody String requestJson) {
+		ResponseEntity<JSONObject> editCredProfileResponseEntity = null;
+		JSONObject editCredProfileResponse = credentialMgmtService.editCredentialProfile(requestJson);
+		if (editCredProfileResponse != null) {
+			editCredProfileResponseEntity = new ResponseEntity<JSONObject>(editCredProfileResponse, HttpStatus.OK);
+		} else {
+			editCredProfileResponseEntity = new ResponseEntity<JSONObject>(editCredProfileResponse, HttpStatus.BAD_REQUEST);
+		}
+		return editCredProfileResponseEntity;
+	}
 
 	@SuppressWarnings("unchecked")
 	@GET
