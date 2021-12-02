@@ -33,7 +33,6 @@ public class ReservationManagementService {
 	@Autowired
 	private ReservationPortStatusRepository reservationPortStatusRepository;
 
-
 	@Autowired
 	private PortUsageRepository portUsageRepository;
 
@@ -48,7 +47,7 @@ public class ReservationManagementService {
 
 	@Autowired
 	private DeviceDiscoveryController deviceDiscoveryController;
-	
+
 	@Autowired
 	private WAFADateUtil dateUtil;
 
@@ -67,11 +66,12 @@ public class ReservationManagementService {
 			JSONObject reservationData = new JSONObject();
 			WorkGroup projectData = workGroupRepository.findAllByWorkGroupIdAndWorkGroupType(projectId, "Project");
 			reservationData.put("project", projectData.getWorkGroupName());
-			List<ReservationPortStatusEntity> reservationPortData = reservationPortStatusRepository.findAllByRpProjectId(projectId);
+			List<ReservationPortStatusEntity> reservationPortData = reservationPortStatusRepository
+					.findAllByRpProjectId(projectId);
 			reservationData.put("projectStatus", projectData.getWorkGroupStatus());
-			if (projectData.getEndDate() != null) {				
-				reservationData.put("projectEndDate", dateUtil
-						.dateTimeInAppFormat(projectData.getEndDate().toString()));
+			if (projectData.getEndDate() != null) {
+				reservationData.put("projectEndDate",
+						dateUtil.dateTimeInAppFormat(projectData.getEndDate().toString()));
 			} else {
 				reservationData.put("projectEndDate", "");
 			}
@@ -100,28 +100,32 @@ public class ReservationManagementService {
 	private JSONObject setReservationData(DeviceDiscoveryEntity deviceData, ReservationPortStatusEntity dashboarddata,
 			WorkGroup projectData) {
 		JSONObject resrvationValue = new JSONObject();
-		resrvationValue.put("device", deviceData.getdHostName());
-		if (deviceData.getCustSiteId() != null) {
-			resrvationValue.put("localtion",
-					deviceDiscoveryController.setSiteDetails(deviceData.getCustSiteId(), deviceData));
+		if (dashboarddata != null) {
+			resrvationValue.put("device", deviceData.getdHostName());
+			if (deviceData.getCustSiteId() != null) {
+				resrvationValue.put("localtion",
+						deviceDiscoveryController.setSiteDetails(deviceData.getCustSiteId(), deviceData));
+			}
+			PortEntity portData = portEntityRepository.findByPortId(dashboarddata.getRpPortId());
+			if (portData != null) {
+				resrvationValue.put("port", portData.getPortName());
+			}
+			resrvationValue.put("reservationStatus", dashboarddata.getRpReservationStatus());
+			if (projectData.getCreatedDate() != null) {
+				resrvationValue.put("startDate", dateUtil.dateTimeInAppFormat(dashboarddata.getRpTo().toString()));
+			} else {
+				resrvationValue.put("startDate", "");
+			}
+			if (projectData.getEndDate() != null) {
+				resrvationValue.put("endDate", dateUtil.dateTimeInAppFormat(dashboarddata.getRpFrom().toString()));
+			} else {
+				resrvationValue.put("endDate", "");
+			}
+			PortUsageEntity portUsageData = portUsageRepository.findByPuPortId(dashboarddata.getRpPortId());
+			if (portUsageData != null) {
+				resrvationValue.put("usage", portUsageData.getPuUsage());
+			}
 		}
-		PortEntity portData = portEntityRepository.findByPortId(dashboarddata.getRpPortId());
-		resrvationValue.put("port", portData.getPortName());
-		resrvationValue.put("reservationStatus", dashboarddata.getRpReservationStatus());
-		if (projectData.getCreatedDate() != null) {			
-			resrvationValue.put("startDate",dateUtil
-					.dateTimeInAppFormat(dashboarddata.getRpTo().toString()));
-		} else {
-			resrvationValue.put("startDate", "");
-		}
-		if (projectData.getEndDate() != null) {			
-			resrvationValue.put("endDate", dateUtil
-					.dateTimeInAppFormat(dashboarddata.getRpFrom().toString()));
-		} else {
-			resrvationValue.put("endDate", "");
-		}
-		PortUsageEntity portUsageData = portUsageRepository.findByPuPortId(dashboarddata.getRpPortId());
-		resrvationValue.put("usage", portUsageData.getPuUsage());
 		return resrvationValue;
 	}
 
@@ -139,9 +143,9 @@ public class ReservationManagementService {
 
 		int count = 0;
 		if (key != null && value != null) {
-			if ("projectName".equals(key)) {				
+			if ("projectName".equals(key)) {
 				List<WorkGroup> projecValues = workGroupRepository.findByWorkGroupNameContains(value);
-				if (projecValues != null && !projecValues.isEmpty()) {					
+				if (projecValues != null && !projecValues.isEmpty()) {
 					for (WorkGroup projecValue : projecValues) {
 						JSONObject reservationData = new JSONObject();
 						WorkGroup projectData = workGroupRepository
@@ -150,8 +154,9 @@ public class ReservationManagementService {
 						List<ReservationPortStatusEntity> reservationPortData = reservationPortStatusRepository
 								.findAllByRpProjectId(projecValue.getWorkGroupId());
 						reservationData.put("projectStatus", projectData.getWorkGroupStatus());
-						if (projectData.getEndDate() != null) {									
-							reservationData.put("projectEndDate", dateUtil.dateTimeInAppFormat(projectData.getEndDate().toString()));
+						if (projectData.getEndDate() != null) {
+							reservationData.put("projectEndDate",
+									dateUtil.dateTimeInAppFormat(projectData.getEndDate().toString()));
 						} else {
 							reservationData.put("projectEndDate", "");
 						}
