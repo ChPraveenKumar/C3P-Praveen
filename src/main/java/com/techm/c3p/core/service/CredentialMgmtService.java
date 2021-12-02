@@ -245,11 +245,10 @@ public class CredentialMgmtService {
 			if (profileName != null && profileType != null)
 				credentialDeatils = getCredentialDetails(profileType, profileName);
 
-			Timestamp timestamp = getCurrentTimeStamp();
 			if (credentialDeatils != null) {
 				CredentialManagementEntity updateCredentialProfile = editCredProfile(profileType, profileName, description,
 						enablePassword, passwordWrite, loginRead, privacyPassword, snmpV3User, authenticationPassword,
-						privacyProtocol, encryptionType, port, credentialDeatils, timestamp);
+						privacyProtocol, encryptionType, port, credentialDeatils, dateUtil.currentTimeStamp());
 				if (updateCredentialProfile != null) 
 					credProfileResponse.put("output", errorValidationRepository.findByErrorId("C3P_CM_009"));
 			} else 
@@ -261,23 +260,16 @@ public class CredentialMgmtService {
 	}
 
 	private CredentialManagementEntity getCredentialDetails(String profileType, String profileName) {
-		CredentialManagementEntity credentialDeatils;
-		credentialDeatils = credentialManagementRepo.findOneByProfileNameAndProfileType(profileName,
-				profileType);
+		CredentialManagementEntity credentialDeatils = credentialManagementRepo
+				.findOneByProfileNameAndProfileType(profileName, profileType);
 		return credentialDeatils;
-	}
-
-	private Timestamp getCurrentTimeStamp() {
-		Timestamp timestamp = dateUtil.currentTimeStamp();
-		return timestamp;
 	}
 
 	private CredentialManagementEntity editCredProfile(String profileType, String profileName, String description,
 			String enablePassword, String passwordWrite, String loginRead, String privacyPassword, String snmpV3User,
 			String authenticationPassword, String privacyProtocol, String encryptionType, String port,
 			CredentialManagementEntity credentialDeatils, Timestamp timestamp) {
-		List<DeviceDiscoveryEntity> refDevicesList;
-		refDevicesList = credentialDeatils.getdDiscoveryEntity();
+		List<DeviceDiscoveryEntity> refDevicesList = credentialDeatils.getdDiscoveryEntity();
 		credentialDeatils.setProfileName(profileName);
 		credentialDeatils.setProfileType(profileType);
 		credentialDeatils.setDescription(description);

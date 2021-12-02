@@ -33,7 +33,7 @@ public class SearchTemplateListService implements Observer {
 	private static final Logger logger = LogManager.getLogger(SearchTemplateListService.class);
 
 	@Autowired
-	private TemplateManagementDetailsService service;
+	private TemplateManagementDetailsService templateManagementDetailsService;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -59,7 +59,7 @@ public class SearchTemplateListService implements Observer {
 				try {
 					// quick fix for json not getting serialized
 
-					detailsList = service.searchTemplates(key, value);
+					detailsList = templateManagementDetailsService.searchTemplates(key, value);
 					if (detailsList.size() > 0) {
 						List<TemplateVersioningJSONModel> versioningModel = new ArrayList<TemplateVersioningJSONModel>();
 						List<TemplateBasicConfigurationPojo> versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();
