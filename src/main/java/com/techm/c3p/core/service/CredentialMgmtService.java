@@ -1,5 +1,6 @@
 package com.techm.c3p.core.service;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +17,8 @@ import com.techm.c3p.core.entitybeans.CredentialManagementEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.repositories.CredentialManagementRepo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
+import com.techm.c3p.core.repositories.ErrorValidationRepository;
+import com.techm.c3p.core.utility.WAFADateUtil;
 
 @Service
 public class CredentialMgmtService {
@@ -27,6 +30,12 @@ public class CredentialMgmtService {
 
 	@Autowired
 	private CredentialManagementRepo credentialManagementRepo;
+	
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private ErrorValidationRepository errorValidationRepository;
 
 	@SuppressWarnings("unchecked")
 	public JSONObject viewCredentialProfile(String infoId) {
@@ -195,6 +204,99 @@ public class CredentialMgmtService {
 			logger.error("exception in updating profile is " + e);
 		}
 		return response;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public JSONObject editCredentialProfile(String inputJson) {
+		JSONObject credProfileResponse = new JSONObject();
+		JSONParser credProfileJsonParser = new JSONParser();
+		CredentialManagementEntity credentialDeatils = null;
+		try {
+			logger.info("Inside editCredentialProfile method  inputJson is -> " + inputJson);
+			JSONObject credProfileJson = (JSONObject) credProfileJsonParser.parse(inputJson);
+			String profileType = null, profileName = null, description = null, enablePassword = null,
+					passwordWrite = null, loginRead = null, privacyPassword = null, snmpV3User = null,
+					authenticationPassword = null, privacyProtocol = null, encryptionType = null, port = null;
+			if (credProfileJson.containsKey("profileType") && credProfileJson.get("profileType") != null)
+				profileType = credProfileJson.get("profileType").toString();
+			if (credProfileJson.containsKey("profileName") && credProfileJson.get("profileName") != null)
+				profileName = credProfileJson.get("profileName").toString();
+			if (credProfileJson.containsKey("description") && credProfileJson.get("description") != null)
+				description = credProfileJson.get("description").toString();
+			if (credProfileJson.containsKey("enablePassword") && credProfileJson.get("enablePassword") != null)
+				enablePassword = credProfileJson.get("enablePassword").toString();
+			if (credProfileJson.containsKey("passwordWrite") && credProfileJson.get("passwordWrite") != null)
+				passwordWrite = credProfileJson.get("passwordWrite").toString();
+			if (credProfileJson.containsKey("loginRead") && credProfileJson.get("loginRead") != null)
+				loginRead = credProfileJson.get("loginRead").toString();
+			if (credProfileJson.containsKey("privacyPassword") && credProfileJson.get("privacyPassword") != null)
+				privacyPassword = credProfileJson.get("privacyPassword").toString();
+			if (credProfileJson.containsKey("snmpV3User") && credProfileJson.get("snmpV3User") != null)
+				snmpV3User = credProfileJson.get("snmpV3User").toString();
+			if (credProfileJson.containsKey("authenticationPassword")
+					&& credProfileJson.get("authenticationPassword") != null)
+				authenticationPassword = credProfileJson.get("authenticationPassword").toString();
+			if (credProfileJson.containsKey("privacyProtocol") && credProfileJson.get("privacyProtocol") != null)
+				privacyProtocol = credProfileJson.get("privacyProtocol").toString();
+			if (credProfileJson.containsKey("encryptionType") && credProfileJson.get("encryptionType") != null)
+				encryptionType = credProfileJson.get("encryptionType").toString();
+			if (credProfileJson.containsKey("port") && credProfileJson.get("port") != null)
+				port = credProfileJson.get("port").toString();
+			if (profileName != null && profileType != null)
+				credentialDeatils = getCredentialDetails(profileType, profileName);
+
+			Timestamp timestamp = getCurrentTimeStamp();
+			if (credentialDeatils != null) {
+				CredentialManagementEntity updateCredentialProfile = editCredProfile(profileType, profileName, description,
+						enablePassword, passwordWrite, loginRead, privacyPassword, snmpV3User, authenticationPassword,
+						privacyProtocol, encryptionType, port, credentialDeatils, timestamp);
+				if (updateCredentialProfile != null) 
+					credProfileResponse.put("output", errorValidationRepository.findByErrorId("C3P_CM_009"));
+			} else 
+				credProfileResponse.put("output", errorValidationRepository.findByErrorId("C3P_CM_001"));
+		} catch (Exception e) {
+			logger.error("exception in editCredentialProfile while updating profile is -> " + e);
+		}
+		return credProfileResponse;
+	}
+
+	private CredentialManagementEntity getCredentialDetails(String profileType, String profileName) {
+		CredentialManagementEntity credentialDeatils;
+		credentialDeatils = credentialManagementRepo.findOneByProfileNameAndProfileType(profileName,
+				profileType);
+		return credentialDeatils;
+	}
+
+	private Timestamp getCurrentTimeStamp() {
+		Timestamp timestamp = dateUtil.currentTimeStamp();
+		return timestamp;
+	}
+
+	private CredentialManagementEntity editCredProfile(String profileType, String profileName, String description,
+			String enablePassword, String passwordWrite, String loginRead, String privacyPassword, String snmpV3User,
+			String authenticationPassword, String privacyProtocol, String encryptionType, String port,
+			CredentialManagementEntity credentialDeatils, Timestamp timestamp) {
+		List<DeviceDiscoveryEntity> refDevicesList;
+		refDevicesList = credentialDeatils.getdDiscoveryEntity();
+		credentialDeatils.setProfileName(profileName);
+		credentialDeatils.setProfileType(profileType);
+		credentialDeatils.setDescription(description);
+		credentialDeatils.setUpdatedDate(timestamp);
+		if ("SNMP".equalsIgnoreCase(profileType)) {
+			credentialDeatils.setEnablePassword(privacyPassword);
+			credentialDeatils.setLoginRead(snmpV3User);
+			credentialDeatils.setPasswordWrite(authenticationPassword);
+			credentialDeatils.setGenric(privacyProtocol);
+			credentialDeatils.setEncryptionType(encryptionType);
+			credentialDeatils.setPort(port);
+		} else {
+			credentialDeatils.setLoginRead(loginRead);
+			credentialDeatils.setEnablePassword(enablePassword);
+			credentialDeatils.setPasswordWrite(passwordWrite);
+		}
+		credentialDeatils.setdDiscoveryEntity(refDevicesList);
+		CredentialManagementEntity updateCredentialProfile = credentialManagementRepo.save(credentialDeatils);
+		return updateCredentialProfile;
 	}
 
 	@SuppressWarnings("unchecked")

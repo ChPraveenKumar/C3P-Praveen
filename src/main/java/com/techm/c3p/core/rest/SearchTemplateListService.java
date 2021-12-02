@@ -12,6 +12,7 @@ import javax.ws.rs.core.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -31,7 +32,8 @@ import com.techm.c3p.core.service.TemplateManagementDetailsService;
 public class SearchTemplateListService implements Observer {
 	private static final Logger logger = LogManager.getLogger(SearchTemplateListService.class);
 
-	TemplateManagementDetailsService service = new TemplateManagementDetailsService();
+	@Autowired
+	private TemplateManagementDetailsService service;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
