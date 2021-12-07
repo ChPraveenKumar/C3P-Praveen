@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import javax.ws.rs.POST;
@@ -13,6 +14,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -205,8 +207,13 @@ public class ConfigComparisonService {
 	@ResponseBody
 	public Response configComparisonSnipetAndKeyword(@RequestBody String configRequest) {
 
+		BufferedWriter bufferWriter = null;
 		JSONObject obj = new JSONObject();
+		JSONObject resp=new JSONObject();
+		StringBuffer stringBuffer=new StringBuffer();  
+		String snippetFromDevice=null;
 		try {
+			
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 			String RequestId = json.get("testLabel").toString();
@@ -224,7 +231,7 @@ public class ConfigComparisonService {
 			String tempRequestId12 = tempRequestId1.concat(RequestId);
 			String snippet = requestInfoDao.getSnippet(reportLabel, testName);
 			// write it to temp file StandardConfiguration.txt
-			String filepath1 = C3PCoreAppLabels.STANDARD_CONFIG_PATH.getValue() + "StandardConfiguration.txt";
+			/*String filepath1 = C3PCoreAppLabels.STANDARD_CONFIG_PATH.getValue() + "StandardConfiguration.txt";
 			FileWriter fw1 = null;
 			BufferedWriter bw1 = null;
 			File file1 = new File(filepath1);
@@ -243,19 +250,21 @@ public class ConfigComparisonService {
 				bw1 = new BufferedWriter(fw1);
 				bw1.append(snippet);
 				bw1.close();
-			}
+			}*/
 
 			// Create temp current version file
 			String filepath2 = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V1.0" + "_CurrentVersionConfig.txt";
-			String tempFilePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt";
+			/*String tempFilePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V1.0" + "_Temp" + "_CurrentVersionConfig.txt";
 			File tempFile = new File(tempFilePath);
 			FileWriter fw = new FileWriter(tempFilePath);
+			bufferWriter = new BufferedWriter(fw);
+			
 			if (!tempFile.exists()) {
 				tempFile.createNewFile();
 			} else {
 				tempFile.delete();
 				tempFile.createNewFile();
-			}
+			}*/
 			String[] arrOfStr = snippet.split("\n");
 			int size = arrOfStr.length;
 			String firstLine = arrOfStr[0];
@@ -267,22 +276,32 @@ public class ConfigComparisonService {
 			while ((readLine = b.readLine()) != null) {
 				if (readLine.equalsIgnoreCase(firstLine)) {
 					for (int i = 0; i < size; i++) {
-						fw.write(readLine + "\n");
+						//bufferWriter.append(readLine+"\n");
+						stringBuffer.append(readLine+"\n");
 						readLine = b.readLine();
+						
 					}
-					fw.close();
+					
 					flag = true;
 					break;
 				}
 				if (flag == true)
+				{
+					
 					break;
+				}
 			}
+			snippetFromDevice = stringBuffer.toString();	
 			// Find lines in the current config file
-
+			if (snippet!=null && snippetFromDevice!=null)
+			{
+				//Call python api
+				obj=configCompareDifferenceWOFile(snippet,snippetFromDevice);
+			}
 			// copy them to temp file
-
+			
 			// if destination html file exists delete it and create new
-			File destFile = new File(C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + requestId + "V1.0" + "_ComparisonSnippet" + ".html");
+			/*File destFile = new File(C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + requestId + "V1.0" + "_ComparisonSnippet" + ".html");
 			if (!destFile.exists()) {
 			} else {
 				destFile.delete();
@@ -333,9 +352,21 @@ public class ConfigComparisonService {
 				obj.put(new String("output"), "Error in processing the files");
 			}
 			bre.close();
-
+*/
+			//obj.put(new String("output"), resp);
 		} catch (Exception e) {
 			logger.error(e);
+		}
+		finally
+		{
+			try {
+				if(bufferWriter !=null) {
+					bufferWriter.close();
+				}
+							
+			}catch (IOException ioExe) {
+				logger.error("IOException in finally storeConfigInfoInFile Error->"+ioExe.getMessage());
+			}
 		}
 
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
@@ -699,4 +730,37 @@ public class ConfigComparisonService {
 		logger.info("End - configCompareDifference - responseJson ->" + responseJson);
 		return responseJson;
 	}
+	
+	private JSONObject configCompareDifferenceWOFile(String previousConfig, String currentVersionConfig) {
+		logger.info("Start - configCompareDifference");
+		HttpHeaders headers = null;
+		JSONObject configCompare = null;
+		JSONArray configStrings = null;
+		JSONParser jsonParser = null;
+		JSONObject responseJson = null;
+		try {
+			headers = new HttpHeaders();
+			configCompare = new JSONObject();
+			jsonParser = new JSONParser();
+			configStrings = new JSONArray();
+			configStrings.add(previousConfig);
+			configStrings.add(currentVersionConfig);
+			configCompare.put(new String("inputs"), configStrings);
+
+			HttpEntity<JSONObject> httpEntity = new HttpEntity<JSONObject>(configCompare, headers);
+			String url = pythonServiceUri + "C3P/api/content/comparison";
+			String response = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class).getBody();
+			responseJson = (JSONObject) jsonParser.parse(response);
+		} catch (ParseException exe) {
+			logger.error("ParseException - configCompareDifference -> " + exe.getMessage());
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - configCompareDifference -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - configCompareDifference->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		logger.info("End - configCompareDifference - responseJson ->" + responseJson);
+		return responseJson;
+	}
+	
 }

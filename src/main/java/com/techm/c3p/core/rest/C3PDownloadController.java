@@ -1,24 +1,24 @@
 package com.techm.c3p.core.rest;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.GET;
+
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.FileCopyUtils;
 
 import java.io.BufferedInputStream;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.techm.c3p.core.service.ConfigurationManagmentService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 
 @RestController
@@ -39,6 +40,9 @@ import com.techm.c3p.core.utility.C3PCoreAppLabels;
 public class C3PDownloadController {
 	private static final Logger logger = LogManager
 			.getLogger(C3PDownloadController.class);
+
+	@Autowired
+	private ConfigurationManagmentService createConfigurationService;
 
 	@RequestMapping("/file/{fileName:.+}")
 	public void downloadPDFResource(HttpServletRequest request,
@@ -89,4 +93,32 @@ public class C3PDownloadController {
 
 		}
 	}
+
+	@POST
+	@RequestMapping(value = "/configuration", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response downloadReport(HttpServletResponse response,
+			@RequestBody String requestInfo) throws IOException, ParseException {
+		JSONObject obj = new JSONObject();
+		Response build = null;
+		JSONParser parser = new JSONParser();
+		JSONObject requestJson = (JSONObject) parser.parse(requestInfo);
+		obj = createConfigurationService.verifyConfiguration(requestJson);
+
+		// Download file using browse option
+		InputStream is = new ByteArrayInputStream(obj.get("output").toString()
+				.getBytes());
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.setHeader("Access-Control-Allow-Origin", "*");
+		response.setHeader("Content-Disposition",
+				"attachment; filename= Configuration");
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType("application/pdf");
+		response.flushBuffer();
+		IOUtils.copy(is, response.getOutputStream());
+
+		build = Response.status(200).entity(true).build();
+		return build;
+	}
+
 }
