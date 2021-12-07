@@ -311,8 +311,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 												Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
 						
 									}
-								channel.disconnect();
-								session.disconnect();
+								if (session != null) {
+									channel.disconnect();
+									session.disconnect();
+								}
 								logger.info("Telsta - value - "+value);
 								
 								jsonArray = new Gson().toJson(value);
