@@ -1194,9 +1194,14 @@ public class BackUpAndRestoreController {
 					requestInfoEntity.setCertificationTests(json.get("certificationTests"));
 
 					requestInfoEntity.setBatchSize(map.size());
-
+					
 					requestInfoEntity.setRequestType(requestType);
-					alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+					if ("Audit".equals(requestType)) {
+						alphaneumeric_req_id = "SLGA-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+					} else {
+						alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
+					}
+					
 					requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
 
 					requestInfoEntity.setCustomer(requestDetail.get(i).getCustSiteId().getcCustName());
