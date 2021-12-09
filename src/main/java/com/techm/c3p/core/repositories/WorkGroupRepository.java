@@ -24,4 +24,6 @@ public interface WorkGroupRepository extends JpaRepository<WorkGroup, Long> {
 	
 	WorkGroup findAllByWorkGroupIdAndWorkGroupType(String projectId,String type);
 	
+	List<WorkGroup> findByWorkGroupNameContains(String workGroupName);
+	
 }

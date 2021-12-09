@@ -1517,7 +1517,7 @@ public class TestStrategeyAnalyser {
 			resultText = rulesLabel.getReportedLabel();
 			requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(), test.getTestCategory(),
 					FLAG_FAIL, resultText, output, "Snnipet starts with: " + evaluationOperator,
-					"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),
+					"Audit Fail : Data not found !!!", rulesLabel.getDataType(),
 					requestVersion, test.getTestSubCategory());
 		}
 

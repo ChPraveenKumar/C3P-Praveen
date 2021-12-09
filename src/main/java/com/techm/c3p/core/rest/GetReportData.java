@@ -173,7 +173,7 @@ public class GetReportData {
 					String version_decimal = df.format(v);
 					dilevaryMilestonesforOSupgrade = requestInfoDao
 							.get_dilevary_steps_status(json.get("requestID").toString(), version_decimal);
-				} else if (requesttype.equalsIgnoreCase("SLGB") || requesttype.equalsIgnoreCase("SLGC")) {
+				} else if (requesttype.equalsIgnoreCase("SLGB") || requesttype.equalsIgnoreCase("SLGC") || requesttype.equalsIgnoreCase("SLGM")) {
 					
 					isCheck = requestInfoDao.get_dilevary_status(json.get("requestID").toString());
 
