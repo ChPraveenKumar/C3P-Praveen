@@ -120,12 +120,17 @@ public class DeviceRequestController {
 						for (ResourceCharacteristicsEntity characteristic : listOfCharacteristics) {
 							// Find charachteristic name
 							JSONObject characteristicObj = new JSONObject();
+							if(characteristic.getRcCharacteristicName()!=null && characteristic.getRcCharacteristicValue()!=null ) {
 							characteristicObj.put("characteristicName", characteristic.getRcCharacteristicName());
 							characteristicObj.put("characteristicValue", characteristic.getRcCharacteristicValue());
 							characteristicObj.put("characteristicCreatedDate",
 									dateUtil.dateTimeInAppFormat(characteristic.getRc_created_date().toString()));
 							characteristicObj.put("characteristicUpdatedDate",
 									dateUtil.dateTimeInAppFormat(characteristic.getRc_updated_date().toString()));
+							}else {
+								characteristicObj.put("characteristicName", "NA");
+								characteristicObj.put("characteristicValue", "NA");	
+							}
 							charachteristicArray.add(characteristicObj);
 						}
 						feature.put("charachteristics", charachteristicArray);

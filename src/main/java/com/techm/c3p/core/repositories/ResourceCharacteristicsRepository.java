@@ -32,4 +32,7 @@ JpaRepository<ResourceCharacteristicsEntity, Long> {
 	
 	ResourceCharacteristicsEntity findByDeviceIdAndRcFeatureIdAndRcCharacteristicIdAndRcKeyValue(int deviceId,
 			String rcFeatureId, String rcCharacteristicId, String rcKeyValue);
+	
+	ResourceCharacteristicsEntity findByDeviceIdAndRcFeatureId(int deviceId,
+			String rcFeatureId);
 }
