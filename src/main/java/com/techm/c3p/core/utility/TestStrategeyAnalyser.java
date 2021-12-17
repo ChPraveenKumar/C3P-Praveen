@@ -1477,7 +1477,7 @@ public class TestStrategeyAnalyser {
 		List<String> snippetArray = Arrays.asList(snippetTest);
 		int count = 0;
 		int currentPosition = 0;
-		boolean isCheck = true, finalCheck = false;
+		boolean isCheck = true, lastCheck = false;
 		int snippetCount = 0;
 		for (int j = 0; j < snippetArray.size(); j++) {
 			currentsnippet = snippetArray.get(j);
@@ -1489,7 +1489,7 @@ public class TestStrategeyAnalyser {
 
 						currentPosition = lineListLoop;
 						isCheck = false;
-						finalCheck = true;
+						lastCheck = true;
 						snippetCount++;
 					}
 				}
@@ -1497,14 +1497,14 @@ public class TestStrategeyAnalyser {
 			}
 		}
 		if(snippetCount!=snippetArray.size()) {
-			finalCheck = false;
+			lastCheck = false;
 		}
 		// check if evalution field is true
 		String evaluationOperator = rulesLabel.getSnippet();
 
 		String output = null;
 
-		if (finalCheck) {
+		if (lastCheck) {
 			// pass the test
 			output = "Test Pass";
 			resultArray.add(FLAG_PASS);
