@@ -246,14 +246,12 @@ public class NetworkTestValidation extends Thread {
 										requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 								int statusData = requestInfoDetailsDao.getStatusForMilestone(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), "network_test");
-								if (statusData != 3) {
+								if (statusData != 3 && statusData != 0) {
 									requestInfoDao.editRequestforReportWebserviceInfo(
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "network_test", "1",
 											status);
-								}
-
-							
+								}						
 						
 							
 							//value = true;// hardcoded for default tests

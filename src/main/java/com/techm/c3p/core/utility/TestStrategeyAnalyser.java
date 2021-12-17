@@ -1478,7 +1478,7 @@ public class TestStrategeyAnalyser {
 		int count = 0;
 		int currentPosition = 0;
 		boolean isCheck = true, finalCheck = false;
-
+		int snippetCount = 0;
 		for (int j = 0; j < snippetArray.size(); j++) {
 			currentsnippet = snippetArray.get(j);
 			count = j;
@@ -1490,13 +1490,15 @@ public class TestStrategeyAnalyser {
 						currentPosition = lineListLoop;
 						isCheck = false;
 						finalCheck = true;
-
+						snippetCount++;
 					}
 				}
 
 			}
 		}
-
+		if(snippetCount!=snippetArray.size()) {
+			finalCheck = false;
+		}
 		// check if evalution field is true
 		String evaluationOperator = rulesLabel.getSnippet();
 
@@ -1559,7 +1561,7 @@ public class TestStrategeyAnalyser {
 			resultText = rulesLabel.getReportedLabel();
 			requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(), test.getTestCategory(),
 					FLAG_FAIL, resultText, collectedValue, "Keyword starts with: " + evaluationOperator,
-					"Incorrect data collection rules detected, please contact Administrator", rulesLabel.getDataType(),
+					"Audit Fail : Data not found !!!", rulesLabel.getDataType(),
 					requestVersion, test.getTestSubCategory());
 		}
 		fileReader.close();

@@ -1326,16 +1326,17 @@ public class DcmConfigService {
 					output = "false";
 				}
 				if (pojoList != null) {
-					if (pojoList.isEmpty()) {
+					int did = deviceDiscoveryRepository.findDid(requestInfoSO.getHostname());
+					String rfoId = rfoDecomposedRepository.findrfoId(requestInfoSO.getAlphanumericReqId());
+					if (pojoList.isEmpty() && features!=null ) {
+						setFeatureResourceCharacteristicsDeatils( requestInfoSO, did, rfoId,features);
 					}
 					// Save the Data in t_create_config_m_attrib_info Table
 					else {
 						for (CreateConfigPojo pojo : pojoList) {
 							pojo.setRequestId(requestInfoSO.getAlphanumericReqId());
 							pojo.setRequestVersion(requestInfoSO.getRequestVersion());
-							saveDynamicAttribValue(pojo);
-							int did = deviceDiscoveryRepository.findDid(requestInfoSO.getHostname());
-							String rfoId = rfoDecomposedRepository.findrfoId(requestInfoSO.getAlphanumericReqId());
+							saveDynamicAttribValue(pojo);									
 							saveResourceCharacteristicsDeatils(pojo, requestInfoSO, did, rfoId);
 						}
 					}
@@ -3136,6 +3137,21 @@ public class DcmConfigService {
 			exe.printStackTrace();
 		}
 		// return updateFlag;
+	}
+	
+	private void setFeatureResourceCharacteristicsDeatils(RequestInfoPojo requestInfoSO, int did, String rfoId,List<TemplateFeaturePojo> features) {
+		features.forEach(feature->{
+		ResourceCharacteristicsHistoryEntity history = new ResourceCharacteristicsHistoryEntity();		
+		history.setRcFeatureId(feature.getfMasterId());
+		history.setDeviceId(did);
+		history.setRcRequestStatus("InProgress");
+		history.setRcDeviceHostname(requestInfoSO.getHostname());
+		history.setSoRequestId(requestInfoSO.getAlphanumericReqId());
+		history.setRfoId(rfoId);
+		history.setRcActionPerformed("ADD");		
+		resourceCharHistoryRepo.save(history);
+		});
+		
 	}
 
 }
