@@ -213,14 +213,23 @@ public class RequestInfoDetailsDao {
 					resourceCharEntity.setRcCharacteristicName(attributes.getRcName());
 					resourceCharEntity.setRcCharacteristicValue(attributes.getRcValue());
 					resourceCharEntity.setRcKeyValue(attributes.getRcKeyValue());
+					resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());			
+					resourceCharEntity.setDeviceId(attributes.getDeviceId());
+					resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
+					resourceCharEntity.setRc_created_date(new Timestamp(new Date().getTime()));
+					resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
+					resourceCharRepo.save(resourceCharEntity);
 					
 				}
-				resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());			
-				resourceCharEntity.setDeviceId(attributes.getDeviceId());
-				resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
-				resourceCharEntity.setRc_created_date(new Timestamp(new Date().getTime()));
-				resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
-				resourceCharRepo.save(resourceCharEntity);
+				ResourceCharacteristicsEntity featureData = resourceCharRepo.findByDeviceIdAndRcFeatureId(attributes.getDeviceId(), attributes.getRcFeatureId());
+				if(featureData==null) {
+					resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());			
+					resourceCharEntity.setDeviceId(attributes.getDeviceId());
+					resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
+					resourceCharEntity.setRc_created_date(new Timestamp(new Date().getTime()));
+					resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
+					resourceCharRepo.save(resourceCharEntity);
+				}
 			}
 			
 			if(request.getAlphanumericReqId().substring(0, Math.min(request.getAlphanumericReqId().length(), 4)).equalsIgnoreCase("SLGB"))
