@@ -16,6 +16,11 @@ public class TemplateAttribPojo {
 
 	private boolean fReplicationFlag;
 	
+	private String fParentId;
+
+	private List<TemplateAttribPojo> templateAttribs;
+	
+	private String fTreeDataId;
 	
 	public String getfId() {
 		return fId;
@@ -60,4 +65,28 @@ public class TemplateAttribPojo {
 		this.attribConfig = attribConfig;
 	}
 
+	public String getfParentId() {
+		return fParentId;
+	}
+
+	public void setfParentId(String fParentId) {
+		this.fParentId = fParentId;
+	}
+
+	public List<TemplateAttribPojo> getTemplateAttribs() {
+		return templateAttribs;
+	}
+
+	public void setTemplateAttribs(List<TemplateAttribPojo> templateAttribs) {
+		this.templateAttribs = templateAttribs;
+	}
+
+	public String getfTreeDataId() {
+		return fTreeDataId;
+	}
+
+	public void setfTreeDataId(String fTreeDataId) {
+		this.fTreeDataId = fTreeDataId;
+	}
+	
 }
