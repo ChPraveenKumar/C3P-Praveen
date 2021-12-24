@@ -1488,13 +1488,13 @@ public class TemplateManagementDao {
 	@SuppressWarnings("resource")
 	public final Map<String, String> addTemplate(String vendor, String deviceFamily, String model, String os,
 			String osVersion, String region, String oldTemplateId, String oldVersion, String comment,
-			String networkType, String aliasName, String userName, String userRole) {
+			String networkType, String aliasName, String userName, String userRole,boolean goldenTemplate) {
 		connection = jDBCConnection.getConnection();
 		boolean result = false;
 		String tempid = null, oldversion = null;
 		String query1 = "INSERT INTO templateconfig_basic_details(temp_id,temp_vendor,temp_device_family,temp_model,temp_device_os,temp_os_version,temp_region,"
 				+ "temp_created_date,temp_version,temp_parent_version,temp_updated_date,temp_comment_section,temp_created_by,"
-				+ "temp_approver,temp_network_type, temp_alias)" + "VALUES(?,?,?,?,?,?,?,now(),?,?,now(),?,?,?,?,?)";
+				+ "temp_approver,temp_network_type, temp_alias,temp_golden)" + "VALUES(?,?,?,?,?,?,?,now(),?,?,now(),?,?,?,?,?,?)";
 		String query2 = "SELECT * FROM templateconfig_basic_details";
 
 		tempid = oldTemplateId;
@@ -1545,6 +1545,7 @@ public class TemplateManagementDao {
 				ps.setString(12, "suser");
 				ps.setString(13, networkType);
 				ps.setString(14, aliasName);
+				ps.setBoolean(15, goldenTemplate);
 				// int i=0;
 				int i = ps.executeUpdate();
 				if (i == 1) {
@@ -1589,6 +1590,7 @@ public class TemplateManagementDao {
 				ps1.setString(12, "suser");
 				ps1.setString(13, networkType);
 				ps1.setString(14, aliasName);
+				ps1.setBoolean(15, goldenTemplate);
 				// int i=0;
 				int i = ps1.executeUpdate();
 				if (i == 1) {
