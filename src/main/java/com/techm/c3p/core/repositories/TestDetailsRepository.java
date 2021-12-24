@@ -86,10 +86,12 @@ public interface TestDetailsRepository extends JpaRepository<TestDetail, Integer
 			@Param("region") String region, @Param("osVersion") String osVersion, @Param("vendor") String vendor,
 			@Param("networkfunction") String networkfunction);
 	
-	@Query(value = "select * from t_tststrategy_m_tstdetails  where (region like :region or region like '%All') and (os like :os or os like '%All') and (os_version like :osVersion or os_version like '%All') and (device_family like :devicefamily or device_family like '%All') and vendor = :vendor and (network_type like :networkfunction or network_type like '%All') and (created_by = 'C3PADMIN')", nativeQuery = true)
+
+	@Query(value = "select * from t_tststrategy_m_tstdetails  where (region like :region or region like '%All') and (os like :os or os like '%All') and (os_version like :osVersion or os_version like '%All') and (device_family like :devicefamily or device_family like '%All') and vendor = :vendor and (network_type like :networkfunction or network_type like '%All') and (created_by = 'C3PADMIN') and (test_category ='Device Prevalidation')", nativeQuery = true)
 	List<TestDetail> getC3PAdminTesListData(@Param("devicefamily") String devicefamily, @Param("os") String os,
 			@Param("region") String region, @Param("osVersion") String osVersion, @Param("vendor") String vendor,
 			@Param("networkfunction") String networkfunction);
+	
 	List<TestDetail> findByDeviceFamilyAndOsAndOsVersionAndVendorAndRegionAndNetworkType(String deviceFamily,
 			String os, String osVersion, String vendor, String region, String NetworkType);
 

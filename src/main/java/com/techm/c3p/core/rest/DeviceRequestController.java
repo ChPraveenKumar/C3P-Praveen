@@ -104,7 +104,9 @@ public class DeviceRequestController {
 					List<MasterFeatureEntity> masterfeatureList = new ArrayList<MasterFeatureEntity>();
 					for (String fid : featureids) {
 						MasterFeatureEntity featureFromDB = masterfeatureRepo.findByFId(fid);
+						if(featureFromDB!=null) {
 						masterfeatureList.add(featureFromDB);
+						}
 					}
 					masterfeatureList.sort((MasterFeatureEntity m1, MasterFeatureEntity m2) -> m2.getfUpdatedDate().compareTo(m1.getfUpdatedDate()));
 					for (MasterFeatureEntity fid : masterfeatureList) {
@@ -120,12 +122,17 @@ public class DeviceRequestController {
 						for (ResourceCharacteristicsEntity characteristic : listOfCharacteristics) {
 							// Find charachteristic name
 							JSONObject characteristicObj = new JSONObject();
+							if(characteristic.getRcCharacteristicName()!=null && characteristic.getRcCharacteristicValue()!=null ) {
 							characteristicObj.put("characteristicName", characteristic.getRcCharacteristicName());
 							characteristicObj.put("characteristicValue", characteristic.getRcCharacteristicValue());
 							characteristicObj.put("characteristicCreatedDate",
 									dateUtil.dateTimeInAppFormat(characteristic.getRc_created_date().toString()));
 							characteristicObj.put("characteristicUpdatedDate",
 									dateUtil.dateTimeInAppFormat(characteristic.getRc_updated_date().toString()));
+							}else {
+								characteristicObj.put("characteristicName", "NA");
+								characteristicObj.put("characteristicValue", "NA");	
+							}
 							charachteristicArray.add(characteristicObj);
 						}
 						feature.put("charachteristics", charachteristicArray);

@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Component;
@@ -279,5 +280,14 @@ public class WAFADateUtil {
 		LocalDateTime nowDate = LocalDateTime.now();
 		Timestamp timestamp = Timestamp.valueOf(nowDate);
 		return timestamp;		
+	}
+	
+	public String setDiscoveryName() {
+		DateFormat dateFormat = new SimpleDateFormat("MMddYY");
+		Date date = new Date();
+		dateFormat.format(date);
+		String generatedString = RandomStringUtils.randomAlphanumeric(2).toUpperCase();
+		String importId = "Test"+dateFormat.format(date)+generatedString;
+		return importId;
 	}
 }

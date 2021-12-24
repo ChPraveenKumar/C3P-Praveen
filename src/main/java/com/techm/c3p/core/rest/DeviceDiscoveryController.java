@@ -6,31 +6,46 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
+import com.google.gson.Gson;
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryInterfaceEntity;
 import com.techm.c3p.core.entitybeans.DiscoveryDashboardEntity;
+import com.techm.c3p.core.entitybeans.ImportDetails;
+import com.techm.c3p.core.entitybeans.ImportStaging;
 import com.techm.c3p.core.entitybeans.SiteInfoEntity;
 import com.techm.c3p.core.repositories.DeviceDiscoveryInterfaceRepository;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
@@ -39,6 +54,9 @@ import com.techm.c3p.core.repositories.ForkDiscrepancyResultRepository;
 import com.techm.c3p.core.repositories.HostDiscrepancyResultRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.utility.WAFADateUtil;
+import com.techm.c3p.core.utility.UtilityMethods;
+import com.techm.c3p.core.repositories.ImportDetailsRepo;
+import com.techm.c3p.core.repositories.ImportStagingRepo;
 
 
 @Controller
@@ -64,7 +82,17 @@ public class DeviceDiscoveryController implements Observer {
 	@Autowired
 	private WAFADateUtil dateUtil;
 	@Autowired
+	private UtilityMethods utilityMethods;
+	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;
+	@Autowired
+	private ImportDetailsRepo importDetailsRepo;
+	@Autowired
+	private ImportStagingRepo importStagingRepo;
+	@Autowired
+	private RestTemplate restTemplate;
+	@Value("${python.service.uri}")
+	private String pythonServiceUri;
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -349,6 +377,146 @@ public class DeviceDiscoveryController implements Observer {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
+	
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/stagingDataToRespectiveDashboard", method = RequestMethod.POST, produces = "application/json")
+    @ResponseBody
+    public JSONObject stagingDataToRespectiveDashboard(@RequestBody String request) {
+		// just send the data for discovery
+		JSONParser parser = new JSONParser();
+		JSONObject obj = new JSONObject();
+		JSONObject subObj = new JSONObject();
+		String jsonArray = "",importId = "", user = "", status = "";
+		logger.info("stagingDataToRespectiveDashboard method"+request); //Request JSON {"requestType":"admin","requestId":"IMCDIS21113301045","version":"true"}
+		try {
+			JSONObject json= (JSONObject) parser.parse(request);
+			importId = json.get("requestId").toString();
+			user = json.get("requestType").toString();
+			status = json.get("version").toString();
+		}catch (Exception e) {
+			logger.error(e);
+		}
+		subObj.put("status", status);
+		subObj.put("importId", importId);
+		subObj.put("user", user);
+		jsonArray = new Gson().toJson(subObj);
+		obj.put(new String("output"), jsonArray);
+		
+		logger.info("The stagingDataToRespectiveDashboard method return json is "+obj);
+		return obj;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/performDiscoveryForEveryRow", method = RequestMethod.POST, produces = "application/json")
+    @ResponseBody
+    public JSONObject performDiscoveryForEveryRow(@RequestBody String request) {
+		JSONObject obj = new JSONObject();
+		JSONObject subObj = new JSONObject();
+		String jsonArray = "",importId = "", user ="";
+		JSONParser parser = new JSONParser();
+		Boolean value = false;
+		try {
+			JSONObject json= (JSONObject) parser.parse(request);
+			logger.info("performDiscoveryForEveryRow method "+request);
+			importId = json.get("requestId").toString();
+			String status = json.get("version").toString();
+			user = json.get("requestType").toString();
+			
+			ImportDetails importDetails = importDetailsRepo.findByImportId(importId);
+			logger.info("Import Details is "+importDetails.getIdStatus());
+			if("Pass".equalsIgnoreCase(importDetails.getIdStatus())) {
+				List<ImportStaging> importStagingList = importStagingRepo.findByImportId(importId);
+				ExecutorService executor = Executors.newFixedThreadPool(10);
+				importStagingList.forEach(entity-> {
+					String sourceSystem = json.get("mileStoneName").toString();
+					String disImportId = entity.getImportId()+"_"+entity.getSeqId();
+					JSONObject jsonForDiscovery = new JSONObject();
+					if(!"".equalsIgnoreCase( entity.getSeq_3())) {
+						jsonForDiscovery.put("discoveryType", "ipRange");
+					}else {
+						jsonForDiscovery.put("discoveryType", "ipSingle");
+					}
+					jsonForDiscovery.put("discoveryName", dateUtil.setDiscoveryName());
+					jsonForDiscovery.put("community", "Public");
+					jsonForDiscovery.put("ipType", entity.getSeq_1());
+					jsonForDiscovery.put("startIp", entity.getSeq_2());
+					jsonForDiscovery.put("endIp", entity.getSeq_3());
+					jsonForDiscovery.put("netMask", entity.getSeq_4());
+					jsonForDiscovery.put("SNMP Profile Type", entity.getSeq_5());
+					jsonForDiscovery.put("sourcesystem", sourceSystem);
+					jsonForDiscovery.put("importId", disImportId);
+					jsonForDiscovery.put("createdBy", json.get("requestType").toString());
+					logger.info("Discovery JSON is "+jsonForDiscovery);
+					Thread t1 = new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								performDiscovery(jsonForDiscovery);
+							} catch (Exception e) {
+								logger.error(e);
+							}
+
+						}
+					});
+					executor.execute(t1);
+					//t1.start();
+				});
+				getThreadStatus(importId);
+				executor.shutdown(); 
+				value = true;
+			}
+		} catch (Exception e) {
+			logger.error(e);
+		}
+		subObj.put("status", value);
+		subObj.put("importId", importId);
+		subObj.put("user", user);
+		jsonArray = new Gson().toJson(subObj);
+		obj.put(new String("output"), jsonArray);
+		return obj;
+		
+	}
+
+	@SuppressWarnings("static-access")
+	private void getThreadStatus(String importId) {
+		//String tStatus = null;
+		logger.info("Inside getThreadStatus "+importId);
+		List<String> importStatusList = importStagingRepo.findRowStatusByImportId(importId);
+			while (importStatusList.contains("InProgress")) {
+				utilityMethods.sleepThread(15000);
+				importStatusList = importStagingRepo.findRowStatusByImportId(importId);
+				logger.info("Inside getThreadStatus while loop "+importStatusList);
+			}
+			
+	}
+	
+	private JSONObject performDiscovery(JSONObject obj) {
+		logger.info("Start - performDiscovery");
+		HttpHeaders headers = null;
+		JSONParser jsonParser = null;
+		JSONObject responseJson = null;
+		try {
+			headers = new HttpHeaders();
+			jsonParser = new JSONParser();
+			HttpEntity<JSONObject> httpEntity = new HttpEntity<JSONObject>(obj, headers);
+			String url = pythonServiceUri + "C3P/api/discovery/";
+			logger.info("url is "+url);
+			String response = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class).getBody();
+			responseJson = (JSONObject) jsonParser.parse(response);
+		} catch (ParseException exe) {
+			logger.error("ParseException - performDiscovery -> " + exe.getMessage());
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - performDiscovery -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - performDiscovery->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		logger.info("End - performDiscovery - responseJson ->" + responseJson);
+		return responseJson;
+	}
+
 
 	@Bean
 	public TaskExecutor getTaskExecutor() {

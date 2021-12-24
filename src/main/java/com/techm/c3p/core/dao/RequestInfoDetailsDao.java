@@ -202,21 +202,36 @@ public class RequestInfoDetailsDao {
 			// INSERT OR update table after Configuration Request gets Completed
 			// Successfully
 			for (ResourceCharacteristicsHistoryEntity attributes : charHistoryEnity) {
-				ResourceCharacteristicsEntity resourceCharEntity = resourceCharRepo
+				ResourceCharacteristicsEntity resourceCharEntity  = new ResourceCharacteristicsEntity();
+				if(attributes.getRcCharacteristicId()!= null) {
+					ResourceCharacteristicsEntity resourceCharEntityData = resourceCharRepo
 						.findByDeviceIdAndRcFeatureIdAndRcCharacteristicIdAndRcKeyValue(attributes.getDeviceId(), attributes.getRcFeatureId(),
 								attributes.getRcCharacteristicId(), attributes.getRcKeyValue());
-				if (resourceCharEntity == null)
-					resourceCharEntity = new ResourceCharacteristicsEntity();
-				resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());
-				resourceCharEntity.setRcCharacteristicId(attributes.getRcCharacteristicId());
-				resourceCharEntity.setRcCharacteristicName(attributes.getRcName());
-				resourceCharEntity.setRcCharacteristicValue(attributes.getRcValue());
-				resourceCharEntity.setDeviceId(attributes.getDeviceId());
-				resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
-				resourceCharEntity.setRc_created_date(new Timestamp(new Date().getTime()));
-				resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
-				resourceCharEntity.setRcKeyValue(attributes.getRcKeyValue());
-				resourceCharRepo.save(resourceCharEntity);
+					if(resourceCharEntityData==null) {
+						resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());
+						resourceCharEntity.setRcCharacteristicId(attributes.getRcCharacteristicId());
+						resourceCharEntity.setRcCharacteristicName(attributes.getRcName());
+						resourceCharEntity.setRcCharacteristicValue(attributes.getRcValue());
+						resourceCharEntity.setRcKeyValue(attributes.getRcKeyValue());
+						resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());			
+						resourceCharEntity.setDeviceId(attributes.getDeviceId());
+						resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
+						resourceCharEntity.setRc_created_date(new Timestamp(new Date().getTime()));
+						resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
+						resourceCharRepo.save(resourceCharEntity);
+					}
+					
+				}else {
+				ResourceCharacteristicsEntity featureData = resourceCharRepo.findByDeviceIdAndRcFeatureId(attributes.getDeviceId(), attributes.getRcFeatureId());
+				if(featureData==null) {
+					resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());			
+					resourceCharEntity.setDeviceId(attributes.getDeviceId());
+					resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
+					resourceCharEntity.setRc_created_date(new Timestamp(new Date().getTime()));
+					resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
+					resourceCharRepo.save(resourceCharEntity);
+					}
+				}
 			}
 			
 			if(request.getAlphanumericReqId().substring(0, Math.min(request.getAlphanumericReqId().length(), 4)).equalsIgnoreCase("SLGB"))
