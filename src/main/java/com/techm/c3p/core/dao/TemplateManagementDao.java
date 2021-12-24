@@ -1509,12 +1509,24 @@ public class TemplateManagementDao {
 			while (rs1.next()) {
 				if (rs1.getString("temp_id").equalsIgnoreCase(tempid)) {
 					isPresent = true;
+					if(vendor.equals(rs1.getString("temp_vendor"))) {
 					vendor = rs1.getString("temp_vendor");
+					}
+					if(deviceFamily.equals(rs1.getString("temp_device_family"))) {
 					deviceFamily = rs1.getString("temp_device_family");
+					}
+					if(model.equals(rs1.getString("temp_model"))) {
 					model = rs1.getString("temp_model");
+					}
+					if(os.equals(rs1.getString("temp_device_os"))) {
 					os = rs1.getString("temp_device_os");
+					}
+					if(osVersion.equals(rs1.getString("temp_os_version"))) {
 					osVersion = rs1.getString("temp_os_version");
+					}
+					if(region.equals(rs1.getString("temp_region"))) {
 					region = rs1.getString("temp_region");
+					}
 					exception = new DuplicateDataException();
 					exception.setError_code("E001");
 					query2 = "SELECT * FROM errorcodedata";

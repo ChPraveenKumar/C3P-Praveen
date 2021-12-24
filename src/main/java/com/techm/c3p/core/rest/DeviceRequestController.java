@@ -104,7 +104,9 @@ public class DeviceRequestController {
 					List<MasterFeatureEntity> masterfeatureList = new ArrayList<MasterFeatureEntity>();
 					for (String fid : featureids) {
 						MasterFeatureEntity featureFromDB = masterfeatureRepo.findByFId(fid);
+						if(featureFromDB!=null) {
 						masterfeatureList.add(featureFromDB);
+						}
 					}
 					masterfeatureList.sort((MasterFeatureEntity m1, MasterFeatureEntity m2) -> m2.getfUpdatedDate().compareTo(m1.getfUpdatedDate()));
 					for (MasterFeatureEntity fid : masterfeatureList) {
