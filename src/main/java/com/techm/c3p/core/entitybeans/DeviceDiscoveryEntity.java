@@ -164,6 +164,8 @@ public class DeviceDiscoveryEntity {
 	
 	@Transient
 	private JSONArray locationDetails;
+	
+	
 
 	@Column(name = "d_discrepancy",length = 2)
 	private int dDiscrepancy;
@@ -186,6 +188,30 @@ public class DeviceDiscoveryEntity {
 	@Column(name = "d_power_supply", length = 45)
 	private String dPowerSupply;
 	
+	@Column(name = "d_clusterid")
+	private int dClusterid;
+	
+	
+	@Column(name = "d_namespace")
+	private String dNamespace;
+	
+	
+	public int getdClusterid() {
+		return dClusterid;
+	}
+
+	public void setdClusterid(int dClusterid) {
+		this.dClusterid = dClusterid;
+	}
+
+	public String getdNamespace() {
+		return dNamespace;
+	}
+
+	public void setdNamespace(String dNamespace) {
+		this.dNamespace = dNamespace;
+	}
+
 	public String getdManagedBy() {
 		return dManagedBy;
 	}
