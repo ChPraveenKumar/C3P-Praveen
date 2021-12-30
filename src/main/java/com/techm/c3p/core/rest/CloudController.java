@@ -146,6 +146,7 @@ public class CloudController {
 			jsonResult.put("podManagementIP", name.getdMgmtIp());
 			jsonResult.put("podImageFileName", name.getdImageFileName());
 			jsonResult.put("podNamespace", name.getdNamespace());
+			jsonResult.put("podCount", name.getdNumberOfPods());
 
 			JSONArray deviceDetails = new JSONArray();
 				JSONObject device =new JSONObject();
