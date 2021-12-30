@@ -329,4 +329,6 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	DeviceDiscoveryEntity findAllByDId(int id);
 	
 	List<DeviceDiscoveryEntity> findByDClusterid(int clusterid);
+	
+	DeviceDiscoveryEntity findByDClusteridAndDHostName(int clusterid, String hostname);
 }

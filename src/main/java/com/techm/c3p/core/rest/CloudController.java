@@ -154,6 +154,7 @@ public class CloudController {
 				device.put("osVersion", name.getdOsVersion());
 				device.put("family", name.getdDeviceFamily());
 				device.put("type", name.getdType());
+				device.put("vendor", name.getdVendor());
 				
 			deviceDetails.add(device);
 			jsonResult.put("deviceDetails", deviceDetails);
@@ -196,6 +197,7 @@ public class CloudController {
 			device.put("osVersion", name.getvOsversion());
 			device.put("family", name.getvFamily());
 			device.put("type", name.getvDevicetype());
+			device.put("vendor", name.getV_vendor());
 			image.put("deviceDetails", device);
 		outList.add(image);
 		

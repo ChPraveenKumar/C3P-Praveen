@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.apache.catalina.Cluster;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -35,6 +36,8 @@ import org.springframework.web.client.RestTemplate;
 import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.dao.TemplateManagementDao;
 import com.techm.c3p.core.dao.TemplateSuggestionDao;
+import com.techm.c3p.core.entitybeans.CloudClusterEntity;
+import com.techm.c3p.core.entitybeans.CloudProjectEntity;
 import com.techm.c3p.core.entitybeans.CreateConfigEntity;
 import com.techm.c3p.core.entitybeans.CredentialManagementEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
@@ -60,6 +63,8 @@ import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.RequestInfoSO;
 import com.techm.c3p.core.pojo.TemplateFeaturePojo;
 import com.techm.c3p.core.repositories.AttribCreateConfigRepo;
+import com.techm.c3p.core.repositories.CloudClusterRepository;
+import com.techm.c3p.core.repositories.CloudProjectsRepository;
 import com.techm.c3p.core.repositories.CreateConfigRepo;
 import com.techm.c3p.core.repositories.CredentialManagementRepo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
@@ -137,6 +142,9 @@ public class DcmConfigService {
 	
 	@Autowired
 	private VNFHelper vNFHelper;
+	
+	@Autowired
+	private CloudClusterRepository cloudClusterRepository;
 
 	public Map<String, String> updateAlldetails(CreateConfigRequestDCM configRequest, List<CreateConfigPojo> pojoList)
 			throws IOException {
@@ -1247,7 +1255,7 @@ public class DcmConfigService {
 	/* method overloadig for UIRevamp */
 	public Map<String, String> updateAlldetails(List<RequestInfoPojo> requestInfoSOList,
 			List<CreateConfigPojo> pojoList, List<String> featureList, String userName,
-			List<TemplateFeaturePojo> features, DeviceDiscoveryEntity device) {
+			List<TemplateFeaturePojo> features, DeviceDiscoveryEntity device, JSONObject cloudObject) {
 		String validateMessage = "";
 		String requestIdForConfig = "", requestType = "";
 		String res = "", output = "";
@@ -1281,6 +1289,17 @@ public class DcmConfigService {
 			// variables.put("createConfigRequest", requestInfoSO);
 			if (requestInfoSO.getSceheduledTime().isEmpty()) {
 				requestInfoSO.setStatus("In Progress");
+				/*Logic to save cloud params in request info table*/
+				if(cloudObject!=null)
+				{
+					
+					requestInfoSO.setCloudName(cloudObject.get("cloudPlatform").toString());
+					JSONObject cluster = (JSONObject) cloudObject.get("cloudCusterDetails");
+					requestInfoSO.setClustername(cluster.get("clusterName").toString());
+					JSONObject pod= (JSONObject) cloudObject.get("cloudPodDetails");
+					requestInfoSO.setNumOfPods(Integer.valueOf(pod.get("numberOfPods").toString()));
+				}
+				
 				// validateMessage=validatorConfigManagement.validate(configRequest);
 				result = requestInfoDao.insertRequestInDB(requestInfoSO);
 				// update template
@@ -1290,7 +1309,7 @@ public class DcmConfigService {
 					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateID());
 				}
-
+				
 				for (Map.Entry<String, String> entry : result.entrySet()) {
 					if (entry.getKey() == "requestID") {
 
@@ -1309,6 +1328,17 @@ public class DcmConfigService {
 				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
 						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType(),
 						requestInfoSO.getRequestVersion());
+				
+				
+				/*Logic to save cloud params in cluster and project tables*/
+				if(cloudObject!=null)
+				{
+					int ClusterId = setCloudCluster(cloudObject,requestInfoSO.getAlphanumericReqId());
+					int podDeviceId= setCloudPod (cloudObject, ClusterId);
+					
+				}
+				
+				
 				// int testStrategyResultsDB=requestInfoDao.
 				/*
 				 * if (requestInfoSO.getTestsSelected() != null) { JSONArray array = new
@@ -3152,6 +3182,59 @@ public class DcmConfigService {
 		resourceCharHistoryRepo.save(history);
 		});
 		
+	}
+	private int setCloudCluster(JSONObject object, String requestId)
+	{
+		int id=0;
+		CloudClusterEntity entity= new CloudClusterEntity();
+		JSONObject clusterObject=(JSONObject) object.get("cloudCusterDetails");
+		if((boolean) clusterObject.get("isNew"))
+		{
+		entity.setCcName(clusterObject.get("clusterName").toString());
+		entity.setCcNetworkName(clusterObject.get("clusterNetworkName").toString());
+		entity.setCcNodePoolName(clusterObject.get("clusterNodePoolName").toString());
+		entity.setCcMachineType(clusterObject.get("machineType").toString());
+		entity.setCcDiskSize(Integer.parseInt(clusterObject.get("diskSize").toString()));
+		entity.setCcNumberOfNodes(clusterObject.get("numberOfNodes").toString());
+		entity.setCcLocation(clusterObject.get("clusterLocation").toString());
+		entity.setCcRequestid(requestId);
+		cloudClusterRepository.save(entity);
+		id =entity.getCcRowid();
+		}
+		else
+		{
+			entity= cloudClusterRepository.findByCcName(clusterObject.get("clusterName").toString());
+			id= entity.getCcRowid();
+		}
+		
+		requestInfoDetailsRepositories.updateClusterID(id, requestId);
+		return id;
+	}
+	
+	private int setCloudPod(JSONObject object, int clusterId)
+	{
+		int deviceid=0;
+		JSONObject podObject=(JSONObject) object.get("cloudPodDetails");
+		if((boolean) podObject.get("isNew"))
+		{
+			//save and find id
+			DeviceDiscoveryEntity entity= new DeviceDiscoveryEntity();
+			entity.setdHostName(podObject.get("podName").toString());
+			entity.setdClusterid(clusterId);
+			entity.setdNumberOfPods(Integer.parseInt(podObject.get("numberOfPods").toString()));
+			entity.setdImageFileName(podObject.get("podImagename").toString());
+			entity.setdNamespace(podObject.get("podNamespace").toString());
+			deviceDiscoveryRepository.save(entity);
+			deviceid=entity.getdId();
+			
+		}
+		else
+		{
+			//only find the id 
+			DeviceDiscoveryEntity entity =  deviceDiscoveryRepository.findByDClusteridAndDHostName(clusterId, podObject.get("podName").toString());
+			deviceid = entity.getdId();
+		}
+		return deviceid;
 	}
 
 }

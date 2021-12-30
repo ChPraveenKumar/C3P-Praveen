@@ -14,6 +14,8 @@ import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 public interface CloudClusterRepository extends JpaRepository<CloudClusterEntity, Long> {
 	
 	List<CloudClusterEntity> findByCloudProjectId(int id);	
+	CloudClusterEntity findByCcRowid(int id);
+	CloudClusterEntity findByCcName (String name);
 	
 	
 }

@@ -191,7 +191,10 @@ public class DeviceDiscoveryEntity {
 	@Column(name = "d_clusterid")
 	private int dClusterid;
 	
-	
+	@Column(name = "d_number_of_pods")
+	private int dNumberOfPods;
+
+
 	@Column(name = "d_namespace")
 	private String dNamespace;
 	
@@ -694,6 +697,14 @@ public class DeviceDiscoveryEntity {
 
 	public void setCredMgmtEntity(List<CredentialManagementEntity> credMgmtEntity) {
 		this.credMgmtEntity = credMgmtEntity;
+	}
+	
+	public int getdNumberOfPods() {
+		return dNumberOfPods;
+	}
+
+	public void setdNumberOfPods(int dNumberOfPods) {
+		this.dNumberOfPods = dNumberOfPods;
 	}
 	
 	@Override
