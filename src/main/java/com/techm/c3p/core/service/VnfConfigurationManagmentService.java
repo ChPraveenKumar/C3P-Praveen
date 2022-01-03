@@ -27,8 +27,10 @@ public class VnfConfigurationManagmentService {
 
 	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
-
-
+	
+	@Autowired
+	private BackupCurrentRouterConfigurationService backupCurrentRouterConfigurationService;
+	
 	public String genereateVnfConfiguration(List<TemplateFeaturePojo> features, JSONArray attribJson) {
 		String finalCommands = "";
 		if (attribJson != null) {
@@ -40,12 +42,15 @@ public class VnfConfigurationManagmentService {
 			List<TemplateAttribPojo> arrangeData = arrangeData(featureAttribute);
 			List<CommandPojo> cammandList = new ArrayList<>();
 			cammandList = assignCommands(arrangeData, cammandList);
-			for (CommandPojo cmd : cammandList) {
-				finalCommands = finalCommands + cmd.getCommandValue();
+			finalCommands = "<?xml version='1.0' encoding='UTF-8'?><data xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">";
+			for (CommandPojo cammand : cammandList) {
+				finalCommands = finalCommands + cammand.getCommandValue();
 			}
+			finalCommands = finalCommands + "</data>";
 		}
-
-		return finalCommands.toString();
+		
+		finalCommands = backupCurrentRouterConfigurationService.formatXml(finalCommands);
+		return finalCommands;
 	}
 
 	private TemplateAttribPojo setFeatureAttributeData(JSONObject attribJsonObj) {
