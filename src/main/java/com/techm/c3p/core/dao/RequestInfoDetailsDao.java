@@ -220,7 +220,7 @@ public class RequestInfoDetailsDao {
 					resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
 					resourceCharRepo.save(resourceCharEntity);
 					
-				}
+				}else {
 				ResourceCharacteristicsEntity featureData = resourceCharRepo.findByDeviceIdAndRcFeatureId(attributes.getDeviceId(), attributes.getRcFeatureId());
 				if(featureData==null) {
 					resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());			
@@ -229,6 +229,7 @@ public class RequestInfoDetailsDao {
 					resourceCharEntity.setRc_created_date(new Timestamp(new Date().getTime()));
 					resourceCharEntity.setRc_updated_date(new Timestamp(new Date().getTime()));
 					resourceCharRepo.save(resourceCharEntity);
+				}
 				}
 			}
 			

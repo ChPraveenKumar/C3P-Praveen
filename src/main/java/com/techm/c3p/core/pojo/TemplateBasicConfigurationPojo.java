@@ -23,6 +23,8 @@ public class TemplateBasicConfigurationPojo {
 	
 	private boolean isEnabled=false;
 	
+	private boolean isGoldenTemplate = false;
+	
 	private String series;
 	public boolean isEnabled() {
 		return isEnabled;
@@ -146,5 +148,11 @@ public class TemplateBasicConfigurationPojo {
 	public void setAlias(String alias) {
 		this.alias = alias;
 	}
-	
+	public boolean getIsGoldenTemplate() {
+		return isGoldenTemplate;
+	}
+	public void setIsGoldenTemplate(boolean isGoldenTemplate) {
+		this.isGoldenTemplate = isGoldenTemplate;
+	}
+
 }
