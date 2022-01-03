@@ -1682,6 +1682,7 @@ public class TemplateManagementDao {
 				pojo.setApprover(rs1.getString("temp_approver"));
 				pojo.setCreatedBy(rs1.getString("temp_created_by"));
 				pojo.setNetworkType(rs1.getString("temp_network_type"));
+				pojo.setIsGoldenTemplate(rs1.getBoolean("temp_golden"));
 
 				if (rs1.getString("temp_status").equalsIgnoreCase("Pending")) {
 					pojo.setEditable(false);

@@ -80,7 +80,7 @@ public class TemplateConfigBasicDetailsEntity implements Serializable
 	private String tempAlias;
 
 	@Column(name = "temp_golden")
-	private boolean tempGolden;
+	private boolean tempGolden=false;
 	
 	public int getId() {
 		return id;

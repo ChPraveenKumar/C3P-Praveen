@@ -132,7 +132,7 @@ public class TemplateManagementService {
 	 *This Api is marked as ***************External Api Impacted****************
 	 **/
 	@POST
-	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
+	//@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
 	@RequestMapping(value = "/saveFinalTemplate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public ResponseEntity<JSONObject> saveFinalTemplate(@RequestBody String newFeature) {
