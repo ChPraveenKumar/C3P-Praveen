@@ -913,10 +913,20 @@ public class ConfigurationManagement {
 						featureList.add(setTemplateFeatureData.getfName());
 					}
 				}
-				List<CreateConfigPojo> createConfigList = new ArrayList<>();
+				JSONArray configJson = null;
 				if (attribJson != null) {
+					configJson = new JSONArray();
 					for (int i = 0; i < attribJson.size(); i++) {
 						JSONObject object = (JSONObject) attribJson.get(i);
+						if (object.containsKey("attribConfig") && object.get("attribConfig") != null) {							
+							configJson .addAll((JSONArray) object.get("attribConfig"));
+						}
+					}
+				}
+				List<CreateConfigPojo> createConfigList = new ArrayList<>();
+				if (configJson != null) {
+					for (int i = 0; i < configJson.size(); i++) {
+						JSONObject object = (JSONObject) configJson.get(i);
 						String attriValue=null,attribCharacteristics = null;						
 						if(object.containsKey("value") && object.get("value")!=null) {
 							 attriValue = object.get("value").toString();	

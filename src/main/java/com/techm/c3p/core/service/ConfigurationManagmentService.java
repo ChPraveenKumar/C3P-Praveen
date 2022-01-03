@@ -101,7 +101,7 @@ public class ConfigurationManagmentService {
 			replicationArray = (JSONArray) requestJson.get("replication");
 		}
 		if (requestJson.get("networkType")!=null && requestJson.get("networkType").toString().equals("VNF")) {			
-			String configuration = vnfConfigurationManagmentService.genereateVnfConfiguration(features,attribJson,replicationArray);
+			String configuration = vnfConfigurationManagmentService.genereateVnfConfiguration(features,attribJson);
 			obj.put(new String("output"),configuration);			
 			
 		} else {
