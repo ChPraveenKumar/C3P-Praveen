@@ -363,6 +363,7 @@ public class GetTemplateConfigurationData {
 			getTemplateMngmntPojo.setFinalTemplate(temp);
 			String vendor = null, deviceFamily = null, model = null, deviceOs = null, osVersion = null, region = null,
 					comment = "", networkType = null, aliasName = null;
+			boolean goldenTemplate= false;
 			if (json.get("vendor") != null) {
 				vendor = json.get("vendor").toString();
 			} else {
@@ -419,12 +420,15 @@ public class GetTemplateConfigurationData {
 			if (json.get("aliasName") != null) {
 				aliasName = json.get("aliasName").toString();
 			}
+			if (json.get("goldenTemplate") != null) {
+				goldenTemplate = (boolean) json.get("goldenTemplate");
+			}
 			if (json.get("templateVersion") != null) {
 				tempIDafterSaveBasicDetails = templateManagementDao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, templateVersion, comment, networkType, aliasName, userName, userRole);
+						templateId, templateVersion, comment, networkType, aliasName, userName, userRole,goldenTemplate);
 			} else {
 				tempIDafterSaveBasicDetails = templateManagementDao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, "1.0", comment, networkType, aliasName, userName, userRole);
+						templateId, "1.0", comment, networkType, aliasName, userName, userRole,goldenTemplate);
 				getTemplateMngmntPojo.getTemplateid().substring(getTemplateMngmntPojo.getTemplateid().length() - 3);
 			}
 
