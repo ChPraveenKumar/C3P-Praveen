@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.pojo.AttribCreateConfigPojo;
 import com.techm.c3p.core.pojo.ChildVersionPojo;
+import com.techm.c3p.core.pojo.CloudPojo;
 import com.techm.c3p.core.pojo.CommandPojo;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
@@ -142,6 +143,12 @@ public class InvokeFtl {
 		Map<String, Object> tree = new HashMap<String, Object>();
 		tree.put("configRequest", configRequest);
 		return freemarkerDo(tree, "templateheader.ftl");
+	}
+	
+	public String generateVariableTF(CloudPojo cloudPojo, String filename, String basePath) {
+		Map<String, Object> tree = new HashMap<String, Object>();
+		tree.put("cloudPojo", cloudPojo);
+		return freemarkerDoCloudVariableTemplate(tree, filename, basePath);
 	}
 
 	public String generateDileveryConfigFile(RequestInfoPojo configRequest) {
@@ -542,6 +549,25 @@ public class InvokeFtl {
 			FileTemplateLoader templateLoader = new FileTemplateLoader(
 					new File(C3PCoreAppLabels.NEW_TEMPLATE_CREATION_PATH.getValue()));
 			cfg.setTemplateLoader(templateLoader);
+			Template tpl = cfg.getTemplate(template);
+			OutputStream os = new ByteArrayOutputStream();
+			OutputStreamWriter output = new OutputStreamWriter(os);
+			tpl.process(datamodel, output);
+			osValue = os.toString();
+		} catch (TemplateException | IOException e) {
+			logger.error("Exception Occured in freemarkerDoTemplate Methode :" + e.getMessage());
+			e.printStackTrace();
+		}
+		return osValue;
+	}
+	
+	static String freemarkerDoCloudVariableTemplate(Map<String, Object> datamodel, String template,String basePath) {
+		String osValue = null;
+		try {
+			@SuppressWarnings("deprecation")
+			Configuration cfg = new Configuration();
+			ClassTemplateLoader ctl = new ClassTemplateLoader(InvokeFtl.class, "/config");
+			cfg.setTemplateLoader(ctl);
 			Template tpl = cfg.getTemplate(template);
 			OutputStream os = new ByteArrayOutputStream();
 			OutputStreamWriter output = new OutputStreamWriter(os);

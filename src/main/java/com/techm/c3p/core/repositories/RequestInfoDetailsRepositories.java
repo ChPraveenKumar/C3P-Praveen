@@ -286,6 +286,11 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	@Modifying
 	@Query("UPDATE RequestInfoEntity c SET c.rClusterId = :rClusterId WHERE c.alphanumericReqId = :alphanumericReqId")
 	int updateClusterID(@Param("rClusterId") int rClusterId, @Param("alphanumericReqId") String alphanumericReqId);
+	
+	
+	@Modifying
+	@Query(value = "update RequestInfoEntity c SET c.managmentIP = :r_management_ip WHERE c.alphanumericReqId = :alphanumericReqId")
+	int updateMgmtIpbyDeviceid(@Param("r_management_ip") String r_management_ip, @Param("alphanumericReqId") String alphanumericReqId);
 }
 
 

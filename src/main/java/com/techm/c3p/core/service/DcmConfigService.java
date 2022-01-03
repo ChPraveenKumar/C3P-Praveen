@@ -2,6 +2,7 @@ package com.techm.c3p.core.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.catalina.Cluster;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -52,6 +54,7 @@ import com.techm.c3p.core.entitybeans.UserManagementEntity;
 import com.techm.c3p.core.mapper.CreateConfigRequestMapper;
 import com.techm.c3p.core.mapper.CreateConfigResponceMapper;
 import com.techm.c3p.core.pojo.AlertInformationPojo;
+import com.techm.c3p.core.pojo.CloudPojo;
 import com.techm.c3p.core.pojo.ConfigurationDataValuePojo;
 import com.techm.c3p.core.pojo.CreateConfigPojo;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
@@ -79,6 +82,7 @@ import com.techm.c3p.core.repositories.UserManagementRepository;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
 import com.techm.c3p.core.utility.TextReport;
+import com.techm.c3p.core.utility.UtilityMethods;
 import com.techm.c3p.core.utility.VNFHelper;
 import com.techm.c3p.core.validator.config.service.ValidatorConfigManagement;
 
@@ -146,6 +150,9 @@ public class DcmConfigService {
 	@Autowired
 	private CloudClusterRepository cloudClusterRepository;
 
+	@Autowired
+	private UtilityMethods utilityMethods;
+	
 	public Map<String, String> updateAlldetails(CreateConfigRequestDCM configRequest, List<CreateConfigPojo> pojoList)
 			throws IOException {
 
@@ -1330,12 +1337,31 @@ public class DcmConfigService {
 						requestInfoSO.getRequestVersion());
 				
 				
-				/*Logic to save cloud params in cluster and project tables*/
+				/*Logic to save cloud params in cluster and project tables and logic for folder creation for main and variable files*/
 				if(cloudObject!=null)
 				{
 					int ClusterId = setCloudCluster(cloudObject,requestInfoSO.getAlphanumericReqId());
 					int podDeviceId= setCloudPod (cloudObject, ClusterId);
 					
+					//Step to create folder
+					String folderPath=utilityMethods.createDirectory(requestInfoSO.getAlphanumericReqId());
+					if(folderPath!=null)
+					{
+						//Copy main.tf to this new folder.
+						String templateFolder=null;
+						if(cloudObject.get("cloudPlatform").toString().equalsIgnoreCase("openstack"))
+							templateFolder=C3PCoreAppLabels.TERRAFORM_OPENSTACK.getValue();
+						else if (cloudObject.get("cloudPlatform").toString().equalsIgnoreCase("gcp"))
+							templateFolder=C3PCoreAppLabels.TERRAFORM_GCP.getValue();
+						File from = new File(templateFolder+File.separator+"main.tf");
+						File to = new File(folderPath);
+						FileUtils.copyFileToDirectory(from, to);
+						
+						/*Code to generate variable file*/
+						CloudPojo cloudPojo=mapToPojo(cloudObject);
+						String variablePathString=templateFolder+"variables.ftl";
+						createVariableTFFile(cloudPojo,"variables.ftl",folderPath+File.separator,templateFolder.replaceAll("\\\\", "/"));
+					}
 				}
 				
 				
@@ -3235,6 +3261,45 @@ public class DcmConfigService {
 			deviceid = entity.getdId();
 		}
 		return deviceid;
+	}
+	
+	private CloudPojo mapToPojo(JSONObject cloudObject)
+	{
+		CloudPojo pojo=new CloudPojo();
+		pojo.setCloudPlatform(cloudObject.get("cloudPlatform").toString());
+		pojo.setCloudProject(cloudObject.get("cloudProject").toString());
+		
+		JSONObject cluster=(JSONObject) cloudObject.get("cloudCusterDetails");
+		pojo.setClusterName(cluster.get("clusterName").toString());
+		pojo.setClusterNetworkName(cluster.get("clusterNetworkName").toString());
+		pojo.setClusterNodePoolName(cluster.get("clusterNodePoolName").toString());
+		pojo.setMachineType(cluster.get("machineType").toString());
+		pojo.setClusterLocation(cluster.get("clusterLocation").toString());
+		pojo.setNumberOfNodes(cluster.get("numberOfNodes").toString());
+		
+		JSONObject cloudPod=(JSONObject) cloudObject.get("cloudPodDetails");
+		pojo.setPodClusterName(cloudPod.get("podClusterName").toString());
+		pojo.setPodName(cloudPod.get("podName").toString());
+		pojo.setPodImagename(cloudPod.get("podImagename").toString());
+		pojo.setNumberOfPods(cloudPod.get("numberOfPods").toString());
+		pojo.setPodNamespace(cloudPod.get("podNamespace").toString());
+		return pojo;
+	}
+	
+	private void createVariableTFFile(CloudPojo cloudPojo,String from, String to, String basePath) {
+		InvokeFtl invokeFtl = new InvokeFtl();
+		String response = "";
+		try {
+			
+				response = invokeFtl.generateVariableTF(cloudPojo,from,basePath);
+				TextReport.writeFile(to,
+						"variable.tf",response, "variableGeneration");
+			
+		} catch (Exception e) {
+			logger.error("Exception in createHeader method " + e.getMessage());
+			e.printStackTrace();
+		}
+
 	}
 
 }
