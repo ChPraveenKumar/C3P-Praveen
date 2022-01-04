@@ -156,6 +156,7 @@ public class InstantiationMilestone extends Thread {
 		String EXTERNAL_MILESTONE_NAME= "milestone_name";
 		String EXTERNAL_MILESTONE_STATUS="status";
 		String EXTERNAL_MILESTONE_SO_ID="so_id";
+		String EXTERNAL_MILESTONE_REQ_ID="req_id";
 		try {
 			JSONParser parser = new JSONParser();
 			JSONObject inputJson = (JSONObject) parser.parse(request);
@@ -176,6 +177,7 @@ public class InstantiationMilestone extends Thread {
 					requestJson.put(EXTERNAL_MILESTONE_NAME, mileStoneName);
 					requestJson.put(EXTERNAL_MILESTONE_STATUS, mileStoneStatus);
 					requestJson.put(EXTERNAL_MILESTONE_SO_ID, rfoDecomposedEntity.getOdRfoId());
+					requestJson.put(EXTERNAL_MILESTONE_REQ_ID, requestId);
 					logger.info("mileStoneName ->" + mileStoneName);
 					logger.info("mileStoneStatus ->" + mileStoneStatus);
 					logger.info("SO ID ->" + rfoDecomposedEntity.getOdRfoId());
