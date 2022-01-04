@@ -68,6 +68,7 @@ public class CNFInstanceCreationServiceImpl implements CNFInstanceCreationServic
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(input, headers);
 			String url = pythonServiceUri + C3PCoreAppLabels.PYTHON_CNF_INSTANCE_CREATE.getValue();
+			//String url = "http://10.207.11.17:5000/C3P/api/deploy/instance";
 			String response = pythonOauth2RestTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
 
 			JSONParser parser = new JSONParser();

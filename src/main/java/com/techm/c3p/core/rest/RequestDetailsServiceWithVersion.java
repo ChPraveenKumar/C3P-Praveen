@@ -136,6 +136,11 @@ public class RequestDetailsServiceWithVersion {
 							request.setCommissionFlag("Commission");
 
 						}
+						else
+						{
+							request.setCommissionFlag("Commission");
+
+						}
 						
 						if(request.getRequestType().equalsIgnoreCase("SLGB"))
 						{

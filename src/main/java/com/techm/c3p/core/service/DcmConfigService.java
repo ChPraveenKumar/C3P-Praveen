@@ -3293,7 +3293,7 @@ public class DcmConfigService {
 			
 				response = invokeFtl.generateVariableTF(cloudPojo,from,basePath);
 				TextReport.writeFile(to,
-						"variable.tf",response, "variableGeneration");
+						"variables.tf",response, "variableGeneration");
 			
 		} catch (Exception e) {
 			logger.error("Exception in createHeader method " + e.getMessage());

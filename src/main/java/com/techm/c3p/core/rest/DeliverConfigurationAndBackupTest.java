@@ -857,6 +857,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				// Code call python service to "Apply" create an instance
 				JSONObject input = new JSONObject();
 				input.put("folderPath", C3PCoreAppLabels.TERRAFORM.getValue() + RequestId);
+				//input.put("folderPath", "/opt/C3PConfig/Terraform/SCGC-CAAB8C6");
 				input.put("sourceSystem", "c3p-ui");
 				input.put("createdBy", requestinfo.getRequestCreatorName());
 				JSONObject result = cnfInstanceCreationService
@@ -3098,17 +3099,18 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	}
 
 	private void updateDeviceInfo(JSONObject result, RequestInfoEntity request) {
-		JSONObject output = (JSONObject) result.get("output");
+		//JSONObject output = (JSONObject) result.get("output");
 		DeviceDiscoveryEntity device = deviceDiscoveryRepository
 				.findByDHostName(request.getHostName());
 		String managementIp = null;
-		JSONArray resourceArray = (JSONArray) output.get("resources");
+		JSONArray resourceArray = (JSONArray) result.get("resources");
 		for (int i = 0; i < resourceArray.size(); i++) {
 			JSONObject obj = (JSONObject) resourceArray.get(i);
 			JSONArray instanceArray = (JSONArray) obj.get("instances");
 			for (int j = 0; j < instanceArray.size(); j++) {
 				JSONObject attributes = (JSONObject) instanceArray.get(j);
-				managementIp = attributes.get("access_ip_v4").toString();
+				JSONObject attribs = (JSONObject)attributes.get("attributes");
+				managementIp = attribs.get("access_ip_v4").toString();
 			}
 		}
 
@@ -3117,15 +3119,16 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	}
 
 	private void updateRequestInfo(JSONObject result, RequestInfoEntity request) {
-		JSONObject output = (JSONObject) result.get("output");
+		//JSONObject output = (JSONObject) result.get("output");
 		String managementIp = null;
-		JSONArray resourceArray = (JSONArray) output.get("resources");
+		JSONArray resourceArray = (JSONArray) result.get("resources");
 		for (int i = 0; i < resourceArray.size(); i++) {
 			JSONObject obj = (JSONObject) resourceArray.get(i);
 			JSONArray instanceArray = (JSONArray) obj.get("instances");
 			for (int j = 0; j < instanceArray.size(); j++) {
 				JSONObject attributes = (JSONObject) instanceArray.get(j);
-				managementIp = attributes.get("access_ip_v4").toString();
+				JSONObject attribs = (JSONObject)attributes.get("attributes");
+				managementIp = attribs.get("access_ip_v4").toString();
 			}
 		}
 		requestInfoDetailsRepositories.updateMgmtIpbyDeviceid(managementIp,
@@ -3135,7 +3138,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	private void updatePodDetailTable(JSONObject result,
 			RequestInfoEntity request) {
 		File directoryPath = new File(C3PCoreAppLabels.TERRAFORM.getValue());
-		JSONObject output = (JSONObject) result.get("output");
+		//JSONObject output = (JSONObject) result.get("output");
 		PodDetailEntity pod = new PodDetailEntity();
 		pod.setPdClusterId(request.getrClusterId());
 		File tempFile = null;
@@ -3145,7 +3148,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					".txt", directoryPath);
 			FileWriter fWriter = new FileWriter(directoryPath
 					+ request.getAlphanumericReqId() + ".txt");
-			fWriter.write(output.toJSONString());
+			fWriter.write(result.toJSONString());
 			fWriter.close();
 			byte[] dataInBytes = new byte[(int) tempFile.length()];
 			FileInputStream fileInputStream;
