@@ -40,7 +40,7 @@ public class ServiceOrderController {
 
 	
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
@@ -49,24 +49,56 @@ public class ServiceOrderController {
 	public Response getServiceOrderList() {
 
 		JSONObject obj = new JSONObject();
-		List<ServiceOrderEntity> detailsList = new ArrayList<ServiceOrderEntity>();
-		detailsList = serviceOrderRepo.findAllByOrderByCreatedDateDesc();
+		List<String> detailsList = serviceOrderRepo.findAllByOrderByCreatedDateDesc();
+		List<ServiceOrderEntity> serviceOrderDetailsList = new ArrayList<ServiceOrderEntity>();
 
-		
-		for (ServiceOrderEntity entity : detailsList) 
-		{ 
-			String fmtDate=dateUtil.dateTimeInAppFormat(entity.getDate());
-			entity.setCreatedDate(fmtDate);
+		for (Object serviceOrder : detailsList) {
+			ServiceOrderEntity details = new ServiceOrderEntity();
+			Object[] serviceOrderDetails = (Object[]) serviceOrder;
+			if (serviceOrderDetails[0] != null) {
+				details.setServiceOrder(serviceOrderDetails[0].toString());
+			}
+			if (serviceOrderDetails[1] != null) {
+				details.setRequestId(serviceOrderDetails[1].toString());
+			}
+			if (serviceOrderDetails[2] != null) {
+				details.setHostName(serviceOrderDetails[2].toString());
+			}
+			if (serviceOrderDetails[3] != null) {
+				details.setCustomer(serviceOrderDetails[3].toString());
+			}
+			if (serviceOrderDetails[4] != null) {
+				details.setSite(serviceOrderDetails[4].toString());
+			}
+			if (serviceOrderDetails[5] != null) {
+				details.setVendor(serviceOrderDetails[5].toString());
+			}
+			if (serviceOrderDetails[6] != null) {
+				details.setSeries(serviceOrderDetails[6].toString());
+			}
+			if (serviceOrderDetails[7] != null) {
+				details.setModel(serviceOrderDetails[7].toString());
+			}
+			if (serviceOrderDetails[8] != null) {
+				details.setStatus(serviceOrderDetails[8].toString());
+			}
+			if (serviceOrderDetails[9] != null) {
+				details.setRequestStatus(serviceOrderDetails[9].toString());
+			}
+			if (serviceOrderDetails[10] != null) {
+				details.setCreatedDate(serviceOrderDetails[10].toString());
+			}
+			if (serviceOrderDetails[11] != null) {
+				details.setRequestType(serviceOrderDetails[11].toString());
+			}
+			serviceOrderDetailsList.add(details);
 		}
-		
-		obj.put(new String("output"), detailsList);
-
+		obj.put(new String("output"), serviceOrderDetailsList);
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
-
 	}
 
 	
