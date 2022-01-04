@@ -327,4 +327,13 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	List<DeviceDiscoveryEntity> findByDId(@Param("did") List<String> did);	
 	
 	DeviceDiscoveryEntity findAllByDId(int id);
+	
+	List<DeviceDiscoveryEntity> findByDClusterid(int clusterid);
+	
+	DeviceDiscoveryEntity findByDClusteridAndDHostName(int clusterid, String hostname);
+	
+	@Modifying
+	@Query(value = "update c3p_deviceinfo set d_mgmtip = :d_mgmtip where d_id = :d_id", nativeQuery = true)
+	int updateMgmtIpbyDeviceid(@Param("d_mgmtip") String d_mgmtip, @Param("d_id") int d_id);
+	
 }

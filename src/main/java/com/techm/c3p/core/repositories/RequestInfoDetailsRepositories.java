@@ -282,6 +282,15 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	@Query("UPDATE RequestInfoEntity e SET e.rHasDeltaWithBaseline= :r_has_delta_with_baseline  where e.alphanumericReqId =:alphanumericReqId And e.requestVersion = :requestVersion")
 	int updatehasdeltawithbaseline(@Param("r_has_delta_with_baseline") boolean r_has_delta_with_baseline,
 			@Param("alphanumericReqId") String alphanumericReqId, @Param("requestVersion") Double requestVersion);
+	
+	@Modifying
+	@Query("UPDATE RequestInfoEntity c SET c.rClusterId = :rClusterId WHERE c.alphanumericReqId = :alphanumericReqId")
+	int updateClusterID(@Param("rClusterId") int rClusterId, @Param("alphanumericReqId") String alphanumericReqId);
+	
+	
+	@Modifying
+	@Query(value = "update RequestInfoEntity c SET c.managmentIP = :r_management_ip WHERE c.alphanumericReqId = :alphanumericReqId")
+	int updateMgmtIpbyDeviceid(@Param("r_management_ip") String r_management_ip, @Param("alphanumericReqId") String alphanumericReqId);
 }
 
 

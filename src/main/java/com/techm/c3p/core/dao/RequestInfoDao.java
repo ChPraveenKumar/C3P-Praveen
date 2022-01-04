@@ -6500,6 +6500,14 @@ public class RequestInfoDao {
 							+ UUID.randomUUID().toString().toUpperCase();
 
 				}
+				else if (requestInfoSO.getRequestType().equalsIgnoreCase(
+						"Config")
+						&& requestInfoSO.getNetworkType().equalsIgnoreCase(
+								"CNF")) {
+					alphaneumeric_req_id = "SCGC-"
+							+ UUID.randomUUID().toString().toUpperCase();
+
+				}
 
 				else {
 					alphaneumeric_req_id = "SLGC-"
@@ -6713,6 +6721,13 @@ public class RequestInfoDao {
 			requestEntity.setrSelectedFileFeatures(selectedFileFeatures);
 			requestEntity.setrConfigGenerationMethod(configGenerationMethods);
 			requestEntity.setRequestElapsedTime("00:00:00");
+			
+			if(requestInfoSO.getNetworkType().equalsIgnoreCase("CNF"))
+			{
+				requestEntity.setrCloudName(requestInfoSO.getCloudName());
+				requestEntity.setrClusterName(requestInfoSO.getClustername());
+				requestEntity.setrNumberOfPods(requestInfoSO.getNumOfPods());
+			}
 
 			if (scheduledTime != null && scheduledTime != "") {	
 				try {

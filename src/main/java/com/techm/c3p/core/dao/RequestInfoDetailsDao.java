@@ -805,6 +805,29 @@ public class RequestInfoDetailsDao {
 		return response;
 	}
 	
+	/**
+	 * This method is useful to fetch the oeprational status from
+	 * c3p_deviceinfo_ext table.
+	 * 
+	 * @param deviceId
+	 * @return imageInstanceId
+	 */
+	public String fetchOprStatusDeviceExt(String deviceId) {
+		String imageInstanceId = null;
+		String sqlQuery = "select r_opertionalState from c3p_deviceinfo_ext where r_device_id = ?";
+		try (Connection connection = jDBCConnection.getConnection();
+				PreparedStatement preparedStmt = connection.prepareStatement(sqlQuery);) {
+			preparedStmt.setString(1, deviceId);
+			ResultSet rs = preparedStmt.executeQuery();
+
+			while (rs.next()) {
+				imageInstanceId = rs.getString("r_opertionalState");
+			}
+		} catch (SQLException exe) {
+			logger.error("SQL Exception in fetchImageInstanceFromDeviceExt method " + exe.getMessage());
+		}
+		return imageInstanceId;
+	}
 	public void saveInDeviceExtension(String deviceId, String modelDescription) {
 		String sqlQuery = "INSERT INTO c3p_deviceinfo_ext(r_device_id, r_description) "
 				+ "VALUES (?,?)";
