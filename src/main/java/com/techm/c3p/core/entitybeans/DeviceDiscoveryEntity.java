@@ -164,6 +164,8 @@ public class DeviceDiscoveryEntity {
 	
 	@Transient
 	private JSONArray locationDetails;
+	
+	
 
 	@Column(name = "d_discrepancy",length = 2)
 	private int dDiscrepancy;
@@ -186,6 +188,33 @@ public class DeviceDiscoveryEntity {
 	@Column(name = "d_power_supply", length = 45)
 	private String dPowerSupply;
 	
+	@Column(name = "d_clusterid")
+	private int dClusterid;
+	
+	@Column(name = "d_number_of_pods")
+	private int dNumberOfPods;
+
+
+	@Column(name = "d_namespace")
+	private String dNamespace;
+	
+	
+	public int getdClusterid() {
+		return dClusterid;
+	}
+
+	public void setdClusterid(int dClusterid) {
+		this.dClusterid = dClusterid;
+	}
+
+	public String getdNamespace() {
+		return dNamespace;
+	}
+
+	public void setdNamespace(String dNamespace) {
+		this.dNamespace = dNamespace;
+	}
+
 	public String getdManagedBy() {
 		return dManagedBy;
 	}
@@ -668,6 +697,14 @@ public class DeviceDiscoveryEntity {
 
 	public void setCredMgmtEntity(List<CredentialManagementEntity> credMgmtEntity) {
 		this.credMgmtEntity = credMgmtEntity;
+	}
+	
+	public int getdNumberOfPods() {
+		return dNumberOfPods;
+	}
+
+	public void setdNumberOfPods(int dNumberOfPods) {
+		this.dNumberOfPods = dNumberOfPods;
 	}
 	
 	@Override

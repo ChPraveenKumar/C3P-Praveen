@@ -188,6 +188,53 @@ public class RequestInfoEntity implements Serializable {
 	public boolean isrHasDeltaWithBaseline() {
 		return rHasDeltaWithBaseline;
 	}
+	
+	
+	@Column(name = "r_number_of_pods")
+	private int rNumberOfPods;
+	
+	@Column(name = "r_cloud_name", length = 45)
+	private String rCloudName;
+
+	
+	@Column(name = "r_cluster_id")
+	private int rClusterId;
+	
+	
+	@Column(name = "r_cluster_name", length = 45)
+	private String rClusterName;
+	
+	public int getrNumberOfPods() {
+		return rNumberOfPods;
+	}
+
+	public void setrNumberOfPods(int rNumberOfPods) {
+		this.rNumberOfPods = rNumberOfPods;
+	}
+
+	public String getrCloudName() {
+		return rCloudName;
+	}
+
+	public void setrCloudName(String rCloudName) {
+		this.rCloudName = rCloudName;
+	}
+
+	public int getrClusterId() {
+		return rClusterId;
+	}
+
+	public void setrClusterId(int rClusterId) {
+		this.rClusterId = rClusterId;
+	}
+
+	public String getrClusterName() {
+		return rClusterName;
+	}
+
+	public void setrClusterName(String rClusterName) {
+		this.rClusterName = rClusterName;
+	}
 
 	public void setrHasDeltaWithBaseline(boolean rHasDeltaWithBaseline) {
 		this.rHasDeltaWithBaseline = rHasDeltaWithBaseline;

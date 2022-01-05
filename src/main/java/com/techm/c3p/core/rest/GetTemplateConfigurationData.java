@@ -67,6 +67,9 @@ public class GetTemplateConfigurationData {
 	private TemplateManagementDao templateManagementDao;
 	@Autowired
 	private NotificationRepo notificationRepo;
+	
+	@Autowired 
+	private TemplateManagementDetailsService templateManagementDetailsService;
 
 	@Autowired
 	private WAFADateUtil dateUtil;	
@@ -363,6 +366,7 @@ public class GetTemplateConfigurationData {
 			getTemplateMngmntPojo.setFinalTemplate(temp);
 			String vendor = null, deviceFamily = null, model = null, deviceOs = null, osVersion = null, region = null,
 					comment = "", networkType = null, aliasName = null;
+			boolean goldenTemplate= false;
 			if (json.get("vendor") != null) {
 				vendor = json.get("vendor").toString();
 			} else {
@@ -419,12 +423,15 @@ public class GetTemplateConfigurationData {
 			if (json.get("aliasName") != null) {
 				aliasName = json.get("aliasName").toString();
 			}
+			if (json.get("isGoldenTemplate") != null) {
+				goldenTemplate = (boolean) json.get("isGoldenTemplate");
+			}
 			if (json.get("templateVersion") != null) {
 				tempIDafterSaveBasicDetails = templateManagementDao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, templateVersion, comment, networkType, aliasName, userName, userRole);
+						templateId, templateVersion, comment, networkType, aliasName, userName, userRole,goldenTemplate);
 			} else {
 				tempIDafterSaveBasicDetails = templateManagementDao.addTemplate(vendor, deviceFamily, model, deviceOs, osVersion, region,
-						templateId, "1.0", comment, networkType, aliasName, userName, userRole);
+						templateId, "1.0", comment, networkType, aliasName, userName, userRole,goldenTemplate);
 				getTemplateMngmntPojo.getTemplateid().substring(getTemplateMngmntPojo.getTemplateid().length() - 3);
 			}
 
@@ -622,6 +629,8 @@ public class GetTemplateConfigurationData {
 					versioningModelObject.setCreatedBy(objToAdd.getCreatedBy());
 					versioningModelObject.setEditable(objToAdd.isEditable());
 					versioningModelObject.setAlias(objToAdd.getAlias());
+					versioningModelObject.setGoldenTemplate(objToAdd.getIsGoldenTemplate());
+					
 					versioningModelChildList = new ArrayList<TemplateBasicConfigurationPojo>();
 					for (int k = 0; k < list.size(); k++) {
 						if (list.get(k).getTemplateId().equalsIgnoreCase(versioningModelObject.getTemplateId())) {
@@ -1212,6 +1221,24 @@ public class GetTemplateConfigurationData {
 			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.OK);
 		} else {
 			responseEntity = new ResponseEntity<JSONObject>(json, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+	
+	@SuppressWarnings({ "unchecked", "unused" })
+	@GET
+	@RequestMapping(value = "/getTemplateCompareDashboard", method = RequestMethod.GET, produces = "application/json")
+	public ResponseEntity<JSONObject> getTemplateCompareDashboard() throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		 List<TemplateBasicConfigurationPojo> templateListData = templateManagementDetailsService.getTemplateListData();
+		 JSONObject data = new JSONObject();
+		 String dataJson = new Gson().toJson(templateListData);
+		 data.put("output", dataJson);
+		if (templateListData != null) {			
+			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.BAD_REQUEST);
+			
 		}
 		return responseEntity;
 	}
