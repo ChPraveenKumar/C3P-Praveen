@@ -1449,7 +1449,7 @@ public class DcmConfigService {
 
 				if (output.equalsIgnoreCase("true")) {
 					validateMessage = "Success";
-					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF") && requestInfoSO.getNetworkType().equalsIgnoreCase("CNF")) {
+					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF") || requestInfoSO.getNetworkType().equalsIgnoreCase("CNF")) {
 						for (RequestInfoPojo request : requestInfoSOList) {
 							createTemplateAndHeader(request, requestInfoSOList);
 						}
