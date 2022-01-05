@@ -1312,7 +1312,7 @@ public class DcmConfigService {
 				// update template
 
 				requestType = requestInfoSO.getRequestType();
-				if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))) {
+				if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))&& !(requestType.equals("NETCONF")) && !(requestType.equals("RESTCONF"))) {
 					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateID());
 				}

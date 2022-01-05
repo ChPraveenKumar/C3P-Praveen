@@ -58,6 +58,9 @@ public class CommandPojo implements Comparable<CommandPojo> {
 
 	@Transient
 	String tempId;
+	
+	@Transient
+	String parenttempId;
 
 	public String getCommand_type() {
 		return command_type;
@@ -191,6 +194,15 @@ public class CommandPojo implements Comparable<CommandPojo> {
 
 	public void setTempId(String tempId) {
 		this.tempId = tempId;
+	}
+	
+	
+	public String getParenttempId() {
+		return parenttempId;
+	}
+
+	public void setParenttempId(String parenttempId) {
+		this.parenttempId = parenttempId;
 	}
 
 	@Override
