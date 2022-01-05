@@ -978,8 +978,11 @@ public class TemplateManagementNewService {
 	@SuppressWarnings("unchecked")
 	private JSONObject createFeatureJson(MasterFeatureEntity feature, String getfParentId,String templateId) {
 		JSONObject featureJsonObject = new JSONObject();
-		String featureName = StringUtils.substringAfter(
+		String featureName = "";
+		if(feature.getfName()!=null) {
+			featureName = StringUtils.substringAfter(
 				feature.getfName(), templateId+"::");
+		}
 		featureJsonObject.put("fName",featureName);
 		featureJsonObject.put("fReplicationFlag", feature.getfReplicationind());
 		featureJsonObject.put("isInstance",false);
