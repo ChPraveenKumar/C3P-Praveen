@@ -6500,10 +6500,10 @@ public class RequestInfoDao {
 							+ UUID.randomUUID().toString().toUpperCase();
 
 				}
-				else if (requestInfoSO.getRequestType().equalsIgnoreCase(
-						"Config")
-						&& requestInfoSO.getNetworkType().equalsIgnoreCase(
-								"CNF")) {
+				else if ("Config".equalsIgnoreCase(requestInfoSO.getRequestType()
+						)
+						&& "CNF".equalsIgnoreCase(requestInfoSO.getNetworkType()
+								)) {
 					alphaneumeric_req_id = "SCGC-"
 							+ UUID.randomUUID().toString().toUpperCase();
 
