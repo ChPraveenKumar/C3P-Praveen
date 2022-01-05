@@ -1299,7 +1299,7 @@ public class DcmConfigService {
 				/*Logic to save cloud params in request info table*/
 				if(cloudObject!=null)
 				{
-					
+					requestInfoSO.setNetworkType("CNF");
 					requestInfoSO.setCloudName(cloudObject.get("cloudPlatform").toString());
 					JSONObject cluster = (JSONObject) cloudObject.get("cloudCusterDetails");
 					requestInfoSO.setClustername(cluster.get("clusterName").toString());
@@ -1449,7 +1449,7 @@ public class DcmConfigService {
 
 				if (output.equalsIgnoreCase("true")) {
 					validateMessage = "Success";
-					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF")) {
+					if (requestInfoSO.getNetworkType().equalsIgnoreCase("PNF") && requestInfoSO.getNetworkType().equalsIgnoreCase("CNF")) {
 						for (RequestInfoPojo request : requestInfoSOList) {
 							createTemplateAndHeader(request, requestInfoSOList);
 						}
