@@ -852,6 +852,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 				}
 			} else if (RequestId.contains("SCGC-")) {
+				try
+				{
 				requestDetailEntity = requestInfoDetailsRepositories
 						.findAllByAlphanumericReqId(RequestId);
 				// Code call python service to "Apply" create an instance
@@ -895,7 +897,20 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 											.getRequestVersion()),
 							"deliever_config", "2", "Failure");
 				}
-				
+				}
+				catch(Exception ex)
+				{
+					value=false;
+					logger.error("Exception occure in Delivery COnfiguration : "
+							+ ex.getMessage());
+					jsonArray = new Gson().toJson(value);
+					obj.put(new String("output"), jsonArray);
+
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+							requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()),
+							"deliever_config", "2", "Failure");
+				}
 			} else {
 				value = true;
 
@@ -928,7 +943,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 											.getRequestVersion())
 									+ "_deliveredConfig.txt", response);
 				} catch (Exception e) {
-					e.printStackTrace();
+					logger.error("Exception occure in Delivery COnfiguration : "
+							+ e.getMessage());
 				}
 			}
 		} finally {
