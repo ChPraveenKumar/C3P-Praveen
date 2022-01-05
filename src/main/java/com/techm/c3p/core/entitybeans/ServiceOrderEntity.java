@@ -9,7 +9,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.validation.constraints.NotNull;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "c3p_t_request_service_order")
@@ -67,6 +70,7 @@ public class ServiceOrderEntity implements Serializable {
 	private String action;
 
 	@Column(name = "so_date")
+	@JsonIgnore
 	private Timestamp date;
 	
 	@Column(name = "so_created_by", length = 20)
@@ -81,6 +85,9 @@ public class ServiceOrderEntity implements Serializable {
 	
 	@Column(name = "so_updated_date")
 	private Timestamp updatedDate;
+	
+	@Transient
+	private String requestType;
 	
 
 	public int getSo_id() {
@@ -240,6 +247,14 @@ public class ServiceOrderEntity implements Serializable {
 
 	public void setUpdatedDate(Timestamp updatedDate) {
 		this.updatedDate = updatedDate;
+	}
+
+	public String getRequestType() {
+		return requestType;
+	}
+
+	public void setRequestType(String requestType) {
+		this.requestType = requestType;
 	}
 
 	@Override
