@@ -862,6 +862,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				//input.put("folderPath", "/opt/C3PConfig/Terraform/SCGC-CAAB8C6");
 				input.put("sourceSystem", "c3p-ui");
 				input.put("createdBy", requestinfo.getRequestCreatorName());
+				input.put("provider", requestDetailEntity.get(0).getrCloudName());
 				JSONObject result = cnfInstanceCreationService
 						.instanceCreate(input);
 				// update device info
