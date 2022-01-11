@@ -35,5 +35,11 @@ public interface ServiceOrderRepo extends JpaRepository<ServiceOrderEntity, Long
 
 	ServiceOrderEntity findByRequestId(String requestId);
 	
-	List<ServiceOrderEntity> findAllByOrderByCreatedDateDesc();
+	@Query(value = "select decom.od_rfo_id as serviceOrder, decom.od_request_id as requestId, dInfo.d_hostname as hostName, sInfo.c_cust_name as customer, "
+			+ "sInfo.c_site_name as site, dInfo.d_vendor as vendor, dInfo.d_device_family as family, dInfo.d_model as model, orders.rfo_status as status,"
+			+ " decom.od_requeststatus as requestStatus, decom.od_updated_date as date, decom.od_rf_taskname as taskName "
+			+ "from c3p_deviceinfo dInfo JOIN  c3p_rfo_decomposed decom JOIN c3p_cust_siteinfo sInfo "
+			+ "JOIN c3p_rf_orders orders on dInfo.d_id=decom.od_req_resource_id and dInfo.c_site_id=sInfo.id and "
+			+ "orders.rfo_id= decom.od_rfo_id ", nativeQuery = true)
+	List<String> findAllByOrderByCreatedDateDesc();
 }

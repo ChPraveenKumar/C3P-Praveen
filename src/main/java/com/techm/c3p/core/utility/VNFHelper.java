@@ -121,7 +121,8 @@ public class VNFHelper {
 			request.put("username",routerCredential.getLoginRead());			
 			request.put("password",routerCredential.getPasswordWrite());
 			request.put("managementip",managmentIp);
-			request.put("filepath",file);
+			String vnfdata = UtilityMethods.readFirstLineFromFile(file);
+			request.put("filepath",vnfdata);
 			
 			HttpHeaders headers = new HttpHeaders();
 			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));

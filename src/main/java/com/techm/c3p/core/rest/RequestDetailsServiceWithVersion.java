@@ -125,6 +125,8 @@ public class RequestDetailsServiceWithVersion {
 					for (RequestInfoCreateConfig request : detailsList) {
 
 						DeviceDiscoveryEntity device = deviceInforepo.findByDHostName(request.getHostname());
+						if(device.getdDeComm()!=null)
+						{
 						if (device.getdDeComm().equalsIgnoreCase("0")) {
 							request.setCommissionFlag("Commission");
 						} else if (device.getdDeComm().equalsIgnoreCase("1")) {
@@ -136,10 +138,16 @@ public class RequestDetailsServiceWithVersion {
 							request.setCommissionFlag("Commission");
 
 						}
+						else
+						{
+							request.setCommissionFlag("Commission");
+
+						}
 						
 						if(request.getRequestType().equalsIgnoreCase("SLGB"))
 						{
 							request.setRequestType("BackUp");
+						}
 						}
 					}
 					}

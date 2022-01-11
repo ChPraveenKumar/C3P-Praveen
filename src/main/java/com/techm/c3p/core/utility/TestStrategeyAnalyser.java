@@ -159,7 +159,7 @@ public class TestStrategeyAnalyser {
 				List<String> resultArray = new ArrayList<String>();
 				for (TestRules rulesLabel : rules) {
 					resultArray = setRuleData(requestID, requestVersion, rulesLabel, tempTextToAnalyse, filename, test,
-							isFilePresent, resultArray, text, chars, filenameData);
+							isFilePresent, resultArray, text, chars, filenameData,lineListFinal);
 				}
 				logger.info("Telstra text ### - resultArray -" + resultArray);
 				boolean resultVar = true;
@@ -199,7 +199,7 @@ public class TestStrategeyAnalyser {
 
 	private List<String> setRuleData(String requestID, Double requestVersion, TestRules rulesLabel,
 			String tempTextToAnalyse, String filename, TestDetail test, File isFilePresent, List<String> resultArray,
-			String text, int chars, String filenameData) {
+			String text, int chars, String filenameData,List<String> data ) {
 
 		try {
 			/* Checking for Text Rule validation */
@@ -215,7 +215,7 @@ public class TestStrategeyAnalyser {
 			/* Checking for Table Rule validation */
 			else if ("Table".equalsIgnoreCase(rulesLabel.getDataType())) {
 				resultArray = setTableResultData(requestID, requestVersion, rulesLabel, tempTextToAnalyse, filename,
-						test, isFilePresent, resultArray, text);
+						test, isFilePresent, resultArray, text, data);
 			}
 			/* Checking for Snippet Rule validation */
 			else if ("Snippet".equalsIgnoreCase(rulesLabel.getDataType())) {
@@ -241,24 +241,24 @@ public class TestStrategeyAnalyser {
 
 	private List<String> setTableResultData(String requestID, Double requestVersion, TestRules rulesLabel,
 			String tempTextToAnalyse, String filename, TestDetail test, File isFilePresent, List<String> resultArray,
-			String text) {
+			String text, List<String> data) {
 		String resultText = null;
 		String fromColum = rulesLabel.getFromColumn();
 		String whereKey = rulesLabel.getWhereKeyword();
-		text.replaceAll("\\r", "");
-		String lines[] = text.split("\\n");
+		text=text.replaceAll("\\r", "");
+		String lines[] = text.split(System.lineSeparator());
 
 		String extractedValue = null;
-		List<String> lineList = Arrays.asList(lines);
+		//List<String> lineList = Arrays.asList(lines);
 		int pointer = 0;
-		for (int lineListLoop = 0; lineListLoop < lineList.size(); lineListLoop++) {
+		for (int lineListLoop = 0; lineListLoop < data.size(); lineListLoop++) {
 
-			if (lineList.get(lineListLoop).contains(fromColum)) {
+			if (data.get(lineListLoop).contains(fromColum)) {
 				String originalFromKey = fromColum;
 				if (fromColum.contains(" ")) {
 					fromColum = fromColum.replace(" ", "_");
 				}
-				String s1 = lineList.get(lineListLoop).replace(originalFromKey, fromColum);
+				String s1 = data.get(lineListLoop).replace(originalFromKey, fromColum);
 				String[] lineSplit = s1.split("( )|(  )");
 				List<String> lineSplitArrayList = new ArrayList<String>(Arrays.asList(lineSplit));
 				lineSplitArrayList.removeAll(Arrays.asList("", null));
@@ -272,12 +272,12 @@ public class TestStrategeyAnalyser {
 				}
 			}
 
-			if (lineList.get(lineListLoop).contains(whereKey)) {
+			if (data.get(lineListLoop).contains(whereKey)) {
 				String originalKey = whereKey;
 				if (whereKey.contains(" ")) {
 					whereKey = whereKey.replace(" ", "_");
 				}
-				String s = lineList.get(lineListLoop).replace(originalKey, whereKey);
+				String s = data.get(lineListLoop).replace(originalKey, whereKey);
 				String[] lineSplit = s.split("( )|(  )");
 				List<String> lineSplitArrayList = new ArrayList<String>(Arrays.asList(lineSplit));
 				lineSplitArrayList.removeAll(Arrays.asList("", null));

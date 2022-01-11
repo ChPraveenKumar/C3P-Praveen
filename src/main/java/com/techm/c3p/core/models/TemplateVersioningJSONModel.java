@@ -25,6 +25,7 @@ public class TemplateVersioningJSONModel {
 	private boolean isEditable;
 	private String networkType;
 	private String alias;
+	private boolean isGoldenTemplate = false;
 	public boolean isEditable() {
 		return isEditable;
 	}
@@ -134,4 +135,11 @@ public class TemplateVersioningJSONModel {
 	public void setAlias(String alias) {
 		this.alias = alias;
 	}
+	public boolean isGoldenTemplate() {
+		return isGoldenTemplate;
+	}
+	public void setGoldenTemplate(boolean isGoldenTemplate) {
+		this.isGoldenTemplate = isGoldenTemplate;
+	}
+	
 }

@@ -40,6 +40,10 @@ public class AttribCreateConfigJson {
 	
 	private List<Integer> poolIds;
 	
+	private String cfId;
+	
+	private int instanceNumber;
+	
 	public List<Integer> getPoolIds() {
 		return poolIds;
 	}
@@ -172,5 +176,22 @@ public class AttribCreateConfigJson {
 	public void setReplicationFalg(boolean replicationFalg) {
 		this.replicationFalg = replicationFalg;
 	}
+
+	public String getCfId() {
+		return cfId;
+	}
+
+	public void setCfId(String cfId) {
+		this.cfId = cfId;
+	}
+
+	public int getInstanceNumber() {
+		return instanceNumber;
+	}
+
+	public void setInstanceNumber(int instanceNumber) {
+		this.instanceNumber = instanceNumber;
+	}
+	
 	
 }

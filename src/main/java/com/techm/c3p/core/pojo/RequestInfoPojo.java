@@ -113,6 +113,46 @@ public class RequestInfoPojo {
 	
 	private String reason;
 	
+	private String cloudName;
+	
+	private String clustername;
+	
+	private int numOfPods;
+	
+	private int clusterid;
+	
+	public String getCloudName() {
+		return cloudName;
+	}
+
+	public void setCloudName(String cloudName) {
+		this.cloudName = cloudName;
+	}
+
+	public String getClustername() {
+		return clustername;
+	}
+
+	public void setClustername(String clustername) {
+		this.clustername = clustername;
+	}
+
+	public int getNumOfPods() {
+		return numOfPods;
+	}
+
+	public void setNumOfPods(int numOfPods) {
+		this.numOfPods = numOfPods;
+	}
+
+	public int getClusterid() {
+		return clusterid;
+	}
+
+	public void setClusterid(int clusterid) {
+		this.clusterid = clusterid;
+	}
+
 	public String getReason() {
 		return reason;
 	}

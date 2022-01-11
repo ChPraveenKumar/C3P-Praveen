@@ -42,7 +42,7 @@ public enum C3PCoreAppLabels {
 	SINGLE_REQUEST_CREATE, SINGLE_REQUEST_CREATE_BACKUP,
 
 	/* Download files */
-	DOWNLOAD_PATH, JSCH_CHANNEL_INPUT_BUFFER_SIZE;
+	DOWNLOAD_PATH, JSCH_CHANNEL_INPUT_BUFFER_SIZE, TERRAFORM,TERRAFORM_OPENSTACK,TERRAFORM_GCP,PYTHON_CNF_INSTANCE_CREATE;
 
 	private static final Logger logger = LogManager.getLogger(C3PCoreAppLabels.class);
 	private static ResourceBundle resourceLabels;

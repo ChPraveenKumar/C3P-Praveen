@@ -79,6 +79,9 @@ public class TemplateConfigBasicDetailsEntity implements Serializable
 	@Column(name = "temp_alias", length = 45)
 	private String tempAlias;
 
+	@Column(name = "temp_golden")
+	private boolean tempGolden=false;
+	
 	public int getId() {
 		return id;
 	}
@@ -233,6 +236,14 @@ public class TemplateConfigBasicDetailsEntity implements Serializable
 
 	public String getTempAlias() {
 		return tempAlias;
+	}
+
+	public boolean isTempGolden() {
+		return tempGolden;
+	}
+
+	public void setTempGolden(boolean tempGolden) {
+		this.tempGolden = tempGolden;
 	}
 
 	public void setTempAlias(String tempAlias) {

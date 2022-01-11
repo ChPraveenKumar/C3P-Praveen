@@ -112,7 +112,7 @@ public class NetworkTestValidation extends Thread {
 					if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SNRC".equalsIgnoreCase(type)
 							|| "SNNC".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type)
 							|| "SLGM".equalsIgnoreCase(type) || "SNRM".equalsIgnoreCase(type)
-							|| "SNNM".equalsIgnoreCase(type)) {
+							|| "SNNM".equalsIgnoreCase(type)|| "SCGC".equalsIgnoreCase(type)) {
 						String host = requestinfo.getManagementIp();
 						CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
 								deviceDetails);

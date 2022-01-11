@@ -101,7 +101,7 @@ public class ConfigurationManagmentService {
 			replicationArray = (JSONArray) requestJson.get("replication");
 		}
 		if (requestJson.get("networkType")!=null && requestJson.get("networkType").toString().equals("VNF")) {			
-			String configuration = vnfConfigurationManagmentService.genereateVnfConfiguration(features,attribJson,replicationArray);
+			String configuration = vnfConfigurationManagmentService.genereateVnfConfiguration(features,attribJson);
 			obj.put(new String("output"),configuration);			
 			
 		} else {
@@ -274,10 +274,13 @@ public class ConfigurationManagmentService {
 		if (json.get("managementIp") != null)
 			mgtIp = json.get("managementIp").toString().toUpperCase();
 		DeviceDiscoveryEntity deviceDetails  = deviceDiscoveryRepository.findHostNameAndMgmtip(mgtIp, hostName);
+		if(deviceDetails!=null)
+		{
 		SiteInfoEntity siteId = deviceDetails.getCustSiteId();
 		createConfigRequest.setSiteid(siteId.getcSiteId());
 		if (json.get("deviceType") != null) {
 //			createConfigRequest.setDeviceType(json.get("deviceType").toString());
+		}
 		}
 		createConfigRequest.setFamily(json.get("deviceFamily").toString());
 		createConfigRequest.setModel(json.get("model").toString());
@@ -296,7 +299,8 @@ public class ConfigurationManagmentService {
 		if (json.get("networkType") != null && json.get("networkType").toString().isEmpty()) {
 			createConfigRequest.setNetworkType(json.get("networkType").toString());
 		} else {
-			createConfigRequest.setNetworkType(deviceDetails.getdVNFSupport());
+			if(deviceDetails!=null)
+				createConfigRequest.setNetworkType(deviceDetails.getdVNFSupport());
 		}
 		return createConfigRequest;
 	}
