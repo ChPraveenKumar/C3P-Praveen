@@ -192,6 +192,8 @@ public class CloudController {
 			
 		JSONObject image = new JSONObject();
 		image.put("imageName",name.getvImagename());
+		image.put("imageSize", name.getvDisksizeGb());
+		image.put("imageStatus",name.getvStatus());
 			JSONObject device =new JSONObject();
 			device.put("model", name.getvModel());
 			device.put("os", name.getvOs());

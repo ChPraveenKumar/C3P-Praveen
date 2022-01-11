@@ -47,6 +47,17 @@ public class ImageInfoEntity {
 	@Column(name = "v_devicetype", length = 45)
 	private String vDevicetype;
 
+	@Column(name = "v_status", length = 20)
+	private String vStatus;
+	
+	public String getvStatus() {
+		return vStatus;
+	}
+
+	public void setvStatus(String vStatus) {
+		this.vStatus = vStatus;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
