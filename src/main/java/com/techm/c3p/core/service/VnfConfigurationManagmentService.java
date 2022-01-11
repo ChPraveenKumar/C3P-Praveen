@@ -42,11 +42,12 @@ public class VnfConfigurationManagmentService {
 			List<TemplateAttribPojo> arrangeData = arrangeData(featureAttribute);
 			List<CommandPojo> cammandList = new ArrayList<>();
 			cammandList = assignCommands(arrangeData, cammandList);
-			finalCommands = "<?xml version='1.0' encoding='UTF-8'?><data xmlns=\"urn:ietf:params:xml:ns:netconf:base:1.0\">";
+			finalCommands = "<?xml version='1.0' encoding='UTF-8'?>";
+			finalCommands = finalCommands+"\n"+"<config>";
 			for (CommandPojo cammand : cammandList) {
 				finalCommands = finalCommands + cammand.getCommandValue();
 			}
-			finalCommands = finalCommands + "</data>";
+			finalCommands = finalCommands + "</config>";
 		}
 		
 		finalCommands = backupCurrentRouterConfigurationService.formatXml(finalCommands);
