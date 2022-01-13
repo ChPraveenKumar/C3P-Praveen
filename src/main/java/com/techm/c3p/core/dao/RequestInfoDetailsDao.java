@@ -121,6 +121,10 @@ public class RequestInfoDetailsDao {
 		else if ("instantiation".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set instantiation = ? where alphanumeric_req_id = ? and version = ? ";
 		}
+		else if ("cnfinstantiation".equalsIgnoreCase(field)) {
+			query = "update webserviceinfo set cnfinstantiation = ? where alphanumeric_req_id = ? and version = ? ";
+		}
+
 
 		try(Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection.prepareStatement(query);) {			
@@ -376,6 +380,8 @@ public class RequestInfoDetailsDao {
 				pojo.setCustomer(entity.getCustomer());
 				pojo.setSiteid(entity.getSiteId());
 				pojo.setSiteName(entity.getSiteName());
+				pojo.setCloudName(entity.getrCloudName());
+				pojo.setClustername(entity.getrClusterName());
 			}
 		} catch (Exception e) {
 			logger.error("Exception in getRequestDetailTRequestInfoDBForVersion method " +e);

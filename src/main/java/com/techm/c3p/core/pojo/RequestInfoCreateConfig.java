@@ -86,7 +86,42 @@ public class RequestInfoCreateConfig {
 
 	private String commissionFlag;
 
+	private String cloudPlatform;
+	private String cluster;
+	private String project;
+	private String projectId;
 
+	public String getProjectId() {
+		return projectId;
+	}
+
+	public void setProjectId(String projectId) {
+		this.projectId = projectId;
+	}
+
+	public String getCloudPlatform() {
+		return cloudPlatform;
+	}
+
+	public void setCloudPlatform(String cloudPlatform) {
+		this.cloudPlatform = cloudPlatform;
+	}
+
+	public String getCluster() {
+		return cluster;
+	}
+
+	public void setCluster(String cluster) {
+		this.cluster = cluster;
+	}
+
+	public String getProject() {
+		return project;
+	}
+
+	public void setProject(String project) {
+		this.project = project;
+	}
 
 	public String getCommissionFlag() {
 		return commissionFlag;

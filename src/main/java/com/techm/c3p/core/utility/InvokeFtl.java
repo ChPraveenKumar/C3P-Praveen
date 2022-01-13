@@ -16,6 +16,8 @@ import org.apache.commons.collections.ListUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
 import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.pojo.AttribCreateConfigPojo;
@@ -39,12 +41,13 @@ import freemarker.template.TemplateException;
  * Owner: Vivek Vidhate Module: FTL Logic: To
  * Generate, Save, and Get .ftl file for all milestone like Network Test, HealthChecl Test, Network Audit Test, etc
  */
-
+@Controller
 public class InvokeFtl {
 	private static final Logger logger = LogManager.getLogger(InvokeFtl.class);
 
-
 	@Autowired
+	RequestInfoDao requestInfoDao;
+	//@Autowired
 	public String getGeneratedConfigFile(String requestID, String version) {
 		String content = "";
 		String filePath = "";
@@ -96,7 +99,7 @@ public class InvokeFtl {
 		return withHeader;
 	}
 
-	@Autowired
+	//@Autowired
 	public List<String> getGeneratedBasicConfigFile(String requestID, String version) {
 		String filePath = "";
 		List<String> lines = new ArrayList<String>();
@@ -309,7 +312,7 @@ public class InvokeFtl {
 		}
 		return dataList;
 	}
-
+	
 	public Map<String, String> getDileveryConfigFile(String requestId, String version) {
 		String content = "";
 		String filePath = "";
@@ -317,16 +320,29 @@ public class InvokeFtl {
 		String contentCurrentVersion = "Not Completed";
 		Map<String, String> dataList = new HashMap<String, String>();
 		try {
+			File filedilevery = new File(
+					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_deliveredConfig.txt");
+			if (filedilevery.exists())
+			{
 			filePath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_deliveredConfig.txt";
 			content = new String(Files.readAllBytes(Paths.get(filePath)));
 			dataList.put("content", content);
-
+			}
+			else
+			{
+				dataList.put("content", "");
+			}
 			File file = new File(
 					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version + "_PreviousConfig.txt");
 
 			if (file.exists()) {
 				contentPreviousVersion = "Completed";
 				dataList.put("contentPreviousVersion", contentPreviousVersion);
+			}
+			else
+			{
+				contentPreviousVersion = "Not Conducted";
+				dataList.put("contentPreviousVersion", "");
 			}
 
 			file = new File(C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + version
@@ -335,7 +351,13 @@ public class InvokeFtl {
 				contentCurrentVersion = "Completed";
 				dataList.put("contentCurrentVersion", contentCurrentVersion);
 			}
-			RequestInfoDao requestInfoDao = new RequestInfoDao();
+			else
+			{
+				contentCurrentVersion = "Not Conducted";
+				dataList.put("contentCurrentVersion", "");
+			}
+			//RequestInfoDao requestInfoDao = new RequestInfoDao();
+		
 			ErrorValidationPojo errorValidationPojo = requestInfoDao.getErrordetailsForRequestId(requestId, version);
 			dataList.put("errorDesc", errorValidationPojo.getError_description());
 			dataList.put("errorType", errorValidationPojo.getError_type());
@@ -347,8 +369,11 @@ public class InvokeFtl {
 			 */
 			if (errorValidationPojo.getDelivery_status().equalsIgnoreCase("1")) {
 				dataList.put("status", "Success");
-			} else {
-				dataList.put("status", "Failed");
+			} else if(errorValidationPojo.getDelivery_status().equalsIgnoreCase("0"))
+			{ 
+				dataList.put("status", "Not Conducted");
+			}else{
+				dataList.put("status", "Fail");
 			}
 
 		} catch (IOException e) {

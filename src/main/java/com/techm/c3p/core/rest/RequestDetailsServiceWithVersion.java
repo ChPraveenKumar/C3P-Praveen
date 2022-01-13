@@ -30,6 +30,8 @@ import com.google.gson.JsonParseException;
 import com.techm.c3p.core.dao.RequestDetails;
 import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
+import com.techm.c3p.core.entitybeans.CloudProjectEntity;
+import com.techm.c3p.core.entitybeans.CloudplatformParamsEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.MasterAttributes;
 import com.techm.c3p.core.entitybeans.MasterCharacteristicsEntity;
@@ -40,6 +42,8 @@ import com.techm.c3p.core.pojo.ReoprtFlags;
 import com.techm.c3p.core.pojo.RequestInfoCreateConfig;
 import com.techm.c3p.core.pojo.SearchParamPojo;
 import com.techm.c3p.core.repositories.AttribCreateConfigRepo;
+import com.techm.c3p.core.repositories.CloudProjectsRepository;
+import com.techm.c3p.core.repositories.CloudplatforParamsRepository;
 import com.techm.c3p.core.repositories.CreateConfigRepo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.MasterCharacteristicsRepository;
@@ -83,6 +87,12 @@ public class RequestDetailsServiceWithVersion {
 	
 	@Autowired
 	private RequestInfoDao requestinfoDao;
+	
+	@Autowired
+	private CloudplatforParamsRepository cloudplatforParamsRepository;
+	
+	@Autowired
+	private CloudProjectsRepository cloudProjectsRepository;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -148,6 +158,12 @@ public class RequestDetailsServiceWithVersion {
 						{
 							request.setRequestType("BackUp");
 						}
+						}
+						
+						CloudplatformParamsEntity cloud = cloudplatforParamsRepository.findByCloudPlatform(request.getCloudPlatform());
+						if(cloud!=null)
+						{
+							//CloudProjectEntity project=cloudProjectsRepository.fi
 						}
 					}
 					}

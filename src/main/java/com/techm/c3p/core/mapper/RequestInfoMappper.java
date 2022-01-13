@@ -50,6 +50,8 @@ public class RequestInfoMappper {
 				request.setRequestElapsedTime(entity.getRequestElapsedTime());
 			}
 
+			request.setCloudPlatform(entity.getrCloudName());
+			request.setCluster(entity.getrClusterName());
 			if (entity.getStatus().equalsIgnoreCase("Success") || entity.getStatus().equalsIgnoreCase("success")) {
 				/*
 				 * SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");

@@ -121,6 +121,15 @@ public class RequestInfoPojo {
 	
 	private int clusterid;
 	
+	private String cnfInstantiation=null;
+	public String getCnfInstantiation() {
+		return cnfInstantiation;
+	}
+
+	public void setCnfInstantiation(String cnfInstantiation) {
+		this.cnfInstantiation = cnfInstantiation;
+	}
+
 	public String getCloudName() {
 		return cloudName;
 	}
