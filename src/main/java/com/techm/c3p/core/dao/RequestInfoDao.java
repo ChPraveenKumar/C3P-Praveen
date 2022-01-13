@@ -6731,6 +6731,7 @@ public class RequestInfoDao {
 				requestEntity.setrCloudName(requestInfoSO.getCloudName());
 				requestEntity.setrClusterName(requestInfoSO.getClustername());
 				requestEntity.setrNumberOfPods(requestInfoSO.getNumOfPods());
+				requestEntity.setrProjecName(requestInfoSO.getProjectName());
 			}
 
 			if (scheduledTime != null && scheduledTime != "") {	

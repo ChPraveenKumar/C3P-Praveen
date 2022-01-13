@@ -160,11 +160,7 @@ public class RequestDetailsServiceWithVersion {
 						}
 						}
 						
-						CloudplatformParamsEntity cloud = cloudplatforParamsRepository.findByCloudPlatform(request.getCloudPlatform());
-						if(cloud!=null)
-						{
-							//CloudProjectEntity project=cloudProjectsRepository.fi
-						}
+						
 					}
 					}
 					for(RequestInfoCreateConfig pojo: detailsList)

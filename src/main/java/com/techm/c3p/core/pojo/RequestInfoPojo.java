@@ -121,6 +121,16 @@ public class RequestInfoPojo {
 	
 	private int clusterid;
 	
+	private String projectName;
+	
+	public String getProjectName() {
+		return projectName;
+	}
+
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
+	}
+
 	private String cnfInstantiation=null;
 	public String getCnfInstantiation() {
 		return cnfInstantiation;

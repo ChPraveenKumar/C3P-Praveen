@@ -191,19 +191,32 @@ public class RequestInfoEntity implements Serializable {
 	
 	
 	@Column(name = "r_number_of_pods")
-	private int rNumberOfPods;
+	private int rNumberOfPods = 0;
 	
 	@Column(name = "r_cloud_name", length = 45)
 	private String rCloudName;
 
 	
 	@Column(name = "r_cluster_id")
-	private int rClusterId;
+	private int rClusterId = 0;
 	
 	
 	@Column(name = "r_cluster_name", length = 45)
 	private String rClusterName;
 	
+	@Column(name = "r_project_name", length = 45)
+	private String rProjecName;
+	
+	
+
+	public String getrProjecName() {
+		return rProjecName;
+	}
+
+	public void setrProjecName(String rProjecName) {
+		this.rProjecName = rProjecName;
+	}
+
 	public int getrNumberOfPods() {
 		return rNumberOfPods;
 	}

@@ -1299,6 +1299,7 @@ public class DcmConfigService {
 				/*Logic to save cloud params in request info table*/
 				if(cloudObject!=null)
 				{
+					requestInfoSO.setProjectName(cloudObject.get("cloudProject").toString());
 					requestInfoSO.setNetworkType("CNF");
 					requestInfoSO.setCloudName(cloudObject.get("cloudPlatform").toString());
 					JSONObject cluster = (JSONObject) cloudObject.get("cloudCusterDetails");
@@ -1340,6 +1341,7 @@ public class DcmConfigService {
 				/*Logic to save cloud params in cluster and project tables and logic for folder creation for main and variable files*/
 				if(cloudObject!=null)
 				{
+					
 					int ClusterId = setCloudCluster(cloudObject,requestInfoSO.getAlphanumericReqId());
 					int podDeviceId= setCloudPod (cloudObject, ClusterId);
 					
@@ -1347,6 +1349,7 @@ public class DcmConfigService {
 					String folderPath=utilityMethods.createDirectory(requestInfoSO.getAlphanumericReqId());
 					if(folderPath!=null)
 					{
+						
 						//Copy main.tf to this new folder.
 						String templateFolder=null;
 						if(cloudObject.get("cloudPlatform").toString().equalsIgnoreCase("openstack"))
