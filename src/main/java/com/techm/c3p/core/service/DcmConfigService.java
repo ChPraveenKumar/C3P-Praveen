@@ -1337,14 +1337,14 @@ public class DcmConfigService {
 						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType(),
 						requestInfoSO.getRequestVersion());
 				
-				
+				int podId=0;
 				/*Logic to save cloud params in cluster and project tables and logic for folder creation for main and variable files*/
 				if(cloudObject!=null)
 				{
 					
 					int ClusterId = setCloudCluster(cloudObject,requestInfoSO.getAlphanumericReqId());
 					int podDeviceId= setCloudPod (cloudObject, ClusterId);
-					
+					podId = podDeviceId;
 					//Step to create folder
 					String folderPath=utilityMethods.createDirectory(requestInfoSO.getAlphanumericReqId());
 					if(folderPath!=null)
@@ -1385,7 +1385,15 @@ public class DcmConfigService {
 					output = "false";
 				}
 				if (pojoList != null) {
-					int did = deviceDiscoveryRepository.findDid(requestInfoSO.getHostname());
+					int did=0;
+					if(podId==0)
+					{
+					 did = deviceDiscoveryRepository.findDid(requestInfoSO.getHostname());
+					}
+					else
+					{
+						did=podId;
+					}
 					String rfoId = rfoDecomposedRepository.findrfoId(requestInfoSO.getAlphanumericReqId());
 					if (pojoList.isEmpty() && features!=null ) {
 						setFeatureResourceCharacteristicsDeatils( requestInfoSO, did, rfoId,features);
@@ -1440,6 +1448,8 @@ public class DcmConfigService {
 							}
 						});
 					}else {
+						if(features!=null)
+						{
 					features.forEach(feature -> {
 						RequestFeatureTransactionEntity requestFeatureEntity = new RequestFeatureTransactionEntity();
 						MasterFeatureEntity masterFeatureId = masterFeatureRepository
@@ -1447,6 +1457,7 @@ public class DcmConfigService {
 						requestFeatureEntity.settMasterFeatureId(masterFeatureId);						
 						saveRequestFeatureData(requestFeatureEntity,requestInfoSO);
 					});
+						}
 				}
 				}
 

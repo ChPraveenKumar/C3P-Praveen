@@ -382,6 +382,7 @@ public class RequestInfoDetailsDao {
 				pojo.setSiteName(entity.getSiteName());
 				pojo.setCloudName(entity.getrCloudName());
 				pojo.setClustername(entity.getrClusterName());
+				pojo.setClusterid(entity.getrClusterId());
 			}
 		} catch (Exception e) {
 			logger.error("Exception in getRequestDetailTRequestInfoDBForVersion method " +e);

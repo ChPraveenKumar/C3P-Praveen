@@ -171,7 +171,7 @@ public class RequestDetails {
 	}
 	@SuppressWarnings("unchecked")
 	public JSONObject customerReportUIRevamp(String requestID, String testType, String version){
-		String STATUS_PASSED = "Pass";
+		String STATUS_PASSED = "Success";
 		String STATUS_FAILED = "Fail";
 		String STATUS_NC = "Not Conducted";
 		String KEY_0 = "0";

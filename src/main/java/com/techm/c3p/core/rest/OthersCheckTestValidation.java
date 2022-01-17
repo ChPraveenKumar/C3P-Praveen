@@ -95,7 +95,7 @@ public class OthersCheckTestValidation extends Thread {
 		JSch jsch = new JSch();
 		Channel channel = null;
 		Session session = null;
-		if (!(("SLGB".equals(type) || ("SNAI".equals(type))||("SLGF".equals(type)||("SLGA".equals(type)))))) {
+		if (!(("SLGB".equals(type) || ("SNAI".equals(type))||("SLGF".equals(type)||("SLGA".equals(type)) || ("SCGC".equals(type)))))) {
 
 			try {				
 				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
@@ -318,7 +318,20 @@ public class OthersCheckTestValidation extends Thread {
 				
 				}
 			}
-		} else {
+		} 
+		else if("SCGC".equals(type))
+		{
+			requestInfoDao.editRequestforReportWebserviceInfo(
+					RequestId,
+					Double.toString(Double.parseDouble(version)),
+					"others_test", "0", "In Progress");
+			
+			value = true;
+			jsonArray = new Gson().toJson(value);
+			obj.put(new String("output"), jsonArray);
+		}
+		
+		else {
 			value = true;
 
 			jsonArray = new Gson().toJson(value);

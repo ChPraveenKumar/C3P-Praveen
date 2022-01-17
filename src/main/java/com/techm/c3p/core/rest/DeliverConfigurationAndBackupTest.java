@@ -859,8 +859,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 					JSONObject input = new JSONObject();
 					input.put("folderPath",
 							C3PCoreAppLabels.TERRAFORM.getValue() + RequestId);
-					// input.put("folderPath",
-					// "/opt/C3PConfig/Terraform/SCGC-CAAB8C6");
+//					 input.put("folderPath",
+//					 "/opt/C3PConfig/Terraform/SCGC-CAAB8C6");
 					input.put("sourceSystem", "c3p-ui");
 					input.put("createdBy", requestinfo.getRequestCreatorName());
 					input.put("provider", requestDetailEntity.get(0)
@@ -882,6 +882,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										.toString(requestinfo
 												.getRequestVersion()),
 										"cnfinstantiation", "1", "In Progress");
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+								requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()),
+								"deliever_config", "1", "In Progress");
 						value = true;
 
 						jsonArray = new Gson().toJson(value);
@@ -896,6 +900,10 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 										.toString(requestinfo
 												.getRequestVersion()),
 								"cnfinstantiation", "2", "Failure");
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+								requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()),
+								"deliever_config", "2", "Failure");
 					}
 				} catch (Exception ex) {
 					value = false;
