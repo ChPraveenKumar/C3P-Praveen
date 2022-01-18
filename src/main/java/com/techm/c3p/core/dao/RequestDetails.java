@@ -171,7 +171,7 @@ public class RequestDetails {
 	}
 	@SuppressWarnings("unchecked")
 	public JSONObject customerReportUIRevamp(String requestID, String testType, String version){
-		String STATUS_PASSED = "Pass";
+		String STATUS_PASSED = "Success";
 		String STATUS_FAILED = "Fail";
 		String STATUS_NC = "Not Conducted";
 		String KEY_0 = "0";
@@ -307,12 +307,16 @@ public class RequestDetails {
 		resultForFlag = requestInfoDao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion());
 		String flagFordelieverConfig = "";
 		String flagForInstantiation ="";
+		String flagForCNFInstantiation="";
 		for (Map.Entry<String, String> entry : resultForFlag.entrySet()) {			
 			if (entry.getKey() == "flagFordelieverConfig") {
 				flagFordelieverConfig = entry.getValue();
 			}
 			if (entry.getKey() == "flagForInstantiation") {
 				flagForInstantiation = entry.getValue();
+			}
+			if (entry.getKey() == "flagForCNFInstantiation") {
+				flagForCNFInstantiation = entry.getValue();
 			}
 
 		}
@@ -335,7 +339,16 @@ public class RequestDetails {
 			reqDetail.setInstantiation(STATUS_FAILED);
 			reqDetail.setReason(requestInfoDetailsDao.reasonForInstantiationFailure(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion()));
 		}
-	
+		if (KEY_0.equals(flagForCNFInstantiation)) {
+			reqDetail.setCnfInstantiation(STATUS_NC);			
+		}
+		if (KEY_1.equals(flagForCNFInstantiation)) {
+			reqDetail.setCnfInstantiation(STATUS_PASSED);
+		}
+		if (KEY_2.equals(flagForCNFInstantiation)) {
+			reqDetail.setCnfInstantiation(STATUS_FAILED);
+			reqDetail.setReason(requestInfoDetailsDao.reasonForInstantiationFailure(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion()));
+		}
 		reqDetail.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(reqDetail.getRequestCreatedOn()));
 		
 		List<String> out = new ArrayList<String>();

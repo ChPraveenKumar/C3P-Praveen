@@ -112,7 +112,7 @@ public class NetworkTestValidation extends Thread {
 					if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SNRC".equalsIgnoreCase(type)
 							|| "SNNC".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type)
 							|| "SLGM".equalsIgnoreCase(type) || "SNRM".equalsIgnoreCase(type)
-							|| "SNNM".equalsIgnoreCase(type)|| "SCGC".equalsIgnoreCase(type)) {
+							|| "SNNM".equalsIgnoreCase(type)) {
 						String host = requestinfo.getManagementIp();
 						CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
 								deviceDetails);
@@ -190,7 +190,7 @@ public class NetworkTestValidation extends Thread {
 												waitTime = 6000;
 											}
 											UtilityMethods.sleepThread(waitTime);
-
+											
 											Boolean res = testStrategeyAnalyser.printAndAnalyse(input, channel,
 													requestinfo.getAlphanumericReqId(),
 													Double.toString(requestinfo.getRequestVersion()),
@@ -287,6 +287,17 @@ public class NetworkTestValidation extends Thread {
 							obj = testStrategyService.setFailureResult(jsonArray, value, requestinfo, "network_test", obj,
 									invokeFtl,"_networkTest.txt");							
 						}
+					}else if("SCGC".equalsIgnoreCase(type))
+					{
+						requestInfoDao.editRequestforReportWebserviceInfo(
+								requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "network_test", "0",
+								"In Progress");
+						
+						value = true;
+						logger.info("DONE Network Test");
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
 					}
 
 					else {

@@ -4085,11 +4085,12 @@ public class RequestInfoDao {
 
 	public Map<String, String> getRequestFlagForReport(String requestId,
 			double versionId) {
-		String query = "select application_test,deliever_config, instantiation from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+		String query = "select application_test,deliever_config, instantiation, cnfinstantiation from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		ResultSet rs = null;
 		String flagForPrevalidation = "";
 		String flagFordelieverConfig = "";
 		String flagForInstantiation ="";
+		String flagForCNFInstantiation="";
 		Map<String, String> hmap = new HashMap<String, String>();
 		DecimalFormat numberFormat = new DecimalFormat("#.0");
 		String version = numberFormat.format(versionId);
@@ -4104,11 +4105,13 @@ public class RequestInfoDao {
 					flagForPrevalidation = rs.getString("application_test");
 					flagFordelieverConfig = rs.getString("deliever_config");
 					flagForInstantiation =rs.getString("instantiation");
+					flagForCNFInstantiation =rs.getString("cnfinstantiation");
 				}
 			}
 			hmap.put("flagForPrevalidation", flagForPrevalidation);
 			hmap.put("flagFordelieverConfig", flagFordelieverConfig);
 			hmap.put("flagForInstantiation", flagForInstantiation);
+			hmap.put("flagForCNFInstantiation", flagForCNFInstantiation);
 
 		} catch (SQLException exe) {
 			logger.error("SQL Exception in lockDeviceForRequest method "
@@ -6274,6 +6277,7 @@ public class RequestInfoDao {
 					} else if (deleveryConfig == 2) {
 						deliver_status = false;
 					}
+					
 				}
 			}
 		} catch (SQLException exe) {
@@ -6727,6 +6731,7 @@ public class RequestInfoDao {
 				requestEntity.setrCloudName(requestInfoSO.getCloudName());
 				requestEntity.setrClusterName(requestInfoSO.getClustername());
 				requestEntity.setrNumberOfPods(requestInfoSO.getNumOfPods());
+				requestEntity.setrProjecName(requestInfoSO.getProjectName());
 			}
 
 			if (scheduledTime != null && scheduledTime != "") {	

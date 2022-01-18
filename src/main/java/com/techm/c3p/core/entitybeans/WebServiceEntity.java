@@ -73,6 +73,18 @@ public class WebServiceEntity implements Serializable {
 	@Column(name = "errordescription_deliverytest")
 	private String ErrorDescriptionDeliveryTest;
 
+	@Column(name = "cnfinstantiation")
+	private int cnfinstantiation;
+	
+	
+	public int getCnfinstantiation() {
+		return cnfinstantiation;
+	}
+
+	public void setCnfinstantiation(int cnfinstantiation) {
+		this.cnfinstantiation = cnfinstantiation;
+	}
+
 	public int getStart_test() {
 		return start_test;
 	}

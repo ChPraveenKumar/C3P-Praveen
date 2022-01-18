@@ -17,6 +17,9 @@ import com.techm.c3p.core.utility.InvokeFtl;
 public class ReportDetailsService {
 
 	@Autowired
+	private InvokeFtl invokeFtl;
+	
+	@Autowired
 	private RequestInfoDao requestInfoDao;
 	public String getDetailsForReport(CreateConfigRequestDCM createConfigRequestDCM, RequestInfoPojo request)
 			throws Exception {
@@ -81,7 +84,7 @@ public class ReportDetailsService {
 
 		String requestId = createConfigRequestDCM.getRequestId();
 		String version = createConfigRequestDCM.getVersion_report();
-		InvokeFtl invokeFtl = new InvokeFtl();
+		//InvokeFtl invokeFtl = new InvokeFtl();
 		String data = "";
 		Map<String, String> dataList = new HashMap<String, String>();
 		try {

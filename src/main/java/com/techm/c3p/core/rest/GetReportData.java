@@ -35,6 +35,7 @@ import com.techm.c3p.core.dao.RequestInfoDetailsDao;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.c3p.core.entitybeans.RfoDecomposedEntity;
+import com.techm.c3p.core.entitybeans.WebServiceEntity;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 import com.techm.c3p.core.pojo.PreValidateTest;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
@@ -42,6 +43,7 @@ import com.techm.c3p.core.pojo.RequestInfoSO;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.c3p.core.repositories.RfoDecomposedRepository;
+import com.techm.c3p.core.repositories.WebServiceRepo;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.ReportDetailsService;
 
@@ -78,6 +80,11 @@ public class GetReportData {
 	
 	@Autowired
 	private ReportDetailsService reportDetailsService;
+	
+	
+	@Autowired
+	private WebServiceRepo webServiceRepo;
+	
 	
 	@POST
 	@RequestMapping(value = "/getReportDataforTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -188,6 +195,66 @@ public class GetReportData {
 
 					}
 
+				}
+				else if(requesttype.equalsIgnoreCase("SCGC"))
+				{
+					WebServiceEntity milestoneFlags=webServiceRepo.findByAlphanumericReqId(json.get("requestID").toString());
+					
+					if (milestoneFlags.getCnfinstantiation() == 1)
+					{
+						obj.put(new String("instantiationGenerated"), "Success");
+					
+					if (milestoneFlags.getDeliever_config() == 1) {
+						obj.put(new String("backupStatus"), "Completed");
+						obj.put(new String("deliveryStatus"), "Completed");
+						obj.put(new String("status"), "Success");
+					} else if(milestoneFlags.getDeliever_config() == 0){
+						obj.put(new String("backupStatus"), "Not Conducted");
+						obj.put(new String("deliveryStatus"), "Not Conducted");
+						obj.put(new String("status"), "Not Conducted");
+
+					}
+					else if(milestoneFlags.getDeliever_config() == 2){
+						obj.put(new String("backupStatus"), "Fail");
+						obj.put(new String("deliveryStatus"), "Fail");
+						obj.put(new String("status"), "Fail");
+
+					}
+					}
+					else if(milestoneFlags.getCnfinstantiation() == 2)
+					{
+						obj.put(new String("instantiationGenerated"), "Fail");
+						obj.put(new String("backupStatus"), "Not Conducted");
+						obj.put(new String("deliveryStatus"), "Not Conducted");
+						obj.put(new String("status"), "Not Conducted");
+
+					}
+					else if(milestoneFlags.getCnfinstantiation() == 0)
+					{
+						obj.put(new String("instantiationGenerated"), "NA");
+						if (milestoneFlags.getDeliever_config() == 1) {
+							obj.put(new String("backupStatus"), "Completed");
+							obj.put(new String("deliveryStatus"), "Completed");
+							obj.put(new String("status"), "Success");
+						} else if(milestoneFlags.getDeliever_config() == 0){
+							obj.put(new String("backupStatus"), "Not Conducted");
+							obj.put(new String("deliveryStatus"), "Not Conducted");
+							obj.put(new String("status"), "Not Conducted");
+
+						}
+						else if(milestoneFlags.getDeliever_config() == 2){
+							obj.put(new String("backupStatus"), "Fail");
+							obj.put(new String("deliveryStatus"), "Fail");
+							obj.put(new String("status"), "Fail");
+
+						}
+
+					}
+					
+					
+					
+					
+					
 				}
 
 				else {

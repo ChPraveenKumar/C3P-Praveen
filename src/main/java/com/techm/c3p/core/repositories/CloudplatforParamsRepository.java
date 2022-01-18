@@ -11,7 +11,7 @@ import com.techm.c3p.core.entitybeans.CloudplatformParamsEntity;
 @Repository
 public interface CloudplatforParamsRepository extends JpaRepository<CloudplatformParamsEntity, Long> {
 	
-
+	CloudplatformParamsEntity findByCloudPlatform (String cloud); 
 	
 	
 }

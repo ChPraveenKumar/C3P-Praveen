@@ -98,6 +98,7 @@ public class TestStrategeyAnalyser {
 					isFilePresent.delete();
 				}
 			}
+			UtilityMethods.sleepThread(10000);
 			logger.info("printAndAnalyse - Total size of the Channel InputStream -->" + input.available());
 			while (input.available() > 0) {
 				int i = input.read(tmp, 0, SIZE);
@@ -122,7 +123,7 @@ public class TestStrategeyAnalyser {
 				}
 				}
 			}
-			UtilityMethods.sleepThread(10000);
+			
 
 			String text = tempTextToAnalyse;
 			//This logic is for Telstra only
