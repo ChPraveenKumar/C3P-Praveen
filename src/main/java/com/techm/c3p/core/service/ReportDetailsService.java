@@ -17,7 +17,7 @@ import com.techm.c3p.core.utility.InvokeFtl;
 public class ReportDetailsService {
 
 	@Autowired
-	InvokeFtl invokeFtl;
+	private InvokeFtl invokeFtl;
 	
 	@Autowired
 	private RequestInfoDao requestInfoDao;

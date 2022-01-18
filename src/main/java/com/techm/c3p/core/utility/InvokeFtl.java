@@ -46,7 +46,7 @@ public class InvokeFtl {
 	private static final Logger logger = LogManager.getLogger(InvokeFtl.class);
 
 	@Autowired
-	RequestInfoDao requestInfoDao;
+	private RequestInfoDao requestInfoDao;
 	//@Autowired
 	public String getGeneratedConfigFile(String requestID, String version) {
 		String content = "";

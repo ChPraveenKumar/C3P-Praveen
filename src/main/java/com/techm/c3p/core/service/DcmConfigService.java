@@ -1388,7 +1388,8 @@ public class DcmConfigService {
 					int did=0;
 					if(podId==0)
 					{
-					 did = deviceDiscoveryRepository.findDid(requestInfoSO.getHostname());
+					if(requestInfoSO.getHostname()!=null)
+						did = deviceDiscoveryRepository.findDid(requestInfoSO.getHostname());
 					}
 					else
 					{

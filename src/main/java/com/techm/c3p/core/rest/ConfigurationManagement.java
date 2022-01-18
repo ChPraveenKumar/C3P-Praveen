@@ -181,8 +181,11 @@ public class ConfigurationManagement {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType")
 						.toString());
 				if (configReqToSendToC3pCode.getNetworkType().equals("VNF")) {
+					if(json.get("hostname")!=null)
+					{
 					device = deviceDiscoveryRepository.findByDHostName(json
 							.get("hostname").toString().toUpperCase());
+					
 					if (!requestType.equalsIgnoreCase("Test")
 							&& !requestType.equalsIgnoreCase("SNAI")
 							&& !requestType.equalsIgnoreCase("SNAD")
@@ -190,6 +193,11 @@ public class ConfigurationManagement {
 							&& !requestType.equalsIgnoreCase("RESTCONF")) {
 						requestType = device.getdConnect();
 						configReqToSendToC3pCode.setRequestType(requestType);
+					}
+					else
+					{
+						configReqToSendToC3pCode.setNetworkType("PNF");
+					}
 					}
 
 				} else if (configReqToSendToC3pCode.getNetworkType().equals(
