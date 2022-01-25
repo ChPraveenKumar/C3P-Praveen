@@ -131,7 +131,7 @@ public class HealthCheckTestValidation extends Thread {
 					if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SNRC".equalsIgnoreCase(type)
 							|| "SNNC".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type)
 							|| "SLGM".equalsIgnoreCase(type) || "SNRM".equalsIgnoreCase(type)
-							|| "SNNM".equalsIgnoreCase(type) || "SCGC".equalsIgnoreCase(type)) {
+							|| "SNNM".equalsIgnoreCase(type) ) {
 						try {
 
 							if (requestinfo.getCertificationSelectionBit().substring(5, 6).equalsIgnoreCase("1")
@@ -375,6 +375,17 @@ public class HealthCheckTestValidation extends Thread {
 						
 						obj = this.postUpgradeHealthCheck.healthcheckCommandTest(request, "POST");
 
+					}else if(type.equalsIgnoreCase("SCGC"))
+					{
+						requestInfoDao.editRequestforReportWebserviceInfo(
+								requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "health_check", "0",
+								"In Progress");
+						
+						value = true;
+						logger.info("DONE Health check Test");
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
 					}
 
 				}

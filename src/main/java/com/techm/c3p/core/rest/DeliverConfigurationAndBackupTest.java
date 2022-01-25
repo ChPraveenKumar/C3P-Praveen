@@ -122,7 +122,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "unused", "null" })
 	@POST
 	@RequestMapping(value = "/deliverConfigurationTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -852,65 +852,86 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 				}
 			} else if (RequestId.contains("SCGC-")) {
-				try
-				{
-				requestDetailEntity = requestInfoDetailsRepositories
-						.findAllByAlphanumericReqId(RequestId);
-				// Code call python service to "Apply" create an instance
-				JSONObject input = new JSONObject();
-				input.put("folderPath", C3PCoreAppLabels.TERRAFORM.getValue() + RequestId);
-				//input.put("folderPath", "/opt/C3PConfig/Terraform/SCGC-CAAB8C6");
-				input.put("sourceSystem", "c3p-ui");
-				input.put("createdBy", requestinfo.getRequestCreatorName());
-				input.put("provider", requestDetailEntity.get(0).getrCloudName());
-				JSONObject result = cnfInstanceCreationService
-						.instanceCreate(input);
-				// update device info
-				updateDeviceInfo(result, requestDetailEntity.get(0));
-				// update request info
-				updateRequestInfo(result, requestDetailEntity.get(0));
-				// store json in a new DB associate it with cluster id
-				updatePodDetailTable(result, requestDetailEntity.get(0));
-				
-				if(result!=null)
-				{
-				requestInfoDetailsDao
-				.editRequestforReportWebserviceInfo(
-						requestinfo
-								.getAlphanumericReqId(),
-						Double.toString(requestinfo
-								.getRequestVersion()),
-						"deliever_config", "1",
-						"In Progress");
-				value = true;
+				try {
+					requestDetailEntity = requestInfoDetailsRepositories
+							.findAllByAlphanumericReqId(RequestId);
+					// Code call python service to "Apply" create an instance
+					JSONObject input = new JSONObject();
+					input.put("folderPath",
+							C3PCoreAppLabels.TERRAFORM.getValue() + RequestId);
+//					 input.put("folderPath",
+//					 "/opt/C3PConfig/Terraform/SCGC-CAAB8C6");
+					input.put("sourceSystem", "c3p-ui");
+					input.put("createdBy", requestinfo.getRequestCreatorName());
+					input.put("provider", requestDetailEntity.get(0)
+							.getrCloudName());
+					JSONObject result = cnfInstanceCreationService
+							.instanceCreate(input);
 
-				jsonArray = new Gson().toJson(value);
-				obj.put(new String("output"), jsonArray);
-				}else
-				{
+					if (result != null || !result.isEmpty()) {
+						// update device info
+						updateDeviceInfo(result, requestDetailEntity.get(0));
+						// update request info
+						updateRequestInfo(result, requestDetailEntity.get(0));
+						// store json in a new DB associate it with cluster id
+						updatePodDetailTable(result, requestDetailEntity.get(0));
+
+						requestInfoDetailsDao
+								.editRequestforReportWebserviceInfo(requestinfo
+										.getAlphanumericReqId(), Double
+										.toString(requestinfo
+												.getRequestVersion()),
+										"cnfinstantiation", "1", "In Progress");
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+								requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()),
+								"deliever_config", "1", "In Progress");
+						value = true;
+
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
+					} else {
+						value = false;
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
+
+						requestInfoDao.editRequestforReportWebserviceInfo(
+								requestinfo.getAlphanumericReqId(), Double
+										.toString(requestinfo
+												.getRequestVersion()),
+								"cnfinstantiation", "2", "Failure");
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+								requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()),
+								"deliever_config", "2", "Failure");
+					}
+				} catch (Exception ex) {
 					value = false;
-					jsonArray = new Gson().toJson(value);
-					obj.put(new String("output"), jsonArray);
-
-					requestInfoDao.editRequestforReportWebserviceInfo(
-							requestinfo.getAlphanumericReqId(), Double
-									.toString(requestinfo
-											.getRequestVersion()),
-							"deliever_config", "2", "Failure");
-				}
-				}
-				catch(Exception ex)
-				{
-					value=false;
 					logger.error("Exception occure in Delivery COnfiguration : "
 							+ ex.getMessage());
 					jsonArray = new Gson().toJson(value);
 					obj.put(new String("output"), jsonArray);
+					if(requestinfo.getAlphanumericReqId().contains("SCGC-"))
+					{
 
+						requestInfoDao.editRequestforReportWebserviceInfo(
+								requestinfo.getAlphanumericReqId(), Double
+										.toString(requestinfo
+												.getRequestVersion()),
+								"cnfinstantiation", "2", "Failure");
+						
+						requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+								requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()),
+								"deliever_config", "2", "Failure");
+					}
+					else
+					{
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 							requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()),
 							"deliever_config", "2", "Failure");
+					}
 				}
 			} else {
 				value = true;
@@ -927,11 +948,27 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 						+ ex.getMessage());
 				jsonArray = new Gson().toJson(value);
 				obj.put(new String("output"), jsonArray);
+				if(requestinfo.getAlphanumericReqId().contains("SCGC-"))
+				{
 
+					requestInfoDao.editRequestforReportWebserviceInfo(
+							requestinfo.getAlphanumericReqId(), Double
+									.toString(requestinfo
+											.getRequestVersion()),
+							"cnfinstantiation", "2", "Failure");
+					
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+							requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()),
+							"deliever_config", "2", "Failure");
+				}
+				else
+				{
 				requestInfoDetailsDao.editRequestforReportWebserviceInfo(
 						requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()),
 						"deliever_config", "2", "Failure");
+				}
 				String response;
 				try {
 					response = invokeFtl
@@ -3116,7 +3153,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	}
 
 	private void updateDeviceInfo(JSONObject result, RequestInfoEntity request) {
-		//JSONObject output = (JSONObject) result.get("output");
+		// JSONObject output = (JSONObject) result.get("output");
 		DeviceDiscoveryEntity device = deviceDiscoveryRepository
 				.findByDHostName(request.getHostName());
 		String managementIp = null;
@@ -3126,7 +3163,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			JSONArray instanceArray = (JSONArray) obj.get("instances");
 			for (int j = 0; j < instanceArray.size(); j++) {
 				JSONObject attributes = (JSONObject) instanceArray.get(j);
-				JSONObject attribs = (JSONObject)attributes.get("attributes");
+				JSONObject attribs = (JSONObject) attributes.get("attributes");
 				managementIp = attribs.get("access_ip_v4").toString();
 			}
 		}
@@ -3136,7 +3173,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	}
 
 	private void updateRequestInfo(JSONObject result, RequestInfoEntity request) {
-		//JSONObject output = (JSONObject) result.get("output");
+		// JSONObject output = (JSONObject) result.get("output");
 		String managementIp = null;
 		JSONArray resourceArray = (JSONArray) result.get("resources");
 		for (int i = 0; i < resourceArray.size(); i++) {
@@ -3144,7 +3181,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 			JSONArray instanceArray = (JSONArray) obj.get("instances");
 			for (int j = 0; j < instanceArray.size(); j++) {
 				JSONObject attributes = (JSONObject) instanceArray.get(j);
-				JSONObject attribs = (JSONObject)attributes.get("attributes");
+				JSONObject attribs = (JSONObject) attributes.get("attributes");
 				managementIp = attribs.get("access_ip_v4").toString();
 			}
 		}
@@ -3155,7 +3192,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 	private void updatePodDetailTable(JSONObject result,
 			RequestInfoEntity request) {
 		File directoryPath = new File(C3PCoreAppLabels.TERRAFORM.getValue());
-		//JSONObject output = (JSONObject) result.get("output");
+		// JSONObject output = (JSONObject) result.get("output");
 		PodDetailEntity pod = new PodDetailEntity();
 		pod.setPdClusterId(request.getrClusterId());
 		File tempFile = null;

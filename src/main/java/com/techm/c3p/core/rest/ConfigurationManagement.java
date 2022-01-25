@@ -174,14 +174,18 @@ public class ConfigurationManagement {
 			} else {
 				configReqToSendToC3pCode.setRequestType("SLGC");
 			}
-			device = deviceDiscoveryRepository.findByDHostName(json
-					.get("hostname").toString().toUpperCase());
+			
 
 			if (json.get("networkType") != null
 					&& !json.get("networkType").toString().isEmpty()) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType")
 						.toString());
 				if (configReqToSendToC3pCode.getNetworkType().equals("VNF")) {
+					if(json.get("hostname")!=null)
+					{
+					device = deviceDiscoveryRepository.findByDHostName(json
+							.get("hostname").toString().toUpperCase());
+					
 					if (!requestType.equalsIgnoreCase("Test")
 							&& !requestType.equalsIgnoreCase("SNAI")
 							&& !requestType.equalsIgnoreCase("SNAD")
@@ -189,6 +193,11 @@ public class ConfigurationManagement {
 							&& !requestType.equalsIgnoreCase("RESTCONF")) {
 						requestType = device.getdConnect();
 						configReqToSendToC3pCode.setRequestType(requestType);
+					}
+					else
+					{
+						configReqToSendToC3pCode.setNetworkType("PNF");
+					}
 					}
 
 				} else if (configReqToSendToC3pCode.getNetworkType().equals(
@@ -728,6 +737,8 @@ public class ConfigurationManagement {
 						featureList = null;
 						// Logic to create pojo list
 						List<MasterCharacteristicsEntity> attributesFromInput = new ArrayList<MasterCharacteristicsEntity>();
+						if(features!=null)
+						{
 						for (TemplateFeaturePojo feature : features) {
 							List<MasterCharacteristicsEntity> byAttribMasterFeatureId = masterCharachteristicRepository
 									.findAllByCFId(feature.getfMasterId());
@@ -736,6 +747,7 @@ public class ConfigurationManagement {
 								attributesFromInput
 										.addAll(byAttribMasterFeatureId);
 							}
+						}
 						}
 						if (attribJson != null) {
 							for (int i = 0; i < attribJson.size(); i++) {

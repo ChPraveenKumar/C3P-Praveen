@@ -468,6 +468,17 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					}
 				}
 			} else {
+				if(RequestId.contains("SCGC-"))
+				{
+					requestInfoDetailsDao
+					.editRequestforReportWebserviceInfo(
+							requestinfo
+									.getAlphanumericReqId(),
+							Double.toString(requestinfo
+									.getRequestVersion()),
+							"Application_test", "1",
+							"In Progress");
+				}
 				value = true;
 
 				jsonArray = new Gson().toJson(value);
@@ -946,6 +957,16 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 				} else {
 					if (RequestId.contains("SCGC-")) {
+						
+						requestInfoDetailsDao
+						.editRequestforReportWebserviceInfo(
+								requestinfo
+										.getAlphanumericReqId(),
+								Double.toString(requestinfo
+										.getRequestVersion()),
+								"Application_test", "1",
+								"In Progress");
+						
 						value = true;
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
