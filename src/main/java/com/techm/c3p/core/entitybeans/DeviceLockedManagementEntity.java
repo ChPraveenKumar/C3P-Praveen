@@ -88,4 +88,5 @@ public class DeviceLockedManagementEntity implements Serializable {
 			return false;
 		return true;
 	}
+	
 }
