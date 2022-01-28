@@ -75,7 +75,6 @@ public class DeviceLockedManagementEntity implements Serializable {
 		return result;
 	}
 
-	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -88,6 +87,5 @@ public class DeviceLockedManagementEntity implements Serializable {
 		if (id != other.id)
 			return false;
 		return true;
-	}
-	
+	}	
 }
