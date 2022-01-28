@@ -44,6 +44,7 @@ import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.UserManagementRepository;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.PingService;
+import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
 import com.techm.c3p.core.utility.TestStrategeyAnalyser;
@@ -88,6 +89,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	private PingService pingService;
 	@Autowired
 	private CamundaServiceFEWorkflow camundaServiceFEWorkflow;
+	@Autowired
+	private RequestInfoService requestInfoService;
 	private static final String JSCH_CONFIG_INPUT_BUFFER = "max_input_buffer_size";
 
 	/**
@@ -142,7 +145,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						requestinfo.setRequestVersion(Double.parseDouble(json
 								.get("version").toString()));
 						// deviceLock for ManagementIP
-						deviceLocked = requestInfoDao.checkForDeviceLock(
+						/*deviceLocked = requestInfoDao.checkForDeviceLock(
+								requestinfo.getAlphanumericReqId(),
+								requestinfo.getManagementIp(), "DeviceTest");*/
+						deviceLocked = requestInfoService.checkForDeviceLock(
 								requestinfo.getAlphanumericReqId(),
 								requestinfo.getManagementIp(), "DeviceTest");
 
@@ -162,8 +168,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 									if ((status.equals("Success"))
 											|| (status.equals("Failure"))) {
-										requestInfoDao
-												.deleteForDeviceLock(lockRequestId);
+										/*requestInfoDao
+												.deleteForDeviceLock(lockRequestId);*/
+										requestInfoService.deleteForDeviceLock(lockRequestId);
 									}
 
 									else if ((status).equals("In Progress")) {
@@ -261,8 +268,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 																		// type
 																		// id OS
 																		// or SR
-							requestInfoDao.lockDeviceForRequest(
+							/*requestInfoDao.lockDeviceForRequest(
 									requestinfo.getManagementIp(),
+									requestinfo.getAlphanumericReqId());*/
+							requestInfoService.lockDeviceForRequest(requestinfo.getManagementIp(),
 									requestinfo.getAlphanumericReqId());
 							if (type.equalsIgnoreCase("SLGC")
 									|| type.equalsIgnoreCase("SLGT")
@@ -796,7 +805,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								jsonArray = new Gson().toJson(value);
 								obj.put(new String("output"), jsonArray);
 							} catch (Exception e) {
-								requestInfoDao.releaselockDeviceForRequest(
+								/*requestInfoDao.releaselockDeviceForRequest(
+										requestinfo.getManagementIp(),
+										requestinfo.getAlphanumericReqId());*/
+								requestInfoService.releaselockDeviceForRequest(
 										requestinfo.getManagementIp(),
 										requestinfo.getAlphanumericReqId());
 								jsonArray = new Gson().toJson(value);
@@ -915,7 +927,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						else if (type.equalsIgnoreCase("SLGF")) {
 							String response = "";
 							String responseDownloadPath = "";
-							requestInfoDao.releaselockDeviceForRequest(
+							/*requestInfoDao.releaselockDeviceForRequest(
+									requestinfo.getManagementIp(),
+									requestinfo.getAlphanumericReqId());*/
+							requestInfoService.releaselockDeviceForRequest(
 									requestinfo.getManagementIp(),
 									requestinfo.getAlphanumericReqId());
 							jsonArray = new Gson().toJson(value);
