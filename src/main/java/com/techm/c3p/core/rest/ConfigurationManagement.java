@@ -193,12 +193,13 @@ public class ConfigurationManagement {
 							&& !requestType.equalsIgnoreCase("RESTCONF")) {
 						requestType = device.getdConnect();
 						configReqToSendToC3pCode.setRequestType(requestType);
-					}
-					else
+					}else if(requestType.equalsIgnoreCase("NETCONF")) {
+						configReqToSendToC3pCode.setNetworkType("VNF");
+					}else
 					{
 						configReqToSendToC3pCode.setNetworkType("PNF");
 					}
-					}
+				 }
 
 				} else if (configReqToSendToC3pCode.getNetworkType().equals(
 						"CNF")) {
