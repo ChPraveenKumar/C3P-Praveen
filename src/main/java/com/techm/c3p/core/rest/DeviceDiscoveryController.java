@@ -246,6 +246,8 @@ public class DeviceDiscoveryController implements Observer {
 					object.put("eol", "Not Available");
 
 			object.put("requests", getAllDevice.get(i).getdReqCount());
+				if(getAllDevice.get(i).getdDeComm()!=null)
+				{
 				if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("0")) {
 					object.put("state", "");
 				} else if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("1")) {
@@ -253,6 +255,11 @@ public class DeviceDiscoveryController implements Observer {
 
 				} else if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("2")) {
 					object.put("state", "Decommissioned");
+				}
+				}
+				else
+				{
+					object.put("state", "");
 				}
 				if (getAllDevice.get(i).getdNewDevice() == 0) {
 					object.put("isNew", true);
