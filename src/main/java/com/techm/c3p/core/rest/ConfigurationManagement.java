@@ -175,31 +175,25 @@ public class ConfigurationManagement {
 				configReqToSendToC3pCode.setRequestType("SLGC");
 			}
 			
-
 			if (json.get("networkType") != null
 					&& !json.get("networkType").toString().isEmpty()) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType")
 						.toString());
 				if (configReqToSendToC3pCode.getNetworkType().equals("VNF")) {
-					if(json.get("hostname")!=null)
-					{
-					device = deviceDiscoveryRepository.findByDHostName(json
-							.get("hostname").toString().toUpperCase());
-					
-					if (!requestType.equalsIgnoreCase("Test")
-							&& !requestType.equalsIgnoreCase("SNAI")
-							&& !requestType.equalsIgnoreCase("SNAD")
-							&& !requestType.equalsIgnoreCase("NETCONF")
-							&& !requestType.equalsIgnoreCase("RESTCONF")) {
-						requestType = device.getdConnect();
+					if (json.get("hostname") != null) {
+						device = deviceDiscoveryRepository.findByDHostName(json
+								.get("hostname").toString().toUpperCase());
+
+						if (!requestType.equalsIgnoreCase("Test")
+								&& !requestType.equalsIgnoreCase("SNAI")
+								&& !requestType.equalsIgnoreCase("SNAD")
+								&& !requestType.equalsIgnoreCase("NETCONF")
+								&& !requestType.equalsIgnoreCase("RESTCONF")) {
+							requestType = device.getdConnect();
+						}
 						configReqToSendToC3pCode.setRequestType(requestType);
-					}else if(requestType.equalsIgnoreCase("NETCONF")) {
-						configReqToSendToC3pCode.setNetworkType("VNF");
-					}else
-					{
-						configReqToSendToC3pCode.setNetworkType("PNF");
+
 					}
-				 }
 
 				} else if (configReqToSendToC3pCode.getNetworkType().equals(
 						"CNF")) {
