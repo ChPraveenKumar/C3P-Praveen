@@ -174,7 +174,7 @@ public class ConfigurationManagement {
 			} else {
 				configReqToSendToC3pCode.setRequestType("SLGC");
 			}
-
+			
 			if (json.get("networkType") != null
 					&& !json.get("networkType").toString().isEmpty()) {
 				configReqToSendToC3pCode.setNetworkType(json.get("networkType")

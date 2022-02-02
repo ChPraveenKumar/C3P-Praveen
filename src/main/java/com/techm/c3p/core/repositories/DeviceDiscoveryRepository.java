@@ -336,4 +336,7 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	@Query(value = "update c3p_deviceinfo set d_mgmtip = :d_mgmtip, d_decomm = 0 where d_id = :d_id", nativeQuery = true)
 	int updateMgmtIpbyDeviceid(@Param("d_mgmtip") String d_mgmtip, @Param("d_id") int d_id);
 	
+	List<DeviceDiscoveryEntity> findByDVendorAndDOsAndDOsVersionAndDDeviceFamilyAndDVNFSupport(
+			String vendor,String os,String osversion,String deviceFamily ,String networktype);
+	
 }
