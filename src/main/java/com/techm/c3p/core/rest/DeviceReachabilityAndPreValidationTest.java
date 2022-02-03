@@ -37,6 +37,8 @@ import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.Notification;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.entitybeans.TestDetail;
+import com.techm.c3p.core.networkcommunicationservices.ChannelElements;
+import com.techm.c3p.core.networkcommunicationservices.NCSAadapter;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.NotificationRepo;
@@ -88,6 +90,13 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	private PingService pingService;
 	@Autowired
 	private CamundaServiceFEWorkflow camundaServiceFEWorkflow;
+
+	@Autowired
+	private NCSAadapter ncsAdapter;
+
+	@Autowired
+	private ChannelElements channelElements;
+
 	private static final String JSCH_CONFIG_INPUT_BUFFER = "max_input_buffer_size";
 
 	/**
@@ -123,7 +132,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					.getRequestDetailTRequestInfoDBForVersion(RequestId,
 							version);
 			// TODO: We need to remove ROUTER_IP_TEMP later or while on GCP
-			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-") && !RequestId.contains("SCGC-")) {
+			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
+					&& !RequestId.contains("SCGC-")) {
 				if (requestinfo.getManagementIp() != null
 						&& !requestinfo.getManagementIp().equals("")) {
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
@@ -314,83 +324,65 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 									}
 								}
 								value = true;
-								if (finallistOfTests.size() > 0) {
+								session = ncsAdapter.getSession(user, host,
+										password);
+								if (session != null) {
+									channelElements = ncsAdapter
+											.channelElements(session,
+													requestinfo, "Test",
+													requestInfoDetailsDao);
+									if (channelElements != null) {
+										if (finallistOfTests.size() > 0) {
 
-									results = new ArrayList<Boolean>();
-									for (int i = 0; i < finallistOfTests.size(); i++) {
+											results = new ArrayList<Boolean>();
+											for (int i = 0; i < finallistOfTests
+													.size(); i++) {
+												channelElements
+														.getPs()
+														.println(
+																finallistOfTests
+																		.get(i)
+																		.getTestCommand());
+												UtilityMethods
+														.sleepThread(3000);
+												Boolean res = testStrategeyAnalyser
+														.printAndAnalyse(
+																channelElements
+																		.getInputStrm(),
+																channelElements
+																		.getChannel(),
+																requestinfo
+																		.getAlphanumericReqId(),
+																Double.toString(requestinfo
+																		.getRequestVersion()),
+																finallistOfTests
+																		.get(i),
+																"Device Prevalidation");
+												results.add(res);
 
-										// port="22";
-										session = jsch
-												.getSession(
-														user,
-														host,
-														Integer.parseInt(C3PCoreAppLabels.PORT_SSH
-																.getValue()));
-										Properties config = new Properties();
-										config.put("StrictHostKeyChecking",
-												"no");
-										config.put(
-												JSCH_CONFIG_INPUT_BUFFER,
-												C3PCoreAppLabels.JSCH_CHANNEL_INPUT_BUFFER_SIZE
-														.getValue());
-										session.setConfig(config);
-										session.setPassword(password);
-										session.connect();
-										UtilityMethods.sleepThread(10000);
-										channel = session.openChannel("shell");
-										OutputStream ops = channel
-												.getOutputStream();
-
-										PrintStream ps = new PrintStream(ops,
-												true);
-										InputStream input = channel
-												.getInputStream();
-										channel.connect();
-										// conduct and analyse the tests
-										ps = requestInfoDetailsDao
-												.setCommandStream(ps,
-														requestinfo, "Test",
-														false);
-										ps.println(finallistOfTests.get(i)
-												.getTestCommand());
-										UtilityMethods.sleepThread(6000);
-
-										// printResult(input,
-										// channel,configRequest.getRequestId(),Double.toString(configRequest.getRequest_version()));
-										Boolean res = testStrategeyAnalyser
-												.printAndAnalyse(
-														input,
-														channel,
-														requestinfo
-																.getAlphanumericReqId(),
-														Double.toString(requestinfo
-																.getRequestVersion()),
-														finallistOfTests.get(i),
-														"Device Prevalidation");
-										results.add(res);
-										input.close();
-									}
-									logger.info("Telsta - results - " + results);
-									if (results != null) {
-										for (int i = 0; i < results.size(); i++) {
-											if (results.get(i) == false) {
-												value = false;
-												break;
 											}
+											channelElements.getInputStrm()
+													.close();
+											logger.info("Prevalidation - results - "
+													+ results);
+											if (results != null) {
+												for (int i = 0; i < results
+														.size(); i++) {
+													if (results.get(i) == false) {
+														value = false;
+														break;
+													}
 
+												}
+											}
 										}
+									} else {
+										value = false;
 									}
-
-									/*
-									 * } else { // No new device prevalidation
-									 * test added }
-									 */
-
-									/*
-									 * END
-									 */
+								} else {
+									value = false;
 								}
-								// value=true;
+							
 								if (value == true) {
 
 									requestInfoDetailsDao
@@ -414,10 +406,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 								}
 								if (session != null) {
-									channel.disconnect();
+									channelElements.getChannel().disconnect();
 									session.disconnect();
 								}
-								logger.info("Telsta - value - " + value);
+								logger.info("Prevalidation - value - " + value);
 
 								jsonArray = new Gson().toJson(value);
 								obj.put(new String("output"), jsonArray);
@@ -468,16 +460,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					}
 				}
 			} else {
-				if(RequestId.contains("SCGC-"))
-				{
-					requestInfoDetailsDao
-					.editRequestforReportWebserviceInfo(
-							requestinfo
-									.getAlphanumericReqId(),
-							Double.toString(requestinfo
-									.getRequestVersion()),
-							"Application_test", "1",
-							"In Progress");
+				if (RequestId.contains("SCGC-")) {
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+							requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()),
+							"Application_test", "1", "In Progress");
 				}
 				value = true;
 
@@ -957,16 +944,14 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 				} else {
 					if (RequestId.contains("SCGC-")) {
-						
+
 						requestInfoDetailsDao
-						.editRequestforReportWebserviceInfo(
-								requestinfo
-										.getAlphanumericReqId(),
-								Double.toString(requestinfo
-										.getRequestVersion()),
-								"Application_test", "1",
-								"In Progress");
-						
+								.editRequestforReportWebserviceInfo(requestinfo
+										.getAlphanumericReqId(), Double
+										.toString(requestinfo
+												.getRequestVersion()),
+										"Application_test", "1", "In Progress");
+
 						value = true;
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);

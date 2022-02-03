@@ -147,8 +147,8 @@ public class ConfigurationManagement {
 		List<String> configGenMtds = new ArrayList<String>();
 		InvokeFtl invokeFtl = new InvokeFtl();
 		boolean isCNF = false;
-		
-		JSONObject cloudObject=null;
+
+		JSONObject cloudObject = null;
 		try {
 
 			JSONParser parser = new JSONParser();
@@ -202,10 +202,12 @@ public class ConfigurationManagement {
 					configReqToSendToC3pCode.setNetworkType("PNF");
 				}
 			}
-			
-			/*Logic to parse cloud parameter object which will be supplied from UI only in case of CNF*/
-			if(isCNF)
-			{
+
+			/*
+			 * Logic to parse cloud parameter object which will be supplied from
+			 * UI only in case of CNF
+			 */
+			if (isCNF) {
 				cloudObject = (JSONObject) json.get("cloudParams");
 			}
 			/*
@@ -515,8 +517,9 @@ public class ConfigurationManagement {
 					+ configReqToSendToC3pCode.getNetworkType());
 			Map<String, String> result = null;
 			if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase(
-					"PNF") || configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase(
-							"CNF")
+					"PNF")
+					|| configReqToSendToC3pCode.getNetworkType()
+							.equalsIgnoreCase("CNF")
 					&& (configReqToSendToC3pCode.getRequestType().contains(
 							"Config") || configReqToSendToC3pCode
 							.getRequestType().contains("MACD"))) {
@@ -732,17 +735,16 @@ public class ConfigurationManagement {
 						featureList = null;
 						// Logic to create pojo list
 						List<MasterCharacteristicsEntity> attributesFromInput = new ArrayList<MasterCharacteristicsEntity>();
-						if(features!=null)
-						{
-						for (TemplateFeaturePojo feature : features) {
-							List<MasterCharacteristicsEntity> byAttribMasterFeatureId = masterCharachteristicRepository
-									.findAllByCFId(feature.getfMasterId());
-							if (byAttribMasterFeatureId != null
-									&& !byAttribMasterFeatureId.isEmpty()) {
-								attributesFromInput
-										.addAll(byAttribMasterFeatureId);
+						if (features != null) {
+							for (TemplateFeaturePojo feature : features) {
+								List<MasterCharacteristicsEntity> byAttribMasterFeatureId = masterCharachteristicRepository
+										.findAllByCFId(feature.getfMasterId());
+								if (byAttribMasterFeatureId != null
+										&& !byAttribMasterFeatureId.isEmpty()) {
+									attributesFromInput
+											.addAll(byAttribMasterFeatureId);
+								}
 							}
-						}
 						}
 						if (attribJson != null) {
 							for (int i = 0; i < attribJson.size(); i++) {
@@ -1141,7 +1143,7 @@ public class ConfigurationManagement {
 				// attribute data
 				result = dcmConfigService.updateAlldetails(
 						configReqToSendToC3pCodeList, createConfigList,
-						featureList, userName, features, device,cloudObject);
+						featureList, userName, features, device, cloudObject);
 
 			} else if (configReqToSendToC3pCode.getRequestType()
 					.equalsIgnoreCase("NETCONF")
@@ -1176,8 +1178,10 @@ public class ConfigurationManagement {
 					configJson = new JSONArray();
 					for (int i = 0; i < attribJson.size(); i++) {
 						JSONObject object = (JSONObject) attribJson.get(i);
-						if (object.containsKey("attribConfig") && object.get("attribConfig") != null) {							
-							configJson .addAll((JSONArray) object.get("attribConfig"));
+						if (object.containsKey("attribConfig")
+								&& object.get("attribConfig") != null) {
+							configJson.addAll((JSONArray) object
+									.get("attribConfig"));
 						}
 					}
 				}
@@ -1185,13 +1189,16 @@ public class ConfigurationManagement {
 				if (configJson != null) {
 					for (int i = 0; i < configJson.size(); i++) {
 						JSONObject object = (JSONObject) configJson.get(i);
-						String attriValue=null,attribCharacteristics = null;						
-						if(object.containsKey("value") && object.get("value")!=null) {
-							 attriValue = object.get("value").toString();	
-						}										
-						if(object.containsKey("characteriscticsId") && object.get("characteriscticsId")!=null) {
-							 attribCharacteristics = object.get("characteriscticsId").toString();	
-						}	
+						String attriValue = null, attribCharacteristics = null;
+						if (object.containsKey("value")
+								&& object.get("value") != null) {
+							attriValue = object.get("value").toString();
+						}
+						if (object.containsKey("characteriscticsId")
+								&& object.get("characteriscticsId") != null) {
+							attribCharacteristics = object.get(
+									"characteriscticsId").toString();
+						}
 						Integer ipPool = setipPoolData(object);
 						if (attribCharacteristics != null) {
 							String masterFId = masterCharacteristicRepository
