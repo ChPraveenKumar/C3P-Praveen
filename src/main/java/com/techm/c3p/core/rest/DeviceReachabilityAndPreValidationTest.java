@@ -97,6 +97,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 	@Autowired
 	private ChannelElements channelElements;
+	
+	@Autowired
+	private RequestInfoService requestInfoService;
 
 	private static final String JSCH_CONFIG_INPUT_BUFFER = "max_input_buffer_size";
 
