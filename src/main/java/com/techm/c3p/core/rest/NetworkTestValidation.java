@@ -251,7 +251,17 @@ public class NetworkTestValidation extends Thread {
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "network_test", "1",
 											status);
-								}	else if(statusData == 4) {
+								}	else if(statusData == 4 && result == true) {
+									requestInfoDao.editRequestforReportWebserviceInfo(
+											requestinfo.getAlphanumericReqId(),
+											Double.toString(requestinfo.getRequestVersion()), "network_test", "1",
+											status);
+								}		else if(statusData == 4 && result == false) {
+									requestInfoDao.editRequestforReportWebserviceInfo(
+											requestinfo.getAlphanumericReqId(),
+											Double.toString(requestinfo.getRequestVersion()), "network_test", "2",
+											status);
+								}		else  {
 									requestInfoDao.editRequestforReportWebserviceInfo(
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "network_test", "0",

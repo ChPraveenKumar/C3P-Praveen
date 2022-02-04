@@ -623,7 +623,8 @@ public class TemplateSuggestionDao {
 				basicDetails.put("raisedBy", rs.getString("temp_created_by"));
 				basicDetails.put("networkType", rs.getString("temp_network_type"));
 				basicDetails.put("alias", rs.getString("temp_alias"));
-				String comment = rs.getString("temp_comment_section");
+				basicDetails.put("isGoldenTemplate", rs.getBoolean("temp_golden"));
+				String comment = rs.getString("temp_comment_section");				
 				basicDetails.put("comment", comment);
 				status = rs.getString("temp_status");
 			}
