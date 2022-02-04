@@ -628,8 +628,8 @@ public class ImportFile {
 				object.put("hostname", entity.getSeq_4());
 				object.put("mgtmtIP", entity.getSeq_2());
 				object.put("ipv6Value", entity.getSeq_3());
-				object.put("result", resultStatus[0]);
-				object.put("status", resultStatus[1]);
+				object.put("result", resultStatus[1]);
+				object.put("status", resultStatus[0]);
 				object.put("rootCause", entity.getRowErrorCode());	
 				staggingArrayData.add(object);
 			}
