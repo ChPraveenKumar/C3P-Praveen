@@ -13,6 +13,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -138,6 +140,38 @@ public class SearchTemplateListService implements Observer {
 				.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
+	@SuppressWarnings({ "unchecked" })
+	@POST
+	@RequestMapping(value = "/compareTemplateDashboardSearch", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<JSONObject> compareTemplateDashboardSearch(@RequestBody String searchParameters)
+			throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;		
+		JSONObject data = new JSONObject();
+		
+		String key = null, value = null;
+		try {
+			Gson gson = new Gson();
+			SearchParamPojo dto = gson.fromJson(searchParameters, SearchParamPojo.class);
+			key = dto.getKey();
+			value = dto.getValue().replace("-", "_");
+			List<TemplateBasicConfigurationPojo> detailsList = new ArrayList<TemplateBasicConfigurationPojo>();
+			if (value != null && !value.isEmpty()) {
+				detailsList = templateManagementDetailsService.searchTemplates(key, value);
+				String dataJson = new Gson().toJson(detailsList);
+				data.put("output", dataJson);
+			}
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			e.printStackTrace();
+		}
+		if (data != null && !data.isEmpty()) {
+			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+	}
+
 
 	@Override
 	public void update(Observable o, Object arg) {

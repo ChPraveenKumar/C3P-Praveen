@@ -96,7 +96,7 @@ public class RequestDashboardGridService {
 			});
 			break;
 		}
-				requestList.sort((ServiceRequestPojo c1, ServiceRequestPojo c2) -> c2.getInfoId() - c1.getInfoId());
+		requestList.sort((ServiceRequestPojo c1, ServiceRequestPojo c2) -> c2.getInfoId() - c1.getInfoId());
 //		Collection<ServiceRequestPojo> infoEntity = requestList.stream()
 //				.collect(Collectors.toMap(ServiceRequestPojo::getAlpha_numeric_req_id, Function.identity(),
 //						BinaryOperator.maxBy(Comparator.comparing(ServiceRequestPojo::getRequestVersion))))

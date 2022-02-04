@@ -246,7 +246,7 @@ public class DeviceDiscoveryController implements Observer {
 					object.put("eol", "Not Available");
 
 			object.put("requests", getAllDevice.get(i).getdReqCount());
-				if(getAllDevice.get(i).getdDeComm()!=null)
+			if(getAllDevice.get(i).getdDeComm()!=null)
 				{
 				if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("0")) {
 					object.put("state", "");

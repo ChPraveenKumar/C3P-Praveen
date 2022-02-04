@@ -1790,27 +1790,27 @@ public class TemplateManagementDao {
 		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
 		String query = null;
 		if (key.equalsIgnoreCase("Template ID")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE temp_id LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_network_type ='PNF' AND temp_id LIKE ?";
 		} else if (key.equalsIgnoreCase("Device Family")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE temp_device_family LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_network_type ='PNF' AND temp_device_family LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Vendor")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE temp_vendor LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_network_type ='PNF' AND temp_vendor LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Model")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE temp_model LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_network_type ='PNF' AND temp_model LIKE ?";
 
 		} else if (key.equalsIgnoreCase("OS")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE temp_device_os LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_network_type ='PNF' AND temp_device_os LIKE ?";
 
 		} else if (key.equalsIgnoreCase("OS Version")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE temp_os_version LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_network_type ='PNF' AND temp_os_version LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Status")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE temp_status LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_network_type ='PNF' AND temp_status LIKE ?";
 
 		} else if (key.equalsIgnoreCase("Approver")) {
-			query = "SELECT * FROM templateconfig_basic_details WHERE temp_approver LIKE ?";
+			query = "SELECT * FROM templateconfig_basic_details WHERE temp_network_type ='PNF' AND temp_approver LIKE ?";
 
 		}
 		ResultSet rs = null;
@@ -1851,7 +1851,8 @@ public class TemplateManagementDao {
 						|| template.getStatus().equalsIgnoreCase("approved")) {
 					template.setEditable(true);
 				}
-
+				template.setAlias(rs.getString("temp_alias"));
+				template.setIsGoldenTemplate(rs.getBoolean("temp_golden"));
 				templateList.add(template);
 			}
 		} catch (SQLException e) {
