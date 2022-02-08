@@ -27,8 +27,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.techm.c3p.core.entitybeans.CustomerStagingEntity;
 import com.techm.c3p.core.entitybeans.ImportMasterStagingEntity;
+import com.techm.c3p.core.entitybeans.ImportStagingHistory;
 import com.techm.c3p.core.repositories.ErrorValidationRepository;
 import com.techm.c3p.core.repositories.ImportMasterStagingRepo;
+import com.techm.c3p.core.repositories.ImportStagingHistoryRepo;
 import com.techm.c3p.core.service.CustomerStagingInteface;
 import com.techm.c3p.core.service.StorageService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
@@ -64,6 +66,9 @@ public class ImportFile {
 	
 	@Autowired
 	private ImportMasterStagingRepo importMasterStagingRepo;
+	
+	@Autowired
+	private ImportStagingHistoryRepo importStagingHistoryRepo;
 	
 	@Autowired
 	private WAFADateUtil dateUtil;
@@ -609,22 +614,23 @@ public class ImportFile {
 
 		logger.info("Inside generateReport Service");
 		JSONObject obj = new JSONObject();
-		List<CustomerStagingEntity> listStaggingData =null;
+		List<ImportStagingHistory> listStaggingData =null;
 		JSONArray staggingArrayData = new JSONArray();
 		JSONArray staggingArrayStatus = new JSONArray();
 		JSONObject object, status = null;
 		List<ImportMasterStagingEntity> importMasterData =null;
 		
 		try {
-			listStaggingData = customerStagingInteface.generateReport(importId);
-			for (CustomerStagingEntity entity : listStaggingData) {
+			listStaggingData = importStagingHistoryRepo.findByImportId(importId);
+			for (ImportStagingHistory entity : listStaggingData) {
+				String[] resultStatus = entity.getRowStatus().split(",");
 				object = new JSONObject();
-				object.put("hostname", entity.getHostname());
-				object.put("mgtmtIP", entity.getiPV4ManagementAddress());
-				object.put("ipv6Value", entity.getiPV6ManagementAddress());
-				object.put("result", entity.getResult());
-				object.put("status", entity.getOutcomeResult());
-				object.put("rootCause", entity.getRootCause());	
+				object.put("hostname", entity.getSeq_4());
+				object.put("mgtmtIP", entity.getSeq_2());
+				object.put("ipv6Value", entity.getSeq_3());
+				object.put("result", resultStatus[1]);
+				object.put("status", resultStatus[0]);
+				object.put("rootCause", entity.getRowErrorCode());	
 				staggingArrayData.add(object);
 			}
 			importMasterData =importMasterStagingRepo.getImportStaggingData(importId);

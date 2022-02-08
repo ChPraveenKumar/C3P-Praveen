@@ -23,7 +23,8 @@ public class TestStrategyService {
 
 	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;	
-	
+	@Autowired
+	private RequestInfoService requestInfoService;
 	@SuppressWarnings("unchecked")
 	public JSONObject setDeviceReachabilityFailuarResult(String message, Boolean value, RequestInfoPojo requestinfo, String testName, JSONObject obj, InvokeFtl invokeFtl,String fileName) {
 		message = new Gson().toJson(value);
@@ -47,7 +48,9 @@ public class TestStrategyService {
 			responseDownloadPath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue();
 			TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
 					+ Double.toString(requestinfo.getRequestVersion()) + fileName, response);
-			requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+			/*requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+					requestinfo.getAlphanumericReqId());*/
+			requestInfoService.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 					requestinfo.getAlphanumericReqId());
 		} catch (Exception e) {
 			logger.error("Exception occured in  setDeviceReachabilityFailuarResult " + e.getMessage());	
