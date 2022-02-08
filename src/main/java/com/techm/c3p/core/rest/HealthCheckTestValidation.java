@@ -40,6 +40,7 @@ import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.PingService;
+import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.service.TestStrategyService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
@@ -77,6 +78,8 @@ public class HealthCheckTestValidation extends Thread {
 	private VNFHelper vNFHelper;
 	@Autowired
 	private ODLClient oDLClient;
+	@Autowired
+	private RequestInfoService requestInfoService;
 	
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
@@ -152,7 +155,7 @@ public class HealthCheckTestValidation extends Thread {
 									if(healthcheckop.containsKey("frameloss"))
 									{
 									frameloss=healthcheckop.get("frameloss").toString();
-									requestInfoDao.updateHealthCheckTestParameter(
+									requestInfoService.updateHealthCheckTestParameter(
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), frameloss,
 											"frameloss");
@@ -160,7 +163,7 @@ public class HealthCheckTestValidation extends Thread {
 									else if(healthcheckop.containsKey("latency"))
 									{
 									latency=healthcheckop.get("latency").toString();
-									requestInfoDao.updateHealthCheckTestParameter(
+									requestInfoService.updateHealthCheckTestParameter(
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), latency, "latency");
 									}
@@ -186,14 +189,14 @@ public class HealthCheckTestValidation extends Thread {
 								if(throughputResults.containsKey("error"))
 								{
 									requestinfo.setThroughput("0");
-									requestInfoDao.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
+									requestInfoService.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "0", "throughput");
 								}
 								else
 								{
 								String throughpput=throughputResults.get("throughput").toString()+throughputResults.get("unit").toString();
 								requestinfo.setThroughput(throughputResults.get("throughput").toString());
-								requestInfoDao.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), throughpput, "throughput");
 								}
 								

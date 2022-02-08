@@ -9,7 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.techm.c3p.core.entitybeans.DeviceLockedManagementEntity;
+import com.techm.c3p.core.entitybeans.ErrorValidationEntity;
+import com.techm.c3p.core.entitybeans.TestValidationEntity;
+import com.techm.c3p.core.entitybeans.WebServiceEntity;
 import com.techm.c3p.core.repositories.DeviceLockedManagementRepo;
+import com.techm.c3p.core.repositories.ErrorValidationRepository;
+import com.techm.c3p.core.repositories.TestValidationRepo;
+import com.techm.c3p.core.repositories.WebServiceRepo;
 
 @Component
 public class RequestInfoService {
@@ -18,6 +24,12 @@ public class RequestInfoService {
 
 	@Autowired
 	DeviceLockedManagementRepo deviceLockedManagementRepo;
+	@Autowired
+	TestValidationRepo testValidationRepo;
+	@Autowired
+	WebServiceRepo webServiceRepo;
+    @Autowired
+	ErrorValidationRepository errorValidationRepository;
 
 	public String lockDeviceForRequest(String managementIp, String requestId) {
 		String result = "";
@@ -107,5 +119,146 @@ public class RequestInfoService {
 			logger.error("Exception in checkForDeviceLockWithManagementIp method " + exe.getMessage());
 		}
 		return devicelocked;
+	}
+	
+	public boolean addCertificationTestForRequest(String alphanumericReqId, String requestVersion,
+			String deviceReachabilityTest) {
+		String suggestion = "NA";
+		if ("2".equalsIgnoreCase(deviceReachabilityTest)) {
+			suggestion = "Please check the device connectivity";
+		}
+		if ("2_Authentication".equalsIgnoreCase(deviceReachabilityTest)) {
+			deviceReachabilityTest = "2";
+			suggestion = "Please check the router credentials";
+		}
+		try {
+			TestValidationEntity testValidation = null;
+			TestValidationEntity testValidationEntity = new TestValidationEntity();
+			testValidationEntity.setTvDeviceReachabilityTest(Integer.parseInt(deviceReachabilityTest));
+			testValidationEntity.setTvVendorTest(0);
+			testValidationEntity.setTvDeviceModelTest(0);
+			testValidationEntity.setTvIosVersionTest(0);
+			testValidationEntity.setTvNetworkTest(0);
+			testValidationEntity.setTvThroughputTest(0);
+			testValidationEntity.setTvFrameLossTest(0);
+			testValidationEntity.setTvLatencyTest(0);
+			testValidationEntity.setTvHealthCheckTest(0);
+			testValidationEntity.setTvAlphanumericReqId(alphanumericReqId);
+			testValidationEntity.setTvVersion(requestVersion);
+			testValidationEntity.setTvSuggestionForFailure(suggestion);
+			testValidation = testValidationRepo.save(testValidationEntity);
+			if (testValidation !=null) {
+				return true;
+			}
+		} catch (Exception exe) {
+			logger.error("Error:>  " + exe.getMessage());
+		}
+		return false;
+	}
+	
+	public boolean updateCertificationTestForRequest(String requestId, String version,
+			String deviceReachabilityTest) {
+		TestValidationEntity testValidationDetails = null;
+		String suggestion = "NA";
+		if ("2".equalsIgnoreCase(deviceReachabilityTest)) {
+			suggestion = "Please check the device connectivity";
+		}
+		if ("2_Authentication".equalsIgnoreCase(deviceReachabilityTest)) {
+			deviceReachabilityTest = "2";
+			suggestion = "Please check the router credentials";
+		}
+		try {
+			testValidationDetails = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId, version);
+			testValidationDetails.setTvDeviceReachabilityTest(Integer.parseInt(deviceReachabilityTest));
+			testValidationDetails.setTvSuggestionForFailure(suggestion);
+			TestValidationEntity testValidationInfo = testValidationRepo.save(testValidationDetails);
+			if (testValidationInfo !=null) {
+				return true;
+			}
+		} catch (Exception exe) {
+			logger.error("Error:>  " + exe.getMessage());
+		}
+		return false;
+	}
+	
+	public void updateHealthCheckTestParameter(String requestId, String version, String value, String type) {
+		TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId, version);
+		try {
+			if ("frameloss".equalsIgnoreCase(type)) {
+				testValidation.setTvFrameLoss(type);
+			} else if ("latency".equalsIgnoreCase(type)) {
+				testValidation.setTvLatency(type);
+			} else {
+				testValidation.setTvThroughput(type);
+			}
+			testValidationRepo.save(testValidation);
+		} catch (Exception exe) {
+			logger.error("Exception in updateHealthCheckTestParameter method " + exe.getMessage());
+		}
+	}
+	
+	public void updateRouterFailureHealthCheck(String requestId, String version) {
+		TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
+				version);
+		String suggestion = "Please check the connectivity.Issue while performing Health check test";
+		try {
+			testValidation.setTvSuggestionForFailure(suggestion);
+			testValidationRepo.save(testValidation);
+		} catch (Exception exe) {
+			logger.error("Exception in updateRouterFailureHealthCheck method " + exe.getMessage());
+		}
+	}
+
+	public void updatePrevalidationValues(String requestId, String version, String vendorActual, String vendorGui,
+			String osActual, String osGui, String modelActual, String modelGui) {
+		try {
+			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
+					version);
+			testValidation.setTvActualVendor(vendorActual);
+			testValidation.setTvGuiVendor(vendorGui);
+			testValidation.setTvActualOsVersion(osActual);
+			testValidation.setTvGuiOsVersion(osGui);
+			testValidation.setTvActualModel(modelActual);
+			testValidation.setTvGuiModel(modelGui);
+			testValidationRepo.save(testValidation);
+		} catch (Exception exe) {
+			logger.error("Exception in updateRouterFailureHealthCheck method " + exe.getMessage());
+		}
+	}
+
+	public void updateErrorDetailsDeliveryTestForRequestId(String requestId, String version, String textFound,
+			String errorType, String errorDescription) {
+		String suggestionForErrorDesc = "";
+		try {
+			WebServiceEntity webServiceEntity = webServiceRepo.findByAlphanumericReqIdAndVersion(requestId, version);
+			ErrorValidationEntity errorValidation = errorValidationRepository.findByErrorDescription(errorDescription);
+			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
+					version);
+			if (webServiceEntity != null && errorValidation != null && testValidation != null) {
+				webServiceEntity.setTextFoundDeliveryTest(textFound);
+				webServiceEntity.setErrorDescriptionDeliveryTest(errorType);
+				webServiceEntity.setErrorDescriptionDeliveryTest(errorDescription);
+				suggestionForErrorDesc = errorValidation.getSuggestion();
+				testValidation.setTvSuggestionForFailure(suggestionForErrorDesc);
+				webServiceRepo.save(webServiceEntity);
+				testValidationRepo.save(testValidation);
+			}
+		} catch (Exception exe) {
+			logger.error("Exception in updateErrorDetailsDeliveryTestForRequestId method--->>" + exe.getMessage());
+		}
+	}
+
+	public void updateHealthCheckTestStatus(String requestId, String version, int throughputFlag, int framelossFlag,
+			int latencyFlag) {
+		try {
+			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
+					version);
+			testValidation.setTvThroughputTest(throughputFlag);
+			testValidation.setTvFrameLossTest(framelossFlag);
+			testValidation.setTvLatencyTest(latencyFlag);
+			testValidationRepo.save(testValidation);
+		} catch (Exception exe) {
+			logger.error("Exception in updateRouterFailureHealthCheck method " + exe.getMessage());
+		}
 	}
 }

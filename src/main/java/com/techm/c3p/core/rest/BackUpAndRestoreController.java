@@ -60,6 +60,7 @@ import com.techm.c3p.core.repositories.TestDetailsRepository;
 import com.techm.c3p.core.repositories.VendorDetailsRepository;
 import com.techm.c3p.core.service.ConfigurationManagmentService;
 import com.techm.c3p.core.service.DcmConfigService;
+import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.WAFADateUtil;
 
 @Controller
@@ -115,6 +116,9 @@ public class BackUpAndRestoreController {
 	
 	@Autowired
 	private ConfigurationManagmentService configurationManagmentService;
+	
+	@Autowired
+	private RequestInfoService requestInfoService;
 
 	
 	/**
@@ -797,7 +801,7 @@ public class BackUpAndRestoreController {
 					}
 
 					dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
-					dao.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
+					requestInfoService.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
 					// result = dao.insertRequestInDB(requestInfoPojo);
 					batchInfoRepo.save(batchIdEntity);
 
@@ -1441,7 +1445,7 @@ public class BackUpAndRestoreController {
 						requestInfoDetailsRepositories.save(requestInfoEntity);
 
 						dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
-						dao.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
+						requestInfoService.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
 						dao.addRequestID_to_Os_Upgrade_dilevary_flags(alphaneumeric_req_id,
 								Double.toString(request_version));
 						batchInfoRepo.save(batchIdEntity);
