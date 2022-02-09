@@ -34,6 +34,7 @@ import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.service.DcmConfigService;
+import com.techm.c3p.core.service.GoldenTemplateConfigurationService;
 import com.techm.c3p.core.service.TestStrategyService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
@@ -70,6 +71,9 @@ public class NetworkAuditTest extends Thread {
 	private TestStrategyService testStrategyService;
 	@Autowired
 	private PostUpgradeHealthCheck postUpgradeHealthCheck;
+	
+	@Autowired
+	private GoldenTemplateConfigurationService goldenTemplateConfigurationService;
 
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -108,6 +112,7 @@ public class NetworkAuditTest extends Thread {
 								version);
 				if (requestinfo.getManagementIp() != null
 						&& !requestinfo.getManagementIp().equals("")) {
+					if(!"Config Audit".equals(requestinfo.getRequestType())) {
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
 							.findByDHostNameAndDMgmtIpAndDDeComm(
 									requestinfo.getHostname(),
@@ -321,7 +326,9 @@ public class NetworkAuditTest extends Thread {
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 					}
-
+				}else {
+					
+					}
 				}
 			}
 			// when reachability fails

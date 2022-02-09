@@ -123,6 +123,8 @@ public class RequestInfoPojo {
 	
 	private String projectName;
 	
+	private String goldenConfig;
+	
 	public String getProjectName() {
 		return projectName;
 	}
@@ -1846,6 +1848,12 @@ public class RequestInfoPojo {
 	public void setTestType(String testType) {
 		this.testType = testType;
 	}
-	
 
+	public String getGoldenConfig() {
+		return goldenConfig;
+	}
+
+	public void setGoldenConfig(String goldenConfig) {
+		this.goldenConfig = goldenConfig;
+	}
 }

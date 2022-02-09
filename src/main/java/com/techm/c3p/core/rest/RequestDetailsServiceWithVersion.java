@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,9 +38,11 @@ import com.techm.c3p.core.entitybeans.MasterAttributes;
 import com.techm.c3p.core.entitybeans.MasterCharacteristicsEntity;
 import com.techm.c3p.core.entitybeans.Notification;
 import com.techm.c3p.core.entitybeans.RequestFeatureTransactionEntity;
+import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.pojo.MileStones;
 import com.techm.c3p.core.pojo.ReoprtFlags;
 import com.techm.c3p.core.pojo.RequestInfoCreateConfig;
+import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.SearchParamPojo;
 import com.techm.c3p.core.repositories.AttribCreateConfigRepo;
 import com.techm.c3p.core.repositories.CloudProjectsRepository;
@@ -49,6 +52,8 @@ import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.MasterCharacteristicsRepository;
 import com.techm.c3p.core.repositories.NotificationRepo;
 import com.techm.c3p.core.repositories.RequestFeatureTransactionRepository;
+import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
+import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.ReportMileStones;
 import com.techm.c3p.core.utility.WAFADateUtil;
 
@@ -57,7 +62,7 @@ import com.techm.c3p.core.utility.WAFADateUtil;
 public class RequestDetailsServiceWithVersion {
 	private static final Logger logger = LogManager.getLogger(RequestDetailsServiceWithVersion.class);
 	@Autowired
-	private RequestInfoDetailsDao requestRedao;
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 
 	@Autowired
 	private DeviceDiscoveryRepository deviceInforepo;
@@ -73,29 +78,32 @@ public class RequestDetailsServiceWithVersion {
 
 	@Autowired
 	private ReportMileStones reportMileStones;
-	
+
 	@Autowired
 	private MasterCharacteristicsRepository masterCharachteristicsRepository;
 	@Autowired
 	private NotificationRepo notificationRepo;
-	
+
 	@Autowired
 	private WAFADateUtil dateUtil;
-	
+
 	@Autowired
 	private RequestDetails requestDetailsDao;
-	
+
 	@Autowired
 	private RequestInfoDao requestinfoDao;
-	
+
 	@Autowired
 	private CloudplatforParamsRepository cloudplatforParamsRepository;
-	
+
 	@Autowired
 	private CloudProjectsRepository cloudProjectsRepository;
-	
+
+	@Autowired
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@POST
 	@RequestMapping(value = "/search", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -115,66 +123,68 @@ public class RequestDetailsServiceWithVersion {
 			List<RequestInfoCreateConfig> detailsList = new ArrayList<RequestInfoCreateConfig>();
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(searchParameters);
-			
-			if(json.get("userName") !=null)
+
+			if (json.get("userName") != null)
 				userName = json.get("userName").toString();
-			if(json.get("userRole") !=null)
+			if (json.get("userRole") != null)
 				userRole = json.get("userRole").toString();
-			if(json.get("notif_id") != null && !json.get("notif_id").equals("")) {
+			if (json.get("notif_id") != null && !json.get("notif_id").equals("")) {
 				notifId = Integer.parseInt(json.get("notif_id").toString());
 				notificationData = notificationRepo.findById(notifId);
 			}
-			
+
 			if (value != null && !value.isEmpty()) {
 				try {
 					requestType = value.substring(0, 4);
 					MileStones showMilestone = reportMileStones.getMileStones(requestType);
-					detailsList = requestRedao.getRequestWithVersion(key, value, version, userName, userRole);
-					if(!requestType.equalsIgnoreCase("SNAI") && !requestType.equalsIgnoreCase("SNAD"))//This is bec after SNAI request the VM will be instantiated and then information will be added to device info table
+					detailsList = requestInfoDetailsDao.getRequestWithVersion(key, value, version, userName, userRole);
+					if (!requestType.equalsIgnoreCase("SNAI") && !requestType.equalsIgnoreCase("SNAD"))// This is bec
+																										// after SNAI
+																										// request the
+																										// VM will be
+																										// instantiated
+																										// and then
+																										// information
+																										// will be added
+																										// to device
+																										// info table
 					{
-					for (RequestInfoCreateConfig request : detailsList) {
+						for (RequestInfoCreateConfig request : detailsList) {
 
-						DeviceDiscoveryEntity device = deviceInforepo.findByDHostName(request.getHostname());
-						if(device.getdDeComm()!=null)
-						{
-						if (device.getdDeComm().equalsIgnoreCase("0")) {
-							request.setCommissionFlag("Commission");
-						} else if (device.getdDeComm().equalsIgnoreCase("1")) {
-							request.setCommissionFlag("Decommission");
+							DeviceDiscoveryEntity device = deviceInforepo.findByDHostName(request.getHostname());
+							if (device.getdDeComm() != null) {
+								if (device.getdDeComm().equalsIgnoreCase("0")) {
+									request.setCommissionFlag("Commission");
+								} else if (device.getdDeComm().equalsIgnoreCase("1")) {
+									request.setCommissionFlag("Decommission");
 
-						} else if (device.getdDeComm().equalsIgnoreCase("2"))
+								} else if (device.getdDeComm().equalsIgnoreCase("2"))
 
-						{
-							request.setCommissionFlag("Commission");
+								{
+									request.setCommissionFlag("Commission");
+
+								} else {
+									request.setCommissionFlag("Commission");
+
+								}
+
+								if (request.getRequestType().equalsIgnoreCase("SLGB")) {
+									request.setRequestType("BackUp");
+								}
+							}
 
 						}
-						else
-						{
-							request.setCommissionFlag("Commission");
-
-						}
-						
-						if(request.getRequestType().equalsIgnoreCase("SLGB"))
-						{
-							request.setRequestType("BackUp");
-						}
-						}
-						
-						
 					}
-					}
-					for(RequestInfoCreateConfig pojo: detailsList)
-					{
+					for (RequestInfoCreateConfig pojo : detailsList) {
 						pojo.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(pojo.getRequestCreatedOn()));
-						if(pojo.getEndDateOfProcessing() !=null)
+						if (pojo.getEndDateOfProcessing() != null)
 							pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
 					}
 					jsonArray = new Gson().toJson(detailsList);
 
 					obj.put(new String("output"), jsonArray);
 					obj.put(new String("milestone"), showMilestone);
-					if(notificationData !=null)
-					{
+					if (notificationData != null) {
 						notificationData.setNotifStatus("Completed");
 						notificationData.setNotifCompletedby(userName);
 						notificationRepo.save(notificationData);
@@ -184,7 +194,7 @@ public class RequestDetailsServiceWithVersion {
 				}
 			} else {
 				try {
-					detailsList = requestRedao.getAllResquestsFromDB(userRole);
+					detailsList = requestInfoDetailsDao.getAllResquestsFromDB(userRole);
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
 				} catch (Exception e) {
@@ -203,12 +213,12 @@ public class RequestDetailsServiceWithVersion {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@POST
 	@RequestMapping(value = "/refreshmilestones", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Response refreshmilestones(@RequestBody String searchParameters) {		
+	public Response refreshmilestones(@RequestBody String searchParameters) {
 		JSONObject obj = new JSONObject();
 
 		String jsonArray = "";
@@ -232,10 +242,10 @@ public class RequestDetailsServiceWithVersion {
 			key = dto.getKey();
 			value = dto.getValue();
 			version = dto.getVersion();
-			
-			if(inputjson.get("userName") !=null)
+
+			if (inputjson.get("userName") != null)
 				userName = inputjson.get("userName").toString();
-			if(inputjson.get("userRole") !=null)
+			if (inputjson.get("userRole") != null)
 				userRole = inputjson.get("userRole").toString();
 
 			if (inputjson.get("readFlag") != null) {
@@ -244,9 +254,9 @@ public class RequestDetailsServiceWithVersion {
 				df.setMaximumFractionDigits(1);
 				String versionSEFE = df.format(v);
 				if (inputjson.get("readFlag").toString().equalsIgnoreCase("1")) {
-					requestRedao.setReadFlagFESE(value, versionSEFE, true, "SE");
+					requestInfoDetailsDao.setReadFlagFESE(value, versionSEFE, true, "SE");
 				} else {
-					requestRedao.setReadFlagFESE(value, versionSEFE, false, "SE");
+					requestInfoDetailsDao.setReadFlagFESE(value, versionSEFE, false, "SE");
 
 				}
 			}
@@ -256,16 +266,18 @@ public class RequestDetailsServiceWithVersion {
 				try {
 					// quick fix for json not getting serialized
 
-					detailsList = requestRedao.getRequestWithVersion(key, value, version, userName, userRole);
+					detailsList = requestInfoDetailsDao.getRequestWithVersion(key, value, version, userName, userRole);
 					reoportflagllist = requestinfoDao.getReportsInfoForAllRequestsDB();
-					certificationBit = requestRedao.getCertificationtestvalidation(value,Double.valueOf(version));
+					certificationBit = requestInfoDetailsDao.getCertificationtestvalidation(value,
+							Double.valueOf(version));
 					String type = value.substring(0, Math.min(value.length(), 4));
 					if (type.equalsIgnoreCase("SLGF")) {
 						Float v = Float.parseFloat(version);
 						DecimalFormat df = new DecimalFormat("0.0");
 						df.setMaximumFractionDigits(1);
 						String version_decimal = df.format(v);
-						dilevaryMilestonesforOSupgrade = requestinfoDao.get_dilevary_steps_status(value, version_decimal);
+						dilevaryMilestonesforOSupgrade = requestinfoDao.get_dilevary_steps_status(value,
+								version_decimal);
 					} else {
 						// dilevary milestones will be null
 					}
@@ -401,10 +413,9 @@ public class RequestDetailsServiceWithVersion {
 
 					}
 					String test = new Gson().toJson(jsonArrayForTest);
-					for(RequestInfoCreateConfig pojo: detailsList)
-					{
+					for (RequestInfoCreateConfig pojo : detailsList) {
 						pojo.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(pojo.getRequestCreatedOn()));
-						if(pojo.getEndDateOfProcessing() !=null)
+						if (pojo.getEndDateOfProcessing() != null)
 							pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
 					}
 					jsonArray = new Gson().toJson(detailsList);
@@ -418,7 +429,7 @@ public class RequestDetailsServiceWithVersion {
 				}
 			} else {
 				try {
-					detailsList = requestRedao.getAllResquestsFromDB(userRole);
+					detailsList = requestInfoDetailsDao.getAllResquestsFromDB(userRole);
 					jsonArray = new Gson().toJson(detailsList);
 					obj.put(new String("output"), jsonArray);
 				} catch (Exception e) {
@@ -438,7 +449,7 @@ public class RequestDetailsServiceWithVersion {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@POST
 	@RequestMapping(value = "/getFeatureDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -454,56 +465,57 @@ public class RequestDetailsServiceWithVersion {
 					.findByTRequestIdAndTRequestVersion(requestId, version);
 			JSONArray featureAndAttrib = new JSONArray();
 			featureList.forEach(feature -> {
-				if(feature.gettFeatureId()!=null)	
-				{
-				JSONObject attribJson = new JSONObject();
-				List<MasterAttributes> masterAttribute = attribConfigRepo
-						.findBytemplateFeatureId(feature.gettFeatureId().getId());
-				attribJson.put("featureName", feature.gettFeatureId().getComandDisplayFeature());
-				attribJson.put("noOfFields", masterAttribute.size());
-
-				JSONArray masterAttrib = new JSONArray();
-				if (masterAttribute != null) {
-					masterAttribute.forEach(attrib -> {
-						List<String>values=configRepo.findAttribValuByRequestId(attrib.getId(), requestId, version);
-						values.forEach(value ->{
-							JSONObject masterAttribObject = new JSONObject();
-							masterAttribObject.put("name", attrib.getLabel());
-							masterAttribObject.put("value", value);
-							masterAttrib.add(masterAttribObject);
-						});
-						
-					});
-				}
-				attribJson.put("featureValue", masterAttrib);
-				featureAndAttrib.add(attribJson);
-				}
-				else
-				{
+				if (feature.gettFeatureId() != null) {
 					JSONObject attribJson = new JSONObject();
-				//	List<MasterFeatureEntity> masterAttribute = masterFeatureRepository.findByFeatureId(feature.gettMasterFeatureId().getfId());
-					List<MasterCharacteristicsEntity>masterAttribute=masterCharachteristicsRepository.findAllByCFId(feature.gettMasterFeatureId().getfId());
-					
-					if(feature.gettMasterFeatureId().getfName().contains("::")) {
-						String featureName = StringUtils.substringAfter(
-								feature.gettMasterFeatureId().getfName(),"::");
-						attribJson.put("featureName", featureName);
-					}else {
-						attribJson.put("featureName", feature.gettMasterFeatureId().getfName());	
-					}					
+					List<MasterAttributes> masterAttribute = attribConfigRepo
+							.findBytemplateFeatureId(feature.gettFeatureId().getId());
+					attribJson.put("featureName", feature.gettFeatureId().getComandDisplayFeature());
 					attribJson.put("noOfFields", masterAttribute.size());
 
 					JSONArray masterAttrib = new JSONArray();
 					if (masterAttribute != null) {
 						masterAttribute.forEach(attrib -> {
-							List<String>values=configRepo.findAttribValuByRequestIdAndMasterFeatureIdandCharachteristicId(attrib.getcFId(), requestId, version,attrib.getcId());
-							values.forEach(value ->{
+							List<String> values = configRepo.findAttribValuByRequestId(attrib.getId(), requestId,
+									version);
+							values.forEach(value -> {
+								JSONObject masterAttribObject = new JSONObject();
+								masterAttribObject.put("name", attrib.getLabel());
+								masterAttribObject.put("value", value);
+								masterAttrib.add(masterAttribObject);
+							});
+
+						});
+					}
+					attribJson.put("featureValue", masterAttrib);
+					featureAndAttrib.add(attribJson);
+				} else {
+					JSONObject attribJson = new JSONObject();
+					// List<MasterFeatureEntity> masterAttribute =
+					// masterFeatureRepository.findByFeatureId(feature.gettMasterFeatureId().getfId());
+					List<MasterCharacteristicsEntity> masterAttribute = masterCharachteristicsRepository
+							.findAllByCFId(feature.gettMasterFeatureId().getfId());
+
+					if (feature.gettMasterFeatureId().getfName().contains("::")) {
+						String featureName = StringUtils.substringAfter(feature.gettMasterFeatureId().getfName(), "::");
+						attribJson.put("featureName", featureName);
+					} else {
+						attribJson.put("featureName", feature.gettMasterFeatureId().getfName());
+					}
+					attribJson.put("noOfFields", masterAttribute.size());
+
+					JSONArray masterAttrib = new JSONArray();
+					if (masterAttribute != null) {
+						masterAttribute.forEach(attrib -> {
+							List<String> values = configRepo
+									.findAttribValuByRequestIdAndMasterFeatureIdandCharachteristicId(attrib.getcFId(),
+											requestId, version, attrib.getcId());
+							values.forEach(value -> {
 								JSONObject masterAttribObject = new JSONObject();
 								masterAttribObject.put("name", attrib.getcName());
 								masterAttribObject.put("value", value);
 								masterAttrib.add(masterAttribObject);
 							});
-							
+
 						});
 					}
 					attribJson.put("featureValue", masterAttrib);
@@ -520,12 +532,12 @@ public class RequestDetailsServiceWithVersion {
 	}
 
 	/**
-	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
 	@POST
 	@RequestMapping(value = "/getTestAndDiagnosisDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
-public Response getTestAndDiagnosisDetailsDuplicateLatest(@RequestBody String testDetails)
+	public Response getTestAndDiagnosisDetailsDuplicateLatest(@RequestBody String testDetails)
 			throws SQLException, JsonParseException, JsonMappingException, IOException {
 
 		JSONParser parser = new JSONParser();
@@ -536,33 +548,36 @@ public Response getTestAndDiagnosisDetailsDuplicateLatest(@RequestBody String te
 			// parse testDeatils and get request Id
 			json = (JSONObject) parser.parse(testDetails);
 			String requestId = (String) json.get("requestId");
-			Double requestVersion = Double.valueOf(json.get("version").toString());			
+			Double requestVersion = Double.valueOf(json.get("version").toString());
 			String testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(requestId, requestVersion);
-			if(testAndDiagnosis!=null && !testAndDiagnosis.isEmpty()) {
-			JSONArray testNameArray = (JSONArray) parser.parse(testAndDiagnosis);
-			if (testNameArray != null && !testNameArray.equals("")) {
-				for (int i = 0; i < testNameArray.size(); i++) {
-					JSONObject jsonObj = (JSONObject) testNameArray.get(i);
-					String testName = jsonObj.get("testName").toString();					
-					String category = null;
-					if(jsonObj.containsKey("testCategory") && jsonObj.get("testCategory")!=null ) {
-						category = 	jsonObj.get("testCategory").toString();
-					}
-					String subCategory = null;
-					if(jsonObj.containsKey("testsubCategory") && jsonObj.get("testsubCategory")!=null) {
-						subCategory = 	jsonObj.get("testsubCategory").toString();
-						if(subCategory.contains("PreUpgrade")) {
-							selectedTest.add(setTestData(requestId,testName,requestVersion,category,"PreUpgrade"));	
-						}if(subCategory.contains("PostUpgrade")) {
-							selectedTest.add(setTestData(requestId,testName,requestVersion,category,"PostUpgrade"));
-						}					
-						
-					}else {
-						selectedTest.add(setTestData(requestId,testName,requestVersion,category,subCategory));
-					}		
+			if (testAndDiagnosis != null && !testAndDiagnosis.isEmpty()) {
+				JSONArray testNameArray = (JSONArray) parser.parse(testAndDiagnosis);
+				if (testNameArray != null && !testNameArray.equals("")) {
+					for (int i = 0; i < testNameArray.size(); i++) {
+						JSONObject jsonObj = (JSONObject) testNameArray.get(i);
+						String testName = jsonObj.get("testName").toString();
+						String category = null;
+						if (jsonObj.containsKey("testCategory") && jsonObj.get("testCategory") != null) {
+							category = jsonObj.get("testCategory").toString();
+						}
+						String subCategory = null;
+						if (jsonObj.containsKey("testsubCategory") && jsonObj.get("testsubCategory") != null) {
+							subCategory = jsonObj.get("testsubCategory").toString();
+							if (subCategory.contains("PreUpgrade")) {
+								selectedTest
+										.add(setTestData(requestId, testName, requestVersion, category, "PreUpgrade"));
+							}
+							if (subCategory.contains("PostUpgrade")) {
+								selectedTest
+										.add(setTestData(requestId, testName, requestVersion, category, "PostUpgrade"));
+							}
 
+						} else {
+							selectedTest.add(setTestData(requestId, testName, requestVersion, category, subCategory));
+						}
+
+					}
 				}
-			}
 			}
 		} catch (Exception e) {
 			logger.error(e);
@@ -570,21 +585,72 @@ public Response getTestAndDiagnosisDetailsDuplicateLatest(@RequestBody String te
 		return Response.status(200).entity(selectedTest).build();
 	}
 
-	private JSONObject setTestData(String requestId, String testName, Double requestVersion, String category, String subCategory) {
+	private JSONObject setTestData(String requestId, String testName, Double requestVersion, String category,
+			String subCategory) {
 		JSONObject tests = new JSONObject();
 		String combination = StringUtils.substringBefore(testName, "_");
 		String name = StringUtils.substringAfter(testName, "_");
 		name = StringUtils.substringBeforeLast(name, "_");
 		String version = StringUtils.substringAfterLast(testName, "_");
 		tests.put("combination", combination);
-		if(subCategory!=null) {
-			name = subCategory + "_"+name;
+		if (subCategory != null) {
+			name = subCategory + "_" + name;
 		}
 		tests.put("testName", name);
 		tests.put("version", version);
-		int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion,category,subCategory);
+		int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion, category, subCategory);
 		tests.put("status", status);
 		return tests;
-		
+
+	}
+
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/getCompliance", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	
+	public JSONObject getComplianceData(@RequestBody String requestDetails) {
+		JSONParser parser = new JSONParser();
+		JSONObject response = new JSONObject();
+		try {
+			JSONObject json = (JSONObject) parser.parse(requestDetails);
+			String version = json.get("version").toString();
+			String requestId = json.get("requestId").toString();
+			RequestInfoPojo requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(requestId,
+					version);
+			String configMethod = requestinfo.getConfigurationGenerationMethods();
+			String alphanumericRequestId = "";
+			String requestVersion = "";
+			String backupTime = "";
+			if ("lastBackup".equals(configMethod)) {
+				List<RequestInfoEntity> backupRequestData = requestInfoDetailsRepositories
+						.findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatus(requestinfo.getHostname(),
+								requestinfo.getManagementIp(), "SLGB", "Success");
+
+				if (backupRequestData == null && backupRequestData.isEmpty()) {
+					alphanumericRequestId = requestId;
+					requestVersion = version;
+					backupTime = requestinfo.getRequestCreatedOn();
+				} else {
+					Collections.reverse(backupRequestData);
+					alphanumericRequestId = backupRequestData.get(0).getAlphanumericReqId();
+					requestVersion = String.valueOf(backupRequestData.get(0).getRequestVersion());
+					backupTime = String.valueOf(backupRequestData.get(0).getDateofProcessing());
+				}
+			} else if ("config".equals(configMethod)) {
+				alphanumericRequestId = requestId;
+				requestVersion = String.valueOf(version);
+				backupTime = requestinfo.getRequestCreatedOn();
+			}
+			String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + alphanumericRequestId + "V"
+					+ requestVersion + "_PreviousConfig.txt";
+
+			response.put("configBackup",  backupTime );
+			response.put("templateAliasName", requestinfo.getTemplateID());
+
+		} catch (Exception e) {
+			logger.error(e.getStackTrace());
+		}
+
+		return response;
 	}
 }
