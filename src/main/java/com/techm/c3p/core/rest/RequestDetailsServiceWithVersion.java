@@ -5,9 +5,7 @@ import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -31,8 +29,8 @@ import com.google.gson.JsonParseException;
 import com.techm.c3p.core.dao.RequestDetails;
 import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
-import com.techm.c3p.core.entitybeans.CloudProjectEntity;
-import com.techm.c3p.core.entitybeans.CloudplatformParamsEntity;
+import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
+import com.techm.c3p.core.entitybeans.CertificationTestResultEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.MasterAttributes;
 import com.techm.c3p.core.entitybeans.MasterCharacteristicsEntity;
@@ -44,7 +42,10 @@ import com.techm.c3p.core.pojo.ReoprtFlags;
 import com.techm.c3p.core.pojo.RequestInfoCreateConfig;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.SearchParamPojo;
+import com.techm.c3p.core.pojo.TestStaregyConfigPojo;
 import com.techm.c3p.core.repositories.AttribCreateConfigRepo;
+import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
+import com.techm.c3p.core.repositories.CertificationTestResultRepository;
 import com.techm.c3p.core.repositories.CloudProjectsRepository;
 import com.techm.c3p.core.repositories.CloudplatforParamsRepository;
 import com.techm.c3p.core.repositories.CreateConfigRepo;
@@ -101,7 +102,13 @@ public class RequestDetailsServiceWithVersion {
 
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
+	
+	@Autowired
+	private CertificationTestResultRepository certificationTestResultRepository;
 
+	@Autowired
+	private AuditDashboardResultRepository auditDashboardResultRepository;
+	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -135,7 +142,12 @@ public class RequestDetailsServiceWithVersion {
 
 			if (value != null && !value.isEmpty()) {
 				try {
+					RequestInfoPojo requestData = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(value, version);
+					if(requestData!=null && requestData.getRequestType()!=null && "Config Audit".equals(requestData.getRequestType())){
+						requestType = requestData.getRequestType();
+					}else {
 					requestType = value.substring(0, 4);
+					}
 					MileStones showMilestone = reportMileStones.getMileStones(requestType);
 					detailsList = requestInfoDetailsDao.getRequestWithVersion(key, value, version, userName, userRole);
 					if (!requestType.equalsIgnoreCase("SNAI") && !requestType.equalsIgnoreCase("SNAD"))// This is bec
@@ -606,8 +618,7 @@ public class RequestDetailsServiceWithVersion {
 
 	@SuppressWarnings("unchecked")
 	@POST
-	@RequestMapping(value = "/getCompliance", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-	
+	@RequestMapping(value = "/getCompliance", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")	
 	public JSONObject getComplianceData(@RequestBody String requestDetails) {
 		JSONParser parser = new JSONParser();
 		JSONObject response = new JSONObject();
@@ -644,13 +655,37 @@ public class RequestDetailsServiceWithVersion {
 			String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + alphanumericRequestId + "V"
 					+ requestVersion + "_PreviousConfig.txt";
 
-			response.put("configBackup",  backupTime );
+			response.put("configBackup",  dateUtil.dateTimeInAppFormat(backupTime ));
 			response.put("templateAliasName", requestinfo.getTemplateID());
 
 		} catch (Exception e) {
 			logger.error(e.getStackTrace());
 		}
-
 		return response;
 	}
+	
+	@SuppressWarnings("unchecked")
+	@POST
+	@RequestMapping(value = "/getComplianceStatus", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")	
+	public JSONObject getComplianceStatus(@RequestBody String requestDetails) {
+		JSONParser parser = new JSONParser();
+		JSONObject response = new JSONObject();
+		try {
+			JSONObject json = (JSONObject) parser.parse(requestDetails);
+			String version = json.get("version").toString();
+			String requestId = json.get("requestId").toString();
+			List<AuditDashboardResultEntity> auditResultData = auditDashboardResultRepository.findByAdRequestIdAndAdRequestVersion(requestId,Double.valueOf(version));
+			if(auditResultData.size()>0) {
+				response.put("compliance", "No");
+				response.put("violations", auditResultData.size());
+			}else {
+				response.put("compliance", "Yes");
+				response.put("violations", "0");
+			  }
+			}catch (Exception e) {
+				logger.error(e.getStackTrace());
+			}
+		return response;
+	}
+	
 }

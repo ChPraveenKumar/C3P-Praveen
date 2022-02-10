@@ -1841,8 +1841,9 @@ public class DcmConfigService {
 				// createTemplate(requestInfoSO);
 				//
 				// } else {
-				if (requestInfoSO.getBatchSize().equals("1")) {
+				if (requestInfoSO.getBatchSize().equals("1") && (!"Config Audit".equals(requestType))) {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
+					
 					for (Map.Entry<String, String> entry : result.entrySet()) {
 						if (entry.getKey() == "requestID") {
 

@@ -24,6 +24,7 @@ import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.service.BackupCurrentRouterConfigurationService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
+import com.techm.c3p.core.utility.WAFADateUtil;
 
 @Controller
 @RequestMapping("/PreProcess")
@@ -41,13 +42,16 @@ public class PreProcessMilestoneTest {
 
 	@Autowired
 	private BackupCurrentRouterConfigurationService backupCurrentRouterConfigurationService;
-
+	
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
 	@SuppressWarnings({ "null", "unchecked" })
 	@POST
 	@RequestMapping(value = "/preProcessTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public JSONObject preProcessTest(@RequestBody String request) {
-
+		
 		JSONObject obj = new JSONObject();
 
 		JSONParser parser = new JSONParser();
@@ -56,6 +60,7 @@ public class PreProcessMilestoneTest {
 		String response = "";
 		boolean preProcesFlag = false;
 		try {
+			logger.info("Inside Pre Process");
 			json = (JSONObject) parser.parse(request);
 			String requestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
@@ -65,7 +70,7 @@ public class PreProcessMilestoneTest {
 					&& ("Config Audit".equals(requestinfo.getRequestType()))) {
 				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "preprocess", "4", "In Progress");
-
+				logger.info("Inside Pre Process Activity");
 				String configMethod = requestinfo.getConfigurationGenerationMethods();
 				if ("lastBackup".equals(configMethod)) {
 					List<RequestInfoEntity> backupRequestData = requestInfoDetailsRepositories
@@ -73,9 +78,7 @@ public class PreProcessMilestoneTest {
 									requestinfo.getHostname(), requestinfo.getManagementIp(), "SLGB", "Success");
 					if (backupRequestData == null || backupRequestData.isEmpty()) {
 						configMethod = "config";
-					} else {
-						requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-								Double.toString(requestinfo.getRequestVersion()), "preprocess", "1", "Success");
+					} else {						
 						preProcesFlag = true;
 					}
 				}
@@ -113,12 +116,13 @@ public class PreProcessMilestoneTest {
 		}
 		if (preProcesFlag) {
 			requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
-					Double.toString(requestinfo.getRequestVersion()), "preprocess", "1", "Success");
+					Double.toString(requestinfo.getRequestVersion()), "preprocess", "1", "In Progress");
 
 		} else {
 			requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 					Double.toString(requestinfo.getRequestVersion()), "preprocess", "2", "Failure");
 		}
+		logger.info("Inside Pre Process Activity Completed");
 		response = new Gson().toJson(preProcesFlag);
 		obj.put(new String("output"), response);
 		return obj;
@@ -159,10 +163,10 @@ public class PreProcessMilestoneTest {
 						backupTime = String.valueOf(backupRequestData.get(0).getDateofProcessing());
 					}
 					obj.put("reachability", "Not Applicable");
-					obj.put("status", "fetched last backup"+backupTime);					
+					obj.put("status", "fetched last backup"+dateUtil.dateTimeInAppFormat(backupTime));					
 				} else if ("config".equals(configMethod)) {
 					obj.put("reachability", "Success");
-					obj.put("status", "fetched last backup"+requestinfo.getRequestCreatedOn());
+					obj.put("status", "fetched last backup"+dateUtil.dateTimeInAppFormat(requestinfo.getRequestCreatedOn()));
 					alphanumericRequestId = requestId;
 					requestVersion = Double.valueOf(version);					
 				}

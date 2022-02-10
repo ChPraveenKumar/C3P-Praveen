@@ -732,6 +732,8 @@ public class RequestInfoDetailsDao {
 		}
 		else if ("instantiation".equalsIgnoreCase(field)) {
 			query = "select instantiation as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+		}else if ("preprocess".equalsIgnoreCase(field)) {
+			query = "select preprocess as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		}
 		if ("pre_health_checkup".equalsIgnoreCase(field)) {
 			query = "select pre_health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";

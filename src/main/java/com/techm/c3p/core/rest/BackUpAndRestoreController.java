@@ -1269,7 +1269,7 @@ public class BackUpAndRestoreController {
 				}
 
 			}
-			if (j == 1) {
+			if (j == 1 && configAudit == null ) {
 
 				obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_004"));
 				obj.put(new String("requestId"), requestId.get("key").toString());

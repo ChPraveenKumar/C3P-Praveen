@@ -349,7 +349,9 @@ public class NetworkAuditTest extends Thread {
 						}else {
 							auditData.setAdStatus("Pass");
 						}
+						if(auditData!=null) {
 							auditDashboardRepository.save(auditData);
+						  }
 						}
 					logger.info("Inside Network Audit Activity");
 					 requestInfoDao.editRequestforReportWebserviceInfo(

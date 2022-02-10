@@ -176,7 +176,7 @@ public class RequestInfoScheduler {
 								}*/
 							}
 						} else if (detailsList.get(j).getRequestType().equals("Test")
-								|| detailsList.get(j).getRequestType().equals("Audit")) {
+								|| detailsList.get(j).getRequestType().contains("Audit")) {
 
 							if ((detailsList.get(j).getExecutionStatus() == false)) {
 

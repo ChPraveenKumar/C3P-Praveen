@@ -16,15 +16,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
+import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.entitybeans.TemplateFeatureEntity;
 import com.techm.c3p.core.pojo.CommandPojo;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
 import com.techm.c3p.core.repositories.MasterCommandsRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
-import com.techm.c3p.core.repositories.TemplateCommandsRepository;
 import com.techm.c3p.core.repositories.TemplateFeatureRepo;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.UtilityMethods;
@@ -37,22 +37,16 @@ public class GoldenTemplateConfigurationService {
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 
 	@Autowired
-	private BackupCurrentRouterConfigurationService backupCurrentRouterConfigurationService;
-
-	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;
 
 	@Autowired
 	private MasterCommandsRepository masterCommandsRepository;
 
 	@Autowired
-	private TemplateCommandsRepository templateCommandsRepository;
-
-	@Autowired
 	private TemplateFeatureRepo templateFeatureRepo;
 
 	@Autowired
-	private RequestInfoDao requestInfoDao;
+	private AuditDashboardResultRepository auditDashboardResultRepository;
 
 	@Value("${python.service.uri}")
 	private String pythonServiceUri;
@@ -79,54 +73,64 @@ public class GoldenTemplateConfigurationService {
 			if (requestValueData != null) {
 				List<TemplateFeatureEntity> commandFeatureId = templateFeatureRepo
 						.findByCommandType(requestValueData.getTemplateID());
+				String requestId = null;
+				Double requestVersion = null;
+				String backupData = "";
 				if (requestValueData.getConfigurationGenerationMethods().equals("lastBackup")) {
 					List<RequestInfoEntity> requestData = requestInfoDetailsRepositories
 							.findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatus(
 									requestValueData.getHostname(), requestValueData.getManagementIp(), "SLGB",
 									"Success");
-					String backupData = "";
+
 					if (requestData != null && !requestData.isEmpty()) {
 						Collections.reverse(requestData);
-						String requestId = requestData.get(0).getAlphanumericReqId();
-						Double requestVersion = requestData.get(0).getRequestVersion();
-						String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V"
-								+ requestVersion + "_PreviousConfig.txt";
-						try {
-							backupData = UtilityMethods.readFirstLineFromFile(filepath);
-						} catch (IOException e) {
-							e.printStackTrace();
-							logger.error(e.getMessage());
-						}
+						requestId = requestData.get(0).getAlphanumericReqId();
+						requestVersion = requestData.get(0).getRequestVersion();
+					} else {
+						requestId = requestValueData.getAlphanumericReqId();
+						requestVersion = requestValueData.getRequestVersion();
 					}
-					Map<String, String> dataMap = new HashMap<>();
-					dataMap.put("backup", backupData);
-					dataMap.put("additionalData", "");
-					dataMap.put("addition", "0");
-					dataMap.put("missing", "0");
-					dataMap.put("missingData", "");
-					for (TemplateFeatureEntity feature : commandFeatureId) {
-						List<CommandPojo> commandTemplateData = masterCommandsRepository
-								.findByCommandId(feature.getId());
-						if (commandTemplateData != null && !commandTemplateData.isEmpty()) {
-							String commandFileData = "";
-							for (CommandPojo data : commandTemplateData) {
-								commandFileData = commandFileData + data.getCommand_value();
-							}
-							dataMap.put("commandFileData", commandFileData);
-							dataMap = comparisionLogic(dataMap, dataMode, feature.getComandDisplayFeature(),
-									requestValueData);
-							List<String> commandData = Arrays.asList(dataMap.get("additionalData").split("\n", -1));
-							if (commandData != null) {
-
-							}
-
-						}
-					}
-					comparisionLogic.put("features", dataMap.get("additionalData"));
-					comparisionLogic.put("added", dataMap.get("addition"));
-					comparisionLogic.put("missing", dataMap.get("missing"));
-					comparisionLogic.put("configurations", dataMap.get("missingData"));
 				}
+				if ("config".equals(requestValueData.getConfigurationGenerationMethods())) {
+					requestId = requestValueData.getAlphanumericReqId();
+					requestVersion = requestValueData.getRequestVersion();
+				}
+				String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + requestId + "V" + requestVersion
+						+ "_PreviousConfig.txt";
+				try {
+					backupData = UtilityMethods.readFirstLineFromFile(filepath);
+				} catch (IOException e) {
+					e.printStackTrace();
+					logger.error(e.getMessage());
+				}
+				Map<String, String> dataMap = new HashMap<>();
+				dataMap.put("backup", backupData);
+				dataMap.put("additionalData", "");
+				dataMap.put("addition", "0");
+				dataMap.put("missing", "0");
+				dataMap.put("missingData", "");
+				for (TemplateFeatureEntity feature : commandFeatureId) {
+					List<CommandPojo> commandTemplateData = masterCommandsRepository.findByCommandId(feature.getId());
+					if (commandTemplateData != null && !commandTemplateData.isEmpty()) {
+						String commandFileData = "";
+						for (CommandPojo data : commandTemplateData) {
+							commandFileData = commandFileData + data.getCommand_value();
+						}
+						dataMap.put("commandFileData", commandFileData);
+						dataMap = comparisionLogic(dataMap, dataMode, feature.getComandDisplayFeature(),
+								requestValueData);
+						List<String> commandData = Arrays.asList(dataMap.get("additionalData").split("\n", -1));
+						if (commandData != null) {
+
+						}
+
+					}
+				}
+				comparisionLogic.put("features", dataMap.get("additionalData"));
+				comparisionLogic.put("added", dataMap.get("addition"));
+				comparisionLogic.put("missing", dataMap.get("missing"));
+				comparisionLogic.put("configurations", dataMap.get("missingData"));
+
 			}
 		}
 
@@ -168,12 +172,14 @@ public class GoldenTemplateConfigurationService {
 			}
 			backupDataString.add(fileData);
 		}
+		List<String> subList = new ArrayList<>();
+
 		if (start == 0 && end == 0) {
-			dataMap.put("delete", String.valueOf(1));
+			saveAuditResultData(requestValueData, featureName, "Missing", null, null);
 		} else {
-			dataMap.put("delete", String.valueOf(0));
+
+			subList = backupDataString.subList(start, end + 1);
 		}
-		List<String> subList = backupDataString.subList(start, end + 1);
 		List<String> dataString = Arrays.asList(dataMap.get("additionalData").split("\n", -1));
 
 		List<String> missingString = Arrays.asList(dataMap.get("missingData").split("\n", -1));
@@ -186,9 +192,8 @@ public class GoldenTemplateConfigurationService {
 		for (String cmdData : bracketCommands) {
 			if (!cmdData.equals("!")) {
 				boolean dataFound = false;
-				if (subList.isEmpty()) {
+				if (!subList.isEmpty()) {
 					for (String fileData : subList) {
-
 						if (cmdData.equals(fileData)) {
 							dataFound = true;
 							break;
@@ -199,31 +204,28 @@ public class GoldenTemplateConfigurationService {
 						missingCount++;
 						missingDataList.add(cmdData);
 						if ("Network Audit".equals(dataMode)) {
-							requestInfoDao.updateTestStrategeyConfigResultsTable(
-									requestValueData.getAlphanumericReqId(), requestValueData.getTemplateID(),
-									"Config Audit", featureName, "Missing", cmdData, null, null, null,
-									Double.valueOf(requestValueData.getRequestVersion()), "");
+							saveAuditResultData(requestValueData, featureName, "Additional", null, cmdData);
 						}
 
 					}
 				}
 			}
 		}
-		for (String fileData : subList) {
-			boolean dataFound = false;
-			for (String cmdData : bracketCommands) {
-				if (cmdData.equals(fileData)) {
-					dataFound = true;
-					break;
+		if (!subList.isEmpty()) {
+			for (String fileData : subList) {
+				boolean dataFound = false;
+				for (String cmdData : bracketCommands) {
+					if (cmdData.equals(fileData)) {
+						dataFound = true;
+						break;
+					}
 				}
-			}
-			if (!dataFound) {
-				additionalCount++;
-				extraDataList.add(fileData);
-				if ("Network Audit".equals(dataMode)) {
-					requestInfoDao.updateTestStrategeyConfigResultsTable(requestValueData.getAlphanumericReqId(),
-							requestValueData.getTemplateID(), "Config Audit", featureName, "Additional", fileData, null,
-							null, null, Double.valueOf(requestValueData.getRequestVersion()), "");
+				if (!dataFound) {
+					additionalCount++;
+					extraDataList.add(fileData);
+					if ("Network Audit".equals(dataMode)) {
+						saveAuditResultData(requestValueData, featureName, "Deleted", fileData, null);
+					}
 				}
 			}
 		}
@@ -234,6 +236,29 @@ public class GoldenTemplateConfigurationService {
 		dataMap.put("missing", String.valueOf(missingCount));
 		dataMap.put("missingData", missingData);
 		return dataMap;
+	}
+
+	private void saveAuditResultData(RequestInfoPojo requestValueData, String featureName, String status,
+			String templateValue, String configurationValue) {
+		AuditDashboardResultEntity auditDashboardResultEntity = new AuditDashboardResultEntity();
+		String batchId = requestValueData.getBatchId();
+		if (batchId != null) {
+			auditDashboardResultEntity.setAdrAuditId(batchId);
+		}
+		if (configurationValue != null) {
+			auditDashboardResultEntity.setAdrConfigurationValue(configurationValue);
+		}
+		if (templateValue != null) {
+			auditDashboardResultEntity.setAdrTemplateValue(templateValue);
+		}
+		auditDashboardResultEntity.setAdRequestId(requestValueData.getAlphanumericReqId());
+		auditDashboardResultEntity.setAdRequestVersion(requestValueData.getRequestVersion());
+		auditDashboardResultEntity.setAdrFeatureName(featureName);
+		auditDashboardResultEntity.setAdrResult(status);
+		auditDashboardResultEntity.setAdrTemplateId(requestValueData.getTemplateID());
+		auditDashboardResultEntity.setCreatedBy(requestValueData.getRequestCreatedOn());
+		auditDashboardResultEntity.setCreatedBy(requestValueData.getRequestCreatorName());
+		auditDashboardResultRepository.save(auditDashboardResultEntity);
 	}
 
 	private List<String> removeBracket(List<String> commandData) {
@@ -251,6 +276,9 @@ public class GoldenTemplateConfigurationService {
 
 			}
 			commandSet.add(newCommandValue);
+			if (newCommandValue.contains("[")) {
+				commandSet = removeBracket(commandSet);
+			}
 		}
 
 		return commandSet;
