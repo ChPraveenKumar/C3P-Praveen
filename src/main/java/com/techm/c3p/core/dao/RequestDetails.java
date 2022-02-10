@@ -375,16 +375,19 @@ public class RequestDetails {
 							reqDetail.getHostname(), reqDetail.getManagementIp(), "SLGB", "Success");
 			if (backupRequestData == null || backupRequestData.isEmpty()) {				
 				backupTime = reqDetail.getRequestCreatedOn();
+				reqDetail.setComplianceData(backupTime);
 			} else {
 				Collections.reverse(backupRequestData);
 				backupTime = String.valueOf(backupRequestData.get(0).getDateofProcessing());
+				reqDetail.setComplianceData(dateUtil.dateTimeInAppFormat(backupTime));
 				}
 			}
 			else if("config".equals(reqDetail.getConfigurationGenerationMethods())) {
 				backupTime = reqDetail.getRequestCreatedOn();
+				reqDetail.setComplianceData(backupTime);
 			}
 			
-			reqDetail.setComplianceData(dateUtil.dateTimeInAppFormat(backupTime));
+			
 		}
 		List<String> out = new ArrayList<String>();
 		out.add(new Gson().toJson(reqDetail));

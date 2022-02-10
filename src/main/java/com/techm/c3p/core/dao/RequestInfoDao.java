@@ -134,6 +134,10 @@ public class RequestInfoDao {
 	@Autowired
 	private AuditDashboardResultRepository auditDashboardResultRepository;
 	
+	@Autowired
+	private RequestInfoDetailsDao requestInfoDetailsDao;
+	
+	
 	private static final String FLAG_PASS ="Pass";
 	
 	private static final String FLAG_FAIL ="Fail";
@@ -8907,18 +8911,24 @@ public class RequestInfoDao {
 			return list;
 	}
 
+	@SuppressWarnings("unchecked")
 	public org.json.simple.JSONObject getStatusForConfigData(RequestInfoPojo createConfigRequestDCM) {
 		org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject preProcess = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray complieanceResult = new org.json.simple.JSONArray();
-		WebServiceEntity webServiceData = webServiceRepo.findTextFoundDeliveryTestByAlphanumericReqIdAndVersion(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
-		
-		if(webServiceData!=null) {
-			if(webServiceData.getPreHealthCheckup()==1) {
+		int status=requestInfoDetailsDao.getStatusForMilestone(createConfigRequestDCM.getAlphanumericReqId(),String.valueOf(createConfigRequestDCM.getRequestVersion()),"pre_health_checkup");
+		if(status ==1) {
 				preProcess.put("notes", "N/A");
 				preProcess.put("testname", "Device Reachability test");
-				preProcess.put("status", "Pass");
-			}		
+				preProcess.put("status", "Pass");				
+		}else if(status ==0){
+			preProcess.put("notes", "N/A");
+			preProcess.put("testname", "Device Reachability test");
+			preProcess.put("status", "Not Applicable");		
+		}else {
+			preProcess.put("notes", "N/A");
+			preProcess.put("testname", "Device Reachability test");
+			preProcess.put("status", "Not Applicable");
 		}
 		List<AuditDashboardResultEntity> auditResultData = auditDashboardResultRepository.findByAdRequestIdAndAdRequestVersion(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 		if(auditResultData.size()>0) {

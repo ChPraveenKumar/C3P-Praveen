@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
+import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
@@ -45,6 +46,9 @@ public class PreProcessMilestoneTest {
 	
 	@Autowired
 	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private RequestInfoDao requestInfoDao;
 	
 	@SuppressWarnings({ "null", "unchecked" })
 	@POST
@@ -92,8 +96,18 @@ public class PreProcessMilestoneTest {
 							boolean isCheck = backupCurrentRouterConfigurationService.getRouterConfig(requestinfo,
 									"previous", false);
 							if (isCheck) {
+								requestInfoDao.editRequestforReportWebserviceInfo(
+										requestinfo.getAlphanumericReqId(), Double
+												.toString(requestinfo
+														.getRequestVersion()),
+										"pre_health_checkup", "1", "In Progress");
 								preProcesFlag = true;
 							} else {
+								requestInfoDao.editRequestforReportWebserviceInfo(
+										requestinfo.getAlphanumericReqId(), Double
+												.toString(requestinfo
+														.getRequestVersion()),
+										"pre_health_checkup", "2", "In Progress");
 								preProcesFlag = false;
 							}
 						} else {
@@ -153,26 +167,40 @@ public class PreProcessMilestoneTest {
 					
 					String backupTime ="";
 					if (backupRequestData == null || backupRequestData.isEmpty()) {
-						alphanumericRequestId = requestId;
-						requestVersion = Double.valueOf(version);
-						backupTime = requestinfo.getRequestCreatedOn();
+//						alphanumericRequestId = requestId;
+//						requestVersion = Double.valueOf(version);
+//						backupTime = requestinfo.getRequestCreatedOn();
+						configMethod = "config";
+						
 					} else {
 						Collections.reverse(backupRequestData);
 						alphanumericRequestId = backupRequestData.get(0).getAlphanumericReqId();
 						requestVersion = backupRequestData.get(0).getRequestVersion();
 						backupTime = String.valueOf(backupRequestData.get(0).getDateofProcessing());
+						obj.put("reachability", "Not Applicable");
+						obj.put("status", "fetched last backup"+dateUtil.dateTimeInAppFormat(backupTime));
 					}
-					obj.put("reachability", "Not Applicable");
-					obj.put("status", "fetched last backup"+dateUtil.dateTimeInAppFormat(backupTime));					
-				} else if ("config".equals(configMethod)) {
-					obj.put("reachability", "Success");
-					obj.put("status", "fetched last backup"+dateUtil.dateTimeInAppFormat(requestinfo.getRequestCreatedOn()));
+									
+				} 
+				if ("config".equals(configMethod)) {
 					alphanumericRequestId = requestId;
 					requestVersion = Double.valueOf(version);					
+					int status=requestInfoDetailsDao.getStatusForMilestone(alphanumericRequestId,String.valueOf(requestVersion),"pre_health_checkup");
+					if(status ==1) {
+						obj.put("reachability", "Success");
+						obj.put("status", "fetched last backup "+dateUtil.dateTimeInAppFormat(requestinfo.getRequestCreatedOn()));
+					}else {
+						obj.put("reachability", "Failed");
+						obj.put("status", "Not Applicable");
+					}
+										
 				}
+				if(alphanumericRequestId!=null && requestVersion!=null) {
 				String filepath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + alphanumericRequestId + "V"
 						+ requestVersion + "_PreviousConfig.txt";
-				obj.put("fileName", filepath);				
+				obj.put("fileName", filepath);	
+				}
+							
 			}
 		} catch (ParseException e) {
 			e.printStackTrace();
