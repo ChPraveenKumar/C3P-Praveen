@@ -2519,8 +2519,8 @@ public class ConfigMngmntService {
 			requestInfoPojo.setAlphanumericReqId(json.get(
 					"alphanumericReqId").toString());
 		}
-		if(json.containsKey("rGoldenConfig") && json.get("rGoldenConfig")!=null ) {
-			requestInfoPojo.setGoldenConfig(json.get("rGoldenConfig").toString());
+		if(json.containsKey("rConfigGenerationMethod") && json.get("rConfigGenerationMethod")!=null ) {
+			requestInfoPojo.setConfigurationGenerationMethods(json.get("rConfigGenerationMethod").toString());
 		}
 
 		return requestInfoPojo;

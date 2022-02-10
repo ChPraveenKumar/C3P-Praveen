@@ -18,6 +18,7 @@ public class ReoprtFlags {
 	int network_audit;
 	double requestVersion;
 	int instantiate;
+	int preProcess;
 	
 	public int getNetwork_audit() {
 		return network_audit;
@@ -115,5 +116,11 @@ public class ReoprtFlags {
 	}
 	public void setInstantiate(int instantiate) {
 		this.instantiate = instantiate;
+	}
+	public int getPreProcess() {
+		return preProcess;
+	}
+	public void setPreProcess(int preProcess) {
+		this.preProcess = preProcess;
 	}
 }

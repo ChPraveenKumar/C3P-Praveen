@@ -123,7 +123,9 @@ public class RequestInfoPojo {
 	
 	private String projectName;
 	
-	private String goldenConfig;
+	private String compliance;
+	
+	private String complianceData;
 	
 	public String getProjectName() {
 		return projectName;
@@ -1848,12 +1850,19 @@ public class RequestInfoPojo {
 	public void setTestType(String testType) {
 		this.testType = testType;
 	}
-
-	public String getGoldenConfig() {
-		return goldenConfig;
+	public String getCompliance() {
+		return compliance;
 	}
 
-	public void setGoldenConfig(String goldenConfig) {
-		this.goldenConfig = goldenConfig;
+	public void setCompliance(String compliance) {
+		this.compliance = compliance;
+	}
+
+	public String getComplianceData() {
+		return complianceData;
+	}
+
+	public void setComplianceData(String complianceData) {
+		this.complianceData = complianceData;
 	}
 }
