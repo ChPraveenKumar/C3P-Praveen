@@ -25,4 +25,7 @@ public interface ErrorValidationRepository extends JpaRepository<ErrorValidation
 
 	 @Query(value = "select suggestion from errorcodedata  where errorDescription= :errorDescription ", nativeQuery = true)
 	 ErrorValidationEntity findByErrorDescription(@Param("errorDescription") String errorDescription);
+	 
+	 @Query(value = "select ErrorType, ErrorDescription, router_error_message from errorcodedata where router_error_message is not null ", nativeQuery = true)
+	 List<String> findByErrorMessageIsNull();
 }

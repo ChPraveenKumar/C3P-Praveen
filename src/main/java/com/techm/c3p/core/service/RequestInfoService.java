@@ -12,6 +12,7 @@ import com.techm.c3p.core.entitybeans.DeviceLockedManagementEntity;
 import com.techm.c3p.core.entitybeans.ErrorValidationEntity;
 import com.techm.c3p.core.entitybeans.TestValidationEntity;
 import com.techm.c3p.core.entitybeans.WebServiceEntity;
+import com.techm.c3p.core.pojo.ErrorValidationPojo;
 import com.techm.c3p.core.repositories.DeviceLockedManagementRepo;
 import com.techm.c3p.core.repositories.ErrorValidationRepository;
 import com.techm.c3p.core.repositories.TestValidationRepo;
@@ -185,11 +186,11 @@ public class RequestInfoService {
 		TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId, version);
 		try {
 			if ("frameloss".equalsIgnoreCase(type)) {
-				testValidation.setTvFrameLoss(type);
+				testValidation.setTvFrameLoss(value);
 			} else if ("latency".equalsIgnoreCase(type)) {
-				testValidation.setTvLatency(type);
+				testValidation.setTvLatency(value);
 			} else {
-				testValidation.setTvThroughput(type);
+				testValidation.setTvThroughput(value);
 			}
 			testValidationRepo.save(testValidation);
 		} catch (Exception exe) {
@@ -202,8 +203,10 @@ public class RequestInfoService {
 				version);
 		String suggestion = "Please check the connectivity.Issue while performing Health check test";
 		try {
-			testValidation.setTvSuggestionForFailure(suggestion);
-			testValidationRepo.save(testValidation);
+			if (testValidation != null) {
+				testValidation.setTvSuggestionForFailure(suggestion);
+				testValidationRepo.save(testValidation);
+			}
 		} catch (Exception exe) {
 			logger.error("Exception in updateRouterFailureHealthCheck method " + exe.getMessage());
 		}
@@ -214,15 +217,17 @@ public class RequestInfoService {
 		try {
 			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
 					version);
-			testValidation.setTvActualVendor(vendorActual);
-			testValidation.setTvGuiVendor(vendorGui);
-			testValidation.setTvActualOsVersion(osActual);
-			testValidation.setTvGuiOsVersion(osGui);
-			testValidation.setTvActualModel(modelActual);
-			testValidation.setTvGuiModel(modelGui);
-			testValidationRepo.save(testValidation);
+			if (testValidation != null) {
+				testValidation.setTvActualVendor(vendorActual);
+				testValidation.setTvGuiVendor(vendorGui);
+				testValidation.setTvActualOsVersion(osActual);
+				testValidation.setTvGuiOsVersion(osGui);
+				testValidation.setTvActualModel(modelActual);
+				testValidation.setTvGuiModel(modelGui);
+				testValidationRepo.save(testValidation);
+			}
 		} catch (Exception exe) {
-			logger.error("Exception in updateRouterFailureHealthCheck method " + exe.getMessage());
+			logger.error("Exception in updatePrevalidationValues method " + exe.getMessage());
 		}
 	}
 
@@ -236,7 +241,7 @@ public class RequestInfoService {
 					version);
 			if (webServiceEntity != null && errorValidation != null && testValidation != null) {
 				webServiceEntity.setTextFoundDeliveryTest(textFound);
-				webServiceEntity.setErrorDescriptionDeliveryTest(errorType);
+				webServiceEntity.setErrorStatusDeliveryTest(errorType);
 				webServiceEntity.setErrorDescriptionDeliveryTest(errorDescription);
 				suggestionForErrorDesc = errorValidation.getSuggestion();
 				testValidation.setTvSuggestionForFailure(suggestionForErrorDesc);
@@ -253,12 +258,36 @@ public class RequestInfoService {
 		try {
 			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
 					version);
-			testValidation.setTvThroughputTest(throughputFlag);
-			testValidation.setTvFrameLossTest(framelossFlag);
-			testValidation.setTvLatencyTest(latencyFlag);
-			testValidationRepo.save(testValidation);
+			if (testValidation != null) {
+				testValidation.setTvThroughputTest(throughputFlag);
+				testValidation.setTvFrameLossTest(framelossFlag);
+				testValidation.setTvLatencyTest(latencyFlag);
+				testValidationRepo.save(testValidation);
+			}
 		} catch (Exception exe) {
-			logger.error("Exception in updateRouterFailureHealthCheck method " + exe.getMessage());
+			logger.error("Exception in updateHealthCheckTestStatus method ==>>" + exe.getMessage());
 		}
+	}
+	
+	public final List<ErrorValidationPojo> getAllErrorCodeFromRouter() {
+		ErrorValidationPojo errorValidationInfo = null;
+		List<ErrorValidationPojo> errorValidationList = new ArrayList<ErrorValidationPojo>();
+		try {
+			List<String> errorValidationData = errorValidationRepository.findByErrorMessageIsNull();
+			for (Object errorValInfo : errorValidationData) {
+				Object[] errorValidationDetails = (Object[]) errorValInfo;
+				errorValidationInfo = new ErrorValidationPojo();
+				if (errorValidationDetails[0] != null && !errorValidationDetails[0].toString().isEmpty())
+					errorValidationInfo.setError_type(errorValidationDetails[0].toString());
+				if (errorValidationDetails[1] != null && !errorValidationDetails[1].toString().isEmpty())
+					errorValidationInfo.setError_description(errorValidationDetails[1].toString());
+				if (errorValidationDetails[2] != null && !errorValidationDetails[2].toString().isEmpty())
+					errorValidationInfo.setRouter_error_message(errorValidationDetails[2].toString());
+				errorValidationList.add(errorValidationInfo);
+			}
+		} catch (Exception exe) {
+			logger.error("Exception in getAllErrorCodeFromRouter method ==>>" + exe.getMessage());
+		}
+		return errorValidationList;
 	}
 }

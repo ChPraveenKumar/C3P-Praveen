@@ -174,7 +174,7 @@ public class HealthCheckTestValidation extends Thread {
 							
 								requestinfo.setFrameLoss(frameloss);
 								requestinfo.setLatency(latency);
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), 0, 1, 1);
 							}
 
@@ -291,12 +291,12 @@ public class HealthCheckTestValidation extends Thread {
 
 							// error code validation
 							if (resultAnalyser.equalsIgnoreCase("Pass")) {
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(4)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(5)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(6)));
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), 1, 1, 1);
 
 								String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
@@ -311,7 +311,7 @@ public class HealthCheckTestValidation extends Thread {
 								}
 							} else if (resultAnalyser.equalsIgnoreCase("Fail")) {
 								// db call for flag set false
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), 2,
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(5)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(6)));
@@ -322,7 +322,7 @@ public class HealthCheckTestValidation extends Thread {
 								/* finalReportTestSSH.FlagCheckTest(configRequest); */
 							} else {
 
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(4, 5)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(5, 6)),
