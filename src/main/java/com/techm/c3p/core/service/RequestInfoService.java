@@ -152,7 +152,7 @@ public class RequestInfoService {
 				return true;
 			}
 		} catch (Exception exe) {
-			logger.error("Error:>  " + exe.getMessage());
+			logger.error("Exception in addCertificationTestForRequest method  " + exe.getMessage());
 		}
 		return false;
 	}
@@ -177,7 +177,7 @@ public class RequestInfoService {
 				return true;
 			}
 		} catch (Exception exe) {
-			logger.error("Error:>  " + exe.getMessage());
+			logger.error("Exception in updateCertificationTestForRequest method " + exe.getMessage());
 		}
 		return false;
 	}
