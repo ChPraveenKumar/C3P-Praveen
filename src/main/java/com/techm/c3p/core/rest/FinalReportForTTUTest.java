@@ -49,6 +49,7 @@ import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.HostIpManagementRepo;
 import com.techm.c3p.core.service.CSVWriteAndConnectPythonTemplateSuggestion;
 import com.techm.c3p.core.service.DcmConfigService;
+import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
 import com.techm.c3p.core.utility.ShowCPUUsage;
@@ -85,6 +86,9 @@ public class FinalReportForTTUTest extends Thread {
 	
 	@Autowired
 	private TemplateSuggestionDao templateSuggestionDao;
+	
+	@Autowired
+	private RequestInfoService requestInfoService;
 	
 	private static final String FLAG_PASS ="Pass";
 	private static final String FLAG_FAIL ="Fail";
@@ -132,12 +136,16 @@ public class FinalReportForTTUTest extends Thread {
 				// Require requestId and version from camunda
 
 				if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type) || "SLGM".equalsIgnoreCase(type) || "SLGB".equalsIgnoreCase(type)) {
-					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
+					/*Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
+							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");*/
+					Boolean deviceLocked = requestInfoService.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
 					if (deviceLocked) {
 
 						// release the locked device
-						requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+						/*requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+								requestinfo.getAlphanumericReqId());*/
+						requestInfoService.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 								requestinfo.getAlphanumericReqId());
 						CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
 						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
@@ -380,13 +388,17 @@ public class FinalReportForTTUTest extends Thread {
 					boolean isPreHealthCheckSuccess = requestInfoDao.isPreHealthCheckSuccesfulForOSUpgrade(
 							requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 					logger.info("Pre Health Check Flag is " + isPreHealthCheckSuccess);
-					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
+					/*Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
+							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");*/
+					Boolean deviceLocked = requestInfoService.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
 					boolean isDilevarySuccess = requestInfoDao.isDilevarySuccessforOSUpgrade(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
 					if (!isPreHealthCheckSuccess || !ishealthCheckSuccess || !isDilevarySuccess) {
 						if (deviceLocked) {
-							requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+							/*requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+									requestinfo.getAlphanumericReqId());*/
+							requestInfoService.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 									requestinfo.getAlphanumericReqId());
 
 							requestInfoDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -709,13 +721,17 @@ public class FinalReportForTTUTest extends Thread {
 					boolean isPreHealthCheckSuccess = requestInfoDao.isPreHealthCheckSuccesfulForOSUpgrade(
 							requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 					logger.info("Pre Health Check Flag is " + isPreHealthCheckSuccess);
-					Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
+					/*Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
+							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");*/
+					Boolean deviceLocked = requestInfoService.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");
 					boolean isDilevarySuccess = requestInfoDao.isDilevarySuccessforOSUpgrade(requestinfo.getAlphanumericReqId(),
 							requestinfo.getRequestVersion());
 					if (!isPreHealthCheckSuccess || !ishealthCheckSuccess || !isDilevarySuccess) {
 						if (deviceLocked) {
-							requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+							/*requestInfoDao.releaselockDeviceForRequest(requestinfo.getManagementIp(),
+									requestinfo.getAlphanumericReqId());*/
+							requestInfoService.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 									requestinfo.getAlphanumericReqId());
 
 							requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),

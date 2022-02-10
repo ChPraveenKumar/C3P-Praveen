@@ -34,6 +34,7 @@ import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.service.DcmConfigService;
+import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
 import com.techm.c3p.core.utility.ODLClient;
@@ -68,6 +69,8 @@ public class OthersCheckTestValidation extends Thread {
 	private VNFHelper vNFHelper;
 	@Autowired
 	private ODLClient oDLClient;
+	@Autowired
+	private RequestInfoService requestInfoService;
 	private static final String JSCH_CONFIG_INPUT_BUFFER = "max_input_buffer_size";
 
 	/**
@@ -391,7 +394,10 @@ public class OthersCheckTestValidation extends Thread {
 										+ Double.toString(requestinfo
 												.getRequestVersion())
 										+ "_CustomTests.txt", response);
-						requestInfoDao.releaselockDeviceForRequest(
+						/*requestInfoDao.releaselockDeviceForRequest(
+								requestinfo.getManagementIp(),
+								requestinfo.getAlphanumericReqId());*/
+						requestInfoService.releaselockDeviceForRequest(
 								requestinfo.getManagementIp(),
 								requestinfo.getAlphanumericReqId());
 					} catch (Exception e) {
