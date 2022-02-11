@@ -8934,7 +8934,7 @@ public class RequestInfoDao {
 		if(auditResultData.size()>0) {
 			auditResultData.forEach(result->{
 				org.json.simple.JSONObject resultData = new org.json.simple.JSONObject();
-				resultData.put("faetureName", result.getAdrFeatureName());
+				resultData.put("featureName", result.getAdrFeatureName());
 				if(result.getAdrConfigurationValue()!=null) {
 					resultData.put("found", result.getAdrConfigurationValue());	
 				}else {
