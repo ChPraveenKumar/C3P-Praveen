@@ -4,20 +4,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.stereotype.Service;
 
-import com.techm.c3p.core.dao.RequestInfoDao;
-import com.techm.c3p.core.entitybeans.CertificationTestResultEntity;
+import com.techm.c3p.core.entitybeans.TestValidationEntity;
 
 @Service
 @Configurable
 public class CertificationTestResultService {
 
 	@Autowired
-	private RequestInfoDao requestInfoDao;
+	private RequestInfoService requestInfoService;
 
-	public CertificationTestResultEntity getRecordByRequestId(String requestId, String version) {
-		CertificationTestResultEntity result = new CertificationTestResultEntity();
+	public TestValidationEntity getRecordByRequestId(String requestId, String version) {
+		TestValidationEntity result = new TestValidationEntity();
 
-		result = requestInfoDao.findCertificationTestResultEntityByRequestID(requestId, version);
+		result = requestInfoService.findCertificationTestResultEntityByRequestID(requestId, version);
 		// result=repo.findByAlphanumericReqIdAndVersion(requestId, version);
 		return result;
 	}

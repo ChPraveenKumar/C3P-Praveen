@@ -18,7 +18,7 @@ public interface WebServiceRepo extends JpaRepository<WebServiceEntity, Long> {
 	
 	WebServiceEntity findTextFoundDeliveryTestByAlphanumericReqIdAndVersion(String requestid, Double version);
 
-	WebServiceEntity findByAlphanumericReqIdAndVersion(String requestId, String version);
+	WebServiceEntity findByAlphanumericReqIdAndVersion(String requestId, Double version);
 	
 	
 

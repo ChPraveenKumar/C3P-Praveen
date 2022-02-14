@@ -1,5 +1,6 @@
 package com.techm.c3p.core.service;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import com.techm.c3p.core.entitybeans.ErrorValidationEntity;
 import com.techm.c3p.core.entitybeans.TestValidationEntity;
 import com.techm.c3p.core.entitybeans.WebServiceEntity;
 import com.techm.c3p.core.pojo.ErrorValidationPojo;
+import com.techm.c3p.core.pojo.PreValidateTest;
 import com.techm.c3p.core.repositories.DeviceLockedManagementRepo;
 import com.techm.c3p.core.repositories.ErrorValidationRepository;
 import com.techm.c3p.core.repositories.TestValidationRepo;
@@ -235,7 +237,8 @@ public class RequestInfoService {
 			String errorType, String errorDescription) {
 		String suggestionForErrorDesc = "";
 		try {
-			WebServiceEntity webServiceEntity = webServiceRepo.findByAlphanumericReqIdAndVersion(requestId, version);
+			double reqVersion = Double.valueOf(version);
+			WebServiceEntity webServiceEntity = webServiceRepo.findByAlphanumericReqIdAndVersion(requestId,reqVersion );
 			ErrorValidationEntity errorValidation = errorValidationRepository.findByErrorDescription(errorDescription);
 			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
 					version);
@@ -289,5 +292,42 @@ public class RequestInfoService {
 			logger.error("Exception in getAllErrorCodeFromRouter method ==>>" + exe.getMessage());
 		}
 		return errorValidationList;
+	}
+	
+	public void resetErrorStateOfRechabilityTest(String requestId, String version) {
+		try {
+			double reqVersion = Double.valueOf(version);
+			WebServiceEntity webServiceEntity = webServiceRepo.findByAlphanumericReqIdAndVersion(requestId, reqVersion);
+			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
+					version);
+			if (webServiceEntity != null) {
+				webServiceEntity.setApplication_test(0);
+				webServiceRepo.save(webServiceEntity);
+			}
+			if (testValidation != null) {
+				testValidation.setTvDeviceReachabilityTest(0);
+				testValidationRepo.save(testValidation);
+			}
+		} catch (Exception exe) {
+			logger.error("Exception in resetErrorStateOfRechabilityTest method--->>" + exe.getMessage());
+		}
+	}
+
+	public TestValidationEntity findCertificationTestResultEntityByRequestID(String requestId, String version) {
+		TestValidationEntity testValidationdata = new TestValidationEntity();
+		try {
+			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
+					version);
+			testValidationdata.setTvActualModel(testValidation.getTvActualModel());
+			testValidationdata.setTvActualOsVersion(testValidation.getTvActualOsVersion());
+			testValidationdata.setTvActualVendor(testValidation.getTvActualVendor());
+			testValidationdata.setTvGuiModel(testValidation.getTvGuiModel());
+			testValidationdata.setTvGuiOsVersion(testValidation.getTvGuiOsVersion());
+			testValidationdata.setTvGuiVendor(testValidation.getTvGuiVendor());
+			testValidationRepo.save(testValidationdata);
+		} catch (Exception exe) {
+			logger.error("Exception in findCertificationTestResultEntityByRequestID method--->>" + exe.getMessage());
+		}
+		return testValidationdata;
 	}
 }
