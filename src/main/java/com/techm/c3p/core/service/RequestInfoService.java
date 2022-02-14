@@ -242,13 +242,17 @@ public class RequestInfoService {
 			ErrorValidationEntity errorValidation = errorValidationRepository.findByErrorDescription(errorDescription);
 			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
 					version);
-			if (webServiceEntity != null && errorValidation != null && testValidation != null) {
+			if (webServiceEntity != null) {
 				webServiceEntity.setTextFoundDeliveryTest(textFound);
 				webServiceEntity.setErrorStatusDeliveryTest(errorType);
 				webServiceEntity.setErrorDescriptionDeliveryTest(errorDescription);
-				suggestionForErrorDesc = errorValidation.getSuggestion();
-				testValidation.setTvSuggestionForFailure(suggestionForErrorDesc);
 				webServiceRepo.save(webServiceEntity);
+			}
+			if (errorValidation != null) {
+				suggestionForErrorDesc = errorValidation.getSuggestion();
+			}
+			if (testValidation != null) {
+				testValidation.setTvSuggestionForFailure(suggestionForErrorDesc);
 				testValidationRepo.save(testValidation);
 			}
 		} catch (Exception exe) {
