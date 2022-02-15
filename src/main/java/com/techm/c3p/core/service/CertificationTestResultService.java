@@ -12,7 +12,11 @@ public class CertificationTestResultService {
 
 	@Autowired
 	private RequestInfoService requestInfoService;
-
+	
+	/*
+	 * This method is no longer use in c3p application, once confirmed with
+	 * other application will discard else keep same as it is
+	 */
 	public TestValidationEntity getRecordByRequestId(String requestId, String version) {
 		TestValidationEntity result = new TestValidationEntity();
 
