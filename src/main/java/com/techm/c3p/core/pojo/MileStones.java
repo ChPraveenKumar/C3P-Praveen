@@ -3,6 +3,7 @@ package com.techm.c3p.core.pojo;
 public class MileStones {
 	private boolean start;
 	private boolean generate;
+	private boolean preProcess;
 	private boolean instantiate;
 	private boolean preValidate;
 	private boolean backup;
@@ -13,12 +14,14 @@ public class MileStones {
 	private boolean networkAudit;
 	private boolean others;
 	private boolean report;
-	public MileStones(boolean start, boolean generate,boolean instantiate, boolean preValidate, boolean backup, boolean backupDelivery,
+	
+	public MileStones(boolean start, boolean generate,boolean preProcess,boolean instantiate, boolean preValidate, boolean backup, boolean backupDelivery,
 			boolean networkTest, boolean preHealthCheck, boolean healthCheck, boolean networkAudit, boolean others,
 			boolean report) {
 		super();
 		this.start = start;
 		this.generate = generate;
+		this.preProcess = preProcess;
 		this.instantiate=instantiate;
 		this.preValidate = preValidate;
 		this.backup = backup;
@@ -101,5 +104,11 @@ public class MileStones {
 	}
 	public void setReport(boolean report) {
 		this.report = report;
+	}
+	public boolean isPreProcess() {
+		return preProcess;
+	}
+	public void setPreProcess(boolean preProcess) {
+		this.preProcess = preProcess;
 	}
 }

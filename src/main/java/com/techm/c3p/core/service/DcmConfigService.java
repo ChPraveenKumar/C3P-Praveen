@@ -1841,8 +1841,9 @@ public class DcmConfigService {
 				// createTemplate(requestInfoSO);
 				//
 				// } else {
-				if (requestInfoSO.getBatchSize().equals("1")) {
+				if (requestInfoSO.getBatchSize().equals("1") && (!"Config Audit".equals(requestType))) {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
+					
 					for (Map.Entry<String, String> entry : result.entrySet()) {
 						if (entry.getKey() == "requestID") {
 
@@ -1925,7 +1926,7 @@ public class DcmConfigService {
 							});
 						}
 					}
-					if (!(requestType.equals("Test"))) {
+					if (!(requestType.equals("Test")) && !(requestType.equals("Config Audit"))) {
 						createTemplate(requestInfoSO);
 					}
 					telnetCommunicationSSH.setTelecommunicationData(null, requestInfoSO, userName);
@@ -1933,7 +1934,7 @@ public class DcmConfigService {
 					result = requestInfoDao.insertBatchConfigRequestInDB(requestInfoSO);
 
 					requestType = requestInfoSO.getRequestType();
-					if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))) {
+					if (!(requestType.equals("Test")) && !(requestType.contains("Audit"))) {
 						if (!requestInfoSO.getTemplateID().isEmpty()
 								&& !requestInfoSO.getTemplateID().contains("Feature"))
 							templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateID());

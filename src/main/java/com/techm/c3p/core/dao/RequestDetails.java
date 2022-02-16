@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,10 +29,14 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 import com.techm.c3p.core.connection.DBUtil;
 import com.techm.c3p.core.connection.JDBCConnection;
+import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
+import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.TestStaregyConfigPojo;
+import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
+import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.TestDetailsRepository;
 import com.techm.c3p.core.utility.WAFADateUtil;
 /*
@@ -57,6 +62,12 @@ public class RequestDetails {
 	
 	@Autowired
 	private JDBCConnection jDBCConnection;
+	
+	@Autowired
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;	
+
+	@Autowired
+	private AuditDashboardResultRepository auditDashboardResultRepository;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -229,6 +240,10 @@ public class RequestDetails {
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
 		JSONObject object = new JSONObject();
 
+		RequestInfoPojo reqDetail = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
+				createConfigRequestDCM.getAlphanumericReqId(),
+				Double.toString(createConfigRequestDCM.getRequestVersion()));
+		
 		if ("SLGF".equalsIgnoreCase(type)) {
 			CreateConfigRequest req = new CreateConfigRequest();
 			req = requestInfoDao.getOSDilevarySteps(createConfigRequestDCM.getAlphanumericReqId(), version);
@@ -279,9 +294,6 @@ public class RequestDetails {
 			}
 
 			// Logic for health checks
-			RequestInfoPojo reqDetail = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
-					createConfigRequestDCM.getAlphanumericReqId(),
-					Double.toString(createConfigRequestDCM.getRequestVersion()));
 
 			List<TestStaregyConfigPojo> firmwareTestDetails = getFirmwareTestDetails(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 				
@@ -296,13 +308,12 @@ public class RequestDetails {
 
 		} else if ("SLGB".equalsIgnoreCase(type)) {
 			obj = requestInfoDao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
+		}else if("Config Audit".equals(reqDetail.getRequestType())) {
+			obj = requestInfoDao.getStatusForConfigData(createConfigRequestDCM);
 		} else {
 			obj = requestInfoDao.getStatusForCustomerReport(createConfigRequestDCM);
 		}
 
-		RequestInfoPojo reqDetail = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
-				createConfigRequestDCM.getAlphanumericReqId(),
-				Double.toString(createConfigRequestDCM.getRequestVersion()));
 		Map<String, String> resultForFlag = new HashMap<String, String>();
 		resultForFlag = requestInfoDao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion());
 		String flagFordelieverConfig = "";
@@ -350,7 +361,34 @@ public class RequestDetails {
 			reqDetail.setReason(requestInfoDetailsDao.reasonForInstantiationFailure(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion()));
 		}
 		reqDetail.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(reqDetail.getRequestCreatedOn()));
-		
+		if("Config Audit".equals(reqDetail.getRequestType())) {
+			List<AuditDashboardResultEntity> auditResultData = auditDashboardResultRepository.findByAdRequestIdAndAdRequestVersion(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
+			if(auditResultData.size()>0) {
+				reqDetail.setCompliance("No");
+			}else {
+				reqDetail.setCompliance("Yes");
+			}
+			String backupTime ="";
+			if("lastBackup".equals(reqDetail.getConfigurationGenerationMethods())) {
+			List<RequestInfoEntity> backupRequestData = requestInfoDetailsRepositories
+					.findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatus(
+							reqDetail.getHostname(), reqDetail.getManagementIp(), "SLGB", "Success");
+			if (backupRequestData == null || backupRequestData.isEmpty()) {				
+				backupTime = reqDetail.getRequestCreatedOn();
+				reqDetail.setComplianceData(backupTime);
+			} else {
+				Collections.reverse(backupRequestData);
+				backupTime = String.valueOf(backupRequestData.get(0).getDateofProcessing());
+				reqDetail.setComplianceData(dateUtil.dateTimeInAppFormat(backupTime));
+				}
+			}
+			else if("config".equals(reqDetail.getConfigurationGenerationMethods())) {
+				backupTime = reqDetail.getRequestCreatedOn();
+				reqDetail.setComplianceData(backupTime);
+			}
+			
+			
+		}
 		List<String> out = new ArrayList<String>();
 		out.add(new Gson().toJson(reqDetail));
 		obj.put("details", out);
@@ -445,6 +483,7 @@ public class RequestDetails {
 			DBUtil.close(result);
 		}
 		return testResultList;
-		
 	}
+		
+
 }

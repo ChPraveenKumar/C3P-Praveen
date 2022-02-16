@@ -47,7 +47,7 @@ public class UtilityMethods {
 		StringBuilder lineData = new StringBuilder();
 		try (BufferedReader br = new BufferedReader(new FileReader(path))) {
 			while ((line = br.readLine()) != null) {
-				lineData.append(line);
+				lineData.append(line+"\n");
 			}
 			return lineData.toString();
 		}

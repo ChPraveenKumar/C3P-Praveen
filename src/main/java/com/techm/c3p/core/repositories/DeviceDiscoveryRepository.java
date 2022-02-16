@@ -339,4 +339,13 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	List<DeviceDiscoveryEntity> findByDVendorAndDOsAndDOsVersionAndDDeviceFamilyAndDVNFSupport(
 			String vendor,String os,String osversion,String deviceFamily ,String networktype);
 	
+
+	List<DeviceDiscoveryEntity> findByDVendorAndDOsAndDDeviceFamilyAndDVNFSupport(
+			String vendor,String os,String deviceFamily ,String networktype);
+	
+	@Query(value = "select * from c3p_deviceinfo where (d_vendor like :vendor or d_vendor like '%All') and (d_os like :os or d_os like '%All') and (d_os_version like :osVersion or d_os_version like '%All') and (d_device_family like :devicefamily or d_device_family like '%All') and d_vnf_support = :networkfunction", nativeQuery = true)
+	List<DeviceDiscoveryEntity> geAuditDeviceList(@Param("vendor") String vendor, @Param("os") String os,
+			 @Param("osVersion") String osVersion, @Param("devicefamily") String devicefamily,
+			@Param("networkfunction") String networkfunction);
+	
 }

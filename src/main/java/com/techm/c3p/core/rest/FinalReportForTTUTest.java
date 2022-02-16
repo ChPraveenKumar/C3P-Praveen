@@ -122,7 +122,7 @@ public class FinalReportForTTUTest extends Thread {
 		CSVWriteAndConnectPythonTemplateSuggestion csvWriteAndConnectPythonTemplateSuggestion = new CSVWriteAndConnectPythonTemplateSuggestion();
 		try {			
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if(!"SNAI".equalsIgnoreCase(type) && !"SNAD".equalsIgnoreCase(type))
+			if(!"SNAI".equalsIgnoreCase(type) && !"SNAD".equalsIgnoreCase(type) && !"Config Audit".equals(requestinfo.getRequestType()))
 			{
 			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				String statusVAlue = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
@@ -904,8 +904,31 @@ public class FinalReportForTTUTest extends Thread {
 				}
 
 			}
+			}else if("Config Audit".equals(requestinfo.getRequestType())) {
+
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "customer_report", "4", "In Progress");
+				//Check if instantiation is 1 or not in webserviceinfo table
+				int status=requestInfoDetailsDao.getStatusForMilestone(RequestId,version,"preprocess");
+				if(status == 1)
+				{
+					value = true;
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", "Success");
+					jsonArray = new Gson().toJson(value);
+					//obj.put(new String("output"), jsonArray);
+				}
+				else if(status==2)
+				{
+					value = false;
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
+					jsonArray = new Gson().toJson(value);
+					//obj.put(new String("output"), jsonArray);
+				}
+				
 			}
-			else
+			else 
 			{
 				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "customer_report", "4", "In Progress");

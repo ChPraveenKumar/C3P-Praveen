@@ -76,6 +76,12 @@ public class WebServiceEntity implements Serializable {
 	@Column(name = "cnfinstantiation")
 	private int cnfinstantiation;
 	
+	@Column(name = "preprocess")
+	private int preprocess;
+	
+	@Column(name = "pre_health_checkup")
+	private int preHealthCheckup;
+	
 	
 	public int getCnfinstantiation() {
 		return cnfinstantiation;
@@ -195,6 +201,20 @@ public class WebServiceEntity implements Serializable {
 
 	public void setErrorDescriptionDeliveryTest(String errorDescriptionDeliveryTest) {
 		ErrorDescriptionDeliveryTest = errorDescriptionDeliveryTest;
+	}
+	public int getPreprocess() {
+		return preprocess;
+	}
+
+	public void setPreprocess(int preprocess) {
+		this.preprocess = preprocess;
+	}
+	public int getPreHealthCheckup() {
+		return preHealthCheckup;
+	}
+
+	public void setPreHealthCheckup(int preHealthCheckup) {
+		this.preHealthCheckup = preHealthCheckup;
 	}
 
 	@Override

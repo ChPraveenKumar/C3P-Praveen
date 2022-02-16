@@ -28,12 +28,17 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.Session;
 import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
+import com.techm.c3p.core.entitybeans.AuditDashboardEntity;
+import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
 import com.techm.c3p.core.entitybeans.CredentialManagementEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.repositories.AuditDashboardRepository;
+import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.service.DcmConfigService;
+import com.techm.c3p.core.service.GoldenTemplateConfigurationService;
 import com.techm.c3p.core.service.TestStrategyService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
@@ -70,6 +75,15 @@ public class NetworkAuditTest extends Thread {
 	private TestStrategyService testStrategyService;
 	@Autowired
 	private PostUpgradeHealthCheck postUpgradeHealthCheck;
+	
+	@Autowired
+	private GoldenTemplateConfigurationService goldenTemplateConfigurationService;
+	
+	@Autowired
+	private AuditDashboardRepository auditDashboardRepository;
+	
+	@Autowired
+	private AuditDashboardResultRepository auditDashboardResultRepository;
 
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -108,6 +122,7 @@ public class NetworkAuditTest extends Thread {
 								version);
 				if (requestinfo.getManagementIp() != null
 						&& !requestinfo.getManagementIp().equals("")) {
+					
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
 							.findByDHostNameAndDMgmtIpAndDDeComm(
 									requestinfo.getHostname(),
@@ -120,6 +135,7 @@ public class NetworkAuditTest extends Thread {
 							requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()),
 							"network_audit", "4", statusVAlue);
+					if(!"Config Audit".equals(requestinfo.getRequestType())) {
 					String host = requestinfo.getManagementIp();
 					CredentialManagementEntity routerCredential = dcmConfigService
 							.getRouterCredential(deviceDetails);
@@ -321,7 +337,33 @@ public class NetworkAuditTest extends Thread {
 						jsonArray = new Gson().toJson(value);
 						obj.put(new String("output"), jsonArray);
 					}
-
+				}else {
+					json.put("requestData", "Network Audit");
+					logger.info("Inside Network Audit" + json);
+					JSONObject requestValue = goldenTemplateConfigurationService.createRequest(json);
+					if(requestValue!=null) {						
+						List<AuditDashboardResultEntity> auditResult = auditDashboardResultRepository.findByAdRequestIdAndAdRequestVersion(RequestId, Double.valueOf(version));
+						AuditDashboardEntity auditData = auditDashboardRepository.findByAdRequestIdAndAdRequestVersion(RequestId, Double.valueOf(version));
+						if(auditResult!=null && auditResult.size()>0 && auditData!=null) {
+							auditData.setAdStatus("Fail");
+						}else {
+							auditData.setAdStatus("Pass");
+						}
+						if(auditData!=null) {
+							auditDashboardRepository.save(auditData);
+						  }
+						}
+					logger.info("Inside Network Audit Activity");
+					 requestInfoDao.editRequestforReportWebserviceInfo(
+							requestinfo.getAlphanumericReqId(), Double
+									.toString(requestinfo
+											.getRequestVersion()),
+							"network_audit", "1", "In Progress");
+					 	value = true;
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
+						logger.info("Inside Network Audit Activity Completed");
+					}
 				}
 			}
 			// when reachability fails

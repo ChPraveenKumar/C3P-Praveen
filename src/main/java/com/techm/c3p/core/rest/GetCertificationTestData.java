@@ -22,9 +22,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.google.gson.Gson;
 import com.techm.c3p.core.dao.RequestInfoDao;
+import com.techm.c3p.core.dao.RequestInfoDetailsDao;
+import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
 import com.techm.c3p.core.entitybeans.RfoDecomposedEntity;
 import com.techm.c3p.core.pojo.CertificationTestPojo;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
+import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
 import com.techm.c3p.core.repositories.RfoDecomposedRepository;
 import com.techm.c3p.core.service.CertificationTestFlagDetailsService;
 
@@ -40,6 +44,12 @@ public class GetCertificationTestData {
 	
 	@Autowired
 	private CertificationTestFlagDetailsService certificationTestFlagDetailsService;
+	
+	@Autowired
+	private RequestInfoDetailsDao requestInfoDetailsDao;
+	
+	@Autowired
+	private AuditDashboardResultRepository auditDashboardResultRepository;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -215,6 +225,8 @@ public class GetCertificationTestData {
 				}*/
 				resultObj.put("Default", subObjArray);
 				// to fetch dynamic test results
+				RequestInfoPojo requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(createConfigRequestDCM.getRequestId(),
+						createConfigRequestDCM.getVersion_report());
 				if ("HealthTest".equalsIgnoreCase(createConfigRequestDCM.getTestType())) {
 					if(StringUtils.startsWith(createConfigRequestDCM.getRequestId(),"SLGF")) {
 						dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
@@ -236,13 +248,17 @@ public class GetCertificationTestData {
 							createConfigRequestDCM.getVersion_report(), "Device Prevalidation",createConfigRequestDCM.getTestType());
 	
 				} else if ("networkAuditTest".equalsIgnoreCase(createConfigRequestDCM.getTestType())) {
+					if("Config Audit".equals(requestinfo.getRequestType())) {
+						dynamicTestArray = setConfigAuditData(createConfigRequestDCM.getRequestId(),createConfigRequestDCM.getVersion_report());
+					}else {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
 							createConfigRequestDCM.getVersion_report(), "Network Audit",createConfigRequestDCM.getTestType());
+					}
 	
 				}else if ("iospreValidate".equalsIgnoreCase(createConfigRequestDCM.getTestType())) {
 					dynamicTestArray = requestInfoDao.getDynamicTestResult(createConfigRequestDCM.getRequestId(),
 							createConfigRequestDCM.getVersion_report(), "Software Upgrade",createConfigRequestDCM.getTestType());	
-				}				
+				}			
 				resultObj.put("Custom", dynamicTestArray);
 	
 				obj.put(new String("output"), resultObj);
@@ -272,6 +288,21 @@ public class GetCertificationTestData {
 
 		return response;
 
+	}
+	@SuppressWarnings("unchecked")
+	private JSONArray setConfigAuditData(String requestId, String version) {
+		List<AuditDashboardResultEntity> auditResultData = auditDashboardResultRepository.findByAdRequestIdAndAdRequestVersion(requestId,Double.valueOf(version));
+		JSONArray auditData = new JSONArray();
+		JSONObject auditObject = new JSONObject();
+		if(auditResultData.size()>0) {
+			auditObject.put("compliance", "No");
+			auditObject.put("violations", auditResultData.size());
+		}else {
+			auditObject.put("compliance", "Yes");
+			auditObject.put("violations", "0");
+		  }
+		auditData.add(auditObject);
+		return auditData;		
 	}
 	/**
 	 * This method will prepare the CreateConfigRequestDCM object with available inputs which passes through the api request

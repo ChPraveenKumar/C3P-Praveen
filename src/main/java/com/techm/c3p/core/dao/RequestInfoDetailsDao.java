@@ -124,6 +124,9 @@ public class RequestInfoDetailsDao {
 		else if ("cnfinstantiation".equalsIgnoreCase(field)) {
 			query = "update webserviceinfo set cnfinstantiation = ? where alphanumeric_req_id = ? and version = ? ";
 		}
+		else if("preprocess".equals(field)) {
+			query = "update webserviceinfo set preprocess = ? where alphanumeric_req_id = ? and version = ? ";
+		}
 
 
 		try(Connection connection = jDBCConnection.getConnection();
@@ -383,6 +386,11 @@ public class RequestInfoDetailsDao {
 				pojo.setCloudName(entity.getrCloudName());
 				pojo.setClustername(entity.getrClusterName());
 				pojo.setClusterid(entity.getrClusterId());
+				pojo.setRequestType(entity.getRequestType());
+				if(entity.getrConfigGenerationMethod()!=null) {
+					pojo.setConfigurationGenerationMethods(entity.getrConfigGenerationMethod());
+				}
+				
 			}
 		} catch (Exception e) {
 			logger.error("Exception in getRequestDetailTRequestInfoDBForVersion method " +e);
@@ -724,6 +732,8 @@ public class RequestInfoDetailsDao {
 		}
 		else if ("instantiation".equalsIgnoreCase(field)) {
 			query = "select instantiation as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
+		}else if ("preprocess".equalsIgnoreCase(field)) {
+			query = "select preprocess as dataValue from  webserviceinfo where alphanumeric_req_id = ? and version = ? ";
 		}
 		if ("pre_health_checkup".equalsIgnoreCase(field)) {
 			query = "select pre_health_checkup as dataValue  from  webserviceinfo  where alphanumeric_req_id = ? and version = ? ";

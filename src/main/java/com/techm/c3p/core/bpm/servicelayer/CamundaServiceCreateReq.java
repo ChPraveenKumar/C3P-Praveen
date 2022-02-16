@@ -67,8 +67,12 @@ public class CamundaServiceCreateReq {
 	@SuppressWarnings("unchecked")
 	public void uploadToServerNew(String requestId, String version, String requestType)
 			throws IOException, JSONException {
-		String query = bpmServiceUri + "/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
-
+		String query = "";
+		if("Config Audit".equals(requestId)) {
+			query = bpmServiceUri + "/engine-rest/process-definition/key/C3P_Golden_Audit_WorkFlow/start";
+		}else {
+			query = bpmServiceUri + "/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
+		}
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
 
@@ -180,8 +184,12 @@ public class CamundaServiceCreateReq {
 	@SuppressWarnings("unchecked")
 	public void uploadToServerNew(String requestId, String version, String requestType, String userName)
 			throws IOException, JSONException {
-		String query = bpmServiceUri + "/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
-
+		String query = "";
+		if("Config Audit".equals(requestType)) {
+			query = bpmServiceUri + "/engine-rest/process-definition/key/C3P_Golden_Audit_WorkFlow/start";
+		}else {
+		query= bpmServiceUri + "/engine-rest/process-definition/key/C3P_New_Request_Workflow/start";
+		}
 		JSONObject obj = new JSONObject();
 		JSONObject obj2 = new JSONObject();
 
