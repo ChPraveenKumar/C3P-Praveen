@@ -88,7 +88,6 @@ import com.techm.c3p.core.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.c3p.core.repositories.ServiceOrderRepo;
 import com.techm.c3p.core.repositories.UserManagementRepository;
 import com.techm.c3p.core.repositories.WebServiceRepo;
-import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.UtilityMethods;
 import com.techm.c3p.core.utility.WAFADateUtil;
@@ -137,9 +136,6 @@ public class RequestInfoDao {
 	
 	@Autowired
 	private RequestInfoDetailsDao requestInfoDetailsDao;
-	
-	@Autowired
-	private RequestInfoService requestInfoService;
 	
 	
 	private static final String FLAG_PASS ="Pass";
@@ -616,7 +612,7 @@ public class RequestInfoDao {
 			if (result == 1) {
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id,
 						Double.toString(request_version));
-				requestInfoService.addCertificationTestForRequest(alphaneumeric_req_id,
+				addCertificationTestForRequest(alphaneumeric_req_id,
 						Double.toString(request_version), "0");
 				// add to OS_updgrade delivery flag details table
 				if (request.getRequest_type().equalsIgnoreCase("IOSUPGRADE")) {
@@ -6802,7 +6798,7 @@ public class RequestInfoDao {
 
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id,
 						Double.toString(request_version));
-				requestInfoService.addCertificationTestForRequest(alphaneumeric_req_id,
+				addCertificationTestForRequest(alphaneumeric_req_id,
 						Double.toString(request_version), "0");
 				// add to OS_updgrade dilevary flag details table
 				if (requestInfoSO.getRequestType().equalsIgnoreCase(
@@ -7867,7 +7863,7 @@ public class RequestInfoDao {
 				}
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id,
 						Double.toString(request_version));
-				requestInfoService.addCertificationTestForRequest(alphaneumeric_req_id,
+				addCertificationTestForRequest(alphaneumeric_req_id,
 						Double.toString(request_version), "0");
 
 				hmap.put("result", "true");
