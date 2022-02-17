@@ -29,6 +29,8 @@ public class PrevalidationTestServiceImpl {
 	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	@Autowired
+	private RequestInfoService requestInfoService;
 
 	public boolean PreValidation(CreateConfigRequest configRequest, String version, String mountStatus)
 			throws Exception {
@@ -133,6 +135,14 @@ public class PrevalidationTestServiceImpl {
 		}
 		preValidateTest.setDeviceReachableStatus("Pass");
 
+		/*
+		 * requestInfoService.updatePrevalidationValues(configRequest.getRequestId(),
+		 * version, preValidateTest.getVendorActualValue(),
+		 * preValidateTest.getVendorGUIValue(),
+		 * preValidateTest.getOsVersionActualValue(),
+		 * preValidateTest.getOsVersionGUIValue(),
+		 * preValidateTest.getModelActualValue(), preValidateTest.getModelGUIValue());
+		 */		
 		requestInfoDao.updatePrevalidationValues(configRequest.getRequestId(), version,
 				preValidateTest.getVendorActualValue(), preValidateTest.getVendorGUIValue(),
 				preValidateTest.getOsVersionActualValue(), preValidateTest.getOsVersionGUIValue(),
@@ -331,6 +341,14 @@ public class PrevalidationTestServiceImpl {
 		}
 		preValidateTest.setDeviceReachableStatus("Pass");
 
+		/*
+		 * requestInfoService.updatePrevalidationValues(configRequest.
+		 * getAlphanumericReqId(), Double.toString(configRequest.getRequestVersion()),
+		 * preValidateTest.getVendorActualValue(), preValidateTest.getVendorGUIValue(),
+		 * preValidateTest.getOsVersionActualValue(),
+		 * preValidateTest.getOsVersionGUIValue(),
+		 * preValidateTest.getModelActualValue(), preValidateTest.getModelGUIValue());
+		 */
 		requestInfoDao.updatePrevalidationValues(configRequest.getAlphanumericReqId(),
 				Double.toString(configRequest.getRequestVersion()), preValidateTest.getVendorActualValue(),
 				preValidateTest.getVendorGUIValue(), preValidateTest.getOsVersionActualValue(),
