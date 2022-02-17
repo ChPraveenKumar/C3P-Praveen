@@ -137,7 +137,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							version);
 			// TODO: We need to remove ROUTER_IP_TEMP later or while on GCP
 			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
-					&& !RequestId.contains("SCGC-")) {
+					&& !RequestId.contains("SCGC-") && (!"Config Audit".equals(requestinfo.getRequestType()))) {
 				if (requestinfo.getManagementIp() != null
 						&& !requestinfo.getManagementIp().equals("")) {
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
