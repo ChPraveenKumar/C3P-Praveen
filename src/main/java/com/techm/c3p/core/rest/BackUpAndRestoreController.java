@@ -1180,7 +1180,7 @@ public class BackUpAndRestoreController {
 
 				for (int i = 0; i < requestDetail.size(); i++) {
 					RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
-					if (configAudit == null && configAudit.isEmpty()) {
+					if (configAudit == null || configAudit.isEmpty()) {
 						if (map.size() > 1) {
 							requestInfoEntity.setBatchId(batchId);
 

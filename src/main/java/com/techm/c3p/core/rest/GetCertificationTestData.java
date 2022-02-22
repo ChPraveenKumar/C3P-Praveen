@@ -295,11 +295,11 @@ public class GetCertificationTestData {
 		JSONArray auditData = new JSONArray();
 		JSONObject auditObject = new JSONObject();
 		if(auditResultData.size()>0) {
-			auditObject.put("compliance", "No");
-			auditObject.put("violations", auditResultData.size());
+			auditObject.put("testName", "No");
+			auditObject.put("status", auditResultData.size());
 		}else {
-			auditObject.put("compliance", "Yes");
-			auditObject.put("violations", "0");
+			auditObject.put("testName", "Yes");
+			auditObject.put("status", "0");
 		  }
 		auditData.add(auditObject);
 		return auditData;		
