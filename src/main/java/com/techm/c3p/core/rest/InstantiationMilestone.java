@@ -1,6 +1,7 @@
 package com.techm.c3p.core.rest;
 
 import java.util.Arrays;
+import java.util.List;
 
 import javax.ws.rs.POST;
 
@@ -31,8 +32,10 @@ import org.springframework.web.client.RestTemplate;
 
 import com.google.gson.Gson;
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
+import com.techm.c3p.core.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.c3p.core.entitybeans.RfoDecomposedEntity;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.c3p.core.repositories.RfoDecomposedRepository;
 import com.techm.c3p.core.service.VnfInstantiationMilestoneService;
 
@@ -47,6 +50,8 @@ public class InstantiationMilestone extends Thread {
 	private RestTemplate restTemplate;
 	@Autowired
 	private RfoDecomposedRepository rfoDecomposedRepo;
+	@Autowired
+	private ResourceCharacteristicsHistoryRepository resourceCharHistoryRepo;
 	@Autowired
 	private VnfInstantiationMilestoneService vnfInstantiationMilestoneService;
 	@Value("${external.system.servicenow.service.uri}")
@@ -69,6 +74,7 @@ public class InstantiationMilestone extends Thread {
 		RequestInfoPojo requestinfo = null;
 		JSONParser jsonParser = null;
 		String requestId = null;
+		String jsonMessage = "";
 		String version = null;
 		String type = null;
 		boolean outputStatus = false;
@@ -94,6 +100,20 @@ public class InstantiationMilestone extends Thread {
 								Double.toString(requestinfo.getRequestVersion()), "instantiation", "4", "In Progress");
 						/* Call the vnfInstantiation to instantiate vnf in cloud */
 						outputStatus = vnfInstantiationMilestoneService.vnfInstantiation(requestId, version);
+						
+						/* Call for open stack Instantiation */
+						if("Affirmed".equalsIgnoreCase(requestinfo.getVendor())) {
+							JSONObject reqJson = new JSONObject();
+							List<ResourceCharacteristicsHistoryEntity>list=resourceCharHistoryRepo.findBySoRequestId(requestId);
+							reqJson.put("templateId", requestinfo.getTemplateID());
+							for(ResourceCharacteristicsHistoryEntity item: list)
+							{
+								reqJson.put(item.getRcName(), item.getRcValue());
+							}
+							
+							outputStatus = vnfInstantiationMilestoneService.openStackInstantiation(reqJson);
+						}
+						
 						if (outputStatus) {
 							requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 									Double.toString(requestinfo.getRequestVersion()), "instantiation", "1",

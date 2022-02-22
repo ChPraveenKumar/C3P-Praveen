@@ -87,6 +87,36 @@ public class VnfInstantiationMilestoneService {
 		logger.info("End - vnfInstantiation - vnfInstantiated ->" + vnfInstantiated);
 		return vnfInstantiated;
 	}
+	
+	
+	@SuppressWarnings("null")
+	public boolean openStackInstantiation(JSONObject reqJSON) {
+		logger.info("Start - openStackInstantiation");
+		boolean openStackInstantiated = false;
+		HttpHeaders headers = null;
+		JSONParser jsonParser = null;
+		try {
+			headers = new HttpHeaders();
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(reqJSON, headers);
+			String url = pythonServiceUri + "/C3P/api/openstack/deploy/stack";
+			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			JSONObject responseJson = (JSONObject) jsonParser.parse(response);
+			if (responseJson.containsKey("stack_status") && responseJson.get("stack_status") != null
+					&& "CREATE_COMPLETE".equalsIgnoreCase(responseJson.get("stack_status").toString())) {
+				openStackInstantiated = true;
+			}
+
+		} catch (ParseException exe) {
+			logger.error("ParseException - openStackInstantiation -> " + exe.getMessage());
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - openStackInstantiation -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - openStackInstantiation->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		logger.info("End - openStackInstantiation - openStackInstantiated ->" + openStackInstantiated);
+		return openStackInstantiated;
+	}
 
 	/**
 	 * This method is useful to update the VNF Instantiation details by pulling the
