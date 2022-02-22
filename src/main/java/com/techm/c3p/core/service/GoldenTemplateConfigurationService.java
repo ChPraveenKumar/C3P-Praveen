@@ -137,8 +137,8 @@ public class GoldenTemplateConfigurationService {
 				comparisionLogic.put("added", dataMap.get("addition"));
 				comparisionLogic.put("deleted", dataMap.get("missing"));
 //				comparisionLogic.put("missingData", dataMap.get("missingData"));
-				comparisionLogic.put("configurations",createResponseJson((List<CommandPojo>)dataMap.get("configuration")));
-				comparisionLogic.put("feature", createResponseJson((List<CommandPojo>)dataMap.get("commandFileData")));
+				comparisionLogic.put("configurations",createResponseJson(updatesequesnceId((List<CommandPojo>)dataMap.get("configuration"))));
+				comparisionLogic.put("feature", createResponseJson(updatesequesnceId((List<CommandPojo>)dataMap.get("commandFileData"))));
 				
 
 			}
@@ -147,7 +147,7 @@ public class GoldenTemplateConfigurationService {
 		return comparisionLogic;
 	}
 
-	@SuppressWarnings("unchecked")
+	/*@SuppressWarnings("unchecked")
 	private Map<String, Object> reassignData(Map<String, Object> dataMap) {
 		List<CommandPojo> commandData = (List<CommandPojo>) dataMap.get("commandFileData");
 		List<CommandPojo> fileData = (List<CommandPojo>) dataMap.get("configuration");
@@ -176,7 +176,7 @@ public class GoldenTemplateConfigurationService {
 		return dataMap;	
 		
 	}
-
+*/
 	private JSONArray createResponseJson(List<CommandPojo> commandData) {
 		JSONArray arr = new JSONArray();
 		commandData.forEach(cmd->{
@@ -190,17 +190,17 @@ public class GoldenTemplateConfigurationService {
 		
 	}
 
-	private List<CommandPojo> updatesequesnceId(List<CommandPojo> fileData, int seqId) {
+	private List<CommandPojo> updatesequesnceId(List<CommandPojo> fileData) {
 		int count =1;
 		List<CommandPojo> dataList =  new ArrayList<>();
 		for(CommandPojo cmd : fileData) {
-			if(count == seqId) {
+			/*if(count == seqId) {
 				CommandPojo cmdValue = new CommandPojo();
 				cmdValue.setCommand_value("");
 				cmdValue.setCommandSequenceId(count);
 				dataList.add(cmdValue);
 				count ++ ;	
-			}
+			}*/
 			cmd.setCommandSequenceId(count);
 			dataList.add(cmd);			
 			count++;
