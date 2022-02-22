@@ -41,9 +41,9 @@ public class TestStrategyService {
 			}else {				
 					response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);					
 			}
-			requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+			requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 					Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
-			requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
+			requestInfoService.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
 					Double.toString(requestinfo.getRequestVersion()));
 			responseDownloadPath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue();
 			TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"
@@ -68,9 +68,9 @@ public class TestStrategyService {
 		String responseDownloadPath = "";
 		try {
 			response = invokeFtl.generateHealthCheckTestResultFailure(requestinfo);
-			requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+			requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 					Double.toString(requestinfo.getRequestVersion()), 0, 0, 0);
-			requestInfoDao.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
+			requestInfoService.updateRouterFailureHealthCheck(requestinfo.getAlphanumericReqId(),
 					Double.toString(requestinfo.getRequestVersion()));
 			responseDownloadPath = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue();
 			TextReport.writeFile(responseDownloadPath, requestinfo.getAlphanumericReqId() + "V"

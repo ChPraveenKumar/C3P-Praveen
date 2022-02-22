@@ -331,11 +331,11 @@ public class OthersCheckTestValidation extends Thread {
 							try {
 								response = invokeFtl
 										.generateHealthCheckTestResultFailure(requestinfo);
-								requestInfoDao.updateHealthCheckTestStatus(
+								requestInfoService.updateHealthCheckTestStatus(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()), 0, 0, 0);
-								requestInfoDao.updateRouterFailureHealthCheck(
+								requestInfoService.updateRouterFailureHealthCheck(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()));
@@ -378,11 +378,11 @@ public class OthersCheckTestValidation extends Thread {
 					try {
 						response = invokeFtl
 								.generateHealthCheckTestResultFailure(requestinfo);
-						requestInfoDao.updateHealthCheckTestStatus(requestinfo
+						requestInfoService.updateHealthCheckTestStatus(requestinfo
 								.getAlphanumericReqId(), Double
 								.toString(requestinfo.getRequestVersion()), 0,
 								0, 0);
-						requestInfoDao.updateRouterFailureHealthCheck(
+						requestInfoService.updateRouterFailureHealthCheck(
 								requestinfo.getAlphanumericReqId(), Double
 										.toString(requestinfo
 												.getRequestVersion()));
