@@ -147,11 +147,10 @@ public class FinalReportForTTUTest extends Thread {
 								requestinfo.getAlphanumericReqId());*/
 						requestInfoService.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 								requestinfo.getAlphanumericReqId());
-						CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
-						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+						CertificationTestPojo certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 								"preValidate");
-
+						if(certificationTestPojo!=null) {
 						if (certificationTestPojo.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
 							requestinfo.setDeviceReachabilityTest(FLAG_FAIL);
 						}
@@ -176,8 +175,9 @@ public class FinalReportForTTUTest extends Thread {
 						if (certificationTestPojo.getVendorTest().equalsIgnoreCase("1")) {
 							requestinfo.setVendorTest(FLAG_PASS);
 						}
+						}
 
-						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+						certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 								"HealthTest");
 						if (null != certificationTestPojo.getThroughput()
@@ -226,7 +226,7 @@ public class FinalReportForTTUTest extends Thread {
 
 						ReoprtFlags reoprtFlags = new ReoprtFlags();
 
-						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+						certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 								"networkTest");
 						
@@ -254,7 +254,7 @@ public class FinalReportForTTUTest extends Thread {
 								}
 							}
 						}
-						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+						certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 								"FinalReport");
 						if (null != certificationTestPojo.getSuggestion()
@@ -526,7 +526,7 @@ public class FinalReportForTTUTest extends Thread {
 					// requestInfoDao.releaselockDeviceForRequest(createConfigRequest.getManagementIp(),createConfigRequest.getRequestId());
 
 					CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
-					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+					certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 							requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 							"preValidate");
 
@@ -555,7 +555,7 @@ public class FinalReportForTTUTest extends Thread {
 						requestinfo.setVendorTest(FLAG_PASS);
 					}
 
-					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+					certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 							requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 							"HealthTest");
 					if (null != certificationTestPojo.getThroughput() && certificationTestPojo.getThroughput() != "") {
@@ -603,7 +603,7 @@ public class FinalReportForTTUTest extends Thread {
 
 					ReoprtFlags reoprtFlags = new ReoprtFlags();
 
-					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+					certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 							requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 							"networkTest");
 					
@@ -631,7 +631,7 @@ public class FinalReportForTTUTest extends Thread {
 							}
 						}
 					}
-					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+					certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 							requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 							"FinalReport");
 					if (null != certificationTestPojo.getSuggestion()

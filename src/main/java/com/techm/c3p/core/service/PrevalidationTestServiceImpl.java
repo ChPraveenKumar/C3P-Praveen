@@ -169,7 +169,7 @@ public class PrevalidationTestServiceImpl {
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), "Application_test", "1",
 						"In Progress");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 
@@ -181,7 +181,7 @@ public class PrevalidationTestServiceImpl {
 				value = false;
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), "Application_test", "2", "Failure");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 
@@ -197,7 +197,7 @@ public class PrevalidationTestServiceImpl {
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), "Application_test", "1",
 						"In Progress");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 
@@ -210,7 +210,7 @@ public class PrevalidationTestServiceImpl {
 				value = false;
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), "Application_test", "2", "Failure");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 		}
@@ -377,7 +377,7 @@ public class PrevalidationTestServiceImpl {
 				// db call for success prevalidation
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), "Application_test", "1", "In Progress");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 			}
 			else {
@@ -388,7 +388,7 @@ public class PrevalidationTestServiceImpl {
 				value = false;
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), "Application_test", "2", "Failure");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 			}
 
@@ -403,7 +403,7 @@ public class PrevalidationTestServiceImpl {
 				// db call for success prevalidation
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), "Application_test", "1", "In Progress");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 			}
 
@@ -416,7 +416,7 @@ public class PrevalidationTestServiceImpl {
 				value = false;
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), "Application_test", "2", "Failure");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 
 			}

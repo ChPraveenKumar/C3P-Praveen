@@ -5697,7 +5697,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray othersArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray networkAuditArray = new org.json.simple.JSONArray();
-		certificationTestPojo1 = getCertificationTestFlagData(
+		certificationTestPojo1 = requestInfoService.getCertificationTestFlagData(
 				request.getRequestId(), request.getVersion_report(),
 				"preValidate");
 		// certificationTestService = new CertificationTestResultService();
@@ -5768,7 +5768,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject waninterface = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject bgpneighbour = new org.json.simple.JSONObject();
 
-		certificationTestPojo2 = getCertificationTestFlagData(
+		certificationTestPojo2 = requestInfoService.getCertificationTestFlagData(
 				request.getRequestId(), request.getVersion_report(),
 				"networkTest");
 		if (certificationTestPojo2.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
@@ -5807,7 +5807,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject latencyObj = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject FrameLossObj = new org.json.simple.JSONObject();
 
-		certificationTestPojo3 = getCertificationTestFlagData(
+		certificationTestPojo3 = requestInfoService.getCertificationTestFlagData(
 				request.getRequestId(), request.getVersion_report(),
 				"HealthTest");
 		if (null != certificationTestPojo3.getThroughput()
@@ -6161,7 +6161,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject backUpStatus = new org.json.simple.JSONObject();
 		String model = null, vendor = null, requestId = null, deliveryStatus = null;
 
-		certificationTestPojo1 = getCertificationTestFlagData(
+		certificationTestPojo1 = requestInfoService.getCertificationTestFlagData(
 				request.getRequestId(), request.getVersion_report(),
 				"preValidate");
 
@@ -7000,7 +7000,7 @@ public class RequestInfoDao {
 //				request.getAlphanumericReqId(),
 //				Double.toString(request.getRequestVersion()));
 
-		certificationTestPojo1 = getCertificationTestFlagData(
+		certificationTestPojo1 = requestInfoService.getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "preValidate");
 
@@ -7164,7 +7164,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONArray instantiationArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray preProcess = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray complieanceResult = new org.json.simple.JSONArray();
-		certificationTestPojo1 = getCertificationTestFlagData(
+		certificationTestPojo1 = requestInfoService.getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "preValidate");
 		
@@ -7290,7 +7290,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject latencyObj = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject FrameLossObj = new org.json.simple.JSONObject();
 
-		certificationTestPojo3 = getCertificationTestFlagData(
+		certificationTestPojo3 = requestInfoService.getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "HealthTest");
 		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("2")) {

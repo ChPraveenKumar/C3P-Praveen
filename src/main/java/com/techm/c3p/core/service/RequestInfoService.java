@@ -1,6 +1,5 @@
 package com.techm.c3p.core.service;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,8 +12,8 @@ import com.techm.c3p.core.entitybeans.DeviceLockedManagementEntity;
 import com.techm.c3p.core.entitybeans.ErrorValidationEntity;
 import com.techm.c3p.core.entitybeans.TestValidationEntity;
 import com.techm.c3p.core.entitybeans.WebServiceEntity;
+import com.techm.c3p.core.pojo.CertificationTestPojo;
 import com.techm.c3p.core.pojo.ErrorValidationPojo;
-import com.techm.c3p.core.pojo.PreValidateTest;
 import com.techm.c3p.core.repositories.DeviceLockedManagementRepo;
 import com.techm.c3p.core.repositories.ErrorValidationRepository;
 import com.techm.c3p.core.repositories.TestValidationRepo;
@@ -31,7 +30,7 @@ public class RequestInfoService {
 	TestValidationRepo testValidationRepo;
 	@Autowired
 	WebServiceRepo webServiceRepo;
-    @Autowired
+	@Autowired
 	ErrorValidationRepository errorValidationRepository;
 
 	public String lockDeviceForRequest(String managementIp, String requestId) {
@@ -123,7 +122,44 @@ public class RequestInfoService {
 		}
 		return devicelocked;
 	}
-	
+
+	public CertificationTestPojo getCertificationTestFlagData(String requestId, String version, String TestType) {
+		CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
+		TestValidationEntity testValidationDetails = null;
+		try {
+			testValidationDetails = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId, version);
+			if ("preValidate".equalsIgnoreCase(TestType) && testValidationDetails != null) {
+				certificationTestPojo
+						.setDeviceReachabilityTest(String.valueOf(testValidationDetails.getTvDeviceReachabilityTest()));
+				certificationTestPojo.setVendorTest(String.valueOf(testValidationDetails.getTvVendorTest()));
+				certificationTestPojo.setDeviceModelTest(String.valueOf(testValidationDetails.getTvDeviceModelTest()));
+				certificationTestPojo.setIosVersionTest(String.valueOf(testValidationDetails.getTvIosVersionTest()));
+			}
+			if ("networkTest".equalsIgnoreCase(TestType) && testValidationDetails != null) {
+				/*
+				 * certificationTestPojo.setShowIpIntBriefCmd();
+				 * certificationTestPojo.setShowInterfaceCmd();
+				 * certificationTestPojo.setShowVersionCmd();
+				 * certificationTestPojo.setShowIpBgpSummaryCmd();
+				 */
+			}
+			if ("HealthTest".equalsIgnoreCase(TestType) && testValidationDetails != null) {
+				certificationTestPojo.setThroughputTest(String.valueOf(testValidationDetails.getTvThroughputTest()));
+				certificationTestPojo.setFrameLossTest(String.valueOf(testValidationDetails.getTvFrameLossTest()));
+				certificationTestPojo.setLatencyTest(String.valueOf(testValidationDetails.getTvLatencyTest()));
+				certificationTestPojo.setThroughput(testValidationDetails.getTvThroughput());
+				certificationTestPojo.setFrameLoss(testValidationDetails.getTvFrameLoss());
+				certificationTestPojo.setLatency(testValidationDetails.getTvLatency());
+			}
+			if ("FinalReport".equalsIgnoreCase(TestType) && testValidationDetails != null) {
+				certificationTestPojo.setSuggestion(testValidationDetails.getTvSuggestionForFailure());
+			}
+		} catch (Exception exe) {
+			logger.error("Exception in getCertificationTestFlagData method " + exe.getMessage());
+		}
+		return certificationTestPojo;
+	}
+
 	public boolean addCertificationTestForRequest(String alphanumericReqId, String requestVersion,
 			String deviceReachabilityTest) {
 		String suggestion = "NA";
@@ -150,7 +186,7 @@ public class RequestInfoService {
 			testValidationEntity.setTvVersion(requestVersion);
 			testValidationEntity.setTvSuggestionForFailure(suggestion);
 			testValidation = testValidationRepo.save(testValidationEntity);
-			if (testValidation !=null) {
+			if (testValidation != null) {
 				return true;
 			}
 		} catch (Exception exe) {
@@ -158,9 +194,8 @@ public class RequestInfoService {
 		}
 		return false;
 	}
-	
-	public boolean updateCertificationTestForRequest(String requestId, String version,
-			String deviceReachabilityTest) {
+
+	public boolean updateCertificationTestForRequest(String requestId, String version, String deviceReachabilityTest) {
 		TestValidationEntity testValidationDetails = null;
 		String suggestion = "NA";
 		if ("2".equalsIgnoreCase(deviceReachabilityTest)) {
@@ -175,7 +210,7 @@ public class RequestInfoService {
 			testValidationDetails.setTvDeviceReachabilityTest(Integer.parseInt(deviceReachabilityTest));
 			testValidationDetails.setTvSuggestionForFailure(suggestion);
 			TestValidationEntity testValidationInfo = testValidationRepo.save(testValidationDetails);
-			if (testValidationInfo !=null) {
+			if (testValidationInfo != null) {
 				return true;
 			}
 		} catch (Exception exe) {
@@ -183,9 +218,10 @@ public class RequestInfoService {
 		}
 		return false;
 	}
-	
+
 	public void updateHealthCheckTestParameter(String requestId, String version, String value, String type) {
-		TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId, version);
+		TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
+				version);
 		try {
 			if ("frameloss".equalsIgnoreCase(type)) {
 				testValidation.setTvFrameLoss(value);
@@ -199,7 +235,7 @@ public class RequestInfoService {
 			logger.error("Exception in updateHealthCheckTestParameter method " + exe.getMessage());
 		}
 	}
-	
+
 	public void updateRouterFailureHealthCheck(String requestId, String version) {
 		TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
 				version);
@@ -238,7 +274,7 @@ public class RequestInfoService {
 		String suggestionForErrorDesc = "";
 		try {
 			double reqVersion = Double.valueOf(version);
-			WebServiceEntity webServiceEntity = webServiceRepo.findByAlphanumericReqIdAndVersion(requestId,reqVersion );
+			WebServiceEntity webServiceEntity = webServiceRepo.findByAlphanumericReqIdAndVersion(requestId, reqVersion);
 			ErrorValidationEntity errorValidation = errorValidationRepository.findByErrorDescription(errorDescription);
 			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
 					version);
@@ -275,7 +311,7 @@ public class RequestInfoService {
 			logger.error("Exception in updateHealthCheckTestStatus method ==>>" + exe.getMessage());
 		}
 	}
-	
+
 	public final List<ErrorValidationPojo> getAllErrorCodeFromRouter() {
 		ErrorValidationPojo errorValidationInfo = null;
 		List<ErrorValidationPojo> errorValidationList = new ArrayList<ErrorValidationPojo>();
@@ -297,7 +333,7 @@ public class RequestInfoService {
 		}
 		return errorValidationList;
 	}
-	
+
 	public void resetErrorStateOfRechabilityTest(String requestId, String version) {
 		try {
 			double reqVersion = Double.valueOf(version);
@@ -334,4 +370,32 @@ public class RequestInfoService {
 		}
 		return testValidationdata;
 	}
+
+	public void updatePrevalidationStatus(String requestId, String version, int vendorflag, int versionflag,
+			int modelflag) {
+		String suggestion = "NA";
+		if (vendorflag == 2) {
+			suggestion = "Please select the correct Vendor from C3P GUI";
+		}
+		if (versionflag == 2) {
+			suggestion = "Please select the correct IOS Version from C3P GUI";
+		}
+		if (modelflag == 2) {
+			suggestion = "Please select the correct router model from C3P GUI";
+		}
+		try {
+			TestValidationEntity testValidation = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId,
+					version);
+			if (testValidation != null) {
+				testValidation.setTvVendorTest(vendorflag);
+				testValidation.setTvIosVersionTest(versionflag);
+				testValidation.setTvDeviceModelTest(modelflag);
+				testValidation.setTvSuggestionForFailure(suggestion);
+				testValidationRepo.save(testValidation);
+			}
+		} catch (Exception exe) {
+			logger.error("Exception in updatePrevalidationStatus method ==>>" + exe.getMessage());
+		}
+	}
+
 }
