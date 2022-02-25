@@ -348,5 +348,5 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 			 @Param("osVersion") String osVersion, @Param("devicefamily") String devicefamily,
 			@Param("networkfunction") String networkfunction);
 	
-	List<DeviceDiscoveryEntity> findByCustSiteIdIdAndDVNFSupport(int siteId, String networkType);	
+	List<DeviceDiscoveryEntity> findByCustSiteIdIdAndDVNFSupport(int siteId, String networkfunction);
 }
