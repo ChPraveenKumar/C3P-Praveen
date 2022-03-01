@@ -88,6 +88,7 @@ import com.techm.c3p.core.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.c3p.core.repositories.ServiceOrderRepo;
 import com.techm.c3p.core.repositories.UserManagementRepository;
 import com.techm.c3p.core.repositories.WebServiceRepo;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.UtilityMethods;
@@ -140,6 +141,9 @@ public class RequestInfoDao {
 	
 	@Autowired
 	private RequestInfoService requestInfoService;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	
 	private static final String FLAG_PASS ="Pass";
@@ -5553,13 +5557,13 @@ public class RequestInfoDao {
 	 */
 	@SuppressWarnings("unchecked")
 	public org.json.simple.JSONArray getDynamicTestResult(String requestId,
-			String version, String testtype, String requestType) {
+			String version, String testtype, String requestType) throws SQLException {
 		org.json.simple.JSONObject res = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
 		try {
 			JSONParser parser = new JSONParser();			
 			Double requestVersion = Double.valueOf(version);
-			String testAndDiagnosis = requestDetails.getTestAndDiagnosisDetails(requestId,
+			String testAndDiagnosis = requestDetailsService.getTestAndDiagnosisDetails(requestId,
 					requestVersion);
 			logger.info("testAndDiagnosis ->"+testAndDiagnosis);
 			if(testAndDiagnosis !=null && !testAndDiagnosis.isEmpty()) {
@@ -5599,10 +5603,7 @@ public class RequestInfoDao {
 			
 		} catch (org.json.simple.parser.ParseException e) {
 			logger.error(e.getMessage());
-		} catch (SQLException e) {
-			logger.error(e.getMessage());
 		}
-
 		res.put("custom", array);
 		return array;
 	}

@@ -54,6 +54,7 @@ import com.techm.c3p.core.repositories.MasterCharacteristicsRepository;
 import com.techm.c3p.core.repositories.NotificationRepo;
 import com.techm.c3p.core.repositories.RequestFeatureTransactionRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.ReportMileStones;
 import com.techm.c3p.core.utility.WAFADateUtil;
@@ -108,6 +109,9 @@ public class RequestDetailsServiceWithVersion {
 
 	@Autowired
 	private AuditDashboardResultRepository auditDashboardResultRepository;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -561,7 +565,7 @@ public class RequestDetailsServiceWithVersion {
 			json = (JSONObject) parser.parse(testDetails);
 			String requestId = (String) json.get("requestId");
 			Double requestVersion = Double.valueOf(json.get("version").toString());
-			String testAndDiagnosis = requestDetailsDao.getTestAndDiagnosisDetails(requestId, requestVersion);
+			String testAndDiagnosis = requestDetailsService.getTestAndDiagnosisDetails(requestId, requestVersion);
 			if (testAndDiagnosis != null && !testAndDiagnosis.isEmpty()) {
 				JSONArray testNameArray = (JSONArray) parser.parse(testAndDiagnosis);
 				if (testNameArray != null && !testNameArray.equals("")) {

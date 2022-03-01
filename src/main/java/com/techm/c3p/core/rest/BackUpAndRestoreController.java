@@ -60,6 +60,7 @@ import com.techm.c3p.core.repositories.TestDetailsRepository;
 import com.techm.c3p.core.repositories.VendorDetailsRepository;
 import com.techm.c3p.core.service.ConfigurationManagmentService;
 import com.techm.c3p.core.service.DcmConfigService;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.WAFADateUtil;
 
@@ -119,6 +120,9 @@ public class BackUpAndRestoreController {
 	
 	@Autowired
 	private RequestInfoService requestInfoService;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 
 	
 	/**
@@ -439,7 +443,7 @@ public class BackUpAndRestoreController {
 					prevaljsonobj.put("bundleName",bundleArray);
 					toSaveArray.add(prevaljsonobj);
 				}
-				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+				int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(
 						requestInfoEntity.getAlphanumericReqId(),
 						toSaveArray.toString(),
 						requestInfoEntity.getRequestType(),
@@ -772,7 +776,7 @@ public class BackUpAndRestoreController {
 						prevaljsonobj.put("bundleName",bundleArray);
 						toSaveArray.add(prevaljsonobj);
 					}
-					int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+					int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(
 							requestInfoEntity.getAlphanumericReqId(),
 							toSaveArray.toString(),
 							requestInfoEntity.getRequestType(),
@@ -1071,7 +1075,7 @@ public class BackUpAndRestoreController {
 							prevaljsonobj.put("bundleName",bundleArray);
 							toSaveArray.add(prevaljsonobj);
 						}
-						int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+						int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(
 								requestInfoEntity.getAlphanumericReqId(),
 								toSaveArray.toString(),
 								requestInfoEntity.getRequestType(),
@@ -1444,7 +1448,7 @@ public class BackUpAndRestoreController {
 								requestInfoEntity.getOs(), "All", requestInfoEntity.getVendor(),
 								requestInfoEntity.getRegion(),"Software Upgrade"), toSaveArray);
 					}
-					int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+					int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(
 							requestInfoEntity.getAlphanumericReqId(),
 							toSaveArray.toString(),
 							requestInfoEntity.getRequestType(),

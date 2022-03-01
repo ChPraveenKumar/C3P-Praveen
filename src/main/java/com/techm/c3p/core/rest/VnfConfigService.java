@@ -60,6 +60,7 @@ import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.service.PrevalidationTestServiceImpl;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
@@ -92,6 +93,9 @@ public class VnfConfigService {
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	@Autowired
 	private RequestInfoService requestInfoService;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -481,7 +485,7 @@ public class VnfConfigService {
 									createConfigRequest.getDeviceType(), createConfigRequest.getOs(),
 									createConfigRequest.getOsVersion(), createConfigRequest.getVendor(),
 									createConfigRequest.getRegion(), "Device Prevalidation");
-							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(createConfigRequest.getRequestId(),
+							List<TestDetail> selectedTests = requestDetailsService.findSelectedTests(createConfigRequest.getRequestId(),
 									"Device Prevalidation",version);
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {

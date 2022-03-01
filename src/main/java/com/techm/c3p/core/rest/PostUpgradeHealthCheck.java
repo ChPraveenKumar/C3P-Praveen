@@ -36,6 +36,7 @@ import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.service.DcmConfigService;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.service.TestStrategyService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
@@ -65,6 +66,9 @@ public class PostUpgradeHealthCheck extends Thread {
 	
 	@Autowired
 	private TestStrategyService testStrategyService;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	@SuppressWarnings("unchecked")
 	@POST
@@ -135,7 +139,7 @@ public class PostUpgradeHealthCheck extends Thread {
 					List<TestDetail> listOfTests = requestInfoDao.findTestFromTestStrategyDB(
 							requestinfo.getFamily(), requestinfo.getOs(), "All", requestinfo.getVendor(),
 							requestinfo.getRegion(), "Software Upgrade");
-					List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+					List<TestDetail> selectedTests = requestDetailsService.findSelectedTests(requestinfo.getAlphanumericReqId(),
 							"Software Upgrade",version);
 					List<Boolean> results = null;
 					

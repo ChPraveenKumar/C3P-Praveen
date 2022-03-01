@@ -40,6 +40,7 @@ import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.PingService;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.service.TestStrategyService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
@@ -85,6 +86,9 @@ public class HealthCheckTestValidation extends Thread {
 	
 	@Autowired
 	private TestStrategyService testStrategyService;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -213,7 +217,7 @@ public class HealthCheckTestValidation extends Thread {
 							listOfTests = requestInfoDao.findTestFromTestStrategyDB(
 									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Health Check");
-							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+							List<TestDetail> selectedTests = requestDetailsService.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Health Check",version);
 							List<Boolean> results = null;
 							if (selectedTests.size() > 0) {

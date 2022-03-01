@@ -38,6 +38,7 @@ import com.techm.c3p.core.pojo.TestStaregyConfigPojo;
 import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.TestDetailsRepository;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.WAFADateUtil;
 /*
  * Owner: Rahul Tiwari Reason: Get configuration feature name and details from database
@@ -68,6 +69,9 @@ public class RequestDetails {
 
 	@Autowired
 	private AuditDashboardResultRepository auditDashboardResultRepository;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -181,7 +185,7 @@ public class RequestDetails {
 		return map;
 	}
 	@SuppressWarnings("unchecked")
-	public JSONObject customerReportUIRevamp(String requestID, String testType, String version){
+	public JSONObject customerReportUIRevamp(String requestID, String testType, String version) throws SQLException{
 		String STATUS_PASSED = "Success";
 		String STATUS_FAILED = "Fail";
 		String STATUS_NC = "Not Conducted";
@@ -205,12 +209,8 @@ public class RequestDetails {
 		String type = createConfigRequestDCM.getAlphanumericReqId().substring(0,
 				Math.min(createConfigRequestDCM.getAlphanumericReqId().length(), 4));
 		String testAndDiagnosis = "";
-		try {
-			testAndDiagnosis = getTestAndDiagnosisDetails(
-					createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
-		} catch (SQLException e) {
-			logger.error("Error in customerReportUIRevamp : "+e.getMessage());			
-		}
+		testAndDiagnosis = requestDetailsService.getTestAndDiagnosisDetails(
+				createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 		logger.info("customerReportUIRevamp - testAndDiagnosis->"+testAndDiagnosis);
 		Set<String> setOfTestBundle = new HashSet<>();
 		if (testAndDiagnosis != null && !testAndDiagnosis.equals("")) {

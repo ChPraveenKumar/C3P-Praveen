@@ -39,6 +39,7 @@ import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.GoldenTemplateConfigurationService;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.service.TestStrategyService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
@@ -84,6 +85,9 @@ public class NetworkAuditTest extends Thread {
 	
 	@Autowired
 	private AuditDashboardResultRepository auditDashboardResultRepository;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -187,7 +191,7 @@ public class NetworkAuditTest extends Thread {
 											requestinfo.getVendor(),
 											requestinfo.getRegion(),
 											"Network Audit");
-							List<TestDetail> selectedTests = requestInfoDao
+							List<TestDetail> selectedTests = requestDetailsService
 									.findSelectedTests(
 											requestinfo.getAlphanumericReqId(),
 											"Network Audit", version);
