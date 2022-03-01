@@ -7,6 +7,8 @@ import java.util.Observable;
 import java.util.Observer;
 
 
+
+
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
@@ -36,12 +38,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 
-import com.google.gson.Gson;
 
+
+import com.google.gson.Gson;
 import com.techm.c3p.core.entitybeans.HeatTemplate;
 import com.techm.c3p.core.entitybeans.MasterCharacteristicsEntity;
+import com.techm.c3p.core.pojo.CategoryDropDownPojo;
 import com.techm.c3p.core.repositories.HeatTemplateRepository;
 import com.techm.c3p.core.repositories.MasterCharacteristicsRepository;
+import com.techm.c3p.core.service.CategoryDropDownService;
 
 
 @Controller
@@ -57,6 +62,8 @@ public class HeatTemplateController implements Observer {
 	private MasterCharacteristicsRepository masterCharachteristicRepository;
 	
 	
+	@Autowired
+	private CategoryDropDownService categoryDropDownservice;
 	
 	@SuppressWarnings("unchecked")
 	@GET
@@ -135,6 +142,13 @@ public class HeatTemplateController implements Observer {
 						masObj.put("type", masCList.getcType());
 						masObj.put("uIComponent", masCList.getcUicomponent());
 						masObj.put("validations", masCList.getcValidations());
+						/* using Category Name find all category Value */
+						if (masCList.getcCategory()!= null) {
+							List<CategoryDropDownPojo> allByCategoryName = categoryDropDownservice
+									.getAllByCategoryName(masCList.getcCategory());
+							masObj.put("categoryLabel",masCList.getcCategory());
+							masObj.put("category",allByCategoryName);			
+							}
 						masCharArray.add(masObj);
 						
 						
