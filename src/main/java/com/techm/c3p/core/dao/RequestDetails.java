@@ -28,10 +28,12 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 import com.techm.c3p.core.connection.DBUtil;
 import com.techm.c3p.core.connection.JDBCConnection;
+import com.techm.c3p.core.entitybeans.HeatTemplate;
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.TestStaregyConfigPojo;
+import com.techm.c3p.core.repositories.HeatTemplateRepository;
 import com.techm.c3p.core.repositories.TestDetailsRepository;
 import com.techm.c3p.core.utility.WAFADateUtil;
 /*
@@ -54,6 +56,9 @@ public class RequestDetails {
 	
 	@Autowired
 	private TestDetailsRepository testDetailsRepository;
+	
+	@Autowired
+	private HeatTemplateRepository heatTemplateRepo;
 	
 	@Autowired
 	private JDBCConnection jDBCConnection;
@@ -350,9 +355,11 @@ public class RequestDetails {
 			reqDetail.setReason(requestInfoDetailsDao.reasonForInstantiationFailure(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion()));
 		}
 		reqDetail.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(reqDetail.getRequestCreatedOn()));
+		HeatTemplate heatTemplate = heatTemplateRepo.findByHeatTemplateId(reqDetail.getTemplateID(), reqDetail.getVendor());
 		
 		List<String> out = new ArrayList<String>();
 		out.add(new Gson().toJson(reqDetail));
+		out.add(new Gson().toJson(heatTemplate));
 		obj.put("details", out);
 		if ("SLGF".equalsIgnoreCase(type)) {
 			obj.put("status", reqDetail.getStatus());

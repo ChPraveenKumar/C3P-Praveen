@@ -101,24 +101,46 @@ public class HeatTemplateController implements Observer {
 		String templateID = "", featureList = "", feature = "", rowId = "";
 		List<MasterCharacteristicsEntity> masCharacteristics = new ArrayList<>();
 		
+		
 		try {
 			JSONObject json= (JSONObject) parser.parse(request);
 			rowId = json.get("rowId").toString();
 			templateID = json.get("variableTemplateId").toString();
-			featureList = heatTemplateRepo.findByHeatTemplateId(templateID, rowId);
+			featureList = heatTemplateRepo.findByVariableTemplateId(templateID, rowId);
 			
 			feature = featureList.substring(1, featureList.length() - 1);
 				String[] Feature = feature.split(",");
 				logger.info("Feature value is "+Feature);
 				for (String f : Feature) {
+					List<JSONObject> masCharArray = new ArrayList<JSONObject>();
 					JSONObject masCharList = new JSONObject();
 					masCharList.put("fId", f);
 					//features.put("fName", value);
 					//features.put("fReplicationFlag", value);
 					masCharacteristics = masterCharachteristicRepository.findByCFId(f);
 					logger.info("getAttributes -> masCharacteristics "+masCharacteristics);
+					for(MasterCharacteristicsEntity masCList : masCharacteristics) {
+						
+						JSONObject masObj = new JSONObject();
+						masObj.put("categotyLabel", masCList.getcFId());
+						masObj.put("cfId", masCList.getcFId());
+						masObj.put("characteriscticsId", masCList.getcId());
+						masObj.put("id", masCList.getcRowid());
+						masObj.put("instanceNumber", masCList.getcFId());
+						masObj.put("key", masCList.iscIsKey());
+						masObj.put("label", masCList.getcName());
+						masObj.put("name", masCList.getcFId());
+						masObj.put("poolIds", masCList.getLinkedPools());
+						masObj.put("replicationFalg", masCList.getcReplicationind());
+						masObj.put("type", masCList.getcType());
+						masObj.put("uIComponent", masCList.getcUicomponent());
+						masObj.put("validations", masCList.getcValidations());
+						masCharArray.add(masObj);
+						
+						
+					}
+					masCharList.put("attribConfig", masCharArray);
 					
-					masCharList.put("attribConfig", masCharacteristics);
 					logger.info("getAttributes -> masCharList "+masCharList);
 					features.add(masCharList);
 				}
