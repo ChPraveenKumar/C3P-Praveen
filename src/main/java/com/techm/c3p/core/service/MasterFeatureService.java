@@ -744,6 +744,9 @@ public class MasterFeatureService {
 				if (jsonObj.get("key") != null) {
 					templatePojo.setKey((boolean)jsonObj.get("key"));
 				}
+				if (jsonObj.get("defaultValue") != null) {
+					templatePojo.setDefaultValue(jsonObj.get("defaultValue").toString());
+				}
 				templateAttribList.add(templatePojo);
 				
 				if (templateId!=null) {
@@ -801,6 +804,7 @@ public class MasterFeatureService {
 		master.setValidations(Arrays.toString(masterAttrib.getValidations()));
 		master.setMasterFID(currentFeature.getMasterFId());
 		master.setTemplateFeature(currentFeature);
+		master.setDefaultValue(masterAttrib.getDefaultValue());
 		if(masterAttrib.getcId()!=null) {
 		master.setCharacteristicId(masterAttrib.getcId());
 		}

@@ -35,6 +35,9 @@ public class AttribCreateConfigResponceMapper {
 		pojo.setTemplateFeature(entity.getTemplateFeature());
 		pojo.setKey(entity.isKey());
 		pojo.setAttribMasterChId(entity.getCharacteristicId());
+		if(entity.getDefaultValue()!=null) {
+		pojo.setDefaultValue(entity.getDefaultValue());
+		}
 		return pojo;
 	}
 
@@ -69,6 +72,9 @@ public class AttribCreateConfigResponceMapper {
 				attribJson.setCategotyLabel(entity.getAttribCategoty());
 				attribJson.setCategory(allByCategoryName);
 			}
+			if(entity.getDefaultValue()!=null) {
+				attribJson.setDefaultValue(entity.getDefaultValue());
+			}			
 			attribJson.setKey(entity.isKey());
 			attribJson.setPoolIds(entity.getPoolIdList());
 			jsonList.add(attribJson);
@@ -112,6 +118,9 @@ public class AttribCreateConfigResponceMapper {
 			}
 			attribJson.setKey(entity.iscIsKey());
 			attribJson.setReplicationFalg(entity.getcReplicationind());
+			if(entity.getcDefaultValue()!=null && !entity.getcDefaultValue().isEmpty()) {
+				attribJson.setDefaultValue(entity.getcDefaultValue());
+			}
 			jsonList.add(attribJson);
 		}
 		return jsonList;
