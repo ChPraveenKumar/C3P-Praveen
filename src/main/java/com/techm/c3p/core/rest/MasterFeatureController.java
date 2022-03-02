@@ -106,6 +106,9 @@ public class MasterFeatureController {
 	private TemplateIpPoolJoinRepository templateIpPoolJoinRepository;
 	@Autowired
 	private CamundaServiceTemplateApproval camundaServiceTemplateApproval;
+	
+	@Autowired
+	private NotificationServiceCall notifServiceCall;
 
 	/*
 	 * To get Validation, Category and UI component list.
@@ -163,18 +166,6 @@ public class MasterFeatureController {
 			if (json.get("userName") != null)
 				userName = json.get("userName").toString();
 			masterFeature = setMasterFeatureData(json);
-			Notification notificationEntity = new Notification();
-			StringBuilder builder = new StringBuilder();
-			String sUserListData = "";
-			Date date = new Date();
-			Timestamp timestampValue = new Timestamp(date.getTime());
-			Calendar cal = Calendar.getInstance();
-			List<String> sUserList = userManagementRepository.findByRole();
-			for (String suserList : sUserList) {
-				builder.append(suserList).append(",");
-			}
-			sUserListData = builder.deleteCharAt(builder.length() - 1)
-					.toString();
 			// If it is basic config save commands to
 			// t_tpmgmt_m_basic_configuration else to
 			// c3p_template_master_command_list
@@ -205,24 +196,7 @@ public class MasterFeatureController {
 			saveMasterCharacteistics(json, masterFeature, ent.getfId());
 			saveComands(cmdArray, ent.getfId());
 			obj.put("output", "Feature Created");
-			notificationEntity
-					.setNotifFromUser(json.get("userName").toString());
-			notificationEntity.setNotifToUser(sUserListData);
-			notificationEntity.setNotifType("Feature Approval");
-			notificationEntity.setNotifCreatedDate(timestampValue);
-			notificationEntity.setNotifReference(ent.getfId() + "_"
-					+ ent.getfName() + "-V" + "1.0");
-			notificationEntity.setNotifLabel(ent.getfId() + "_"
-					+ ent.getfName() + "-V" + "1.0" + " : "
-					+ "Approval initiated");
-			notificationEntity.setNotifMessage("Approval initiated");
-			notificationEntity.setNotifPriority("1");
-			notificationEntity.setNotifStatus("Pending");
-			cal.setTimeInMillis(timestampValue.getTime());
-			cal.add(Calendar.DAY_OF_MONTH, 30);
-			timestampValue = new Timestamp(cal.getTime().getTime());
-			notificationEntity.setNotifExpiryDate(timestampValue);
-			notificationRepo.save(notificationEntity);
+			notifServiceCall.generateNotificationForAddFeature(ent, json.get("userName").toString());
 			camundaServiceTemplateApproval.initiateApprovalFlow(ent.getfId(), "1.0", userName);
 
 			// }
@@ -605,19 +579,9 @@ public class MasterFeatureController {
 		MasterFeatureEntity masterFeature = new MasterFeatureEntity();
 		JSONObject json;
 		try {
-			Notification notificationEntity = new Notification();
-			StringBuilder builder = new StringBuilder();
-			String sUserListData = "";
-			Date date = new Date();
-			Timestamp timestampValue = new Timestamp(date.getTime());
-			Calendar cal = Calendar.getInstance();
-			List<String> sUserList = userManagementRepository.findByRole();
+			
 			String templateId = null;
-			for (String suserList : sUserList) {
-				builder.append(suserList).append(",");
-			}
-			sUserListData = builder.deleteCharAt(builder.length() - 1)
-					.toString();
+			
 			json = (JSONObject) parser.parse(configRequest);
 			masterFeature = setMasterFeatureData(json);
 			JSONArray cmdArray = (JSONArray) (json.get("commands"));
@@ -639,24 +603,8 @@ public class MasterFeatureController {
 				} else {
 					String featurId = saveconfiguartionData(json,
 							masterFeature, series);
-					notificationEntity.setNotifFromUser(json.get("userName")
-							.toString());
-					notificationEntity.setNotifToUser(sUserListData);
-					notificationEntity.setNotifType("Feature Approval");
-					notificationEntity.setNotifCreatedDate(timestampValue);
-					notificationEntity.setNotifReference(featurId + "_"
-							+ masterFeature.getfName() + "-V" + "1.0");
-					notificationEntity.setNotifLabel(featurId + "_"
-							+ masterFeature.getfName() + "-V" + "1.0" + " : "
-							+ "Approval initiated");
-					notificationEntity.setNotifMessage("Approval initiated");
-					notificationEntity.setNotifPriority("1");
-					notificationEntity.setNotifStatus("Pending");
-					cal.setTimeInMillis(timestampValue.getTime());
-					cal.add(Calendar.DAY_OF_MONTH, 30);
-					timestampValue = new Timestamp(cal.getTime().getTime());
-					notificationEntity.setNotifExpiryDate(timestampValue);
-					notificationRepo.save(notificationEntity);
+					
+					notifServiceCall.generateNotificationForAddFeatureTemplate(featurId, json.get("userName").toString(), masterFeature.getfName());
 					obj.put("output", errorValidationRepository
 							.findByErrorId("C3P_TM_014"));
 				}
@@ -680,24 +628,8 @@ public class MasterFeatureController {
 				templateCommandJSONModel.setChecked(false);
 				templateCommandJSONModel.setCommands(commandPojoList);
 				obj.put("output", templateCommandJSONModel);
-				notificationEntity.setNotifFromUser(json.get("userName")
-						.toString());
-				notificationEntity.setNotifToUser(sUserListData);
-				notificationEntity.setNotifType("Feature Approval");
-				notificationEntity.setNotifCreatedDate(timestampValue);
-				notificationEntity.setNotifReference(ent.getfId() + "_"
-						+ ent.getfName() + "-V" + "1.0");
-				notificationEntity.setNotifLabel(ent.getfId() + "_"
-						+ ent.getfName() + "-V" + "1.0" + " : "
-						+ "Approval initiated");
-				notificationEntity.setNotifMessage("Approval initiated");
-				notificationEntity.setNotifPriority("1");
-				notificationEntity.setNotifStatus("Pending");
-				cal.setTimeInMillis(timestampValue.getTime());
-				cal.add(Calendar.DAY_OF_MONTH, 30);
-				timestampValue = new Timestamp(cal.getTime().getTime());
-				notificationEntity.setNotifExpiryDate(timestampValue);
-				notificationRepo.save(notificationEntity);
+				
+				notifServiceCall.generateNotificationForAddFeature(ent, json.get("userName").toString());
 			}
 
 		} catch (ParseException e) {
