@@ -285,6 +285,10 @@ public class TemplateSuggestionDao {
 		//String version = TemplateId.substring(16, 19);
 		String templateId =  arr[0];
 		String version = arr[1];
+		if(arr[1]==null || arr[1].isEmpty())
+		{
+			arr[1]="1";
+		}
 		ResultSet rs = null;
 
 		try {

@@ -355,8 +355,8 @@ public class RequestDetails {
 			reqDetail.setReason(requestInfoDetailsDao.reasonForInstantiationFailure(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion()));
 		}
 		reqDetail.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(reqDetail.getRequestCreatedOn()));
-		HeatTemplate heatTemplate = heatTemplateRepo.findByHeatTemplateId(reqDetail.getTemplateID(), reqDetail.getVendor());
-		
+		List<HeatTemplate> heatTemplates = heatTemplateRepo.findByHeatTemplateId(reqDetail.getTemplateID(), reqDetail.getVendor());
+		HeatTemplate heatTemplate=heatTemplates.get(0);
 		List<String> out = new ArrayList<String>();
 		out.add(new Gson().toJson(reqDetail));
 		out.add(new Gson().toJson(heatTemplate));

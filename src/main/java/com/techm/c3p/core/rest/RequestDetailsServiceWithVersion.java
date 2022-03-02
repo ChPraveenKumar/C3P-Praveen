@@ -174,7 +174,8 @@ public class RequestDetailsServiceWithVersion {
 						pojo.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(pojo.getRequestCreatedOn()));
 						if(pojo.getEndDateOfProcessing() !=null)
 							pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
-						heatTemplate = heatTemplateRepo.findByHeatTemplateId(pojo.getTemplateID(), pojo.getVendor());
+						List<HeatTemplate>heatTemplates = heatTemplateRepo.findByHeatTemplateId(pojo.getTemplateID(), pojo.getVendor());
+						heatTemplate=heatTemplates.get(0);
 					}
 					jsonArray = new Gson().toJson(detailsList);
 

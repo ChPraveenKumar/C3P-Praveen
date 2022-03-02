@@ -110,7 +110,7 @@ public class HeatTemplateController implements Observer {
 		
 		
 		try {
-			JSONObject json= (JSONObject) parser.parse(request);
+		 	JSONObject json= (JSONObject) parser.parse(request);
 			rowId = json.get("rowId").toString();
 			templateID = json.get("variableTemplateId").toString();
 			featureList = heatTemplateRepo.findByVariableTemplateId(templateID, rowId);

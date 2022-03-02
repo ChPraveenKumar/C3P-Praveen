@@ -19,5 +19,5 @@ public interface HeatTemplateRepository  extends JpaRepository<HeatTemplate, Lon
 	String findByVariableTemplateId(@Param("templateID") String templateID, @Param("rowId") String rowId);
 	
 	@Query(value = "SELECT * FROM c3p_m_heat_templates WHERE ht_heat_template_id=:templateID AND ht_vendor=:vendor", nativeQuery = true)
-	HeatTemplate findByHeatTemplateId(@Param("templateID") String templateID, @Param("vendor") String vendor);
+	List<HeatTemplate> findByHeatTemplateId(@Param("templateID") String templateID, @Param("vendor") String vendor);
 }
