@@ -101,6 +101,9 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 	@Autowired
 	private RequestInfoService requestInfoService;
 
+	@Autowired
+	private NotificationServiceCall notifServiceCall;
+	
 	private static final String JSCH_CONFIG_INPUT_BUFFER = "max_input_buffer_size";
 
 	/**
@@ -683,20 +686,6 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						if (type.equalsIgnoreCase("SLGC")) {
 							String response = "";
 							String responseDownloadPath = "";
-							Notification notificationEntity = new Notification();
-							StringBuilder builder = new StringBuilder();
-							String sUserListData = "";
-							Date date = new Date();
-							Timestamp timestampValue = new Timestamp(
-									date.getTime());
-							Calendar cal = Calendar.getInstance();
-							List<String> sUserList = userManagementRepository
-									.findByWorkGroup();
-							for (String suserList : sUserList) {
-								builder.append(suserList).append(",");
-							}
-							sUserListData = builder.deleteCharAt(
-									builder.length() - 1).toString();
 							try {
 								response = invokeFtl
 										.generateBasicConfigurationFile(requestinfo);
@@ -750,39 +739,8 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										Double.toString(requestinfo
 												.getRequestVersion()),
 										"In Progress");
-								notificationEntity.setNotifFromUser(requestinfo
-										.getRequestCreatorName());
-								notificationEntity
-										.setNotifToUser(sUserListData);
-								notificationEntity.setNotifType("FE Flow");
-								notificationEntity
-										.setNotifCreatedDate(timestampValue);
-								notificationEntity
-										.setNotifReference(requestinfo
-												.getAlphanumericReqId()
-												+ "-V"
-												+ Double.toString(requestinfo
-														.getRequestVersion()));
-								notificationEntity.setNotifLabel(requestinfo
-										.getAlphanumericReqId()
-										+ "-V"
-										+ Double.toString(requestinfo
-												.getRequestVersion())
-										+ " : "
-										+ "Request initiated");
-								notificationEntity
-										.setNotifMessage("Request initiated");
-								notificationEntity.setNotifPriority("1");
-								notificationEntity
-										.setNotifToWorkgroup("FE_USER_ALL");
-								notificationEntity.setNotifStatus("Pending");
-								cal.setTimeInMillis(timestampValue.getTime());
-								cal.add(Calendar.DAY_OF_MONTH, 30);
-								timestampValue = new Timestamp(cal.getTime()
-										.getTime());
-								notificationEntity
-										.setNotifExpiryDate(timestampValue);
-								notificationRepo.save(notificationEntity);
+								
+								notifServiceCall.generateNotificationForFeuser(requestinfo);
 								// Code to initiate FE Workflow
 								camundaServiceFEWorkflow.initiateFEWorkflow(
 										requestinfo.getAlphanumericReqId(),
