@@ -40,6 +40,8 @@ import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.PingService;
+import com.techm.c3p.core.service.RequestDetailsService;
+import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.service.TestStrategyService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
@@ -77,11 +79,16 @@ public class HealthCheckTestValidation extends Thread {
 	private VNFHelper vNFHelper;
 	@Autowired
 	private ODLClient oDLClient;
+	@Autowired
+	private RequestInfoService requestInfoService;
 	
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	@Autowired
 	private TestStrategyService testStrategyService;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -152,7 +159,7 @@ public class HealthCheckTestValidation extends Thread {
 									if(healthcheckop.containsKey("frameloss"))
 									{
 									frameloss=healthcheckop.get("frameloss").toString();
-									requestInfoDao.updateHealthCheckTestParameter(
+									requestInfoService.updateHealthCheckTestParameter(
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), frameloss,
 											"frameloss");
@@ -160,7 +167,7 @@ public class HealthCheckTestValidation extends Thread {
 									else if(healthcheckop.containsKey("latency"))
 									{
 									latency=healthcheckop.get("latency").toString();
-									requestInfoDao.updateHealthCheckTestParameter(
+									requestInfoService.updateHealthCheckTestParameter(
 											requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), latency, "latency");
 									}
@@ -171,7 +178,7 @@ public class HealthCheckTestValidation extends Thread {
 							
 								requestinfo.setFrameLoss(frameloss);
 								requestinfo.setLatency(latency);
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), 0, 1, 1);
 							}
 
@@ -186,14 +193,14 @@ public class HealthCheckTestValidation extends Thread {
 								if(throughputResults.containsKey("error"))
 								{
 									requestinfo.setThroughput("0");
-									requestInfoDao.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
+									requestInfoService.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
 											Double.toString(requestinfo.getRequestVersion()), "0", "throughput");
 								}
 								else
 								{
 								String throughpput=throughputResults.get("throughput").toString()+throughputResults.get("unit").toString();
 								requestinfo.setThroughput(throughputResults.get("throughput").toString());
-								requestInfoDao.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestParameter(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), throughpput, "throughput");
 								}
 								
@@ -210,7 +217,7 @@ public class HealthCheckTestValidation extends Thread {
 							listOfTests = requestInfoDao.findTestFromTestStrategyDB(
 									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Health Check");
-							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
+							List<TestDetail> selectedTests = requestDetailsService.findSelectedTests(requestinfo.getAlphanumericReqId(),
 									"Health Check",version);
 							List<Boolean> results = null;
 							if (selectedTests.size() > 0) {
@@ -288,12 +295,12 @@ public class HealthCheckTestValidation extends Thread {
 
 							// error code validation
 							if (resultAnalyser.equalsIgnoreCase("Pass")) {
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(4)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(5)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(6)));
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), 1, 1, 1);
 
 								String status = requestInfoDetailsDao.getPreviousMileStoneStatus(
@@ -308,7 +315,7 @@ public class HealthCheckTestValidation extends Thread {
 								}
 							} else if (resultAnalyser.equalsIgnoreCase("Fail")) {
 								// db call for flag set false
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()), 2,
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(5)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(6)));
@@ -319,7 +326,7 @@ public class HealthCheckTestValidation extends Thread {
 								/* finalReportTestSSH.FlagCheckTest(configRequest); */
 							} else {
 
-								requestInfoDao.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
+								requestInfoService.updateHealthCheckTestStatus(requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo.getRequestVersion()),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(4, 5)),
 										Integer.parseInt(requestinfo.getCertificationSelectionBit().substring(5, 6)),

@@ -1486,10 +1486,8 @@ public class TestStrategeyAnalyser {
 
 			for (int lineListLoop = 0; lineListLoop < lineList.size(); lineListLoop++) {
 				if (isCheck) {
-					if (lineList.get(lineListLoop).contains(currentsnippet)) {
-
-						currentPosition = lineListLoop;
-						isCheck = false;
+					if (lineList.get(lineListLoop).contains(currentsnippet)) {	
+						currentPosition = lineListLoop;						
 						lastCheck = true;
 						snippetCount++;
 					}

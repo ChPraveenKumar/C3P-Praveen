@@ -153,6 +153,9 @@ public class DcmConfigService {
 	@Autowired
 	private UtilityMethods utilityMethods;
 	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
+	
 	public Map<String, String> updateAlldetails(CreateConfigRequestDCM configRequest, List<CreateConfigPojo> pojoList)
 			throws IOException {
 
@@ -337,7 +340,7 @@ public class DcmConfigService {
 						}
 
 					}
-					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(configRequest.getRequestId(),
+					testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(configRequest.getRequestId(),
 							configRequest.getTestsSelected(), requestType, configRequest.getRequest_version());
 
 					JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
@@ -458,7 +461,7 @@ public class DcmConfigService {
 
 					}
 
-					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(configRequest.getRequestId(),
+					testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(configRequest.getRequestId(),
 							configRequest.getTestsSelected(), requestType, configRequest.getRequest_version());
 
 					JSONArray array = new JSONArray(requestInfoSO.getTestsSelected());
@@ -1333,7 +1336,7 @@ public class DcmConfigService {
 					}
 
 				}
-				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
+				int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
 						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType(),
 						requestInfoSO.getRequestVersion());
 				
@@ -1607,7 +1610,7 @@ public class DcmConfigService {
 					}
 
 				}
-				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
+				int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
 						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType(),
 						requestInfoSO.getRequestVersion());
 
@@ -1841,8 +1844,9 @@ public class DcmConfigService {
 				// createTemplate(requestInfoSO);
 				//
 				// } else {
-				if (requestInfoSO.getBatchSize().equals("1")) {
+				if (requestInfoSO.getBatchSize().equals("1") && (!"Config Audit".equals(requestType))) {
 					result = requestInfoDao.insertRequestInDB(requestInfoSO);
+					
 					for (Map.Entry<String, String> entry : result.entrySet()) {
 						if (entry.getKey() == "requestID") {
 
@@ -1856,7 +1860,7 @@ public class DcmConfigService {
 					}
 
 					if (requestType.equals("Test") || requestType.equals("Audit")) {
-						int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+						int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(
 								requestInfoSO.getAlphanumericReqId(), requestInfoSO.getTestsSelected(),
 								requestInfoSO.getRequestType(), requestInfoSO.getRequestVersion());
 						// int testStrategyResultsDB=requestInfoDao.
@@ -1925,7 +1929,7 @@ public class DcmConfigService {
 							});
 						}
 					}
-					if (!(requestType.equals("Test"))) {
+					if (!(requestType.equals("Test")) && !(requestType.equals("Config Audit"))) {
 						createTemplate(requestInfoSO);
 					}
 					telnetCommunicationSSH.setTelecommunicationData(null, requestInfoSO, userName);
@@ -1933,7 +1937,7 @@ public class DcmConfigService {
 					result = requestInfoDao.insertBatchConfigRequestInDB(requestInfoSO);
 
 					requestType = requestInfoSO.getRequestType();
-					if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))) {
+					if (!(requestType.equals("Test")) && !(requestType.contains("Audit"))) {
 						if (!requestInfoSO.getTemplateID().isEmpty()
 								&& !requestInfoSO.getTemplateID().contains("Feature"))
 							templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateID());
@@ -1952,7 +1956,7 @@ public class DcmConfigService {
 					}
 
 					if (requestType.equals("Test") || requestType.equals("Audit")) {
-						int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+						int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(
 								requestInfoSO.getAlphanumericReqId(), requestInfoSO.getTestsSelected(),
 								requestInfoSO.getRequestType(), requestInfoSO.getRequestVersion());
 						// int testStrategyResultsDB=requestInfoDao.
@@ -2371,7 +2375,7 @@ public class DcmConfigService {
 						}
 
 					}
-					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(configRequest.getRequestId(),
+					testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(configRequest.getRequestId(),
 							configRequest.getTestsSelected(), requestType, configRequest.getRequest_version());
 
 					/*
@@ -2492,7 +2496,7 @@ public class DcmConfigService {
 
 					}
 
-					testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(configRequest.getRequestId(),
+					testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(configRequest.getRequestId(),
 							configRequest.getTestsSelected(), requestType, configRequest.getRequest_version());
 
 					/*
@@ -2654,7 +2658,7 @@ public class DcmConfigService {
 					}
 
 				}
-				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
+				int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
 						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType(),
 						requestInfoSO.getRequestVersion());
 				// int testStrategyResultsDB=requestInfoDao.
@@ -2951,7 +2955,7 @@ public class DcmConfigService {
 					}
 
 				}
-				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
+				int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(requestInfoSO.getAlphanumericReqId(),
 						requestInfoSO.getTestsSelected(), requestInfoSO.getRequestType(),
 						requestInfoSO.getRequestVersion());
 

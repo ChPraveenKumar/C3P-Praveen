@@ -30,6 +30,8 @@ public class DeviceDiscoverPojo {
 	private String osVersion;
 
 	private SiteInfoPojo siteInfo;
+	
+	private String role;
 
 	public String getHostName() {
 		return hostName;
@@ -110,6 +112,12 @@ public class DeviceDiscoverPojo {
 	public void setSiteInfo(SiteInfoPojo siteInfo) {
 		this.siteInfo = siteInfo;
 	}
-	
-	
+
+	public String getRole() {
+		return role;
+	}
+
+	public void setRole(String role) {
+		this.role = role;
+	}
 }

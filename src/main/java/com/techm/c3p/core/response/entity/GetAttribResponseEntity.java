@@ -22,6 +22,8 @@ public class GetAttribResponseEntity {
 	List<AttribValidationPojo> validationList;
 	
 	List<CategoryMasterPojo> categoryList;
+	
+	String defaultValue;
 
 	public List<PredefinedMappedAtrribPojo> getPredefinedMappedList() {
 		return predefinedMappedList;
@@ -71,5 +73,14 @@ public class GetAttribResponseEntity {
 
 	public void setCategoryList(List<CategoryMasterPojo> categoryList) {
 		this.categoryList = categoryList;
-	} 
+	}
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+	
 }

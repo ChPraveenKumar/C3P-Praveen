@@ -50,6 +50,8 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 	
 	@Autowired
 	private DeliverConfigurationAndBackupTest deliverConfigurationAndBackupTest;
+	@Autowired
+	private RequestInfoService requestInfoService;
 	
 	public String checkErrorCode(String requestId, double version) throws IOException {
 		
@@ -58,7 +60,7 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 		String errorType = null;
 		String errorDescription = null;
 		try {
-			list = requestInfoDao.getAllErrorCodeFromRouter();
+			list = requestInfoService.getAllErrorCodeFromRouter();
 			for (Iterator iterator = list.iterator(); iterator.hasNext();) {
 
 				ErrorValidationPojo errorValidationPojo = (ErrorValidationPojo) iterator.next();
@@ -75,12 +77,12 @@ public class ErrorCodeValidationDeliveryTest extends Thread {
 			}
 			if (textFound != "") {
 				// we need to save for that particular request error details
-				requestInfoDao.updateErrorDetailsDeliveryTestForRequestId(requestId, Double.toString(version),
+				requestInfoService.updateErrorDetailsDeliveryTestForRequestId(requestId, Double.toString(version),
 						textFound, errorType, errorDescription);
 
 			} else {
 				errorType = "No Error";
-				requestInfoDao.updateErrorDetailsDeliveryTestForRequestId(requestId, Double.toString(version),
+				requestInfoService.updateErrorDetailsDeliveryTestForRequestId(requestId, Double.toString(version),
 						"No Error", "No Error", "NA");
 			}
 

@@ -55,6 +55,9 @@ public class RequestModificationService {
 	
 	@Autowired
 	private RequestInfoDetailsRepositories repository;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 
 	@SuppressWarnings("unchecked")
 	public JSONObject getModifyRequestDetails(String requestId, String hostName, String version, String templateId) {
@@ -82,7 +85,7 @@ public class RequestModificationService {
 		JSONObject templateJson = new JSONObject();
 		templateJson.put("SuggestedTemplate", templateList);
 		templateJson.put("selectedTemplate", templateId);
-		String testList = requestdao.getTestList(requestId);
+		String testList = requestDetailsService.getTestList(requestId);
 		JSONObject testAndFeatureDetails = new JSONObject();
 		testAndFeatureDetails.put("featureDetails", featureAndAttrib);
 		testAndFeatureDetails.put("tesDetails", testList);

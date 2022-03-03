@@ -60,6 +60,8 @@ import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.service.PrevalidationTestServiceImpl;
+import com.techm.c3p.core.service.RequestDetailsService;
+import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
 import com.techm.c3p.core.utility.ODLClient;
@@ -89,7 +91,11 @@ public class VnfConfigService {
 	@Autowired
 	private ODLClient oDLClient;
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
+	@Autowired
+	private RequestInfoService requestInfoService;
 	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -461,7 +467,7 @@ public class VnfConfigService {
 						ps.println("show version");
 						UtilityMethods.sleepThread(5000);
 						logger.info("Total size of the Channel InputStream -->"+input.available());
-						requestInfoDao.addCertificationTestForRequest(createConfigRequest.getRequestId(),
+						requestInfoService.updateCertificationTestForRequest(createConfigRequest.getRequestId(),
 								Double.toString(createConfigRequest.getRequest_version()), "1");
 						printVersionversionInfo(input, channel, createConfigRequest.getRequestId(),
 								Double.toString(createConfigRequest.getRequest_version()));
@@ -479,7 +485,7 @@ public class VnfConfigService {
 									createConfigRequest.getDeviceType(), createConfigRequest.getOs(),
 									createConfigRequest.getOsVersion(), createConfigRequest.getVendor(),
 									createConfigRequest.getRegion(), "Device Prevalidation");
-							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(createConfigRequest.getRequestId(),
+							List<TestDetail> selectedTests = requestDetailsService.findSelectedTests(createConfigRequest.getRequestId(),
 									"Device Prevalidation",version);
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {
@@ -532,7 +538,7 @@ public class VnfConfigService {
 						requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
 								Double.toString(createConfigRequest.getRequest_version()), "Application_test", "2",
 								"Failure");
-						requestInfoDao.addCertificationTestForRequest(createConfigRequest.getRequestId(),
+						requestInfoService.updateCertificationTestForRequest(createConfigRequest.getRequestId(),
 								Double.toString(createConfigRequest.getRequest_version()), "2");
 						String response = "";
 						try {
@@ -592,7 +598,7 @@ public class VnfConfigService {
 						ps.println("show version");
 						UtilityMethods.sleepThread(5000);
 						logger.info("Total size of the Channel InputStream -->"+input.available());
-						requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+						requestInfoService.updateCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "1");
 						printVersionversionInfo(input, channel, requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()));
@@ -661,7 +667,7 @@ public class VnfConfigService {
 						obj.put(new String("output"), jsonArray);
 						requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
-						requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+						requestInfoService.updateCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 								Double.toString(requestinfo.getRequestVersion()), "2");
 						String response = "";
 						try {
@@ -701,7 +707,7 @@ public class VnfConfigService {
 					requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
 							Double.toString(createConfigRequest.getRequest_version()), "Application_test", "2",
 							"Failure");
-					requestInfoDao.addCertificationTestForRequest(createConfigRequest.getRequestId(),
+					requestInfoService.updateCertificationTestForRequest(createConfigRequest.getRequestId(),
 							Double.toString(createConfigRequest.getRequest_version()), "2_Authentication");
 					String response = "";
 					try {
@@ -720,7 +726,7 @@ public class VnfConfigService {
 					requestInfoDao.editRequestforReportWebserviceInfo(createConfigRequest.getRequestId(),
 							Double.toString(createConfigRequest.getRequest_version()), "Application_test", "2",
 							"Failure");
-					requestInfoDao.addCertificationTestForRequest(createConfigRequest.getRequestId(),
+					requestInfoService.updateCertificationTestForRequest(createConfigRequest.getRequestId(),
 							Double.toString(createConfigRequest.getRequest_version()), "2");
 					String response = "";
 					try {
@@ -745,7 +751,7 @@ public class VnfConfigService {
 					obj.put(new String("output"), jsonArray);
 					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
-					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+					requestInfoService.updateCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "2_Authentication");
 					String response = "";
 
@@ -766,7 +772,7 @@ public class VnfConfigService {
 					obj.put(new String("output"), jsonArray);
 					requestDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "Application_test", "2", "Failure");
-					requestInfoDao.addCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
+					requestInfoService.updateCertificationTestForRequest(requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()), "2");
 					String response = "";
 

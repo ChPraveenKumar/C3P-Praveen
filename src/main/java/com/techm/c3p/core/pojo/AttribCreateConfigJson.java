@@ -44,6 +44,9 @@ public class AttribCreateConfigJson {
 	
 	private int instanceNumber;
 	
+	@JsonInclude(Include.NON_NULL)
+	private String defaultValue;
+	
 	public List<Integer> getPoolIds() {
 		return poolIds;
 	}
@@ -192,6 +195,13 @@ public class AttribCreateConfigJson {
 	public void setInstanceNumber(int instanceNumber) {
 		this.instanceNumber = instanceNumber;
 	}
-	
-	
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+		
 }

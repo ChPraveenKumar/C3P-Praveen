@@ -34,6 +34,7 @@ import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.service.DcmConfigService;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
@@ -71,6 +72,10 @@ public class OthersCheckTestValidation extends Thread {
 	private ODLClient oDLClient;
 	@Autowired
 	private RequestInfoService requestInfoService;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
+	
 	private static final String JSCH_CONFIG_INPUT_BUFFER = "max_input_buffer_size";
 
 	/**
@@ -182,7 +187,7 @@ public class OthersCheckTestValidation extends Thread {
 											requestinfo.getOsVersion(),
 											requestinfo.getVendor(),
 											requestinfo.getRegion(), "Others");
-							List<TestDetail> selectedTests = requestInfoDao
+							List<TestDetail> selectedTests = requestDetailsService
 									.findSelectedTests(
 											requestinfo.getAlphanumericReqId(),
 											"Others", version);
@@ -331,11 +336,11 @@ public class OthersCheckTestValidation extends Thread {
 							try {
 								response = invokeFtl
 										.generateHealthCheckTestResultFailure(requestinfo);
-								requestInfoDao.updateHealthCheckTestStatus(
+								requestInfoService.updateHealthCheckTestStatus(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()), 0, 0, 0);
-								requestInfoDao.updateRouterFailureHealthCheck(
+								requestInfoService.updateRouterFailureHealthCheck(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()));
@@ -378,11 +383,11 @@ public class OthersCheckTestValidation extends Thread {
 					try {
 						response = invokeFtl
 								.generateHealthCheckTestResultFailure(requestinfo);
-						requestInfoDao.updateHealthCheckTestStatus(requestinfo
+						requestInfoService.updateHealthCheckTestStatus(requestinfo
 								.getAlphanumericReqId(), Double
 								.toString(requestinfo.getRequestVersion()), 0,
 								0, 0);
-						requestInfoDao.updateRouterFailureHealthCheck(
+						requestInfoService.updateRouterFailureHealthCheck(
 								requestinfo.getAlphanumericReqId(), Double
 										.toString(requestinfo
 												.getRequestVersion()));

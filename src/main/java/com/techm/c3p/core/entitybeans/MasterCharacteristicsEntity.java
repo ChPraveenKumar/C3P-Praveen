@@ -3,21 +3,17 @@ package com.techm.c3p.core.entitybeans;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
-import java.util.Set;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import javax.persistence.JoinColumn;
 
 @Entity
 @Table(name = "c3p_m_characteristics")
@@ -85,6 +81,7 @@ public class MasterCharacteristicsEntity implements Serializable
 
 	@Column(name = "c_replicationind", columnDefinition = "TINYINT(1)")
 	private boolean cReplicationind;
+	
 	
 	@Column(name = "c_default_value")
 	private String cDefaultValue;
@@ -252,6 +249,14 @@ public class MasterCharacteristicsEntity implements Serializable
 		this.cDefaultValue = cDefaultValue;
 	}
 		
+
+	public String getcDefaultValue() {
+		return cDefaultValue;
+	}
+
+	public void setcDefaultValue(String cDefaultValue) {
+		this.cDefaultValue = cDefaultValue;
+	}
 
 	public MasterCharacteristicsEntity() {
 		super();

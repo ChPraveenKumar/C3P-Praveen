@@ -123,6 +123,10 @@ public class RequestInfoPojo {
 	
 	private String projectName;
 	
+	private String compliance;
+	
+	private String complianceData;
+	
 	public String getProjectName() {
 		return projectName;
 	}
@@ -1846,6 +1850,19 @@ public class RequestInfoPojo {
 	public void setTestType(String testType) {
 		this.testType = testType;
 	}
-	
+	public String getCompliance() {
+		return compliance;
+	}
 
+	public void setCompliance(String compliance) {
+		this.compliance = compliance;
+	}
+
+	public String getComplianceData() {
+		return complianceData;
+	}
+
+	public void setComplianceData(String complianceData) {
+		this.complianceData = complianceData;
+	}
 }

@@ -137,7 +137,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							version);
 			// TODO: We need to remove ROUTER_IP_TEMP later or while on GCP
 			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
-					&& !RequestId.contains("SCGC-")) {
+					&& !RequestId.contains("SCGC-") && (!"Config Audit".equals(requestinfo.getRequestType()))) {
 				if (requestinfo.getManagementIp() != null
 						&& !requestinfo.getManagementIp().equals("")) {
 					DeviceDiscoveryEntity deviceDetails = deviceDiscoveryRepository
@@ -444,7 +444,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										.toString(requestinfo
 												.getRequestVersion()),
 										"Application_test", "2", "Failure");
-						requestInfoDao.addCertificationTestForRequest(
+						requestInfoService.updateCertificationTestForRequest(
 								requestinfo.getAlphanumericReqId(), Double
 										.toString(requestinfo
 												.getRequestVersion()), "2");
@@ -504,7 +504,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								"invalid server's version string") || e1
 								.getMessage().contains("Auth fail"))) {
 
-					requestInfoDao.addCertificationTestForRequest(
+					requestInfoService.updateCertificationTestForRequest(
 							requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()),
 							"2_Authentication");
@@ -513,7 +513,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 				} else if (e1.getMessage() != null
 						&& (e1.getMessage().contains("Connection refused"))) {
-					requestInfoDao.addCertificationTestForRequest(
+					requestInfoService.updateCertificationTestForRequest(
 							requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()),
 							"2_Authentication");
@@ -524,7 +524,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						logger.error(e);
 					}
 				} else {
-					requestInfoDao.addCertificationTestForRequest(
+					requestInfoService.updateCertificationTestForRequest(
 							requestinfo.getAlphanumericReqId(),
 							Double.toString(requestinfo.getRequestVersion()),
 							"2");
@@ -663,7 +663,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 						}
 
-						requestInfoDao.addCertificationTestForRequest(
+						requestInfoService.updateCertificationTestForRequest(
 								requestinfo.getAlphanumericReqId(), Double
 										.toString(requestinfo
 												.getRequestVersion()), "1");
@@ -720,7 +720,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 														.getRequestVersion()),
 												"Application_test", "2",
 												"Failure");
-								requestInfoDao.addCertificationTestForRequest(
+								requestInfoService.updateCertificationTestForRequest(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()), "2");
@@ -869,7 +869,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 														.getRequestVersion()),
 												"Application_test", "2",
 												"Failure");
-								requestInfoDao.addCertificationTestForRequest(
+								requestInfoService.updateCertificationTestForRequest(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
 												.getRequestVersion()), "2");
@@ -993,7 +993,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 						requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()),
 						"pre_health_checkup", "2", "Failure");
-				requestInfoDao.addCertificationTestForRequest(
+				requestInfoService.updateCertificationTestForRequest(
 						requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "2");
 				String response = "";

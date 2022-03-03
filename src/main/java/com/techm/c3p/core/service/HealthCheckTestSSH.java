@@ -38,6 +38,8 @@ public class HealthCheckTestSSH {
 	private RequestInfoDao requestInfoDao;
 	@Autowired
 	private  FinalReportTestSSH finalReportTestSSH;
+	@Autowired
+	private RequestInfoService requestInfoService;
 	
 	// @SuppressWarnings("unused")
 	public void HealthCheckTest(CreateConfigRequestDCM configRequest) throws IOException {
@@ -98,7 +100,7 @@ public class HealthCheckTestSSH {
 					}
 					configRequest.setFrameloss(frameloss);
 					configRequest.setLatency(latency);
-					requestInfoDao.updateHealthCheckTestStatus(configRequest.getRequestId(),
+					requestInfoService.updateHealthCheckTestStatus(configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()), 0, 1, 1);
 				}
 
@@ -130,12 +132,12 @@ public class HealthCheckTestSSH {
 
 				// error code validation
 				if (resultAnalyser.equalsIgnoreCase("Pass")) {
-					requestInfoDao.updateHealthCheckTestStatus(configRequest.getRequestId(),
+					requestInfoService.updateHealthCheckTestStatus(configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()),
 							Integer.parseInt(configRequest.getThroughputTest()),
 							Integer.parseInt(configRequest.getFrameLossTest()),
 							Integer.parseInt(configRequest.getLatencyTest()));
-					requestInfoDao.updateHealthCheckTestStatus(configRequest.getRequestId(),
+					requestInfoService.updateHealthCheckTestStatus(configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()), 1, 1, 1);
 					requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()), "health_check", "1", "In Progress");
@@ -151,7 +153,7 @@ public class HealthCheckTestSSH {
 				 */
 				else if (resultAnalyser.equalsIgnoreCase("Fail")) {
 					// db call for flag set false
-					requestInfoDao.updateHealthCheckTestStatus(configRequest.getRequestId(),
+					requestInfoService.updateHealthCheckTestStatus(configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()), 2,
 							Integer.parseInt(configRequest.getFrameLossTest()),
 							Integer.parseInt(configRequest.getLatencyTest()));
@@ -161,7 +163,7 @@ public class HealthCheckTestSSH {
 					finalReportTestSSH.FlagCheckTest(configRequest);
 				} else {
 
-					requestInfoDao.updateHealthCheckTestStatus(configRequest.getRequestId(),
+					requestInfoService.updateHealthCheckTestStatus(configRequest.getRequestId(),
 							Double.toString(configRequest.getRequest_version()),
 							Integer.parseInt(configRequest.getThroughputTest()),
 							Integer.parseInt(configRequest.getFrameLossTest()),

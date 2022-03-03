@@ -426,6 +426,10 @@ public class MasterFeatureController {
 					masterCharacteristic.setcCreatedBy(jsonObject.get(
 							"userName").toString());
 				}
+				if (jsonObject.containsKey("defaultValue") && jsonObject.get("defaultValue")!=null) {
+					masterCharacteristic
+							.setcDefaultValue(jsonObject.get("defaultValue").toString());
+				}
 				timestamp = new Timestamp(new Date().getTime());
 				if (timestamp != null) {
 					masterCharacteristic.setcCreatedDate(timestamp);
@@ -897,6 +901,7 @@ public class MasterFeatureController {
 														.getcValidations()));
 						attrJsonObj.put("category", entity.getcCategory());
 						attrJsonObj.put("key", entity.iscIsKey());
+						attrJsonObj.put("defaultValue", entity.getcDefaultValue());
 						childList.add(attrJsonObj);
 					}
 					jsonObj.put("attribMappings", childList);
