@@ -142,6 +142,7 @@ public class HeatTemplateController implements Observer {
 						masObj.put("type", masCList.getcType());
 						masObj.put("uIComponent", masCList.getcUicomponent());
 						masObj.put("validations", masCList.getcValidations());
+						masObj.put("defaultValue", masCList.getcDefaultValue());
 						/* using Category Name find all category Value */
 						if (masCList.getcCategory()!= null) {
 							List<CategoryDropDownPojo> allByCategoryName = categoryDropDownservice

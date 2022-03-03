@@ -85,6 +85,9 @@ public class MasterCharacteristicsEntity implements Serializable
 
 	@Column(name = "c_replicationind", columnDefinition = "TINYINT(1)")
 	private boolean cReplicationind;
+	
+	@Column(name = "c_default_value")
+	private String cDefaultValue;
 
 	public String getcValidations() {
 		return cValidations;
@@ -240,6 +243,15 @@ public class MasterCharacteristicsEntity implements Serializable
 	public void setcReplicationind(boolean cReplicationind) {
 		this.cReplicationind = cReplicationind;
 	}
+	
+	public String getcDefaultValue() {
+		return cDefaultValue;
+	}
+
+	public void setcDefaultValue(String cDefaultValue) {
+		this.cDefaultValue = cDefaultValue;
+	}
+		
 
 	public MasterCharacteristicsEntity() {
 		super();
