@@ -13,6 +13,7 @@ public class MasterAttribPojo {
 	String category;
 	
 	String cId;
+	String defaultValue;
 	
 	boolean isKey;
 
@@ -70,5 +71,14 @@ public class MasterAttribPojo {
 
 	public void setKey(boolean isKey) {
 		this.isKey = isKey;
+	}
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
 	} 
+	
 } 

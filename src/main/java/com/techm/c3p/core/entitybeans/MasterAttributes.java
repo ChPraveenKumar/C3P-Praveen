@@ -67,6 +67,10 @@ public class MasterAttributes implements Serializable {
 	
 	@Column(name = "is_key", columnDefinition="TINYINT(1)", nullable = false)
 	private boolean isKey;
+	
+	@Column(name = "default_value")
+	private String defaultValue;		
+	
 
 	public int getId() {
 		return id;
@@ -178,6 +182,14 @@ public class MasterAttributes implements Serializable {
 
 	public void setKey(boolean isKey) {
 		this.isKey = isKey;
+	}
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
 	}
 
 	public MasterAttributes(String label, String masterFID, String characteristicId, String labelValue, boolean isKey) {
