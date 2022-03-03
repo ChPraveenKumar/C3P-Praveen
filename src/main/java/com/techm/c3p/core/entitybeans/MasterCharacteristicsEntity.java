@@ -240,6 +240,15 @@ public class MasterCharacteristicsEntity implements Serializable
 	public void setcReplicationind(boolean cReplicationind) {
 		this.cReplicationind = cReplicationind;
 	}
+	
+	public String getcDefaultValue() {
+		return cDefaultValue;
+	}
+
+	public void setcDefaultValue(String cDefaultValue) {
+		this.cDefaultValue = cDefaultValue;
+	}
+		
 
 	public String getcDefaultValue() {
 		return cDefaultValue;

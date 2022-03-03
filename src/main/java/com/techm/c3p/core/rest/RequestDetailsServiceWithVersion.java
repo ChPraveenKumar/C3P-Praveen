@@ -32,6 +32,7 @@ import com.techm.c3p.core.dao.RequestInfoDetailsDao;
 import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
 import com.techm.c3p.core.entitybeans.CertificationTestResultEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
+import com.techm.c3p.core.entitybeans.HeatTemplate;
 import com.techm.c3p.core.entitybeans.MasterAttributes;
 import com.techm.c3p.core.entitybeans.MasterCharacteristicsEntity;
 import com.techm.c3p.core.entitybeans.Notification;
@@ -50,6 +51,7 @@ import com.techm.c3p.core.repositories.CloudProjectsRepository;
 import com.techm.c3p.core.repositories.CloudplatforParamsRepository;
 import com.techm.c3p.core.repositories.CreateConfigRepo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
+import com.techm.c3p.core.repositories.HeatTemplateRepository;
 import com.techm.c3p.core.repositories.MasterCharacteristicsRepository;
 import com.techm.c3p.core.repositories.NotificationRepo;
 import com.techm.c3p.core.repositories.RequestFeatureTransactionRepository;
@@ -113,6 +115,9 @@ public class RequestDetailsServiceWithVersion {
 	@Autowired
 	private RequestDetailsService requestDetailsService;
 	
+	@Autowired
+	private HeatTemplateRepository heatTemplateRepo;
+	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -134,8 +139,9 @@ public class RequestDetailsServiceWithVersion {
 			List<RequestInfoCreateConfig> detailsList = new ArrayList<RequestInfoCreateConfig>();
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(searchParameters);
-
-			if (json.get("userName") != null)
+			HeatTemplate heatTemplate = new HeatTemplate();
+			
+			if(json.get("userName") !=null)
 				userName = json.get("userName").toString();
 			if (json.get("userRole") != null)
 				userRole = json.get("userRole").toString();
@@ -195,10 +201,13 @@ public class RequestDetailsServiceWithVersion {
 						pojo.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(pojo.getRequestCreatedOn()));
 						if (pojo.getEndDateOfProcessing() != null)
 							pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
+						List<HeatTemplate>heatTemplates = heatTemplateRepo.findByHeatTemplateId(pojo.getTemplateID(), pojo.getVendor());
+						heatTemplate=heatTemplates.get(0);
 					}
 					jsonArray = new Gson().toJson(detailsList);
 
 					obj.put(new String("output"), jsonArray);
+					jsonArray = jsonArray +new Gson().toJson(heatTemplate);
 					obj.put(new String("milestone"), showMilestone);
 					if (notificationData != null) {
 						notificationData.setNotifStatus("Completed");

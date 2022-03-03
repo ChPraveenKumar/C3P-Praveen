@@ -29,14 +29,22 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 import com.techm.c3p.core.connection.DBUtil;
 import com.techm.c3p.core.connection.JDBCConnection;
+
+import com.techm.c3p.core.entitybeans.HeatTemplate;
+
 import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
+
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.TestStaregyConfigPojo;
+
+import com.techm.c3p.core.repositories.HeatTemplateRepository;
+
 import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
+
 import com.techm.c3p.core.repositories.TestDetailsRepository;
 import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.WAFADateUtil;
@@ -60,6 +68,9 @@ public class RequestDetails {
 	
 	@Autowired
 	private TestDetailsRepository testDetailsRepository;
+	
+	@Autowired
+	private HeatTemplateRepository heatTemplateRepo;
 	
 	@Autowired
 	private JDBCConnection jDBCConnection;
@@ -361,6 +372,10 @@ public class RequestDetails {
 			reqDetail.setReason(requestInfoDetailsDao.reasonForInstantiationFailure(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion()));
 		}
 		reqDetail.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(reqDetail.getRequestCreatedOn()));
+
+		List<HeatTemplate> heatTemplates = heatTemplateRepo.findByHeatTemplateId(reqDetail.getTemplateID(), reqDetail.getVendor());
+		HeatTemplate heatTemplate=heatTemplates.get(0);
+
 		if("Config Audit".equals(reqDetail.getRequestType())) {
 			List<AuditDashboardResultEntity> auditResultData = auditDashboardResultRepository.findByAdRequestIdAndAdRequestVersion(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 			if(auditResultData.size()>0) {
@@ -389,8 +404,10 @@ public class RequestDetails {
 			
 			
 		}
+
 		List<String> out = new ArrayList<String>();
 		out.add(new Gson().toJson(reqDetail));
+		out.add(new Gson().toJson(heatTemplate));
 		obj.put("details", out);
 		if ("SLGF".equalsIgnoreCase(type)) {
 			obj.put("status", reqDetail.getStatus());
