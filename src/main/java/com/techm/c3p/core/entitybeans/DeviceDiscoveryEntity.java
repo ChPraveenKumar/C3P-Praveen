@@ -193,6 +193,15 @@ public class DeviceDiscoveryEntity {
 	
 	@Column(name = "d_number_of_pods")
 	private int dNumberOfPods;
+	
+	@Column(name = "d_snmp_cred_profile")
+	private String dSnmpCredProfile;
+	
+	@Column(name = "d_ssh_cred_profile")
+	private String dSshCredProfile;
+	
+	@Column(name = "d_telnet_cred_profile")
+	private String dTelnetCredProfile;
 
 
 	@Column(name = "d_namespace")
@@ -707,6 +716,36 @@ public class DeviceDiscoveryEntity {
 		this.dNumberOfPods = dNumberOfPods;
 	}
 	
+	
+	
+	
+
+	public String getdSnmpCredProfile() {
+		return dSnmpCredProfile;
+	}
+
+	public void setdSnmpCredProfile(String dSnmpCredProfile) {
+		this.dSnmpCredProfile = dSnmpCredProfile;
+	}
+
+
+
+	public String getdSshCredProfile() {
+		return dSshCredProfile;
+	}
+
+	public void setdSshCredProfile(String dSshCredProfile) {
+		this.dSshCredProfile = dSshCredProfile;
+	}
+
+	public String getdTelnetCredProfile() {
+		return dTelnetCredProfile;
+	}
+
+	public void setdTelnetCredProfile(String dTelnetCredProfile) {
+		this.dTelnetCredProfile = dTelnetCredProfile;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
