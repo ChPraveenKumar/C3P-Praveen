@@ -2638,7 +2638,7 @@ public class DcmConfigService {
 				}
 
 				requestType = requestInfoSO.getRequestType();
-				if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))) {
+				if (!(requestType.equals("Test")) && !(requestType.equals("Audit")) && !(requestType.equals("SNAI"))) {
 					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateID());
 				}
@@ -2935,7 +2935,7 @@ public class DcmConfigService {
 				result = requestInfoDao.insertRequestInDB(requestInfoSO);
 
 				requestType = requestInfoSO.getRequestType();
-				if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))) {
+				if (!(requestType.equals("Test")) && !(requestType.equals("Audit")) && !(requestType.equals("SNAI"))) {
 					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateID());
 				}
