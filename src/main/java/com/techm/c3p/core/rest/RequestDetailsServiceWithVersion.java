@@ -139,7 +139,6 @@ public class RequestDetailsServiceWithVersion {
 			List<RequestInfoCreateConfig> detailsList = new ArrayList<RequestInfoCreateConfig>();
 			JSONParser parser = new JSONParser();
 			JSONObject json = (JSONObject) parser.parse(searchParameters);
-			HeatTemplate heatTemplate = new HeatTemplate();
 			
 			if(json.get("userName") !=null)
 				userName = json.get("userName").toString();
@@ -199,15 +198,18 @@ public class RequestDetailsServiceWithVersion {
 					}
 					for (RequestInfoCreateConfig pojo : detailsList) {
 						pojo.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(pojo.getRequestCreatedOn()));
-						if (pojo.getEndDateOfProcessing() != null)
+						if(pojo.getEndDateOfProcessing() !=null)
 							pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
+						logger.info("search -> "+pojo.getTemplateID()+" "+pojo.getAlphanumericReqId());
 						List<HeatTemplate>heatTemplates = heatTemplateRepo.findByHeatTemplateId(pojo.getTemplateID(), pojo.getVendor());
-						heatTemplate=heatTemplates.get(0);
+						logger.info("search -> heatTemplates "+heatTemplates);
+						pojo.setVmType(heatTemplates.get(0).getVmType());
+						pojo.setFlavour(heatTemplates.get(0).getFlavour());
+						pojo.setNetworkFunction(heatTemplates.get(0).getNetworkFunction());
 					}
+					
 					jsonArray = new Gson().toJson(detailsList);
-
 					obj.put(new String("output"), jsonArray);
-					jsonArray = jsonArray +new Gson().toJson(heatTemplate);
 					obj.put(new String("milestone"), showMilestone);
 					if (notificationData != null) {
 						notificationData.setNotifStatus("Completed");

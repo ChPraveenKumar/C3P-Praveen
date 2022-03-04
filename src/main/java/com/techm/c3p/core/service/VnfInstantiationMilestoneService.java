@@ -100,7 +100,9 @@ public class VnfInstantiationMilestoneService {
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(reqJSON, headers);
 			String url = pythonServiceUri + "/C3P/api/openstack/deploy/stack";
 			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			logger.info("Response - openStackInstantiation "+response);
 			JSONObject responseJson = (JSONObject) jsonParser.parse(response);
+			logger.info("ResponseJSON - openStackInstantiation "+responseJson);
 			if (responseJson.containsKey("stack_status") && responseJson.get("stack_status") != null
 					&& "CREATE_COMPLETE".equalsIgnoreCase(responseJson.get("stack_status").toString())) {
 				openStackInstantiated = true;
