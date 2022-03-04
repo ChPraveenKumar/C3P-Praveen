@@ -86,6 +86,12 @@ public class RequestInfoCreateConfig {
 
 	private String commissionFlag;
 
+	private String vmType;
+	
+	private String flavour;
+	
+	private String networkFunction;
+	
 	private String cloudPlatform;
 	private String cluster;
 	private String project;
@@ -452,4 +458,27 @@ public class RequestInfoCreateConfig {
 		this.family = family;
 	}
 
+	public String getVmType() {
+		return vmType;
+	}
+
+	public void setVmType(String vmType) {
+		this.vmType = vmType;
+	}
+
+	public String getFlavour() {
+		return flavour;
+	}
+
+	public void setFlavour(String flavour) {
+		this.flavour = flavour;
+	}
+
+	public String getNetworkFunction() {
+		return networkFunction;
+	}
+
+	public void setNetworkFunction(String networkFunction) {
+		this.networkFunction = networkFunction;
+	}
 }

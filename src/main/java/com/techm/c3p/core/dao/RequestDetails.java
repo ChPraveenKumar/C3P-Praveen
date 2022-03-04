@@ -373,8 +373,11 @@ public class RequestDetails {
 		}
 		reqDetail.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(reqDetail.getRequestCreatedOn()));
 
-		List<HeatTemplate> heatTemplates = heatTemplateRepo.findByHeatTemplateId(reqDetail.getTemplateID(), reqDetail.getVendor());
-		HeatTemplate heatTemplate=heatTemplates.get(0);
+		List<HeatTemplate> heatTemplate = heatTemplateRepo.findByHeatTemplateId(reqDetail.getTemplateID(), reqDetail.getVendor());
+		logger.info("customerReportUIRevamp -> heatTemplate "+heatTemplate);
+		reqDetail.setVmType(heatTemplate.get(0).getVmType());
+		reqDetail.setNetworkFunction(heatTemplate.get(0).getNetworkFunction());
+		reqDetail.setFlavour(heatTemplate.get(0).getFlavour());
 
 		if("Config Audit".equals(reqDetail.getRequestType())) {
 			List<AuditDashboardResultEntity> auditResultData = auditDashboardResultRepository.findByAdRequestIdAndAdRequestVersion(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
@@ -407,7 +410,6 @@ public class RequestDetails {
 
 		List<String> out = new ArrayList<String>();
 		out.add(new Gson().toJson(reqDetail));
-		out.add(new Gson().toJson(heatTemplate));
 		obj.put("details", out);
 		if ("SLGF".equalsIgnoreCase(type)) {
 			obj.put("status", reqDetail.getStatus());
