@@ -96,6 +96,7 @@ public class VnfInstantiationMilestoneService {
 		HttpHeaders headers = null;
 		JSONParser jsonParser = null;
 		try {
+			jsonParser = new JSONParser();
 			headers = new HttpHeaders();
 			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(reqJSON, headers);
 			String url = pythonServiceUri + "/C3P/api/openstack/deploy/stack";
