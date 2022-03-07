@@ -516,14 +516,9 @@ public class ConfigurationManagement {
 			logger.info("createConfigurationDcm - configReqToSendToC3pCode -NetworkType- "
 					+ configReqToSendToC3pCode.getNetworkType());
 			Map<String, String> result = null;
-			if (configReqToSendToC3pCode.getNetworkType().equalsIgnoreCase(
-					"PNF")
-					|| configReqToSendToC3pCode.getNetworkType()
-							.equalsIgnoreCase("CNF")
-					&& (configReqToSendToC3pCode.getRequestType().contains(
-							"Config") || configReqToSendToC3pCode
-							.getRequestType().contains("MACD"))) {
-
+			if ("PNF".equalsIgnoreCase(configReqToSendToC3pCode.getNetworkType())
+						|| "CNF".equalsIgnoreCase(configReqToSendToC3pCode.getNetworkType())
+						&& (configReqToSendToC3pCode.getRequestType().contains(	"Config") || configReqToSendToC3pCode.getRequestType().contains("MACD"))) {
 				/*
 				 * Extract dynamicAttribs Json Value and map it to
 				 * MasteAtrribute List

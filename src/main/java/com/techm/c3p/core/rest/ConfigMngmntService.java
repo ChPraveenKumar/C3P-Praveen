@@ -2298,8 +2298,7 @@ public class ConfigMngmntService {
 			requestInfoPojo.setBatchId(json.get("batchId").toString());
 		}
 
-		if (!json.get("networkType").toString().equals("")
-				&& json.get("networkType") != null) {
+		if (json.get("networkType") != null && !json.get("networkType").toString().equals("")) {
 			requestInfoPojo.setNetworkType(json.get("networkType").toString());
 			if (requestInfoPojo.getNetworkType().equalsIgnoreCase("VNF")) {
 				DeviceDiscoveryEntity device = deviceDiscoveryRepository
@@ -2315,7 +2314,7 @@ public class ConfigMngmntService {
 			DeviceDiscoveryEntity networkfunctio = deviceDiscoveryRepository
 					.findDVNFSupportByDHostName(requestInfoPojo.getHostname());
 			requestInfoPojo.setNetworkType(networkfunctio.getdVNFSupport());
-			if (requestInfoPojo.getNetworkType().equalsIgnoreCase("VNF")) {
+			if (requestInfoPojo.getNetworkType() != null && requestInfoPojo.getNetworkType().equalsIgnoreCase("VNF")) {
 				DeviceDiscoveryEntity device = deviceDiscoveryRepository
 						.findByDHostName(json.get("hostname").toString()
 								.toUpperCase());

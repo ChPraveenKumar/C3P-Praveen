@@ -178,7 +178,7 @@ public class PreProcessMilestoneTest {
 						requestVersion = backupRequestData.get(0).getRequestVersion();
 						backupTime = String.valueOf(backupRequestData.get(0).getDateofProcessing());
 						obj.put("reachability", "Not Applicable");
-						obj.put("status", "fetched last backup"+dateUtil.dateTimeInAppFormat(backupTime));
+						obj.put("status", "fetched last backup "+dateUtil.dateTimeInAppFormat(backupTime));
 					}
 									
 				} 
