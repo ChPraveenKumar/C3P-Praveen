@@ -76,16 +76,16 @@ public class RequestDetailsService {
 			TestsSelectedEntity testsSelected = testsSelectedRepo.findByRequestId(requestId);
 			if (testsSelected != null && testsSelected.getTestsSelected() != null) {
 				res = testsSelected.getTestsSelected();
-			}
-			JSONArray jsonArray = new JSONArray(res);
-			for (int i = 0; i < jsonArray.length(); i++) {
-				JSONObject explrObject = jsonArray.getJSONObject(i);
-				if (explrObject.get("testCategory").toString().equalsIgnoreCase(testCategory)) {
-					TestDetail test = new TestDetail();
-					test.setTestName(explrObject.getString("testName"));
-					resultList.add(test);
+				JSONArray jsonArray = new JSONArray(res);
+				for (int i = 0; i < jsonArray.length(); i++) {
+					JSONObject explrObject = jsonArray.getJSONObject(i);
+					if (explrObject.get("testCategory").toString().equalsIgnoreCase(testCategory)) {
+						TestDetail test = new TestDetail();
+						test.setTestName(explrObject.getString("testName"));
+						resultList.add(test);
+					}
 				}
-			}
+			}			
 		} catch (Exception exe) {
 			logger.error("Exception in findSelectedTests method --> " + exe.getMessage());
 		}
