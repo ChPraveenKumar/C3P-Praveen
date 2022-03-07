@@ -1252,7 +1252,29 @@ public class GetTemplateConfigurationData {
 		JSONParser parser = new JSONParser();
 		JSONObject json = (JSONObject) parser.parse(request);
 		String listType = json.get("listType").toString();
-		 List<TemplateBasicConfigurationPojo> templateListData = templateManagementDetailsService.getAuditTemplateListData(listType);
+		List<TemplateBasicConfigurationPojo> templateListData = templateManagementDetailsService.getAuditTemplateListData(listType);
+		JSONObject data = new JSONObject();
+		String dataJson = new Gson().toJson(templateListData);
+		data.put("output", dataJson);
+		if (templateListData != null) {
+			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.BAD_REQUEST);
+
+		}
+		return responseEntity;
+	}
+	
+	@SuppressWarnings({ "unchecked", "unused" })
+	@GET
+	@RequestMapping(value = "/getAuditTemplateListUsingDevice", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<JSONObject> getAuditTemplateListUsingDevice(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(request);
+		String listType = json.get("listType").toString();
+		String vendor = json.get("vendor").toString();
+		 List<TemplateBasicConfigurationPojo> templateListData = templateManagementDetailsService.getAuditTemplateListDataUsingDevice(listType, vendor);
 		 JSONObject data = new JSONObject();
 		 String dataJson = new Gson().toJson(templateListData);
 		 data.put("output", dataJson);
@@ -1264,6 +1286,7 @@ public class GetTemplateConfigurationData {
 		}
 		return responseEntity;
 	}
+	
 	
 	@SuppressWarnings({ "unchecked", "unused" })
 	@GET

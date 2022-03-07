@@ -3058,7 +3058,7 @@ public class DcmConfigService {
 
 	private void templateFileCreator(List<RequestInfoPojo> requestInfoSOList, RequestInfoPojo request) {
 		if (requestInfoSOList.size() == 1) {
-			if (!requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("Test")) {
+			if (!requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("Test") && !requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("Config Audit")) {
 				if (!requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("IOSUPGRADE")) {
 					createHeader(request);
 					createTemplate(request);

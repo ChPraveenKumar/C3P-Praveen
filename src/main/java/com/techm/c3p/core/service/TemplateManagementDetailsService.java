@@ -310,6 +310,13 @@ public class TemplateManagementDetailsService {
 		list = templateManagementDao.getAuditTemplateList(listType);
 		return list;
 	}
+	
+	public List<TemplateBasicConfigurationPojo> getAuditTemplateListDataUsingDevice(String listType, String vendor) {	
+		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
+		list = templateManagementDao.getAuditTemplateListUsingDevice(listType, vendor);
+		return list;
+	}
+	
 	public List<DeviceDiscoverPojo> getDeviceListForAudit(String templateId,String version,
 			 String vendor,String deviceOs,String osVersion,String deviceFamily,String networkType) {	
 		List<DeviceDiscoverPojo> list = new ArrayList<DeviceDiscoverPojo>();
