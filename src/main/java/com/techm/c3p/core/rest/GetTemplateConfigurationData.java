@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -1271,18 +1272,29 @@ public class GetTemplateConfigurationData {
 	public ResponseEntity<JSONObject> getAuditTemplateListUsingDevice(@RequestBody String request) throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
 		JSONParser parser = new JSONParser();
-		JSONObject json = (JSONObject) parser.parse(request);
-		String listType = json.get("listType").toString();
-		String vendor = json.get("vendor").toString();
-		 List<TemplateBasicConfigurationPojo> templateListData = templateManagementDetailsService.getAuditTemplateListDataUsingDevice(listType, vendor);
-		 JSONObject data = new JSONObject();
-		 String dataJson = new Gson().toJson(templateListData);
-		 data.put("output", dataJson);
-		if (templateListData != null) {			
-			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.OK);
-		} else {
-			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.BAD_REQUEST);
+		try {
+			JSONObject json = (JSONObject) parser.parse(request);
+			String listType = json.get("listType").toString();
+			String vendor = json.get("vendor").toString();
+			 List<TemplateBasicConfigurationPojo> templateListData = templateManagementDetailsService.getAuditTemplateListDataUsingDevice(listType, vendor);
+			 JSONObject data = new JSONObject();
+			 String dataJson = new Gson().toJson(templateListData);
+			 data.put("output", dataJson);
+			if (templateListData != null) {			
+				responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.OK);
+			} else {
+				responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.BAD_REQUEST);
+				
+			}
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			logger.error(e.getStackTrace());
 			
+		}catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			logger.error(e.getStackTrace());
 		}
 		return responseEntity;
 	}

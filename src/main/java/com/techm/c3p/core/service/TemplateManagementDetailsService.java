@@ -306,14 +306,12 @@ public class TemplateManagementDetailsService {
 	}
 	
 	public List<TemplateBasicConfigurationPojo> getAuditTemplateListData(String listType) {	
-		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
-		list = templateManagementDao.getAuditTemplateList(listType);
+		List<TemplateBasicConfigurationPojo> list = templateManagementDao.getAuditTemplateList(listType);
 		return list;
 	}
 	
 	public List<TemplateBasicConfigurationPojo> getAuditTemplateListDataUsingDevice(String listType, String vendor) {	
-		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
-		list = templateManagementDao.getAuditTemplateListUsingDevice(listType, vendor);
+		List<TemplateBasicConfigurationPojo> list = templateManagementDao.getAuditTemplateListUsingDevice(listType, vendor);
 		return list;
 	}
 	

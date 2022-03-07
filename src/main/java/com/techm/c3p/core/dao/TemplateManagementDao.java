@@ -2577,10 +2577,10 @@ public List<DeviceDiscoverPojo> getDeviceListForAudit(String templateId,String v
 		connection = jDBCConnection.getConnection();
 		String query2;
 		if(listType.equalsIgnoreCase("Golden")) {
-		 query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type not in ('VNF') and temp_status='Approved' and temp_golden=true and temp_vendor='"+vendor+"' order by temp_created_date desc";
+		 query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type='PNF' and temp_status='Approved' and temp_golden=true and temp_vendor='"+vendor+"' order by temp_created_date desc";
 		}
 		else {
-			query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type not in ('VNF') and temp_status='Approved'and temp_vendor='"+vendor+"' order by temp_created_date desc";
+			query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type='PNF' and temp_status='Approved'and temp_vendor='"+vendor+"' order by temp_created_date desc";
 		}
 		try {
 			Statement pst = connection.createStatement();

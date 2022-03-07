@@ -6544,7 +6544,7 @@ public class RequestInfoDao {
 							+ UUID.randomUUID().toString().toUpperCase();
 
 				}
-				else if (requestInfoSO.getRequestType().equalsIgnoreCase("Config Audit")) {
+				else if ("Config Audit".equalsIgnoreCase(requestInfoSO.getRequestType())) {
 					alphaneumeric_req_id = "SLGA-"
 							+ UUID.randomUUID().toString().toUpperCase();
 
