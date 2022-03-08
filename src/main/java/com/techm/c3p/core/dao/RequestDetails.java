@@ -374,11 +374,12 @@ public class RequestDetails {
 		reqDetail.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(reqDetail.getRequestCreatedOn()));
 
 		List<HeatTemplate> heatTemplate = heatTemplateRepo.findByHeatTemplateId(reqDetail.getTemplateID(), reqDetail.getVendor());
+		if(heatTemplate!=null && !heatTemplate.isEmpty()) {
 		logger.info("customerReportUIRevamp -> heatTemplate "+heatTemplate);
 		reqDetail.setVmType(heatTemplate.get(0).getVmType());
 		reqDetail.setNetworkFunction(heatTemplate.get(0).getNetworkFunction());
 		reqDetail.setFlavour(heatTemplate.get(0).getFlavour());
-
+		}
 		if("Config Audit".equals(reqDetail.getRequestType())) {
 			List<AuditDashboardResultEntity> auditResultData = auditDashboardResultRepository.findByAdRequestIdAndAdRequestVersion(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 			if(auditResultData.size()>0) {
