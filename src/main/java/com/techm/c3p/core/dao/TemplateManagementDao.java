@@ -2565,4 +2565,60 @@ public List<DeviceDiscoverPojo> getDeviceListForAudit(String templateId,String v
 		return list;
 
 	}
+
+	/**
+	 * get vendor related audit template list 
+	 * @param listType
+	 * @return
+	 */
+	public List<TemplateBasicConfigurationPojo> getAuditTemplateListUsingDevice(String listType, String vendor) {
+		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
+		TemplateBasicConfigurationPojo pojo;
+		connection = jDBCConnection.getConnection();
+		String query2;
+		if(listType.equalsIgnoreCase("Golden")) {
+		 query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type='PNF' and temp_status='Approved' and temp_golden=true and temp_vendor='"+vendor+"' order by temp_created_date desc";
+		}
+		else {
+			query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type='PNF' and temp_status='Approved'and temp_vendor='"+vendor+"' order by temp_created_date desc";
+		}
+		try {
+			Statement pst = connection.createStatement();
+			ResultSet rs1 = pst.executeQuery(query2);
+			while (rs1.next()) {
+				pojo = new TemplateBasicConfigurationPojo();
+				pojo.setVendor(rs1.getString("temp_vendor"));
+				pojo.setModel(rs1.getString("temp_model"));
+				pojo.setDeviceFamily(rs1.getString("temp_device_family"));
+				pojo.setDeviceOs(rs1.getString("temp_device_os"));
+				pojo.setOsVersion(rs1.getString("temp_os_version"));
+				pojo.setRegion(rs1.getString("temp_region"));
+				pojo.setTemplateId(rs1.getString("temp_id"));
+				Timestamp d = rs1.getTimestamp("temp_created_date");
+				pojo.setDate(dateUtil.dateTimeInAppFormat(d.toString()));
+				pojo.setVersion(rs1.getString("temp_version"));
+				Timestamp d1 = rs1.getTimestamp("temp_updated_date");
+				pojo.setUpdatedDate(dateUtil.dateTimeInAppFormat(d.toString()));
+				pojo.setComment(rs1.getString("temp_comment_section"));
+	
+				if (pojo.getComment().isEmpty()) {
+					pojo.setComment("undefined");
+				}
+				pojo.setStatus(rs1.getString("temp_status"));
+				pojo.setApprover(rs1.getString("temp_approver"));
+				pojo.setCreatedBy(rs1.getString("temp_created_by"));
+				pojo.setNetworkType(rs1.getString("temp_network_type"));
+				pojo.setIsGoldenTemplate(rs1.getBoolean("temp_golden"));
+				pojo.setAlias(rs1.getString("temp_alias"));
+				list.add(pojo);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DBUtil.close(connection);
+		}
+		return list;
+	}
+
 }

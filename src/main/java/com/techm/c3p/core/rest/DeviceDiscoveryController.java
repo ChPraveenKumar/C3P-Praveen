@@ -220,6 +220,7 @@ public class DeviceDiscoveryController implements Observer {
 				object.put("role", getAllDevice.get(i).getdRole());
 				object.put("powerSupply", getAllDevice.get(i).getdPowerSupply());
 				object.put("deviceId", getAllDevice.get(i).getdId());
+				object.put("vnfSupport", getAllDevice.get(i).getdVNFSupport());
 				if (getAllDevice.get(i).getCustSiteId() != null) {
 					object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
 					SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
