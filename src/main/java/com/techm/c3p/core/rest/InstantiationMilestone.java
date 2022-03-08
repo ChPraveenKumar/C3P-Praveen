@@ -1,6 +1,7 @@
 package com.techm.c3p.core.rest;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.POST;
@@ -133,7 +134,7 @@ public class InstantiationMilestone extends Thread {
 							}
 
 							outputStatus = vnfInstantiationMilestoneService
-									.openStackInstantiation(reqJson);
+									.openStackInstantiation(requestId,reqJson);
 						} else {
 							/*
 							 * Call the vnfInstantiation to instantiate vnf in
@@ -146,7 +147,7 @@ public class InstantiationMilestone extends Thread {
 						if (outputStatus) {
 							// update topology table
 							// attriblist
-							Boolean result2 = false, result1 = false, result3 = false;
+							Boolean result2 = false, result1 = false, result3 = false, result=false;
 							List<DeviceDiscoveryEntity> sList = deviceInfoRepo
 									.findBydHostName(requestinfo.getHostname());
 							if (sList != null) {
@@ -166,17 +167,16 @@ public class InstantiationMilestone extends Thread {
 										.findBydId(targetdeviceid2);
 								result2 = updateTopologyTable(attriblist,
 										targetdevice2, sourceDevice);
-
+								result= true;
 								// hardcoded for now
 								int targetdeviceid3 = Integer.parseInt(C3PCoreAppLabels.VMME_DEVICE_3.getValue());;
 								DeviceDiscoveryEntity targetdevice3 = deviceInfoRepo
 										.findBydId(targetdeviceid3);
 								result3 = updateTopologyTable(attriblist,
-										targetdevice2, sourceDevice);
+										targetdevice3, sourceDevice);
 
 							}
-							if (result2 == true && result1 == true
-									&& result3 == true) {
+							if (result) {
 								requestDao.editRequestforReportWebserviceInfo(
 										requestinfo.getAlphanumericReqId(),
 										Double.toString(requestinfo
@@ -382,23 +382,25 @@ public class InstantiationMilestone extends Thread {
 			tEntity1.setsHostname(sourceDevice.getdHostName());
 			tEntity1.setsMgmtip(eth0_ipv4addr);
 			tEntity1.setsTopoTypeName("Stack");
-
+			tEntity1.settTopologyType("LINK");
 			tEntity1.settDeviceId(targetdevice.getdId());
 			tEntity1.settHostname(targetdevice.getdHostName());
 			tEntity1.settMgmtip(targetdevice.getdMgmtIp());
 			tEntity1.settTopoTypeName("Stack");
+			tEntity1.setTpCreatedBy("system");
+			tEntity1.setTpCreatedDate(new Date(System.currentTimeMillis()));
 			if (vm_service.equalsIgnoreCase("lb-0")) {
 				if (targetdevice.getdHostName().equalsIgnoreCase("MGMT-Cloud7")) {
 					tEntity1.setsInterfaceIp(oam_ip_float);
 				} else if (targetdevice.getdHostName().equalsIgnoreCase(
-						"North-South")) {
+						"NorthSouth")) {
 					tEntity1.setsInterfaceIp(epc_external_network1_fixed_ip);
 				}
 			} else {
 				if (targetdevice.getdHostName().equalsIgnoreCase("MGMT-Cloud7")) {
 					tEntity1.setsInterfaceIp(oam_ip_float);
 				} else if (targetdevice.getdHostName().equalsIgnoreCase(
-						"East-West")) {
+						"EastWest")) {
 					tEntity1.setsInterfaceIp(port2_fixed_ip);
 				}
 			}
