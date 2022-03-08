@@ -202,10 +202,12 @@ public class RequestDetailsServiceWithVersion {
 							pojo.setEndDateOfProcessing(dateUtil.dateTimeInAppFormat(pojo.getEndDateOfProcessing()));
 						logger.info("search -> "+pojo.getTemplateID()+" "+pojo.getAlphanumericReqId());
 						List<HeatTemplate>heatTemplates = heatTemplateRepo.findByHeatTemplateId(pojo.getTemplateID(), pojo.getVendor());
-						logger.info("search -> heatTemplates "+heatTemplates);
-						pojo.setVmType(heatTemplates.get(0).getVmType());
-						pojo.setFlavour(heatTemplates.get(0).getFlavour());
-						pojo.setNetworkFunction(heatTemplates.get(0).getNetworkFunction());
+						if (heatTemplates != null && !heatTemplates.isEmpty()) {
+							logger.info("search -> heatTemplates " + heatTemplates);
+							pojo.setVmType(heatTemplates.get(0).getVmType());
+							pojo.setFlavour(heatTemplates.get(0).getFlavour());
+							pojo.setNetworkFunction(heatTemplates.get(0).getNetworkFunction());
+						}
 					}
 					
 					jsonArray = new Gson().toJson(detailsList);
