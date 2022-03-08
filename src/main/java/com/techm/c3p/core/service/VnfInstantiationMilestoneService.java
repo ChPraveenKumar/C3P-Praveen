@@ -240,6 +240,7 @@ public class VnfInstantiationMilestoneService {
 			deviceInfo.setdNumberOfPods(0);
 			deviceInfo.setdMgmtIp(managementip);
 			deviceInfo.setdHostName(requestInfoObj.getHostName());
+			deviceInfo.setdVNFSupport("VNF");
 			/*SiteInfoEntity siteEnt=new SiteInfoEntity();
 			siteEnt.setId(1);*/
 			SiteInfoEntity ent=new SiteInfoEntity();
