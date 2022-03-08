@@ -67,18 +67,51 @@ public class TopologyEntity implements Serializable {
 	private String tTopoTypeName;
 	@Column(name = "t_topo_type_id", length = 45)
 	private String tTopoTypeId;
+	
+	
+	@Column(name = "tp_created_by", length = 45)
+	private String tpCreatedBy;
 
-	@Column(name = "created_by", length = 45)
-	private String createdBy;
+	@Column(name = "tp_updated_by", length = 45)
+	private String tpUpdatedBy;
 
-	@Column(name = "updated_by", length = 45)
-	private String updatedBy;
+	public String getTpCreatedBy() {
+		return tpCreatedBy;
+	}
 
-	@Column(name = "updated_date")
-	private Date updatedDate;
+	public void setTpCreatedBy(String tpCreatedBy) {
+		this.tpCreatedBy = tpCreatedBy;
+	}
 
-	@Column(name = "created_date")
-	private Date createdDate;
+	public String getTpUpdatedBy() {
+		return tpUpdatedBy;
+	}
+
+	public void setTpUpdatedBy(String tpUpdatedBy) {
+		this.tpUpdatedBy = tpUpdatedBy;
+	}
+
+	public Date getTpUpdatedDate() {
+		return tpUpdatedDate;
+	}
+
+	public void setTpUpdatedDate(Date tpUpdatedDate) {
+		this.tpUpdatedDate = tpUpdatedDate;
+	}
+
+	public Date getTpCreatedDate() {
+		return tpCreatedDate;
+	}
+
+	public void setTpCreatedDate(Date tpCreatedDate) {
+		this.tpCreatedDate = tpCreatedDate;
+	}
+
+	@Column(name = "tp_updated_date")
+	private Date tpUpdatedDate;
+
+	@Column(name = "tp_created_date")
+	private Date tpCreatedDate;
 
 
 	public int getRowid() {
@@ -225,37 +258,6 @@ public class TopologyEntity implements Serializable {
 		this.tTopoTypeId = tTopoTypeId;
 	}
 
-	public String getCreatedBy() {
-		return createdBy;
-	}
-
-	public void setCreatedBy(String createdBy) {
-		this.createdBy = createdBy;
-	}
-
-	public String getUpdatedBy() {
-		return updatedBy;
-	}
-
-	public void setUpdatedBy(String updatedBy) {
-		this.updatedBy = updatedBy;
-	}
-
-	public Date getUpdatedDate() {
-		return updatedDate;
-	}
-
-	public void setUpdatedDate(Date updatedDate) {
-		this.updatedDate = updatedDate;
-	}
-
-	public Date getCreatedDate() {
-		return createdDate;
-	}
-
-	public void setCreatedDate(Date createdDate) {
-		this.createdDate = createdDate;
-	}
 
 	public TopologyEntity() {
 		super();
