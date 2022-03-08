@@ -93,6 +93,7 @@ public class GetReportData {
 
 		
 		JSONObject obj = new JSONObject();
+		JSONObject vMMEObj = new JSONObject();
 		JSONArray jsonArray = new JSONArray();
 		String jsonMessage = "";
 		String format = "false";
@@ -264,12 +265,23 @@ public class GetReportData {
 			} 
 			else if(createConfigRequestDCM.getTestType().equalsIgnoreCase("instantiate"))
 			{
-				List<ResourceCharacteristicsHistoryEntity>list=resourceCharHistoryRepo.findBySoRequestId(createConfigRequestDCM.getRequestId());
-				for(ResourceCharacteristicsHistoryEntity item: list)
-				{
-					jsonMessage=jsonMessage+item.getRcName()+" :"+item.getRcValue()+"\n";
+				List<ResourceCharacteristicsHistoryEntity> list = resourceCharHistoryRepo
+						.findBySoRequestId(createConfigRequestDCM.getRequestId());
+
+				if ("Affirmed".equalsIgnoreCase(requestinfo.getVendor())) {
+					for (ResourceCharacteristicsHistoryEntity item : list) {
+						if ("flavor_name".equalsIgnoreCase(item.getRcName())
+								|| "vm_service".equalsIgnoreCase(item.getRcName())
+								|| "availability_zone".equalsIgnoreCase(item.getRcName())) {
+							vMMEObj.put(item.getRcName(), item.getRcValue());
+						}
+					}
+				} else {
+					for (ResourceCharacteristicsHistoryEntity item : list) {
+						jsonMessage = jsonMessage + item.getRcName() + " :" + item.getRcValue() + "\n";
+					}
 				}
-				
+
 			}
 			else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")) {
 				org.json.simple.JSONArray prevalidateArray = new org.json.simple.JSONArray();
@@ -378,7 +390,11 @@ public class GetReportData {
 			}
 			obj.put(new String("format"), new String(format));
 			obj.put(new String("formatColor"), new String(formatColor));
-			obj.put(new String("output"), new String(jsonMessage));
+			if("Affirmed".equalsIgnoreCase(requestinfo.getVendor())) {
+				obj.put(new String("output"), vMMEObj);
+			}else {
+				obj.put(new String("output"), new String(jsonMessage));
+			}
 			obj.put(new String("testType"), new String(createConfigRequestDCM.getTestType()));
 			obj.put(new String("DilevaryMilestones"), dilevaryMilestonesforOSupgrade);
 
