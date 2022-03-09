@@ -19,6 +19,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,7 @@ import com.techm.c3p.core.models.TemplateLeftPanelJSONModel;
 import com.techm.c3p.core.models.TemplateVersioningJSONModel;
 import com.techm.c3p.core.pojo.CommandPojo;
 import com.techm.c3p.core.pojo.DeviceDetailsPojo;
+import com.techm.c3p.core.pojo.DeviceDiscoverPojo;
 import com.techm.c3p.core.pojo.GetTemplateMngmntPojo;
 import com.techm.c3p.core.pojo.Global;
 import com.techm.c3p.core.pojo.TemplateBasicConfigurationPojo;
@@ -1231,6 +1233,90 @@ public class GetTemplateConfigurationData {
 	public ResponseEntity<JSONObject> getTemplateCompareDashboard() throws Exception {
 		ResponseEntity<JSONObject> responseEntity = null;
 		 List<TemplateBasicConfigurationPojo> templateListData = templateManagementDetailsService.getTemplateListData();
+		 JSONObject data = new JSONObject();
+		 String dataJson = new Gson().toJson(templateListData);
+		 data.put("output", dataJson);
+		if (templateListData != null) {			
+			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.BAD_REQUEST);
+			
+		}
+		return responseEntity;
+	}
+	
+	@SuppressWarnings({ "unchecked", "unused" })
+	@GET
+	@RequestMapping(value = "/getAuditTemplateDashboard", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<JSONObject> getAuditTemplateDashboard(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(request);
+		String listType = json.get("listType").toString();
+		List<TemplateBasicConfigurationPojo> templateListData = templateManagementDetailsService.getAuditTemplateListData(listType);
+		JSONObject data = new JSONObject();
+		String dataJson = new Gson().toJson(templateListData);
+		data.put("output", dataJson);
+		if (templateListData != null) {
+			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.BAD_REQUEST);
+
+		}
+		return responseEntity;
+	}
+	
+	@SuppressWarnings({ "unchecked", "unused" })
+	@GET
+	@RequestMapping(value = "/getAuditTemplateListUsingDevice", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<JSONObject> getAuditTemplateListUsingDevice(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONParser parser = new JSONParser();
+		try {
+			JSONObject json = (JSONObject) parser.parse(request);
+			String listType = json.get("listType").toString();
+			String vendor = json.get("vendor").toString();
+			 List<TemplateBasicConfigurationPojo> templateListData = templateManagementDetailsService.getAuditTemplateListDataUsingDevice(listType, vendor);
+			 JSONObject data = new JSONObject();
+			 String dataJson = new Gson().toJson(templateListData);
+			 data.put("output", dataJson);
+			if (templateListData != null) {			
+				responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.OK);
+			} else {
+				responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.BAD_REQUEST);
+				
+			}
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			logger.error(e.getStackTrace());
+			
+		}catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			logger.error(e.getStackTrace());
+		}
+		return responseEntity;
+	}
+	
+	
+	@SuppressWarnings({ "unchecked", "unused" })
+	@GET
+	@RequestMapping(value = "/getDeviceListForAudit", method = RequestMethod.POST, produces = "application/json")
+	public ResponseEntity<JSONObject> getDeviceListForAudit(@RequestBody String request) throws Exception {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONParser parser = new JSONParser();
+		JSONObject json = (JSONObject) parser.parse(request);
+		String templateId = json.get("templateId").toString();
+		String version = json.get("version").toString();
+		String vendor = json.get("vendor").toString();
+		String deviceFamily = json.get("deviceFamily").toString();
+		String deviceOs = json.get("deviceOs").toString();
+		String osVersion = json.get("osVersion").toString();
+		String networkType = json.get("networkType").toString();
+		
+		 List<DeviceDiscoverPojo> templateListData = templateManagementDetailsService.getDeviceListForAudit(templateId,version,
+				 vendor,deviceOs,osVersion,deviceFamily,networkType);
 		 JSONObject data = new JSONObject();
 		 String dataJson = new Gson().toJson(templateListData);
 		 data.put("output", dataJson);

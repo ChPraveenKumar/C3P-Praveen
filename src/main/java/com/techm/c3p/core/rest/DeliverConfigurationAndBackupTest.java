@@ -151,7 +151,7 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 							version);
 
 			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
-					&& !RequestId.contains("SCGC-")) {
+					&& !RequestId.contains("SCGC-") && (!"Config Audit".equals(requestinfo.getRequestType()))) {
 				requestDetailEntity = requestInfoDetailsRepositories
 						.findAllByAlphanumericReqId(RequestId);
 

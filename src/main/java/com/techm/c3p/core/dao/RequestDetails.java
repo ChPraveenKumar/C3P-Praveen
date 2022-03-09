@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,11 +29,24 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 import com.techm.c3p.core.connection.DBUtil;
 import com.techm.c3p.core.connection.JDBCConnection;
+
+import com.techm.c3p.core.entitybeans.HeatTemplate;
+
+import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
+import com.techm.c3p.core.entitybeans.RequestInfoEntity;
+
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.TestStaregyConfigPojo;
+
+import com.techm.c3p.core.repositories.HeatTemplateRepository;
+
+import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
+import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
+
 import com.techm.c3p.core.repositories.TestDetailsRepository;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.WAFADateUtil;
 /*
  * Owner: Rahul Tiwari Reason: Get configuration feature name and details from database
@@ -56,7 +70,19 @@ public class RequestDetails {
 	private TestDetailsRepository testDetailsRepository;
 	
 	@Autowired
+	private HeatTemplateRepository heatTemplateRepo;
+	
+	@Autowired
 	private JDBCConnection jDBCConnection;
+	
+	@Autowired
+	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;	
+
+	@Autowired
+	private AuditDashboardResultRepository auditDashboardResultRepository;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -170,7 +196,7 @@ public class RequestDetails {
 		return map;
 	}
 	@SuppressWarnings("unchecked")
-	public JSONObject customerReportUIRevamp(String requestID, String testType, String version){
+	public JSONObject customerReportUIRevamp(String requestID, String testType, String version) throws SQLException{
 		String STATUS_PASSED = "Success";
 		String STATUS_FAILED = "Fail";
 		String STATUS_NC = "Not Conducted";
@@ -194,12 +220,8 @@ public class RequestDetails {
 		String type = createConfigRequestDCM.getAlphanumericReqId().substring(0,
 				Math.min(createConfigRequestDCM.getAlphanumericReqId().length(), 4));
 		String testAndDiagnosis = "";
-		try {
-			testAndDiagnosis = getTestAndDiagnosisDetails(
-					createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
-		} catch (SQLException e) {
-			logger.error("Error in customerReportUIRevamp : "+e.getMessage());			
-		}
+		testAndDiagnosis = requestDetailsService.getTestAndDiagnosisDetails(
+				createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 		logger.info("customerReportUIRevamp - testAndDiagnosis->"+testAndDiagnosis);
 		Set<String> setOfTestBundle = new HashSet<>();
 		if (testAndDiagnosis != null && !testAndDiagnosis.equals("")) {
@@ -229,6 +251,10 @@ public class RequestDetails {
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
 		JSONObject object = new JSONObject();
 
+		RequestInfoPojo reqDetail = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
+				createConfigRequestDCM.getAlphanumericReqId(),
+				Double.toString(createConfigRequestDCM.getRequestVersion()));
+		
 		if ("SLGF".equalsIgnoreCase(type)) {
 			CreateConfigRequest req = new CreateConfigRequest();
 			req = requestInfoDao.getOSDilevarySteps(createConfigRequestDCM.getAlphanumericReqId(), version);
@@ -279,9 +305,6 @@ public class RequestDetails {
 			}
 
 			// Logic for health checks
-			RequestInfoPojo reqDetail = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
-					createConfigRequestDCM.getAlphanumericReqId(),
-					Double.toString(createConfigRequestDCM.getRequestVersion()));
 
 			List<TestStaregyConfigPojo> firmwareTestDetails = getFirmwareTestDetails(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 				
@@ -296,13 +319,12 @@ public class RequestDetails {
 
 		} else if ("SLGB".equalsIgnoreCase(type)) {
 			obj = requestInfoDao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
+		}else if("Config Audit".equals(reqDetail.getRequestType())) {
+			obj = requestInfoDao.getStatusForConfigData(createConfigRequestDCM);
 		} else {
 			obj = requestInfoDao.getStatusForCustomerReport(createConfigRequestDCM);
 		}
 
-		RequestInfoPojo reqDetail = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(
-				createConfigRequestDCM.getAlphanumericReqId(),
-				Double.toString(createConfigRequestDCM.getRequestVersion()));
 		Map<String, String> resultForFlag = new HashMap<String, String>();
 		resultForFlag = requestInfoDao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion());
 		String flagFordelieverConfig = "";
@@ -350,7 +372,43 @@ public class RequestDetails {
 			reqDetail.setReason(requestInfoDetailsDao.reasonForInstantiationFailure(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion()));
 		}
 		reqDetail.setRequestCreatedOn(dateUtil.dateTimeInAppFormat(reqDetail.getRequestCreatedOn()));
-		
+
+		List<HeatTemplate> heatTemplate = heatTemplateRepo.findByHeatTemplateId(reqDetail.getTemplateID(), reqDetail.getVendor());
+		if(heatTemplate!=null && !heatTemplate.isEmpty()) {
+		logger.info("customerReportUIRevamp -> heatTemplate "+heatTemplate);
+		reqDetail.setVmType(heatTemplate.get(0).getVmType());
+		reqDetail.setNetworkFunction(heatTemplate.get(0).getNetworkFunction());
+		reqDetail.setFlavour(heatTemplate.get(0).getFlavour());
+		}
+		if("Config Audit".equals(reqDetail.getRequestType())) {
+			List<AuditDashboardResultEntity> auditResultData = auditDashboardResultRepository.findByAdRequestIdAndAdRequestVersion(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
+			if(auditResultData.size()>0) {
+				reqDetail.setCompliance("No");
+			}else {
+				reqDetail.setCompliance("Yes");
+			}
+			String backupTime ="";
+			if("lastBackup".equals(reqDetail.getConfigurationGenerationMethods())) {
+			List<RequestInfoEntity> backupRequestData = requestInfoDetailsRepositories
+					.findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatus(
+							reqDetail.getHostname(), reqDetail.getManagementIp(), "SLGB", "Success");
+			if (backupRequestData == null || backupRequestData.isEmpty()) {				
+				backupTime = reqDetail.getRequestCreatedOn();
+				reqDetail.setComplianceData(backupTime);
+			} else {
+				Collections.reverse(backupRequestData);
+				backupTime = String.valueOf(backupRequestData.get(0).getDateofProcessing());
+				reqDetail.setComplianceData(dateUtil.dateTimeInAppFormat(backupTime));
+				}
+			}
+			else if("config".equals(reqDetail.getConfigurationGenerationMethods())) {
+				backupTime = reqDetail.getRequestCreatedOn();
+				reqDetail.setComplianceData(backupTime);
+			}
+			
+			
+		}
+
 		List<String> out = new ArrayList<String>();
 		out.add(new Gson().toJson(reqDetail));
 		obj.put("details", out);
@@ -445,6 +503,7 @@ public class RequestDetails {
 			DBUtil.close(result);
 		}
 		return testResultList;
-		
 	}
+		
+
 }

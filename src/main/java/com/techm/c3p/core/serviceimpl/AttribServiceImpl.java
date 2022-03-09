@@ -80,6 +80,7 @@ public class AttribServiceImpl implements AttribSevice {
 	}
 
 	/* To get Attrib final Response */
+	@SuppressWarnings("unlikely-arg-type")
 	@Override
 	public GetAttribResponseEntity createGetAttribResponse(List<PredefinedMappedAtrribPojo> predefinedGenericAtrribList,
 			List<AttribUIComponentPojo> attribUIComponentList, List<AttribValidationPojo> attribValidationList,
@@ -110,7 +111,8 @@ public class AttribServiceImpl implements AttribSevice {
 					predefinedAttrib.setName(predefined.getName());
 					return predefinedAttrib;
 				}).collect(Collectors.toList());
-
+		
+		
 		getAttribResponseEntity.setPredefinedMappedList(predefinedAtrribList);
 		getAttribResponseEntity.setPredefinedAttribList(predefinedAttribList);
 		getAttribResponseEntity.setGenericAttribList(genericAttribList);

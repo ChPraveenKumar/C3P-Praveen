@@ -123,6 +123,16 @@ public class RequestInfoPojo {
 	
 	private String projectName;
 	
+	private String compliance;
+	
+	private String complianceData;
+	
+	private String vmType;
+	
+	private String flavour;
+	
+	private String networkFunction;
+	
 	public String getProjectName() {
 		return projectName;
 	}
@@ -211,6 +221,30 @@ public class RequestInfoPojo {
 
 	public void setApiCallType(String apiCallType) {
 		this.apiCallType = apiCallType;
+	}
+	
+	public String getVmType() {
+		return vmType;
+	}
+
+	public void setVmType(String vmType) {
+		this.vmType = vmType;
+	}
+
+	public String getFlavour() {
+		return flavour;
+	}
+
+	public void setFlavour(String flavour) {
+		this.flavour = flavour;
+	}
+
+	public String getNetworkFunction() {
+		return networkFunction;
+	}
+
+	public void setNetworkFunction(String networkFunction) {
+		this.networkFunction = networkFunction;
 	}
 
 	private String osVer;
@@ -1846,6 +1880,19 @@ public class RequestInfoPojo {
 	public void setTestType(String testType) {
 		this.testType = testType;
 	}
-	
+	public String getCompliance() {
+		return compliance;
+	}
 
+	public void setCompliance(String compliance) {
+		this.compliance = compliance;
+	}
+
+	public String getComplianceData() {
+		return complianceData;
+	}
+
+	public void setComplianceData(String complianceData) {
+		this.complianceData = complianceData;
+	}
 }

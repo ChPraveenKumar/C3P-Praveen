@@ -122,7 +122,7 @@ public class FinalReportForTTUTest extends Thread {
 		CSVWriteAndConnectPythonTemplateSuggestion csvWriteAndConnectPythonTemplateSuggestion = new CSVWriteAndConnectPythonTemplateSuggestion();
 		try {			
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if(!"SNAI".equalsIgnoreCase(type) && !"SNAD".equalsIgnoreCase(type))
+			if(!"SNAI".equalsIgnoreCase(type) && !"SNAD".equalsIgnoreCase(type) && !"Config Audit".equals(requestinfo.getRequestType()))
 			{
 			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				String statusVAlue = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
@@ -147,11 +147,10 @@ public class FinalReportForTTUTest extends Thread {
 								requestinfo.getAlphanumericReqId());*/
 						requestInfoService.releaselockDeviceForRequest(requestinfo.getManagementIp(),
 								requestinfo.getAlphanumericReqId());
-						CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
-						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+						CertificationTestPojo certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 								"preValidate");
-
+						if(certificationTestPojo!=null) {
 						if (certificationTestPojo.getDeviceReachabilityTest().equalsIgnoreCase("2")) {
 							requestinfo.setDeviceReachabilityTest(FLAG_FAIL);
 						}
@@ -176,8 +175,9 @@ public class FinalReportForTTUTest extends Thread {
 						if (certificationTestPojo.getVendorTest().equalsIgnoreCase("1")) {
 							requestinfo.setVendorTest(FLAG_PASS);
 						}
+						}
 
-						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+						certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 								"HealthTest");
 						if (null != certificationTestPojo.getThroughput()
@@ -226,7 +226,7 @@ public class FinalReportForTTUTest extends Thread {
 
 						ReoprtFlags reoprtFlags = new ReoprtFlags();
 
-						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+						certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 								"networkTest");
 						
@@ -254,7 +254,7 @@ public class FinalReportForTTUTest extends Thread {
 								}
 							}
 						}
-						certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+						certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 								requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 								"FinalReport");
 						if (null != certificationTestPojo.getSuggestion()
@@ -526,7 +526,7 @@ public class FinalReportForTTUTest extends Thread {
 					// requestInfoDao.releaselockDeviceForRequest(createConfigRequest.getManagementIp(),createConfigRequest.getRequestId());
 
 					CertificationTestPojo certificationTestPojo = new CertificationTestPojo();
-					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+					certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 							requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 							"preValidate");
 
@@ -555,7 +555,7 @@ public class FinalReportForTTUTest extends Thread {
 						requestinfo.setVendorTest(FLAG_PASS);
 					}
 
-					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+					certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 							requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 							"HealthTest");
 					if (null != certificationTestPojo.getThroughput() && certificationTestPojo.getThroughput() != "") {
@@ -603,7 +603,7 @@ public class FinalReportForTTUTest extends Thread {
 
 					ReoprtFlags reoprtFlags = new ReoprtFlags();
 
-					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+					certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 							requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 							"networkTest");
 					
@@ -631,7 +631,7 @@ public class FinalReportForTTUTest extends Thread {
 							}
 						}
 					}
-					certificationTestPojo = requestInfoDao.getCertificationTestFlagData(
+					certificationTestPojo = requestInfoService.getCertificationTestFlagData(
 							requestinfo.getAlphanumericReqId(), Double.toString(requestinfo.getRequestVersion()),
 							"FinalReport");
 					if (null != certificationTestPojo.getSuggestion()
@@ -904,8 +904,31 @@ public class FinalReportForTTUTest extends Thread {
 				}
 
 			}
+			}else if("Config Audit".equals(requestinfo.getRequestType())) {
+
+				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+						Double.toString(requestinfo.getRequestVersion()), "customer_report", "4", "In Progress");
+				//Check if instantiation is 1 or not in webserviceinfo table
+				int status=requestInfoDetailsDao.getStatusForMilestone(RequestId,version,"preprocess");
+				if(status == 1)
+				{
+					value = true;
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "customer_report", "1", "Success");
+					jsonArray = new Gson().toJson(value);
+					//obj.put(new String("output"), jsonArray);
+				}
+				else if(status==2)
+				{
+					value = false;
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()), "customer_report", "2", "Failure");
+					jsonArray = new Gson().toJson(value);
+					//obj.put(new String("output"), jsonArray);
+				}
+				
 			}
-			else
+			else 
 			{
 				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 						Double.toString(requestinfo.getRequestVersion()), "customer_report", "4", "In Progress");

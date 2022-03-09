@@ -291,6 +291,8 @@ public interface RequestInfoDetailsRepositories extends JpaRepository<RequestInf
 	@Modifying
 	@Query(value = "update RequestInfoEntity c SET c.managmentIP = :r_management_ip WHERE c.alphanumericReqId = :alphanumericReqId")
 	int updateMgmtIpbyDeviceid(@Param("r_management_ip") String r_management_ip, @Param("alphanumericReqId") String alphanumericReqId);
+	
+	public List<RequestInfoEntity> findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatus(String hostName, String managementIp,String requestId,String status);
 }
 
 

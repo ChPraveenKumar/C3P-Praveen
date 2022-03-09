@@ -1972,6 +1972,9 @@ public class ConfigMngmntService {
 			if (json.containsKey("requestCreatorName"))
 				userName = json.get("requestCreatorName").toString();
 
+			if(json.containsKey("rConfigGenerationMethod") && json.get("rConfigGenerationMethod")!=null) {
+				requestInfoPojo.setConfigurationGenerationMethods(json.get("rConfigGenerationMethod").toString());
+			}
 			if (requestInfoPojo.getRequestType().contains("Config")
 					&& requestInfoPojo.getNetworkType().equalsIgnoreCase("PNF")) {
 
@@ -1982,7 +1985,7 @@ public class ConfigMngmntService {
 				}
 
 				JSONArray replicationArray = null;
-				if (json.containsKey("replicationAttrib")) {
+				if (json.containsKey("replicationAttrib") && json.get("replicationAttrib")!=null) {
 					replicationArray = (JSONArray) json
 							.get("replicationAttrib");
 
@@ -2005,7 +2008,7 @@ public class ConfigMngmntService {
 				}
 
 				org.json.simple.JSONArray featureListJson = null;
-				if (json.containsKey("selectedFeatures")) {
+				if (json.containsKey("selectedFeatures") && json.get("selectedFeatures")!= null ) {
 					featureListJson = (org.json.simple.JSONArray) json
 							.get("selectedFeatures");
 				}
@@ -2031,6 +2034,7 @@ public class ConfigMngmntService {
 
 				// Logic to create pojo list
 				List<MasterCharacteristicsEntity> attributesFromInput = new ArrayList<MasterCharacteristicsEntity>();
+				if(features!=null) {
 				for (TemplateFeaturePojo feature : features) {
 					List<MasterCharacteristicsEntity> byAttribMasterFeatureId = masterCharachteristicRepository
 							.findAllByCFId(feature.getfMasterId());
@@ -2038,8 +2042,8 @@ public class ConfigMngmntService {
 							&& !byAttribMasterFeatureId.isEmpty()) {
 						attributesFromInput.addAll(byAttribMasterFeatureId);
 					}
+				  }
 				}
-
 				List<CreateConfigPojo> createConfigList = new ArrayList<>();
 				if (attribJson != null) {
 					for (int i = 0; i < attribJson.size(); i++) {
@@ -2121,9 +2125,10 @@ public class ConfigMngmntService {
 							invokeFtl.setCommandPosition(null,
 									cammandByTemplate));
 				}
-
+				if(!requestInfoPojo.getRequestType().equals("Config Audit")) {
 				data = getConfigurationTemplateService
 						.generateTemplate(requestInfoPojo);
+				}
 				result = dcmConfigService.updateBatchConfig(requestInfoPojo,
 						createConfigList, featureList, userName, features);
 
@@ -2293,8 +2298,7 @@ public class ConfigMngmntService {
 			requestInfoPojo.setBatchId(json.get("batchId").toString());
 		}
 
-		if (!json.get("networkType").toString().equals("")
-				&& json.get("networkType") != null) {
+		if (json.get("networkType") != null && !json.get("networkType").toString().equals("")) {
 			requestInfoPojo.setNetworkType(json.get("networkType").toString());
 			if (requestInfoPojo.getNetworkType().equalsIgnoreCase("VNF")) {
 				DeviceDiscoveryEntity device = deviceDiscoveryRepository
@@ -2310,7 +2314,7 @@ public class ConfigMngmntService {
 			DeviceDiscoveryEntity networkfunctio = deviceDiscoveryRepository
 					.findDVNFSupportByDHostName(requestInfoPojo.getHostname());
 			requestInfoPojo.setNetworkType(networkfunctio.getdVNFSupport());
-			if (requestInfoPojo.getNetworkType().equalsIgnoreCase("VNF")) {
+			if (requestInfoPojo.getNetworkType() != null && requestInfoPojo.getNetworkType().equalsIgnoreCase("VNF")) {
 				DeviceDiscoveryEntity device = deviceDiscoveryRepository
 						.findByDHostName(json.get("hostname").toString()
 								.toUpperCase());
@@ -2514,6 +2518,10 @@ public class ConfigMngmntService {
 			requestInfoPojo.setAlphanumericReqId(json.get(
 					"alphanumericReqId").toString());
 		}
+		if(json.containsKey("rConfigGenerationMethod") && json.get("rConfigGenerationMethod")!=null ) {
+			requestInfoPojo.setConfigurationGenerationMethods(json.get("rConfigGenerationMethod").toString());
+		}
+
 		return requestInfoPojo;
 
 	}

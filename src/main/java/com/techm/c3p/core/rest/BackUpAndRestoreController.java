@@ -60,6 +60,8 @@ import com.techm.c3p.core.repositories.TestDetailsRepository;
 import com.techm.c3p.core.repositories.VendorDetailsRepository;
 import com.techm.c3p.core.service.ConfigurationManagmentService;
 import com.techm.c3p.core.service.DcmConfigService;
+import com.techm.c3p.core.service.RequestDetailsService;
+import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.WAFADateUtil;
 
 @Controller
@@ -115,6 +117,12 @@ public class BackUpAndRestoreController {
 	
 	@Autowired
 	private ConfigurationManagmentService configurationManagmentService;
+	
+	@Autowired
+	private RequestInfoService requestInfoService;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 
 	
 	/**
@@ -435,7 +443,7 @@ public class BackUpAndRestoreController {
 					prevaljsonobj.put("bundleName",bundleArray);
 					toSaveArray.add(prevaljsonobj);
 				}
-				int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+				int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(
 						requestInfoEntity.getAlphanumericReqId(),
 						toSaveArray.toString(),
 						requestInfoEntity.getRequestType(),
@@ -768,7 +776,7 @@ public class BackUpAndRestoreController {
 						prevaljsonobj.put("bundleName",bundleArray);
 						toSaveArray.add(prevaljsonobj);
 					}
-					int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+					int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(
 							requestInfoEntity.getAlphanumericReqId(),
 							toSaveArray.toString(),
 							requestInfoEntity.getRequestType(),
@@ -797,7 +805,7 @@ public class BackUpAndRestoreController {
 					}
 
 					dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
-					dao.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
+					requestInfoService.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
 					// result = dao.insertRequestInDB(requestInfoPojo);
 					batchInfoRepo.save(batchIdEntity);
 
@@ -1067,7 +1075,7 @@ public class BackUpAndRestoreController {
 							prevaljsonobj.put("bundleName",bundleArray);
 							toSaveArray.add(prevaljsonobj);
 						}
-						int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+						int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(
 								requestInfoEntity.getAlphanumericReqId(),
 								toSaveArray.toString(),
 								requestInfoEntity.getRequestType(),
@@ -1118,7 +1126,7 @@ public class BackUpAndRestoreController {
 
 		JsonArray attribJson = null;
 		String scheduledTime = "", alphaneumeric_req_id = "", tempManagementIp = "", tempHostName = null,
-				templateId = null, requestType = null, userName = null;
+				templateId = null, requestType = null, userName = null, configAudit = null;
 		JSONObject requestId = null;
 
 		HashMap<String, String> map = new HashMap<String, String>();
@@ -1132,7 +1140,12 @@ public class BackUpAndRestoreController {
 		JsonObject jsonObject = new JsonParser().parse(configRequest).getAsJsonObject();
 		userName = json.get("userName").toString();
 		attribJson = jsonObject.getAsJsonArray("requests");
-
+		if (json.containsKey("templateId") && json.get("templateId") != null) {
+			templateId = json.get("templateId").toString();
+		}
+		if (json.containsKey("configAudit") && json.get("configAudit") != null) {
+			configAudit = json.get("configAudit").toString();
+		}
 		for (int n = 0; n < attribJson.size(); n++) {
 			tempHostName = attribJson.get(n).getAsJsonObject().get("hostname").getAsString();
 			tempManagementIp = attribJson.get(n).getAsJsonObject().get("managementIp").getAsString();
@@ -1171,11 +1184,13 @@ public class BackUpAndRestoreController {
 
 				for (int i = 0; i < requestDetail.size(); i++) {
 					RequestInfoEntity requestInfoEntity = new RequestInfoEntity();
+					if (configAudit == null || configAudit.isEmpty()) {
+						if (map.size() > 1) {
+							requestInfoEntity.setBatchId(batchId);
 
-					if (map.size() > 1) {
-
+						}
+					} else {
 						requestInfoEntity.setBatchId(batchId);
-
 					}
 
 					if (j == 0) {
@@ -1191,24 +1206,29 @@ public class BackUpAndRestoreController {
 					timestamp = Timestamp.valueOf(nowDate);
 					requestInfoEntity.setDateofProcessing(timestamp);
 					requestInfoEntity.setTemplateUsed(templateId);
-					requestInfoEntity.setCertificationTests(json.get("certificationTests"));
+					if (configAudit != null) {
+						requestInfoEntity.setrConfigGenerationMethod(configAudit);
+					}
+					if (json.containsKey("certificationTests") && json.get("certificationTests") != null) {
+						requestInfoEntity.setCertificationTests(json.get("certificationTests"));
+					}
 
 					requestInfoEntity.setBatchSize(map.size());
-					
+
 					requestInfoEntity.setRequestType(requestType);
-					if ("Audit".equals(requestType)) {
+					if ("Audit".equals(requestType) || "Config Audit".equals(requestType)) {
 						alphaneumeric_req_id = "SLGA-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
 					} else {
 						alphaneumeric_req_id = "SLGT-" + UUID.randomUUID().toString().toUpperCase().substring(0, 7);
 					}
-					
+
 					requestInfoEntity.setAlphanumericReqId(alphaneumeric_req_id);
 
 					requestInfoEntity.setCustomer(requestDetail.get(i).getCustSiteId().getcCustName());
 
 					requestInfoEntity.setSiteId(requestDetail.get(i).getCustSiteId().getcSiteId());
 
-//					requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
+					// requestInfoEntity.setDeviceType(requestDetail.get(i).getdType());
 
 					requestInfoEntity.setModel(requestDetail.get(i).getdModel());
 
@@ -1244,10 +1264,11 @@ public class BackUpAndRestoreController {
 						timestamp = Timestamp.valueOf(scheduledTime);
 						requestInfoEntity.setSceheduledTime(timestamp);
 					}
-				
+					if(configAudit!=null && !configAudit.isEmpty()) {
+						requestInfoEntity.setrConfigGenerationMethod(configAudit);
+					}
 					String jsonString = mapper.writeValueAsString(requestInfoEntity);
 
-					
 					requestId = myObj.getTemplateId(jsonString);
 					if (requestId != null && requestId.get("data").toString() != null) {
 						j++;
@@ -1256,7 +1277,7 @@ public class BackUpAndRestoreController {
 				}
 
 			}
-			if (j == 1) {
+			if (j == 1 && configAudit == null ) {
 
 				obj.put("output", errorValidationRepository.findByErrorId("C3P_BR_004"));
 				obj.put(new String("requestId"), requestId.get("key").toString());
@@ -1268,7 +1289,7 @@ public class BackUpAndRestoreController {
 		}
 
 		catch (Exception e) {
-			logger.error("Exception in batchTest method "+e.getMessage());
+			logger.error("Exception in batchTest method " + e.getMessage());
 		}
 		return obj;
 
@@ -1427,7 +1448,7 @@ public class BackUpAndRestoreController {
 								requestInfoEntity.getOs(), "All", requestInfoEntity.getVendor(),
 								requestInfoEntity.getRegion(),"Software Upgrade"), toSaveArray);
 					}
-					int testStrategyDBUpdate = requestInfoDao.insertTestRecordInDB(
+					int testStrategyDBUpdate = requestDetailsService.insertTestRecordInDB(
 							requestInfoEntity.getAlphanumericReqId(),
 							toSaveArray.toString(),
 							requestInfoEntity.getRequestType(),
@@ -1441,7 +1462,7 @@ public class BackUpAndRestoreController {
 						requestInfoDetailsRepositories.save(requestInfoEntity);
 
 						dao.addRequestIDtoWebserviceInfo(alphaneumeric_req_id, Double.toString(request_version));
-						dao.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
+						requestInfoService.addCertificationTestForRequest(alphaneumeric_req_id, Double.toString(request_version), "0");
 						dao.addRequestID_to_Os_Upgrade_dilevary_flags(alphaneumeric_req_id,
 								Double.toString(request_version));
 						batchInfoRepo.save(batchIdEntity);

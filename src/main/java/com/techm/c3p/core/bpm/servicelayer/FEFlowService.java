@@ -36,6 +36,7 @@ import com.techm.c3p.core.repositories.NotificationRepo;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.TemplateFeatureRepo;
 import com.techm.c3p.core.rest.DeviceReachabilityAndPreValidationTest;
+import com.techm.c3p.core.service.RequestInfoService;
 
 @Controller
 @RequestMapping("/configuration")
@@ -67,6 +68,8 @@ public class FEFlowService {
 
 	@Autowired
 	private MasterFeatureRepository masterFeatureRepository;
+	@Autowired
+	private RequestInfoService requestInfoService;
 
 
 	@POST
@@ -127,7 +130,7 @@ public class FEFlowService {
 				{
 					res = requestInfoDao.changeRequestOwner(RequestId, version, req.getRequestCreatorName());
 					requestInfoDao.changeRequestStatus(RequestId, version, "In Progress");
-					requestInfoDao.resetErrorStateOfRechabilityTest(RequestId, version);
+					requestInfoService.resetErrorStateOfRechabilityTest(RequestId, version);
 					// call camunda service for given request id and version
 					Thread t1 = new Thread(new Runnable() {
 

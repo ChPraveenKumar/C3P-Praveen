@@ -29,6 +29,8 @@ public class PrevalidationTestServiceImpl {
 	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	@Autowired
+	private RequestInfoService requestInfoService;
 
 	public boolean PreValidation(CreateConfigRequest configRequest, String version, String mountStatus)
 			throws Exception {
@@ -133,6 +135,14 @@ public class PrevalidationTestServiceImpl {
 		}
 		preValidateTest.setDeviceReachableStatus("Pass");
 
+		/*
+		 * requestInfoService.updatePrevalidationValues(configRequest.getRequestId(),
+		 * version, preValidateTest.getVendorActualValue(),
+		 * preValidateTest.getVendorGUIValue(),
+		 * preValidateTest.getOsVersionActualValue(),
+		 * preValidateTest.getOsVersionGUIValue(),
+		 * preValidateTest.getModelActualValue(), preValidateTest.getModelGUIValue());
+		 */		
 		requestInfoDao.updatePrevalidationValues(configRequest.getRequestId(), version,
 				preValidateTest.getVendorActualValue(), preValidateTest.getVendorGUIValue(),
 				preValidateTest.getOsVersionActualValue(), preValidateTest.getOsVersionGUIValue(),
@@ -159,7 +169,7 @@ public class PrevalidationTestServiceImpl {
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), "Application_test", "1",
 						"In Progress");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 
@@ -171,7 +181,7 @@ public class PrevalidationTestServiceImpl {
 				value = false;
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), "Application_test", "2", "Failure");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 
@@ -187,7 +197,7 @@ public class PrevalidationTestServiceImpl {
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), "Application_test", "1",
 						"In Progress");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 
@@ -200,7 +210,7 @@ public class PrevalidationTestServiceImpl {
 				value = false;
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), "Application_test", "2", "Failure");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getRequestId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getRequestId(),
 						Double.toString(configRequest.getRequest_version()), vendorflag, versionflag, modelflag);
 			}
 		}
@@ -331,6 +341,14 @@ public class PrevalidationTestServiceImpl {
 		}
 		preValidateTest.setDeviceReachableStatus("Pass");
 
+		/*
+		 * requestInfoService.updatePrevalidationValues(configRequest.
+		 * getAlphanumericReqId(), Double.toString(configRequest.getRequestVersion()),
+		 * preValidateTest.getVendorActualValue(), preValidateTest.getVendorGUIValue(),
+		 * preValidateTest.getOsVersionActualValue(),
+		 * preValidateTest.getOsVersionGUIValue(),
+		 * preValidateTest.getModelActualValue(), preValidateTest.getModelGUIValue());
+		 */
 		requestInfoDao.updatePrevalidationValues(configRequest.getAlphanumericReqId(),
 				Double.toString(configRequest.getRequestVersion()), preValidateTest.getVendorActualValue(),
 				preValidateTest.getVendorGUIValue(), preValidateTest.getOsVersionActualValue(),
@@ -359,7 +377,7 @@ public class PrevalidationTestServiceImpl {
 				// db call for success prevalidation
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), "Application_test", "1", "In Progress");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 			}
 			else {
@@ -370,7 +388,7 @@ public class PrevalidationTestServiceImpl {
 				value = false;
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), "Application_test", "2", "Failure");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 			}
 
@@ -385,7 +403,7 @@ public class PrevalidationTestServiceImpl {
 				// db call for success prevalidation
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), "Application_test", "1", "In Progress");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 			}
 
@@ -398,7 +416,7 @@ public class PrevalidationTestServiceImpl {
 				value = false;
 				requestInfoDao.editRequestforReportWebserviceInfo(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), "Application_test", "2", "Failure");
-				requestInfoDao.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
+				requestInfoService.updatePrevalidationStatus(configRequest.getAlphanumericReqId(),
 						Double.toString(configRequest.getRequestVersion()), vendorflag, versionflag, modelflag);
 
 			}

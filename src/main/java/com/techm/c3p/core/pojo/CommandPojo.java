@@ -57,7 +57,7 @@ public class CommandPojo implements Comparable<CommandPojo> {
 	int is_save;
 
 	@Transient
-	String tempId;
+	String tempId ="0";
 	
 	@Transient
 	String parenttempId;

@@ -10,6 +10,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +25,7 @@ import com.techm.c3p.core.entitybeans.SiteInfoEntity;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.SiteInfoRepository;
 import com.techm.c3p.core.service.ConfigurationManagmentService;
-
-import org.json.simple.JSONArray;
+import com.techm.c3p.core.service.GoldenTemplateConfigurationService;
 
 @RestController
 public class RequestCreatorController {
@@ -38,6 +38,11 @@ public class RequestCreatorController {
 	
 	@Autowired
 	private ConfigurationManagmentService createConfigurationService;
+	
+
+	@Autowired
+	private GoldenTemplateConfigurationService goldenTemplateConfigurationService;
+	
 	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -224,6 +229,29 @@ public class RequestCreatorController {
 			JSONParser parser = new JSONParser();
 			JSONObject requestJson = (JSONObject) parser.parse(configRequest);			
 			obj=createConfigurationService.verifyConfiguration(requestJson);
+
+		} catch (Exception exe) {
+			logger.error("Exception occurred in generateCreateRequestDetails method - "+exe.getMessage());
+			exe.printStackTrace();
+		}
+		return obj;
+
+	}
+	
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
+	@POST
+	@RequestMapping(value = "/goldenTemplateConfiguration", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public JSONObject goldenTemplateConfiguration(@RequestBody String configRequest) {
+		logger.info("generateCreateRequestDetails - configRequest-  "+configRequest);
+		JSONObject obj = new JSONObject();
+		try {
+
+			JSONParser parser = new JSONParser();
+			JSONObject requestJson = (JSONObject) parser.parse(configRequest);			
+			obj=goldenTemplateConfigurationService.createRequest(requestJson);
 
 		} catch (Exception exe) {
 			logger.error("Exception occurred in generateCreateRequestDetails method - "+exe.getMessage());

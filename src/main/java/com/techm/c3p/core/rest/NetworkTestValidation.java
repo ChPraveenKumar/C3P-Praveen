@@ -37,6 +37,7 @@ import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.service.DcmConfigService;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.service.TestStrategyService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.InvokeFtl;
@@ -67,6 +68,9 @@ public class NetworkTestValidation extends Thread {
 	
 	@Autowired
 	private TestStrategyService testStrategyService;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
@@ -113,6 +117,10 @@ public class NetworkTestValidation extends Thread {
 							|| "SNNC".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type)
 							|| "SLGM".equalsIgnoreCase(type) || "SNRM".equalsIgnoreCase(type)
 							|| "SNNM".equalsIgnoreCase(type)) {
+
+						List<TestDetail> selectedTests = requestDetailsService.findSelectedTests(requestinfo.getAlphanumericReqId(),
+								"Network Test",version);
+						if(selectedTests!=null && !selectedTests.isEmpty()) {
 						String host = requestinfo.getManagementIp();
 						CredentialManagementEntity routerCredential = dcmConfigService.getRouterCredential(
 								deviceDetails);
@@ -130,7 +138,6 @@ public class NetworkTestValidation extends Thread {
 						session.connect();
 						UtilityMethods.sleepThread(5000);
 						try {
-							
 							channel = session.openChannel("shell");
 							OutputStream ops = channel.getOutputStream();
 
@@ -145,8 +152,7 @@ public class NetworkTestValidation extends Thread {
 							listOfTests = requestInfoDao.findTestFromTestStrategyDB(
 									requestinfo.getFamily(), requestinfo.getOs(), requestinfo.getOsVersion(),
 									requestinfo.getVendor(), requestinfo.getRegion(), "Network Test");
-							List<TestDetail> selectedTests = requestInfoDao.findSelectedTests(requestinfo.getAlphanumericReqId(),
-									"Network Test",version);
+							
 							if (selectedTests.size() > 0) {
 								for (int i = 0; i < listOfTests.size(); i++) {
 									for (int j = 0; j < selectedTests.size(); j++) {
@@ -297,6 +303,13 @@ public class NetworkTestValidation extends Thread {
 							obj = testStrategyService.setFailureResult(jsonArray, value, requestinfo, "network_test", obj,
 									invokeFtl,"_networkTest.txt");							
 						}
+					}else {
+						requestInfoDao.editRequestforReportWebserviceInfo(
+								requestinfo.getAlphanumericReqId(),
+								Double.toString(requestinfo.getRequestVersion()), "network_test", "0",
+								"In Progress");
+						value = true;
+					}
 					}else if("SCGC".equalsIgnoreCase(type))
 					{
 						requestInfoDao.editRequestforReportWebserviceInfo(

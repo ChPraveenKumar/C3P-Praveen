@@ -42,8 +42,11 @@ import org.springframework.stereotype.Controller;
 import com.techm.c3p.core.beans.RequestInfo;
 import com.techm.c3p.core.connection.DBUtil;
 import com.techm.c3p.core.connection.JDBCConnection;
+import com.techm.c3p.core.entitybeans.AuditDashboardEntity;
+import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
 import com.techm.c3p.core.entitybeans.BatchIdEntity;
 import com.techm.c3p.core.entitybeans.CertificationTestResultEntity;
+import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.c3p.core.entitybeans.ServiceOrderEntity;
@@ -51,6 +54,7 @@ import com.techm.c3p.core.entitybeans.TestBundling;
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.entitybeans.TestRules;
 import com.techm.c3p.core.entitybeans.UserManagementEntity;
+import com.techm.c3p.core.entitybeans.WebServiceEntity;
 import com.techm.c3p.core.pojo.AlertInformationPojo;
 import com.techm.c3p.core.pojo.CertificationTestPojo;
 import com.techm.c3p.core.pojo.ConfigurationDataValuePojo;
@@ -75,11 +79,17 @@ import com.techm.c3p.core.pojo.TestBundlePojo;
 import com.techm.c3p.core.pojo.TestStrategyPojo;
 import com.techm.c3p.core.pojo.UserPojo;
 import com.techm.c3p.core.pojo.UserValidationResultDetailPojo;
+import com.techm.c3p.core.repositories.AuditDashboardRepository;
+import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
 import com.techm.c3p.core.repositories.BatchInfoRepo;
+import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.c3p.core.repositories.ServiceOrderRepo;
 import com.techm.c3p.core.repositories.UserManagementRepository;
+import com.techm.c3p.core.repositories.WebServiceRepo;
+import com.techm.c3p.core.service.RequestDetailsService;
+import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.UtilityMethods;
 import com.techm.c3p.core.utility.WAFADateUtil;
@@ -114,6 +124,28 @@ public class RequestInfoDao {
 	@Autowired
 	private GetAllDetailsService getAllDetailsService;
 	
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	
+	@Autowired
+	private AuditDashboardRepository auditDashboardRepository;
+	
+	@Autowired
+	private WebServiceRepo webServiceRepo;
+	
+	@Autowired
+	private AuditDashboardResultRepository auditDashboardResultRepository;
+	
+	@Autowired
+	private RequestInfoDetailsDao requestInfoDetailsDao;
+	
+	@Autowired
+	private RequestInfoService requestInfoService;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
+	
+	
 	private static final String FLAG_PASS ="Pass";
 	
 	private static final String FLAG_FAIL ="Fail";
@@ -132,8 +164,8 @@ public class RequestInfoDao {
 			+ "VALUES(?,?,?,?)";
 	private static final String INSERT_OS_UPGRADE_DELIVERY_FLAGS = "INSERT INTO os_upgrade_dilevary_flags(request_id,request_version,login_flag,flash_size_flag,back_up_flag,os_download_flag,boot_system_flash_flag,reload_flag,post_login_flag)"
 			+ "VALUES(?,?,?,?,?,?,?,?,?)";
-	private static final String INSERT_WEB_SERVICE_INFO = "INSERT INTO webserviceinfo(start_test,generate_config,deliever_config,health_checkup,network_test,application_test,customer_report,filename,latencyResultRes,alphanumeric_req_id,version,pre_health_checkup,others_test)"
-			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)";
+	private static final String INSERT_WEB_SERVICE_INFO = "INSERT INTO webserviceinfo(start_test,generate_config,deliever_config,health_checkup,network_test,application_test,customer_report,filename,latencyResultRes,alphanumeric_req_id,version,pre_health_checkup,others_test,preprocess)"
+			+ "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 	private static final String GET_MIS_AR_PE_SO = "select * from misarpeso where request_info_id= ?";
 	private static final String GET_INTERNET_LCVRF_SO = "select * from internetlcvrfso where request_info_id= ?";
 	private static final String GET_DEVICE_INTERFACE_SO = "select * from deviceinterfaceso where request_info_id= ?";
@@ -588,7 +620,7 @@ public class RequestInfoDao {
 			if (result == 1) {
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id,
 						Double.toString(request_version));
-				addCertificationTestForRequest(alphaneumeric_req_id,
+				requestInfoService.addCertificationTestForRequest(alphaneumeric_req_id,
 						Double.toString(request_version), "0");
 				// add to OS_updgrade delivery flag details table
 				if (request.getRequest_type().equalsIgnoreCase("IOSUPGRADE")) {
@@ -898,6 +930,7 @@ public class RequestInfoDao {
 			prepStmt.setString(11, request_version);
 			prepStmt.setInt(12, 0);
 			prepStmt.setInt(13, 0);
+			prepStmt.setInt(14, 0);
 			int result = prepStmt.executeUpdate();
 			if (result > 0) {
 				queryStatus = true;
@@ -966,6 +999,7 @@ public class RequestInfoDao {
 					flags.setOthers_test(resultSet.getInt("others_test"));
 					flags.setNetwork_audit(resultSet.getInt("network_audit"));
 					flags.setRequestVersion(resultSet.getDouble("version"));
+					flags.setPreProcess(resultSet.getInt("preprocess"));
 					reportFlags.add(flags);
 				}
 			}
@@ -1052,8 +1086,9 @@ public class RequestInfoDao {
 			query = "update webserviceinfo set others_test = ? where alphanumeric_req_id = ? and version = ? ";
 		} else if (field.equalsIgnoreCase("network_audit")) {
 			query = "update webserviceinfo set network_audit = ? where alphanumeric_req_id = ? and version = ? ";
+		}else if (field.equalsIgnoreCase("preprocess")) {
+				query = "update webserviceinfo set preprocess = ? where alphanumeric_req_id = ? and version = ? ";
 		}
-
 		try (Connection connection = jDBCConnection.getConnection();
 				PreparedStatement preparedStmt = connection
 						.prepareStatement(query);) {
@@ -5522,13 +5557,13 @@ public class RequestInfoDao {
 	 */
 	@SuppressWarnings("unchecked")
 	public org.json.simple.JSONArray getDynamicTestResult(String requestId,
-			String version, String testtype, String requestType) {
+			String version, String testtype, String requestType) throws SQLException {
 		org.json.simple.JSONObject res = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray array = new org.json.simple.JSONArray();
 		try {
 			JSONParser parser = new JSONParser();			
 			Double requestVersion = Double.valueOf(version);
-			String testAndDiagnosis = requestDetails.getTestAndDiagnosisDetails(requestId,
+			String testAndDiagnosis = requestDetailsService.getTestAndDiagnosisDetails(requestId,
 					requestVersion);
 			logger.info("testAndDiagnosis ->"+testAndDiagnosis);
 			if(testAndDiagnosis !=null && !testAndDiagnosis.isEmpty()) {
@@ -5568,10 +5603,7 @@ public class RequestInfoDao {
 			
 		} catch (org.json.simple.parser.ParseException e) {
 			logger.error(e.getMessage());
-		} catch (SQLException e) {
-			logger.error(e.getMessage());
 		}
-
 		res.put("custom", array);
 		return array;
 	}
@@ -5666,7 +5698,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject vendorTest = new org.json.simple.JSONObject();
 		org.json.simple.JSONArray othersArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray networkAuditArray = new org.json.simple.JSONArray();
-		certificationTestPojo1 = getCertificationTestFlagData(
+		certificationTestPojo1 = requestInfoService.getCertificationTestFlagData(
 				request.getRequestId(), request.getVersion_report(),
 				"preValidate");
 		// certificationTestService = new CertificationTestResultService();
@@ -5737,7 +5769,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject waninterface = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject bgpneighbour = new org.json.simple.JSONObject();
 
-		certificationTestPojo2 = getCertificationTestFlagData(
+		certificationTestPojo2 = requestInfoService.getCertificationTestFlagData(
 				request.getRequestId(), request.getVersion_report(),
 				"networkTest");
 		if (certificationTestPojo2.getShowIpIntBriefCmd().equalsIgnoreCase("1")) {
@@ -5776,7 +5808,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject latencyObj = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject FrameLossObj = new org.json.simple.JSONObject();
 
-		certificationTestPojo3 = getCertificationTestFlagData(
+		certificationTestPojo3 = requestInfoService.getCertificationTestFlagData(
 				request.getRequestId(), request.getVersion_report(),
 				"HealthTest");
 		if (null != certificationTestPojo3.getThroughput()
@@ -6130,7 +6162,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject backUpStatus = new org.json.simple.JSONObject();
 		String model = null, vendor = null, requestId = null, deliveryStatus = null;
 
-		certificationTestPojo1 = getCertificationTestFlagData(
+		certificationTestPojo1 = requestInfoService.getCertificationTestFlagData(
 				request.getRequestId(), request.getVersion_report(),
 				"preValidate");
 
@@ -6512,7 +6544,11 @@ public class RequestInfoDao {
 							+ UUID.randomUUID().toString().toUpperCase();
 
 				}
+				else if ("Config Audit".equalsIgnoreCase(requestInfoSO.getRequestType())) {
+					alphaneumeric_req_id = "SLGA-"
+							+ UUID.randomUUID().toString().toUpperCase();
 
+				} 
 				else {
 					alphaneumeric_req_id = "SLGC-"
 							+ UUID.randomUUID().toString().toUpperCase();
@@ -6771,7 +6807,7 @@ public class RequestInfoDao {
 
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id,
 						Double.toString(request_version));
-				addCertificationTestForRequest(alphaneumeric_req_id,
+				requestInfoService.addCertificationTestForRequest(alphaneumeric_req_id,
 						Double.toString(request_version), "0");
 				// add to OS_updgrade dilevary flag details table
 				if (requestInfoSO.getRequestType().equalsIgnoreCase(
@@ -6969,7 +7005,7 @@ public class RequestInfoDao {
 //				request.getAlphanumericReqId(),
 //				Double.toString(request.getRequestVersion()));
 
-		certificationTestPojo1 = getCertificationTestFlagData(
+		certificationTestPojo1 = requestInfoService.getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "preValidate");
 
@@ -7131,8 +7167,9 @@ public class RequestInfoDao {
 		org.json.simple.JSONArray othersArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray networkAuditArray = new org.json.simple.JSONArray();
 		org.json.simple.JSONArray instantiationArray = new org.json.simple.JSONArray();
-
-		certificationTestPojo1 = getCertificationTestFlagData(
+		org.json.simple.JSONArray preProcess = new org.json.simple.JSONArray();
+		org.json.simple.JSONArray complieanceResult = new org.json.simple.JSONArray();
+		certificationTestPojo1 = requestInfoService.getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "preValidate");
 		
@@ -7258,7 +7295,7 @@ public class RequestInfoDao {
 		org.json.simple.JSONObject latencyObj = new org.json.simple.JSONObject();
 		org.json.simple.JSONObject FrameLossObj = new org.json.simple.JSONObject();
 
-		certificationTestPojo3 = getCertificationTestFlagData(
+		certificationTestPojo3 = requestInfoService.getCertificationTestFlagData(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "HealthTest");
 		if (certificationTestPojo3.getThroughputTest().equalsIgnoreCase("2")) {
@@ -7696,6 +7733,9 @@ public class RequestInfoDao {
 					&& requestInfoSO.getTemplateID() != "") {
 				templateId = requestInfoSO.getTemplateID();
 			}
+			if(requestInfoSO.getConfigurationGenerationMethods()!=null) {
+				requestEntity.setrConfigGenerationMethod(requestInfoSO.getConfigurationGenerationMethods());
+			}
 
 			if (requestInfoSO.getNetworkType() != null
 					|| requestInfoSO.getNetworkType() != "") {
@@ -7825,12 +7865,14 @@ public class RequestInfoDao {
 			batchIdEntity.setRequestInfoEntity(requestEntity);
 
 			BatchIdEntity save = batchInfoRepo.save(batchIdEntity);
-
+			
 			if (save.getBatchId() != null) {
-
+				if("Config Audit".equals(requestEntity.getRequestType())) {
+					saveAuditData(save);
+				}
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id,
 						Double.toString(request_version));
-				addCertificationTestForRequest(alphaneumeric_req_id,
+				requestInfoService.addCertificationTestForRequest(alphaneumeric_req_id,
 						Double.toString(request_version), "0");
 
 				hmap.put("result", "true");
@@ -7843,6 +7885,24 @@ public class RequestInfoDao {
 
 		hmap.put("result", "false");
 		return hmap;
+	}
+
+	private void saveAuditData(BatchIdEntity save) {
+		AuditDashboardEntity auditDashboardEntity = new AuditDashboardEntity();
+		RequestInfoEntity requestInfoEntity = save.getRequestInfoEntity();
+		if(requestInfoEntity!=null) {
+		auditDashboardEntity.setAdAuditId(save.getBatchId());
+		DeviceDiscoveryEntity deviceData = deviceDiscoveryRepository.findHostNameAndMgmtip(requestInfoEntity.getManagmentIP(),requestInfoEntity.getHostName());
+		auditDashboardEntity.setAdDeviceId(deviceData.getdId());
+		auditDashboardEntity.setAdMode(requestInfoEntity.getrConfigGenerationMethod());
+		auditDashboardEntity.setAdRequestId(requestInfoEntity.getAlphanumericReqId());
+		auditDashboardEntity.setAdRequestVersion(requestInfoEntity.getRequestVersion());
+		auditDashboardEntity.setAdTemplateId(requestInfoEntity.getTemplateUsed());
+		auditDashboardEntity.setCreatedDate(requestInfoEntity.getDateofProcessing());
+		auditDashboardEntity.setCreatedBy(requestInfoEntity.getRequestCreatorName());
+		auditDashboardRepository.save(auditDashboardEntity);
+		}
+		
 	}
 
 	public boolean updateBatchRequestStatus(String requestId) {
@@ -8858,5 +8918,52 @@ public class RequestInfoDao {
 			DBUtil.close(rs);
 		}
 			return list;
+	}
+
+	@SuppressWarnings("unchecked")
+	public org.json.simple.JSONObject getStatusForConfigData(RequestInfoPojo createConfigRequestDCM) {
+		org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
+		org.json.simple.JSONObject preProcess = new org.json.simple.JSONObject();
+		org.json.simple.JSONArray complieanceResult = new org.json.simple.JSONArray();
+		int status=requestInfoDetailsDao.getStatusForMilestone(createConfigRequestDCM.getAlphanumericReqId(),String.valueOf(createConfigRequestDCM.getRequestVersion()),"pre_health_checkup");
+		if(status ==1) {
+				preProcess.put("notes", "N/A");
+				preProcess.put("testname", "Device Reachability test");
+				preProcess.put("status", "Pass");				
+		}else if(status ==0){
+			preProcess.put("notes", "N/A");
+			preProcess.put("testname", "Device Reachability test");
+			preProcess.put("status", "Not Applicable");		
+		}else {
+			preProcess.put("notes", "N/A");
+			preProcess.put("testname", "Device Reachability test");
+			preProcess.put("status", "Not Applicable");
+		}
+		List<AuditDashboardResultEntity> auditResultData = auditDashboardResultRepository.findByAdRequestIdAndAdRequestVersion(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
+		if(auditResultData.size()>0) {
+			auditResultData.forEach(result->{
+				org.json.simple.JSONObject resultData = new org.json.simple.JSONObject();
+				resultData.put("featureName", result.getAdrFeatureName());
+				if(result.getAdrConfigurationValue()!=null) {
+					resultData.put("found", result.getAdrConfigurationValue());	
+				}else {
+					resultData.put("found", "");
+				}
+				if(result.getAdrTemplateId()!=null) {
+					resultData.put("template", result.getAdrTemplateValue());	
+				}else {
+					resultData.put("template","");
+				}
+				if(result.getAdrResult()!=null) {
+					resultData.put("result", result.getAdrResult());	
+				}else {
+					resultData.put("result", "");
+				}
+				complieanceResult.add(resultData);
+			});
+		}
+		obj.put("PreProcess", preProcess);
+		obj.put("ComplienceResult", complieanceResult);
+		return obj;		
 	}
 }

@@ -36,6 +36,8 @@ public class AttribCreateConfigPojo {
 	private List<Integer> poolIdList;
 	
 	private String attribMasterChId;
+	
+	private String defaultValue;
 
 	public String getAttribMasterChId() {
 		return attribMasterChId;
@@ -149,4 +151,12 @@ public class AttribCreateConfigPojo {
 		this.attribValue = attribValue;
 	}
 
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+	
 }

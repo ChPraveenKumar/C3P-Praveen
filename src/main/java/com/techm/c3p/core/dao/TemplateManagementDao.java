@@ -28,15 +28,20 @@ import com.google.gson.Gson;
 import com.techm.c3p.core.connection.DBUtil;
 import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.entitybeans.BasicConfiguration;
+import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.Notification;
+import com.techm.c3p.core.entitybeans.SiteInfoEntity;
 import com.techm.c3p.core.exception.DuplicateDataException;
 import com.techm.c3p.core.models.TemplateCommandJSONModel;
 import com.techm.c3p.core.models.TemplateLeftPanelJSONModel;
 import com.techm.c3p.core.pojo.CommandPojo;
+import com.techm.c3p.core.pojo.DeviceDiscoverPojo;
 import com.techm.c3p.core.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.c3p.core.pojo.Global;
 import com.techm.c3p.core.pojo.RequestInfoSO;
+import com.techm.c3p.core.pojo.SiteInfoPojo;
 import com.techm.c3p.core.pojo.TemplateBasicConfigurationPojo;
+import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.NotificationRepo;
 import com.techm.c3p.core.repositories.UserManagementRepository;
 import com.techm.c3p.core.utility.WAFADateUtil;
@@ -54,6 +59,8 @@ public class TemplateManagementDao {
 	private WAFADateUtil dateUtil;
 	@Autowired
 	private JDBCConnection jDBCConnection;
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepository;
 
 	public boolean updateMasterFeatureAndCommandTable(String series) {
 		boolean result = false;
@@ -2453,4 +2460,165 @@ public class TemplateManagementDao {
 		}
 		return cammandList;
 	}
+	
+	public List<TemplateBasicConfigurationPojo> getAuditTemplateList(String listType) {
+		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
+		TemplateBasicConfigurationPojo pojo;
+		connection = jDBCConnection.getConnection();
+		String query2;
+		if(listType.equalsIgnoreCase("Golden")) {
+		 query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type not in ('VNF') and temp_status='Approved' and temp_golden=true order by temp_created_date desc";
+		}
+		else {
+			query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type not in ('VNF') and temp_status='Approved' order by temp_created_date desc";
+		}
+		try {
+			Statement pst = connection.createStatement();
+			ResultSet rs1 = pst.executeQuery(query2);
+			while (rs1.next()) {
+				pojo = new TemplateBasicConfigurationPojo();
+				pojo.setVendor(rs1.getString("temp_vendor"));
+				pojo.setModel(rs1.getString("temp_model"));
+				pojo.setDeviceFamily(rs1.getString("temp_device_family"));
+				pojo.setDeviceOs(rs1.getString("temp_device_os"));
+				pojo.setOsVersion(rs1.getString("temp_os_version"));
+				pojo.setRegion(rs1.getString("temp_region"));
+				pojo.setTemplateId(rs1.getString("temp_id"));
+				Timestamp d = rs1.getTimestamp("temp_created_date");
+				pojo.setDate(dateUtil.dateTimeInAppFormat(d.toString()));
+				pojo.setVersion(rs1.getString("temp_version"));
+				Timestamp d1 = rs1.getTimestamp("temp_updated_date");
+				pojo.setUpdatedDate(dateUtil.dateTimeInAppFormat(d.toString()));
+				pojo.setComment(rs1.getString("temp_comment_section"));
+
+				if (pojo.getComment().isEmpty()) {
+					pojo.setComment("undefined");
+				}
+				pojo.setStatus(rs1.getString("temp_status"));
+				pojo.setApprover(rs1.getString("temp_approver"));
+				pojo.setCreatedBy(rs1.getString("temp_created_by"));
+				pojo.setNetworkType(rs1.getString("temp_network_type"));
+				pojo.setIsGoldenTemplate(rs1.getBoolean("temp_golden"));
+				pojo.setAlias(rs1.getString("temp_alias"));
+				list.add(pojo);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DBUtil.close(connection);
+		}
+		return list;
+
+	}
+
+
+public List<DeviceDiscoverPojo> getDeviceListForAudit(String templateId,String version,
+			 String vendor,String deviceOs,String osVersion,String deviceFamily,String networkType) {
+		List<DeviceDiscoverPojo> list = new ArrayList<DeviceDiscoverPojo>();
+		List<DeviceDiscoveryEntity> deviceDiscoveryList=new ArrayList<>();
+		if ("All".equals(osVersion)) {
+			osVersion = "%";
+		} else {
+			osVersion = "%" + osVersion+"%";
+		}
+		if ("All".equals(deviceOs)) {
+			deviceOs = "%";
+		} else {
+			deviceOs = "%" + deviceOs+"%";
+		}
+		if ("All".equals(deviceFamily)) {
+			deviceFamily = "%";
+		} else {
+			deviceFamily = "%" + deviceFamily+"%";
+		}
+		if ("All".equals(vendor)) {
+			vendor = "%";
+		} else {
+			vendor = "%" + vendor+"%";
+		}
+		deviceDiscoveryList= deviceDiscoveryRepository.geAuditDeviceList( vendor, deviceOs, osVersion, deviceFamily, networkType);
+//		if("All".equals(osVersion)) {
+//			deviceDiscoveryList= deviceDiscoveryRepository.findByDVendorAndDOsAndDDeviceFamilyAndDVNFSupport( vendor, deviceOs, deviceFamily, networkType);
+//		}
+		deviceDiscoveryList.forEach(entity->{
+			DeviceDiscoverPojo pojo = new DeviceDiscoverPojo();
+				pojo.setVendor(entity.getdVendor());
+				pojo.setDeviceFamily(entity.getdDeviceFamily());
+				pojo.setOs(entity.getdOs());
+				pojo.setOsVersion(entity.getdOsVersion());
+				pojo.setManagmentId(entity.getdMgmtIp());
+				pojo.setHostName(entity.getdHostName());
+				pojo.setModel(entity.getdModel());
+				pojo.setRole(entity.getdRole());
+				if (entity.getCustSiteId() != null) {
+					SiteInfoEntity custSiteId = entity.getCustSiteId();
+					SiteInfoPojo siteInfoPojo = new SiteInfoPojo();
+					siteInfoPojo.setCustName(custSiteId.getcCustName());
+					siteInfoPojo.setSiteRegion(custSiteId.getcSiteRegion());
+					siteInfoPojo.setSiteName(custSiteId.getcSiteName());
+					siteInfoPojo.setSiteActive(custSiteId.getcSiteAddressLine1());
+					pojo.setSiteInfo(siteInfoPojo);
+				}
+				list.add(pojo);
+			});
+		return list;
+
+	}
+
+	/**
+	 * get vendor related audit template list 
+	 * @param listType
+	 * @return
+	 */
+	public List<TemplateBasicConfigurationPojo> getAuditTemplateListUsingDevice(String listType, String vendor) {
+		List<TemplateBasicConfigurationPojo> list = new ArrayList<TemplateBasicConfigurationPojo>();
+		TemplateBasicConfigurationPojo pojo;
+		connection = jDBCConnection.getConnection();
+		String query2;
+		if(listType.equalsIgnoreCase("Golden")) {
+		 query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type='PNF' and temp_status='Approved' and temp_golden=true and temp_vendor='"+vendor+"' order by temp_created_date desc";
+		}
+		else {
+			query2 = "SELECT * FROM templateconfig_basic_details where temp_network_type='PNF' and temp_status='Approved'and temp_vendor='"+vendor+"' order by temp_created_date desc";
+		}
+		try {
+			Statement pst = connection.createStatement();
+			ResultSet rs1 = pst.executeQuery(query2);
+			while (rs1.next()) {
+				pojo = new TemplateBasicConfigurationPojo();
+				pojo.setVendor(rs1.getString("temp_vendor"));
+				pojo.setModel(rs1.getString("temp_model"));
+				pojo.setDeviceFamily(rs1.getString("temp_device_family"));
+				pojo.setDeviceOs(rs1.getString("temp_device_os"));
+				pojo.setOsVersion(rs1.getString("temp_os_version"));
+				pojo.setRegion(rs1.getString("temp_region"));
+				pojo.setTemplateId(rs1.getString("temp_id"));
+				Timestamp d = rs1.getTimestamp("temp_created_date");
+				pojo.setDate(dateUtil.dateTimeInAppFormat(d.toString()));
+				pojo.setVersion(rs1.getString("temp_version"));
+				Timestamp d1 = rs1.getTimestamp("temp_updated_date");
+				pojo.setUpdatedDate(dateUtil.dateTimeInAppFormat(d.toString()));
+				pojo.setComment(rs1.getString("temp_comment_section"));
+	
+				if (pojo.getComment().isEmpty()) {
+					pojo.setComment("undefined");
+				}
+				pojo.setStatus(rs1.getString("temp_status"));
+				pojo.setApprover(rs1.getString("temp_approver"));
+				pojo.setCreatedBy(rs1.getString("temp_created_by"));
+				pojo.setNetworkType(rs1.getString("temp_network_type"));
+				pojo.setIsGoldenTemplate(rs1.getBoolean("temp_golden"));
+				pojo.setAlias(rs1.getString("temp_alias"));
+				list.add(pojo);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			DBUtil.close(connection);
+		}
+		return list;
+	}
+
 }

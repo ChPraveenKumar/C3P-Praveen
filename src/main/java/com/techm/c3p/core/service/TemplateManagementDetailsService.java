@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.techm.c3p.core.dao.TemplateManagementDao;
 import com.techm.c3p.core.entitybeans.TemplateConfigBasicDetailsEntity;
 import com.techm.c3p.core.models.TemplateLeftPanelJSONModel;
+import com.techm.c3p.core.pojo.DeviceDiscoverPojo;
 import com.techm.c3p.core.pojo.GetTemplateMngmntActiveDataPojo;
 import com.techm.c3p.core.pojo.GetTemplateMngmntPojo;
 import com.techm.c3p.core.pojo.Global;
@@ -302,6 +303,23 @@ public class TemplateManagementDetailsService {
 			jsonObject.put("isAliasPresent", false);
 		}
 		return jsonObject;
+	}
+	
+	public List<TemplateBasicConfigurationPojo> getAuditTemplateListData(String listType) {	
+		List<TemplateBasicConfigurationPojo> list = templateManagementDao.getAuditTemplateList(listType);
+		return list;
+	}
+	
+	public List<TemplateBasicConfigurationPojo> getAuditTemplateListDataUsingDevice(String listType, String vendor) {	
+		List<TemplateBasicConfigurationPojo> list = templateManagementDao.getAuditTemplateListUsingDevice(listType, vendor);
+		return list;
+	}
+	
+	public List<DeviceDiscoverPojo> getDeviceListForAudit(String templateId,String version,
+			 String vendor,String deviceOs,String osVersion,String deviceFamily,String networkType) {	
+		List<DeviceDiscoverPojo> list = new ArrayList<DeviceDiscoverPojo>();
+		list = templateManagementDao.getDeviceListForAudit(templateId,version,vendor, deviceOs, osVersion, deviceFamily, networkType);
+		return list;
 	}
 }
 

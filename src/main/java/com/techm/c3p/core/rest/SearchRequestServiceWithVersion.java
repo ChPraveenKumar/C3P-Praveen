@@ -35,6 +35,7 @@ import com.techm.c3p.core.pojo.CertificationTestPojo;
 import com.techm.c3p.core.pojo.ReoprtFlags;
 import com.techm.c3p.core.pojo.RequestInfoSO;
 import com.techm.c3p.core.pojo.SearchParamPojo;
+import com.techm.c3p.core.service.RequestDetailsService;
 
 @Controller
 @RequestMapping("/SearchRequestServiceWithVersion")
@@ -45,6 +46,10 @@ public class SearchRequestServiceWithVersion implements Observer {
 
 	@Autowired
 	private RequestDetails requestDetails;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
+	
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -752,7 +757,7 @@ public class SearchRequestServiceWithVersion implements Observer {
 			StringBuilder builderVersion = new StringBuilder();
 			StringBuilder builder = new StringBuilder();
 			String testAndDiagnosis = null;
-			testAndDiagnosis = requestDetails.getTestAndDiagnosisDetails(requestId,requestVersion);
+			testAndDiagnosis = requestDetailsService.getTestAndDiagnosisDetails(requestId,requestVersion);
 
 			// Split test details with comma separator
 			String splitTestAndDiagnosis[] = testAndDiagnosis.toString().split(",");

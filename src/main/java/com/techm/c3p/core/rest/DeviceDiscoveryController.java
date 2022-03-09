@@ -53,6 +53,7 @@ import com.techm.c3p.core.repositories.DiscoveryDashboardRepository;
 import com.techm.c3p.core.repositories.ForkDiscrepancyResultRepository;
 import com.techm.c3p.core.repositories.HostDiscrepancyResultRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
+import com.techm.c3p.core.repositories.TopologyRepository;
 import com.techm.c3p.core.utility.WAFADateUtil;
 import com.techm.c3p.core.utility.UtilityMethods;
 import com.techm.c3p.core.repositories.ImportDetailsRepo;
@@ -93,6 +94,8 @@ public class DeviceDiscoveryController implements Observer {
 	private RestTemplate restTemplate;
 	@Value("${python.service.uri}")
 	private String pythonServiceUri;
+	
+
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -217,6 +220,7 @@ public class DeviceDiscoveryController implements Observer {
 				object.put("role", getAllDevice.get(i).getdRole());
 				object.put("powerSupply", getAllDevice.get(i).getdPowerSupply());
 				object.put("deviceId", getAllDevice.get(i).getdId());
+				object.put("vnfSupport", getAllDevice.get(i).getdVNFSupport());
 				if (getAllDevice.get(i).getCustSiteId() != null) {
 					object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
 					SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
