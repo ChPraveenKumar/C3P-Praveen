@@ -133,7 +133,7 @@ public class NotificationServiceCall {
 			notifyForAddFeatureTemplate.put(new String("masterFeatureName"), featureId);
 
 			HttpEntity<JSONObject> httpEntity = new HttpEntity<JSONObject>(notifyForAddFeatureTemplate, headers);
-			String url = notifyServiceUri + "/generateNotifications";
+			String url = notifyServiceUri + "/generateNotifications/notifyForAddTemplate";
 			String response = restTemplate.exchange(url, HttpMethod.POST, httpEntity, String.class).getBody();
 			responseJson = (JSONObject) jsonParser.parse(response);
 		} catch (ParseException exe) {
