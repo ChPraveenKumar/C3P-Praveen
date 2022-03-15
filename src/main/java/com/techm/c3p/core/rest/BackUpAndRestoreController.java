@@ -1,9 +1,12 @@
 package com.techm.c3p.core.rest;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +49,7 @@ import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.entitybeans.VendorDetails;
 import com.techm.c3p.core.models.BackUpRequestVersioningJSONModel;
 import com.techm.c3p.core.pojo.BatchPojo;
+import com.techm.c3p.core.pojo.CommandPojo;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.SearchParamPojo;
@@ -879,7 +883,15 @@ public class BackUpAndRestoreController {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
+	public String covnertTStoString(Timestamp indate) {
+		String dateString = null;
+		Date date = new Date();
+		date.setTime(indate.getTime());
+		dateString = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(date);
+		return dateString;
+	}
 
+	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -889,7 +901,7 @@ public class BackUpAndRestoreController {
 	public Response getSingleBatchRequest(@RequestBody String configRequest) {
 
 		JSONObject obj = new JSONObject();
-		String batchId = "", jsonArray = "";
+		String batchId = "";
 
 		List<RequestInfoEntity> detailsList = new ArrayList<RequestInfoEntity>();
 
@@ -904,13 +916,53 @@ public class BackUpAndRestoreController {
 			batchId = json.get("batchId").toString();
 
 			detailsList = requestInfoDetailsRepositories.findByBatchId(batchId);
+			JSONArray jsonArray = new JSONArray();
+			detailsList.forEach(commands -> {
+				RequestInfoPojo requestPojo = new RequestInfoPojo();
+				requestPojo.setStartUp(commands.getStartUp());
+				requestPojo.setAlphanumericReqId(commands.getAlphanumericReqId());
+				requestPojo.setDateofProcessing((covnertTStoString(commands.getDateofProcessing())));
+				requestPojo.setBatchId(commands.getBatchId());
+				requestPojo.setCertificationSelectionBit(commands.getCertificationSelectionBit());
+				requestPojo.setCustomer(commands.getCustomer());
+				requestPojo.setExecutionStatus(commands.getExecutionStatus());
+				requestPojo.setFamily(commands.getFamily());
+				requestPojo.setHostName(commands.getHostName());
+				requestPojo.setInfoId(commands.getInfoId());
+				requestPojo.setIsBaselineFlag(commands.isBaselineFlag());
+				requestPojo.setManagmentIP(commands.getManagmentIP());
+				requestPojo.setModel(commands.getModel());
+				requestPojo.setNetworkType(commands.getNetworkType());
+				requestPojo.setOs(commands.getOs());
+				requestPojo.setOsVersion(commands.getOsVersion());
+				requestPojo.setrClusterId(commands.getrClusterId());
+				requestPojo.setrConfigGenerationMethod(commands.getrConfigGenerationMethod());
+				requestPojo.setrHasDeltaWithBaseline(commands.isrHasDeltaWithBaseline());
+				requestPojo.setrNumberOfPods(commands.getrNumberOfPods());
+				requestPojo.setReadFE(commands.getReadFE());
+				requestPojo.setReadSE(commands.getReadSE());
+				requestPojo.setRegion(commands.getRegion());
+				requestPojo.setRequestCreatorName(commands.getRequestCreatorName());
+				requestPojo.setRequestElapsedTime(commands.getRequestElapsedTime());
+				requestPojo.setRequestOwnerName(commands.getRequestOwnerName());
+				requestPojo.setRequestParentVersion(commands.getRequestParentVersion());
+				requestPojo.setRequestType(commands.getRequestType());
+				requestPojo.setRequestTypeFlag(commands.getRequestTypeFlag());
+				requestPojo.setRequestVersion(commands.getRequestVersion());
+				requestPojo.setSiteId(commands.getSiteId());
+				requestPojo.setSiteName(commands.getSiteName());
+				requestPojo.setStatus(commands.getStatus());
+				requestPojo.setTemplateUsed(commands.getTemplateUsed());
+				requestPojo.setVendor(commands.getVendor());
+				requestPojo.setEndDateOfProcessing(commands.getEndDateOfProcessing());
+				jsonArray.add(requestPojo);
+			});
+			obj.put("output", jsonArray);
 
 		} catch (Exception e) {
 			logger.error("Exception in getSingleBatchRequest method "+e.getMessage());
 		}
-		jsonArray = new Gson().toJson(detailsList);
-		obj.put(new String("output"), jsonArray);
-
+//		jsonArray = new Gson().toJson(detailsList);
 		return Response.status(200).header("Access-Control-Allow-Origin", "*")
 				.header("Access-Control-Allow-Headers", "origin, content-type, accept, authorization")
 				.header("Access-Control-Allow-Credentials", "true")

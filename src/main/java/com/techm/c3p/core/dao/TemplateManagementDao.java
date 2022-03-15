@@ -2513,59 +2513,6 @@ public class TemplateManagementDao {
 	}
 
 
-public List<DeviceDiscoverPojo> getDeviceListForAudit(String templateId,String version,
-			 String vendor,String deviceOs,String osVersion,String deviceFamily,String networkType) {
-		List<DeviceDiscoverPojo> list = new ArrayList<DeviceDiscoverPojo>();
-		List<DeviceDiscoveryEntity> deviceDiscoveryList=new ArrayList<>();
-		if ("All".equals(osVersion)) {
-			osVersion = "%";
-		} else {
-			osVersion = "%" + osVersion+"%";
-		}
-		if ("All".equals(deviceOs)) {
-			deviceOs = "%";
-		} else {
-			deviceOs = "%" + deviceOs+"%";
-		}
-		if ("All".equals(deviceFamily)) {
-			deviceFamily = "%";
-		} else {
-			deviceFamily = "%" + deviceFamily+"%";
-		}
-		if ("All".equals(vendor)) {
-			vendor = "%";
-		} else {
-			vendor = "%" + vendor+"%";
-		}
-		deviceDiscoveryList= deviceDiscoveryRepository.geAuditDeviceList( vendor, deviceOs, osVersion, deviceFamily, networkType);
-//		if("All".equals(osVersion)) {
-//			deviceDiscoveryList= deviceDiscoveryRepository.findByDVendorAndDOsAndDDeviceFamilyAndDVNFSupport( vendor, deviceOs, deviceFamily, networkType);
-//		}
-		deviceDiscoveryList.forEach(entity->{
-			DeviceDiscoverPojo pojo = new DeviceDiscoverPojo();
-				pojo.setVendor(entity.getdVendor());
-				pojo.setDeviceFamily(entity.getdDeviceFamily());
-				pojo.setOs(entity.getdOs());
-				pojo.setOsVersion(entity.getdOsVersion());
-				pojo.setManagmentId(entity.getdMgmtIp());
-				pojo.setHostName(entity.getdHostName());
-				pojo.setModel(entity.getdModel());
-				pojo.setRole(entity.getdRole());
-				if (entity.getCustSiteId() != null) {
-					SiteInfoEntity custSiteId = entity.getCustSiteId();
-					SiteInfoPojo siteInfoPojo = new SiteInfoPojo();
-					siteInfoPojo.setCustName(custSiteId.getcCustName());
-					siteInfoPojo.setSiteRegion(custSiteId.getcSiteRegion());
-					siteInfoPojo.setSiteName(custSiteId.getcSiteName());
-					siteInfoPojo.setSiteActive(custSiteId.getcSiteAddressLine1());
-					pojo.setSiteInfo(siteInfoPojo);
-				}
-				list.add(pojo);
-			});
-		return list;
-
-	}
-
 	/**
 	 * get vendor related audit template list 
 	 * @param listType

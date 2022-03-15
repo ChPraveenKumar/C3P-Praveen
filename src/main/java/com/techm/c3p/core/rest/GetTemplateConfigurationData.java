@@ -1298,34 +1298,4 @@ public class GetTemplateConfigurationData {
 		}
 		return responseEntity;
 	}
-	
-	
-	@SuppressWarnings({ "unchecked", "unused" })
-	@GET
-	@RequestMapping(value = "/getDeviceListForAudit", method = RequestMethod.POST, produces = "application/json")
-	public ResponseEntity<JSONObject> getDeviceListForAudit(@RequestBody String request) throws Exception {
-		ResponseEntity<JSONObject> responseEntity = null;
-		JSONParser parser = new JSONParser();
-		JSONObject json = (JSONObject) parser.parse(request);
-		String templateId = json.get("templateId").toString();
-		String version = json.get("version").toString();
-		String vendor = json.get("vendor").toString();
-		String deviceFamily = json.get("deviceFamily").toString();
-		String deviceOs = json.get("deviceOs").toString();
-		String osVersion = json.get("osVersion").toString();
-		String networkType = json.get("networkType").toString();
-		
-		 List<DeviceDiscoverPojo> templateListData = templateManagementDetailsService.getDeviceListForAudit(templateId,version,
-				 vendor,deviceOs,osVersion,deviceFamily,networkType);
-		 JSONObject data = new JSONObject();
-		 String dataJson = new Gson().toJson(templateListData);
-		 data.put("output", dataJson);
-		if (templateListData != null) {			
-			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.OK);
-		} else {
-			responseEntity = new ResponseEntity<JSONObject>(data, HttpStatus.BAD_REQUEST);
-			
-		}
-		return responseEntity;
-	}
 }
