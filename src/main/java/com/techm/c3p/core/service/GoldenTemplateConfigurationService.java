@@ -104,6 +104,7 @@ public class GoldenTemplateConfigurationService {
 					e.printStackTrace();
 					logger.error(e.getMessage());
 				}
+				if(backupData!=null && !backupData.isEmpty()) {
 				Map<String, Object> dataMap = new HashMap<>();
 				dataMap.put("backup", backupData);
 				dataMap.put("additionalData", "");
@@ -139,7 +140,7 @@ public class GoldenTemplateConfigurationService {
 //				comparisionLogic.put("missingData", dataMap.get("missingData"));
 				comparisionLogic.put("configurations",createResponseJson(updatesequesnceId((List<CommandPojo>)dataMap.get("configuration"))));
 				comparisionLogic.put("feature", createResponseJson(updatesequesnceId((List<CommandPojo>)dataMap.get("commandFileData"))));
-				
+				}	
 
 			}
 		}
@@ -177,6 +178,7 @@ public class GoldenTemplateConfigurationService {
 		
 	}
 */
+	@SuppressWarnings("unchecked")
 	private JSONArray createResponseJson(List<CommandPojo> commandData) {
 		JSONArray arr = new JSONArray();
 		commandData.forEach(cmd->{
@@ -225,14 +227,45 @@ public class GoldenTemplateConfigurationService {
 	@SuppressWarnings("unchecked")
 	private Map<String, Object> comparisionLogic(Map<String, Object> dataMap, String dataMode, String featureName,
 			RequestInfoPojo requestValueData, List<CommandPojo> commandTemplateData) {
-		List<String> fileString = Arrays.asList(String.valueOf(dataMap.get("backup")).split("\n", -1));
+		String backupData = String.valueOf(dataMap.get("backup"));
+		List<String> fileString = Arrays.asList(backupData.split("\n", -1));
 		List<String> commandData = Arrays.asList(String.valueOf(dataMap.get("commandFileData")).split("\n", -1));
 		List<String> bracketCommands = removeBracket(commandData);
 
 		List<String> backupDataString = new ArrayList<>();
 		int start = 0;
-		int end = 0;
-		for (String fileData : fileString) {
+		
+		int endData =0;
+		boolean startCmdCheck =false;
+		
+		if(backupData.contains(bracketCommands.get(0).trim())) {
+			startCmdCheck =true;
+		}
+		if(startCmdCheck) {
+		
+		String endIndex = "";
+		
+		for(int i=(bracketCommands.size()-1);i>0;i--) {
+			if (!bracketCommands.get(i).equals("!") && !bracketCommands.get(i).equals("")) {				
+				if(backupData.contains(bracketCommands.get(i))) {
+					endIndex = bracketCommands.get(i);
+					break;
+				}
+			}
+		}
+		System.out.println(endIndex);
+		if(endIndex!="") {
+			for (String fileData : fileString) {
+				if(fileData.contains(endIndex)) {
+					endData =fileString.indexOf(fileData);
+					break;
+				}
+				if(fileData.contains(bracketCommands.get(0))) {
+					start =fileString.indexOf(fileData);
+				}
+			}
+		}
+		for (String fileData : fileString) {			
 			for (String cmdData : bracketCommands) {
 				if (!fileData.equals("!") && !cmdData.equals("!")) {
 					String data = cmdData;
@@ -242,28 +275,34 @@ public class GoldenTemplateConfigurationService {
 					if (newData.size() > 2 || !newData.get(0).equals("")) {
 						for (String d : newData) {
 							if (fileData.contains(d)) {
-								count++;
+								count++;								
 							}
 						}
 					}
 					if (count == newData.size()) {
-						if (start == 0) {
+						/*if( endData!=0 && Math.abs(end-start)<bracketCommands.size()) {
+							endData = end;
+						}	
+						if (start == 0 && endData==0) {
 							start = fileString.indexOf(fileData);
-						}
-						end = fileString.indexOf(fileData);
+							endData = start;
+						}					
+						end = fileString.indexOf(fileData);*/
 						fileData = cmdData;
 						break;
 					}
 				}
+			
 			}
 			backupDataString.add(fileData);
+		 }
 		}
 		List<String> subList = new ArrayList<>();
 
-		if (start == 0 && end == 0) {
+		if (start == 0 && endData == 0) {
 			saveAuditResultData(requestValueData, featureName, "Missing", null, null);
 		} else {
-			subList = backupDataString.subList(start, end + 1);
+			subList = backupDataString.subList(start, endData+1);
 		}
 		List<String> dataString = Arrays.asList(String.valueOf(dataMap.get("additionalData")).split("\n", -1));
 
@@ -319,10 +358,13 @@ public class GoldenTemplateConfigurationService {
 		for (CommandPojo cmd : commandTemplateData) {
 			if (missingDataList != null && !missingDataList.isEmpty()) {
 				missingDataList.forEach(data -> {
-					if (!data.isEmpty()) {
+					if (!data.isEmpty()) {						
 						if( cmd.getTempId()==null || cmd.getTempId().equals("0") || cmd.getTempId().equals("2")) {
-						if (data.equals(cmd.getCommand_value())) {
+							
+						if (data.equals(StringUtils.remove(cmd.getCommand_value(),"\n"))) {
 							cmd.setTempId("2");
+						}else {
+							
 						}
 						}
 					}
@@ -336,7 +378,7 @@ public class GoldenTemplateConfigurationService {
 				extraDataList.forEach(data -> {				
 					if (!data.isEmpty()) {
 						for (CommandPojo cmd : convertFileToCommand) {						
-						if (data.equals(cmd.getCommand_value())) {
+						if (data.equals(StringUtils.remove(cmd.getCommand_value(),"\n"))) {
 							if((cmd.getTempId() == null  ||cmd.getTempId().equals("0") || cmd.getTempId().equals("1"))) {
 							cmd.setTempId("1");
 							break;
