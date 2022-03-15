@@ -883,18 +883,11 @@ public class BackUpAndRestoreController {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
-	public String covnertTStoString(Timestamp indate) {
-		String dateString = null;
-		Date date = new Date();
-		date.setTime(indate.getTime());
-		dateString = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(date);
-		return dateString;
-	}
-
 	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
+	@SuppressWarnings("static-access")
 	@POST
 	@RequestMapping(value = "/getSingleBatch", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -921,7 +914,7 @@ public class BackUpAndRestoreController {
 				RequestInfoPojo requestPojo = new RequestInfoPojo();
 				requestPojo.setStartUp(commands.getStartUp());
 				requestPojo.setAlphanumericReqId(commands.getAlphanumericReqId());
-				requestPojo.setDateofProcessing((covnertTStoString(commands.getDateofProcessing())));
+				requestPojo.setDateofProcessing((dateUtil.dbToUI(commands.getDateofProcessing())));
 				requestPojo.setBatchId(commands.getBatchId());
 				requestPojo.setCertificationSelectionBit(commands.getCertificationSelectionBit());
 				requestPojo.setCustomer(commands.getCustomer());
