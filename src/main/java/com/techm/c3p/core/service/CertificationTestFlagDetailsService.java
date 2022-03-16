@@ -10,7 +10,7 @@ import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 @Component
 public class CertificationTestFlagDetailsService {
 
-	private static final Logger logger = LogManager.getLogger(RequestInfoService.class);
+	private static final Logger logger = LogManager.getLogger(CertificationTestFlagDetailsService.class);
 
 	@Autowired
 	private RequestInfoService requestInfoService;
