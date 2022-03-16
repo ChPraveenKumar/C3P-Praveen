@@ -1,5 +1,7 @@
 package com.techm.c3p.core.service;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.techm.c3p.core.pojo.CertificationTestPojo;
@@ -7,6 +9,8 @@ import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 
 @Component
 public class CertificationTestFlagDetailsService {
+
+	private static final Logger logger = LogManager.getLogger(RequestInfoService.class);
 
 	@Autowired
 	private RequestInfoService requestInfoService;
@@ -27,19 +31,19 @@ public class CertificationTestFlagDetailsService {
 				version = version + ".0";
 			}
 
-			if (TestType.equalsIgnoreCase("preValidate")) {
+			if ("preValidate".equalsIgnoreCase(TestType)) {
 				certificationTestPojo = requestInfoService.getCertificationTestFlagData(requestId, version, TestType);
 			}
 
-			if (TestType.equalsIgnoreCase("networkTest")) {
+			if ("networkTest".equalsIgnoreCase(TestType)) {
 				certificationTestPojo = requestInfoService.getCertificationTestFlagData(requestId, version, TestType);
 			}
-			if (TestType.equalsIgnoreCase("HealthTest")) {
+			if ("HealthTest".equalsIgnoreCase(TestType)) {
 				certificationTestPojo = requestInfoService.getCertificationTestFlagData(requestId, version, TestType);
 			}
 
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception exe) {
+			logger.error("Exception in getPrevalidationTestFlag method --> " + exe.getMessage());
 		}
 		return certificationTestPojo;
 	}
