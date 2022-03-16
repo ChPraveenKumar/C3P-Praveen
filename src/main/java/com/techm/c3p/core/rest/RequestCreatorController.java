@@ -157,18 +157,19 @@ public class RequestCreatorController {
 			String siteName = json.get("siteName").toString();
 			String region = json.get("region").toString();
 			// String vendor = json.get("vendor").toString();
-			List<SiteInfoEntity> siteList = siteRepo.findCSiteIdByCCustNameAndCSiteRegionAndCSiteName(customer, region,
-					siteName);
+			
+			String networkfunction = json.get("networkfunction").toString();
+			
+			List<SiteInfoEntity> siteList = siteRepo.findCSiteIdByCCustNameAndCSiteRegionAndCSiteName(customer, region, siteName);
 			siteList.forEach(site -> {
-				List<DeviceDiscoveryEntity> device = deviceRepo.findByCustSiteIdId(site.getId());
+				 //List<DeviceDiscoveryEntity> device = deviceRepo.findByCustSiteIdId(site.getId());
+				List<DeviceDiscoveryEntity> device = deviceRepo.findByCustSiteIdIdAndDVNFSupport(site.getId(), networkfunction);
 				device.forEach(item -> {
 					JSONObject obj = new JSONObject();
 					obj.put("hostName",item.getdHostName());
 					obj.put("status",item.getdLifeCycleState());
 					array.add(obj);
-					hostNameList.add(item.getdHostName());
-					
-					
+					hostNameList.add(item.getdHostName());	
 				});
 
 			});

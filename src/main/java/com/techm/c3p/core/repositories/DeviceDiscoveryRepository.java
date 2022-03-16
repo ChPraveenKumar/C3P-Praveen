@@ -351,4 +351,5 @@ List<DeviceDiscoveryEntity> geAuditDeviceList(@Param("vendor") String vendor, @P
 	@Param("networkfunction") String networkfunction,@Param("region") String region);
 	
 	
+	List<DeviceDiscoveryEntity> findByCustSiteIdIdAndDVNFSupport(int siteId, String networkfunction);
 }
