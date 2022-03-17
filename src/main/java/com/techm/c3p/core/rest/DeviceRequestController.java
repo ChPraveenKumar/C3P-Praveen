@@ -206,7 +206,7 @@ public class DeviceRequestController {
 				object.put("deviceFamily", templateListData.get(i).getdDeviceFamily());
 				object.put("os", templateListData.get(i).getdOs());
 				object.put("osVersion", templateListData.get(i).getdOsVersion());
-				object.put("managmentId", templateListData.get(i).getdOsVersion());
+				object.put("managmentId", templateListData.get(i).getdMgmtIp());
 				object.put("hostName", templateListData.get(i).getdHostName());
 				object.put("model", templateListData.get(i).getdModel());
 				object.put("role", templateListData.get(i).getdRole());
@@ -239,5 +239,6 @@ public class DeviceRequestController {
 					.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 					.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
+	
 	
 }
