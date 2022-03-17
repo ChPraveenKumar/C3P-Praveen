@@ -328,7 +328,7 @@ public class GoldenTemplateConfigurationService {
 						missingCount++;
 						missingDataList.add(cmdData);
 						if ("Network Audit".equals(dataMode)) {
-							saveAuditResultData(requestValueData, featureName, "Additional", null, cmdData);
+							saveAuditResultData(requestValueData, featureName, "Deleted", null, cmdData);
 						}
 
 					}
@@ -349,7 +349,7 @@ public class GoldenTemplateConfigurationService {
 						additionalCount++;
 						extraDataList.add(fileData);
 						if ("Network Audit".equals(dataMode)) {
-							saveAuditResultData(requestValueData, featureName, "Deleted", fileData, null);
+							saveAuditResultData(requestValueData, featureName, "Additional", fileData, null);
 						}
 					}
 				}
@@ -359,13 +359,19 @@ public class GoldenTemplateConfigurationService {
 			if (missingDataList != null && !missingDataList.isEmpty()) {
 				missingDataList.forEach(data -> {
 					if (!data.isEmpty()) {						
-						if( cmd.getTempId()==null || cmd.getTempId().equals("0") || cmd.getTempId().equals("2")) {
-							
-						if (data.equals(StringUtils.remove(cmd.getCommand_value(),"\n"))) {
-							cmd.setTempId("2");
-						}else {
-							
-						}
+						if( cmd.getTempId()==null || cmd.getTempId().equals("0") || cmd.getTempId().equals("3")) {
+							List<String> newData = Arrays.asList(data.split(" ", -1));
+							int count = 0;
+							if (newData.size() > 2 || !newData.get(0).equals("")) {
+								for (String d : newData) {
+									if (cmd.getCommand_value().contains(d)) {
+										count++;								
+									}
+								}
+							}
+							if (count == newData.size()) {
+								cmd.setTempId("3");	
+							}
 						}
 					}
 				});

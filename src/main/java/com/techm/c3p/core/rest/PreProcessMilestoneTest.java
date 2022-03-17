@@ -70,6 +70,7 @@ public class PreProcessMilestoneTest {
 		String response = "";
 		boolean preProcesFlag = false;
 		Timestamp dateofProcessing  =null;
+		String modeRequestId="";
 		try {
 			logger.info("Inside Pre Process");
 			json = (JSONObject) parser.parse(request);
@@ -92,7 +93,7 @@ public class PreProcessMilestoneTest {
 					} else {	
 						Collections.reverse(backupRequestData);
 						dateofProcessing = backupRequestData.get(0).getDateofProcessing();
-						
+						modeRequestId = backupRequestData.get(0).getAlphanumericReqId();
 						preProcesFlag = true;
 					}
 				}
@@ -112,6 +113,7 @@ public class PreProcessMilestoneTest {
 														.getRequestVersion()),
 										"pre_health_checkup", "1", "In Progress");
 								preProcesFlag = true;
+								modeRequestId = requestinfo.getAlphanumericReqId();
 							} else {
 								requestInfoDao.editRequestforReportWebserviceInfo(
 										requestinfo.getAlphanumericReqId(), Double
@@ -144,6 +146,7 @@ public class PreProcessMilestoneTest {
 					Double.toString(requestinfo.getRequestVersion()), "preprocess", "1", "In Progress");
 			AuditDashboardEntity auditData = auditDashboardRepository.findByAdRequestIdAndAdRequestVersion(requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
 			auditData.setAdAuditDataDate(dateofProcessing);
+			auditData.setAdAuditModeId(modeRequestId);
 			auditDashboardRepository.save(auditData);
 		} else {
 			requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),

@@ -1330,6 +1330,14 @@ public class DcmConfigService {
 							request.setAlphanumericReqId(requestIdForConfig);
 							request.setRequestVersion(requestInfoSO.getRequestVersion());
 						}
+						if ("Config Audit".equals(requestInfoSO.getRequestType())) {
+							RequestInfoEntity requestData = requestInfoDetailsRepositories
+									.findByAlphanumericReqIdAndRequestVersion(requestInfoSO.getAlphanumericReqId(),
+											requestInfoSO.getRequestVersion());
+							if (requestData != null) {
+								requestInfoDao.saveAuditData(requestData);
+							}
+						}
 					}
 					if (entry.getKey() == "result") {
 						res = entry.getValue();
