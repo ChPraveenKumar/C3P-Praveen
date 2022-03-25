@@ -117,7 +117,7 @@ public class HealthCheckTestValidation extends Thread {
 		Channel channel = null;
 		Session session = null;
 
-		if (!(("SLGB".equals(type) || ("SNAI".equals(type) || ("SNAD".equals(type)))))) {
+		if (!(("SLGB".equals(type) || ("SNAI".equals(type) || ("SNAD".equals(type)|| ("SCGC".equals(type))))))) {
 			try {
 				requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
 				if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {

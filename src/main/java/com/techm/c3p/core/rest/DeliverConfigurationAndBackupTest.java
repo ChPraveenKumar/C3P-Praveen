@@ -3203,11 +3203,9 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		}
 		else if(request.getrCloudName().equalsIgnoreCase("GCP"))
 		{
-			DeviceDiscoveryEntity device = deviceDiscoveryRepository
-					.findByDHostName(request.getHostName());
 			managementIp=getIPForGCP(result);
-			deviceDiscoveryRepository.updateMgmtIpbyDeviceid(managementIp,
-					device.getdId());
+			requestInfoDetailsRepositories.updateMgmtIpbyDeviceid(managementIp,
+					request.getAlphanumericReqId());
 		}
 	}
 
