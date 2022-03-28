@@ -315,11 +315,5 @@ public class TemplateManagementDetailsService {
 		return list;
 	}
 	
-	public List<DeviceDiscoverPojo> getDeviceListForAudit(String templateId,String version,
-			 String vendor,String deviceOs,String osVersion,String deviceFamily,String networkType) {	
-		List<DeviceDiscoverPojo> list = new ArrayList<DeviceDiscoverPojo>();
-		list = templateManagementDao.getDeviceListForAudit(templateId,version,vendor, deviceOs, osVersion, deviceFamily, networkType);
-		return list;
-	}
 }
 

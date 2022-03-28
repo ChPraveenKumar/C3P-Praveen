@@ -31,7 +31,7 @@ import com.techm.c3p.core.connection.DBUtil;
 import com.techm.c3p.core.connection.JDBCConnection;
 
 import com.techm.c3p.core.entitybeans.HeatTemplate;
-
+import com.techm.c3p.core.entitybeans.AuditDashboardEntity;
 import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 
@@ -41,7 +41,7 @@ import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.TestStaregyConfigPojo;
 
 import com.techm.c3p.core.repositories.HeatTemplateRepository;
-
+import com.techm.c3p.core.repositories.AuditDashboardRepository;
 import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 
@@ -83,6 +83,9 @@ public class RequestDetails {
 	
 	@Autowired
 	private RequestDetailsService requestDetailsService;
+	
+	@Autowired
+	private AuditDashboardRepository auditDashboardRepository;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -387,25 +390,11 @@ public class RequestDetails {
 			}else {
 				reqDetail.setCompliance("Yes");
 			}
-			String backupTime ="";
-			if("lastBackup".equals(reqDetail.getConfigurationGenerationMethods())) {
-			List<RequestInfoEntity> backupRequestData = requestInfoDetailsRepositories
-					.findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatus(
-							reqDetail.getHostname(), reqDetail.getManagementIp(), "SLGB", "Success");
-			if (backupRequestData == null || backupRequestData.isEmpty()) {				
-				backupTime = reqDetail.getRequestCreatedOn();
-				reqDetail.setComplianceData(backupTime);
-			} else {
-				Collections.reverse(backupRequestData);
-				backupTime = String.valueOf(backupRequestData.get(0).getDateofProcessing());
-				reqDetail.setComplianceData(dateUtil.dateTimeInAppFormat(backupTime));
-				}
+			AuditDashboardEntity auditEntity = auditDashboardRepository.findByAdRequestIdAndAdRequestVersion(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion());		
+		
+			if(auditEntity!=null && auditEntity.getAdAuditDataDate()!=null) {
+				reqDetail.setComplianceData(dateUtil.dateTimeInAppFormat(String.valueOf(auditEntity.getAdAuditDataDate())));
 			}
-			else if("config".equals(reqDetail.getConfigurationGenerationMethods())) {
-				backupTime = reqDetail.getRequestCreatedOn();
-				reqDetail.setComplianceData(backupTime);
-			}
-			
 			
 		}
 

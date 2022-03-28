@@ -343,9 +343,13 @@ public interface DeviceDiscoveryRepository extends JpaRepository<DeviceDiscovery
 	List<DeviceDiscoveryEntity> findByDVendorAndDOsAndDDeviceFamilyAndDVNFSupport(
 			String vendor,String os,String deviceFamily ,String networktype);
 	
-	@Query(value = "select * from c3p_deviceinfo where (d_vendor like :vendor or d_vendor like '%All') and (d_os like :os or d_os like '%All') and (d_os_version like :osVersion or d_os_version like '%All') and (d_device_family like :devicefamily or d_device_family like '%All') and d_vnf_support = :networkfunction", nativeQuery = true)
-	List<DeviceDiscoveryEntity> geAuditDeviceList(@Param("vendor") String vendor, @Param("os") String os,
-			 @Param("osVersion") String osVersion, @Param("devicefamily") String devicefamily,
-			@Param("networkfunction") String networkfunction);
 	
+	@Query(value = "select * FROM c3p_deviceinfo as u inner join c3p_cust_siteinfo as c on u.c_site_id= c.id "
+	+ "where (u.d_vendor like :vendor or u.d_vendor like '%All') and (u.d_os like :os or u.d_os like '%All') and (u.d_os_version like :osVersion or u.d_os_version like '%All') and (u.d_device_family like :devicefamily or u.d_device_family like '%All') and (u.d_vnf_support like :networkfunction or u.d_vnf_support like '%All') and (c.c_site_region like :region or c.c_site_region like '%All')",nativeQuery = true)
+List<DeviceDiscoveryEntity> geAuditDeviceList(@Param("vendor") String vendor, @Param("os") String os,
+	 @Param("osVersion") String osVersion, @Param("devicefamily") String devicefamily,
+	@Param("networkfunction") String networkfunction,@Param("region") String region);
+	
+	
+	List<DeviceDiscoveryEntity> findByCustSiteIdIdAndDVNFSupport(int siteId, String networkfunction);
 }

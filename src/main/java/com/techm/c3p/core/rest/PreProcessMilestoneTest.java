@@ -1,5 +1,6 @@
 package com.techm.c3p.core.rest;
 
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,8 +21,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.google.gson.Gson;
 import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
+import com.techm.c3p.core.entitybeans.AuditDashboardEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.repositories.AuditDashboardRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.service.BackupCurrentRouterConfigurationService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
@@ -50,6 +53,9 @@ public class PreProcessMilestoneTest {
 	@Autowired
 	private RequestInfoDao requestInfoDao;
 	
+	@Autowired
+	private AuditDashboardRepository auditDashboardRepository;
+	
 	@SuppressWarnings({ "null", "unchecked" })
 	@POST
 	@RequestMapping(value = "/preProcessTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -63,13 +69,15 @@ public class PreProcessMilestoneTest {
 		RequestInfoPojo requestinfo = new RequestInfoPojo();
 		String response = "";
 		boolean preProcesFlag = false;
+		Timestamp dateofProcessing  =null;
+		String modeRequestId="";
 		try {
 			logger.info("Inside Pre Process");
 			json = (JSONObject) parser.parse(request);
 			String requestId = json.get("requestId").toString();
 			String version = json.get("version").toString();
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(requestId, version);
-
+			
 			if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")
 					&& ("Config Audit".equals(requestinfo.getRequestType()))) {
 				requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
@@ -82,7 +90,10 @@ public class PreProcessMilestoneTest {
 									requestinfo.getHostname(), requestinfo.getManagementIp(), "SLGB", "Success");
 					if (backupRequestData == null || backupRequestData.isEmpty()) {
 						configMethod = "config";
-					} else {						
+					} else {	
+						Collections.reverse(backupRequestData);
+						dateofProcessing = backupRequestData.get(0).getDateofProcessing();
+						modeRequestId = backupRequestData.get(0).getAlphanumericReqId();
 						preProcesFlag = true;
 					}
 				}
@@ -102,6 +113,7 @@ public class PreProcessMilestoneTest {
 														.getRequestVersion()),
 										"pre_health_checkup", "1", "In Progress");
 								preProcesFlag = true;
+								modeRequestId = requestinfo.getAlphanumericReqId();
 							} else {
 								requestInfoDao.editRequestforReportWebserviceInfo(
 										requestinfo.getAlphanumericReqId(), Double
@@ -110,6 +122,7 @@ public class PreProcessMilestoneTest {
 										"pre_health_checkup", "2", "In Progress");
 								preProcesFlag = false;
 							}
+							dateofProcessing = Timestamp.valueOf(requestinfo.getRequestCreatedOn());
 						} else {
 							preProcesFlag = false;
 						}
@@ -131,7 +144,10 @@ public class PreProcessMilestoneTest {
 		if (preProcesFlag) {
 			requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 					Double.toString(requestinfo.getRequestVersion()), "preprocess", "1", "In Progress");
-
+			AuditDashboardEntity auditData = auditDashboardRepository.findByAdRequestIdAndAdRequestVersion(requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());
+			auditData.setAdAuditDataDate(dateofProcessing);
+			auditData.setAdAuditModeId(modeRequestId);
+			auditDashboardRepository.save(auditData);
 		} else {
 			requestInfoDetailsDao.editRequestforReportWebserviceInfo(requestinfo.getAlphanumericReqId(),
 					Double.toString(requestinfo.getRequestVersion()), "preprocess", "2", "Failure");
@@ -142,7 +158,7 @@ public class PreProcessMilestoneTest {
 		return obj;
 	}
 
-	@SuppressWarnings({ "null", "unchecked" })
+	@SuppressWarnings({  "unchecked" })
 	@POST
 	@RequestMapping(value = "/preProcessMilestoneData", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
@@ -160,27 +176,14 @@ public class PreProcessMilestoneTest {
 				String configMethod = requestinfo.getConfigurationGenerationMethods();
 				String alphanumericRequestId = null;
 				Double requestVersion = null;
-				if ("lastBackup".equals(configMethod)) {
-					List<RequestInfoEntity> backupRequestData = requestInfoDetailsRepositories
-							.findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatus(
-									requestinfo.getHostname(), requestinfo.getManagementIp(), "SLGB", "Success");
-					
-					String backupTime ="";
-					if (backupRequestData == null || backupRequestData.isEmpty()) {
-//						alphanumericRequestId = requestId;
-//						requestVersion = Double.valueOf(version);
-//						backupTime = requestinfo.getRequestCreatedOn();
-						configMethod = "config";
-						
-					} else {
-						Collections.reverse(backupRequestData);
-						alphanumericRequestId = backupRequestData.get(0).getAlphanumericReqId();
-						requestVersion = backupRequestData.get(0).getRequestVersion();
-						backupTime = String.valueOf(backupRequestData.get(0).getDateofProcessing());
+				AuditDashboardEntity auditData = auditDashboardRepository.findByAdRequestIdAndAdRequestVersion(requestinfo.getAlphanumericReqId(), requestinfo.getRequestVersion());				
+				if ("lastBackup".equals(configMethod)) {					
+					if(auditData!=null) {
 						obj.put("reachability", "Not Applicable");
-						obj.put("status", "fetched last backup "+dateUtil.dateTimeInAppFormat(backupTime));
-					}
-									
+						if(auditData.getAdAuditDataDate()!=null) {
+						obj.put("status", "fetched last backup "+dateUtil.dateTimeInAppFormat(String.valueOf(auditData.getAdAuditDataDate())));
+						}
+					}									
 				} 
 				if ("config".equals(configMethod)) {
 					alphanumericRequestId = requestId;
@@ -188,7 +191,9 @@ public class PreProcessMilestoneTest {
 					int status=requestInfoDetailsDao.getStatusForMilestone(alphanumericRequestId,String.valueOf(requestVersion),"pre_health_checkup");
 					if(status ==1) {
 						obj.put("reachability", "Success");
-						obj.put("status", "fetched last backup "+dateUtil.dateTimeInAppFormat(requestinfo.getRequestCreatedOn()));
+						if(auditData.getAdAuditDataDate()!=null) {
+							obj.put("status", "fetched last backup "+dateUtil.dateTimeInAppFormat(String.valueOf(auditData.getAdAuditDataDate())));
+						}
 					}else {
 						obj.put("reachability", "Failed");
 						obj.put("status", "Not Applicable");

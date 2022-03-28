@@ -33,6 +33,26 @@ public class RequestInfoPojo {
 	private String customer;
 
 	private String siteid;
+	
+	private boolean executionStatus;
+	
+	private String hostName;
+	
+	private String managmentIP;
+	
+	private int rClusterId = 0;
+	
+	private String rConfigGenerationMethod;
+	
+	private boolean rHasDeltaWithBaseline;
+	
+	private int rNumberOfPods = 0;
+	
+	private String requestOwnerName;
+	
+	private String siteId;
+	
+	private String templateUsed;
 
 	private String siteName;
 
@@ -45,6 +65,8 @@ public class RequestInfoPojo {
 	//private String deviceType;
 
 	private Timestamp endDateOfProcessing;
+	
+	private String dateofProcessing;
 
 	private Double requestVersion;
 
@@ -1895,4 +1917,96 @@ public class RequestInfoPojo {
 	public void setComplianceData(String complianceData) {
 		this.complianceData = complianceData;
 	}
+
+
+	public String getDateofProcessing() {
+		return dateofProcessing;
+	}
+
+	public void setDateofProcessing(String dateofProcessing) {
+		this.dateofProcessing = dateofProcessing;
+	}
+
+	public boolean isExecutionStatus() {
+		return executionStatus;
+	}
+
+	public void setExecutionStatus(boolean executionStatus) {
+		this.executionStatus = executionStatus;
+	}
+
+	public String getHostName() {
+		return hostName;
+	}
+
+	public void setHostName(String hostName) {
+		this.hostName = hostName;
+	}
+
+	public String getManagmentIP() {
+		return managmentIP;
+	}
+
+	public void setManagmentIP(String managmentIP) {
+		this.managmentIP = managmentIP;
+	}
+
+	public int getrClusterId() {
+		return rClusterId;
+	}
+
+	public void setrClusterId(int rClusterId) {
+		this.rClusterId = rClusterId;
+	}
+
+	public String getrConfigGenerationMethod() {
+		return rConfigGenerationMethod;
+	}
+
+	public void setrConfigGenerationMethod(String rConfigGenerationMethod) {
+		this.rConfigGenerationMethod = rConfigGenerationMethod;
+	}
+
+	public boolean isrHasDeltaWithBaseline() {
+		return rHasDeltaWithBaseline;
+	}
+
+	public void setrHasDeltaWithBaseline(boolean rHasDeltaWithBaseline) {
+		this.rHasDeltaWithBaseline = rHasDeltaWithBaseline;
+	}
+
+	public int getrNumberOfPods() {
+		return rNumberOfPods;
+	}
+
+	public void setrNumberOfPods(int rNumberOfPods) {
+		this.rNumberOfPods = rNumberOfPods;
+	}
+
+	public String getRequestOwnerName() {
+		return requestOwnerName;
+	}
+
+	public void setRequestOwnerName(String requestOwnerName) {
+		this.requestOwnerName = requestOwnerName;
+	}
+
+	public String getSiteId() {
+		return siteId;
+	}
+
+	public void setSiteId(String siteId) {
+		this.siteId = siteId;
+	}
+
+	public String getTemplateUsed() {
+		return templateUsed;
+	}
+
+	public void setTemplateUsed(String templateUsed) {
+		this.templateUsed = templateUsed;
+	}
+	
+	
+	
 }

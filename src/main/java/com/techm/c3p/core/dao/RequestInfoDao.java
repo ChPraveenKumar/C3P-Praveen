@@ -7868,7 +7868,7 @@ public class RequestInfoDao {
 			
 			if (save.getBatchId() != null) {
 				if("Config Audit".equals(requestEntity.getRequestType())) {
-					saveAuditData(save);
+					saveAuditData(save.getRequestInfoEntity());
 				}
 				addRequestIDtoWebserviceInfo(alphaneumeric_req_id,
 						Double.toString(request_version));
@@ -7887,11 +7887,12 @@ public class RequestInfoDao {
 		return hmap;
 	}
 
-	private void saveAuditData(BatchIdEntity save) {
-		AuditDashboardEntity auditDashboardEntity = new AuditDashboardEntity();
-		RequestInfoEntity requestInfoEntity = save.getRequestInfoEntity();
+	public void saveAuditData(RequestInfoEntity requestInfoEntity) {
+		AuditDashboardEntity auditDashboardEntity = new AuditDashboardEntity();		
 		if(requestInfoEntity!=null) {
-		auditDashboardEntity.setAdAuditId(save.getBatchId());
+			if(requestInfoEntity.getBatchId()!=null) {
+				auditDashboardEntity.setAdAuditId(requestInfoEntity.getBatchId());
+			}
 		DeviceDiscoveryEntity deviceData = deviceDiscoveryRepository.findHostNameAndMgmtip(requestInfoEntity.getManagmentIP(),requestInfoEntity.getHostName());
 		auditDashboardEntity.setAdDeviceId(deviceData.getdId());
 		auditDashboardEntity.setAdMode(requestInfoEntity.getrConfigGenerationMethod());

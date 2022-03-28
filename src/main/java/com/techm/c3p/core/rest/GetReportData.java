@@ -32,6 +32,7 @@ import com.google.gson.Gson;
 import com.techm.c3p.core.dao.RequestDetails;
 import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
+import com.techm.c3p.core.entitybeans.AuditDashboardEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.c3p.core.entitybeans.RfoDecomposedEntity;
@@ -40,12 +41,14 @@ import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 import com.techm.c3p.core.pojo.PreValidateTest;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.RequestInfoSO;
+import com.techm.c3p.core.repositories.AuditDashboardRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.c3p.core.repositories.RfoDecomposedRepository;
 import com.techm.c3p.core.repositories.WebServiceRepo;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.ReportDetailsService;
+import com.techm.c3p.core.utility.InvokeFtl;
 
 /*
  * Owner: Ruchita Salvi, Vivek Vidhate Module: Modified for Test Strategey Logic: To
@@ -85,6 +88,8 @@ public class GetReportData {
 	@Autowired
 	private WebServiceRepo webServiceRepo;
 	
+	@Autowired
+	private AuditDashboardRepository auditDashboardRepository;
 	
 	@POST
 	@RequestMapping(value = "/getReportDataforTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -424,35 +429,46 @@ public class GetReportData {
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 
 			CreateConfigRequestDCM createConfigRequestDCM = new CreateConfigRequestDCM();
-			if(json.get("requestID") !=null)
+			if (json.get("requestID") != null)
 				requestID = json.get("requestID").toString();
-			if(json.get("version") !=null)
+			if (json.get("version") != null)
 				version = json.get("version").toString();
 			createConfigRequestDCM.setRequestId(requestID);
 			// createConfigRequestDCM.setTestType(json.get("testType").toString());
 			createConfigRequestDCM.setVersion_report(version);
 			String flag = json.get("flagForData").toString();
-			RequestInfoEntity requestInfo = requestInfoDetailsRepositories.findByAlphanumericReqIdAndRequestVersion
-					(requestID, Double.parseDouble(version));
-			if(requestInfo !=null)
-				networkType = requestInfo.getNetworkType();
-			createConfigRequestDCM.setNetworkType(networkType);
-			
-			Map<String, String> dataList = reportDetailsService.getRouterConfigDetails(createConfigRequestDCM, flag);
-			for (Map.Entry<String, String> entry : dataList.entrySet()) {
-				if (entry.getKey() == "previousRouterVersion") {
-
-					previousRouterVersion = entry.getValue();
+			RequestInfoEntity requestInfo = requestInfoDetailsRepositories
+					.findByAlphanumericReqIdAndRequestVersion(requestID, Double.parseDouble(version));
+			if (requestInfo != null) {
+				if ("Config Audit".equals(requestInfo.getRequestType())) {
+					AuditDashboardEntity auditData = auditDashboardRepository.findByAdRequestIdAndAdRequestVersion(requestInfo.getAlphanumericReqId(), requestInfo.getRequestVersion());
+					InvokeFtl invokeFtl = new InvokeFtl();					
+					previousRouterVersion = invokeFtl.getPreviousRouterVersion(auditData.getAdAuditModeId(),String.valueOf(requestInfo.getRequestVersion()));
+					
 					String detailsStr = new Gson().toJson(previousRouterVersion);
 					obj.put(new String("previousRouterVersion"), detailsStr);
-				}
-				if (entry.getKey() == "currentRouterVersion") {
-					currentRouterVersion = entry.getValue();
-					String detailsStr = new Gson().toJson(currentRouterVersion);
+				} else {
+					networkType = requestInfo.getNetworkType();
+					createConfigRequestDCM.setNetworkType(networkType);
 
-					obj.put(new String("currentRouterVersion"), detailsStr);
-				}
+					Map<String, String> dataList = reportDetailsService.getRouterConfigDetails(createConfigRequestDCM,
+							flag);
+					for (Map.Entry<String, String> entry : dataList.entrySet()) {
+						if (entry.getKey() == "previousRouterVersion") {
 
+							previousRouterVersion = entry.getValue();
+							String detailsStr = new Gson().toJson(previousRouterVersion);
+							obj.put(new String("previousRouterVersion"), detailsStr);
+						}
+						if (entry.getKey() == "currentRouterVersion") {
+							currentRouterVersion = entry.getValue();
+							String detailsStr = new Gson().toJson(currentRouterVersion);
+
+							obj.put(new String("currentRouterVersion"), detailsStr);
+						}
+
+					}
+				}
 			}
 
 		} catch (Exception e) {

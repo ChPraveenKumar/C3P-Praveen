@@ -3,6 +3,8 @@ package com.techm.c3p.core.service;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -1330,6 +1332,14 @@ public class DcmConfigService {
 							request.setAlphanumericReqId(requestIdForConfig);
 							request.setRequestVersion(requestInfoSO.getRequestVersion());
 						}
+						if ("Config Audit".equals(requestInfoSO.getRequestType())) {
+							RequestInfoEntity requestData = requestInfoDetailsRepositories
+									.findByAlphanumericReqIdAndRequestVersion(requestInfoSO.getAlphanumericReqId(),
+											requestInfoSO.getRequestVersion());
+							if (requestData != null) {
+								requestInfoDao.saveAuditData(requestData);
+							}
+						}
 					}
 					if (entry.getKey() == "result") {
 						res = entry.getValue();
@@ -1360,8 +1370,12 @@ public class DcmConfigService {
 						else if (cloudObject.get("cloudPlatform").toString().equalsIgnoreCase("gcp"))
 							templateFolder=C3PCoreAppLabels.TERRAFORM_GCP.getValue();
 						File from = new File(templateFolder+File.separator+"main.tf");
-						File to = new File(folderPath);
-						FileUtils.copyFileToDirectory(from, to);
+						File to = new File(folderPath+File.separator+"main.tf");
+						to.setReadable(true);
+						to.setWritable(true);
+						to.setExecutable(true);
+						Files.copy(from.toPath(), to.toPath(),StandardCopyOption.COPY_ATTRIBUTES);
+						Files.setPosixFilePermissions(to.toPath(), PosixFilePermissions.fromString("rwxrwxrwx"));
 						
 						/*Code to generate variable file*/
 						CloudPojo cloudPojo=mapToPojo(cloudObject);

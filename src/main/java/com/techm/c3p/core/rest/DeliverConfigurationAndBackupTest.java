@@ -3154,6 +3154,8 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 	private void updateDeviceInfo(JSONObject result, RequestInfoEntity request) {
 		// JSONObject output = (JSONObject) result.get("output");
+		if(request.getrCloudName().equalsIgnoreCase("Openstack"))
+		{
 		DeviceDiscoveryEntity device = deviceDiscoveryRepository
 				.findByDHostName(request.getHostName());
 		String managementIp = null;
@@ -3167,14 +3169,25 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 				managementIp = attribs.get("access_ip_v4").toString();
 			}
 		}
-
 		deviceDiscoveryRepository.updateMgmtIpbyDeviceid(managementIp,
 				device.getdId());
+		}
+		else if(request.getrCloudName().equalsIgnoreCase("GCP"))
+		{
+			DeviceDiscoveryEntity device = deviceDiscoveryRepository
+					.findByDHostName(request.getHostName());
+			String managementIp=getIPForGCP(result);
+			deviceDiscoveryRepository.updateMgmtIpbyDeviceid(managementIp,
+					device.getdId());
+		}
+	
 	}
 
 	private void updateRequestInfo(JSONObject result, RequestInfoEntity request) {
 		// JSONObject output = (JSONObject) result.get("output");
 		String managementIp = null;
+		if(request.getrCloudName().equalsIgnoreCase("Openstack"))
+		{
 		JSONArray resourceArray = (JSONArray) result.get("resources");
 		for (int i = 0; i < resourceArray.size(); i++) {
 			JSONObject obj = (JSONObject) resourceArray.get(i);
@@ -3187,6 +3200,13 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 		}
 		requestInfoDetailsRepositories.updateMgmtIpbyDeviceid(managementIp,
 				request.getAlphanumericReqId());
+		}
+		else if(request.getrCloudName().equalsIgnoreCase("GCP"))
+		{
+			managementIp=getIPForGCP(result);
+			requestInfoDetailsRepositories.updateMgmtIpbyDeviceid(managementIp,
+					request.getAlphanumericReqId());
+		}
 	}
 
 	private void updatePodDetailTable(JSONObject result,
@@ -3225,5 +3245,31 @@ public class DeliverConfigurationAndBackupTest extends Thread {
 
 		}
 
+	}
+	
+	private String getIPForGCP(JSONObject result)
+	{
+		String managementIP=null;
+		JSONArray resourceArray = (JSONArray) result.get("resources");
+		for (int i = 0; i < resourceArray.size(); i++) {
+			JSONObject obj = (JSONObject) resourceArray.get(i);
+			if(obj.get("type").toString().equalsIgnoreCase("kubernetes_service") && obj.get("mode").toString().equalsIgnoreCase("managed"))
+			{
+				JSONArray instanceArray = (JSONArray) obj.get("instances");
+				for (int j = 0; j < instanceArray.size(); j++) {
+					JSONObject instanceObj = (JSONObject) instanceArray.get(j);
+					JSONObject attributesObj=(JSONObject) instanceObj.get("attributes");
+					JSONArray sepcsArray = (JSONArray) attributesObj.get("spec");
+					for (int k = 0; k < sepcsArray.size(); k++)
+					{
+						JSONObject specObj = (JSONObject) sepcsArray.get(k);
+						managementIP = specObj.get("cluster_ip").toString();
+
+					}
+					
+				}
+			}
+		}
+		return managementIP;
 	}
 }

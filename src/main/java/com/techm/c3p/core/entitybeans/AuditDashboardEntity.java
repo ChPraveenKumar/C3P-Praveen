@@ -53,6 +53,13 @@ public class AuditDashboardEntity implements Serializable {
 
 	@Column(name = "created_date")
 	private Date createdDate;
+	
+	@Column(name = "ad_data_date")
+	private Date adAuditDataDate;
+	
+	@Column(name = "ad_mode_id", length = 45)
+	private String adAuditModeId;
+
 
 	public int getAdRowId() {
 		return adRowId;
@@ -148,6 +155,22 @@ public class AuditDashboardEntity implements Serializable {
 
 	public void setAdMode(String adMode) {
 		this.adMode = adMode;
+	}
+
+	public Date getAdAuditDataDate() {
+		return adAuditDataDate;
+	}
+
+	public void setAdAuditDataDate(Date adAuditDataDate) {
+		this.adAuditDataDate = adAuditDataDate;
+	}
+
+	public String getAdAuditModeId() {
+		return adAuditModeId;
+	}
+
+	public void setAdAuditModeId(String adAuditModeId) {
+		this.adAuditModeId = adAuditModeId;
 	}
 	
 }

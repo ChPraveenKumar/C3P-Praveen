@@ -222,7 +222,7 @@ public class LandingPageController {
 			}
 			if (loggedUser != null && !loggedUser.isEmpty()) {
 				int backFailCount = requestInfoDetailsRepositories.getbackupRequestFailuerStatusCount("Failure",
-						loggedUser, "%SLGB%");
+						loggedUser, "SLGB%");
 				object.put("backupFailCount", backFailCount);
 				int reqFailCount = requestInfoDetailsRepositories.getRequestFailuerStatusCount("Failure", loggedUser,
 						"%SLGB%");
