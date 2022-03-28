@@ -302,81 +302,101 @@ public class DeviceDiscoveryController implements Observer {
 		JSONObject obj = new JSONObject();
 		try {
 			List<DeviceDiscoveryEntity> inventoryList = deviceInforepo.findBydHostName(hostname);
+			if (inventoryList != null && (!inventoryList.isEmpty())) {
+				List<DeviceDiscoveryInterfaceEntity> interfaceListInventory = deviceinterfaceRepo
+						.findByDevice(inventoryList.get(0));
+				if (interfaceListInventory != null) {
+					for (int i = 0; i < interfaceListInventory.size(); i++) {
+						interfaceListInventory.get(i).setDevice(null);
+						if (interfaceListInventory.get(i).getiIntSubnet() != null) {
+							String getiIntSubnet = interfaceListInventory.get(i).getiIntSubnet();
+							InetAddress netmask = InetAddress.getByName(getiIntSubnet);
+							int cidr = convertNetmaskToCIDR(netmask);
+							String finalIpAddress = interfaceListInventory.get(i).getiIntIpaddr() + " / " + cidr;
+							interfaceListInventory.get(i).setiIntIpaddr(finalIpAddress);
+						}
+					}
+					for (int j = 0; j < inventoryList.size(); j++) {
+						// DeviceInfoExtEntity
+						// extObj=deviceInfoExtRepo.findByRDeviceId(String.valueOf(inventoryList.get(j).getdId()));
+						JSONObject extObj = requestInfoDetailsDao
+								.fetchFromDeviceExtLocationDescription(String.valueOf(inventoryList.get(j).getdId()));
+						inventoryList.get(j).setInterfaces(null);
+						inventoryList.get(j).setUsers(null);
+						JSONArray locationDetails = new JSONArray();
+						JSONObject details = new JSONObject();
+						if (extObj != null && extObj.get("description") != null && extObj.containsKey("description")) {
+							inventoryList.get(j).setdSystemDescription(extObj.get("description").toString());
+						} else {
+							inventoryList.get(j).setdSystemDescription("Not Available");
+						}
+						if (extObj != null && extObj.containsKey("lat") && (extObj.get("lat") != null)
+								&& extObj.containsKey("long") && (extObj.get("long") != null)) {
+							details.put("latitude", extObj.get("lat").toString());
+							details.put("longitude", extObj.get("long").toString());
+						} else {
+							details.put("latitude", "Not Available");
+							details.put("longitude", "Not Available");
+						}
+						if (inventoryList.get(j).getdEndOfSupportDate() != null) {
+							inventoryList.get(j).setdEndOfSupportDate(inventoryList.get(j).getdEndOfSupportDate());
+						}
+						if (inventoryList.get(j).getdEndOfSaleDate() != null) {
+							inventoryList.get(j).setdEndOfLife(inventoryList.get(j).getdEndOfSaleDate());
+						}
+						inventoryList.get(j).setdPollUsing("IP Address");
+						if (inventoryList.get(j).getdConnect() != null) {
+							inventoryList.get(j).setdLoginDetails(inventoryList.get(j).getdConnect());
+						}
+						inventoryList.get(j).setdStatus("Available");
+						inventoryList.get(j).getdManagedBy();
+						inventoryList.get(j).getdManagedServicesType();
+						inventoryList.get(j).getdLifeCycleState();
+						if (inventoryList.get(j).getdRole() == null) {
+							inventoryList.get(j).setdRole("Not Available");
+						}
+						if (inventoryList.get(j).getdPowerSupply() != null) {
+							inventoryList.get(j).getdPowerSupply();
+						}
+						if (inventoryList.get(j).getCustSiteId() != null) {
 
-			List<DeviceDiscoveryInterfaceEntity> interfaceListInventory = deviceinterfaceRepo
-					.findByDevice(inventoryList.get(0));
+							if (inventoryList.get(j).getCustSiteId().getcSiteAddressLine1() != null
+									&& (!inventoryList.get(j).getCustSiteId().getcSiteAddressLine1().isEmpty())) {
+								inventoryList.get(j).getCustSiteId().getcSiteAddressLine1();
+							}
+							if (inventoryList.get(j).getCustSiteId().getcSIteAddressLine2() != null) {
+								inventoryList.get(j).getCustSiteId().getcSIteAddressLine2();
+							}
+							if (inventoryList.get(j).getCustSiteId().getcSiteAddressLine3() != null) {
+								inventoryList.get(j).getCustSiteId().getcSiteAddressLine3();
+							}
+							if (inventoryList.get(j).getCustSiteId().getcSiteName() != null) {
+								inventoryList.get(j).getCustSiteId().getcSiteName();
+							}
+							details.put("location",
+									setSiteDetails(inventoryList.get(j).getCustSiteId(), inventoryList.get(j)));
+						}
 
-			for (int i = 0; i < interfaceListInventory.size(); i++) {
-				interfaceListInventory.get(i).setDevice(null);
-				if (interfaceListInventory.get(i).getiIntSubnet() != null) {
-					String getiIntSubnet = interfaceListInventory.get(i).getiIntSubnet();
-					InetAddress netmask = InetAddress.getByName(getiIntSubnet);
-					int cidr = convertNetmaskToCIDR(netmask);
-					String finalIpAddress = interfaceListInventory.get(i).getiIntIpaddr() + " / " + cidr;
-					interfaceListInventory.get(i).setiIntIpaddr(finalIpAddress);
+						JSONArray contactDetails = new JSONArray();
+						JSONObject detail = new JSONObject();
+
+						detail.put("dContact", "Baldev Singh Chaudhari");
+						detail.put("dContactLocation", "Pune");
+						detail.put("dContactRole", "Administrator");
+						detail.put("dContactOrganization", "TechMahindra");
+						detail.put("dContactEmail", inventoryList.get(j).getdContactEmail());
+						detail.put("dContactPhone", inventoryList.get(j).getdContactPhone());
+
+						contactDetails.add(detail);
+						locationDetails.add(details);
+						inventoryList.get(j).setContactDetails(contactDetails);
+						inventoryList.get(j).setLocationDetails(locationDetails);
+					}
+
+					obj.put("deviceDetails", inventoryList);
+					obj.put("interfaces", interfaceListInventory);
 				}
 			}
-			for (int j = 0; j < inventoryList.size(); j++) {
-				//DeviceInfoExtEntity extObj=deviceInfoExtRepo.findByRDeviceId(String.valueOf(inventoryList.get(j).getdId()));
-				JSONObject extObj=requestInfoDetailsDao.fetchFromDeviceExtLocationDescription(String.valueOf(inventoryList.get(j).getdId()));
-				inventoryList.get(j).setInterfaces(null);
-				inventoryList.get(j).setUsers(null);
-				JSONArray locationDetails = new JSONArray();
-				JSONObject details = new JSONObject();
-				if(extObj!=null && extObj.get("description") != null && extObj.containsKey("description"))
-				{
-				inventoryList.get(j).setdSystemDescription(extObj.get("description").toString());
-				}
-				else
-				{
-				inventoryList.get(j).setdSystemDescription("Not Available");
-				}
-				if(extObj!=null && extObj.containsKey("lat") && (extObj.get("lat") != null) && extObj.containsKey("long") && (extObj.get("long") != null))
-				{
-					details.put("latitude",extObj.get("lat").toString());
-					details.put("longitude", extObj.get("long").toString());
-				}
-				else
-				{
-					details.put("latitude","Not Available");
-					details.put("longitude", "Not Available");
-				}
-				inventoryList.get(j).setdEndOfSupportDate(inventoryList.get(j).getdEndOfSupportDate());
-				inventoryList.get(j).setdEndOfLife(inventoryList.get(j).getdEndOfSaleDate());
-				inventoryList.get(j).setdPollUsing("IP Address");
-				inventoryList.get(j).setdLoginDetails(inventoryList.get(j).getdConnect());
-				inventoryList.get(j).setdStatus("Available");
-				inventoryList.get(j).getdManagedBy();
-				inventoryList.get(j).getdManagedServicesType();
-				inventoryList.get(j).getdLifeCycleState();
-				if(inventoryList.get(j).getdRole()==null) {
-					inventoryList.get(j).setdRole("Not Available");
-				}
-				inventoryList.get(j).getdPowerSupply();
-				inventoryList.get(j).getCustSiteId().getcSiteAddressLine1();
-				inventoryList.get(j).getCustSiteId().getcSIteAddressLine2();
-				inventoryList.get(j).getCustSiteId().getcSiteAddressLine3();
-				inventoryList.get(j).getCustSiteId().getcSiteName();
-				details.put("location", setSiteDetails(inventoryList.get(j).getCustSiteId(), inventoryList.get(j)));
-
-				JSONArray contactDetails = new JSONArray();
-				JSONObject detail = new JSONObject();
-
-				detail.put("dContact", "Baldev Singh Chaudhari");
-				detail.put("dContactLocation", "Pune");
-				detail.put("dContactRole", "Administrator");
-				detail.put("dContactOrganization", "TechMahindra");
-				detail.put("dContactEmail", inventoryList.get(j).getdContactEmail());
-				detail.put("dContactPhone", inventoryList.get(j).getdContactPhone());
-
-				contactDetails.add(detail);
-				locationDetails.add(details);
-				inventoryList.get(j).setContactDetails(contactDetails);
-				inventoryList.get(j).setLocationDetails(locationDetails);
-			}
-			
-			obj.put("deviceDetails", inventoryList);
-			obj.put("interfaces", interfaceListInventory);
 		} catch (Exception e) {
 			logger.error(e);
 		}
