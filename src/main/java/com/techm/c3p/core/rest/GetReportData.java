@@ -49,7 +49,8 @@ import com.techm.c3p.core.repositories.WebServiceRepo;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.ReportDetailsService;
 import com.techm.c3p.core.utility.InvokeFtl;
-
+import com.techm.c3p.core.entitybeans.TestValidationEntity;
+import com.techm.c3p.core.repositories.TestValidationRepo;
 /*
  * Owner: Ruchita Salvi, Vivek Vidhate Module: Modified for Test Strategey Logic: To
  * display Network Audit tests
@@ -90,6 +91,9 @@ public class GetReportData {
 	
 	@Autowired
 	private AuditDashboardRepository auditDashboardRepository;
+	
+	@Autowired
+	private TestValidationRepo testValidationRepo;
 	
 	@POST
 	@RequestMapping(value = "/getReportDataforTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -289,42 +293,46 @@ public class GetReportData {
 
 			}
 			else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")) {
-				org.json.simple.JSONArray prevalidateArray = new org.json.simple.JSONArray();
-				org.json.simple.JSONArray outArray = requestInfoDao.getDynamicTestResultCustomerReport(createConfigRequestDCM.getRequestId(), createConfigRequestDCM.getVersion_report(),"Device Prevalidation"); 
-				JSONObject vendorObj = new JSONObject();
-				JSONObject modelObj = new JSONObject();
-				JSONObject iosversionObj = new JSONObject();
-				for(int i=0;i<outArray.size();i++)
-				{
-					JSONObject obj1=(JSONObject) outArray.get(i);
-					if(obj1.get("testname").toString().contains("vendor"))
-					{
-						vendorObj.put("testName", "Vendor");
-						vendorObj.put("userInput", requestinfo.getVendor());
-						vendorObj.put("cpeValue", obj1.get("CollectedValue").toString());
-						vendorObj.put("status", obj1.get("status").toString());
-					}
-					else if(obj1.get("testname").toString().contains("model"))
-					{
-						modelObj.put("testName", "Model");
-						modelObj.put("userInput", requestinfo.getModel());
-						modelObj.put("cpeValue", obj1.get("CollectedValue").toString());
-						modelObj.put("status", obj1.get("status").toString());
-
-					}
-					else if(obj1.get("testname").toString().contains("version"))
-					{
-						iosversionObj.put("testName", "Os");
-						iosversionObj.put("userInput", requestinfo.getOsVersion());
-						iosversionObj.put("cpeValue", obj1.get("CollectedValue").toString());
-						iosversionObj.put("status", obj1.get("status").toString());
-
-					}
-				}
 				
-				prevalidateArray.add(vendorObj);
-				prevalidateArray.add(modelObj);
-				prevalidateArray.add(iosversionObj);
+				org.json.simple.JSONArray prevalidateArray = new org.json.simple.JSONArray();
+				TestValidationEntity testResult = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(createConfigRequestDCM.getRequestId(), String.valueOf(Double.valueOf(createConfigRequestDCM.getVersion_report())));
+				org.json.simple.JSONArray outArray = requestInfoDao.getDynamicTestResultCustomerReport(createConfigRequestDCM.getRequestId(), createConfigRequestDCM.getVersion_report(),"Device Prevalidation");
+				if (outArray != null && !outArray.isEmpty()) {
+					JSONObject vendorObj = new JSONObject();
+					JSONObject modelObj = new JSONObject();
+					JSONObject iosversionObj = new JSONObject();
+					for (int i = 0; i < outArray.size(); i++) {
+						JSONObject obj1 = (JSONObject) outArray.get(i);
+						if (obj1.get("testname").toString().contains("vendor")) {
+							vendorObj.put("testName", "Vendor");
+							vendorObj.put("userInput", requestinfo.getVendor());
+							vendorObj.put("cpeValue", obj1.get("CollectedValue").toString());
+							vendorObj.put("status", obj1.get("status").toString());
+						} else if (obj1.get("testname").toString().contains("model")) {
+							modelObj.put("testName", "Model");
+							modelObj.put("userInput", requestinfo.getModel());
+							modelObj.put("cpeValue", obj1.get("CollectedValue").toString());
+							modelObj.put("status", obj1.get("status").toString());
+
+						} else if (obj1.get("testname").toString().contains("version")) {
+							iosversionObj.put("testName", "Os");
+							iosversionObj.put("userInput", requestinfo.getOsVersion());
+							iosversionObj.put("cpeValue", obj1.get("CollectedValue").toString());
+							iosversionObj.put("status", obj1.get("status").toString());
+
+						}
+					}
+
+					prevalidateArray.add(vendorObj);
+					prevalidateArray.add(modelObj);
+					prevalidateArray.add(iosversionObj);
+				}else {
+					JSONObject errorData = new JSONObject();
+					if(testResult!=null) {
+					errorData.put("errorRouterMessage",testResult.getTvSuggestionForFailure());
+					}
+					prevalidateArray.add(errorData);
+				}
 			
 			jsonMessage = prevalidateArray.toString();
 				/*List<PreValidateTest> preValidateTestList = requestInfoDao.getPreValidateTestData(requestinfo.getAlphanumericReqId(),requestinfo.getRequestVersion().toString());
