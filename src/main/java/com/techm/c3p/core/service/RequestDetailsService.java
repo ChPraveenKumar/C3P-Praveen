@@ -134,8 +134,8 @@ public class RequestDetailsService {
 		try {
 			TestStrategeyConfigResultsEntity testStrategeyConfigResults = testStrategeyConfigResultsRepo
 					.findByRequestIdAndRequestVersion(requestId, requsetVersion);
-			testResultList = new ArrayList<>();
 			if (testStrategeyConfigResults != null) {
+				testResultList = new ArrayList<>();
 				TestStaregyConfigPojo testResult = new TestStaregyConfigPojo();
 				testResult.setTestRequestId(testStrategeyConfigResults.getRequestId());
 				testResult.setTestCategoty(testStrategeyConfigResults.getTestCategory());
@@ -161,8 +161,9 @@ public class RequestDetailsService {
 		try {
 			TestStrategeyConfigResultsEntity testStrategeyConfigResults = testStrategeyConfigResultsRepo
 					.findByRequestId(requestId);
-			if (testStrategeyConfigResults != null)
-				result = testStrategeyConfigResults.getTestName();
+			if (testStrategeyConfigResults != null) {
+					result = testStrategeyConfigResults.getTestName();
+			}
 		} catch (Exception exe) {
 			logger.error("Exception in findByRequestId method --> " + exe.getMessage());
 		}
@@ -182,9 +183,9 @@ public class RequestDetailsService {
 			if (testStrategeyConfigResults != null) {
 				org.json.simple.JSONObject obj = new org.json.simple.JSONObject();
 				obj.put("category", testStrategeyConfigResults.getTestCategory());
-				if (testStrategeyConfigResults.getTestResult().equalsIgnoreCase("FLAG_PASS")) {
+				if (testStrategeyConfigResults.getTestResult().equalsIgnoreCase("Pass")) {
 					obj.put("status", "1");
-				} else if (testStrategeyConfigResults.getTestResult().equalsIgnoreCase("FLAG_FAIL")) {
+				} else if (testStrategeyConfigResults.getTestResult().equalsIgnoreCase("Fail")) {
 					obj.put("status", "2");
 				} else {
 					obj.put("status", "0");
@@ -203,36 +204,40 @@ public class RequestDetailsService {
 	public int getTestDetails(String requestId, String testName, double requsetVersion, String category,
 			String subCategory) {
 		int status = 0;
+		int failuarCount = 0;
 		TestStrategeyConfigResultsEntity testStrategeyConfigResults = null;
 		try {
 			if (subCategory != null) {
 				testStrategeyConfigResults = testStrategeyConfigResultsRepo
 						.findByRequestIdAndTestNameAndRequestVersionAndTestCategoryAndTestSubCategory(requestId,
 								testName, requsetVersion, category, subCategory);
+				if(testStrategeyConfigResults != null) {
 				testStrategeyConfigResults.setRequestId(requestId);
 				testStrategeyConfigResults.setTestName(testName);
 				testStrategeyConfigResults.setRequestVersion(requsetVersion);
 				testStrategeyConfigResults.setTestCategory(category);
 				testStrategeyConfigResults.setTestSubCategory(subCategory);
+				}
 			} else {
 				testStrategeyConfigResults = testStrategeyConfigResultsRepo
 						.findByRequestIdAndTestNameAndRequestVersion(requestId, testName, requsetVersion);
+				if(testStrategeyConfigResults != null) {
 				testStrategeyConfigResults.setRequestId(requestId);
 				testStrategeyConfigResults.setTestName(testName);
 				testStrategeyConfigResults.setRequestVersion(requsetVersion);
+				}
 			}
-			int failuarCount = 0;
 			if (testStrategeyConfigResults != null) {
-				if (testStrategeyConfigResults.getTestResult().equalsIgnoreCase("FLAG_PASS")) {
+				if (testStrategeyConfigResults.getTestResult().equalsIgnoreCase("Pass")) {
 					status = 1;
-				} else if (testStrategeyConfigResults.getTestResult().equalsIgnoreCase("FLAG_FAIL")) {
+				} else if (testStrategeyConfigResults.getTestResult().equalsIgnoreCase("Fail")) {
 					status = 2;
 				} else {
 					status = 0;
 				}
-				if (failuarCount > 0) {
-					return 2;
-				}
+			}
+			if (failuarCount > 0) {
+				return 2;
 			}
 		} catch (Exception exe) {
 			logger.error("Exception in getTestDetails method --> " + exe.getMessage());
