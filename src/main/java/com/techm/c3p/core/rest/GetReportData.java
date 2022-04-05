@@ -48,6 +48,7 @@ import com.techm.c3p.core.repositories.RfoDecomposedRepository;
 import com.techm.c3p.core.repositories.WebServiceRepo;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.ReportDetailsService;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.InvokeFtl;
 
 /*
@@ -80,6 +81,9 @@ public class GetReportData {
 	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	@Autowired
 	private ReportDetailsService reportDetailsService;
@@ -290,7 +294,7 @@ public class GetReportData {
 			}
 			else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")) {
 				org.json.simple.JSONArray prevalidateArray = new org.json.simple.JSONArray();
-				org.json.simple.JSONArray outArray = requestInfoDao.getDynamicTestResultCustomerReport(createConfigRequestDCM.getRequestId(), createConfigRequestDCM.getVersion_report(),"Device Prevalidation"); 
+				org.json.simple.JSONArray outArray = requestDetailsService.getDynamicTestResultCustomerReport(createConfigRequestDCM.getRequestId(), createConfigRequestDCM.getVersion_report(),"Device Prevalidation"); 
 				JSONObject vendorObj = new JSONObject();
 				JSONObject modelObj = new JSONObject();
 				JSONObject iosversionObj = new JSONObject();
@@ -729,7 +733,7 @@ public class GetReportData {
 			createConfigRequestDCM.setTestType(json.get("testType").toString());
 
 			if (createConfigRequestDCM.getTestType().equalsIgnoreCase("networkAuditTest")) {
-				dynamicTestArray = requestInfoDao.getNetworkAuditReport(createConfigRequestDCM.getRequestId(),
+				dynamicTestArray = requestDetailsService.getNetworkAuditReport(createConfigRequestDCM.getRequestId(),
 						createConfigRequestDCM.getVersion_report(), "Network Audit");
 
 			}

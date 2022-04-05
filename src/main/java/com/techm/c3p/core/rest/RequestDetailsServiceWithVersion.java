@@ -627,7 +627,7 @@ public class RequestDetailsServiceWithVersion {
 		}
 		tests.put("testName", name);
 		tests.put("version", version);
-		int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion, category, subCategory);
+		int status = requestDetailsService.getTestDetails(requestId, testName, requestVersion, category, subCategory);
 		tests.put("status", status);
 		return tests;
 
