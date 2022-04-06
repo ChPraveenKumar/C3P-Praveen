@@ -651,8 +651,10 @@ public class RequestDetailsServiceWithVersion {
 			String backupTime = "";
 			if ("lastBackup".equals(configMethod)) {
 				List<RequestInfoEntity> backupRequestData = requestInfoDetailsRepositories
-						.findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatus(requestinfo.getHostname(),
-								requestinfo.getManagementIp(), "SLGB", "Success");
+						.findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatusAndInfoIdLessThan(requestinfo.getHostname(),
+								requestinfo.getManagementIp(), "SLGB", "Success", requestinfo.getInfoId());
+				
+				
 
 				if (backupRequestData == null && backupRequestData.isEmpty()) {
 					alphanumericRequestId = requestId;

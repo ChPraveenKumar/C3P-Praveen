@@ -50,7 +50,8 @@ import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.ReportDetailsService;
 import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.InvokeFtl;
-
+import com.techm.c3p.core.entitybeans.TestValidationEntity;
+import com.techm.c3p.core.repositories.TestValidationRepo;
 /*
  * Owner: Ruchita Salvi, Vivek Vidhate Module: Modified for Test Strategey Logic: To
  * display Network Audit tests
@@ -94,6 +95,9 @@ public class GetReportData {
 	
 	@Autowired
 	private AuditDashboardRepository auditDashboardRepository;
+	
+	@Autowired
+	private TestValidationRepo testValidationRepo;
 	
 	@POST
 	@RequestMapping(value = "/getReportDataforTest", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -293,6 +297,7 @@ public class GetReportData {
 
 			}
 			else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")) {
+				
 				org.json.simple.JSONArray prevalidateArray = new org.json.simple.JSONArray();
 				org.json.simple.JSONArray outArray = requestDetailsService.getDynamicTestResultCustomerReport(createConfigRequestDCM.getRequestId(), createConfigRequestDCM.getVersion_report(),"Device Prevalidation"); 
 				JSONObject vendorObj = new JSONObject();
@@ -315,20 +320,19 @@ public class GetReportData {
 						modelObj.put("cpeValue", obj1.get("CollectedValue").toString());
 						modelObj.put("status", obj1.get("status").toString());
 
+						}
 					}
-					else if(obj1.get("testname").toString().contains("version"))
-					{
-						iosversionObj.put("testName", "Os");
-						iosversionObj.put("userInput", requestinfo.getOsVersion());
-						iosversionObj.put("cpeValue", obj1.get("CollectedValue").toString());
-						iosversionObj.put("status", obj1.get("status").toString());
 
+					prevalidateArray.add(vendorObj);
+					prevalidateArray.add(modelObj);
+					prevalidateArray.add(iosversionObj);
+				}else {
+					JSONObject errorData = new JSONObject();
+					if(testResult!=null) {
+					errorData.put("errorRouterMessage",testResult.getTvSuggestionForFailure());
 					}
+					prevalidateArray.add(errorData);
 				}
-				
-				prevalidateArray.add(vendorObj);
-				prevalidateArray.add(modelObj);
-				prevalidateArray.add(iosversionObj);
 			
 			jsonMessage = prevalidateArray.toString();
 				/*List<PreValidateTest> preValidateTestList = requestInfoDao.getPreValidateTestData(requestinfo.getAlphanumericReqId(),requestinfo.getRequestVersion().toString());

@@ -360,6 +360,7 @@ public class RequestInfoDetailsDao {
 			RequestInfoEntity entity = reository.findByAlphanumericReqIdAndRequestVersion(requestId, finalVersion);
 			if (entity != null) {
 				pojo = new RequestInfoPojo();
+				pojo.setInfoId(entity.getInfoId());
 				pojo.setAlphanumericReqId(entity.getAlphanumericReqId());
 				pojo.setManagementIp(entity.getManagmentIP());
 				pojo.setTemplateID(entity.getTemplateUsed());
