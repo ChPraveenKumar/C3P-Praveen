@@ -484,6 +484,7 @@ public class User {
 		GenericResponse res = new GenericResponse();
 		JSONObject obj = new JSONObject();
 		JSONObject resObj = new JSONObject();
+		List<UserManagementEntity>  allUser = new ArrayList<>();
 		List<UserManagementEntity>  activeUserList = new ArrayList<>();
 		List<UserManagementEntity>  inActiveUserList = new ArrayList<>();
 		try {
@@ -495,13 +496,16 @@ public class User {
 			} else {
 				for(UserManagementEntity activeUser: viewResult)
 				{
+					activeUser.setSubOrdinate("");
+					allUser.add(activeUser);
+					
 					if("active".equals(activeUser.getStatus()))
 						activeUserList.add(activeUser);
 					else
 						inActiveUserList.add(activeUser);	
 				}
 				obj.put("error", "");
-				obj.put("allUser", viewResult);
+				obj.put("allUser", allUser);
 				obj.put("activeUser", activeUserList);
 				obj.put("inActiveUser", inActiveUserList);
 			}
