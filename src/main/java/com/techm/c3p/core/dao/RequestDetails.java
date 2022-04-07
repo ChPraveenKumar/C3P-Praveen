@@ -309,7 +309,7 @@ public class RequestDetails {
 
 			// Logic for health checks
 
-			List<TestStaregyConfigPojo> firmwareTestDetails = getFirmwareTestDetails(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
+			List<TestStaregyConfigPojo> firmwareTestDetails = requestDetailsService.getFirmwareTestDetails(createConfigRequestDCM.getAlphanumericReqId(), createConfigRequestDCM.getRequestVersion());
 				
 			obj.put("preVersionInfo", reqDetail.getOsVersion());
 

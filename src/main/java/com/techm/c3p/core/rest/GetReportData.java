@@ -48,6 +48,7 @@ import com.techm.c3p.core.repositories.RfoDecomposedRepository;
 import com.techm.c3p.core.repositories.WebServiceRepo;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.ReportDetailsService;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.InvokeFtl;
 import com.techm.c3p.core.entitybeans.TestValidationEntity;
 import com.techm.c3p.core.repositories.TestValidationRepo;
@@ -81,6 +82,9 @@ public class GetReportData {
 	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	@Autowired
 	private ReportDetailsService reportDetailsService;
@@ -295,30 +299,26 @@ public class GetReportData {
 			else if (createConfigRequestDCM.getTestType().equalsIgnoreCase("preValidate")) {
 				
 				org.json.simple.JSONArray prevalidateArray = new org.json.simple.JSONArray();
-				TestValidationEntity testResult = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(createConfigRequestDCM.getRequestId(), String.valueOf(Double.valueOf(createConfigRequestDCM.getVersion_report())));
-				org.json.simple.JSONArray outArray = requestInfoDao.getDynamicTestResultCustomerReport(createConfigRequestDCM.getRequestId(), createConfigRequestDCM.getVersion_report(),"Device Prevalidation");
-				if (outArray != null && !outArray.isEmpty()) {
-					JSONObject vendorObj = new JSONObject();
-					JSONObject modelObj = new JSONObject();
-					JSONObject iosversionObj = new JSONObject();
-					for (int i = 0; i < outArray.size(); i++) {
-						JSONObject obj1 = (JSONObject) outArray.get(i);
-						if (obj1.get("testname").toString().contains("vendor")) {
-							vendorObj.put("testName", "Vendor");
-							vendorObj.put("userInput", requestinfo.getVendor());
-							vendorObj.put("cpeValue", obj1.get("CollectedValue").toString());
-							vendorObj.put("status", obj1.get("status").toString());
-						} else if (obj1.get("testname").toString().contains("model")) {
-							modelObj.put("testName", "Model");
-							modelObj.put("userInput", requestinfo.getModel());
-							modelObj.put("cpeValue", obj1.get("CollectedValue").toString());
-							modelObj.put("status", obj1.get("status").toString());
-
-						} else if (obj1.get("testname").toString().contains("version")) {
-							iosversionObj.put("testName", "Os");
-							iosversionObj.put("userInput", requestinfo.getOsVersion());
-							iosversionObj.put("cpeValue", obj1.get("CollectedValue").toString());
-							iosversionObj.put("status", obj1.get("status").toString());
+				org.json.simple.JSONArray outArray = requestDetailsService.getDynamicTestResultCustomerReport(createConfigRequestDCM.getRequestId(), createConfigRequestDCM.getVersion_report(),"Device Prevalidation"); 
+				JSONObject vendorObj = new JSONObject();
+				JSONObject modelObj = new JSONObject();
+				JSONObject iosversionObj = new JSONObject();
+				for(int i=0;i<outArray.size();i++)
+				{
+					JSONObject obj1=(JSONObject) outArray.get(i);
+					if(obj1.get("testname").toString().contains("vendor"))
+					{
+						vendorObj.put("testName", "Vendor");
+						vendorObj.put("userInput", requestinfo.getVendor());
+						vendorObj.put("cpeValue", obj1.get("CollectedValue").toString());
+						vendorObj.put("status", obj1.get("status").toString());
+					}
+					else if(obj1.get("testname").toString().contains("model"))
+					{
+						modelObj.put("testName", "Model");
+						modelObj.put("userInput", requestinfo.getModel());
+						modelObj.put("cpeValue", obj1.get("CollectedValue").toString());
+						modelObj.put("status", obj1.get("status").toString());
 
 						}
 					}
@@ -737,7 +737,7 @@ public class GetReportData {
 			createConfigRequestDCM.setTestType(json.get("testType").toString());
 
 			if (createConfigRequestDCM.getTestType().equalsIgnoreCase("networkAuditTest")) {
-				dynamicTestArray = requestInfoDao.getNetworkAuditReport(createConfigRequestDCM.getRequestId(),
+				dynamicTestArray = requestDetailsService.getNetworkAuditReport(createConfigRequestDCM.getRequestId(),
 						createConfigRequestDCM.getVersion_report(), "Network Audit");
 
 			}
