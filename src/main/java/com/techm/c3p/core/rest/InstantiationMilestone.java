@@ -220,6 +220,7 @@ public class InstantiationMilestone extends Thread {
 											.toString(requestinfo
 													.getRequestVersion()),
 									"instantiation", "1", "In Progress");
+									requestDao.saveLCMDeleteDetails(requestinfo.getManagementIp(),requestinfo.getHostname(),requestId,"Success");
 						} else {
 							requestDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double

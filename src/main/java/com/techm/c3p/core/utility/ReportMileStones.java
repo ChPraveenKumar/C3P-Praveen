@@ -29,7 +29,7 @@ public class ReportMileStones {
 		} else if ("SNAI".equals(requestType)) {
 			mileStone = new MileStones(true, true,false, true, false, false, false, false, false, false, false, false, true);
 		} else if ("SNAD".equals(requestType)) {
-			mileStone = new MileStones(true, true,false, true, false, false, false, false, false, false, false, false, true);
+			mileStone = new MileStones(true, false,true, true, false, false, false, false, false, false, false, false, true);
 		}
 		else if ("SCGC".equals(requestType)) {
 			mileStone = new MileStones(true, true,false,false, true, false, true, true, false, true, true, true, true);
