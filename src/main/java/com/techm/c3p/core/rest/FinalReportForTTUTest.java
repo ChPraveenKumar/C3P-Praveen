@@ -122,7 +122,7 @@ public class FinalReportForTTUTest extends Thread {
 		CSVWriteAndConnectPythonTemplateSuggestion csvWriteAndConnectPythonTemplateSuggestion = new CSVWriteAndConnectPythonTemplateSuggestion();
 		try {			
 			requestinfo = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(RequestId, version);
-			if(!"SNAI".equalsIgnoreCase(type) && !"SNAD".equalsIgnoreCase(type) && !"Config Audit".equals(requestinfo.getRequestType())&& !"SCGC".equals(requestinfo.getRequestType()))
+			if(!"SNAI".equalsIgnoreCase(type) && !"Config Audit".equals(requestinfo.getRequestType())&& !"SCGC".equals(requestinfo.getRequestType()))
 			{
 			 if (requestinfo.getManagementIp() != null && !requestinfo.getManagementIp().equals("")) {
 				String statusVAlue = requestInfoDetailsDao.getPreviousMileStoneStatus(requestinfo.getAlphanumericReqId(),
@@ -135,7 +135,7 @@ public class FinalReportForTTUTest extends Thread {
 
 				// Require requestId and version from camunda
 
-				if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type) || "SLGM".equalsIgnoreCase(type) || "SLGB".equalsIgnoreCase(type)) {
+				if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type) || "SLGM".equalsIgnoreCase(type) || "SLGB".equalsIgnoreCase(type)|| "SNAD".equalsIgnoreCase(type)) {
 					/*Boolean deviceLocked = requestInfoDao.checkForDeviceLockWithManagementIp(
 							requestinfo.getAlphanumericReqId(), requestinfo.getManagementIp(), "FinalReport");*/
 					Boolean deviceLocked = requestInfoService.checkForDeviceLockWithManagementIp(

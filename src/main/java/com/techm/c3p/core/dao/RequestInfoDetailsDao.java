@@ -884,7 +884,25 @@ public class RequestInfoDetailsDao {
 		}
 		return printStream;
 	}
-
+@SuppressWarnings("unused")
+	public void saveLCMDeleteDetails(String managmentIp,String hostName,String requestId,String status) {
+		DeviceDiscoveryEntity deviceData = deviceDiscoveryRepository.findHostNameAndMgmtip(managmentIp,hostName);
+		deviceData.setdDeComm("1");
+		deviceDiscoveryRepository.save(deviceData);;
+		List<ResourceCharacteristicsHistoryEntity> charHistoryEnity = resourceCharHistoryRepo
+				.findBydeviceId(deviceData.getdId());
+		for (ResourceCharacteristicsHistoryEntity attributes : charHistoryEnity) {
+			ResourceCharacteristicsHistoryEntity resourceCharEntity  = new ResourceCharacteristicsHistoryEntity();
+			 resourceCharEntity.setDeviceId(attributes.getDeviceId());
+			 resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
+			 resourceCharEntity.setSoRequestId(requestId);
+			 resourceCharEntity.setRcRequestStatus(status);
+			 resourceCharEntity.setRcActionPerformed("DELETE");
+             resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());
+			 resourceCharHistoryRepo.save(resourceCharEntity);
+		}
+			
+	}
 	private PrintStream setModeData(String parentId, PrintStream printStream) {
 		if (parentId !=null && parentId.contains("::")) {
 			String startParentId = StringUtils.substringBefore(parentId, "::");

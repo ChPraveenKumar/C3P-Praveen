@@ -139,7 +139,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					.getRequestDetailTRequestInfoDBForVersion(RequestId,
 							version);
 			// TODO: We need to remove ROUTER_IP_TEMP later or while on GCP
-			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")
+			if (!RequestId.contains("SNAI-") 
 					&& !RequestId.contains("SCGC-") && (!"Config Audit".equals(requestinfo.getRequestType()))) {
 				if (requestinfo.getManagementIp() != null
 						&& !requestinfo.getManagementIp().equals("")) {
@@ -591,7 +591,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 					.getRequestDetailTRequestInfoDBForVersion(RequestId,
 							version);
 			/* Temporary hard coding ROUTER_IP_TEMP router */
-			if (!RequestId.contains("SNAI-") && !RequestId.contains("SNAD-")) {
+			if (!RequestId.contains("SNAI-")) {
 				if (RequestId.contains("SCGC-")) {
 					// check if any other pods from device info have same
 					// cluster id.
@@ -654,7 +654,7 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										0,
 										Math.min(requestinfo
 												.getAlphanumericReqId()
-												.length(), 2));
+												.length(), 4));
 						if (type.equalsIgnoreCase("SLGC")) {
 						} else if (type.equalsIgnoreCase("SLGF")) {
 
@@ -664,6 +664,18 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 													.getRequestVersion()),
 									"pre_health_checkup", "1", "In Progress");
 
+						}
+						else if (type.equalsIgnoreCase("SNAD")) {
+							requestInfoDao.editRequestforReportWebserviceInfo(
+									requestinfo.getAlphanumericReqId(), Double
+											.toString(requestinfo
+													.getRequestVersion()),
+									"preprocess", "1", "Success");
+							requestInfoDetailsDao.changeRequestInRequestInfoStatus(
+									requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo.getRequestVersion()),
+									"Success");
+							
 						}
 
 						requestInfoService.updateCertificationTestForRequest(
@@ -869,7 +881,19 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 							}
 
 						}
-
+                        else if (type.equalsIgnoreCase("SNAD")) {
+							requestInfoDetailsDao
+							.editRequestforReportWebserviceInfo(
+									requestinfo
+											.getAlphanumericReqId(),
+									Double.toString(requestinfo
+											.getRequestVersion()),
+									"preprocess", "2",
+									"Failure");
+							value = false;
+							jsonArray = new Gson().toJson(value);
+							obj.put(new String("output"), jsonArray);
+							}
 						else if (type.equalsIgnoreCase("SLGF")) {
 							String response = "";
 							String responseDownloadPath = "";

@@ -116,7 +116,7 @@ public class NetworkTestValidation extends Thread {
 					if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SNRC".equalsIgnoreCase(type)
 							|| "SNNC".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type)
 							|| "SLGM".equalsIgnoreCase(type) || "SNRM".equalsIgnoreCase(type)
-							|| "SNNM".equalsIgnoreCase(type)) {
+							|| "SNNM".equalsIgnoreCase(type)|| "SNAD".equalsIgnoreCase(type)) {
 
 						List<TestDetail> selectedTests = requestDetailsService.findSelectedTests(requestinfo.getAlphanumericReqId(),
 								"Network Test",version);
