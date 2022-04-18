@@ -897,7 +897,7 @@ public class RequestInfoDetailsDao {
 			 resourceCharEntity.setRcDeviceHostname(attributes.getRcDeviceHostname());
 			 resourceCharEntity.setSoRequestId(requestId);
 			 resourceCharEntity.setRcRequestStatus(status);
-			 resourceCharEntity.setRcActionPerformed("Delete");
+			 resourceCharEntity.setRcActionPerformed("DELETE");
              resourceCharEntity.setRcFeatureId(attributes.getRcFeatureId());
 			 resourceCharHistoryRepo.save(resourceCharEntity);
 		}

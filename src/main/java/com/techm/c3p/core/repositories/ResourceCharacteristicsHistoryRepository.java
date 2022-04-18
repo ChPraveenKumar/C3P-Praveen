@@ -18,6 +18,6 @@ public interface ResourceCharacteristicsHistoryRepository extends
 	@Query(value = "select * from c3p_resourcecharacteristicshistory  where so_request_id = :requestId and rc_name='CloudPlatform'", nativeQuery = true)
 	ResourceCharacteristicsHistoryEntity findCloudPlatform(@Param("requestId") String requestId);
 
-	List<ResourceCharacteristicsHistoryEntity> findBydeviceId(int requestId);
+	List<ResourceCharacteristicsHistoryEntity> findBydeviceId(int deviceId);
 
 }
