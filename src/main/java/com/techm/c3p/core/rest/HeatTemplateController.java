@@ -100,67 +100,44 @@ public class HeatTemplateController implements Observer {
 	@ResponseBody
 	public ResponseEntity<JSONObject> getAttributes(@RequestBody String request) {
 
-		logger.info("Inside getAttributes "+request);
+		logger.info("Inside getAttributes " + request);
 		ResponseEntity<JSONObject> responseEntity = null;
 		JSONObject obj = new JSONObject();
 		JSONArray features = new JSONArray();
+		JSONArray param = new JSONArray();
+		JSONArray config = new JSONArray();
 		JSONParser parser = new JSONParser();
-		String templateID = "", featureList = "", feature = "", rowId = "";
-		List<MasterCharacteristicsEntity> masCharacteristics = new ArrayList<>();
-		
-		
+		String templateID = "", featureList = "", feature = "", rowId = "", networkFunction = "", heatTemplateID = "";
+		String[] Feature = null;
+		List<String> heatFeatureLists = new ArrayList<String>();
+		List<String> variableFeatureLists = new ArrayList<String>();
+
 		try {
-		 	JSONObject json= (JSONObject) parser.parse(request);
+			JSONObject json = (JSONObject) parser.parse(request);
 			rowId = json.get("rowId").toString();
 			templateID = json.get("variableTemplateId").toString();
-			featureList = heatTemplateRepo.findByVariableTemplateId(templateID, rowId);
-			
-			feature = featureList.substring(1, featureList.length() - 1);
-				String[] Feature = feature.split(",");
-				logger.info("Feature value is "+Feature);
-				for (String f : Feature) {
-					List<JSONObject> masCharArray = new ArrayList<JSONObject>();
-					JSONObject masCharList = new JSONObject();
-					masCharList.put("fId", f);
-					//features.put("fName", value);
-					//features.put("fReplicationFlag", value);
-					masCharacteristics = masterCharachteristicRepository.findByCFId(f);
-					logger.info("getAttributes -> masCharacteristics "+masCharacteristics);
-					for(MasterCharacteristicsEntity masCList : masCharacteristics) {
-						
-						JSONObject masObj = new JSONObject();
-						masObj.put("categotyLabel", masCList.getcFId());
-						masObj.put("cfId", masCList.getcFId());
-						masObj.put("characteriscticsId", masCList.getcId());
-						masObj.put("id", masCList.getcRowid());
-						masObj.put("instanceNumber", masCList.getcFId());
-						masObj.put("key", masCList.iscIsKey());
-						masObj.put("label", masCList.getcName());
-						masObj.put("name", masCList.getcFId());
-						masObj.put("poolIds", masCList.getLinkedPools());
-						masObj.put("replicationFalg", masCList.getcReplicationind());
-						masObj.put("type", masCList.getcType());
-						masObj.put("uIComponent", masCList.getcUicomponent());
-						masObj.put("validations", masCList.getcValidations());
-						masObj.put("defaultValue", masCList.getcDefaultValue());
-						/* using Category Name find all category Value */
-						if (masCList.getcCategory()!= null) {
-							List<CategoryDropDownPojo> allByCategoryName = categoryDropDownservice
-									.getAllByCategoryName(masCList.getcCategory());
-							masObj.put("categoryLabel",masCList.getcCategory());
-							masObj.put("category",allByCategoryName);			
-							}
-						masCharArray.add(masObj);
-						
-						
-					}
-					masCharList.put("attribConfig", masCharArray);
-					
-					logger.info("getAttributes -> masCharList "+masCharList);
-					features.add(masCharList);
-				}
-				
-			obj.put(new String("features"), features);
+			heatTemplateID = json.get("heatTemplateId").toString();
+			networkFunction = json.get("networkFunction").toString();
+
+			if ("vMME".equalsIgnoreCase(networkFunction)) {
+				featureList = heatTemplateRepo.findByVariableTemplateId(templateID, rowId);
+				feature = featureList.substring(1, featureList.length() - 1);
+				Feature = feature.split(",");
+				features = getcharacteristics(Feature);
+				obj.put(new String("features"), features);
+				logger.info("vMME feature value is " + Feature);
+			} else if ("MCC".equalsIgnoreCase(networkFunction)) {
+				variableFeatureLists = templateFeatureRepo.findByMasterfeatureIdByTemplateId(templateID);
+				String[] vFeature = variableFeatureLists.toArray(new String[0]);
+				logger.info("MCC variable template feature value : " + vFeature);
+				param = getcharacteristics(vFeature);
+				obj.put(new String("parameters"), param);
+				heatFeatureLists = templateFeatureRepo.findByMasterfeatureIdByTemplateId(heatTemplateID);
+				String[] hFeature = heatFeatureLists.toArray(new String[0]);
+				logger.info("MCC heat template feature value : " + hFeature);
+				config = getcharacteristics(hFeature);
+				obj.put(new String("Configuration"), config);	
+			}
 			responseEntity = new ResponseEntity<JSONObject>(obj, HttpStatus.OK);
 		} catch (Exception e) {
 			logger.info(e);
@@ -170,7 +147,52 @@ public class HeatTemplateController implements Observer {
 
 	}
 
+	@SuppressWarnings("unchecked")
+	private JSONArray getcharacteristics(String[] Feature) {
+		JSONArray features = new JSONArray();
+		List<MasterCharacteristicsEntity> masCharacteristics = new ArrayList<>();
+		if(Feature!=null) {
+		for (String f : Feature) {
+			List<JSONObject> masCharArray = new ArrayList<JSONObject>();
+			JSONObject masCharList = new JSONObject();
+			masCharList.put("fId", f);
+			masCharacteristics = masterCharachteristicRepository.findByCFId(f);
+			logger.info("getAttributes -> masCharacteristics " + masCharacteristics);
+			for (MasterCharacteristicsEntity masCList : masCharacteristics) {
 
+				JSONObject masObj = new JSONObject();
+				masObj.put("categotyLabel", masCList.getcFId());
+				masObj.put("cfId", masCList.getcFId());
+				masObj.put("characteriscticsId", masCList.getcId());
+				masObj.put("id", masCList.getcRowid());
+				masObj.put("instanceNumber", masCList.getcFId());
+				masObj.put("key", masCList.iscIsKey());
+				masObj.put("label", masCList.getcName());
+				masObj.put("name", masCList.getcFId());
+				masObj.put("poolIds", masCList.getLinkedPools());
+				masObj.put("replicationFalg", masCList.getcReplicationind());
+				masObj.put("type", masCList.getcType());
+				masObj.put("uIComponent", masCList.getcUicomponent());
+				masObj.put("validations", masCList.getcValidations());
+				masObj.put("defaultValue", masCList.getcDefaultValue());
+				/* using Category Name find all category Value */
+				if (masCList.getcCategory() != null) {
+					List<CategoryDropDownPojo> allByCategoryName = categoryDropDownservice
+							.getAllByCategoryName(masCList.getcCategory());
+					masObj.put("categoryLabel", masCList.getcCategory());
+					masObj.put("category", allByCategoryName);
+				}
+				masCharArray.add(masObj);
+
+			}
+			masCharList.put("attribConfig", masCharArray);
+
+			logger.info("getAttributes -> masCharList " + masCharList);
+			features.add(masCharList);
+		}
+	}
+		return features;
+	}
 
 	@Override
 	public void update(Observable o, Object arg) {
