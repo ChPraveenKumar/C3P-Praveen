@@ -46,6 +46,7 @@ import com.techm.c3p.core.entitybeans.MasterCharacteristicsEntity;
 import com.techm.c3p.core.pojo.CategoryDropDownPojo;
 import com.techm.c3p.core.repositories.HeatTemplateRepository;
 import com.techm.c3p.core.repositories.MasterCharacteristicsRepository;
+import com.techm.c3p.core.repositories.TemplateFeatureRepo;
 import com.techm.c3p.core.service.CategoryDropDownService;
 
 
@@ -64,6 +65,9 @@ public class HeatTemplateController implements Observer {
 	
 	@Autowired
 	private CategoryDropDownService categoryDropDownservice;
+
+	@Autowired
+	private TemplateFeatureRepo templateFeatureRepo;
 	
 	@SuppressWarnings("unchecked")
 	@GET
@@ -149,15 +153,18 @@ public class HeatTemplateController implements Observer {
 
 	@SuppressWarnings("unchecked")
 	private JSONArray getcharacteristics(String[] Feature) {
+		logger.info("Inside getcharacteristics " + Feature);
 		JSONArray features = new JSONArray();
 		List<MasterCharacteristicsEntity> masCharacteristics = new ArrayList<>();
 		if(Feature!=null) {
+			logger.info("getcharacteristics -> null check " + Feature);
 		for (String f : Feature) {
+			logger.info("getcharacteristics -> f value " + f);
 			List<JSONObject> masCharArray = new ArrayList<JSONObject>();
 			JSONObject masCharList = new JSONObject();
 			masCharList.put("fId", f);
 			masCharacteristics = masterCharachteristicRepository.findByCFId(f);
-			logger.info("getAttributes -> masCharacteristics " + masCharacteristics);
+			logger.info("getcharacteristics -> masCharacteristics " + masCharacteristics);
 			for (MasterCharacteristicsEntity masCList : masCharacteristics) {
 
 				JSONObject masObj = new JSONObject();
