@@ -116,7 +116,7 @@ public class NetworkTestValidation extends Thread {
 					if ("SLGC".equalsIgnoreCase(type) || "SLGT".equalsIgnoreCase(type) || "SNRC".equalsIgnoreCase(type)
 							|| "SNNC".equalsIgnoreCase(type) || "SLGA".equalsIgnoreCase(type)
 							|| "SLGM".equalsIgnoreCase(type) || "SNRM".equalsIgnoreCase(type)
-							|| "SNNM".equalsIgnoreCase(type)|| "SNAD".equalsIgnoreCase(type)) {
+							|| "SNNM".equalsIgnoreCase(type)) {
 
 						List<TestDetail> selectedTests = requestDetailsService.findSelectedTests(requestinfo.getAlphanumericReqId(),
 								"Network Test",version);
@@ -310,6 +310,9 @@ public class NetworkTestValidation extends Thread {
 								"In Progress");
 						value = true;
 					}
+						logger.info("DONE Network Test");
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
 					}else if("SCGC".equalsIgnoreCase(type))
 					{
 						requestInfoDao.editRequestforReportWebserviceInfo(
