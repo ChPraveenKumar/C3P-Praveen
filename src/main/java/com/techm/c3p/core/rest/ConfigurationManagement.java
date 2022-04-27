@@ -130,7 +130,9 @@ public class ConfigurationManagement {
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
-	//@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
+
+//	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
+
 	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public JSONObject createConfigurationDcm(@RequestBody String configRequest) {

@@ -30,6 +30,7 @@ import com.techm.c3p.core.entitybeans.PasswordPolicy;
 import com.techm.c3p.core.entitybeans.SiteInfoEntity;
 import com.techm.c3p.core.entitybeans.UserManagementEntity;
 import com.techm.c3p.core.exception.GenericResponse;
+import com.techm.c3p.core.models.UserManagementModel;
 import com.techm.c3p.core.pojo.UserManagementResulltDetailPojo;
 import com.techm.c3p.core.pojo.UserPojo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
@@ -484,9 +485,9 @@ public class User {
 		GenericResponse res = new GenericResponse();
 		JSONObject obj = new JSONObject();
 		JSONObject resObj = new JSONObject();
-		List<UserManagementEntity>  allUser = new ArrayList<>();
-		List<UserManagementEntity>  activeUserList = new ArrayList<>();
-		List<UserManagementEntity>  inActiveUserList = new ArrayList<>();
+		List<UserManagementModel>  allUser = new ArrayList<>();
+		List<UserManagementModel>  activeUserList = new ArrayList<>();
+		List<UserManagementModel>  inActiveUserList = new ArrayList<>();
 		try {
 			List<UserManagementEntity>  viewResult = userCreateInterface.getAllUserView();
 			if (viewResult.isEmpty()) {
@@ -496,13 +497,19 @@ public class User {
 			} else {
 				for(UserManagementEntity activeUser: viewResult)
 				{
-					activeUser.setSubOrdinate("");
-					allUser.add(activeUser);
+					UserManagementModel um = new UserManagementModel();
+					um.setUserName(activeUser.getUserName());
+					um.setFirstName(activeUser.getFirstName());
+					um.setLastName(activeUser.getLastName());
+					um.setRole(activeUser.getRole());
+					um.setStatus(activeUser.getStatus());
+					
+					allUser.add(um);
 					
 					if("active".equals(activeUser.getStatus()))
-						activeUserList.add(activeUser);
+						activeUserList.add(um);
 					else
-						inActiveUserList.add(activeUser);	
+						inActiveUserList.add(um);	
 				}
 				obj.put("error", "");
 				obj.put("allUser", allUser);
