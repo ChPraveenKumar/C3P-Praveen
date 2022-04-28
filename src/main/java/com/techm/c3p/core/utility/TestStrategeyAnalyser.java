@@ -132,21 +132,21 @@ public class TestStrategeyAnalyser {
 			String text = tempTextToAnalyse;
 			//This logic is for Telstra only
 			
-			String linesInit[] = text.split("\\n");
+	String linesInit[] = text.split("\\n");
 			List<String> lineListInit = Arrays.asList(linesInit);
 			List<String> lineListFinal = new ArrayList<String>();
 			lineListFinal.addAll(lineListInit);
-			for(int i=0; i< 2; i++){
+			/*for(int i=0; i< 2; i++){
 				if(lineListInit.get(i).contains("#"))
 				{
 					lineListFinal.remove(i);
 				
 			    }
 				}
-			text = String.join("\\n\\r", lineListFinal);
+			text = String.join("\\n\\r", lineListFinal);*/
 			
 			//This logic is for Telstra only
-			
+		
 			
 			logger.info("tempTextToAnalyse ->" + text);
 
@@ -1470,9 +1470,10 @@ public class TestStrategeyAnalyser {
 		String result = null, resultText = null;
 
 		String snippet = rulesLabel.getSnippet();
-
-		text.replaceAll("\\r", "");
-		snippet.replaceAll("\\r", "");
+//		text = text. replaceAll("\\r\\n|\\r", " ");
+//		snippet = snippet. replaceAll("\\r\\n|\\r", " ");
+		//text=text.replaceAll("\\s+", "\\n");
+		snippet=snippet.replaceAll("\\r", "");
 		String lines[] = text.split("\\n");
 		String snippetTest[] = snippet.split("\\n");
 		int extractedRowNumber = 0, extractedColumnNumber = 0;
