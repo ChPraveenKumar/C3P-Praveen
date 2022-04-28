@@ -1495,12 +1495,13 @@ public class TestStrategeyAnalyser {
 						currentPosition = lineListLoop;						
 						lastCheck = true;
 						snippetCount++;
+			
 					}
 				}
 
 			}
 		}
-		if(snippetCount!=snippetArray.size()) {
+		if(snippetCount==0) {
 			lastCheck = false;
 		}
 		// check if evalution field is true
