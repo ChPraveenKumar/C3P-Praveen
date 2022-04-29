@@ -29,6 +29,7 @@ import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.c3p.core.repositories.SiteInfoRepository;
+import com.techm.c3p.core.utility.C3PCoreAppLabels;
 
 @Service
 public class VnfInstantiationMilestoneService {
@@ -161,6 +162,67 @@ public class VnfInstantiationMilestoneService {
 		}
 		logger.info("End - openStackInstantiation - openStackInstantiated ->"
 				+ openStackInstantiated);
+		return result;
+	}
+
+	
+	@SuppressWarnings("null")
+	public boolean openStackInstantiationMCC(String requestId, JSONObject reqJSON) {
+		logger.info("Start - openStackInstantiation MCC");
+		boolean openStackInstantiated = false;
+		HttpHeaders headers = null;
+		JSONParser jsonParser = null;
+		boolean vnfInstantiated = false, result = false;
+		String managementIp = "", url = "", characteristicId = C3PCoreAppLabels.CHARACTERISTIC_ID.getValue();
+		try {
+			jsonParser = new JSONParser();
+			headers = new HttpHeaders();
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(reqJSON, headers);
+			url = pythonServiceUri + "/C3P/api/openstack/deploy/instancemcc";
+
+			String response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+			
+			JSONObject responseJson = (JSONObject) jsonParser.parse(response);
+			logger.info("ResponseJSON - openStackInstantiation MCC" + responseJson);
+			if (responseJson.containsKey("Status") && responseJson.get("Status") != null
+					&& "ACTIVE".equalsIgnoreCase(responseJson.get("Status").toString())) {
+				openStackInstantiated = true;
+				String rcValue = resourceCharHistoryRepo.findByCharacteristicId(requestId, characteristicId);
+				JSONObject address = (JSONObject) responseJson.get("address");
+				logger.info("addressJSON - openStackInstantiation MCC" + address);
+				if(address.containsKey(rcValue)) {
+					JSONArray addressArray = (JSONArray) address.get("MGMT-Cloud7");
+					logger.info("addressArray - openStackInstantiation MCC" + addressArray);
+					JSONObject addressParams = (JSONObject) addressArray.get(0);
+					logger.info("addressParamsJSON - openStackInstantiation MCC" + addressParams);
+					if (addressParams != null) {
+						managementIp = addressParams.get("addr").toString();
+						logger.info("managementIp - openStackInstantiation MCC" + managementIp);
+					}
+				}
+
+			}
+			if (openStackInstantiated) {
+				List<ResourceCharacteristicsHistoryEntity> resCharHistEntityList = resourceCharHistoryRepo
+						.findBySoRequestId(requestId);
+				if (resCharHistEntityList != null) {
+					vnfInstantiated = updateVNFInstanceDetails(requestId, resCharHistEntityList.get(0).getDeviceId(),
+							managementIp, resCharHistEntityList);
+				}
+
+			}
+			if (openStackInstantiated && vnfInstantiated) {
+				result = true;
+			}
+		} catch (ParseException exe) {
+			logger.error("ParseException - openStackInstantiation -> " + exe.getMessage());
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - openStackInstantiation -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - openStackInstantiation->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		logger.info("End - openStackInstantiation - openStackInstantiated ->" + openStackInstantiated);
 		return result;
 	}
 

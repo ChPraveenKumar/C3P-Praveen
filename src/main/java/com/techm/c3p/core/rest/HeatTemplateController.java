@@ -131,12 +131,12 @@ public class HeatTemplateController implements Observer {
 				obj.put(new String("features"), features);
 				logger.info("vMME feature value is " + Feature);
 			} else if ("MCC".equalsIgnoreCase(networkFunction)) {
-				variableFeatureLists = templateFeatureRepo.findByMasterfeatureIdByTemplateId(templateID+"_V1.0");
+				variableFeatureLists = templateFeatureRepo.findByMasterfeatureIdByTemplateId(heatTemplateID+"_V1.0");
 				String[] vFeature = variableFeatureLists.toArray(new String[0]);
 				logger.info("MCC variable template feature value : " + vFeature);
 				param = getcharacteristics(vFeature);
 				obj.put(new String("parameters"), param);
-				heatFeatureLists = templateFeatureRepo.findByMasterfeatureIdByTemplateId(heatTemplateID+"_V1.0");
+				heatFeatureLists = templateFeatureRepo.findByMasterfeatureIdByTemplateId(templateID+"_V1.0");
 				String[] hFeature = heatFeatureLists.toArray(new String[0]);
 				logger.info("MCC heat template feature value : " + hFeature);
 				config = getcharacteristics(hFeature);
