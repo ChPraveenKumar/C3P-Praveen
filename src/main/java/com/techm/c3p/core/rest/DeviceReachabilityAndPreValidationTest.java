@@ -789,6 +789,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 												"Device Reachability Failure",
 												"Failure",
 												"Could not connect to the router.");
+								requestInfoService.updateCertificationTestForRequest(
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo
+												.getRequestVersion()), "2");
+
 								response = invokeFtl
 										.generatePrevalidationResultFileFailure(requestinfo);
 

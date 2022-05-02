@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.itextpdf.styledxmlparser.jsoup.select.Evaluator.IsEmpty;
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.entitybeans.TestStrategeyConfigResultsEntity;
 import com.techm.c3p.core.entitybeans.TestsSelectedEntity;
@@ -24,6 +25,8 @@ import com.techm.c3p.core.utility.UtilityMethods;
 public class RequestDetailsService {
 
 	private static final Logger logger = LogManager.getLogger(RequestInfoService.class);
+	private static final String NFTEXT = "Not Found";
+	private static final String NATEXT = "Not Available";
 
 	@Autowired
 	TestsSelectedRepo testsSelectedRepo;
@@ -106,6 +109,14 @@ public class RequestDetailsService {
 			String dataType, double requestVersion, String testSubCategory) {
 		boolean res = false;
 		try {
+			if(collectedValue == null || collectedValue.isEmpty())
+				collectedValue = NFTEXT;
+			if(resultText == null || resultText.isEmpty())
+				resultText = NATEXT;
+			if(testResult == null || testResult.isEmpty())
+				testResult = NATEXT;
+			if(notes == null || notes.isEmpty())
+				notes = NATEXT;
 			TestStrategeyConfigResultsEntity testStrategeyConfig = null;
 			TestStrategeyConfigResultsEntity testStrategeyConfigResults = new TestStrategeyConfigResultsEntity();
 			testStrategeyConfigResults.setRequestId(requestId);
