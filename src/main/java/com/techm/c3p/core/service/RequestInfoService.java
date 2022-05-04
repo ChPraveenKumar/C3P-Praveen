@@ -209,6 +209,10 @@ public class RequestInfoService {
 			deviceReachabilityTest = "1";
 			suggestion = "Device is reachable";
 		}
+		if ("2_Locked".equalsIgnoreCase(deviceReachabilityTest)) {
+			deviceReachabilityTest = "1";
+			suggestion = "Device is locked";
+		}
 		try {
 			testValidationDetails = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId, version);
 			testValidationDetails.setTvDeviceReachabilityTest(Integer.parseInt(deviceReachabilityTest));

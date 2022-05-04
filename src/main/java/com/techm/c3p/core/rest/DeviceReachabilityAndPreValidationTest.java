@@ -220,7 +220,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 
 												+ "_prevalidationTest.txt",
 										response);
-
+								requestInfoService.updateCertificationTestForRequest(
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()),
+										"2_Locked");
 								requestInfoDetailsDao
 										.editRequestforReportWebserviceInfo(
 												requestinfo
@@ -236,6 +239,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								String response = invokeFtl
 										.generateDevicelockedFile(requestinfo);
 
+								requestInfoService.updateCertificationTestForRequest(
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()),
+										"2_Locked");
 								requestInfoDetailsDao
 										.editRequestforReportWebserviceInfo(
 												requestinfo
@@ -252,6 +259,10 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								String response = invokeFtl
 										.generateDevicelockedFile(requestinfo);
 
+								requestInfoService.updateCertificationTestForRequest(
+										requestinfo.getAlphanumericReqId(),
+										Double.toString(requestinfo.getRequestVersion()),
+										"2_Locked");
 								TextReport.writeFile(
 										C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH
 												.getValue(),
