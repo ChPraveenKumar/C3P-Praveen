@@ -1500,7 +1500,8 @@ public class BackUpAndRestoreController {
 							toSaveArray.toString(),
 							requestInfoEntity.getRequestType(),
 							requestInfoEntity .getRequestVersion());
-					
+					batchIdEntity = new BatchIdEntity();
+
 					if (map.size() > 1) {
 						requestInfoEntity.setBatchId(batchId);
 						batchIdEntity.setBatchStatus("In Progress");
