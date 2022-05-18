@@ -613,6 +613,12 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 								.getdMgmtIp());
 					}
 				}
+				if(RequestId.contains("SNAD")) {
+					requestInfoDetailsDao.editRequestforReportWebserviceInfo(
+							requestinfo.getAlphanumericReqId(),
+							Double.toString(requestinfo.getRequestVersion()),
+							"preprocess", "4", "In Progress");
+				}
 				if (requestinfo.getManagementIp() != null
 						&& !requestinfo.getManagementIp().equals("")) {
 					requestInfoDetailsDao.editRequestforReportWebserviceInfo(
