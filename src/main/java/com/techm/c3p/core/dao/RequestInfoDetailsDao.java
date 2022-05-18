@@ -59,6 +59,7 @@ import com.techm.c3p.core.utility.InvokeFtl;
 import com.techm.c3p.core.utility.PythonServices;
 import com.techm.c3p.core.utility.TextReport;
 import com.techm.c3p.core.utility.UtilityMethods;
+import com.techm.c3p.core.utility.WAFADateUtil;
 
 @Component
 public class RequestInfoDetailsDao {
@@ -89,6 +90,9 @@ public class RequestInfoDetailsDao {
 	private VendorCommandRepository vendorCommandRepository;
 	@Autowired
 	private JDBCConnection jDBCConnection;
+	@Autowired
+	private WAFADateUtil dateUtil;	
+	
 	private static final String JSCH_CONFIG_INPUT_BUFFER= "max_input_buffer_size";
 	
 	public void editRequestforReportWebserviceInfo(String requestId, String version, String field, String flag,
@@ -887,8 +891,10 @@ public class RequestInfoDetailsDao {
 @SuppressWarnings("unused")
 	public void saveLCMDeleteDetails(String managmentIp,String hostName,String requestId,String status) {
 		DeviceDiscoveryEntity deviceData = deviceDiscoveryRepository.findHostNameAndMgmtip(managmentIp,hostName);
+		deviceData.setdDecommReason("LCM Delete Request Raised");
 		deviceData.setdDeComm("1");
-		deviceDiscoveryRepository.save(deviceData);;
+		deviceDiscoveryRepository.save(deviceData);
+		updateC3PDeviceInfoExt(deviceData.getdId());
 		List<ResourceCharacteristicsHistoryEntity> charHistoryEnity = resourceCharHistoryRepo
 				.findBydeviceId(deviceData.getdId());
 		for (ResourceCharacteristicsHistoryEntity attributes : charHistoryEnity) {
@@ -903,6 +909,25 @@ public class RequestInfoDetailsDao {
 		}
 			
 	}
+
+public final boolean updateC3PDeviceInfoExt(int id) {
+	boolean result = false;
+	String query = "update c3p_deviceinfo_ext set r_endOperatingDate=? WHERE r_device_id=?";
+	try (Connection connection = jDBCConnection.getConnection();
+			PreparedStatement ps = connection.prepareStatement(query);) {
+		ps.setString(1, new Timestamp(new Date().getTime()).toString());
+		ps.setInt(2, id);
+		int i = ps.executeUpdate();
+		if (i > 0) {
+			result = true;
+		}
+	} catch (SQLException exe) {
+		logger.error("SQL Exception in resetUsersDB method "
+				+ exe.getMessage());
+	}
+	return result;
+}
+
 	private PrintStream setModeData(String parentId, PrintStream printStream) {
 		if (parentId !=null && parentId.contains("::")) {
 			String startParentId = StringUtils.substringBefore(parentId, "::");
