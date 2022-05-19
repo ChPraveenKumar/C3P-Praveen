@@ -1,16 +1,29 @@
 package com.techm.c3p.core.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.techm.c3p.core.dao.RequestInfoDao;
+import com.techm.c3p.core.entitybeans.PortEntity;
+import com.techm.c3p.core.entitybeans.ReservationInformationEntity;
+import com.techm.c3p.core.entitybeans.ReservationPortStatusEntity;
+import com.techm.c3p.core.pojo.ApprovalMilestoneResponse;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.pojo.ReservationReportPojo;
+import com.techm.c3p.core.repositories.PortEntityRepository;
+import com.techm.c3p.core.repositories.ReservationInformationRepository;
+import com.techm.c3p.core.repositories.ReservationPortStatusRepository;
 import com.techm.c3p.core.utility.InvokeFtl;
 
 @Component
@@ -18,6 +31,14 @@ public class ReportDetailsService {
 
 	@Autowired
 	private InvokeFtl invokeFtl;
+	
+	@Autowired
+	private ReservationPortStatusRepository reservationPortStatusRepository;
+	@Autowired
+	 private PortEntityRepository portEntityRepository;
+	@Autowired
+	private ReservationInformationRepository reservationInformationRepository;
+	
 	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
@@ -167,6 +188,34 @@ public class ReportDetailsService {
 			ex.printStackTrace();
 		}
 		return dataList;
+	}
+
+	public ReservationReportPojo getReservationData(String reservationId) {
+		
+		List<ReservationPortStatusEntity> entity = reservationPortStatusRepository.findByRpReservationId(reservationId );
+		ReservationReportPojo response=new ReservationReportPojo();
+		
+		if(entity!=null) {
+			ReservationPortStatusEntity e = entity.get(0);
+			response.setProject(e.getRpProjectId());
+			response.setStartDate(e.getRpFrom().toLocalDateTime().toString());
+			response.setEndDate(e.getRpTo().toLocalDateTime().toString());
+			
+			List<String> portNames = new ArrayList<String>();
+			for(ReservationPortStatusEntity obj:entity) {
+				int portId=obj.getRpPortId();
+				PortEntity portEntity = portEntityRepository.findByPortId(portId);
+				if(portEntity!=null) {
+					portNames.add(portEntity.getPortName());
+				}
+			}
+			response.setPortSelected(portNames);
+			ReservationInformationEntity reservation=reservationInformationRepository.findByrvReservationId(reservationId);	
+			if(reservation!=null) {
+				response.setComment(reservation.getRvNotes());
+			}
+		}
+		return response;
 	}
 
 }
