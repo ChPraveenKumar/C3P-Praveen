@@ -17,6 +17,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -42,6 +43,7 @@ import com.techm.c3p.core.pojo.MileStones;
 import com.techm.c3p.core.pojo.ReoprtFlags;
 import com.techm.c3p.core.pojo.RequestInfoCreateConfig;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.pojo.ReservationReportPojo;
 import com.techm.c3p.core.pojo.SearchParamPojo;
 import com.techm.c3p.core.pojo.TestStaregyConfigPojo;
 import com.techm.c3p.core.repositories.AttribCreateConfigRepo;
@@ -56,6 +58,7 @@ import com.techm.c3p.core.repositories.MasterCharacteristicsRepository;
 import com.techm.c3p.core.repositories.NotificationRepo;
 import com.techm.c3p.core.repositories.RequestFeatureTransactionRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
+import com.techm.c3p.core.service.ReportDetailsService;
 import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.ReportMileStones;
@@ -117,6 +120,8 @@ public class RequestDetailsServiceWithVersion {
 	
 	@Autowired
 	private HeatTemplateRepository heatTemplateRepo;
+	@Autowired
+	private ReportDetailsService reportDetailsService;
 	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -707,4 +712,25 @@ public class RequestDetailsServiceWithVersion {
 		return response;
 	}
 	
+
+// Api for milestone status display
+@SuppressWarnings("unchecked")
+@POST
+@RequestMapping(value = "/getApprovalDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")	
+public ResponseEntity<ReservationReportPojo> getApprovalDetail(@RequestBody String requestDetails) {
+	JSONParser parser = new JSONParser();
+	JSONObject response = new JSONObject();
+	ReservationReportPojo reservationReportPojo = new ReservationReportPojo();
+	try {
+		JSONObject json = (JSONObject) parser.parse(requestDetails);
+		String requestId = json.get("requestId").toString();
+		reservationReportPojo = reportDetailsService.getReservationData(requestId);
+		if(reservationReportPojo!=null) {
+			response.put("ReservationReportFields", new Gson().toJson(reservationReportPojo));
+		}
+		}catch (Exception e) {
+			logger.error(e.getStackTrace());
+		}
+	return ResponseEntity.ok(reservationReportPojo);
+}
 }
