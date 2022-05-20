@@ -205,6 +205,14 @@ public class RequestInfoService {
 			deviceReachabilityTest = "2";
 			suggestion = "Please check the router credentials";
 		}
+		if ("1".equalsIgnoreCase(deviceReachabilityTest)) {
+			deviceReachabilityTest = "1";
+			suggestion = "Device is reachable";
+		}
+		if ("2_Locked".equalsIgnoreCase(deviceReachabilityTest)) {
+			deviceReachabilityTest = "1";
+			suggestion = "Device is locked";
+		}
 		try {
 			testValidationDetails = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(requestId, version);
 			testValidationDetails.setTvDeviceReachabilityTest(Integer.parseInt(deviceReachabilityTest));

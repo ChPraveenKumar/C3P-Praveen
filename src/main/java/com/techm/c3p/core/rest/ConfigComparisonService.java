@@ -35,6 +35,7 @@ import org.springframework.web.client.RestTemplate;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.techm.c3p.core.dao.RequestInfoDao;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 
 @Controller
@@ -44,6 +45,10 @@ public class ConfigComparisonService {
 	private static final Logger logger = LogManager.getLogger(ConfigComparisonService.class);
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
+	
 	@Autowired
 	private RestTemplate restTemplate;
 	@Value("${python.service.uri}")
@@ -226,7 +231,7 @@ public class ConfigComparisonService {
 
 			// RequestId="USCI7200IO12.4_NA_Test_1.0_Snippet_Router Uptime";
 
-			String tempRequestId = requestInfoDao.findByRequestId(requestId);
+			String tempRequestId = requestDetailsService.findByRequestId(requestId);
 			String tempRequestId1 = tempRequestId.substring(0, 15);
 			String tempRequestId12 = tempRequestId1.concat(RequestId);
 			String snippet = requestInfoDao.getSnippet(reportLabel, testName);

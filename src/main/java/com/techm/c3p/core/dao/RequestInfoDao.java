@@ -5610,7 +5610,7 @@ public class RequestInfoDao {
 
 	@SuppressWarnings("unchecked")
 	private org.json.simple.JSONObject setFinalTestData(String requestId, Double requestVersion, String category, String subCategory, org.json.simple.JSONObject jsonObj, org.json.simple.JSONObject finalObj) {
-		int status = getTestDetails(requestId,
+		int status = requestDetailsService.getTestDetails(requestId,
 				jsonObj.get("testName").toString(), requestVersion,category,subCategory);
 		finalObj.put("status", status);
 		String testNameAndVersion = jsonObj.get("testName")
@@ -5862,7 +5862,7 @@ public class RequestInfoDao {
 		healthArray.add(throughputObj);
 
 		org.json.simple.JSONArray dynamicTestResultArray = new org.json.simple.JSONArray();
-		dynamicTestResultArray = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getRequestId(), request.getVersion_report(),
 				"Network Test");
 
@@ -5873,7 +5873,7 @@ public class RequestInfoDao {
 		}
 
 		org.json.simple.JSONArray dynamicTestResultArray1 = new org.json.simple.JSONArray();
-		dynamicTestResultArray1 = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray1 = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getRequestId(), request.getVersion_report(),
 				"Health Check");
 
@@ -5884,7 +5884,7 @@ public class RequestInfoDao {
 		}
 
 		org.json.simple.JSONArray dynamicTestResultArray2 = new org.json.simple.JSONArray();
-		dynamicTestResultArray2 = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray2 = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getRequestId(), request.getVersion_report(),
 				"Device Prevalidation");
 
@@ -5895,7 +5895,7 @@ public class RequestInfoDao {
 		}
 
 		org.json.simple.JSONArray dynamicTestResultArray3 = new org.json.simple.JSONArray();
-		dynamicTestResultArray3 = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray3 = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getRequestId(), request.getVersion_report(), "Others");
 
 		if (dynamicTestResultArray3.size() > 0) {
@@ -5904,7 +5904,7 @@ public class RequestInfoDao {
 			}
 		}
 		org.json.simple.JSONArray dynamicTestResultArray4 = new org.json.simple.JSONArray();
-		dynamicTestResultArray4 = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray4 = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getRequestId(), request.getVersion_report(),
 				"Network Audit");
 
@@ -7137,7 +7137,7 @@ public class RequestInfoDao {
 		
 		
 		org.json.simple.JSONArray dynamicTestResultArray2 = new org.json.simple.JSONArray();
-		dynamicTestResultArray2 = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray2 = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()),
 				"Device Prevalidation");
@@ -7366,7 +7366,7 @@ public class RequestInfoDao {
 		healthArray.add(throughputObj);
 
 		org.json.simple.JSONArray dynamicTestResultArray = new org.json.simple.JSONArray();
-		dynamicTestResultArray = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "Network Test");
 
@@ -7377,7 +7377,7 @@ public class RequestInfoDao {
 		}
 
 		org.json.simple.JSONArray dynamicTestResultArray1 = new org.json.simple.JSONArray();
-		dynamicTestResultArray1 = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray1 = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "Health Check");
 
@@ -7388,7 +7388,7 @@ public class RequestInfoDao {
 		}
 
 		org.json.simple.JSONArray dynamicTestResultArray2 = new org.json.simple.JSONArray();
-		dynamicTestResultArray2 = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray2 = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()),
 				"Device Prevalidation");
@@ -7400,7 +7400,7 @@ public class RequestInfoDao {
 		}
 
 		org.json.simple.JSONArray dynamicTestResultArray3 = new org.json.simple.JSONArray();
-		dynamicTestResultArray3 = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray3 = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "Others");
 
@@ -7410,7 +7410,7 @@ public class RequestInfoDao {
 			}
 		}
 		org.json.simple.JSONArray dynamicTestResultArray4 = new org.json.simple.JSONArray();
-		dynamicTestResultArray4 = getDynamicTestResultCustomerReport(
+		dynamicTestResultArray4 = requestDetailsService.getDynamicTestResultCustomerReport(
 				request.getAlphanumericReqId(),
 				Double.toString(request.getRequestVersion()), "Network Audit");
 

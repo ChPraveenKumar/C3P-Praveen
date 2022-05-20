@@ -310,6 +310,9 @@ public class NetworkTestValidation extends Thread {
 								"In Progress");
 						value = true;
 					}
+						logger.info("DONE Network Test");
+						jsonArray = new Gson().toJson(value);
+						obj.put(new String("output"), jsonArray);
 					}else if("SCGC".equalsIgnoreCase(type))
 					{
 						requestInfoDao.editRequestforReportWebserviceInfo(

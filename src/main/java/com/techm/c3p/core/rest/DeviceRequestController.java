@@ -13,6 +13,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.techm.c3p.core.dao.RequestInfoDetailsDao;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.MasterFeatureEntity;
 import com.techm.c3p.core.entitybeans.ResourceCharacteristicsEntity;
@@ -54,6 +57,11 @@ public class DeviceRequestController {
 	
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+
+	@Autowired
+	private DeviceDiscoveryRepository deviceInforepo;
+	@Autowired
+	private RequestInfoDetailsDao requestInfoDetailsDao;
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -239,6 +247,105 @@ public class DeviceRequestController {
 					.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD")
 					.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 	}
-	
-	
+
+	@SuppressWarnings("unchecked")
+	@GET
+	@RequestMapping(value = "/getLCMDeleteList", method = RequestMethod.GET, produces = "application/json")
+	@ResponseBody
+	public ResponseEntity<JSONObject> deviceInventoryDashboard() {
+		ResponseEntity<JSONObject> responseEntity = null;
+		JSONObject jsonObject = getListDetails();
+		if (jsonObject != null) {
+			responseEntity = new ResponseEntity<JSONObject>(jsonObject, HttpStatus.OK);
+		} else {
+			responseEntity = new ResponseEntity<JSONObject>(jsonObject, HttpStatus.BAD_REQUEST);
+		}
+		return responseEntity;
+
+	}
+
+	@SuppressWarnings("unchecked")
+	public JSONObject getListDetails() {
+		JSONObject obj = new JSONObject();
+		List<DeviceDiscoveryEntity> getAllDevice = deviceInforepo.findLCMDeleteList();
+		JSONArray outputArray = new JSONArray();
+		for (int i = 0; i < getAllDevice.size(); i++) {
+			JSONObject object = new JSONObject();
+			object.put("hostName", getAllDevice.get(i).getdHostName());
+			object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
+			// object.put("type", "Router");
+			object.put("deviceFamily", getAllDevice.get(i).getdDeviceFamily());
+			object.put("model", getAllDevice.get(i).getdModel());
+			object.put("os", getAllDevice.get(i).getdOs());
+			object.put("osVersion", getAllDevice.get(i).getdOsVersion());
+			object.put("vendor", getAllDevice.get(i).getdVendor());
+			object.put("status", "Available");
+			object.put("role", getAllDevice.get(i).getdRole());
+			object.put("powerSupply", getAllDevice.get(i).getdPowerSupply());
+			object.put("deviceId", getAllDevice.get(i).getdId());
+			if (getAllDevice.get(i).getCustSiteId() != null) {
+				object.put("customer", getAllDevice.get(i).getCustSiteId().getcCustName());
+				SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
+				object.put("site", site.getcSiteName());
+				object.put("region", site.getcSiteRegion());
+				object.put("addressline1", site.getcSiteAddressLine1());
+				object.put("addressline2", site.getcSIteAddressLine2());
+				object.put("addressline3", site.getcSiteAddressLine3());
+//				object.put("location", setSiteDetails(site, getAllDevice.get(i)));
+				object.put("city", site.getcSiteCity());
+				object.put("country", site.getcSiteCountry());
+				object.put("market", site.getcSiteMarket());
+				object.put("state", site.getcSiteState());
+				object.put("subRegion", site.getcSiteSubRegion());
+				object.put("zip", site.getcSiteZip());
+
+			}
+
+			if (getAllDevice.get(i).getdEndOfSupportDate() != null
+					&& !"Not Available".equalsIgnoreCase(getAllDevice.get(i).getdEndOfSupportDate()))
+				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate().toString());
+			else
+				object.put("eos", "Not Available");
+
+			if (getAllDevice.get(i).getdEndOfSaleDate() != null)
+				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate().toString());
+			else
+				object.put("eol", "Not Available");
+
+			object.put("requests", getAllDevice.get(i).getdReqCount());
+			if (getAllDevice.get(i).getdDeComm() != null) {
+				if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("0")) {
+					object.put("state", "");
+				} else if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("1")) {
+					object.put("state", "Commissioned");
+
+				} else if (getAllDevice.get(i).getdDeComm().equalsIgnoreCase("2")) {
+					object.put("state", "Decommissioned");
+				}
+			} else {
+				object.put("state", "");
+			}
+			if (getAllDevice.get(i).getdNewDevice() == 0) {
+				object.put("isNew", true);
+			} else {
+				object.put("isNew", false);
+			}
+			if (getAllDevice.get(i).getdDiscrepancy() > 0) {
+				object.put("discreapncyFlag", "Yes");
+			} else {
+				object.put("discreapncyFlag", "No");
+			}
+			String operationalStatus = requestInfoDetailsDao
+					.fetchOprStatusDeviceExt(String.valueOf(getAllDevice.get(i).getdId()));
+			if (operationalStatus != null) {
+				if (operationalStatus.equalsIgnoreCase("Operational")) {
+					outputArray.add(object);
+				}
+			}
+		}
+		obj.put("data", outputArray);
+
+		return obj;
+	}
+
 }

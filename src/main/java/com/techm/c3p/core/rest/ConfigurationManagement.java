@@ -21,12 +21,14 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.google.gson.Gson;
 import com.techm.c3p.core.dao.TemplateManagementDao;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.MasterAttributes;
@@ -128,7 +130,9 @@ public class ConfigurationManagement {
 	 **/
 	@SuppressWarnings("unchecked")
 	@POST
-	// @PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
+
+//	@PreAuthorize("#oauth2.hasScope('read') and #oauth2.hasScope('write')")
+
 	@RequestMapping(value = "/create", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
 	@ResponseBody
 	public JSONObject createConfigurationDcm(@RequestBody String configRequest) {
@@ -553,19 +557,25 @@ public class ConfigurationManagement {
 				List<String> featureList = new ArrayList<String>();
 				List<TemplateFeaturePojo> features = null;
 				List<CommandPojo> cammandByTemplate = new ArrayList<>();
-
+				Gson gson = new Gson();
 				if (configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase(
 						"external")
 						&& configGenMtds.contains("Template")) {
-					String selectedFeatures = json.get("selectedFeatures")
-							.toString();
+					JSONObject jsonObj = (JSONObject) json.get("selectedFeatures");
+					if(jsonObj!=null) {
+					if(jsonObj.size()>0) {
+
+					String selectedFeatures = gson.toJson(json.get("selectedFeatures"));
 					List<String> selectedFeatureAndTemplateId = Arrays
 							.asList(splitStringArray(selectedFeatures));
+					if(selectedFeatureAndTemplateId.size()>=1) {
+
 					for (String tempAndFeatureId : selectedFeatureAndTemplateId) {
 						String[] arr = tempAndFeatureId.replaceAll("\"", "")
 								.split(":::");
 						String templateid = arr[0];
 						String featureid = arr[1];
+						
 						TemplateFeatureEntity entity = new TemplateFeatureEntity();
 						entity.setId(Integer.parseInt(featureid));
 						List<AttribCreateConfigPojo> byAttribTemplateAndFeatureName = service
@@ -584,11 +594,15 @@ public class ConfigurationManagement {
 									featureEntity.getMasterFId(), toSaveArray);
 						}
 						featureList.add(featureid);
+					
 						// Fetch commands only in case of external api
 						List<CommandPojo> listToSent = templateManagementDao
 								.getCammandByTemplateAndfeatureId(
 										Integer.parseInt(featureid), templateid);
 						cammandByTemplate.addAll(listToSent);
+					}
+					}
+					}
 					}
 
 				} else if (configReqToSendToC3pCode.getApiCallType()
@@ -794,6 +808,7 @@ public class ConfigurationManagement {
 						switch (type) {
 						case "Template":
 							// RequestInfoPojo request = new RequestInfoPojo();
+							if (templateList != null) {
 							for (String template : templateList) {
 								/*
 								 * Extract Json and map to CreateConfigPojo
@@ -934,6 +949,7 @@ public class ConfigurationManagement {
 									invokeFtl.createFinalTemplate(null, toSend,
 											null, attribToSend, template);
 								}
+							}
 							}
 							break;
 						case "Non-Template":

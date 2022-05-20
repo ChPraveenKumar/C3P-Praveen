@@ -627,7 +627,7 @@ public class RequestDetailsServiceWithVersion {
 		}
 		tests.put("testName", name);
 		tests.put("version", version);
-		int status = requestinfoDao.getTestDetails(requestId, testName, requestVersion, category, subCategory);
+		int status = requestDetailsService.getTestDetails(requestId, testName, requestVersion, category, subCategory);
 		tests.put("status", status);
 		return tests;
 
@@ -651,8 +651,10 @@ public class RequestDetailsServiceWithVersion {
 			String backupTime = "";
 			if ("lastBackup".equals(configMethod)) {
 				List<RequestInfoEntity> backupRequestData = requestInfoDetailsRepositories
-						.findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatus(requestinfo.getHostname(),
-								requestinfo.getManagementIp(), "SLGB", "Success");
+						.findByHostNameAndManagmentIPAndAlphanumericReqIdContainsAndStatusAndInfoIdLessThan(requestinfo.getHostname(),
+								requestinfo.getManagementIp(), "SLGB", "Success", requestinfo.getInfoId());
+				
+				
 
 				if (backupRequestData == null && backupRequestData.isEmpty()) {
 					alphanumericRequestId = requestId;

@@ -30,6 +30,7 @@ import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.entitybeans.TestRules;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.service.RequestDetailsService;
 
 @Component
 public class ODLClient {
@@ -43,6 +44,9 @@ public class ODLClient {
 
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 
 	public String doPostNetworkTopology(String endpoint, String requestBody, String contentType) {
 		String output = null;
@@ -458,7 +462,7 @@ public class ODLClient {
 									// pass the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Passed", resultText, op, "Text starts with: " + value1, "N/A",
@@ -467,7 +471,7 @@ public class ODLClient {
 									// fail the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, op, "Text starts with: " + value1, "Failed to match",
@@ -479,7 +483,7 @@ public class ODLClient {
 									// pass the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Passed", resultText, op, "Is equal to (=): " + value1, "N/A",
@@ -488,7 +492,7 @@ public class ODLClient {
 									// fail the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, op, "Is equal to (=): " + value1, "Failed to match",
@@ -506,7 +510,7 @@ public class ODLClient {
 										// pass the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Between: " + value1 + " & " + value2, "N/A",
@@ -515,7 +519,7 @@ public class ODLClient {
 										// fail the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Failed", resultText, op, "Between: " + value1 + " & " + value2,
@@ -526,7 +530,7 @@ public class ODLClient {
 									// fail the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, "Unable to process the rule",
@@ -546,7 +550,7 @@ public class ODLClient {
 										// pass the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Greater than (>): " + value1, "N/A",
@@ -555,7 +559,7 @@ public class ODLClient {
 										// fail the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Failed", resultText, op, "Greater than (>): " + value1,
@@ -566,7 +570,7 @@ public class ODLClient {
 									// fail the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, "Unable to process the rule",
@@ -585,7 +589,7 @@ public class ODLClient {
 										// pass the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Less than (<): " + value1, "N/A",
@@ -594,7 +598,7 @@ public class ODLClient {
 										// fail the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Failed", resultText, op, "Less than (<): " + value1, "Failed to match",
@@ -604,7 +608,7 @@ public class ODLClient {
 									// fail the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, "Unable to process the rule",
@@ -623,7 +627,7 @@ public class ODLClient {
 										// pass the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Greater than or equals to (>=): " + value1,
@@ -632,7 +636,7 @@ public class ODLClient {
 										// fail the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Failed", resultText, op, "Greater than or equals to (>=): " + value1,
@@ -643,7 +647,7 @@ public class ODLClient {
 									// fail the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, "Unable to process the rule",
@@ -662,7 +666,7 @@ public class ODLClient {
 										// pass the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Less than or equals to (<=): " + value1,
@@ -671,7 +675,7 @@ public class ODLClient {
 										// fail the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Failed", resultText, op, "Less than or equals to (<=): " + value1,
@@ -682,7 +686,7 @@ public class ODLClient {
 									// fail the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, "Unable to process the rule",
@@ -701,7 +705,7 @@ public class ODLClient {
 										// pass the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Passed", resultText, op, "Is not equal to  (<>): " + value1, "N/A",
@@ -710,7 +714,7 @@ public class ODLClient {
 										// fail the test
 
 										resultText = rules.get(i).getReportedLabel();
-										result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+										result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 												test.getTestName(), test.getTestCategory(),
 
 												"Failed", resultText, op, "Is not equal to  (<>): " + value1,
@@ -720,7 +724,7 @@ public class ODLClient {
 								} catch (Exception e) {
 									// fail the test
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID, test.getTestName(),
 											test.getTestCategory(),
 
 											"Failed", resultText, "Unable to process the rule",
@@ -733,7 +737,7 @@ public class ODLClient {
 									// pass the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Passed", resultText, op, "Text matches excatly: " + value1, "N/A",
@@ -742,7 +746,7 @@ public class ODLClient {
 									// fail the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, op, "Text matches excatly: " + value1,
@@ -755,7 +759,7 @@ public class ODLClient {
 									// pass the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Passed", resultText, op, "Text ends with: " + value1, "N/A",
@@ -764,7 +768,7 @@ public class ODLClient {
 									// fail the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, op, "Text ends with: " + value1, "Failed to match",
@@ -776,7 +780,7 @@ public class ODLClient {
 									// pass the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Passed", resultText, op, "Text contains: " + value1, "N/A",
@@ -785,7 +789,7 @@ public class ODLClient {
 									// fail the test
 
 									resultText = rules.get(i).getReportedLabel();
-									result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+									result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 											test.getTestName(), test.getTestCategory(),
 
 											"Failed", resultText, op, "Text contains: " + value1, "Failed to match",
@@ -795,7 +799,7 @@ public class ODLClient {
 								// Incorrect operator message fail the test
 
 								resultText = rules.get(i).getReportedLabel();
-								result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestID,
+								result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestID,
 										test.getTestName(), test.getTestCategory(),
 
 										"Failed", resultText, op, "Invalid operator", "Failed",
@@ -804,7 +808,7 @@ public class ODLClient {
 
 						} else {
 							String resultText = rules.get(i).getReportedLabel();
-							result = requestInfoDao.updateTestStrategeyConfigResultsTable(
+							result = requestDetailsService.updateTestStrategeyConfigResultsTable(
 									requestinfo.getAlphanumericReqId(), test.getTestName(), test.getTestCategory(),
 									"Passed", resultText, String.join(",", resultList), "N/A", "",
 									rules.get(i).getDataType(),requestinfo.getRequestVersion(),test.getTestSubCategory());
@@ -814,7 +818,7 @@ public class ODLClient {
 
 				}
 			} else {
-				result = requestInfoDao.updateTestStrategeyConfigResultsTable(requestinfo.getAlphanumericReqId(),
+				result = requestDetailsService.updateTestStrategeyConfigResultsTable(requestinfo.getAlphanumericReqId(),
 						test.getTestName(), test.getTestCategory(), "Failed", "N/A", "N/A", "N/A", "Invalid odl url",
 						"N/A", requestinfo.getRequestVersion(),test.getTestSubCategory());
 			}

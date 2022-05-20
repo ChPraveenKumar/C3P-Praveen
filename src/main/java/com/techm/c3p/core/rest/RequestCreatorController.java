@@ -140,6 +140,7 @@ public class RequestCreatorController {
 		return Response.status(200).entity("Abc").build();
 	}*/
 
+	@SuppressWarnings("unchecked")
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -157,16 +158,17 @@ public class RequestCreatorController {
 			String siteName = json.get("siteName").toString();
 			String region = json.get("region").toString();
 			// String vendor = json.get("vendor").toString();
-			
-			String networkfunction = json.get("networkfunction").toString();
+	
+			String networkFuction = json.get("networkFuction").toString();
 			
 			List<SiteInfoEntity> siteList = siteRepo.findCSiteIdByCCustNameAndCSiteRegionAndCSiteName(customer, region, siteName);
 			siteList.forEach(site -> {
 				 //List<DeviceDiscoveryEntity> device = deviceRepo.findByCustSiteIdId(site.getId());
-				List<DeviceDiscoveryEntity> device = deviceRepo.findByCustSiteIdIdAndDVNFSupport(site.getId(), networkfunction);
+				List<DeviceDiscoveryEntity> device = deviceRepo.findByCustSiteIdIdAndDVNFSupport(site.getId(), networkFuction);
 				device.forEach(item -> {
 					JSONObject obj = new JSONObject();
 					obj.put("hostName",item.getdHostName());
+					obj.put("managementIP", item.getdMgmtIp());
 					obj.put("status",item.getdLifeCycleState());
 					array.add(obj);
 					hostNameList.add(item.getdHostName());	
