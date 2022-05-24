@@ -13,6 +13,4 @@ public interface ReservationPortStatusRepository extends JpaRepository<Reservati
 	List<ReservationPortStatusEntity> findAllByRpProjectId(String projectId);
 	
 	List<ReservationPortStatusEntity> findAllByRpDeviceId(int projectId);
-
-	
 }

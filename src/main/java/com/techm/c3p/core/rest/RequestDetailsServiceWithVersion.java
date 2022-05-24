@@ -152,7 +152,7 @@ public class RequestDetailsServiceWithVersion {
 			if (value != null && !value.isEmpty()) {
 				try {
 					RequestInfoPojo requestData = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(value, version);
-					if(requestData!=null && requestData.getRequestType()!=null && "Config Audit".equals(requestData.getRequestType())){
+					if(requestData!=null && requestData.getRequestType()!=null && "Config Audit".equals(requestData.getRequestType()) || "Reservation".equals(requestData.getRequestType())){
 						requestType = requestData.getRequestType();
 					}else {
 					requestType = value.substring(0, 4);

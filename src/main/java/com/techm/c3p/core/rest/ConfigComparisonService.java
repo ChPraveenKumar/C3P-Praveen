@@ -3,14 +3,17 @@ package com.techm.c3p.core.rest;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Scanner;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -529,11 +532,17 @@ public class ConfigComparisonService {
 			JSONObject json = (JSONObject) parser.parse(configRequest);
 			String RequestId = json.get("requestID").toString();
 			String outputFile = null;
-
+			
+			String previousConfig = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_PreviousConfig.txt";
+			String currentConfig = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_CurrentVersionConfig.txt";
+			
+			previousConfig = removeBuildConfigurationAboveLineFromConfigFile(previousConfig);
+			currentConfig = removeBuildConfigurationAboveLineFromConfigFile(currentConfig);
+			
 			// copy them to temp file
 			String[] cmd = { "python", C3PCoreAppLabels.PYTHON_SCRIPT_PATH.getValue() + "filediff.py", "-m",
-					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_PreviousConfig.txt",
-					C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_CurrentVersionConfig.txt",
+					previousConfig,
+					currentConfig,
 					C3PCoreAppLabels.COMPARISON_HTMLS.getValue() + RequestId + "_Comparison" + ".html" };
 
 			Process p = Runtime.getRuntime().exec(cmd);
@@ -576,9 +585,9 @@ public class ConfigComparisonService {
 				obj.put(new String("output"), "Error in processing the files");
 			}
 			bre.close();
-			String previousConfig = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_PreviousConfig.txt";
-			String currentVersionConfig = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_CurrentVersionConfig.txt";
-			JSONObject responseJson = configCompareDifference(previousConfig, currentVersionConfig);
+			String previousConfigTxt = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_PreviousConfig.txt";
+			String currentVersionConfigTxt = C3PCoreAppLabels.RESPONSE_DOWNLOAD_PATH.getValue() + RequestId + "_CurrentVersionConfig.txt";
+			JSONObject responseJson = configCompareDifference(previousConfigTxt, currentVersionConfigTxt);
 			obj.put("configDifference", responseJson);
 
 		} catch (Exception e) {
@@ -761,6 +770,51 @@ public class ConfigComparisonService {
 		}
 		logger.info("End - configCompareDifference - responseJson ->" + responseJson);
 		return responseJson;
+	}
+	
+	/**
+	 * Creating new configuration file if file contains 'Building configuration'
+	 * 
+	 * @param file
+	 * @return
+	 */
+	public String removeBuildConfigurationAboveLineFromConfigFile(String filePath) {
+
+		boolean isRemoveBuildConfAndAboveLine = false;
+
+		String strBuildConf = "Building configuration...";
+		StringBuilder newString = new StringBuilder();
+
+		try {
+			File file = new File(filePath);
+			String data = FileUtils.readFileToString(file);
+			if (data.contains(strBuildConf)) {
+				isRemoveBuildConfAndAboveLine = true;
+			}
+
+			if (isRemoveBuildConfAndAboveLine) {
+				boolean isRemove = true;
+				Scanner scanner = new Scanner(file);
+				while (scanner.hasNext()) {
+					String line = scanner.nextLine();
+					if (isRemove && line.equalsIgnoreCase(strBuildConf)) {
+						newString.append(line).append("\n");
+						isRemove = false;
+					} else if (!isRemove)
+						newString.append(line).append("\n");
+				}
+				scanner.close();
+				String tempConfigFile = file.getParentFile() + "temp_" + file.getName();
+				FileOutputStream fileOut = new FileOutputStream(tempConfigFile);
+				fileOut.write(newString.toString().getBytes());
+				fileOut.close();
+				return tempConfigFile;
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return filePath;
 	}
 	
 }

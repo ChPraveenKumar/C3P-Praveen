@@ -12,11 +12,12 @@ public class MileStones {
 	private boolean preHealthCheck;
 	private boolean healthCheck;
 	private boolean networkAudit;
+	private boolean approval;
 	private boolean others;
 	private boolean report;
 	
 	public MileStones(boolean start, boolean generate,boolean preProcess,boolean instantiate, boolean preValidate, boolean backup, boolean backupDelivery,
-			boolean networkTest, boolean preHealthCheck, boolean healthCheck, boolean networkAudit, boolean others,
+			boolean networkTest, boolean preHealthCheck, boolean healthCheck, boolean networkAudit, boolean approval, boolean others,
 			boolean report) {
 		super();
 		this.start = start;
@@ -30,6 +31,7 @@ public class MileStones {
 		this.preHealthCheck = preHealthCheck;
 		this.healthCheck = healthCheck;
 		this.networkAudit = networkAudit;
+		this.approval = approval;
 		this.others = others;
 		this.report = report;
 	}
@@ -110,5 +112,12 @@ public class MileStones {
 	}
 	public void setPreProcess(boolean preProcess) {
 		this.preProcess = preProcess;
+	}
+	
+	public boolean isApproval() {
+		return approval;
+	}
+	public void setApproval(boolean approval) {
+		this.approval = approval;
 	}
 }
