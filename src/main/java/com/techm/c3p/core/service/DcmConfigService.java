@@ -314,7 +314,6 @@ public class DcmConfigService {
 				requestInfoPojo.setRequestCreatorName(configRequest.getRequest_creator_name());
 
 				requestInfoPojo.setStartUp(configRequest.getIsStartUp());
-
 				// added new to database
 				// new added parameter for request created by field
 				requestInfoPojo.setRequestCreatorName(configRequest.getRequest_creator_name());

@@ -791,6 +791,8 @@ public class BackUpAndRestoreController {
 						timestamp = Timestamp.valueOf(scheduledTime);
 						requestInfoEntity.setSceheduledTime(timestamp);
 					}
+					batchIdEntity = new BatchIdEntity();
+
 					batchIdEntity.setBatchStatus("In Progress");
 
 					batchIdEntity.setBatchId(batchId);
@@ -1498,7 +1500,8 @@ public class BackUpAndRestoreController {
 							toSaveArray.toString(),
 							requestInfoEntity.getRequestType(),
 							requestInfoEntity .getRequestVersion());
-					
+					batchIdEntity = new BatchIdEntity();
+
 					if (map.size() > 1) {
 						requestInfoEntity.setBatchId(batchId);
 						batchIdEntity.setBatchStatus("In Progress");

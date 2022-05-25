@@ -106,7 +106,7 @@ public class OthersCheckTestValidation extends Thread {
 		Channel channel = null;
 		Session session = null;
 		if (!(("SLGB".equals(type) || ("SNAI".equals(type)) || ("SLGF"
-				.equals(type) || ("SLGA".equals(type)) || ("SCGC".equals(type)))))) {
+				.equals(type) || ("SLGA".equals(type)) || ("SCGC".equals(type))||("SNAD".equals(type)))))) {
 
 			try {
 				requestinfo = requestInfoDetailsDao
@@ -148,7 +148,8 @@ public class OthersCheckTestValidation extends Thread {
 							|| "SNNC".equalsIgnoreCase(type)
 							|| "SLGM".equalsIgnoreCase(type)
 							|| "SNRM".equalsIgnoreCase(type)
-							|| "SNNM".equalsIgnoreCase(type)) {
+							|| "SNNM".equalsIgnoreCase(type)
+							||"SNAD".equalsIgnoreCase(type)) {
 						session = jsch.getSession(user, host,
 								Integer.parseInt(port));
 						Properties config = new Properties();

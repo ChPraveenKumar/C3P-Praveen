@@ -17,6 +17,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.web.client.RestTemplate;
 
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
+
 @SpringBootApplication
 @EnableAutoConfiguration
 @EnableTransactionManagement
@@ -27,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 @EnableSpringConfigured
 @EnableAsync
 @EnableScheduling
+@EnableSwagger2
 public class WebApplication extends SpringBootServletInitializer implements
 		CommandLineRunner {
 
@@ -58,6 +64,13 @@ public class WebApplication extends SpringBootServletInitializer implements
 	public void run(String... arg0) throws Exception {
 		// TODO Auto-generated method stub
 
+	}
+	@Bean
+	public Docket productApi() {
+		return new Docket(DocumentationType.SWAGGER_2)
+				.select()
+				.apis(RequestHandlerSelectors
+						.basePackage("com.techm.c3p.core")).build();
 	}
 
 }

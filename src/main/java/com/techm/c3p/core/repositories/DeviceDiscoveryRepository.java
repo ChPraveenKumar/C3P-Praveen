@@ -351,5 +351,8 @@ List<DeviceDiscoveryEntity> geAuditDeviceList(@Param("vendor") String vendor, @P
 	@Param("networkfunction") String networkfunction,@Param("region") String region);
 	
 	
-	List<DeviceDiscoveryEntity> findByCustSiteIdIdAndDVNFSupport(int siteId, String networkfunction);
+	List<DeviceDiscoveryEntity> findByCustSiteIdIdAndDVNFSupport(int siteId, String networkFuction);
+
+	@Query(value = "SELECT * FROM c3p_deviceinfo where d_decomm= 0 and d_vnf_support='VNF'", nativeQuery = true)
+	List<DeviceDiscoveryEntity> findLCMDeleteList();
 }

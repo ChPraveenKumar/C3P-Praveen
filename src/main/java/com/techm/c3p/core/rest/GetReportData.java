@@ -48,6 +48,7 @@ import com.techm.c3p.core.repositories.RfoDecomposedRepository;
 import com.techm.c3p.core.repositories.WebServiceRepo;
 import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.ReportDetailsService;
+import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.InvokeFtl;
 import com.techm.c3p.core.entitybeans.TestValidationEntity;
 import com.techm.c3p.core.repositories.TestValidationRepo;
@@ -81,6 +82,9 @@ public class GetReportData {
 	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
+	
+	@Autowired
+	private RequestDetailsService requestDetailsService;
 	
 	@Autowired
 	private ReportDetailsService reportDetailsService;
@@ -296,7 +300,7 @@ public class GetReportData {
 				
 				org.json.simple.JSONArray prevalidateArray = new org.json.simple.JSONArray();
 				TestValidationEntity testResult = testValidationRepo.findByTvAlphanumericReqIdAndTvVersion(createConfigRequestDCM.getRequestId(), String.valueOf(Double.valueOf(createConfigRequestDCM.getVersion_report())));
-				org.json.simple.JSONArray outArray = requestInfoDao.getDynamicTestResultCustomerReport(createConfigRequestDCM.getRequestId(), createConfigRequestDCM.getVersion_report(),"Device Prevalidation");
+				org.json.simple.JSONArray outArray = requestDetailsService.getDynamicTestResultCustomerReport(createConfigRequestDCM.getRequestId(), createConfigRequestDCM.getVersion_report(),"Device Prevalidation");
 				if (outArray != null && !outArray.isEmpty()) {
 					JSONObject vendorObj = new JSONObject();
 					JSONObject modelObj = new JSONObject();
@@ -319,6 +323,7 @@ public class GetReportData {
 							iosversionObj.put("userInput", requestinfo.getOsVersion());
 							iosversionObj.put("cpeValue", obj1.get("CollectedValue").toString());
 							iosversionObj.put("status", obj1.get("status").toString());
+
 
 						}
 					}
@@ -737,7 +742,7 @@ public class GetReportData {
 			createConfigRequestDCM.setTestType(json.get("testType").toString());
 
 			if (createConfigRequestDCM.getTestType().equalsIgnoreCase("networkAuditTest")) {
-				dynamicTestArray = requestInfoDao.getNetworkAuditReport(createConfigRequestDCM.getRequestId(),
+				dynamicTestArray = requestDetailsService.getNetworkAuditReport(createConfigRequestDCM.getRequestId(),
 						createConfigRequestDCM.getVersion_report(), "Network Audit");
 
 			}

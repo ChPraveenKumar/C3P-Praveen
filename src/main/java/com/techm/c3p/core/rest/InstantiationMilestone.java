@@ -133,8 +133,13 @@ public class InstantiationMilestone extends Thread {
 								reqJson.put(item.getRcName(), item.getRcValue());
 							}
 
-							outputStatus = vnfInstantiationMilestoneService
-									.openStackInstantiation(requestId,reqJson);
+							if("instantiationvMME".equalsIgnoreCase(requestinfo.getConfigurationGenerationMethods())) {
+								outputStatus = vnfInstantiationMilestoneService
+										.openStackInstantiation(requestId, reqJson);	
+							} else if("instantiationMCC".equalsIgnoreCase(requestinfo.getConfigurationGenerationMethods())) {
+								outputStatus = vnfInstantiationMilestoneService
+										.openStackInstantiationMCC(requestId, reqJson);
+							}
 						} else {
 							/*
 							 * Call the vnfInstantiation to instantiate vnf in
@@ -220,6 +225,7 @@ public class InstantiationMilestone extends Thread {
 											.toString(requestinfo
 													.getRequestVersion()),
 									"instantiation", "1", "In Progress");
+									requestDao.saveLCMDeleteDetails(requestinfo.getManagementIp(),requestinfo.getHostname(),requestId,"Success");
 						} else {
 							requestDao.editRequestforReportWebserviceInfo(
 									requestinfo.getAlphanumericReqId(), Double
