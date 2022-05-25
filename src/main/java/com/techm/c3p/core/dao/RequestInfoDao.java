@@ -54,7 +54,6 @@ import com.techm.c3p.core.entitybeans.TestBundling;
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.entitybeans.TestRules;
 import com.techm.c3p.core.entitybeans.UserManagementEntity;
-import com.techm.c3p.core.entitybeans.WebServiceEntity;
 import com.techm.c3p.core.pojo.AlertInformationPojo;
 import com.techm.c3p.core.pojo.CertificationTestPojo;
 import com.techm.c3p.core.pojo.ConfigurationDataValuePojo;
@@ -87,7 +86,7 @@ import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.c3p.core.repositories.ServiceOrderRepo;
 import com.techm.c3p.core.repositories.UserManagementRepository;
-import com.techm.c3p.core.repositories.WebServiceRepo;
+import com.techm.c3p.core.service.DcmConfigService;
 import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.service.RequestInfoService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
@@ -118,8 +117,6 @@ public class RequestInfoDao {
 	private WAFADateUtil dateUtil;
 	
 	@Autowired
-	private RequestDetails requestDetails;
-	@Autowired
 	private JDBCConnection jDBCConnection;
 	@Autowired
 	private GetAllDetailsService getAllDetailsService;
@@ -129,9 +126,6 @@ public class RequestInfoDao {
 	
 	@Autowired
 	private AuditDashboardRepository auditDashboardRepository;
-	
-	@Autowired
-	private WebServiceRepo webServiceRepo;
 	
 	@Autowired
 	private AuditDashboardResultRepository auditDashboardResultRepository;
@@ -144,6 +138,9 @@ public class RequestInfoDao {
 	
 	@Autowired
 	private RequestDetailsService requestDetailsService;
+	
+	@Autowired
+	private DcmConfigService dcmConfig;
 	
 	
 	private static final String FLAG_PASS ="Pass";
@@ -6548,13 +6545,21 @@ public class RequestInfoDao {
 					alphaneumeric_req_id = "SLGA-"
 							+ UUID.randomUUID().toString().toUpperCase();
 
-				} 
+				}
+				else if ("Reservation".equalsIgnoreCase(requestInfoSO.getRequestType())) {
+					//alphaneumeric_req_id = "SLGA-"+ UUID.randomUUID().toString().toUpperCase();
+					String requestingPageEntity = "Reservation Management ";
+					String requestingModule = "Port Reservation";
+					alphaneumeric_req_id= dcmConfig.generateId(requestInfoSO.getApiCallType(), requestingPageEntity, requestInfoSO.getRequestType(), requestingModule);
+					System.out.println("alphaneumeric_req_id = " + alphaneumeric_req_id);
+
+				}
 				else {
 					alphaneumeric_req_id = "SLGC-"
 							+ UUID.randomUUID().toString().toUpperCase();
 				}
 			}
-			alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
+			//alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
 			hmap.put("requestID", alphaneumeric_req_id);
 			if (requestInfoSO.getOs() != null || requestInfoSO.getOs() != "") {
 				Os = requestInfoSO.getOs();
@@ -6762,7 +6767,7 @@ public class RequestInfoDao {
 			requestEntity.setrConfigGenerationMethod(configGenerationMethods);
 			requestEntity.setRequestElapsedTime("00:00:00");
 			
-			if(requestInfoSO.getNetworkType().equalsIgnoreCase("CNF"))
+			if(null != requestInfoSO.getNetworkType() && requestInfoSO.getNetworkType().equalsIgnoreCase("CNF"))
 			{
 				requestEntity.setrCloudName(requestInfoSO.getCloudName());
 				requestEntity.setrClusterName(requestInfoSO.getClustername());
