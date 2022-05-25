@@ -2231,7 +2231,7 @@ public class ConfigMngmntService {
 
 				result = dcmConfigService.updateAlldetails(
 						configReqToSendToC3pCodeList, createConfigList,
-						featureList, userName, null);
+						featureList, userName, null, null);
 				logger.info("log");
 
 			} else {
