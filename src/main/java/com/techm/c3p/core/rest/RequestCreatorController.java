@@ -1,7 +1,9 @@
 package com.techm.c3p.core.rest;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.GET;
@@ -21,9 +23,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
+import com.techm.c3p.core.entitybeans.PortEntity;
 import com.techm.c3p.core.entitybeans.SiteInfoEntity;
+import com.techm.c3p.core.entitybeans.WorkGroup;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
+import com.techm.c3p.core.repositories.PortEntityRepository;
 import com.techm.c3p.core.repositories.SiteInfoRepository;
+import com.techm.c3p.core.repositories.WorkGroupRepository;
 import com.techm.c3p.core.service.ConfigurationManagmentService;
 import com.techm.c3p.core.service.GoldenTemplateConfigurationService;
 
@@ -42,6 +48,12 @@ public class RequestCreatorController {
 
 	@Autowired
 	private GoldenTemplateConfigurationService goldenTemplateConfigurationService;
+	
+	@Autowired
+	private WorkGroupRepository workGroupRepository;
+	
+	@Autowired
+	private PortEntityRepository portEntityRepository;
 	
 	
 	/**
@@ -263,5 +275,87 @@ public class RequestCreatorController {
 		return obj;
 
 	}
+	
+	/**
+	 * get projects from Workgroup
+	 * @return
+	 */
+	@GET
+	@RequestMapping(value = "/getWorkgroupName", method = RequestMethod.GET, produces = "application/json")
+	public Response getWorkgroupName() {
+		List<WorkGroup> WorkgroupNameInfo = workGroupRepository.findAll();
+		return Response.status(200).entity(WorkgroupNameInfo).build();
+	}
 
+	/**
+	 * Get Reservation Types and Description 
+	 * @return
+	 */
+	@GET
+	@RequestMapping(value="/getReservationTypesAndDescriptions", method=RequestMethod.GET, produces="application/json")
+	@SuppressWarnings("unchecked")
+	public Response getReservationTypesAndDescriptions() {
+		
+		List<PortEntity> portname = portEntityRepository.findAll();
+		Map<String, JSONObject> portMap = new HashMap<>();
+
+		portname.forEach(port -> {
+
+			if (port != null) {
+
+				String str = port.getPortName();
+				String[] str_portType = str.split("[0-9/]");
+				String portDesc = str.replaceAll("[a-zA-Z]", "");
+				String key = str_portType[0];
+				if (portMap.containsKey(key)) {
+
+					JSONObject portData = portMap.get(key);
+					org.json.simple.JSONArray portDescription = (JSONArray) portData.get("portDescription");
+					int total = (int) portData.get("total")+1;
+					int free = (int) portData.get("free");
+					
+					JSONObject portDetails = new JSONObject();
+					portDetails.put("portId", port.getPortId());
+					portDetails.put("description", key+"["+portDesc+"]");
+					portDetails.put("status", "Free".equalsIgnoreCase(port.getPortStatus()) ? true : false);
+					
+					portDescription.add(portDetails);
+					portData.replace("total", total);
+					portData.replace("free", "Free".equalsIgnoreCase(port.getPortStatus()) ? free+1 : free);
+
+				} else {
+					
+					JSONObject portDetails = new JSONObject();
+					JSONObject portData = new JSONObject();
+					org.json.simple.JSONArray portDescription = new org.json.simple.JSONArray();
+					
+					portDetails.put("portId", port.getPortId());
+					portDetails.put("description", key+"["+portDesc+"]");
+					portDetails.put("status", "Free".equalsIgnoreCase(port.getPortStatus()) ? true : false);
+					
+					portDescription.add(portDetails);
+					
+					portData.put("portType", key);
+					portData.put("free", "Free".equalsIgnoreCase(port.getPortStatus()) ? 1 : 0);
+					portData.put("total", 1);
+					portData.put("portDescription", portDescription);
+					
+					portMap.put(key, portData);
+
+				}
+
+			}
+		});
+		
+		org.json.simple.JSONArray portDataArray = new org.json.simple.JSONArray();
+		for (Map.Entry entry : portMap.entrySet()) {
+			JSONObject obj =(JSONObject) entry.getValue();
+			portDataArray.add(obj);
+			
+		}
+		JSONObject portDataFinal = new JSONObject();
+		portDataFinal.put("types", portDataArray);
+		
+		return Response.status(200).entity(portDataFinal).build();
+	}
 }

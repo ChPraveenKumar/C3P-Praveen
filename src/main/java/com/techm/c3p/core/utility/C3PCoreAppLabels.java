@@ -35,6 +35,8 @@ public enum C3PCoreAppLabels {
 	// Json temporary File
 	JSON_FILE,
 
+	// request Id generation using ID generation tool
+	PYTHON_GENERATE_ID,
 	// Timezone var
 	C3P_APPLICATION_SERVER_TIMEZONE,
 

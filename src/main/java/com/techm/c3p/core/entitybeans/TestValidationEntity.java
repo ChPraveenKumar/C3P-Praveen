@@ -46,7 +46,7 @@ public class TestValidationEntity {
 	@Column(name = "tv_health_check_test")
 	private int tvHealthCheckTest;
 
-	@Column(name = "tv_alphanumeric_req_id", length = 15)
+	@Column(name = "tv_alphanumeric_req_id", length = 25)
 	private String tvAlphanumericReqId;
 
 	@Column(name = "tv_version", length = 10)
