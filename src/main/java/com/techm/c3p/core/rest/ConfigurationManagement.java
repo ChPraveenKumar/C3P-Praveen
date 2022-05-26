@@ -561,9 +561,9 @@ public class ConfigurationManagement {
 				if (configReqToSendToC3pCode.getApiCallType().equalsIgnoreCase(
 						"external")
 						&& configGenMtds.contains("Template")) {
-					JSONObject jsonObj = (JSONObject) json.get("selectedFeatures");
+/*					JSONObject jsonObj = (JSONObject) json.get("selectedFeatures");
 					if(jsonObj!=null) {
-					if(jsonObj.size()>0) {
+					if(jsonObj.size()>0) {*/
 
 					String selectedFeatures = gson.toJson(json.get("selectedFeatures"));
 					List<String> selectedFeatureAndTemplateId = Arrays
@@ -602,8 +602,8 @@ public class ConfigurationManagement {
 						cammandByTemplate.addAll(listToSent);
 					}
 					}
-					}
-					}
+/*					}
+					}*/
 
 				} else if (configReqToSendToC3pCode.getApiCallType()
 						.equalsIgnoreCase("c3p-ui")) {
