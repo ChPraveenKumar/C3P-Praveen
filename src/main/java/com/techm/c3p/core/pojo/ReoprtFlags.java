@@ -19,6 +19,7 @@ public class ReoprtFlags {
 	double requestVersion;
 	int instantiate;
 	int preProcess;
+	int approval;
 	
 	public int getNetwork_audit() {
 		return network_audit;
@@ -122,5 +123,11 @@ public class ReoprtFlags {
 	}
 	public void setPreProcess(int preProcess) {
 		this.preProcess = preProcess;
+	}
+	public int getApproval() {
+		return approval;
+	}
+	public void setApproval(int approval) {
+		this.approval = approval;
 	}
 }

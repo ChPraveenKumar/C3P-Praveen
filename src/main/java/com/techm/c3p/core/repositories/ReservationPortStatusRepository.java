@@ -17,5 +17,8 @@ public interface ReservationPortStatusRepository extends JpaRepository<Reservati
 	List<ReservationPortStatusEntity> findAllByRpDeviceId(int projectId);
 	
 	@Query(value = "select * from c3p_t_reservation_port_status where rp_reservation_id = :rpReservationId ", nativeQuery = true)
-	List<ReservationPortStatusEntity> findByRpReservationId(@Param("rpReservationId") String rpReservationI
+	List<ReservationPortStatusEntity> findByRpReservationId(@Param("rpReservationId") String rpReservation);
+
+	List<ReservationPortStatusEntity>  findAllByRpReservationId(String rvReservationId);
+	List<ReservationPortStatusEntity>  findAllByRpReservationIdAndRpReservationStatus(String rpReservationId, String rpReservationStatus);
 }

@@ -1371,8 +1371,8 @@ public class DcmConfigService {
 								deviceId = deviceList.get(0).getdId();
 							
 							ReservationInformationEntity reserInfoData = new ReservationInformationEntity();
-							reserInfoData.setRvApprovedBy(null);
-							reserInfoData.setRvApprovedOn(timestamp);
+							//reserInfoData.setRvApprovedBy(null);
+							//reserInfoData.setRvApprovedOn(timestamp);
 							reserInfoData.setRvReservedBy(requestInfoSO.getRequestCreatorName());
 							reserInfoData.setRvReservedOn(timestamp);
 							reserInfoData.setRvReservationId(requestIdForConfig);

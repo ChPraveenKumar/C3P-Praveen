@@ -997,6 +997,7 @@ public class RequestInfoDao {
 					flags.setNetwork_audit(resultSet.getInt("network_audit"));
 					flags.setRequestVersion(resultSet.getDouble("version"));
 					flags.setPreProcess(resultSet.getInt("preprocess"));
+					flags.setApproval(resultSet.getInt("approval"));
 					reportFlags.add(flags);
 				}
 			}

@@ -5,6 +5,7 @@ import javax.ws.rs.core.Response;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.techm.c3p.core.pojo.ApprovalMilestoneRequestPojo;
 import com.techm.c3p.core.pojo.ApprovalMilestoneResponse;
 import com.techm.c3p.core.service.ApprovalMilestoneService;
+import com.techm.c3p.core.service.ReservationManagementService;
 
 
 
@@ -25,6 +27,9 @@ public class ApprovalMilestoneController {
 
 	@Autowired
 	private ApprovalMilestoneService approvalMilestoneService;
+	
+	@Autowired
+	private ReservationManagementService reservationManagementService;
 	
 	@SuppressWarnings({ "unchecked", "null"})
 	@POST
@@ -38,5 +43,15 @@ public class ApprovalMilestoneController {
 		}
 		return ResponseEntity.ok(approvalMilestoneResponse);
 	}
+	
+	
+	@SuppressWarnings({ "unchecked", "null"})
+	@POST
+	@RequestMapping(value = "/reserve", method = RequestMethod.POST, produces = "application/json",consumes="application/json")
+	public JSONObject reservePortReservation(@RequestBody JSONObject jsonRequest) {
+
+		return reservationManagementService.reserveport(jsonRequest);
+	}
+
 }
 

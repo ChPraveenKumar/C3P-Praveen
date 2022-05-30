@@ -329,23 +329,15 @@ public class RequestDetails {
 			obj = requestInfoDao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
 		}else if("Config Audit".equals(reqDetail.getRequestType())) {
 			obj = requestInfoDao.getStatusForConfigData(createConfigRequestDCM);
-		} 
+			
+		} else if ("Reservation".equals(reqDetail.getRequestType())) {
+			ReservationReportPojo reservationSummary = reportDetailsService.getReservationData(requestID);
+			obj.put("reservationSummary",new Gson().toJson(reservationSummary));
+
+		}
 		else {
 			obj = requestInfoDao.getStatusForCustomerReport(createConfigRequestDCM);
 		}
-
-		
-		
-		if("Reservation".equals(testType)) {
-			ReservationReportPojo reservationReportPojo = null;
-			reservationReportPojo = reportDetailsService.getReservationData(requestID);
-			if(reservationReportPojo!=null) {
-				obj.put("ReservationReportFields", new Gson().toJson(reservationReportPojo));
-			}	
-		}
-		
-		
-		
 		
 		Map<String, String> resultForFlag = new HashMap<String, String>();
 		resultForFlag = requestInfoDao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion());

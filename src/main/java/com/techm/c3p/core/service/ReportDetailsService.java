@@ -6,9 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -16,7 +13,7 @@ import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.entitybeans.PortEntity;
 import com.techm.c3p.core.entitybeans.ReservationInformationEntity;
 import com.techm.c3p.core.entitybeans.ReservationPortStatusEntity;
-import com.techm.c3p.core.pojo.ApprovalMilestoneResponse;
+import com.techm.c3p.core.entitybeans.WorkGroup;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
@@ -24,7 +21,9 @@ import com.techm.c3p.core.pojo.ReservationReportPojo;
 import com.techm.c3p.core.repositories.PortEntityRepository;
 import com.techm.c3p.core.repositories.ReservationInformationRepository;
 import com.techm.c3p.core.repositories.ReservationPortStatusRepository;
+import com.techm.c3p.core.repositories.WorkGroupRepository;
 import com.techm.c3p.core.utility.InvokeFtl;
+import com.techm.c3p.core.utility.WAFADateUtil;
 
 @Component
 public class ReportDetailsService {
@@ -38,6 +37,14 @@ public class ReportDetailsService {
 	 private PortEntityRepository portEntityRepository;
 	@Autowired
 	private ReservationInformationRepository reservationInformationRepository;
+	
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private WorkGroupRepository workGroupRepository;
+
+
 	
 	
 	@Autowired
@@ -190,16 +197,20 @@ public class ReportDetailsService {
 		return dataList;
 	}
 
+	@SuppressWarnings("static-access")
 	public ReservationReportPojo getReservationData(String reservationId) {
 		
 		List<ReservationPortStatusEntity> entity = reservationPortStatusRepository.findByRpReservationId(reservationId );
 		ReservationReportPojo response=new ReservationReportPojo();
 		
 		if(entity!=null) {
+			
 			ReservationPortStatusEntity e = entity.get(0);
-			response.setProject(e.getRpProjectId());
-			response.setStartDate(e.getRpFrom().toLocalDateTime().toString());
-			response.setEndDate(e.getRpTo().toLocalDateTime().toString());
+			
+			WorkGroup workGroup = workGroupRepository.findById(Integer.parseInt(e.getRpProjectId()));
+			response.setProject(workGroup.getWorkGroupName());
+			response.setStartDate(dateUtil.dbToUI(e.getRpFrom()));
+			response.setEndDate(dateUtil.dbToUI(e.getRpTo()));
 			
 			List<String> portNames = new ArrayList<String>();
 			for(ReservationPortStatusEntity obj:entity) {

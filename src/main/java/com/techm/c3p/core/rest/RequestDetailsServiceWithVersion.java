@@ -716,17 +716,17 @@ public class RequestDetailsServiceWithVersion {
 // Api for milestone status display
 @SuppressWarnings("unchecked")
 @POST
-@RequestMapping(value = "/getApprovalDetail", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")	
-public ResponseEntity<ReservationReportPojo> getApprovalDetail(@RequestBody String requestDetails) {
+@RequestMapping(value = "/getReservationGenerateDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")	
+public ResponseEntity<ReservationReportPojo> getReservationGenerateDetails(@RequestBody String requestDetails) {
 	JSONParser parser = new JSONParser();
 	JSONObject response = new JSONObject();
 	ReservationReportPojo reservationReportPojo = new ReservationReportPojo();
 	try {
 		JSONObject json = (JSONObject) parser.parse(requestDetails);
-		String requestId = json.get("requestId").toString();
+		String requestId = json.get("requestID").toString();
 		reservationReportPojo = reportDetailsService.getReservationData(requestId);
 		if(reservationReportPojo!=null) {
-			response.put("ReservationReportFields", new Gson().toJson(reservationReportPojo));
+			response.put("reservationData", new Gson().toJson(reservationReportPojo));
 		}
 		}catch (Exception e) {
 			logger.error(e.getStackTrace());
