@@ -316,7 +316,7 @@ public class RequestCreatorController {
 					
 					JSONObject portDetails = new JSONObject();
 					portDetails.put("portId", port.getPortId());
-					portDetails.put("description", key+"["+portDesc+"]");
+					portDetails.put("description", key+" [ "+portDesc+" ] ");
 					portDetails.put("status", "Free".equalsIgnoreCase(port.getPortStatus()) ? true : false);
 					
 					portDescription.add(portDetails);
@@ -330,7 +330,7 @@ public class RequestCreatorController {
 					org.json.simple.JSONArray portDescription = new org.json.simple.JSONArray();
 					
 					portDetails.put("portId", port.getPortId());
-					portDetails.put("description", key+"["+portDesc+"]");
+					portDetails.put("description", key+" [ "+portDesc+" ] ");
 					portDetails.put("status", "Free".equalsIgnoreCase(port.getPortStatus()) ? true : false);
 					
 					portDescription.add(portDetails);
