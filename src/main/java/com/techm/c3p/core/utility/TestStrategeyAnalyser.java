@@ -1485,24 +1485,25 @@ public class TestStrategeyAnalyser {
 		int currentPosition = 0;
 		boolean isCheck = true, lastCheck = false;
 		int snippetCount = 0;
-		for (int j = 0; j < snippetArray.size(); j++) {
-			currentsnippet = snippetArray.get(j);
-			count = j;
 
-			for (int lineListLoop = 0; lineListLoop < lineList.size(); lineListLoop++) {
-				if (isCheck) {
-					if (lineList.get(lineListLoop).contains(currentsnippet)) {	
-						currentPosition = lineListLoop;						
-						lastCheck = true;
+		String snip = snippetArray.get(currentPosition);
+		for (int lineListLoop = 0; lineListLoop < lineList.size(); lineListLoop++) {
+			if (isCheck) {
+
+				if (lineList.get(lineListLoop).trim().toLowerCase()
+						.equalsIgnoreCase(snip.trim().toLowerCase())) {
+					currentPosition++;
+					if (currentPosition < snippetArray.size()) {
+						snip = snippetArray.get(currentPosition);
+					} else {
 						snippetCount++;
-			
+						lastCheck = true;
+						break;
 					}
-				}
 
+				}
 			}
-		}
-		if(snippetCount==0) {
-			lastCheck = false;
+
 		}
 		// check if evalution field is true
 		String evaluationOperator = rulesLabel.getSnippet();
