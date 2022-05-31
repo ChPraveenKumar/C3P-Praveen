@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,8 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.catalina.Cluster;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
@@ -37,11 +36,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.techm.c3p.core.bpm.servicelayer.CamundaServiceCreateReq;
 import com.techm.c3p.core.dao.RequestInfoDao;
+import com.techm.c3p.core.dao.ReservationInfoDao;
 import com.techm.c3p.core.dao.TemplateManagementDao;
 import com.techm.c3p.core.dao.TemplateSuggestionDao;
 import com.techm.c3p.core.entitybeans.CloudClusterEntity;
-import com.techm.c3p.core.entitybeans.CloudProjectEntity;
 import com.techm.c3p.core.entitybeans.CreateConfigEntity;
 import com.techm.c3p.core.entitybeans.CredentialManagementEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
@@ -50,6 +50,9 @@ import com.techm.c3p.core.entitybeans.MasterCharacteristicsEntity;
 import com.techm.c3p.core.entitybeans.MasterFeatureEntity;
 import com.techm.c3p.core.entitybeans.RequestFeatureTransactionEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
+import com.techm.c3p.core.entitybeans.ReservationInformationEntity;
+import com.techm.c3p.core.entitybeans.ReservationPortStatusEntity;
+import com.techm.c3p.core.entitybeans.ReservationPortStatusHistoryEntity;
 import com.techm.c3p.core.entitybeans.ResourceCharacteristicsHistoryEntity;
 import com.techm.c3p.core.entitybeans.TemplateFeatureEntity;
 import com.techm.c3p.core.entitybeans.UserManagementEntity;
@@ -69,7 +72,6 @@ import com.techm.c3p.core.pojo.RequestInfoSO;
 import com.techm.c3p.core.pojo.TemplateFeaturePojo;
 import com.techm.c3p.core.repositories.AttribCreateConfigRepo;
 import com.techm.c3p.core.repositories.CloudClusterRepository;
-import com.techm.c3p.core.repositories.CloudProjectsRepository;
 import com.techm.c3p.core.repositories.CreateConfigRepo;
 import com.techm.c3p.core.repositories.CredentialManagementRepo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
@@ -77,6 +79,8 @@ import com.techm.c3p.core.repositories.MasterCharacteristicsRepository;
 import com.techm.c3p.core.repositories.MasterFeatureRepository;
 import com.techm.c3p.core.repositories.RequestFeatureTransactionRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
+import com.techm.c3p.core.repositories.ReservationPortStatusHistoryRepository;
+import com.techm.c3p.core.repositories.ReservationPortStatusRepository;
 import com.techm.c3p.core.repositories.ResourceCharacteristicsHistoryRepository;
 import com.techm.c3p.core.repositories.RfoDecomposedRepository;
 import com.techm.c3p.core.repositories.TemplateFeatureRepo;
@@ -136,7 +140,16 @@ public class DcmConfigService {
 
 	@Autowired
 	private TemplateManagementDao templateManagementDao;
+	
+	@Autowired
+	private ReservationInfoDao reservationInfoDao;
+	
+	@Autowired
+	private ReservationPortStatusRepository reservationPortStatusRepository;
 
+	@Autowired
+	private ReservationPortStatusHistoryRepository reservationPortStatusHistoryRepository;
+	
 	@Value("${python.service.uri}")
 	private String pythonServiceUri;
 
@@ -157,6 +170,12 @@ public class DcmConfigService {
 	
 	@Autowired
 	private RequestDetailsService requestDetailsService;
+	
+	@Autowired
+	private CamundaServiceCreateReq camundaServiceCreateReq;
+	
+	@Autowired
+	private DeviceDiscoveryRepository deviceDiscoveryRepo;
 	
 	public Map<String, String> updateAlldetails(CreateConfigRequestDCM configRequest, List<CreateConfigPojo> pojoList)
 			throws IOException {
@@ -295,7 +314,6 @@ public class DcmConfigService {
 				requestInfoPojo.setRequestCreatorName(configRequest.getRequest_creator_name());
 
 				requestInfoPojo.setStartUp(configRequest.getIsStartUp());
-
 				// added new to database
 				// new added parameter for request created by field
 				requestInfoPojo.setRequestCreatorName(configRequest.getRequest_creator_name());
@@ -1267,7 +1285,7 @@ public class DcmConfigService {
 	/* method overloadig for UIRevamp */
 	public Map<String, String> updateAlldetails(List<RequestInfoPojo> requestInfoSOList,
 			List<CreateConfigPojo> pojoList, List<String> featureList, String userName,
-			List<TemplateFeaturePojo> features, DeviceDiscoveryEntity device, JSONObject cloudObject) {
+			List<TemplateFeaturePojo> features, DeviceDiscoveryEntity device, JSONObject cloudObject, org.json.simple.JSONObject reservationJson) {
 		String validateMessage = "";
 		String requestIdForConfig = "", requestType = "";
 		String res = "", output = "";
@@ -1318,7 +1336,7 @@ public class DcmConfigService {
 				// update template
 
 				requestType = requestInfoSO.getRequestType();
-				if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))&& !(requestType.equals("NETCONF")) && !(requestType.equals("RESTCONF")) && !(requestType.equals("SNAI"))) {
+				if (!(requestType.equals("Test")) && !(requestType.equals("Audit"))&& !(requestType.equals("NETCONF")) && !(requestType.equals("RESTCONF")) && !(requestType.equals("SNAI")) && !(requestType.equals("Reservation"))) {
 					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateID());
 				}
@@ -1340,6 +1358,76 @@ public class DcmConfigService {
 								requestInfoDao.saveAuditData(requestData);
 							}
 						}
+						if ("Reservation".equals(requestInfoSO.getRequestType()) && (null != requestIdForConfig)){
+							
+							LocalDateTime nowDate = LocalDateTime.now();
+							Timestamp timestamp = Timestamp.valueOf(nowDate);
+							String projectId = reservationJson.get("rvProjectId").toString();
+							
+							int deviceId = 0;
+							List<DeviceDiscoveryEntity> deviceList = deviceDiscoveryRepo.findBydHostName(requestInfoSO.getHostname());
+
+							if (deviceList !=null && deviceList.get(0) != null)
+								deviceId = deviceList.get(0).getdId();
+							
+							ReservationInformationEntity reserInfoData = new ReservationInformationEntity();
+							//reserInfoData.setRvApprovedBy(null);
+							//reserInfoData.setRvApprovedOn(timestamp);
+							reserInfoData.setRvReservedBy(requestInfoSO.getRequestCreatorName());
+							reserInfoData.setRvReservedOn(timestamp);
+							reserInfoData.setRvReservationId(requestIdForConfig);
+							reserInfoData.setRvCreatedBy(requestInfoSO.getRequestCreatorName());
+							reserInfoData.setRvCreatedDate(timestamp);
+							reserInfoData.setRvNotes(reservationJson.get("rvComments").toString());
+							reserInfoData.setRvProjectId(projectId);	
+							reservationInfoDao.saveReservationInfoData(reserInfoData);
+							
+							List<ReservationPortStatusEntity> rpStatuslist = new ArrayList<>();
+							List<ReservationPortStatusHistoryEntity> rpStatusHistorylist = new ArrayList<>();
+							
+							org.json.simple.JSONArray rvDescriptions = null;
+							if (reservationJson.containsKey("rvDescription")) {
+								rvDescriptions = (org.json.simple.JSONArray) reservationJson.get("rvDescription");
+								for (int i = 0; i < rvDescriptions.size(); i++) {
+									JSONObject rvDescriptionsJson = (JSONObject) rvDescriptions.get(i);
+																		
+									ReservationPortStatusEntity rpEntity = new ReservationPortStatusEntity();
+									ReservationPortStatusHistoryEntity rpHistoryEntity = new ReservationPortStatusHistoryEntity();
+									
+									rpEntity.setRpReservationId(requestIdForConfig);
+									rpEntity.setRpReservationStatus(reservationJson.get("rvStatus").toString());
+									rpEntity.setRpCreatedBy(requestInfoSO.getRequestCreatorName());
+									rpEntity.setRpCreatedDate(timestamp);
+									rpEntity.setRpDeviceId(deviceId);
+									rpEntity.setRpPortId(Integer.parseInt(rvDescriptionsJson.get("portId").toString()));
+									rpEntity.setRpProjectId(projectId);
+									rpEntity.setRpFrom(Timestamp.from(Instant.parse(reservationJson.get("rvStartDate").toString())));
+									rpEntity.setRpTo(Timestamp.from(Instant.parse(reservationJson.get("rvEndDate").toString())));
+									
+									rpHistoryEntity.setRpReservationId(requestIdForConfig);
+									rpHistoryEntity.setRpReservationStatus(reservationJson.get("rvStatus").toString());
+									rpHistoryEntity.setRpCreatedBy(requestInfoSO.getRequestCreatorName());
+									rpHistoryEntity.setRpCreatedDate(timestamp);
+									rpEntity.setRpDeviceId(deviceId);
+									rpHistoryEntity.setRpPortId(Integer.parseInt(rvDescriptionsJson.get("portId").toString()));
+									rpHistoryEntity.setRpProjectId(projectId);
+									rpHistoryEntity.setRpFrom(Timestamp.from(Instant.parse(reservationJson.get("rvStartDate").toString())));
+									rpHistoryEntity.setRpTo(Timestamp.from(Instant.parse(reservationJson.get("rvEndDate").toString())));
+							
+									rpStatuslist.add(rpEntity);
+									rpStatusHistorylist.add(rpHistoryEntity);
+								}
+								
+								if (rpStatuslist.size()>0)
+									reservationPortStatusRepository.save(rpStatuslist);
+								if (rpStatusHistorylist.size()>0)
+									reservationPortStatusHistoryRepository.save(rpStatusHistorylist);
+								
+								camundaServiceCreateReq.uploadToServerNewForApproval(requestInfoSO.getAlphanumericReqId(), requestInfoSO.getRequestVersion().toString(), "NEWREQUEST");								
+							}
+							
+						}
+						
 					}
 					if (entry.getKey() == "result") {
 						res = entry.getValue();
@@ -2608,7 +2696,7 @@ public class DcmConfigService {
 	/* method overloadig for UIRevamp for passing user information */
 	public Map<String, String> updateAlldetails(List<RequestInfoPojo> requestInfoSOList,
 			List<CreateConfigPojo> pojoList, List<String> featureList, String userName,
-			List<TemplateFeaturePojo> features) {
+			List<TemplateFeaturePojo> features, JSONObject reservationJson) {
 		List<String> configGenMtds = new ArrayList<String>();
 
 		String validateMessage = "";
@@ -2652,7 +2740,7 @@ public class DcmConfigService {
 				}
 
 				requestType = requestInfoSO.getRequestType();
-				if (!(requestType.equals("Test")) && !(requestType.equals("Audit")) && !(requestType.equals("SNAI"))) {
+				if (!(requestType.equals("Test")) && !(requestType.equals("Audit")) && !(requestType.equals("SNAI")) && !(requestType.equals("Reservation"))) {
 					if (!requestInfoSO.getTemplateID().isEmpty() && !requestInfoSO.getTemplateID().contains("Feature"))
 						templateSuggestionDao.insertTemplateUsageData(requestInfoSO.getTemplateID());
 				}
@@ -3072,7 +3160,7 @@ public class DcmConfigService {
 
 	private void templateFileCreator(List<RequestInfoPojo> requestInfoSOList, RequestInfoPojo request) {
 		if (requestInfoSOList.size() == 1) {
-			if (!requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("Test") && !requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("Config Audit")) {
+			if (!requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("Test") && !requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("Config Audit") && !requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("Reservation")) {
 				if (!requestInfoSOList.get(0).getRequestType().equalsIgnoreCase("IOSUPGRADE")) {
 					createHeader(request);
 					createTemplate(request);
@@ -3334,5 +3422,34 @@ public class DcmConfigService {
 		}
 
 	}
-
+	
+	
+	@SuppressWarnings({ "unchecked" })
+	public String generateId(String sourceSystem, String requestingPageEntity, String requestType,
+			String requestingModule) {
+		String response = null;
+		try {
+			logger.info("Inside generateId method--->  sourceSystem -> " + sourceSystem + "  requestingPageEntity --> "
+					+ requestingPageEntity + " requestType -->" + requestType + "  requestingModule --> "
+					+ requestingModule);
+			RestTemplate restTemplate = new RestTemplate();
+			JSONObject request = new JSONObject();
+			request.put(new String("sourceSystem"), sourceSystem);
+			request.put(new String("requestingPageEntity"), requestingPageEntity);
+			request.put(new String("requestType"), requestType!=null && !requestType.equals("")?requestType.charAt(0):"");
+			request.put(new String("requestingModule"), requestingModule);
+			HttpHeaders headers = new HttpHeaders();
+			headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+			HttpEntity<JSONObject> entity = new HttpEntity<JSONObject>(request, headers);
+			String url = pythonServiceUri + C3PCoreAppLabels.PYTHON_GENERATE_ID.getValue();
+			response = restTemplate.exchange(url, HttpMethod.POST, entity, String.class).getBody();
+		} catch (HttpClientErrorException serviceErr) {
+			logger.error("HttpClientErrorException - generateId -> " + serviceErr.getMessage());
+		} catch (Exception exe) {
+			logger.error("Exception - generateId->" + exe.getMessage());
+			exe.printStackTrace();
+		}
+		logger.info("End - generateId ->" + response);
+		return response;
+	}
 }

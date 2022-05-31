@@ -5,14 +5,8 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.Comparator;
-
 import javax.ws.rs.POST;
 
 import org.apache.logging.log4j.LogManager;
@@ -124,7 +118,7 @@ public class ConfigurationManagement {
 
 	@Autowired
 	private GetConfigurationTemplateService getConfigurationTemplateService;
-
+	
 	/**
 	 * This Api is marked as ***************Both Api Impacted****************
 	 **/
@@ -147,6 +141,9 @@ public class ConfigurationManagement {
 		String request_creator_name = null, userName = null;
 		List<String> templateList = null;
 
+	//	System.out.println(" getReservationType = "+ getReservationType());
+		
+		
 		List<RequestInfoPojo> configReqToSendToC3pCodeList = new ArrayList<RequestInfoPojo>();
 		List<String> configGenMtds = new ArrayList<String>();
 		InvokeFtl invokeFtl = new InvokeFtl();
@@ -317,7 +314,7 @@ public class ConfigurationManagement {
 			// parent will be 1.
 			configReqToSendToC3pCode.setRequestParentVersion(1.0);
 			JSONArray toSaveArray = new JSONArray();
-			if (!requestType.equals("Test") && !requestType.equals("Audit")) {
+			if (!requestType.equals("Test") && !requestType.equals("Audit") && !requestType.equals("Reservation")) {
 				// template suggestion
 				String template = "";
 				if (json.get("templateId") != null
@@ -382,7 +379,7 @@ public class ConfigurationManagement {
 							.get("certificationTests");
 				}
 			}
-			if (!(requestType.equals("SLGB"))) {
+			if (!(requestType.equals("SLGB") && !requestType.equals("Reservation")) ) {
 
 				if (certificationTestFlag != null
 						&& certificationTestFlag.containsKey("default")) {
@@ -426,7 +423,7 @@ public class ConfigurationManagement {
 				}
 			}
 
-			if (!(requestType.equals("SLGB"))) {
+			if (!(requestType.equals("SLGB")) && !requestType.equals("Reservation")) {
 
 				if (certificationTestFlag != null
 						&& certificationTestFlag.containsKey("dynamic")) {
@@ -519,6 +516,15 @@ public class ConfigurationManagement {
 			}
 			logger.info("createConfigurationDcm - configReqToSendToC3pCode -NetworkType- "
 					+ configReqToSendToC3pCode.getNetworkType());
+			
+			JSONObject reservationJson = null;
+			// getting types for reservation
+			if ("Reservation".equals(requestType) && json.containsKey("reservations")) {
+				
+				reservationJson = (JSONObject) json.get("reservations");
+			}
+			
+			
 			Map<String, String> result = null;
 			if ("PNF".equalsIgnoreCase(configReqToSendToC3pCode.getNetworkType())
 						|| "CNF".equalsIgnoreCase(configReqToSendToC3pCode.getNetworkType())
@@ -1154,7 +1160,7 @@ public class ConfigurationManagement {
 				// attribute data
 				result = dcmConfigService.updateAlldetails(
 						configReqToSendToC3pCodeList, createConfigList,
-						featureList, userName, features, device, cloudObject);
+						featureList, userName, features, device, cloudObject, reservationJson);
 
 			} else if (configReqToSendToC3pCode.getRequestType()
 					.equalsIgnoreCase("NETCONF")
@@ -1227,7 +1233,7 @@ public class ConfigurationManagement {
 				configReqToSendToC3pCodeList.add(configReqToSendToC3pCode);
 				result = dcmConfigService.updateAlldetails(
 						configReqToSendToC3pCodeList, createConfigList, null,
-						userName, features, device, cloudObject);
+						userName, features, device, cloudObject, reservationJson);
 			} else {
 				if (toSaveArray != null && !toSaveArray.isEmpty()) {
 					configReqToSendToC3pCode.setTestsSelected(toSaveArray
@@ -1238,7 +1244,7 @@ public class ConfigurationManagement {
 				// 3075
 				result = dcmConfigService.updateAlldetails(
 						configReqToSendToC3pCodeList, null, null, userName,
-						null);
+						null, reservationJson);
 			}
 
 			for (Map.Entry<String, String> entry : result.entrySet()) {

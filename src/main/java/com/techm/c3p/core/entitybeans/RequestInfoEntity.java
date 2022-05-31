@@ -85,7 +85,7 @@ public class RequestInfoEntity implements Serializable {
 	@NotNull
 	private String managmentIP;
 
-	@Column(name = "r_alphanumeric_req_id", length = 15, nullable = false)
+	@Column(name = "r_alphanumeric_req_id", length = 25, nullable = false)
 	private String alphanumericReqId;
 
 	@Column(name = "r_device_type", length = 20, nullable = false)

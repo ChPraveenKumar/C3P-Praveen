@@ -48,6 +48,9 @@ public class WebServiceEntity implements Serializable {
 
 	@Column(name = "application_test")
 	private int application_test;
+	
+	@Column(name = "approval")
+	private int approval;
 
 	@Column(name = "customer_report")
 	private int customer_report;
@@ -147,6 +150,14 @@ public class WebServiceEntity implements Serializable {
 		this.customer_report = customer_report;
 	}
 
+	public int getApproval() {
+		return approval;
+	}
+
+	public void setApproval(int approval) {
+		this.approval = approval;
+	}
+	
 	public int getFilename() {
 		return filename;
 	}

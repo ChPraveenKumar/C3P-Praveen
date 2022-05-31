@@ -38,6 +38,7 @@ import com.techm.c3p.core.entitybeans.RequestInfoEntity;
 import com.techm.c3p.core.entitybeans.TestDetail;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.pojo.ReservationReportPojo;
 import com.techm.c3p.core.pojo.TestStaregyConfigPojo;
 
 import com.techm.c3p.core.repositories.HeatTemplateRepository;
@@ -46,6 +47,7 @@ import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 
 import com.techm.c3p.core.repositories.TestDetailsRepository;
+import com.techm.c3p.core.service.ReportDetailsService;
 import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.WAFADateUtil;
 /*
@@ -86,6 +88,9 @@ public class RequestDetails {
 	
 	@Autowired
 	private AuditDashboardRepository auditDashboardRepository;
+	
+	@Autowired
+	private ReportDetailsService reportDetailsService;
 	
 	public String getTestAndDiagnosisDetails(String requestId,double requestVersion) throws SQLException {
 		StringBuilder builder = new StringBuilder();
@@ -324,10 +329,16 @@ public class RequestDetails {
 			obj = requestInfoDao.getStatusForBackUpRequestCustomerReport(createConfigRequestDCM);
 		}else if("Config Audit".equals(reqDetail.getRequestType())) {
 			obj = requestInfoDao.getStatusForConfigData(createConfigRequestDCM);
-		} else {
+			
+		} else if ("Reservation".equals(reqDetail.getRequestType())) {
+			ReservationReportPojo reservationSummary = reportDetailsService.getReservationData(requestID);
+			obj.put("reservationSummary",new Gson().toJson(reservationSummary));
+
+		}
+		else {
 			obj = requestInfoDao.getStatusForCustomerReport(createConfigRequestDCM);
 		}
-
+		
 		Map<String, String> resultForFlag = new HashMap<String, String>();
 		resultForFlag = requestInfoDao.getRequestFlagForReport(reqDetail.getAlphanumericReqId(), reqDetail.getRequestVersion());
 		String flagFordelieverConfig = "";
