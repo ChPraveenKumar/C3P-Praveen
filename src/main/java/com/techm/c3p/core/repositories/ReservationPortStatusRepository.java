@@ -22,4 +22,7 @@ public interface ReservationPortStatusRepository extends JpaRepository<Reservati
 	List<ReservationPortStatusEntity>  findAllByRpReservationId(String rvReservationId);
 	List<ReservationPortStatusEntity>  findAllByRpReservationIdAndRpReservationStatus(String rpReservationId, String rpReservationStatus);
 	List<ReservationPortStatusEntity>  findAllByRpDeviceIdAndRpPortId(int projectId, int portId);
+	
+	@Query(value = "select count(rp_device_id) from c3p_t_reservation_port_status where rp_device_id=:deviceId", nativeQuery = true)
+	int getDeviceReservationCount(@Param("deviceId") int deviceId);
 }
