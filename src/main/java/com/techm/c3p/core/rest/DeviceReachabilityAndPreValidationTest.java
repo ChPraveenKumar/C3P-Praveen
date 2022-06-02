@@ -672,7 +672,11 @@ public class DeviceReachabilityAndPreValidationTest extends Thread {
 										Math.min(requestinfo
 												.getAlphanumericReqId()
 												.length(), 4));
-						if (type.equalsIgnoreCase("SLGC")) {
+						if (type.equalsIgnoreCase("SLGC")|| type.equalsIgnoreCase("SLGM")) {
+							requestInfoService.updateCertificationTestForRequest(
+									requestinfo.getAlphanumericReqId(),
+									Double.toString(requestinfo
+											.getRequestVersion()), "1");
 						} else if (type.equalsIgnoreCase("SLGF")) {
 
 							requestInfoDao.editRequestforReportWebserviceInfo(
