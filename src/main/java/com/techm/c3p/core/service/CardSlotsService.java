@@ -11,13 +11,17 @@ import org.springframework.stereotype.Service;
 import com.techm.c3p.core.entitybeans.CardEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.PortEntity;
+import com.techm.c3p.core.entitybeans.ReservationPortStatusEntity;
 import com.techm.c3p.core.entitybeans.SlotEntity;
 import com.techm.c3p.core.entitybeans.SubSlotEntity;
+import com.techm.c3p.core.entitybeans.WorkGroup;
 import com.techm.c3p.core.repositories.CardEntityRepository;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.PortEntityRepository;
+import com.techm.c3p.core.repositories.ReservationPortStatusRepository;
 import com.techm.c3p.core.repositories.SlotEntityRepository;
 import com.techm.c3p.core.repositories.SubSlotEntityRepository;
+import com.techm.c3p.core.repositories.WorkGroupRepository;
 
 @Service
 public class CardSlotsService {
@@ -35,7 +39,13 @@ public class CardSlotsService {
 	private CardEntityRepository cardEntityRepository;
 
 	@Autowired
-	private PortEntityRepository portEntityRepository;
+	private PortEntityRepository portEntityRepository;	
+	
+	@Autowired
+	private WorkGroupRepository workGroupRepository;
+	 
+	@Autowired
+	private ReservationPortStatusRepository reservationPortStatusRepository;
 
 	@SuppressWarnings("unchecked")
 	public JSONObject getCardSlots(String hostName) {
@@ -63,6 +73,18 @@ public class CardSlotsService {
 						JSONObject interfaceJson = new JSONObject();
 						interfaceJson.put("interfaceName", ports.getPortName());
 						interfaceJson.put("interfaceStatus", ports.getPortStatus());
+						
+						List<ReservationPortStatusEntity> portStatusList =  reservationPortStatusRepository.findAllByRpDeviceIdAndRpPortId(entity.getdId(), ports.getPortId());
+						if (portStatusList !=null && !portStatusList.isEmpty()) {
+							
+							for (ReservationPortStatusEntity re: portStatusList) {
+								interfaceJson.put("reservationStatus", re.getRpReservationStatus());
+								WorkGroup wGroup = workGroupRepository.findNameById(Integer.parseInt(re.getRpProjectId()));
+								if (wGroup !=null)
+									interfaceJson.put("reservationFor", wGroup.getWorkGroupName());
+								break;
+							}
+						}
 						interfaceCardArray.add(interfaceJson);
 					});
 					cardEntities.put("interfaces", interfaceCardArray);
@@ -87,6 +109,19 @@ public class CardSlotsService {
 							JSONObject interfaceSubSlotJson = new JSONObject();
 							interfaceSubSlotJson.put("interfaceName", subPorts.getPortName());
 							interfaceSubSlotJson.put("interfaceStatus", subPorts.getPortStatus());
+							
+							List<ReservationPortStatusEntity> portStatusList =  reservationPortStatusRepository.findAllByRpDeviceIdAndRpPortId(entity.getdId(), subPorts.getPortId());
+							if (portStatusList !=null && !portStatusList.isEmpty()) {
+								
+								for (ReservationPortStatusEntity re: portStatusList) {
+									interfaceSubSlotJson.put("reservationStatus", re.getRpReservationStatus());
+									WorkGroup wGroup = workGroupRepository.findNameById(Integer.parseInt(re.getRpProjectId()));
+									
+									if (wGroup !=null)
+										interfaceSubSlotJson.put("reservationFor", wGroup.getWorkGroupName());
+									break;
+								}
+							}
 							interfaceSubSlotArray.add(interfaceSubSlotJson);
 						});
 						subSlotEntities.put("interfaces", interfaceSubSlotArray);
