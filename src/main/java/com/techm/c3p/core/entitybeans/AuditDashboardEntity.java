@@ -21,7 +21,7 @@ public class AuditDashboardEntity implements Serializable {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private int adRowId;	
 
-	@Column(name = "ad_request_id", length = 20)
+	@Column(name = "ad_request_id", length = 25)
 	private String adRequestId;
 	
 	@Column(name = "ad_audit_id", length = 20)

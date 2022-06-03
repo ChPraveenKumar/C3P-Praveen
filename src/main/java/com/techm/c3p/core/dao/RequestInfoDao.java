@@ -6560,7 +6560,10 @@ public class RequestInfoDao {
 							+ UUID.randomUUID().toString().toUpperCase();
 				}
 			}
-			//alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
+			
+			if (!"Reservation".equalsIgnoreCase(requestInfoSO.getRequestType())){
+				alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
+			}
 			hmap.put("requestID", alphaneumeric_req_id);
 			if (requestInfoSO.getOs() != null || requestInfoSO.getOs() != "") {
 				Os = requestInfoSO.getOs();
