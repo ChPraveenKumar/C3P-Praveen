@@ -44,14 +44,10 @@ public class ReportDetailsService {
 	@Autowired
 	private WorkGroupRepository workGroupRepository;
 
-
-	
-	
 	@Autowired
 	private RequestInfoDao requestInfoDao;
 	public String getDetailsForReport(CreateConfigRequestDCM createConfigRequestDCM, RequestInfoPojo request)
 			throws Exception {
-		
 
 		String requestId = createConfigRequestDCM.getRequestId();
 		String TestType = createConfigRequestDCM.getTestType();
@@ -198,7 +194,10 @@ public class ReportDetailsService {
 	}
 
 	@SuppressWarnings("static-access")
-	public ReservationReportPojo getReservationData(String reservationId) {
+	public ReservationReportPojo getReservationData(String requestID) {
+		
+		ReservationInformationEntity reserveInfo = reservationInformationRepository.findByRvRequestId(requestID);
+		String reservationId = reserveInfo != null ? reserveInfo.getRvReservationId():"";
 		
 		List<ReservationPortStatusEntity> entity = reservationPortStatusRepository.findByRpReservationId(reservationId );
 		ReservationReportPojo response=new ReservationReportPojo();
@@ -221,10 +220,11 @@ public class ReportDetailsService {
 				}
 			}
 			response.setPortSelected(portNames);
-			ReservationInformationEntity reservation=reservationInformationRepository.findByrvReservationId(reservationId);	
-			if(reservation!=null) {
-				response.setComment(reservation.getRvNotes());
-			}
+			response.setComment(reserveInfo.getRvNotes());
+//			ReservationInformationEntity reservation=reservationInformationRepository.findByRvReservationId(requestID);	
+//			if(reservation!=null) {
+//				response.setComment(reservation.getRvNotes());
+//			}
 		}
 		return response;
 	}

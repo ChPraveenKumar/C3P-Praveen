@@ -239,15 +239,18 @@ public class ReservationManagementService {
 		String requestID = jsonRequest.get("requestID").toString();
 		String userName = jsonRequest.get("userName").toString();
 		
+		ReservationInformationEntity reservationInfo = reservationInformationRepository.findByRvRequestId(requestID);
+		String reservationId = reservationInfo != null ? reservationInfo.getRvReservationId():"";
+		
 		String rpReservationStatus = "Pending";
-		List<ReservationPortStatusEntity> entityLists = reservationPortStatusRepository.findAllByRpReservationIdAndRpReservationStatus(requestID, rpReservationStatus);
+		List<ReservationPortStatusEntity> entityLists = reservationPortStatusRepository.findAllByRpReservationIdAndRpReservationStatus(reservationId, rpReservationStatus);
 		if(entityLists !=null && entityLists.isEmpty()) {
 			response.put(new String("outputStatus"), "Error");
 			response.put(new String("outputMessage"), "Port already reserved...!!" );
 			return response;
 		}
 
-		ReservationInformationEntity reservationInfo = reservationInformationRepository.findByrvReservationId(requestID);
+		
 
 		if (reservationInfo != null) {
 			rpReservationStatus = "Reserved";
@@ -257,7 +260,6 @@ public class ReservationManagementService {
 			reservationInfo.setRvUpdatedDate(timestamp);
 			reservationInformationRepository.save(reservationInfo);
 			try {
-			//	List<ReservationPortStatusEntity> entityList = reservationPortStatusRepository.findAllByRpReservationId(requestID);
 				for (ReservationPortStatusEntity entity : entityLists) {
 					entity.setRpReservationStatus(rpReservationStatus);
 					entity.setRpUpdatedDate(timestamp);
