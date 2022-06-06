@@ -1363,6 +1363,7 @@ public class DcmConfigService {
 							LocalDateTime nowDate = LocalDateTime.now();
 							Timestamp timestamp = Timestamp.valueOf(nowDate);
 							String projectId = reservationJson.get("rvProjectId").toString();
+							String reservationID = result.get("reservationID");
 							
 							int deviceId = 0;
 							List<DeviceDiscoveryEntity> deviceList = deviceDiscoveryRepo.findBydHostName(requestInfoSO.getHostname());
@@ -1375,7 +1376,8 @@ public class DcmConfigService {
 							//reserInfoData.setRvApprovedOn(timestamp);
 							reserInfoData.setRvReservedBy(requestInfoSO.getRequestCreatorName());
 							reserInfoData.setRvReservedOn(timestamp);
-							reserInfoData.setRvReservationId(requestIdForConfig);
+							reserInfoData.setRvReservationId(reservationID);
+							reserInfoData.setRvRequestId(requestIdForConfig);
 							reserInfoData.setRvCreatedBy(requestInfoSO.getRequestCreatorName());
 							reserInfoData.setRvCreatedDate(timestamp);
 							reserInfoData.setRvNotes(reservationJson.get("rvComments").toString());
@@ -1394,7 +1396,7 @@ public class DcmConfigService {
 									ReservationPortStatusEntity rpEntity = new ReservationPortStatusEntity();
 									ReservationPortStatusHistoryEntity rpHistoryEntity = new ReservationPortStatusHistoryEntity();
 									
-									rpEntity.setRpReservationId(requestIdForConfig);
+									rpEntity.setRpReservationId(reservationID);
 									rpEntity.setRpReservationStatus(reservationJson.get("rvStatus").toString());
 									rpEntity.setRpCreatedBy(requestInfoSO.getRequestCreatorName());
 									rpEntity.setRpCreatedDate(timestamp);
@@ -1404,11 +1406,11 @@ public class DcmConfigService {
 									rpEntity.setRpFrom(Timestamp.from(Instant.parse(reservationJson.get("rvStartDate").toString())));
 									rpEntity.setRpTo(Timestamp.from(Instant.parse(reservationJson.get("rvEndDate").toString())));
 									
-									rpHistoryEntity.setRpReservationId(requestIdForConfig);
+									rpHistoryEntity.setRpReservationId(reservationID);
 									rpHistoryEntity.setRpReservationStatus(reservationJson.get("rvStatus").toString());
 									rpHistoryEntity.setRpCreatedBy(requestInfoSO.getRequestCreatorName());
 									rpHistoryEntity.setRpCreatedDate(timestamp);
-									rpEntity.setRpDeviceId(deviceId);
+									rpHistoryEntity.setRpDeviceId(deviceId);
 									rpHistoryEntity.setRpPortId(Integer.parseInt(rvDescriptionsJson.get("portId").toString()));
 									rpHistoryEntity.setRpProjectId(projectId);
 									rpHistoryEntity.setRpFrom(Timestamp.from(Instant.parse(reservationJson.get("rvStartDate").toString())));

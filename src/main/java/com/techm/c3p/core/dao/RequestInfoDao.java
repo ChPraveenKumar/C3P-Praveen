@@ -6548,11 +6548,14 @@ public class RequestInfoDao {
 
 				}
 				else if ("Reservation".equalsIgnoreCase(requestInfoSO.getRequestType())) {
-					//alphaneumeric_req_id = "SLGA-"+ UUID.randomUUID().toString().toUpperCase();
+					
 					String requestingPageEntity = "Reservation Management ";
 					String requestingModule = "Port Reservation";
-					alphaneumeric_req_id= dcmConfig.generateId(requestInfoSO.getApiCallType(), requestingPageEntity, requestInfoSO.getRequestType(), requestingModule);
-					System.out.println("alphaneumeric_req_id = " + alphaneumeric_req_id);
+					String reservationID= dcmConfig.generateId(requestInfoSO.getApiCallType(), requestingPageEntity, requestInfoSO.getRequestType(), requestingModule);
+					hmap.put("reservationID", reservationID);
+					
+					alphaneumeric_req_id = "SLBK-"
+							+ UUID.randomUUID().toString().toUpperCase();
 
 				}
 				else {
@@ -6560,7 +6563,9 @@ public class RequestInfoDao {
 							+ UUID.randomUUID().toString().toUpperCase();
 				}
 			}
-			//alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
+			
+			alphaneumeric_req_id = alphaneumeric_req_id.substring(0, 12);
+			
 			hmap.put("requestID", alphaneumeric_req_id);
 			if (requestInfoSO.getOs() != null || requestInfoSO.getOs() != "") {
 				Os = requestInfoSO.getOs();
