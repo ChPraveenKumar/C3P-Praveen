@@ -1,5 +1,7 @@
 package com.techm.c3p.core.service;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -16,11 +18,15 @@ import org.springframework.stereotype.Service;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.PortEntity;
 import com.techm.c3p.core.entitybeans.PortUsageEntity;
+import com.techm.c3p.core.entitybeans.ReservationInformationEntity;
 import com.techm.c3p.core.entitybeans.ReservationPortStatusEntity;
+import com.techm.c3p.core.entitybeans.ReservationPortStatusHistoryEntity;
 import com.techm.c3p.core.entitybeans.WorkGroup;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.PortEntityRepository;
 import com.techm.c3p.core.repositories.PortUsageRepository;
+import com.techm.c3p.core.repositories.ReservationInformationRepository;
+import com.techm.c3p.core.repositories.ReservationPortStatusHistoryRepository;
 import com.techm.c3p.core.repositories.ReservationPortStatusRepository;
 import com.techm.c3p.core.repositories.WorkGroupRepository;
 import com.techm.c3p.core.rest.DeviceDiscoveryController;
@@ -29,9 +35,6 @@ import com.techm.c3p.core.utility.WAFADateUtil;
 @Service
 public class ReservationManagementService {
 	private static final Logger logger = LogManager.getLogger(ReservationManagementService.class);
-
-	@Autowired
-	private ReservationPortStatusRepository reservationPortStatusRepository;
 
 	@Autowired
 	private PortUsageRepository portUsageRepository;
@@ -49,8 +52,17 @@ public class ReservationManagementService {
 	private DeviceDiscoveryController deviceDiscoveryController;
 
 	@Autowired
-	private WAFADateUtil dateUtil;
+	private ReservationInformationRepository reservationInformationRepository;
+	
+	@Autowired
+	private ReservationPortStatusRepository reservationPortStatusRepository;
+	
+	@Autowired
+	private ReservationPortStatusHistoryRepository reservationPortStatusHistoryRepository;
 
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
 	@SuppressWarnings("unchecked")
 	public JSONObject getDahsboardData() {
 		List<ReservationPortStatusEntity> reservationInformation = reservationPortStatusRepository.findAll();
@@ -216,4 +228,69 @@ public class ReservationManagementService {
 		return finalObject;
 	}
 
+	@SuppressWarnings("unchecked")
+	public JSONObject reserveport(JSONObject jsonRequest) {
+
+		JSONObject response = new JSONObject();
+
+		LocalDateTime nowDate = LocalDateTime.now();
+		Timestamp timestamp = Timestamp.valueOf(nowDate);
+
+		String requestID = jsonRequest.get("requestID").toString();
+		String userName = jsonRequest.get("userName").toString();
+		
+		ReservationInformationEntity reservationInfo = reservationInformationRepository.findByRvRequestId(requestID);
+		String reservationId = reservationInfo != null ? reservationInfo.getRvReservationId():"";
+		
+		String rpReservationStatus = "Pending";
+		List<ReservationPortStatusEntity> entityLists = reservationPortStatusRepository.findAllByRpReservationIdAndRpReservationStatus(reservationId, rpReservationStatus);
+		if(entityLists !=null && entityLists.isEmpty()) {
+			response.put(new String("outputStatus"), "Error");
+			response.put(new String("outputMessage"), "Port already reserved...!!" );
+			return response;
+		}
+
+		
+
+		if (reservationInfo != null) {
+			rpReservationStatus = "Reserved";
+			reservationInfo.setRvApprovedBy(userName);
+			reservationInfo.setRvApprovedOn(timestamp);
+			reservationInfo.setRvUpdatedBy(userName);
+			reservationInfo.setRvUpdatedDate(timestamp);
+			reservationInformationRepository.save(reservationInfo);
+			try {
+				for (ReservationPortStatusEntity entity : entityLists) {
+					entity.setRpReservationStatus(rpReservationStatus);
+					entity.setRpUpdatedDate(timestamp);
+					entity.setRpUpdatedBy(userName);
+					reservationPortStatusRepository.save(entity);
+
+					ReservationPortStatusHistoryEntity history = new ReservationPortStatusHistoryEntity();
+
+					history.setRpReservationId(entity.getRpReservationId());
+					history.setRpReservationStatus(rpReservationStatus);
+					history.setRpCreatedBy(entity.getRpCreatedBy());
+					history.setRpCreatedDate(entity.getRpCreatedDate());
+					history.setRpDeviceId(entity.getRpDeviceId());
+					history.setRpPortId(entity.getRpPortId());
+					history.setRpProjectId(entity.getRpProjectId());
+					history.setRpFrom(entity.getRpFrom());
+					history.setRpTo(entity.getRpTo());
+					history.setRpUpdatedBy(userName);
+					history.setRpUpdatedDate(timestamp);
+					reservationPortStatusHistoryRepository.save(history);
+
+				}
+				response.put(new String("outputStatus"), "Success");
+				response.put(new String("outputMessage"), "Port succussfully reserved...!!" );
+
+			} catch (Exception e) {
+				logger.error("Exception in ReservePort Method " + e.getMessage());
+				response.put(new String("outputStatus"), "Failed");
+				response.put(new String("outputMessage"), "Exception in ReservePort Method" );
+			}
+		}
+		return response;
+	}
 }

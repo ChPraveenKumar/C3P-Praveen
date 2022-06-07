@@ -11,7 +11,7 @@ import com.techm.c3p.core.entitybeans.WorkGroup;;
 public interface WorkGroupRepository extends JpaRepository<WorkGroup, Long> {
 
 	WorkGroup findByWorkGroupName(String workGroupName);
-	WorkGroup findById(int moduleId);	
+	WorkGroup findById(int id);	
 	List<WorkGroup> findAll();
 	@Query("SELECT workGroupName FROM WorkGroup")
 	List<WorkGroup> findName();
@@ -26,4 +26,5 @@ public interface WorkGroupRepository extends JpaRepository<WorkGroup, Long> {
 	
 	List<WorkGroup> findByWorkGroupNameContains(String workGroupName);
 	
+	WorkGroup findNameById(int id);
 }

@@ -1,6 +1,8 @@
 package com.techm.c3p.core.service;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.simple.JSONArray;
@@ -8,10 +10,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.techm.c3p.core.dao.RequestInfoDao;
+import com.techm.c3p.core.entitybeans.PortEntity;
+import com.techm.c3p.core.entitybeans.ReservationInformationEntity;
+import com.techm.c3p.core.entitybeans.ReservationPortStatusEntity;
+import com.techm.c3p.core.entitybeans.WorkGroup;
 import com.techm.c3p.core.pojo.CreateConfigRequest;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.pojo.ReservationReportPojo;
+import com.techm.c3p.core.repositories.PortEntityRepository;
+import com.techm.c3p.core.repositories.ReservationInformationRepository;
+import com.techm.c3p.core.repositories.ReservationPortStatusRepository;
+import com.techm.c3p.core.repositories.WorkGroupRepository;
 import com.techm.c3p.core.utility.InvokeFtl;
+import com.techm.c3p.core.utility.WAFADateUtil;
 
 @Component
 public class ReportDetailsService {
@@ -20,10 +32,22 @@ public class ReportDetailsService {
 	private InvokeFtl invokeFtl;
 	
 	@Autowired
+	private ReservationPortStatusRepository reservationPortStatusRepository;
+	@Autowired
+	 private PortEntityRepository portEntityRepository;
+	@Autowired
+	private ReservationInformationRepository reservationInformationRepository;
+	
+	@Autowired
+	private WAFADateUtil dateUtil;
+	
+	@Autowired
+	private WorkGroupRepository workGroupRepository;
+
+	@Autowired
 	private RequestInfoDao requestInfoDao;
 	public String getDetailsForReport(CreateConfigRequestDCM createConfigRequestDCM, RequestInfoPojo request)
 			throws Exception {
-		
 
 		String requestId = createConfigRequestDCM.getRequestId();
 		String TestType = createConfigRequestDCM.getTestType();
@@ -167,6 +191,42 @@ public class ReportDetailsService {
 			ex.printStackTrace();
 		}
 		return dataList;
+	}
+
+	@SuppressWarnings("static-access")
+	public ReservationReportPojo getReservationData(String requestID) {
+		
+		ReservationInformationEntity reserveInfo = reservationInformationRepository.findByRvRequestId(requestID);
+		String reservationId = reserveInfo != null ? reserveInfo.getRvReservationId():"";
+		
+		List<ReservationPortStatusEntity> entity = reservationPortStatusRepository.findByRpReservationId(reservationId );
+		ReservationReportPojo response=new ReservationReportPojo();
+		
+		if(entity!=null) {
+			
+			ReservationPortStatusEntity e = entity.get(0);
+			
+			WorkGroup workGroup = workGroupRepository.findById(Integer.parseInt(e.getRpProjectId()));
+			response.setProject(workGroup.getWorkGroupName());
+			response.setStartDate(dateUtil.dbToUI(e.getRpFrom()));
+			response.setEndDate(dateUtil.dbToUI(e.getRpTo()));
+			
+			List<String> portNames = new ArrayList<String>();
+			for(ReservationPortStatusEntity obj:entity) {
+				int portId=obj.getRpPortId();
+				PortEntity portEntity = portEntityRepository.findByPortId(portId);
+				if(portEntity!=null) {
+					portNames.add(portEntity.getPortName());
+				}
+			}
+			response.setPortSelected(portNames);
+			response.setComment(reserveInfo.getRvNotes());
+//			ReservationInformationEntity reservation=reservationInformationRepository.findByRvReservationId(requestID);	
+//			if(reservation!=null) {
+//				response.setComment(reservation.getRvNotes());
+//			}
+		}
+		return response;
 	}
 
 }

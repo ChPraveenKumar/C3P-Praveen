@@ -200,4 +200,37 @@ public class CreateScheduleReqDBService {
 		}
 
 	}
+	/**
+	 *This Api is marked as ***************c3p-ui Api Impacted****************
+	 **/
+	@POST
+	@RequestMapping(value = "/updateStatusInDB", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public void updateStatusInDB(@RequestBody String request) throws Exception {
+
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(request);
+
+			// Require taskId and processId from camunda
+			String requestId = json.get("requestId").toString();
+			String versionId = json.get("versionId").toString();
+
+			String query = "update camundahistory set history_requestId = ? where history_versionId = ?";
+			
+			try(Connection connection = jDBCconnection.getConnection();
+					PreparedStatement preparedStmt = connection.prepareStatement(query);) {
+				preparedStmt.setString(1, requestId);
+				preparedStmt.setString(2, versionId);
+				preparedStmt.executeUpdate();
+
+			} catch (SQLException exe) {
+				logger.error("SQL Exception in updateTaskIDInDB method "+exe.getMessage());
+			}
+
+		} catch (Exception ex) {
+			logger.error(ex);
+		}
+
+	}
 }

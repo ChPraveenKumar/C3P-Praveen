@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.SiteInfoEntity;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
+import com.techm.c3p.core.repositories.ReservationPortStatusRepository;
 
 @Controller
 @RequestMapping("/searchdeviceinventory")
@@ -32,6 +33,10 @@ public class SearchDeviceController {
 
 	@Autowired
 	private DeviceDiscoveryRepository deviceInforepo;
+	
+	@Autowired
+	private ReservationPortStatusRepository reservationPortStatusRepository;
+	
 	private static final Logger logger = LogManager.getLogger(SearchDeviceController.class);
 
 	/**
@@ -553,4 +558,361 @@ public class SearchDeviceController {
 		}
 		return jsonData;
 	}
+	
+	@POST
+	@RequestMapping(value = "/searchReservationInventoryDashboard", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response searchReservationInventoryDashboard(@RequestBody String searchParameters) {
+
+		JSONObject obj = new JSONObject();
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(searchParameters);
+			JSONObject object = new JSONObject();
+
+			String customer = null, region = null, vendortosearch = null, networktosearch = null , siteName = null;
+			List<DeviceDiscoveryEntity> getAllDevice = new ArrayList<DeviceDiscoveryEntity>();
+
+			if (json.containsKey("customer")) {
+				customer = json.get("customer").toString();
+			}
+			if (json.containsKey("region")) {
+				region = json.get("region").toString();
+			}
+			if (json.containsKey("vendor")) {
+				vendortosearch = json.get("vendor").toString();
+			}
+			if (json.containsKey("networkFunction")) {
+				networktosearch = json.get("networkFunction").toString();
+			}
+			if (json.containsKey("site")) {
+				siteName = json.get("site").toString();
+			}
+
+			// Implementation of search logic based on fields received from UI
+			String nonMandatoryfiltersbits = "000";
+
+			if (customer != null) {
+				nonMandatoryfiltersbits = "100";
+			}
+			if (region != null && !"All".equals(region)) {
+				nonMandatoryfiltersbits = "110";
+			}
+			if (vendortosearch != null  && !vendortosearch.isEmpty()) {
+				nonMandatoryfiltersbits = "111";
+			}
+			if (networktosearch != null && !networktosearch.isEmpty()) {
+				nonMandatoryfiltersbits = "211";
+			}
+			if (siteName != null && !siteName.isEmpty() && !"All".equals(siteName)) {
+				nonMandatoryfiltersbits = "311";
+			}
+
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("000")) {
+				// find only with customer
+				getAllDevice = deviceInforepo.findAll();
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("100")) {
+				// find with customer
+				getAllDevice = deviceInforepo
+						.findAllByCustSiteIdCCustName(customer);
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("110")) {
+				// find with customer and region
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegion(
+								customer, region);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("111")) {
+				// find with customer and region and vendor
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendor(
+								customer, region, vendortosearch);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("211")) {
+				// find with customer and region and vendor and network function
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupport(
+								customer, region, vendortosearch,
+								networktosearch);
+
+			}
+			if (nonMandatoryfiltersbits.equals("311")) {
+				// find with customer and region and site
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndCustSiteIdCSiteName(
+								customer, region, siteName);
+			}
+			JSONArray outputArray = new JSONArray();
+			for (int i = 0; i < getAllDevice.size(); i++) {
+
+				object = new JSONObject();
+				object.put("hostName", getAllDevice.get(i).getdHostName());
+				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
+				object.put("type", "Router");
+				object.put("deviceFamily", getAllDevice.get(i)
+						.getdDeviceFamily());
+				object.put("model", getAllDevice.get(i).getdModel());
+				object.put("os", getAllDevice.get(i).getdOs());
+				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
+				object.put("vendor", getAllDevice.get(i).getdVendor());
+				object.put("status", "Available");
+				object.put("customer", getAllDevice.get(i).getCustSiteId()
+						.getcCustName());
+				if (getAllDevice.get(i).getdEndOfSupportDate() != null
+						&& !getAllDevice.get(i).getdEndOfSupportDate()
+								.equalsIgnoreCase("Not Available")) {
+					object.put("eos", getAllDevice.get(i)
+							.getdEndOfSupportDate());
+				} else {
+					object.put("eos", "");
+
+				}
+				if (getAllDevice.get(i).getdEndOfSaleDate() != null
+						&& !getAllDevice.get(i).getdEndOfSaleDate()
+								.equalsIgnoreCase("Not Available")) {
+					object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
+				} else {
+					object.put("eol", "");
+
+				}
+				SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
+				object.put("site", site.getcSiteName());
+				object.put("region", site.getcSiteRegion());
+				
+				int reservationCount = reservationPortStatusRepository.getDeviceReservationCount(getAllDevice.get(i).getdId());
+				object.put("isReserved", reservationCount>0 ? true:false);
+				
+
+				outputArray.add(object);
+			}
+			obj.put("data", outputArray);
+
+		} catch (Exception e) {
+			logger.error(e);
+		}
+
+		return Response
+				.status(200)
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers",
+						"origin, content-type, accept, authorization")
+				.header("Access-Control-Allow-Credentials", "true")
+				.header("Access-Control-Allow-Methods",
+						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj)
+				.build();
+	}
+	
+	@POST
+	@RequestMapping(value = "/filterReservationInventoryDashboard", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Response filterReservationInventoryDashboard(@RequestBody String searchParameters) {
+
+		JSONObject obj = new JSONObject();
+		try {
+			JSONParser parser = new JSONParser();
+			JSONObject json = (JSONObject) parser.parse(searchParameters);
+			JSONObject object = new JSONObject();
+
+			String customer = null, region = null, vendortosearch = null, networktosearch = null, sitetosearch = null, devicetosearch = null, modeltosearch = null;
+			List<DeviceDiscoveryEntity> getAllDevice = new ArrayList<DeviceDiscoveryEntity>();
+
+			if (json.containsKey("customer")) {
+				customer = json.get("customer").toString();
+			}
+			if (json.containsKey("region")) {
+				region = json.get("region").toString();
+			}
+			if (json.containsKey("vendor")) {
+				vendortosearch = json.get("vendor").toString();
+			}
+			if (json.containsKey("networkFunction")) {
+				networktosearch = json.get("networkFunction").toString();
+			}
+			if (json.containsKey("site")) {
+				sitetosearch = json.get("site").toString();
+			}
+			if (json.containsKey("deviceFamily")) {
+				devicetosearch = json.get("deviceFamily").toString();
+			}
+			if (json.containsKey("model")) {
+				modeltosearch = json.get("model").toString();
+			}
+			logger.info("customer -" + customer + ", region-" + region
+					+ ", sitetosearch-" + sitetosearch + ", devicetosearch-"
+					+ devicetosearch + ", modeltosearch-" + modeltosearch
+					+ ", networktosearch" + networktosearch);
+			// Implementation of search logic based on fields received from UI
+			String nonMandatoryfiltersbits = "000";
+
+			if (customer != null) {
+				nonMandatoryfiltersbits = "100";
+			}
+			if (region != null) {
+				nonMandatoryfiltersbits = "110";
+			}
+			if (vendortosearch != null) {
+				nonMandatoryfiltersbits = "111";
+			}
+			if (networktosearch != null) {
+				nonMandatoryfiltersbits = "211";
+			}
+			if (!(sitetosearch.equals(""))) {
+				nonMandatoryfiltersbits = "221";
+			}
+			if (!(devicetosearch.equals(""))) {
+				nonMandatoryfiltersbits = "222";
+			}
+			if (!(sitetosearch.equals("")) && !(devicetosearch.equals(""))) {
+				nonMandatoryfiltersbits = "332";
+			}
+			if (!(sitetosearch.equals("")) && !(modeltosearch.equals(""))) {
+				nonMandatoryfiltersbits = "333";
+			}
+			if (!(devicetosearch.equals("")) && !(modeltosearch.equals(""))) {
+				nonMandatoryfiltersbits = "433";
+			}
+			if (!(sitetosearch.equals("")) && !(devicetosearch.equals(""))
+					&& !(modeltosearch.equals(""))) {
+				nonMandatoryfiltersbits = "322";
+			}
+
+			logger.info("nonMandatoryfiltersbits -" + nonMandatoryfiltersbits);
+
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("000")) {
+				// find only with customer
+				getAllDevice = deviceInforepo.findAll();
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("100")) {
+				// find with customer
+				getAllDevice = deviceInforepo
+						.findAllByCustSiteIdCCustName(customer);
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("110")) {
+				// find with customer and region
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegion(
+								customer, region);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("111")) {
+				// find with customer and region and vendor
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendor(
+								customer, region, vendortosearch);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("211")) {
+				// find with customer and region and vendor and network type
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupport(
+								customer, region, vendortosearch,
+								networktosearch);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("221")) {
+				// find with customer and region and vendor and network type and
+				// site
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteName(
+								customer, region, vendortosearch,
+								networktosearch, sitetosearch);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("222")) {
+				// find with customer and region and vendor and network type and
+				// device family
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDDeviceFamily(
+								customer, region, vendortosearch,
+								networktosearch, devicetosearch);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("322")) {
+				// find with customer and region and vendor and network type and
+				// site and device family and model
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDDeviceFamilyAndDModel(
+								customer, region, vendortosearch,
+								networktosearch, sitetosearch, devicetosearch,
+								modeltosearch);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("332")) {
+				// find with customer and region and vendor and network type and
+				// site and device family
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDDeviceFamily(
+								customer, region, vendortosearch,
+								networktosearch, sitetosearch, devicetosearch);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("333")) {
+				// find with customer and region and vendor and network type and
+				// site and model
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndCustSiteIdCSiteNameAndDModel(
+								customer, region, vendortosearch,
+								networktosearch, sitetosearch, modeltosearch);
+
+			}
+			if (nonMandatoryfiltersbits.equalsIgnoreCase("433")) {
+				// find with customer and region and vendor and network type and
+				// device family and model
+				getAllDevice = deviceInforepo
+						.findByCustSiteIdCCustNameAndCustSiteIdCSiteRegionAndDVendorAndDVNFSupportAndDDeviceFamilyAndDModel(
+								customer, region, vendortosearch,
+								networktosearch, devicetosearch, modeltosearch);
+			}
+
+			JSONArray outputArray = new JSONArray();
+			for (int i = 0; i < getAllDevice.size(); i++) {
+
+				object = new JSONObject();
+				object.put("hostName", getAllDevice.get(i).getdHostName());
+				object.put("managementIp", getAllDevice.get(i).getdMgmtIp());
+				object.put("type", "Router");
+				object.put("deviceFamily", getAllDevice.get(i)
+						.getdDeviceFamily());
+				object.put("model", getAllDevice.get(i).getdModel());
+				object.put("os", getAllDevice.get(i).getdOs());
+				object.put("osVersion", getAllDevice.get(i).getdOsVersion());
+				object.put("vendor", getAllDevice.get(i).getdVendor());
+				object.put("status", "Available");
+				object.put("customer", getAllDevice.get(i).getCustSiteId()
+						.getcCustName());
+				object.put("eos", getAllDevice.get(i).getdEndOfSupportDate());
+				object.put("eol", getAllDevice.get(i).getdEndOfSaleDate());
+				SiteInfoEntity site = getAllDevice.get(i).getCustSiteId();
+				object.put("site", site.getcSiteName());
+				object.put("region", site.getcSiteRegion());
+				
+				int reservationCount = reservationPortStatusRepository.getDeviceReservationCount(getAllDevice.get(i).getdId());
+				object.put("isReserved", reservationCount>0 ? true:false);
+
+				outputArray.add(object);
+			}
+			obj.put("data", outputArray);
+
+		} catch (Exception e) {
+			logger.error(e);
+		}
+
+		return Response
+				.status(200)
+				.header("Access-Control-Allow-Origin", "*")
+				.header("Access-Control-Allow-Headers",
+						"origin, content-type, accept, authorization")
+				.header("Access-Control-Allow-Credentials", "true")
+				.header("Access-Control-Allow-Methods",
+						"GET, POST, PUT, DELETE, OPTIONS, HEAD")
+				.header("Access-Control-Max-Age", "1209600").entity(obj)
+				.build();
+	}
+
+
 }
+

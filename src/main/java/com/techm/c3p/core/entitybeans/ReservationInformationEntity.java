@@ -22,6 +22,10 @@ public class ReservationInformationEntity {
 	@Column(name = "rv_reservation_id", length = 50)
 	@NotNull
 	private String rvReservationId;
+	
+	@Column(name = "rv_request_id", length = 25)
+	@NotNull
+	private String rvRequestId;
 
 	@Column(name = "rv_reserved_on")
 	@NotNull
@@ -72,6 +76,14 @@ public class ReservationInformationEntity {
 
 	public void setRvReservationId(String rvReservationId) {
 		this.rvReservationId = rvReservationId;
+	}
+	
+	public String getRvRequestId() {
+		return rvRequestId;
+	}
+
+	public void setRvRequestId(String rvRequestId) {
+		this.rvRequestId = rvRequestId;
 	}
 
 	public Timestamp getRvReservedOn() {

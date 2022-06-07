@@ -234,9 +234,9 @@ public class ConfigComparisonService {
 
 			// RequestId="USCI7200IO12.4_NA_Test_1.0_Snippet_Router Uptime";
 
-			String tempRequestId = requestDetailsService.findByRequestId(requestId);
+/*			String tempRequestId = requestDetailsService.findByRequestId(requestId);
 			String tempRequestId1 = tempRequestId.substring(0, 15);
-			String tempRequestId12 = tempRequestId1.concat(RequestId);
+			String tempRequestId12 = tempRequestId1.concat(RequestId);*/
 			String snippet = requestInfoDao.getSnippet(reportLabel, testName);
 			// write it to temp file StandardConfiguration.txt
 			/*String filepath1 = C3PCoreAppLabels.STANDARD_CONFIG_PATH.getValue() + "StandardConfiguration.txt";
@@ -776,6 +776,12 @@ public class ConfigComparisonService {
 		return responseJson;
 	}
 	
+	/**
+	 * Creating new configuration file if file contains 'Building configuration'
+	 * 
+	 * @param file
+	 * @return
+	 */
 	public String removeBuildConfigurationAboveLineFromConfigFile(String filePath) {
 
 		boolean isRemoveBuildConfAndAboveLine = false;
@@ -809,6 +815,7 @@ public class ConfigComparisonService {
 				return tempConfigFile;
 			}
 		} catch (Exception e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return filePath;

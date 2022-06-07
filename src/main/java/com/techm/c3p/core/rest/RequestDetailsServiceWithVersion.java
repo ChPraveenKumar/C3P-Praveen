@@ -17,6 +17,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,11 +27,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
-import com.techm.c3p.core.dao.RequestDetails;
 import com.techm.c3p.core.dao.RequestInfoDao;
 import com.techm.c3p.core.dao.RequestInfoDetailsDao;
 import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
-import com.techm.c3p.core.entitybeans.CertificationTestResultEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.HeatTemplate;
 import com.techm.c3p.core.entitybeans.MasterAttributes;
@@ -38,17 +37,15 @@ import com.techm.c3p.core.entitybeans.MasterCharacteristicsEntity;
 import com.techm.c3p.core.entitybeans.Notification;
 import com.techm.c3p.core.entitybeans.RequestFeatureTransactionEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
+import com.techm.c3p.core.entitybeans.ReservationInformationEntity;
 import com.techm.c3p.core.pojo.MileStones;
 import com.techm.c3p.core.pojo.ReoprtFlags;
 import com.techm.c3p.core.pojo.RequestInfoCreateConfig;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
+import com.techm.c3p.core.pojo.ReservationReportPojo;
 import com.techm.c3p.core.pojo.SearchParamPojo;
-import com.techm.c3p.core.pojo.TestStaregyConfigPojo;
 import com.techm.c3p.core.repositories.AttribCreateConfigRepo;
 import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
-import com.techm.c3p.core.repositories.CertificationTestResultRepository;
-import com.techm.c3p.core.repositories.CloudProjectsRepository;
-import com.techm.c3p.core.repositories.CloudplatforParamsRepository;
 import com.techm.c3p.core.repositories.CreateConfigRepo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.HeatTemplateRepository;
@@ -56,6 +53,8 @@ import com.techm.c3p.core.repositories.MasterCharacteristicsRepository;
 import com.techm.c3p.core.repositories.NotificationRepo;
 import com.techm.c3p.core.repositories.RequestFeatureTransactionRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
+import com.techm.c3p.core.repositories.ReservationInformationRepository;
+import com.techm.c3p.core.service.ReportDetailsService;
 import com.techm.c3p.core.service.RequestDetailsService;
 import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.ReportMileStones;
@@ -92,23 +91,11 @@ public class RequestDetailsServiceWithVersion {
 	private WAFADateUtil dateUtil;
 
 	@Autowired
-	private RequestDetails requestDetailsDao;
-
-	@Autowired
 	private RequestInfoDao requestinfoDao;
-
-	@Autowired
-	private CloudplatforParamsRepository cloudplatforParamsRepository;
-
-	@Autowired
-	private CloudProjectsRepository cloudProjectsRepository;
 
 	@Autowired
 	private RequestInfoDetailsRepositories requestInfoDetailsRepositories;
 	
-	@Autowired
-	private CertificationTestResultRepository certificationTestResultRepository;
-
 	@Autowired
 	private AuditDashboardResultRepository auditDashboardResultRepository;
 	
@@ -117,6 +104,12 @@ public class RequestDetailsServiceWithVersion {
 	
 	@Autowired
 	private HeatTemplateRepository heatTemplateRepo;
+	@Autowired
+	private ReportDetailsService reportDetailsService;
+	
+	@Autowired
+	private ReservationInformationRepository reservationInformationRepository;
+	
 	
 	/**
 	 * This Api is marked as ***************c3p-ui Api Impacted****************
@@ -152,7 +145,7 @@ public class RequestDetailsServiceWithVersion {
 			if (value != null && !value.isEmpty()) {
 				try {
 					RequestInfoPojo requestData = requestInfoDetailsDao.getRequestDetailTRequestInfoDBForVersion(value, version);
-					if(requestData!=null && requestData.getRequestType()!=null && "Config Audit".equals(requestData.getRequestType())){
+					if(requestData!=null && requestData.getRequestType()!=null && "Config Audit".equals(requestData.getRequestType()) || "Reservation".equals(requestData.getRequestType())){
 						requestType = requestData.getRequestType();
 					}else {
 					requestType = value.substring(0, 4);
@@ -707,4 +700,25 @@ public class RequestDetailsServiceWithVersion {
 		return response;
 	}
 	
+
+// Api for milestone status display
+@SuppressWarnings("unchecked")
+@POST
+@RequestMapping(value = "/getReservationGenerateDetails", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")	
+public ResponseEntity<ReservationReportPojo> getReservationGenerateDetails(@RequestBody String requestDetails) {
+	JSONParser parser = new JSONParser();
+	JSONObject response = new JSONObject();
+	ReservationReportPojo reservationReportPojo = new ReservationReportPojo();
+	try {
+		JSONObject json = (JSONObject) parser.parse(requestDetails);
+		String requestId = json.get("requestID").toString();
+		reservationReportPojo = reportDetailsService.getReservationData(requestId);
+		if(reservationReportPojo!=null) {
+			response.put("reservationData", new Gson().toJson(reservationReportPojo));
+		}
+		}catch (Exception e) {
+			logger.error(e.getStackTrace());
+		}
+	return ResponseEntity.ok(reservationReportPojo);
+}
 }
