@@ -532,11 +532,14 @@ public class ImportFile {
 		int myRequestCount, allRequestCount= 0;
 		JSONArray outputArray = new JSONArray();
 		JSONObject object = new JSONObject();
+		String status="Success";
 		try {
 			myRequestCount = importMasterStagingRepo.myImportCountStatus(user);
-			if("all".equalsIgnoreCase(requestType))
+			if("all".equalsIgnoreCase(requestType)) {
 				user = "%";
-			importMasterData =importMasterStagingRepo.getMyImport(user);
+				importMasterData =importMasterStagingRepo.findAllByStatus(status);
+			}else	
+			    importMasterData =importMasterStagingRepo.findAllByUserNameAndStatus(user,status);
 			allRequestCount = importMasterStagingRepo.allImportCountStatus();
 			for (ImportMasterStagingEntity entity : importMasterData) {
 				object = new JSONObject();
@@ -570,7 +573,7 @@ public class ImportFile {
 	@RequestMapping(value = "/getMyDashboardData", method = RequestMethod.GET, produces = "application/json")
 	@ResponseBody
 	public ResponseEntity discoverDashboard(@RequestParam String user,
-			@RequestParam String requestType) {
+			@RequestParam String requestType,@RequestParam String status) {
 
 		logger.info("Inside getMyDashboardData Service");
 		JSONObject obj = new JSONObject();
@@ -579,7 +582,7 @@ public class ImportFile {
 		JSONObject object = new JSONObject();
 		int myRequestCount, allRequestCount=0;
 		try {
-			importMasterData =importMasterStagingRepo.getMyImport(user);
+			importMasterData =importMasterStagingRepo.findAllByUserNameAndStatus(user,status);
 			myRequestCount = importMasterStagingRepo.myImportCountStatus(user);
 			allRequestCount = importMasterStagingRepo.allImportCountStatus();
 			for (ImportMasterStagingEntity entity : importMasterData) {
