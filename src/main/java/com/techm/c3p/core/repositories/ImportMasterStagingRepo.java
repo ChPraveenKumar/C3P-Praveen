@@ -20,14 +20,16 @@ public interface ImportMasterStagingRepo extends JpaRepository<ImportMasterStagi
 	@Query("SELECT data FROM ImportMasterStagingEntity data where importId=:importId")
 	List<ImportMasterStagingEntity> getImportStaggingData(@Param("importId") String importId);
 	
-	List<ImportMasterStagingEntity> findAllByStatus(String status);
+	@Query("SELECT allimport FROM ImportMasterStagingEntity allimport")
+	List<ImportMasterStagingEntity> getAllImport();
 	
-	List<ImportMasterStagingEntity> findAllByUserNameAndStatus(String userName, String status);
+	@Query("SELECT myimport FROM ImportMasterStagingEntity myimport where userName like :userName order by executionProcessDate Desc")
+	List<ImportMasterStagingEntity> getMyImport(@Param("userName") String userName);
 	
-	@Query("SELECT count(distinct importId) FROM ImportMasterStagingEntity where userName=:userName and status='Success'")
+	@Query("SELECT count(distinct importId) FROM ImportMasterStagingEntity where userName=:userName and status='Successful'")
 	int myImportCountStatus(@Param("userName") String userName);
 	
-	@Query("SELECT count(distinct importId) FROM ImportMasterStagingEntity where status='Success'")
+	@Query("SELECT count(distinct importId) FROM ImportMasterStagingEntity where status='Successful'")
 	int allImportCountStatus();
 	
 	List<ImportMasterStagingEntity> findByCreatedByOrderByExecutionDateDesc(String userName, Pageable pageable);
