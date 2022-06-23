@@ -28,6 +28,7 @@ import com.google.gson.Gson;
 import com.techm.c3p.core.connection.DBUtil;
 import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.entitybeans.BasicConfiguration;
+import com.techm.c3p.core.entitybeans.CamundaHistoryEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.Notification;
 import com.techm.c3p.core.entitybeans.SiteInfoEntity;
@@ -41,6 +42,7 @@ import com.techm.c3p.core.pojo.Global;
 import com.techm.c3p.core.pojo.RequestInfoSO;
 import com.techm.c3p.core.pojo.SiteInfoPojo;
 import com.techm.c3p.core.pojo.TemplateBasicConfigurationPojo;
+import com.techm.c3p.core.repositories.CamundaHistoryRepo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.NotificationRepo;
 import com.techm.c3p.core.repositories.UserManagementRepository;
@@ -61,6 +63,8 @@ public class TemplateManagementDao {
 	private JDBCConnection jDBCConnection;
 	@Autowired
 	private DeviceDiscoveryRepository deviceDiscoveryRepository;
+	@Autowired
+	private CamundaHistoryRepo camundaHistoryRepo;
 
 	public boolean updateMasterFeatureAndCommandTable(String series) {
 		boolean result = false;
@@ -271,28 +275,23 @@ public class TemplateManagementDao {
 		}
 		return result;
 	}
-
-	public String getUserTaskIdForTemplate(String templateid, String version) {
+	
+	public String getUserTaskIdForTemplate(String requestId, String version) {
 		String userTaskid = null;
-		connection = jDBCConnection.getConnection();
-		String query2 = "select * from  camundahistory where history_requestId=? and history_versionId=?";
 		try {
-			PreparedStatement pst = connection.prepareStatement(query2);
-			pst.setString(1, templateid);
-			pst.setString(2, version);
-			ResultSet res = pst.executeQuery();
-			while (res.next()) {
-				userTaskid = res.getString("history_userTaskId");
+
+			CamundaHistoryEntity camundaHistory = camundaHistoryRepo.findByHistoryRequestIdAndHistoryVersionId(requestId, version);
+
+			if (camundaHistory != null) {
+				userTaskid=camundaHistory.getHistoryUserTaskId();
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			DBUtil.close(connection);
+		} catch (Exception exe) {
+			logger.error("Exception in getUserTaskIdForTemplate method --> " + exe.getMessage());
 		}
+
 		return userTaskid;
 	}
-
+	
 	public int updateTemplateStatus(String templateid, String version, String status, String approverCommet) {
 		int res = 0;
 		connection = jDBCConnection.getConnection();
