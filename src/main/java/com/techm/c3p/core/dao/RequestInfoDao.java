@@ -45,6 +45,7 @@ import com.techm.c3p.core.connection.JDBCConnection;
 import com.techm.c3p.core.entitybeans.AuditDashboardEntity;
 import com.techm.c3p.core.entitybeans.AuditDashboardResultEntity;
 import com.techm.c3p.core.entitybeans.BatchIdEntity;
+import com.techm.c3p.core.entitybeans.CamundaHistoryEntity;
 import com.techm.c3p.core.entitybeans.CertificationTestResultEntity;
 import com.techm.c3p.core.entitybeans.DeviceDiscoveryEntity;
 import com.techm.c3p.core.entitybeans.RequestInfoEntity;
@@ -81,6 +82,7 @@ import com.techm.c3p.core.pojo.UserValidationResultDetailPojo;
 import com.techm.c3p.core.repositories.AuditDashboardRepository;
 import com.techm.c3p.core.repositories.AuditDashboardResultRepository;
 import com.techm.c3p.core.repositories.BatchInfoRepo;
+import com.techm.c3p.core.repositories.CamundaHistoryRepo;
 import com.techm.c3p.core.repositories.DeviceDiscoveryRepository;
 import com.techm.c3p.core.repositories.RequestInfoDetailsRepositories;
 import com.techm.c3p.core.repositories.ResourceCharacteristicsHistoryRepository;
@@ -141,6 +143,9 @@ public class RequestInfoDao {
 	
 	@Autowired
 	private DcmConfigService dcmConfig;
+	
+	@Autowired
+	private CamundaHistoryRepo camundaHistoryRepo;
 	
 	
 	private static final String FLAG_PASS ="Pass";
@@ -4193,25 +4198,22 @@ public class RequestInfoDao {
 		}
 		return result;
 	}
-
+	
 	public String getUserTaskIdForRequest(String requestId, String version) {
-		String usertaskid = null;
-		String query = "select * from  camundahistory where history_requestId=? and history_versionId=?";
-		try (Connection connection = jDBCConnection.getConnection();
-				PreparedStatement pst = connection.prepareStatement(query);) {
-			pst.setString(1, requestId);
-			pst.setString(2, version);
-			ResultSet res = pst.executeQuery();
-			while (res.next()) {
-				usertaskid = res.getString("history_userTaskId");
-			}
-		} catch (SQLException exe) {
-			logger.error("SQL Exception in changeRequestOwner method "
-					+ exe.getMessage());
-		}
-		return usertaskid;
-	}
+		String userTaskid = null;
+		try {
 
+			CamundaHistoryEntity camundaHistory = camundaHistoryRepo.findByHistoryRequestIdAndHistoryVersionId(requestId, version);
+
+			if (camundaHistory != null) {
+				userTaskid=camundaHistory.getHistoryUserTaskId();
+			}
+		} catch (Exception exe) {
+			logger.error("Exception in getProcessIdFromCamundaHistory method --> " + exe.getMessage());
+		}
+
+		return userTaskid;
+	}
 	public boolean changeRequestStatus(String requestid, String version,
 			String status) {
 		boolean result = false;
