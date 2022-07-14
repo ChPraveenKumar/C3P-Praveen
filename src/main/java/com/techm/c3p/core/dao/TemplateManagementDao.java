@@ -317,10 +317,13 @@ public class TemplateManagementDao {
 			pst.setString(5, version);
 			res = pst.executeUpdate();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} finally {
-			DBUtil.close(connection);
+			try {
+				connection.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return res;
 	}

@@ -180,7 +180,7 @@ public class TemplateApprovalWorkflowService {
 				response = templateManagementDao.updateTemplateStatus(templateId, templateVersion, status,
 						approverComment);
 				userTaskId = templateManagementDao
-						.getUserTaskIdForTemplate(json.get("templateid").toString().replace("-", "_"), templateVersion);
+						.getUserTaskIdForTemplate(json.get("templateId").toString().replace("-", "_"), templateVersion);
 				camundaServiceTemplateApproval.completeApprovalFlow(userTaskId, status, approverComment);
 			}
 			else
