@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-
+	
+   <modelVersion>4.0.0</modelVersion>
 	<groupId>com.techm.c3p.core</groupId>
 	<artifactId>C3P</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<properties>
-		<wildfly_home>target</wildfly_home>
+		<wildfly_home>D:\C3P\Server\camunda-bpm-wildfly10-7.10.0-alpha4</wildfly_home>
 		<resteasy.version>3.1.3.Final</resteasy.version>
 		<oauth.version>2.3.5.RELEASE</oauth.version>
 		<jwt.version>1.0.10.RELEASE</jwt.version>
@@ -240,7 +240,7 @@
 				<version>3.3.1</version><!--$NO-MVN-MAN-VER$ -->
 				<configuration>
 					<failOnMissingWebXml>false</failOnMissingWebXml>
-					<outputDirectory>${wildfly_home}</outputDirectory>
+					<outputDirectory>${wildfly_home}\server\wildfly-10.1.0.Final\standalone\deployments</outputDirectory>
 				</configuration>
 			</plugin>
 

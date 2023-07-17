@@ -30,7 +30,6 @@ import com.techm.c3p.core.repositories.SiteInfoRepository;
 import com.techm.c3p.core.repositories.UserManagementRepository;
 import com.techm.c3p.core.repositories.WorkGroupRepository;
 import com.techm.c3p.core.service.UserManagementInterface;
-import com.techm.c3p.core.utility.C3PCoreAppLabels;
 import com.techm.c3p.core.utility.PasswordEncryption;
 import com.techm.c3p.core.utility.UserEncryption;
 

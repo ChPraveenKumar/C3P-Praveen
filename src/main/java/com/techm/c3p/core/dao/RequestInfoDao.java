@@ -4209,7 +4209,7 @@ public class RequestInfoDao {
 				userTaskid=camundaHistory.getHistoryUserTaskId();
 			}
 		} catch (Exception exe) {
-			logger.error("Exception in getProcessIdFromCamundaHistory method --> " + exe.getMessage());
+			logger.error("Exception in getUserTaskIdForRequest method --> " + exe.getMessage());
 		}
 
 		return userTaskid;

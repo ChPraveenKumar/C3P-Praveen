@@ -18,9 +18,11 @@ import org.springframework.stereotype.Service;
 
 import com.techm.c3p.core.connection.DBUtil;
 import com.techm.c3p.core.connection.JDBCConnection;
+import com.techm.c3p.core.entitybeans.CamundaHistoryEntity;
 import com.techm.c3p.core.pojo.CreateConfigRequestDCM;
 import com.techm.c3p.core.pojo.RequestInfoPojo;
 import com.techm.c3p.core.pojo.SchedulerListPojo;
+import com.techm.c3p.core.repositories.CamundaHistoryRepo;
 
 @Service
 public class RequestSchedulerDao {
@@ -28,6 +30,9 @@ public class RequestSchedulerDao {
 	private static final Logger logger = LogManager.getLogger(RequestSchedulerDao.class);
 	@Autowired
 	private JDBCConnection jDBCConnection;
+	
+	@Autowired
+	private CamundaHistoryRepo camundaHistoryRepo;
 
 	public String updateScheduledRequest(CreateConfigRequestDCM configRequest) throws SQLException {
 		String result = "";
@@ -304,41 +309,32 @@ public class RequestSchedulerDao {
 		dateString = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(date);
 		return dateString;
 	}
-
+	
 	public String getProcessIdFromCamundaHistory(String requestId, String version) {
 		String processId = null;
-		String query = "Select history_processId from camundahistory where history_requestId=? and history_versionId=?";
-		ResultSet rs = null;
-		
-		try(Connection	connection = jDBCConnection.getConnection();
-				PreparedStatement pst = connection.prepareStatement(query);) {
-			pst.setString(1, requestId);
-			pst.setString(2, version);
-			rs = pst.executeQuery();
-			while (rs.next()) {
-				processId = rs.getString("history_processId");
+		try {
+
+			CamundaHistoryEntity camundaHistory = camundaHistoryRepo.findByHistoryRequestIdAndHistoryVersionId(requestId, version);
+
+			if (camundaHistory != null) {
+				processId=camundaHistory.getHistoryProcessId();
 			}
-		} catch (SQLException exe) {
-			logger.error("SQL Exception in getProcessIdFromCamundaHistory method "+exe.getMessage());
-		} finally {
-			DBUtil.close(rs);
+		} catch (Exception exe) {
+			logger.error("Exception in getProcessIdFromCamundaHistory method --> " + exe.getMessage());
 		}
 
 		return processId;
 	}
 
 	public void deleteProcessIdFromCamundaHistory(String processId) {
-		String query = "delete from camundahistory where history_processId = ?";
-		try(Connection connection = jDBCConnection.getConnection();
-				PreparedStatement pst = connection.prepareStatement(query);) {
-			pst.setString(1, processId);
-			pst.execute("SET FOREIGN_KEY_CHECKS=0");
-			pst.executeUpdate();
-		} catch (SQLException exe) {
+		try{
+			
+			camundaHistoryRepo.deleteByHistoryProcessId(processId);
+			
+		} catch (Exception exe) {
 			logger.error("SQL Exception in deleteProcessIdFromCamundaHistory method "+exe.getMessage());
 		}
 	}
-
 	/* method overloading for UIRevamp */
 	public String updateScheduledRequest(RequestInfoPojo configRequest) throws SQLException {
 		String result = "";

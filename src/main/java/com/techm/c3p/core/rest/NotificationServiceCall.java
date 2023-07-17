@@ -24,7 +24,7 @@ public class NotificationServiceCall {
 	
 	@Autowired
 	private RestTemplate restTemplate;
-	@Value("${notify.service.uri}")
+	@Value("${m}")
 	private String notifyServiceUri;
 	
 	

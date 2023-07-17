@@ -105,7 +105,7 @@ public class DeviceDiscoveryController implements Observer {
 	 **/
 	@SuppressWarnings("unchecked")
 	@GET
-	@RequestMapping(value = "/discoverDashboard", method = RequestMethod.GET, produces = "application/json")
+	@RequestMapping(value = "/discoverDashboard", method = RequestMethod.GET, produces = "application/JSON")
 	@ResponseBody
 	public ResponseEntity<JSONObject> discoverDashboard(@RequestParam String type, @RequestParam String user,
 			@RequestParam String requestType) {

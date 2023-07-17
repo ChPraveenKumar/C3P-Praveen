@@ -606,6 +606,8 @@ public class ConfigComparisonService {
 				.header("Access-Control-Max-Age", "1209600").entity(obj).build();
 
 	}
+
+
 	/**
 	 *This Api is marked as ***************c3p-ui Api Impacted****************
 	 **/
@@ -820,5 +822,4 @@ public class ConfigComparisonService {
 		}
 		return filePath;
 	}
-	
 }
